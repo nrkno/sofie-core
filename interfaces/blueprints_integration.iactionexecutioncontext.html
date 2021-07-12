@@ -52,7 +52,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules.html">Sofie Integration Libraries</a>
+					<a href="../index.html">Sofie Integration Libraries</a>
 				</li>
 				<li>
 					<a href="../modules/blueprints_integration.html">blueprints-integration</a>
@@ -99,6 +99,7 @@
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#gethashid" class="tsd-kind-icon">get<wbr>Hash<wbr>Id</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#getpackageinfo" class="tsd-kind-icon">get<wbr>Package<wbr>Info</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#getshowstyleconfig" class="tsd-kind-icon">get<wbr>Show<wbr>Style<wbr>Config</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#getstudioconfig" class="tsd-kind-icon">get<wbr>Studio<wbr>Config</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#getstudiomappings" class="tsd-kind-icon">get<wbr>Studio<wbr>Mappings</a></li>
@@ -106,6 +107,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#logerror" class="tsd-kind-icon">log<wbr>Error</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#loginfo" class="tsd-kind-icon">log<wbr>Info</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#logwarning" class="tsd-kind-icon">log<wbr>Warning</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#studioid" class="tsd-kind-icon">studio<wbr>Id</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#unhashid" class="tsd-kind-icon">unhash<wbr>Id</a></li>
 							</ul>
 						</section>
@@ -113,7 +115,9 @@
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blueprints_integration.iactionexecutioncontext.html#findlastpieceonlayer" class="tsd-kind-icon">find<wbr>Last<wbr>Piece<wbr>OnLayer</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blueprints_integration.iactionexecutioncontext.html#findlastscriptedpieceonlayer" class="tsd-kind-icon">find<wbr>Last<wbr>Scripted<wbr>Piece<wbr>OnLayer</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.iactionexecutioncontext.html#getcurrenttime" class="tsd-kind-icon">get<wbr>Current<wbr>Time</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blueprints_integration.iactionexecutioncontext.html#getpartforpreviouspiece" class="tsd-kind-icon">get<wbr>Part<wbr>For<wbr>Previous<wbr>Piece</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blueprints_integration.iactionexecutioncontext.html#getpartinstance" class="tsd-kind-icon">get<wbr>Part<wbr>Instance</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blueprints_integration.iactionexecutioncontext.html#getpartinstanceforpreviouspiece" class="tsd-kind-icon">get<wbr>Part<wbr>Instance<wbr>For<wbr>Previous<wbr>Piece</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="blueprints_integration.iactionexecutioncontext.html#getpieceinstances" class="tsd-kind-icon">get<wbr>Piece<wbr>Instances</a></li>
@@ -145,7 +149,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#gethashid">getHashId</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L23">blueprints-integration/src/context.ts:23</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L25">blueprints-integration/src/context.ts:25</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -187,13 +191,45 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="getpackageinfo" class="tsd-anchor"></a>
+					<h3>get<wbr>Package<wbr>Info</h3>
+					<div class="tsd-signature tsd-kind-icon">get<wbr>Package<wbr>Info<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>packageId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-symbol">readonly </span><a href="" class="tsd-signature-type" data-tsd-kind="Type alias">Any</a><span class="tsd-signature-symbol">[]</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#getpackageinfo">getPackageInfo</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L87">blueprints-integration/src/context.ts:87</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-type-declaration">
+						<h4>Type declaration</h4>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter-signature">
+								<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-interface">
+									<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>packageId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">readonly </span><a href="" class="tsd-signature-type" data-tsd-kind="Type alias">Any</a><span class="tsd-signature-symbol">[]</span></li>
+								</ul>
+								<ul class="tsd-descriptions">
+									<li class="tsd-description">
+										<h4 class="tsd-parameters-title">Parameters</h4>
+										<ul class="tsd-parameters">
+											<li>
+												<h5>packageId: <span class="tsd-signature-type">string</span></h5>
+											</li>
+										</ul>
+										<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">readonly </span><a href="" class="tsd-signature-type" data-tsd-kind="Type alias">Any</a><span class="tsd-signature-symbol">[]</span></h4>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 					<a name="getshowstyleconfig" class="tsd-anchor"></a>
 					<h3>get<wbr>Show<wbr>Style<wbr>Config</h3>
 					<div class="tsd-signature tsd-kind-icon">get<wbr>Show<wbr>Style<wbr>Config<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">unknown</span></div>
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#getshowstyleconfig">getShowStyleConfig</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L89">blueprints-integration/src/context.ts:89</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L96">blueprints-integration/src/context.ts:96</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -224,7 +260,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#getstudioconfig">getStudioConfig</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L75">blueprints-integration/src/context.ts:75</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L80">blueprints-integration/src/context.ts:80</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -255,7 +291,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#getstudiomappings">getStudioMappings</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L80">blueprints-integration/src/context.ts:80</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L85">blueprints-integration/src/context.ts:85</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -286,7 +322,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#logdebug">logDebug</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L28">blueprints-integration/src/context.ts:28</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L30">blueprints-integration/src/context.ts:30</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -323,7 +359,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#logerror">logError</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L34">blueprints-integration/src/context.ts:34</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L36">blueprints-integration/src/context.ts:36</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -360,7 +396,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#loginfo">logInfo</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L30">blueprints-integration/src/context.ts:30</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L32">blueprints-integration/src/context.ts:32</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -397,7 +433,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#logwarning">logWarning</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L32">blueprints-integration/src/context.ts:32</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L34">blueprints-integration/src/context.ts:34</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -428,13 +464,29 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="studioid" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> studio<wbr>Id</h3>
+					<div class="tsd-signature tsd-kind-icon">studio<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#studioid">studioId</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L77">blueprints-integration/src/context.ts:77</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The id of the studio</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 					<a name="unhashid" class="tsd-anchor"></a>
 					<h3>unhash<wbr>Id</h3>
 					<div class="tsd-signature tsd-kind-icon">unhash<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span>hash<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#unhashid">unhashId</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L25">blueprints-integration/src/context.ts:25</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L27">blueprints-integration/src/context.ts:27</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -477,7 +529,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L123">blueprints-integration/src/context.ts:123</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L130">blueprints-integration/src/context.ts:130</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -509,6 +561,45 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="findlastscriptedpieceonlayer" class="tsd-anchor"></a>
+					<h3>find<wbr>Last<wbr>Scripted<wbr>Piece<wbr>OnLayer</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">find<wbr>Last<wbr>Scripted<wbr>Piece<wbr>OnLayer<span class="tsd-signature-symbol">(</span>sourceLayerId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-symbol">{ </span>excludeCurrentPart<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>pieceMetaDataFilter<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPiece</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L139">blueprints-integration/src/context.ts:139</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Get the previous scripted piece on a given layer, looking backwards from the current part.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>sourceLayerId: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> options: <span class="tsd-signature-symbol">{ </span>excludeCurrentPart<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>pieceMetaDataFilter<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> }</span></h5>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> exclude<wbr>Current<wbr>Part<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span></h5>
+										</li>
+										<li class="tsd-parameter">
+											<h5><span class="tsd-flag ts-flagOptional">Optional</span> piece<wbr>Meta<wbr>Data<wbr>Filter<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span></h5>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPiece</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
 					<a name="getcurrenttime" class="tsd-anchor"></a>
 					<h3>get<wbr>Current<wbr>Time</h3>
@@ -520,10 +611,38 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="blueprints_integration.ieventcontext.html">IEventContext</a>.<a href="blueprints_integration.ieventcontext.html#getcurrenttime">getCurrentTime</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L203">blueprints-integration/src/context.ts:203</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L220">blueprints-integration/src/context.ts:220</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getpartforpreviouspiece" class="tsd-anchor"></a>
+					<h3>get<wbr>Part<wbr>For<wbr>Previous<wbr>Piece</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Part<wbr>For<wbr>Previous<wbr>Piece<span class="tsd-signature-symbol">(</span>piece<span class="tsd-signature-symbol">: </span><a href="" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPieceDB</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPart</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L149">blueprints-integration/src/context.ts:149</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Gets the Part for a Piece retrieved from findLastScriptedPieceOnLayer. This primarily allows for accessing metadata of the Part</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>piece: <a href="" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPieceDB</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="" class="tsd-signature-type" data-tsd-kind="Interface">IBlueprintPart</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -537,7 +656,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L117">blueprints-integration/src/context.ts:117</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L124">blueprints-integration/src/context.ts:124</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -565,12 +684,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L132">blueprints-integration/src/context.ts:132</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L147">blueprints-integration/src/context.ts:147</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Gets the PartInstance for a PieceInstane retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance</p>
+									<p>Gets the PartInstance for a PieceInstance retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -593,7 +712,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L119">blueprints-integration/src/context.ts:119</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L126">blueprints-integration/src/context.ts:126</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -621,7 +740,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L121">blueprints-integration/src/context.ts:121</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L128">blueprints-integration/src/context.ts:128</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -650,7 +769,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#getshowstyleconfigref">getShowStyleConfigRef</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L91">blueprints-integration/src/context.ts:91</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L98">blueprints-integration/src/context.ts:98</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -679,7 +798,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#getstudioconfigref">getStudioConfigRef</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L77">blueprints-integration/src/context.ts:77</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L82">blueprints-integration/src/context.ts:82</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -707,7 +826,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L138">blueprints-integration/src/context.ts:138</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L155">blueprints-integration/src/context.ts:155</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -738,7 +857,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L155">blueprints-integration/src/context.ts:155</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L172">blueprints-integration/src/context.ts:172</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -770,7 +889,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#notifyusererror">notifyUserError</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L56">blueprints-integration/src/context.ts:56</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L58">blueprints-integration/src/context.ts:58</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -807,7 +926,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="blueprints_integration.ishowstyleusercontext.html">IShowStyleUserContext</a>.<a href="blueprints_integration.ishowstyleusercontext.html#notifyuserwarning">notifyUserWarning</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L58">blueprints-integration/src/context.ts:58</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L60">blueprints-integration/src/context.ts:60</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -843,7 +962,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L142">blueprints-integration/src/context.ts:142</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L159">blueprints-integration/src/context.ts:159</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -874,7 +993,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L152">blueprints-integration/src/context.ts:152</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L169">blueprints-integration/src/context.ts:169</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -905,7 +1024,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L150">blueprints-integration/src/context.ts:150</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L167">blueprints-integration/src/context.ts:167</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -936,7 +1055,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L148">blueprints-integration/src/context.ts:148</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L165">blueprints-integration/src/context.ts:165</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -967,7 +1086,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L157">blueprints-integration/src/context.ts:157</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L174">blueprints-integration/src/context.ts:174</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -995,7 +1114,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L144">blueprints-integration/src/context.ts:144</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L161">blueprints-integration/src/context.ts:161</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1026,7 +1145,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/223296f/packages/blueprints-integration/src/context.ts#L140">blueprints-integration/src/context.ts:140</a></li>
+									<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/context.ts#L157">blueprints-integration/src/context.ts:157</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1053,7 +1172,7 @@
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class=" ">
-						<a href="../modules.html">Exports</a>
+						<a href="../index.html">Exports</a>
 					</li>
 					<li class="current tsd-kind-module">
 						<a href="../modules/blueprints_integration.html">blueprints-<wbr>integration</a>
@@ -1077,6 +1196,9 @@
 										<a href="blueprints_integration.iactionexecutioncontext.html#gethashid" class="tsd-kind-icon">get<wbr>Hash<wbr>Id</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+										<a href="blueprints_integration.iactionexecutioncontext.html#getpackageinfo" class="tsd-kind-icon">get<wbr>Package<wbr>Info</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 										<a href="blueprints_integration.iactionexecutioncontext.html#getshowstyleconfig" class="tsd-kind-icon">get<wbr>Show<wbr>Style<wbr>Config</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
@@ -1098,13 +1220,22 @@
 										<a href="blueprints_integration.iactionexecutioncontext.html#logwarning" class="tsd-kind-icon">log<wbr>Warning</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+										<a href="blueprints_integration.iactionexecutioncontext.html#studioid" class="tsd-kind-icon">studio<wbr>Id</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 										<a href="blueprints_integration.iactionexecutioncontext.html#unhashid" class="tsd-kind-icon">unhash<wbr>Id</a>
 									</li>
 									<li class=" tsd-kind-method tsd-parent-kind-interface">
 										<a href="blueprints_integration.iactionexecutioncontext.html#findlastpieceonlayer" class="tsd-kind-icon">find<wbr>Last<wbr>Piece<wbr>OnLayer</a>
 									</li>
+									<li class=" tsd-kind-method tsd-parent-kind-interface">
+										<a href="blueprints_integration.iactionexecutioncontext.html#findlastscriptedpieceonlayer" class="tsd-kind-icon">find<wbr>Last<wbr>Scripted<wbr>Piece<wbr>OnLayer</a>
+									</li>
 									<li class=" tsd-kind-method tsd-parent-kind-interface tsd-is-inherited">
 										<a href="blueprints_integration.iactionexecutioncontext.html#getcurrenttime" class="tsd-kind-icon">get<wbr>Current<wbr>Time</a>
+									</li>
+									<li class=" tsd-kind-method tsd-parent-kind-interface">
+										<a href="blueprints_integration.iactionexecutioncontext.html#getpartforpreviouspiece" class="tsd-kind-icon">get<wbr>Part<wbr>For<wbr>Previous<wbr>Piece</a>
 									</li>
 									<li class=" tsd-kind-method tsd-parent-kind-interface">
 										<a href="blueprints_integration.iactionexecutioncontext.html#getpartinstance" class="tsd-kind-icon">get<wbr>Part<wbr>Instance</a>
@@ -1176,8 +1307,6 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
-				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
 				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>

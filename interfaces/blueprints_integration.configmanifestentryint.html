@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>ConfigManifestEntryBoolean | Sofie Integration Libraries</title>
+	<title>ConfigManifestEntryInt | Sofie Integration Libraries</title>
 	<meta name="description" content="Documentation for Sofie Integration Libraries">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -58,10 +58,10 @@
 					<a href="../modules/blueprints_integration.html">blueprints-integration</a>
 				</li>
 				<li>
-					<a href="blueprints_integration.configmanifestentryboolean.html">ConfigManifestEntryBoolean</a>
+					<a href="blueprints_integration.configmanifestentryint.html">ConfigManifestEntryInt</a>
 				</li>
 			</ul>
-			<h1>Interface ConfigManifestEntryBoolean</h1>
+			<h1>Interface ConfigManifestEntryInt</h1>
 		</div>
 	</div>
 </header>
@@ -75,7 +75,7 @@
 						<a href="blueprints_integration.configmanifestentrybase.html" class="tsd-signature-type" data-tsd-kind="Interface">ConfigManifestEntryBase</a>
 						<ul class="tsd-hierarchy">
 							<li>
-								<span class="target">ConfigManifestEntryBoolean</span>
+								<span class="target">ConfigManifestEntryInt</span>
 							</li>
 						</ul>
 					</li>
@@ -88,13 +88,14 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="blueprints_integration.configmanifestentryboolean.html#defaultval" class="tsd-kind-icon">default<wbr>Val</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryboolean.html#description" class="tsd-kind-icon">description</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryboolean.html#hint" class="tsd-kind-icon">hint</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryboolean.html#id" class="tsd-kind-icon">id</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryboolean.html#name" class="tsd-kind-icon">name</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryboolean.html#required" class="tsd-kind-icon">required</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="blueprints_integration.configmanifestentryboolean.html#type" class="tsd-kind-icon">type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="blueprints_integration.configmanifestentryint.html#defaultval" class="tsd-kind-icon">default<wbr>Val</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryint.html#description" class="tsd-kind-icon">description</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryint.html#hint" class="tsd-kind-icon">hint</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryint.html#id" class="tsd-kind-icon">id</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryint.html#name" class="tsd-kind-icon">name</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="blueprints_integration.configmanifestentryint.html#required" class="tsd-kind-icon">required</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite"><a href="blueprints_integration.configmanifestentryint.html#type" class="tsd-kind-icon">type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="blueprints_integration.configmanifestentryint.html#zerobased" class="tsd-kind-icon">zero<wbr>Based</a></li>
 							</ul>
 						</section>
 					</div>
@@ -105,11 +106,11 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
 					<a name="defaultval" class="tsd-anchor"></a>
 					<h3>default<wbr>Val</h3>
-					<div class="tsd-signature tsd-kind-icon">default<wbr>Val<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<div class="tsd-signature tsd-kind-icon">default<wbr>Val<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<p>Overrides <a href="blueprints_integration.configmanifestentrybase.html">ConfigManifestEntryBase</a>.<a href="blueprints_integration.configmanifestentrybase.html#defaultval">defaultVal</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/config.ts#L81">blueprints-integration/src/config.ts:81</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/config.ts#L69">blueprints-integration/src/config.ts:69</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -171,13 +172,29 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
 					<a name="type" class="tsd-anchor"></a>
 					<h3>type</h3>
-					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <a href="../enums/blueprints_integration.configmanifestentrytype.html#boolean" class="tsd-signature-type" data-tsd-kind="Enumeration member">BOOLEAN</a></div>
+					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <a href="../enums/blueprints_integration.configmanifestentrytype.html#int" class="tsd-signature-type" data-tsd-kind="Enumeration member">INT</a></div>
 					<aside class="tsd-sources">
 						<p>Overrides <a href="blueprints_integration.configmanifestentrybase.html">ConfigManifestEntryBase</a>.<a href="blueprints_integration.configmanifestentrybase.html#type">type</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/config.ts#L80">blueprints-integration/src/config.ts:80</a></li>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/config.ts#L68">blueprints-integration/src/config.ts:68</a></li>
 						</ul>
 					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
+					<a name="zerobased" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> zero<wbr>Based</h3>
+					<div class="tsd-signature tsd-kind-icon">zero<wbr>Based<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/nrkno/tv-automation-server-core/blob/3b465e6/packages/blueprints-integration/src/config.ts#L73">blueprints-integration/src/config.ts:73</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Zero-based values will be stored in the database (and reported to blueprints) as values starting from 0, however,
+							when rendered in settings pages they will appear as value + 1</p>
+						</div>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -203,28 +220,31 @@
 						<a href="../modules/blueprints_integration.html" class="tsd-kind-icon">blueprints-<wbr>integration</a>
 						<ul>
 							<li class="current tsd-kind-interface tsd-parent-kind-module">
-								<a href="blueprints_integration.configmanifestentryboolean.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Boolean</a>
+								<a href="blueprints_integration.configmanifestentryint.html" class="tsd-kind-icon">Config<wbr>Manifest<wbr>Entry<wbr>Int</a>
 								<ul>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-										<a href="blueprints_integration.configmanifestentryboolean.html#defaultval" class="tsd-kind-icon">default<wbr>Val</a>
+										<a href="blueprints_integration.configmanifestentryint.html#defaultval" class="tsd-kind-icon">default<wbr>Val</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-										<a href="blueprints_integration.configmanifestentryboolean.html#description" class="tsd-kind-icon">description</a>
+										<a href="blueprints_integration.configmanifestentryint.html#description" class="tsd-kind-icon">description</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-										<a href="blueprints_integration.configmanifestentryboolean.html#hint" class="tsd-kind-icon">hint</a>
+										<a href="blueprints_integration.configmanifestentryint.html#hint" class="tsd-kind-icon">hint</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-										<a href="blueprints_integration.configmanifestentryboolean.html#id" class="tsd-kind-icon">id</a>
+										<a href="blueprints_integration.configmanifestentryint.html#id" class="tsd-kind-icon">id</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-										<a href="blueprints_integration.configmanifestentryboolean.html#name" class="tsd-kind-icon">name</a>
+										<a href="blueprints_integration.configmanifestentryint.html#name" class="tsd-kind-icon">name</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
-										<a href="blueprints_integration.configmanifestentryboolean.html#required" class="tsd-kind-icon">required</a>
+										<a href="blueprints_integration.configmanifestentryint.html#required" class="tsd-kind-icon">required</a>
 									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite">
-										<a href="blueprints_integration.configmanifestentryboolean.html#type" class="tsd-kind-icon">type</a>
+										<a href="blueprints_integration.configmanifestentryint.html#type" class="tsd-kind-icon">type</a>
+									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface">
+										<a href="blueprints_integration.configmanifestentryint.html#zerobased" class="tsd-kind-icon">zero<wbr>Based</a>
 									</li>
 								</ul>
 							</li>

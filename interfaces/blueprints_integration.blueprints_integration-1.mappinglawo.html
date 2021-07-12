@@ -52,7 +52,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules.html">Sofie Integration Libraries</a>
+					<a href="../index.html">Sofie Integration Libraries</a>
 				</li>
 				<li>
 					<a href="../modules/blueprints_integration.html">blueprints-integration</a>
@@ -95,6 +95,7 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a href="blueprints_integration.blueprints_integration-1.mappinglawo.html#deviceid" class="tsd-kind-icon">device<wbr>Id</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="blueprints_integration.blueprints_integration-1.mappinglawo.html#embertype" class="tsd-kind-icon">ember<wbr>Type</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="blueprints_integration.blueprints_integration-1.mappinglawo.html#identifier" class="tsd-kind-icon">identifier</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external"><a href="blueprints_integration.blueprints_integration-1.mappinglawo.html#layername" class="tsd-kind-icon">layer<wbr>Name</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="blueprints_integration.blueprints_integration-1.mappinglawo.html#mappingtype" class="tsd-kind-icon">mapping<wbr>Type</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-external"><a href="blueprints_integration.blueprints_integration-1.mappinglawo.html#priority" class="tsd-kind-icon">priority</a></li>
 							</ul>
@@ -129,7 +130,7 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
 					<a name="embertype" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> ember<wbr>Type</h3>
-					<div class="tsd-signature tsd-kind-icon">ember<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Integer</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Real</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">String</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Trigger</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Enum</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Octets</span></div>
+					<div class="tsd-signature tsd-kind-icon">ember<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ParameterType</span></div>
 					<aside class="tsd-sources">
 						<ul>
 							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/lawo.d.ts:19</li>
@@ -145,6 +146,22 @@
 							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/lawo.d.ts:18</li>
 						</ul>
 					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external">
+					<a name="layername" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> layer<wbr>Name</h3>
+					<div class="tsd-signature tsd-kind-icon">layer<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="blueprints_integration.blueprints_integration-1.mapping.html">Mapping</a>.<a href="blueprints_integration.blueprints_integration-1.mapping.html#layername">layerName</a></p>
+						<ul>
+							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/mapping.d.ts:10</li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Human-readable name given to the layer. Can be used by devices to set the label of e.g. a fader a mapping points to.</p>
+						</div>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-external">
 					<a name="mappingtype" class="tsd-anchor"></a>
@@ -172,7 +189,7 @@
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class=" ">
-						<a href="../modules.html">Exports</a>
+						<a href="../index.html">Exports</a>
 					</li>
 				</ul>
 			</nav>
@@ -198,6 +215,9 @@
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-external">
 										<a href="blueprints_integration.blueprints_integration-1.mappinglawo.html#identifier" class="tsd-kind-icon">identifier</a>
 									</li>
+									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external">
+										<a href="blueprints_integration.blueprints_integration-1.mappinglawo.html#layername" class="tsd-kind-icon">layer<wbr>Name</a>
+									</li>
 									<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-external">
 										<a href="blueprints_integration.blueprints_integration-1.mappinglawo.html#mappingtype" class="tsd-kind-icon">mapping<wbr>Type</a>
 									</li>
@@ -220,8 +240,6 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
-				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
 				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>

@@ -57,105 +57,26 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
-			<div class="tsd-panel tsd-typography">
-				<a href="#sofie-the-modern-tv-news-studio-automation-system-tv-automation-server-core" id="sofie-the-modern-tv-news-studio-automation-system-tv-automation-server-core" style="color: inherit; text-decoration: none;">
-					<h1>Sofie: The Modern TV News Studio Automation System (tv-automation-server-core)</h1>
-				</a>
-				<p>This is the &quot;Core&quot; application of the <a href="https://github.com/nrkno/Sofie-TV-automation/"><strong>Sofie</strong> TV News Studio Automation System</a>.</p>
-				<p>The Core is a Meteor/Node.JS-based web server that serves the web-GUI:s as well as handling the business logic for the Sofie TV Automation system.</p>
-				<p>System documentation can be found here: <a href="https://sofie.gitbook.io/sofie-tv-automation/documentation">Sofie system documentation</a>.</p>
-				<a href="#for-developers" id="for-developers" style="color: inherit; text-decoration: none;">
-					<h1>For developers</h1>
-				</a>
-				<a href="#gettings-started-local-development" id="gettings-started-local-development" style="color: inherit; text-decoration: none;">
-					<h2>Gettings started, local development</h2>
-				</a>
-				<p>Follow these instructions to start up Sofie Core in development mode. (For production deploys, see <a href="https://sofie.gitbook.io/sofie-tv-automation/documentation/installation">System documentation</a>.)</p>
-				<a href="#prerequisites" id="prerequisites" style="color: inherit; text-decoration: none;">
-					<h3>Prerequisites</h3>
-				</a>
-				<ul>
-					<li>Install <a href="https://www.meteor.com/install">Meteor</a></li>
-					<li>Install <a href="https://nodejs.org">Node.js</a></li>
-					<li>Install <a href="https://yarnpkg.com">Yarn</a></li>
-					<li><code>npm install --global windows-build-tools</code></li>
-				</ul>
-				<a href="#quick-start" id="quick-start" style="color: inherit; text-decoration: none;">
-					<h3>Quick-start:</h3>
-				</a>
-				<pre><code><span style="color: #001080">git</span><span style="color: #000000"> </span><span style="color: #001080">clone</span><span style="color: #000000"> -</span><span style="color: #001080">b</span><span style="color: #000000"> </span><span style="color: #001080">master</span><span style="color: #000000"> https:</span><span style="color: #008000">//github.com/nrkno/tv-automation-server-core.git</span>
-<span style="color: #001080">cd</span><span style="color: #000000"> </span><span style="color: #001080">tv</span><span style="color: #000000">-</span><span style="color: #001080">automation</span><span style="color: #000000">-</span><span style="color: #001080">server</span><span style="color: #000000">-</span><span style="color: #001080">core</span><span style="color: #000000">/</span><span style="color: #001080">meteor</span>
-<span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">start</span>
-</code></pre>
-				<a href="#slightly-more-detailed-start" id="slightly-more-detailed-start" style="color: inherit; text-decoration: none;">
-					<h3>Slightly more detailed start:</h3>
-				</a>
-				<ol>
-					<li><p>Clone the repository (for development, it is recommended to base your work on the latest unstable release branch)</p>
-						<p> <code>git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git</code></p>
-					</li>
-					<li><p>Go into the meteor directory</p>
-						<p> <code>cd tv-automation-server-core/meteor</code></p>
-					</li>
-					<li><p>Trigger Meteor to install the right version</p>
-						<p> <code>meteor --version</code></p>
-					</li>
-					<li><p>Install the right dependencies. (Before this, make sure your NODE_ENV environment variable is NOT set to &quot;production&quot;!)</p>
-						<p> <code>meteor npm install</code></p>
-					</li>
-					<li><p>Start Meteor in development mode</p>
-						<p> <code>meteor npm run dev</code></p>
-					</li>
-				</ol>
-				<p>If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.</p>
-				<pre><code><span style="color: #001080">cd</span><span style="color: #000000"> </span><span style="color: #001080">packages</span>
-<span style="color: #001080">yarn</span><span style="color: #000000"> </span><span style="color: #001080">build</span><span style="color: #000000"> # </span><span style="color: #001080">or</span><span style="color: #000000"> </span><span style="color: #001080">yarn</span><span style="color: #000000"> </span><span style="color: #001080">watch</span><span style="color: #000000"> </span><span style="color: #001080">to</span><span style="color: #000000"> </span><span style="color: #001080">watch</span><span style="color: #000000"> </span><span style="color: #001080">for</span><span style="color: #000000"> </span><span style="color: #001080">changes</span>
-</code></pre>
-				<p>If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using <code>npm link</code>. For example, for <code>tv-automation-mos-connection</code> library:</p>
-				<pre><code><span style="color: #001080">git</span><span style="color: #000000"> </span><span style="color: #001080">clone</span><span style="color: #000000"> -</span><span style="color: #001080">b</span><span style="color: #000000"> </span><span style="color: #001080">master</span><span style="color: #000000"> https:</span><span style="color: #008000">//github.com/nrkno/tv-automation-mos-connection.git</span>
-<span style="color: #001080">cd</span><span style="color: #000000"> </span><span style="color: #001080">tv</span><span style="color: #000000">-</span><span style="color: #001080">automation</span><span style="color: #000000">-</span><span style="color: #001080">mos</span><span style="color: #000000">-</span><span style="color: #001080">connection</span>
-<span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">run</span><span style="color: #000000"> </span><span style="color: #001080">build</span>
-<span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">link</span>
-<span style="color: #001080">cd</span><span style="color: #000000"> ../</span><span style="color: #001080">tv</span><span style="color: #000000">-</span><span style="color: #001080">automation</span><span style="color: #000000">-</span><span style="color: #001080">server</span><span style="color: #000000">-</span><span style="color: #001080">core</span><span style="color: #000000">/</span><span style="color: #001080">meteor</span>
-<span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">link</span><span style="color: #000000"> </span><span style="color: #001080">mos</span><span style="color: #000000">-</span><span style="color: #001080">connection</span>
-</code></pre>
-				<a href="#translating-sofie-add-a-new-language" id="translating-sofie-add-a-new-language" style="color: inherit; text-decoration: none;">
-					<h2>Translating Sofie, add a new language</h2>
-				</a>
-				<p>For support of various languages in the GUI, Sofie uses the i18next framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:</p>
-				<pre><code><span style="color: #001080">cd</span><span style="color: #000000"> </span><span style="color: #001080">meteor</span>
-<span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">run</span><span style="color: #000000"> </span><span style="color: #001080">i18n</span><span style="color: #000000">-</span><span style="color: #001080">extract</span><span style="color: #000000">-</span><span style="color: #001080">pot</span>
-</code></pre>
-				<p>Find the created <code>template.pot</code> file in <code>meteor/i18n</code> folder. Create a new PO file based on that template using a PO editor of your choice. Save it in the <code>meteor/i18n</code> folder using your <a href="https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes">ISO 639-1 language code</a> of choice as the filename.</p>
-				<p>Next, modify the <code>package.json</code> scripts and create a new language compilations script:</p>
-				<pre><code><span style="color: #A31515">&quot;i18n-compile-json&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&quot;npm run i18n-compile-json-nb &amp; npm run i18n-compile-json-sv &amp; npm run i18n-compile-json-xx&quot;</span><span style="color: #000000">,</span>
-<span style="color: #A31515">&quot;i18n-compile-json-xx&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&quot;i18next-conv -l nb -s i18n/xx.po -t public/locales/xx/translations.json&quot;</span><span style="color: #000000">,</span>
-</code></pre>
-				<p>Then, run the compilation script:</p>
-				<pre><code><span style="color: #001080">npm</span><span style="color: #000000"> </span><span style="color: #001080">run</span><span style="color: #000000"> </span><span style="color: #001080">i18n</span><span style="color: #000000">-</span><span style="color: #001080">compile</span><span style="color: #000000">-</span><span style="color: #001080">json</span>
-</code></pre>
-				<p>The resulting JSON file will be placed in <code>meteor/public/locales/xx</code>, where it will be available to the Sofie UI for use and auto-detection.</p>
-				<p>Then submit this as a PR.</p>
-				<a href="#version-numbering-scheme" id="version-numbering-scheme" style="color: inherit; text-decoration: none;">
-					<h2>Version numbering scheme</h2>
-				</a>
-				<p>This project does not follow semver. We believe that semver does not make sense for this system as there are so many moving parts that a majority of releases could be considered breaking in some way.</p>
-				<p>Instead of semver, the Major number gets incremented whenever we feel like Sofie has evolved enough to warrant the change. The minor number gets incremented for each iteration of the development cycle, with the digit matching the cycle number. The patch number gets incremented for patch releases as expected.</p>
-				<p>The version numbers of the blueprints-integration and server-core-integration libraries are tied to this, and as such they also do not follow semver currently. In future these may be decoupled.<br>The api of server-core-integration is pretty stable and rarely undergoes any breaking changes, so is ok to be mismatched.
-				The api of blueprints-integration is rather volatile, and often has breaking changes. Because of this, we recommend matching the minor version of blueprints-integration with Sofie core. Sofie will warn if these do not match. We expect this to settle down in the future, and will review this decision when we feel it is worthwhile.</p>
-				<a href="#additional-information" id="additional-information" style="color: inherit; text-decoration: none;">
-					<h2>Additional information</h2>
-				</a>
-				<p>Background image used for previewing graphical elements is based on &quot;Sunset over dark forest&quot; by Aliis Sinisalu: <a href="https://unsplash.com/photos/8NiAH5YRZPs">https://unsplash.com/photos/8NiAH5YRZPs</a> used under the <a href="https://unsplash.com/license">Unsplash License</a>.</p>
-				<hr>
-				<p><em>The NRK logo is a registered trademark of Norsk rikskringkasting AS. The license does not grant any right to use, in any way, any trademarks, service marks or logos of Norsk rikskringkasting AS.</em></p>
-			</div>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Modules</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-module"><a href="modules/blueprints_integration.html" class="tsd-kind-icon">blueprints-<wbr>integration</a></li>
+								<li class="tsd-kind-module"><a href="modules/server_core_integration.html" class="tsd-kind-icon">server-<wbr>core-<wbr>integration</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 			<nav class="tsd-navigation primary">
 				<ul>
-					<li class=" ">
-						<a href="modules.html">Exports</a>
+					<li class="current ">
+						<a href="index.html">Exports</a>
 					</li>
 					<li class=" tsd-kind-module">
 						<a href="modules/blueprints_integration.html">blueprints-<wbr>integration</a>
@@ -183,8 +104,6 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
-				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
 				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>

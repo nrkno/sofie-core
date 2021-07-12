@@ -52,7 +52,7 @@
 		<div class="container">
 			<ul class="tsd-breadcrumb">
 				<li>
-					<a href="../modules.html">Sofie Integration Libraries</a>
+					<a href="../index.html">Sofie Integration Libraries</a>
 				</li>
 				<li>
 					<a href="../modules/blueprints_integration.html">blueprints-integration</a>
@@ -141,11 +141,11 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-overwrite tsd-is-external">
 					<a name="content" class="tsd-anchor"></a>
 					<h3>content</h3>
-					<div class="tsd-signature tsd-kind-icon">content<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>channelName<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>continueStep<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>cue<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>deviceType<span class="tsd-signature-symbol">: </span><a href="../enums/blueprints_integration.blueprints_integration-1.devicetype.html#vizmse" class="tsd-signature-type" data-tsd-kind="Enumeration member">VIZMSE</a><span class="tsd-signature-symbol">; </span>noAutoPreloading<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>outTransition<span class="tsd-signature-symbol">?: </span><a href="blueprints_integration.blueprints_integration-1.vizmsetransitiondelay.html" class="tsd-signature-type" data-tsd-kind="Interface">VIZMSETransitionDelay</a><span class="tsd-signature-symbol">; </span>templateVcpId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>type<span class="tsd-signature-symbol">: </span><a href="../enums/blueprints_integration.blueprints_integration-1.timelinecontenttypevizmse.html#element_pilot" class="tsd-signature-type" data-tsd-kind="Enumeration member">ELEMENT_PILOT</a><span class="tsd-signature-symbol"> }</span></div>
+					<div class="tsd-signature tsd-kind-icon">content<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>channelName<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>continueStep<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>cue<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>delayTakeAfterOutTransition<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>deviceType<span class="tsd-signature-symbol">: </span><a href="../enums/blueprints_integration.blueprints_integration-1.devicetype.html#vizmse" class="tsd-signature-type" data-tsd-kind="Enumeration member">VIZMSE</a><span class="tsd-signature-symbol">; </span>noAutoPreloading<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>outTransition<span class="tsd-signature-symbol">?: </span><a href="blueprints_integration.blueprints_integration-1.vizmsetransitiondelay.html" class="tsd-signature-type" data-tsd-kind="Interface">VIZMSETransitionDelay</a><span class="tsd-signature-symbol">; </span>templateVcpId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>type<span class="tsd-signature-symbol">: </span><a href="../enums/blueprints_integration.blueprints_integration-1.timelinecontenttypevizmse.html#element_pilot" class="tsd-signature-type" data-tsd-kind="Enumeration member">ELEMENT_PILOT</a><span class="tsd-signature-symbol"> }</span></div>
 					<aside class="tsd-sources">
 						<p>Overrides <a href="blueprints_integration.blueprints_integration-1.timelineobjvizmsebase.html">TimelineObjVIZMSEBase</a>.<a href="blueprints_integration.blueprints_integration-1.timelineobjvizmsebase.html#content">content</a></p>
 						<ul>
-							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/vizMSE.d.ts:80</li>
+							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/vizMSE.d.ts:84</li>
 						</ul>
 					</aside>
 					<div class="tsd-type-declaration">
@@ -172,6 +172,14 @@
 								<div class="tsd-comment tsd-typography">
 									<div class="lead">
 										<p>Don&#39;t play, only cue the element</p>
+									</div>
+								</div>
+							</li>
+							<li class="tsd-parameter">
+								<h5><span class="tsd-flag ts-flagOptional">Optional</span> delay<wbr>Take<wbr>After<wbr>Out<wbr>Transition<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span></h5>
+								<div class="tsd-comment tsd-typography">
+									<div class="lead">
+										<p>Whether this element should have its take delayed until after an out transition has finished</p>
 									</div>
 								</div>
 							</li>
@@ -254,7 +262,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.blueprints_integration-1.timelineobjvizmsebase.html">TimelineObjVIZMSEBase</a>.<a href="blueprints_integration.blueprints_integration-1.timelineobjvizmsebase.html#islookahead">isLookahead</a></p>
 						<ul>
-							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/mapping.d.ts:14</li>
+							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/mapping.d.ts:16</li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -266,11 +274,11 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited tsd-is-external">
 					<a name="keyframes" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> keyframes</h3>
-					<div class="tsd-signature tsd-kind-icon">keyframes<span class="tsd-signature-symbol">:</span> <a href="blueprints_integration.blueprints_integration-1.tsrtimelinekeyframe.html" class="tsd-signature-type" data-tsd-kind="Interface">TSRTimelineKeyframe</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>channelName<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>continueStep<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>cue<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>deviceType<span class="tsd-signature-symbol">: </span><a href="../enums/blueprints_integration.blueprints_integration-1.devicetype.html#vizmse" class="tsd-signature-type" data-tsd-kind="Enumeration member">VIZMSE</a><span class="tsd-signature-symbol">; </span>noAutoPreloading<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>outTransition<span class="tsd-signature-symbol">?: </span><a href="blueprints_integration.blueprints_integration-1.vizmsetransitiondelay.html" class="tsd-signature-type" data-tsd-kind="Interface">VIZMSETransitionDelay</a><span class="tsd-signature-symbol">; </span>templateVcpId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>type<span class="tsd-signature-symbol">: </span><a href="../enums/blueprints_integration.blueprints_integration-1.timelinecontenttypevizmse.html#element_pilot" class="tsd-signature-type" data-tsd-kind="Enumeration member">ELEMENT_PILOT</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
+					<div class="tsd-signature tsd-kind-icon">keyframes<span class="tsd-signature-symbol">:</span> <a href="blueprints_integration.blueprints_integration-1.tsrtimelinekeyframe.html" class="tsd-signature-type" data-tsd-kind="Interface">TSRTimelineKeyframe</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">{ </span>channelName<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>continueStep<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>cue<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>delayTakeAfterOutTransition<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>deviceType<span class="tsd-signature-symbol">: </span><a href="../enums/blueprints_integration.blueprints_integration-1.devicetype.html#vizmse" class="tsd-signature-type" data-tsd-kind="Enumeration member">VIZMSE</a><span class="tsd-signature-symbol">; </span>noAutoPreloading<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">; </span>outTransition<span class="tsd-signature-symbol">?: </span><a href="blueprints_integration.blueprints_integration-1.vizmsetransitiondelay.html" class="tsd-signature-type" data-tsd-kind="Interface">VIZMSETransitionDelay</a><span class="tsd-signature-symbol">; </span>templateVcpId<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>type<span class="tsd-signature-symbol">: </span><a href="../enums/blueprints_integration.blueprints_integration-1.timelinecontenttypevizmse.html#element_pilot" class="tsd-signature-type" data-tsd-kind="Enumeration member">ELEMENT_PILOT</a><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.blueprints_integration-1.timelineobjvizmsebase.html">TimelineObjVIZMSEBase</a>.<a href="blueprints_integration.blueprints_integration-1.timelineobjvizmsebase.html#keyframes">keyframes</a></p>
 						<ul>
-							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/index.d.ts:68</li>
+							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/index.d.ts:69</li>
 						</ul>
 					</aside>
 				</section>
@@ -292,7 +300,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from <a href="blueprints_integration.blueprints_integration-1.timelineobjvizmsebase.html">TimelineObjVIZMSEBase</a>.<a href="blueprints_integration.blueprints_integration-1.timelineobjvizmsebase.html#lookaheadforlayer">lookaheadForLayer</a></p>
 						<ul>
-							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/mapping.d.ts:16</li>
+							<li>Defined in blueprints-integration/node_modules/timeline-state-resolver-types/dist/mapping.d.ts:18</li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -334,7 +342,7 @@
 			<nav class="tsd-navigation primary">
 				<ul>
 					<li class=" ">
-						<a href="../modules.html">Exports</a>
+						<a href="../index.html">Exports</a>
 					</li>
 				</ul>
 			</nav>
@@ -403,8 +411,6 @@
 		<h2>Legend</h2>
 		<div class="tsd-legend-group">
 			<ul class="tsd-legend">
-				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
-				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
 				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
 				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
 				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
