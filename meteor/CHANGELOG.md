@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.35.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.0...v1.35.1-0) (2021-07-12)
+
+
+### Bug Fixes
+
+* always run typedoc, but skip publish if not a tag ([f92251d](https://github.com/nrkno/tv-automation-server-core/commit/f92251de8eafd138a10b4a0530ed5ee09e134617))
+* LOWER_THIRD pieces can use takeNow not GRAPHICS pieces ([d702336](https://github.com/nrkno/tv-automation-server-core/commit/d702336a25a471fad6eb4b4a80e87bdb9c66b2c5))
+
 ## [1.35.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.34.0...v1.35.0) (2021-07-07)
 
 ## [1.35.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.3...v1.35.0-in-testing.1) (2021-06-10)
