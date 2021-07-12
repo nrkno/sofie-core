@@ -4,6 +4,10 @@ import * as _ from 'underscore'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 import { isDbCacheWritable } from './lib'
+import { anythingChanged, sumChanges } from '../db/changes'
+import { IS_PRODUCTION } from '../environment'
+import { logger } from '../logging'
+import { sleep } from '@sofie-automation/corelib/dist/lib'
 
 type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
 
@@ -32,16 +36,14 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	private _hasTimedOut = false
 
 	constructor() {
-		if (!Meteor.isProduction) {
+		if (!IS_PRODUCTION) {
 			// When this is set up, we expect saveAllToDatabase() to have been called at the end, otherwise something is wrong
-			if (!isInTestWrite()) {
-				const futureError = new Meteor.Error(500, `saveAllToDatabase never called`)
-				this._activeTimeout = Meteor.setTimeout(() => {
-					this._hasTimedOut = true
-					logger.error(futureError)
-					logger.error(futureError.stack)
-				}, 5000)
-			}
+			const futureError = new Error(`saveAllToDatabase never called`)
+			this._activeTimeout = setTimeout(() => {
+				this._hasTimedOut = true
+				logger.error(futureError.toString())
+				if (futureError.stack) logger.error(futureError.stack)
+			}, 5000)
 		}
 	}
 
@@ -52,8 +54,8 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 
 		if (this._hasTimedOut) {
 			const err = new Error(`saveAllToDatabase called after timeout`)
-			logger.warn(err)
-			logger.warn(err.stack)
+			logger.warn(err.toString())
+			if (err.stack) logger.warn(err.stack)
 		}
 	}
 
@@ -61,8 +63,8 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		const highPrioDBs: DbCacheWritable<any>[] = []
 		const lowPrioDBs: DbCacheWritable<any>[] = []
 
-		_.map(_.keys(this), (key) => {
-			let db = this[key]
+		for (const [key, db0] of Object.entries(this)) {
+			let db = db0
 			if (db && typeof db === 'object' && 'getIfLoaded' in db) {
 				// If wrapped in a lazy
 				db = db.getIfLoaded()
@@ -74,7 +76,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 					lowPrioDBs.push(db)
 				}
 			}
-		})
+		}
 
 		return {
 			allDBs: [...highPrioDBs, ...lowPrioDBs],
@@ -148,15 +150,15 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
 	 * changes made are an error and will cause issues.
 	 */
-	assertNoChanges() {
+	assertNoChanges(): void {
 		const span = profiler.startSpan('Cache.assertNoChanges')
 
 		function logOrThrowError(error: Error) {
-			if (!Meteor.isProduction) {
+			if (!IS_PRODUCTION) {
 				throw error
 			} else {
-				logger.error(error)
-				logger.error(error.stack)
+				logger.error(error.toString())
+				if (error.stack) logger.error(error.stack)
 			}
 		}
 
@@ -197,7 +199,7 @@ export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheB
 	/** Defer provided function to after cache.saveAllToDatabase().
 	 * Note that at the time of execution, the cache is no longer available.
 	 * */
-	deferAfterSave(fcn: () => void | Promise<void>) {
+	deferAfterSave(fcn: () => void | Promise<void>): void {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}
 }

@@ -8,8 +8,11 @@ import {
 } from '@sofie-automation/corelib/dist/protectedString'
 import { profiler } from '../profiler'
 import _ = require('underscore')
-import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { BulkWriteOperation } from 'mongodb'
+import { IS_PRODUCTION } from '../environment'
+import { logger } from '../logging'
+import { Changes } from '../db/changes'
 
 type SelectorFunction<TDoc> = (doc: TDoc) => boolean
 type DbCacheCollectionDocument<TDoc> = {
@@ -130,17 +133,9 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 				)
 			}
 
-			this.documents.set(id, { document: this._transform(clone(doc)) })
+			this.documents.set(id, { document: clone(doc) })
 		})
 	}
-	protected _transform(doc: TDoc): TDoc {
-		// @ts-ignore hack: using internal function in collection
-		const transform = this._collection._transform
-		if (transform) {
-			return transform(doc)
-		} else return doc as TDoc
-	}
-
 	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
 	markForRemoval() {
 		this.isToBeRemoved = true
@@ -153,7 +148,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	protected assertNotToBeRemoved(methodName: string): void {
 		if (this.isToBeRemoved) {
 			const msg = `DbCacheWriteCollection: got call to "${methodName} when cache has been flagged for removal"`
-			if (Meteor.isProduction) {
+			if (IS_PRODUCTION) {
 				logger.warn(msg)
 			} else {
 				throw new Error(msg)
@@ -196,7 +191,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		this.documents.set(doc._id, {
 			inserted: existing !== null,
 			updated: existing === null,
-			document: this._transform(newDoc), // Unlinke a normal collection, this class stores the transformed objects
+			document: newDoc,
 		})
 		if (span) span.end()
 		return doc._id
@@ -262,7 +257,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 					)
 				}
 
-				docEntry.document = this._transform(newDoc)
+				docEntry.document = newDoc
 				docEntry.updated = true
 			}
 			changedIds.push(_id)
@@ -289,11 +284,11 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		const oldDoc = this.documents.get(_id)
 		if (oldDoc) {
 			oldDoc.updated = true
-			oldDoc.document = this._transform(newDoc)
+			oldDoc.document = newDoc
 		} else {
 			this.documents.set(_id, {
 				inserted: true,
-				document: this._transform(newDoc),
+				document: newDoc,
 			})
 		}
 
@@ -361,7 +356,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 			})
 		}
 
-		const pBulkWriteResult = updates.length > 0 ? this._collection.bulkWriteAsync(updates) : Promise.resolve()
+		const pBulkWriteResult = updates.length > 0 ? this._collection.bulkWrite(updates) : Promise.resolve()
 
 		_.each(removedDocs, (_id) => {
 			this.documents.delete(_id)

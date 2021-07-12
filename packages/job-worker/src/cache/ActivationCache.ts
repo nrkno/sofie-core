@@ -66,8 +66,8 @@ type InternalCache<T> = { modifiedHash: string; value: T }
  */
 export class ActivationCache {
 	private _expires!: number
-	private _initialized: boolean = false
-	private _persistant: boolean = false
+	private _initialized = false
+	private _persistant = false
 
 	private _playlist: DBRundownPlaylist | undefined
 	private _studio: DBStudio | undefined

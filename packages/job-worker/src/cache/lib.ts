@@ -2,6 +2,8 @@ import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection
 import { DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 import { MongoQuery } from '../collection'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { logger } from '../logging'
+import { ChangedIds, SaveIntoDbHooks, saveIntoBase } from '../db/changes'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)

@@ -52,7 +52,8 @@
 		"threadedclass": "^0.8.3",
 		"tslib": "^2.1.0",
 		"type-fest": "^0.21.1",
-		"underscore": "1.12.0"
+		"underscore": "1.12.0",
+		"winston": "^2.4.2"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"husky": {

@@ -27,26 +27,7 @@ export function flatten<T>(vals: Array<T[] | undefined>): T[] {
 	)
 }
 
-/**
- * Recursively delete all undefined properties from the supplied object.
- * This is necessary as _.isEqual({ a: 1 }, { a: 1, b: undefined }) === false
- */
-export function deleteAllUndefinedProperties<T>(obj: T): void {
-	if (Array.isArray(obj)) {
-		for (const v of obj) {
-			deleteAllUndefinedProperties(v)
-		}
-	} else if (obj && typeof obj === 'object') {
-		const keys = Object.keys(obj)
-		for (const key of keys) {
-			if (obj[key] === undefined) {
-				delete obj[key]
-			} else {
-				deleteAllUndefinedProperties(obj[key])
-			}
-		}
-	}
-}
+
 
 export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefined {
 	if (vals.length <= 1) {
@@ -304,44 +285,6 @@ export function getRank<T extends { _rank: number }>(
 		}
 	}
 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
-}
-
-export function normalizeArrayFuncFilter<T>(
-	array: Array<T>,
-	getKey: (o: T) => string | undefined
-): { [indexKey: string]: T } {
-	const normalizedObject: any = {}
-	for (let i = 0; i < array.length; i++) {
-		const key = getKey(array[i])
-		if (key !== undefined) {
-			normalizedObject[key] = array[i]
-		}
-	}
-	return normalizedObject as { [key: string]: T }
-}
-export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string): { [indexKey: string]: T } {
-	const normalizedObject: any = {}
-	for (let i = 0; i < array.length; i++) {
-		const key = getKey(array[i])
-		normalizedObject[key] = array[i]
-	}
-	return normalizedObject as { [key: string]: T }
-}
-export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexKey: string]: T } {
-	const normalizedObject: any = {}
-	for (let i = 0; i < array.length; i++) {
-		const key = array[i][indexKey]
-		normalizedObject[key] = array[i]
-	}
-	return normalizedObject as { [key: string]: T }
-}
-export function normalizeArrayToMap<T, K extends keyof T>(array: T[], indexKey: K): Map<T[K], T> {
-	const normalizedObject = new Map<T[K], T>()
-	for (const item of array) {
-		const key = item[indexKey]
-		normalizedObject.set(key, item)
-	}
-	return normalizedObject
 }
 
 /** Convenience function, to be used when length of array has previously been verified */
@@ -669,9 +612,9 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 
 		if (options.fields !== undefined) {
 			const idVal = options.fields['_id']
-			const includeKeys = _.keys(options.fields).filter(
+			const includeKeys = (_.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] !== 0
-			) as any as (keyof DBInterface)[]
+			) as any) as (keyof DBInterface)[]
 			const excludeKeys: string[] = _.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] === 0
 			)

@@ -1,5 +1,5 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { FilterQuery, UpdateQuery, Collection } from 'mongodb'
+import { FilterQuery, UpdateQuery, Collection, BulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import { FindOptions, ICollection } from '../collection'
 
@@ -27,6 +27,9 @@ export class MongoCollection<TDoc extends { _id: ProtectedString<any> }> impleme
 		throw new Error('Method not implemented.')
 	}
 	replace(_doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean> {
+		throw new Error('Method not implemented.')
+	}
+	bulkWrite(_ops: BulkWriteOperation<TDoc>[]): Promise<unknown> {
 		throw new Error('Method not implemented.')
 	}
 }

@@ -1,8 +1,12 @@
-import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { ICollection, MongoModifier } from '../collection'
+import { logger } from '../logging'
+import { Changes } from '../db/changes'
+import { IS_PRODUCTION } from '../environment'
+import _ = require('underscore')
 
 /**
  * Caches a single object, allowing reads from cache, but not writes
@@ -20,7 +24,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 		private readonly _optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	) {
-		this._document = (doc ? this._transform(clone(doc as any)) : doc) as any
+		this._document = (doc ? clone(doc as any) : doc) as any
 		this._rawDocument = clone(doc as any)
 	}
 	get name(): string | null {
@@ -55,14 +59,6 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 
 	get doc(): DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc> {
 		return this._document as any
-	}
-
-	protected _transform(doc: TDoc): TDoc {
-		// @ts-ignore hack: using internal function in collection
-		const transform = this._collection._transform
-		if (transform) {
-			return transform(doc)
-		} else return doc as TDoc
 	}
 
 	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
@@ -118,7 +114,7 @@ export class DbCacheWriteObject<
 	protected assertNotToBeRemoved(methodName: string): void {
 		if (this.isToBeRemoved) {
 			const msg = `DbCacheWriteObject: got call to "${methodName} when cache has been flagged for removal"`
-			if (Meteor.isProduction) {
+			if (IS_PRODUCTION) {
 				logger.warn(msg)
 			} else {
 				throw new Error(msg)
@@ -144,7 +140,7 @@ export class DbCacheWriteObject<
 		deleteAllUndefinedProperties(newDoc)
 
 		if (!_.isEqual(this.doc, newDoc)) {
-			this._document = this._transform(newDoc)
+			this._document = newDoc
 
 			this._updated = true
 			return true
@@ -181,7 +177,7 @@ export class DbCacheWriteObject<
 	discardChanges() {
 		if (this.isModified()) {
 			this._updated = false
-			this._document = this._rawDocument ? this._transform(clone(this._rawDocument)) : this._rawDocument
+			this._document = this._rawDocument ? clone(this._rawDocument) : this._rawDocument
 		}
 	}
 
@@ -232,7 +228,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 		// ensure no properties are 'undefined'
 		deleteAllUndefinedProperties(newDoc)
 
-		this._document = this._transform(newDoc)
+		this._document = newDoc
 
 		return this._document as any
 	}
