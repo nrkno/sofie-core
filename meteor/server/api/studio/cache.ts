@@ -1,3 +1,5 @@
+/** HACK - copied to job-worker */
+
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import {
 	RundownPlaylist,

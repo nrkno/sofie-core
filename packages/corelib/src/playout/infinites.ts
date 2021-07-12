@@ -1,26 +1,23 @@
-import _ from 'underscore'
-import { PartInstance, PartInstanceId } from '../collections/PartInstances'
-import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../collections/PieceInstances'
-import { DBPart, PartId } from '../collections/Parts'
-import { Piece } from '../collections/Pieces'
-import { SegmentId } from '../collections/Segments'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { Piece } from '../dataModel/Piece'
+import { DBPart } from '../dataModel/Part'
 import {
-	assertNever,
-	max,
-	flatten,
-	literal,
-	protectString,
-	normalizeArrayFuncFilter,
-	unprotectString,
-	getRandomId,
-} from '../lib'
-import { Mongo } from 'meteor/mongo'
-import { ShowStyleBase, ShowStyleBaseId } from '../collections/ShowStyleBases'
-import { getPieceGroupId } from './timeline'
-import { RundownPlaylistActivationId } from '../collections/RundownPlaylists'
+	PartId,
+	PartInstanceId,
+	RundownId,
+	RundownPlaylistActivationId,
+	SegmentId,
+	ShowStyleBaseId,
+} from '../dataModel/Ids'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../dataModel/PieceInstance'
+import { DBPartInstance } from '../dataModel/PartInstance'
+import { DBRundown } from '../dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
-import { Rundown, RundownId } from '../collections/Rundowns'
+import { assertNever, flatten, getRandomId, literal, max, normalizeArrayFuncFilter } from '../lib'
+import { unprotectString, protectString } from '../protectedString'
+import { getPieceGroupId } from './ids'
+import { DBShowStyleBase } from '../dataModel/ShowStyleBase'
+import _ = require('underscore')
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -98,9 +95,9 @@ export function getPlayheadTrackingInfinitesForPart(
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
-	currentPartInstance: PartInstance,
+	currentPartInstance: DBPartInstance,
 	currentPartPieceInstances: PieceInstance[],
-	rundown: ReadonlyDeep<Rundown>,
+	rundown: ReadonlyDeep<DBRundown>,
 	part: DBPart,
 	newInstanceId: PartInstanceId,
 	nextPartIsAfterCurrentPart: boolean,
@@ -257,12 +254,12 @@ export function getPlayheadTrackingInfinitesForPart(
 }
 
 export function isPiecePotentiallyActiveInPart(
-	previousPartInstance: PartInstance | undefined,
+	previousPartInstance: DBPartInstance | undefined,
 	partsBeforeThisInSegment: Set<PartId>,
 	segmentsBeforeThisInRundown: Set<SegmentId>,
 	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
-	rundown: ReadonlyDeep<Rundown>,
+	rundown: ReadonlyDeep<DBRundown>,
 	part: DBPart,
 	pieceToCheck: Piece
 ): boolean {
@@ -330,9 +327,9 @@ export function isPiecePotentiallyActiveInPart(
 
 export function getPieceInstancesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
-	playingPartInstance: PartInstance | undefined,
+	playingPartInstance: DBPartInstance | undefined,
 	playingPieceInstances: PieceInstance[] | undefined,
-	rundown: ReadonlyDeep<Rundown>,
+	rundown: ReadonlyDeep<DBRundown>,
 	part: DBPart,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
@@ -498,7 +495,7 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
  * The stacking order of infinites is considered, to define the stop times
  */
 export function processAndPrunePieceInstanceTimings(
-	showStyle: ReadonlyDeep<ShowStyleBase>,
+	showStyle: ReadonlyDeep<DBShowStyleBase>,
 	pieces: PieceInstance[],
 	nowInPart: number,
 	keepDisabledPieces?: boolean,
@@ -695,7 +692,7 @@ function continueShowStyleEndInfinites(
 	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	previousRundownId: RundownId,
-	rundown: ReadonlyDeep<Rundown>
+	rundown: ReadonlyDeep<DBRundown>
 ): boolean {
 	let canContinueShowStyleEndInfinites = true
 	if (rundown.showStyleBaseId !== rundownsToShowstyles.get(previousRundownId)) {

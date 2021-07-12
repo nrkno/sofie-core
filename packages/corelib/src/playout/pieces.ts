@@ -1,17 +1,17 @@
-import { ReadonlyDeep } from 'type-fest'
-import { PieceInstanceWithTimings } from './infinites'
 import {
-	TimelineObjRundown,
-	TimelineContentTypeOther,
-	TimelineObjType,
-	TimelineObjGroupRundown,
 	OnGenerateTimelineObjExt,
-} from '../collections/Timeline'
+	TimelineContentTypeOther,
+	TimelineObjGroupRundown,
+	TimelineObjRundown,
+	TimelineObjType,
+} from '../dataModel/Timeline'
+import { ReadonlyDeep } from 'type-fest'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { literal, unprotectString } from '../lib'
-import { clone } from 'underscore'
-import { PieceInstanceId } from '../collections/PieceInstances'
-import { getPieceGroupId } from './timeline'
+import { PieceInstanceId } from '../dataModel/Ids'
+import { clone, literal } from '../lib'
+import { getPieceGroupId } from './ids'
+import { unprotectString } from '../protectedString'
+import { PieceInstanceWithTimings } from './infinites'
 
 export interface PieceTimelineMetadata {
 	isPieceTimeline: boolean

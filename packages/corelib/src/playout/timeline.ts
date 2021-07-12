@@ -1,17 +1,16 @@
-import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { TimelineObjGeneric, TimelineObjGroup } from './collections/Timeline'
-import { TimelineObject } from 'superfly-timeline'
-import { clone } from './lib'
-import { logger } from './logging'
-
 // This is a collection of functions that match what the playout-gateway / TSR does
+
+import clone = require('fast-clone')
+import _ = require('underscore')
+import { TSR } from '@sofie-automation/blueprints-integration'
+import { TimelineObjGeneric, TimelineObjGroup } from '../dataModel/Timeline'
+
 // playout-gateway:
 export function transformTimeline(timeline: Array<TimelineObjGeneric>): Array<TimelineContentObject> {
 	const transformObject = (obj: TimelineObjGeneric | TimelineObjGroup): TimelineContentObject => {
-		if (!obj.id) throw new Meteor.Error(500, `Timeline object missing id attribute ${JSON.stringify(obj)} `)
+		if (!obj.id) throw new Error(`Timeline object missing id attribute ${JSON.stringify(obj)} `)
 
-		const transformedObj: TimelineContentObject = clone(_.omit(obj, ['_id', 'studioId']))
+		const transformedObj: TimelineContentObject = clone(_.omit(obj, ['_id', 'studioId'])) as any
 		transformedObj.id = obj.id
 
 		if (!transformedObj.content) transformedObj.content = {}
@@ -43,7 +42,7 @@ export function transformTimeline(timeline: Array<TimelineObjGeneric>): Array<Ti
 				}
 			} else {
 				// referenced group not found
-				logger.warn('Referenced group "' + obj.inGroup + '" not found! Referenced by "' + obj.id + '"')
+				console.warn('Referenced group "' + obj.inGroup + '" not found! Referenced by "' + obj.id + '"')
 				transformedTimeline.push(obj)
 			}
 		} else {
@@ -56,6 +55,6 @@ export function transformTimeline(timeline: Array<TimelineObjGeneric>): Array<Ti
 }
 
 // TSR: ---------
-export interface TimelineContentObject extends TimelineObject {
+export interface TimelineContentObject extends TSR.Timeline.TimelineObject {
 	inGroup?: string
 }

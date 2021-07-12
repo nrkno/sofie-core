@@ -21,6 +21,25 @@ export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
 	return _.omit(obj, ...(props as string[])) as any
 }
 
+export function flatten<T>(vals: Array<T[] | undefined>): T[] {
+	return _.flatten(
+		vals.filter((v) => v !== undefined),
+		true
+	) as T[]
+}
+
+export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefined {
+	if (vals.length <= 1) {
+		return vals[0]
+	} else {
+		return _.max(vals, iterator) as T
+	}
+}
+
+export function assertNever(_never: never): void {
+	// Do nothing. This is a type guard
+}
+
 export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
 	// Use this instead of fast-clone directly, as this retains the type
 	return fastClone(o as any)
@@ -93,5 +112,15 @@ export function deleteAllUndefinedProperties<T>(obj: T): void {
 				deleteAllUndefinedProperties(obj[key])
 			}
 		}
+	}
+}
+
+export function applyToArray<T>(arr: T | T[], func: (val: T) => void): void {
+	if (Array.isArray(arr)) {
+		for (const val of arr) {
+			func(val)
+		}
+	} else {
+		func(arr)
 	}
 }

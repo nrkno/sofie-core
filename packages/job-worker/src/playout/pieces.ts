@@ -1,45 +1,43 @@
-/** HACK - copied to job-worker */
-
-/* tslint:disable:no-use-before-declare */
-import { Resolver, TimelineEnable } from 'superfly-timeline'
-import * as _ from 'underscore'
-import { ReadonlyDeep } from 'type-fest'
-import { Piece } from '../../../lib/collections/Pieces'
+import { PieceId, RundownPlaylistActivationId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
-	literal,
-	extendMandadory,
-	getCurrentTime,
-	clone,
-	normalizeArray,
-	protectString,
-	unprotectString,
-	flatten,
-	applyToArray,
-	getRandomId,
-} from '../../../lib/lib'
+	PieceInstance,
+	PieceInstancePiece,
+	ResolvedPieceInstance,
+} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
-	TimelineObjPieceAbstract,
-	TimelineObjType,
-	TimelineObjRundown,
-	TimelineObjGeneric,
 	OnGenerateTimelineObjExt,
-} from '../../../lib/collections/Timeline'
-import { logger } from '../../logging'
-import { TimelineObjectCoreExt, TSR, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { transformTimeline, TimelineContentObject } from '@sofie-automation/corelib/dist/playout/timeline'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { Random } from 'meteor/random'
-import { prefixAllObjectIds } from './lib'
-import { RundownPlaylistActivationId, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap, PieceGroupMetadata, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { profiler } from '../profiler'
-import { getPieceFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
+	TimelineObjGeneric,
+	TimelineObjPieceAbstract,
+	TimelineObjRundown,
+	TimelineObjType,
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceLifespan, TSR } from '@sofie-automation/blueprints-integration/dist'
+import { clone, getRandomId, literal, normalizeArray, flatten, applyToArray } from '@sofie-automation/corelib/dist/lib'
+import { Resolver, TimelineEnable } from 'superfly-timeline'
+import { logger } from '../logging'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { JobContext } from '../jobs'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import _ = require('underscore')
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
+import { getPieceFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
+import { getCurrentTime } from '../lib'
+import { transformTimeline, TimelineContentObject } from '@sofie-automation/corelib/dist/playout/timeline'
+import {
+	PieceInstanceWithTimings,
+	processAndPrunePieceInstanceTimings,
+} from '@sofie-automation/corelib/dist/playout/infinites'
+import {
+	createPieceGroupAndCap,
+	PieceGroupMetadata,
+	PieceTimelineMetadata,
+} from '@sofie-automation/corelib/dist/playout/pieces'
+import { prefixAllObjectIds } from './lib'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
@@ -117,7 +115,7 @@ function resolvePieceTimeline(
 
 	const unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
-		const obj = (obj0 as any) as TimelineObjRundown
+		const obj = obj0 as any as TimelineObjRundown
 		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
 
 		if (!id) return
@@ -194,11 +192,12 @@ function resolvePieceTimeline(
 }
 
 export function getResolvedPieces(
+	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<ShowStyleBase>,
-	partInstance: PartInstance
+	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	partInstance: DBPartInstance
 ): ResolvedPieceInstance[] {
-	const span = profiler.startSpan('getResolvedPieces')
+	const span = context.startSpan('getResolvedPieces')
 	const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
@@ -241,10 +240,11 @@ export function getResolvedPieces(
 	return resolvedPieces
 }
 export function getResolvedPiecesFromFullTimeline(
+	context: JobContext,
 	cache: CacheForPlayout,
 	allObjs: TimelineObjGeneric[]
 ): { pieces: ResolvedPieceInstance[]; time: number } {
-	const span = profiler.startSpan('getResolvedPiecesFromFullTimeline')
+	const span = context.startSpan('getResolvedPiecesFromFullTimeline')
 	const objs = clone(
 		allObjs.filter((o) => (o.metaData as Partial<PieceTimelineMetadata> | undefined)?.isPieceTimeline)
 	)
@@ -295,29 +295,25 @@ export function getResolvedPiecesFromFullTimeline(
 	}
 }
 
-export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece {
-	const span = profiler.startSpan('convertPieceToAdLibPiece')
+export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstancePiece): AdLibPiece {
+	const span = context.startSpan('convertPieceToAdLibPiece')
 	// const oldId = piece._id
-	const newId = Random.id()
 	const newAdLibPiece = literal<AdLibPiece>({
 		...piece,
-		_id: protectString(newId),
+		_id: getRandomId(),
 		_rank: 0,
 		expectedDuration: piece.enable.duration,
 		rundownId: protectString(''),
 	})
 
 	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {
-		const contentObjects = newAdLibPiece.content.timelineObjects
+		const contentObjects = _.compact(newAdLibPiece.content.timelineObjects)
 		const objs = prefixAllObjectIds(
-			_.compact(
-				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
-					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						objectType: TimelineObjType.RUNDOWN,
-					})
-				})
-			),
-			newId + '_'
+			contentObjects.map((obj) => ({
+				...obj,
+				objectType: TimelineObjType.RUNDOWN,
+			})),
+			newAdLibPiece._id + '_'
 		)
 		newAdLibPiece.content.timelineObjects = objs
 	}
@@ -327,20 +323,21 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 }
 
 export function convertAdLibToPieceInstance(
+	context: JobContext,
 	playlistActivationId: RundownPlaylistActivationId,
 	adLibPiece: AdLibPiece | Piece | BucketAdLib | PieceInstancePiece,
-	partInstance: PartInstance,
+	partInstance: DBPartInstance,
 	queue: boolean
 ): PieceInstance {
-	const span = profiler.startSpan('convertAdLibToPieceInstance')
+	const span = context.startSpan('convertAdLibToPieceInstance')
 	let duration: number | undefined = undefined
-	if (adLibPiece['expectedDuration']) {
+	if ('expectedDuration' in adLibPiece && adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']
-	} else if (adLibPiece['enable'] && adLibPiece['enable'].duration) {
+	} else if ('enable' in adLibPiece && adLibPiece['enable'] && adLibPiece['enable'].duration) {
 		duration = adLibPiece['enable'].duration
 	}
 
-	const newPieceId = Random.id()
+	const newPieceId: PieceId = getRandomId()
 	const newPieceInstance = literal<PieceInstance>({
 		_id: protectString(`${partInstance._id}_${newPieceId}`),
 		rundownId: partInstance.rundownId,
@@ -350,7 +347,7 @@ export function convertAdLibToPieceInstance(
 		dynamicallyInserted: queue ? undefined : getCurrentTime(),
 		piece: literal<PieceInstancePiece>({
 			...(_.omit(adLibPiece, '_rank', 'expectedDuration', 'partId', 'rundownId') as PieceInstancePiece), // TODO - this could be typed stronger
-			_id: protectString(newPieceId),
+			_id: newPieceId,
 			startPartId: partInstance.part._id,
 			enable: {
 				start: queue ? 0 : 'now',
@@ -362,15 +359,12 @@ export function convertAdLibToPieceInstance(
 	setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-		const contentObjects = newPieceInstance.piece.content.timelineObjects
+		const contentObjects = _.compact(newPieceInstance.piece.content.timelineObjects)
 		const objs = prefixAllObjectIds(
-			_.compact(
-				_.map(contentObjects, (obj) => {
-					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						objectType: TimelineObjType.RUNDOWN,
-					})
-				})
-			),
+			contentObjects.map((obj) => ({
+				...obj,
+				objectType: TimelineObjType.RUNDOWN,
+			})),
 			newPieceId + '_'
 		)
 		newPieceInstance.piece.content.timelineObjects = objs

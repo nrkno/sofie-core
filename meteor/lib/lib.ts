@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { MongoQuery, MongoModifier, FindOptions } from './typings/meteor'
 import { logger } from './logging'
@@ -8,7 +7,6 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
 import * as crypto from 'crypto'
-import { ReadonlyDeep } from 'type-fest'
 import { ITranslatableMessage } from './api/TranslatableMessage'
 import { AsyncTransformedCollection } from './collections/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
@@ -19,23 +17,6 @@ export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
-
-export function flatten<T>(vals: Array<T[] | undefined>): T[] {
-	return _.flatten(
-		vals.filter((v) => v !== undefined),
-		true
-	)
-}
-
-
-
-export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefined {
-	if (vals.length <= 1) {
-		return vals[0]
-	} else {
-		return _.max(vals, iterator)
-	}
-}
 
 export function getHash(str: string): string {
 	const hash = crypto.createHash('sha1')
@@ -60,16 +41,6 @@ export function hashObj(obj: any): string {
 		return getHash(strs.join('|'))
 	}
 	return obj + ''
-}
-
-export function applyToArray<T>(arr: T | T[], func: (val: T) => void) {
-	if (Array.isArray(arr)) {
-		for (const val of arr) {
-			func(val)
-		}
-	} else {
-		func(arr)
-	}
 }
 
 /**
@@ -927,10 +898,6 @@ export async function sleep(ms: number): Promise<void> {
 
 export function isPromise<T extends any>(val: any): val is Promise<T> {
 	return _.isObject(val) && typeof val.then === 'function' && typeof val.catch === 'function'
-}
-
-export function assertNever(_never: never): void {
-	// Do nothing. This is a type guard
 }
 
 /**
