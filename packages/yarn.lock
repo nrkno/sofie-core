@@ -8509,10 +8509,10 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@6.1.0-release36:
-  version "6.1.0-release36"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.1.0-release36.tgz#2682578f5d43fb625fa6e65a8dff72cdf9438480"
-  integrity sha512-D0/rQAH3gqRvvj0BVmdsQOF//sRnyS5OeUMnUNddkjiA3kEdnjvGigcqOjTEHJuz07Uqwu1fCiIcqXNNI0Rdjg==
+timeline-state-resolver-types@6.1.0-release36.0:
+  version "6.1.0-release36.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.1.0-release36.0.tgz#64ccf4e10365b8038ff613ed299606744182d40c"
+  integrity sha512-A6pGl6UUO5nyyO1yUkKc6yL0LGmyFA1t6r3z3wX3aD4dY7LW6ivch1C+dvvXEy1ia1D4uFpeISALKlJrTshPEA==
   dependencies:
     tslib "^2.1.0"
 
@@ -8523,10 +8523,10 @@ timeline-state-resolver-types@^6.0.3:
   dependencies:
     tslib "^2.1.0"
 
-timeline-state-resolver@6.1.0-release36:
-  version "6.1.0-release36"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.1.0-release36.tgz#8329b0fe149b9866ceb490deea1ea92cecbb7ecb"
-  integrity sha512-+dmXu8n7MdUVYGhRKF57C1rOCjVx1VV4Q9YRbfq/zVN8PAjzALOJfuJ6cowtH4gkAaf5dfLcd+gDgNVgnvjeXQ==
+timeline-state-resolver@6.1.0-release36.1:
+  version "6.1.0-release36.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.1.0-release36.1.tgz#7155476ccc6acc63a6ef4017ebfea919f3ee4855"
+  integrity sha512-3UpJgNDJquvBHCprvscJsoWEFiSxMgZ6Zl36ituUC8WgEazLABx/7FOkMDVOrgTUzRUm+7Vlm/3WGgp1mYJuuw==
   dependencies:
     atem-connection "^2.3.0"
     atem-state "^0.12.1"
@@ -8547,7 +8547,7 @@ timeline-state-resolver@6.1.0-release36:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.1.0-release36"
+    timeline-state-resolver-types "6.1.0-release36.0"
     tslib "^2.1.0"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
