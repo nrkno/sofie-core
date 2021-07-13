@@ -44,7 +44,6 @@ import { logger } from '../logging'
 import _ = require('underscore')
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { getCurrentTime } from '../lib'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '@sofie-automation/corelib/dist/playout/ids'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
@@ -57,6 +56,7 @@ import {
 import { CacheForStudioBase } from '../studio/cache'
 import { getLookeaheadObjects } from './lookahead'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
+import { TimelineEventContext } from '../blueprints/context'
 
 // 	// Ensure there isn't a playlist active, as that should be using a different function call
 // 	if (isCacheForStudio(cache)) {
@@ -153,7 +153,7 @@ function processAndSaveTimelineObjects(
 	forceNowToTime: Time | undefined
 ): void {
 	const studio = cache.Studio.doc
-	processTimelineObjects(context, studio, timelineObjs)
+	processTimelineObjects(context, timelineObjs)
 
 	/** The timestamp that "now" was set to */
 	let theNowTime = 0
@@ -267,7 +267,6 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
 			const pShowStyle = cache.activationCache.getShowStyleCompound(activeRundown)
-			const pshowStyleBlueprint = pShowStyle.then(async (showStyle) => loadShowStyleBlueprint(showStyle))
 
 			const showStyle = await pShowStyle
 			if (!showStyle) {
@@ -285,24 +284,29 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 
 			// next (on pvw (or on pgm if first))
 			const pLookaheadObjs = getLookeaheadObjects(context, cache, partInstancesInfo)
-			const pBaselineItems = cache.activationCache
-				.getRundownBaselineObjs(activeRundown)
-				.then((objs) => transformBaselineItemsIntoTimeline(objs))
+
+			const rawBaselineItems = cache.BaselineObjects.findFetch((o) => o.rundownId === activeRundown._id)
+			if (rawBaselineItems.length > 0) {
+				timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(rawBaselineItems))
+			} else {
+				logger.warn(`Missing Baseline objects for Rundown "${activeRundown._id}"`)
+			}
 
 			timelineObjs = timelineObjs.concat(
 				buildTimelineObjsForRundown(context, cache, activeRundown, partInstancesInfo)
 			)
 
 			timelineObjs = timelineObjs.concat(await pLookaheadObjs)
-			timelineObjs = timelineObjs.concat(await pBaselineItems)
 
-			const showStyleBlueprint0 = await pshowStyleBlueprint
-			const showStyleBlueprintManifest = showStyleBlueprint0.blueprint
+			// const showStyleBlueprint0 = await pshowStyleBlueprint
+			// const showStyleBlueprintManifest = context.showStyleBlueprint.blueprint
 
-			if (showStyleBlueprintManifest.onTimelineGenerate) {
-				const context = new TimelineEventContext(
+			if (context.showStyleBlueprint.blueprint.onTimelineGenerate) {
+				const context2 = new TimelineEventContext(
 					cache.Studio.doc,
+					context.studioBlueprint,
 					showStyle,
+					context.showStyleBlueprint,
 					cache.Playlist.doc,
 					activeRundown,
 					previousPartInstance,
@@ -311,8 +315,8 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 				)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
 				try {
-					const tlGenRes = await showStyleBlueprintManifest.onTimelineGenerate(
-						context,
+					const tlGenRes = await context.showStyleBlueprint.blueprint.onTimelineGenerate(
+						context2,
 						timelineObjs,
 						cache.Playlist.doc.previousPersistentState,
 						currentPartInstance?.previousPartEndState,
@@ -327,7 +331,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 					cache.Playlist.update({
 						$set: {
 							previousPersistentState: tlGenRes.persistentState,
-							trackedAbSessions: context.knownSessions,
+							trackedAbSessions: context2.knownSessions,
 						},
 					})
 				} catch (e) {
@@ -359,11 +363,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
  * @param studio
  * @param timelineObjs Array of timeline objects
  */
-function processTimelineObjects(
-	context: JobContext,
-	studio: ReadonlyDeep<DBStudio>,
-	timelineObjs: Array<TimelineObjGeneric>
-): void {
+function processTimelineObjects(context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
 	const span = context.startSpan('processTimelineObjects')
 	// first, split out any grouped objects, to make the timeline shallow:
 	const fixObjectChildren = (o: TimelineObjGeneric): void => {
@@ -414,7 +414,7 @@ function setNowToTimeInObjects(timelineObjs: Array<TimelineObjGeneric>, now: Tim
 function buildTimelineObjsForRundown(
 	context: JobContext,
 	cache: CacheForPlayout,
-	activeRundown: DBRundown,
+	_activeRundown: DBRundown,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo
 ): (TimelineObjRundown & OnGenerateTimelineObjExt)[] {
 	const span = context.startSpan('buildTimelineObjsForRundown')

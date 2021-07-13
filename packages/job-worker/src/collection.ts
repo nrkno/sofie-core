@@ -25,6 +25,8 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 
 // @ts-ignore
 export interface FindOptions<T> {
@@ -74,4 +76,7 @@ export interface IDirectCollections {
 	ShowStyleVariants: ICollection<DBShowStyleVariant>
 	Studios: ICollection<DBStudio>
 	Timelines: ICollection<TimelineComplete>
+
+	ExpectedPackages: ICollection<ExpectedPackageDB>
+	PackageInfos: ICollection<PackageInfoDB>
 }

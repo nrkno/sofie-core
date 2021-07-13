@@ -163,15 +163,6 @@ export function removeNullyProperties<T>(obj: T): T {
 	})
 	return obj
 }
-export function objectPathGet(obj: any, path: string, defaultValue?: any) {
-	const v = objectPath.get(obj, path)
-	if (v === undefined && defaultValue !== undefined) return defaultValue
-	return v
-}
-export function objectPathSet(obj: any, path: string, value: any) {
-	objectPath.set(obj, path, value)
-	return obj
-}
 /**
  * Returns a string that can be used to compare objects for equality
  * @param objs
@@ -583,9 +574,9 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 
 		if (options.fields !== undefined) {
 			const idVal = options.fields['_id']
-			const includeKeys = (_.keys(options.fields).filter(
+			const includeKeys = _.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] !== 0
-			) as any) as (keyof DBInterface)[]
+			) as any as (keyof DBInterface)[]
 			const excludeKeys: string[] = _.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] === 0
 			)

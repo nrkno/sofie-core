@@ -53,6 +53,7 @@
 		"tslib": "^2.1.0",
 		"type-fest": "^0.21.1",
 		"underscore": "1.12.0",
+		"vm2": "^3.9.3",
 		"winston": "^2.4.2"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",

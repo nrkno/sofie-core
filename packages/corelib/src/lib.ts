@@ -4,6 +4,7 @@ import { ReadonlyDeep } from 'type-fest'
 import fastClone = require('fast-clone')
 import { Random } from './random'
 import { ProtectedString, protectString } from './protectedString'
+import * as objectPath from 'object-path'
 
 export type TimeDuration = number
 
@@ -123,4 +124,14 @@ export function applyToArray<T>(arr: T | T[], func: (val: T) => void): void {
 	} else {
 		func(arr)
 	}
+}
+
+export function objectPathGet(obj: any, path: string, defaultValue?: any) {
+	const v = objectPath.get(obj, path)
+	if (v === undefined && defaultValue !== undefined) return defaultValue
+	return v
+}
+export function objectPathSet(obj: any, path: string, value: any) {
+	objectPath.set(obj, path, value)
+	return obj
 }

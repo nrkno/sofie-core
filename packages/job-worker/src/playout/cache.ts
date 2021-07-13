@@ -1,5 +1,5 @@
 import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ActivationCache, getActivationCache } from '../cache/ActivationCache'
+// import { ActivationCache, getActivationCache } from '../cache/ActivationCache'
 import { DbCacheReadObject, DbCacheWriteObject } from '../cache/CacheObject'
 import { CacheBase } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
@@ -16,6 +16,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import _ = require('underscore')
+import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 
 /**
  * This is a cache used for playout operations.
@@ -25,7 +26,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 	public readonly isPlayout = true
 	public readonly PlaylistId: RundownPlaylistId
 
-	public readonly activationCache: ActivationCache
+	// public readonly activationCache: ActivationCache
 
 	public readonly Studio: DbCacheReadObject<DBStudio>
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
@@ -35,7 +36,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 
 	protected constructor(
 		playlistId: RundownPlaylistId,
-		activationCache: ActivationCache,
+		// activationCache: ActivationCache,
 		studio: DbCacheReadObject<DBStudio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
 		playlist: DbCacheWriteObject<DBRundownPlaylist>,
@@ -44,7 +45,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		super()
 
 		this.PlaylistId = playlistId
-		this.activationCache = activationCache
+		// this.activationCache = activationCache
 
 		this.Studio = studio
 		this.PeripheralDevices = peripheralDevices
@@ -67,16 +68,53 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		existingRundowns: DbCacheReadCollection<DBRundown> | undefined
 	): Promise<
 		[
-			ActivationCache,
+			// ActivationCache,
 			DbCacheReadObject<DBStudio>,
 			DbCacheReadCollection<PeripheralDevice>,
 			DbCacheWriteObject<DBRundownPlaylist>,
 			DbCacheReadCollection<DBRundown>
 		]
 	> {
-		const activationCache = getActivationCache(tmpPlaylist.studioId, tmpPlaylist._id)
+		// const activationCache = getActivationCache(tmpPlaylist.studioId, tmpPlaylist._id)
 
-		const [playlist, rundowns] = await Promise.all([
+		// const [playlist, rundowns] = await Promise.all([
+		// 	reloadPlaylist
+		// 		? await DbCacheWriteObject.createFromDatabase(
+		// 				context.directCollections.RundownPlaylists,
+		// 				false,
+		// 				tmpPlaylist._id
+		// 		  )
+		// 		: DbCacheWriteObject.createFromDoc<DBRundownPlaylist>(
+		// 				context.directCollections.RundownPlaylists,
+		// 				false,
+		// 				tmpPlaylist
+		// 		  ),
+		// 	existingRundowns ??
+		// 		DbCacheReadCollection.createFromDatabase(context.directCollections.Rundowns, {
+		// 			playlistId: tmpPlaylist._id,
+		// 		}),
+		// ])
+
+		// // await activationCache.initialize(playlist.doc, rundowns.findFetch())
+
+		// const studio = DbCacheReadObject.createFromDoc(
+		// 	context.directCollections.Studios,
+		// 	false,
+		// 	activationCache.getStudio()
+		// )
+		// const rawPeripheralDevices = await activationCache.getPeripheralDevices()
+		// const peripheralDevices = DbCacheReadCollection.createFromArray(
+		// 	context.directCollections.PeripheralDevices,
+		// 	rawPeripheralDevices
+		// )
+
+		// return [activationCache, studio, peripheralDevices, playlist, rundowns]
+
+		return Promise.all([
+			DbCacheReadObject.createFromDatabase(context.directCollections.Studios, false, tmpPlaylist.studioId),
+			DbCacheReadCollection.createFromDatabase(context.directCollections.PeripheralDevices, {
+				studioId: tmpPlaylist.studioId,
+			}),
 			reloadPlaylist
 				? await DbCacheWriteObject.createFromDatabase(
 						context.directCollections.RundownPlaylists,
@@ -93,21 +131,6 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 					playlistId: tmpPlaylist._id,
 				}),
 		])
-
-		await activationCache.initialize(playlist.doc, rundowns.findFetch())
-
-		const studio = DbCacheReadObject.createFromDoc(
-			context.directCollections.Studios,
-			false,
-			activationCache.getStudio()
-		)
-		const rawPeripheralDevices = await activationCache.getPeripheralDevices()
-		const peripheralDevices = DbCacheReadCollection.createFromArray(
-			context.directCollections.PeripheralDevices,
-			rawPeripheralDevices
-		)
-
-		return [activationCache, studio, peripheralDevices, playlist, rundowns]
 	}
 }
 
@@ -128,10 +151,12 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	public readonly PartInstances: DbCacheWriteCollection<DBPartInstance>
 	public readonly PieceInstances: DbCacheWriteCollection<PieceInstance>
 
+	public readonly BaselineObjects: DbCacheReadCollection<RundownBaselineObj>
+
 	protected constructor(
 		context: JobContext,
 		playlistId: RundownPlaylistId,
-		activationCache: ActivationCache,
+		// activationCache: ActivationCache,
 		studio: DbCacheReadObject<DBStudio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
 		playlist: DbCacheWriteObject<DBRundownPlaylist>,
@@ -140,9 +165,10 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		parts: DbCacheReadCollection<DBPart>,
 		partInstances: DbCacheWriteCollection<DBPartInstance>,
 		pieceInstances: DbCacheWriteCollection<PieceInstance>,
-		timeline: DbCacheWriteCollection<TimelineComplete>
+		timeline: DbCacheWriteCollection<TimelineComplete>,
+		baselineObjects: DbCacheReadCollection<RundownBaselineObj>
 	) {
-		super(playlistId, activationCache, studio, peripheralDevices, playlist, rundowns)
+		super(playlistId, studio, peripheralDevices, playlist, rundowns)
 
 		this.context = context
 
@@ -153,6 +179,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		this.PartInstances = partInstances
 		this.PieceInstances = pieceInstances
+
+		this.BaselineObjects = baselineObjects
 	}
 
 	// static async create(tmpPlaylist: ReadonlyDeep<RundownPlaylist>): Promise<CacheForPlayout> {
@@ -176,7 +204,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		return new CacheForPlayout(
 			context,
 			initCache.PlaylistId,
-			initCache.activationCache,
+			// initCache.activationCache,
 			initCache.Studio,
 			initCache.PeripheralDevices,
 			initCache.Playlist,
@@ -222,7 +250,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			DbCacheReadCollection<DBPart>,
 			DbCacheWriteCollection<DBPartInstance>,
 			DbCacheWriteCollection<PieceInstance>,
-			DbCacheWriteCollection<TimelineComplete>
+			DbCacheWriteCollection<TimelineComplete>,
+			DbCacheReadCollection<RundownBaselineObj>
 		]
 	> {
 		const selectedPartInstanceIds = _.compact([
@@ -233,6 +262,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
 		const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
+		const loadBaselineIds = rundownIds // TODO
 
 		const [segments, parts, ...collections] = await Promise.all([
 			DbCacheReadCollection.createFromDatabase(context.directCollections.Segments, {
@@ -260,6 +290,9 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			}),
 			// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
 			DbCacheWriteCollection.createFromDatabase(context.directCollections.Timelines, { _id: playlist.studioId }),
+			DbCacheReadCollection.createFromDatabase(context.directCollections.RundownBaselineObjects, {
+				rundownId: { $in: loadBaselineIds },
+			}),
 		])
 
 		if (ingestCache) {
