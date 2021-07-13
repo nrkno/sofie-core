@@ -24,7 +24,7 @@ import { Settings } from '../../../lib/Settings'
 import { upsertBundles } from '../translationsBundles'
 import { fsMakeDir, fsReadFile, fsWriteFile } from '../../lib'
 
-export function insertBlueprint(
+export async function insertBlueprint(
 	methodContext: MethodContext,
 	type?: BlueprintManifestType,
 	name?: string
@@ -273,13 +273,13 @@ async function assignSystemBlueprint(methodContext: MethodContext, blueprintId?:
 }
 
 class ServerBlueprintAPI extends MethodContextAPI implements NewBlueprintAPI {
-	insertBlueprint() {
+	async insertBlueprint() {
 		return insertBlueprint(this)
 	}
-	removeBlueprint(blueprintId: BlueprintId) {
+	async removeBlueprint(blueprintId: BlueprintId) {
 		return removeBlueprint(this, blueprintId)
 	}
-	assignSystemBlueprint(blueprintId?: BlueprintId) {
+	async assignSystemBlueprint(blueprintId?: BlueprintId) {
 		return assignSystemBlueprint(this, blueprintId)
 	}
 }

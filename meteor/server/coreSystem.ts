@@ -9,7 +9,7 @@ import {
 	parseCoreIntegrationCompatabilityRange,
 	compareSemverVersions,
 } from '../lib/collections/CoreSystem'
-import { getCurrentTime, unprotectString, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, unprotectString, waitForPromise, waitForPromiseAll } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from './migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
@@ -21,7 +21,7 @@ import { Studios, StudioId } from '../lib/collections/Studios'
 import { logger } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
-import { syncFunction } from './codeControl'
+import { pushWorkToQueue } from './codeControl'
 const PackageInfo = require('../package.json')
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 import { profiler } from './api/profiler'
@@ -236,53 +236,57 @@ function queueCheckBlueprintsConfig() {
 }
 
 let lastBlueprintConfigIds: { [id: string]: true } = {}
-const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
-	const blueprintIds: { [id: string]: true } = {}
+function checkBlueprintsConfig() {
+	waitForPromise(
+		pushWorkToQueue('checkBlueprintsConfig', 'checkBlueprintsConfig', async () => {
+			const blueprintIds: { [id: string]: true } = {}
 
-	// Studios
-	_.each(Studios.find({}).fetch(), (studio) => {
-		const blueprint = Blueprints.findOne(studio.blueprintId)
-		if (!blueprint) return
+			// Studios
+			_.each(Studios.find({}).fetch(), (studio) => {
+				const blueprint = Blueprints.findOne(studio.blueprintId)
+				if (!blueprint) return
 
-		const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
-		const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
-		setBlueprintConfigStatus(systemStatusId, diff, studio._id)
-		blueprintIds[systemStatusId] = true
-	})
+				const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
+				const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
+				setBlueprintConfigStatus(systemStatusId, diff, studio._id)
+				blueprintIds[systemStatusId] = true
+			})
 
-	// ShowStyles
-	_.each(ShowStyleBases.find({}).fetch(), (showBase) => {
-		const blueprint = Blueprints.findOne(showBase.blueprintId)
-		if (!blueprint || !blueprint.showStyleConfigManifest) return
+			// ShowStyles
+			_.each(ShowStyleBases.find({}).fetch(), (showBase) => {
+				const blueprint = Blueprints.findOne(showBase.blueprintId)
+				if (!blueprint || !blueprint.showStyleConfigManifest) return
 
-		const variants = ShowStyleVariants.find({
-			showStyleBaseId: showBase._id,
-		}).fetch()
+				const variants = ShowStyleVariants.find({
+					showStyleBaseId: showBase._id,
+				}).fetch()
 
-		const allDiffs: string[] = []
+				const allDiffs: string[] = []
 
-		_.each(variants, (variant) => {
-			const compound = createShowStyleCompound(showBase, variant)
-			if (!compound) return
+				_.each(variants, (variant) => {
+					const compound = createShowStyleCompound(showBase, variant)
+					if (!compound) return
 
-			const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
-			if (diff && diff.length) {
-				allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
-			}
+					const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
+					if (diff && diff.length) {
+						allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
+					}
+				})
+				const systemStatusId = `blueprintConfig_${blueprint._id}_showStyle_${showBase._id}`
+				setBlueprintConfigStatus(systemStatusId, allDiffs)
+				blueprintIds[systemStatusId] = true
+			})
+
+			// Check for removed
+			_.each(lastBlueprintConfigIds, (_val, id: string) => {
+				if (!blueprintIds[id]) {
+					removeSystemStatus(id)
+				}
+			})
+			lastBlueprintConfigIds = blueprintIds
 		})
-		const systemStatusId = `blueprintConfig_${blueprint._id}_showStyle_${showBase._id}`
-		setBlueprintConfigStatus(systemStatusId, allDiffs)
-		blueprintIds[systemStatusId] = true
-	})
-
-	// Check for removed
-	_.each(lastBlueprintConfigIds, (_val, id: string) => {
-		if (!blueprintIds[id]) {
-			removeSystemStatus(id)
-		}
-	})
-	lastBlueprintConfigIds = blueprintIds
-}, 'checkBlueprintsConfig')
+	)
+}
 function setBlueprintConfigStatus(systemStatusId: string, diff: string[], studioId?: StudioId) {
 	if (diff && diff.length > 0) {
 		setSystemStatus(systemStatusId, {

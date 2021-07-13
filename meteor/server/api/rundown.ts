@@ -9,7 +9,6 @@ import {
 	protectString,
 	unprotectString,
 	makePromise,
-	waitForPromiseObj,
 	normalizeArray,
 	normalizeArrayToMap,
 	clone,
@@ -301,12 +300,12 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 
 export namespace ServerRundownAPI {
 	/** Remove a RundownPlaylist and all its contents */
-	export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId): void {
+	export async function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId): Promise<void> {
 		check(playlistId, String)
 
 		const access = checkAccessToPlaylist(context, playlistId)
 
-		runPlayoutOperationWithLock(
+		await runPlayoutOperationWithLock(
 			access,
 			'removeRundownPlaylist',
 			playlistId,
@@ -319,18 +318,18 @@ export namespace ServerRundownAPI {
 		)
 	}
 	/** Remove an individual rundown */
-	export function removeRundown(context: MethodContext, rundownId: RundownId) {
+	export async function removeRundown(context: MethodContext, rundownId: RundownId): Promise<void> {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		handleRemovedRundownByRundown(access.rundown, true)
+		await handleRemovedRundownByRundown(access.rundown, true)
 	}
 
-	export function unsyncRundown(context: MethodContext, rundownId: RundownId): void {
+	export async function unsyncRundown(context: MethodContext, rundownId: RundownId): Promise<void> {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		runIngestOperationFromRundown('unsyncRundown', access.rundown, async (cache) => {
+		await runIngestOperationFromRundown('unsyncRundown', access.rundown, async (cache) => {
 			const rundown = getRundown(cache)
 			if (!rundown.orphaned) {
 				cache.Rundown.update({
@@ -432,17 +431,17 @@ export namespace ClientRundownAPI {
 		return _.compact(errors)
 	}
 	// Validate the blueprint config used for this rundown, to ensure that all the required fields are specified
-	export function rundownPlaylistValidateBlueprintConfig(
+	export async function rundownPlaylistValidateBlueprintConfig(
 		context: MethodContext,
 		playlistId: RundownPlaylistId
-	): RundownPlaylistValidateBlueprintConfigResult {
+	): Promise<RundownPlaylistValidateBlueprintConfigResult> {
 		check(playlistId, String)
 
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const rundownPlaylist = access.playlist
 
 		const studio = rundownPlaylist.getStudio()
-		const studioBlueprint = Blueprints.findOne(studio.blueprintId)
+		const studioBlueprint = studio.blueprintId ? await Blueprints.findOneAsync(studio.blueprintId) : null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
 		const rundowns = rundownPlaylist.getRundowns()
@@ -453,17 +452,17 @@ export namespace ClientRundownAPI {
 		)
 
 		// Load all variants/compounds
-		const { showStyleBases, showStyleVariants } = waitForPromiseObj({
-			showStyleBases: ShowStyleBases.findFetchAsync({
+		const [showStyleBases, showStyleVariants] = await Promise.all([
+			ShowStyleBases.findFetchAsync({
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleBaseId) },
 			}),
-			showStyleVariants: ShowStyleVariants.findFetchAsync({
+			ShowStyleVariants.findFetchAsync({
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) },
 			}),
-		})
-		const showStyleBlueprints = Blueprints.find({
+		])
+		const showStyleBlueprints = await Blueprints.findFetchAsync({
 			_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
-		}).fetch()
+		})
 
 		const showStyleBasesMap = normalizeArray(showStyleBases, '_id')
 		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')
@@ -523,39 +522,39 @@ export namespace ClientRundownAPI {
 }
 
 class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
-	removeRundownPlaylist(playlistId: RundownPlaylistId) {
-		return makePromise(() => ServerRundownAPI.removeRundownPlaylist(this, playlistId))
+	async removeRundownPlaylist(playlistId: RundownPlaylistId) {
+		return ServerRundownAPI.removeRundownPlaylist(this, playlistId)
 	}
-	resyncRundownPlaylist(playlistId: RundownPlaylistId) {
+	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(this, playlistId))
 	}
-	rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
+	async rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
 		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId))
 	}
-	rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId) {
-		return makePromise(() => ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(this, playlistId))
+	async rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId) {
+		return ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(this, playlistId)
 	}
-	removeRundown(rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.removeRundown(this, rundownId))
+	async removeRundown(rundownId: RundownId) {
+		return ServerRundownAPI.removeRundown(this, rundownId)
 	}
-	resyncRundown(rundownId: RundownId) {
+	async resyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.resyncRundown(this, rundownId))
 	}
-	resyncSegment(rundownId: RundownId, segmentId: SegmentId) {
+	async resyncSegment(rundownId: RundownId, segmentId: SegmentId) {
 		return makePromise(() => ServerRundownAPI.resyncSegment(this, rundownId, segmentId))
 	}
-	unsyncRundown(rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.unsyncRundown(this, rundownId))
+	async unsyncRundown(rundownId: RundownId) {
+		return ServerRundownAPI.unsyncRundown(this, rundownId)
 	}
-	moveRundown(
+	async moveRundown(
 		rundownId: RundownId,
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	) {
-		return makePromise(() => moveRundownIntoPlaylist(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder))
+		return moveRundownIntoPlaylist(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	}
-	restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
-		return makePromise(() => restoreRundownsInPlaylistToDefaultOrder(this, playlistId))
+	async restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
+		return restoreRundownsInPlaylistToDefaultOrder(this, playlistId)
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

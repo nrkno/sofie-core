@@ -53,18 +53,18 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 
 export namespace ServerPlayoutAdLibAPI {
-	export function pieceTakeNow(
+	export async function pieceTakeNow(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'pieceTakeNow',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -168,19 +168,19 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		)
 	}
-	export function segmentAdLibPieceStart(
+	export async function segmentAdLibPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adLibPieceId: PieceId,
 		queue: boolean
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'segmentAdLibPieceStart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist.activationId)
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
@@ -211,19 +211,19 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		)
 	}
-	export function rundownBaselineAdLibPieceStart(
+	export async function rundownBaselineAdLibPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		baselineAdLibPieceId: PieceId,
 		queue: boolean
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'rundownBaselineAdLibPieceStart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				logger.debug('rundownBaselineAdLibPieceStart')
 
 				const playlist = cache.Playlist.doc
@@ -317,17 +317,17 @@ export namespace ServerPlayoutAdLibAPI {
 		if (span) span.end()
 	}
 
-	export function sourceLayerStickyPieceStart(
+	export async function sourceLayerStickyPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
-	) {
+	): Promise<void> {
 		return runPlayoutOperationWithCache(
 			access,
 			'sourceLayerStickyPieceStart',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 				if (!playlist.activationId)
@@ -520,7 +520,7 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.PieceInstances.insert(pieceInstance)
 		}
 
-		setNextPart(cache, newPartInstance)
+		await setNextPart(cache, newPartInstance)
 
 		if (span) span.end()
 	}
@@ -651,13 +651,13 @@ export namespace ServerPlayoutAdLibAPI {
 		if (span) span.end()
 		return stoppedInstances
 	}
-	export function startBucketAdlibPiece(
+	export async function startBucketAdlibPiece(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
 		queue: boolean
-	) {
+	): Promise<void> {
 		const bucketAdlib = BucketAdLibs.findOne(bucketAdlibId)
 		if (!bucketAdlib) throw new Meteor.Error(404, `Bucket Adlib "${bucketAdlibId}" not found!`)
 
@@ -666,7 +666,7 @@ export namespace ServerPlayoutAdLibAPI {
 			'startBucketAdlibPiece',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			(cache) => {
+			async (cache) => {
 				const playlist = cache.Playlist.doc
 				if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 				if (!playlist.activationId)

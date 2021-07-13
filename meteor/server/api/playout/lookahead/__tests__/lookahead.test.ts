@@ -152,7 +152,7 @@ describe('Lookahead', () => {
 		findLookaheadForLayerMock.mockClear()
 	}
 
-	testInFiber('No pieces', () => {
+	testInFiber('No pieces', async () => {
 		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 		expect(playlist).toBeTruthy()
 
@@ -161,13 +161,13 @@ describe('Lookahead', () => {
 		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts.map((p) => p.part))
 
-		const res = runPlayoutOperationWithCache(
+		const res = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(res).toHaveLength(0)
 
@@ -185,7 +185,7 @@ describe('Lookahead', () => {
 		} as any
 	}
 
-	testInFiber('got some objects', () => {
+	testInFiber('got some objects', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
 		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
@@ -209,13 +209,13 @@ describe('Lookahead', () => {
 				],
 			}))
 
-		const res = runPlayoutOperationWithCache(
+		const res = await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(res).toMatchSnapshot()
 
@@ -224,19 +224,19 @@ describe('Lookahead', () => {
 		expectLookaheadForLayerMock(playlistId, [], undefined, fakeParts)
 	})
 
-	testInFiber('Different max distances', () => {
+	testInFiber('Different max distances', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
 		// Set really low
 		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = 0
 		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 0
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 0)
@@ -245,13 +245,13 @@ describe('Lookahead', () => {
 		getOrderedPartsAfterPlayheadMock.mockClear()
 		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = -1
 		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 2000
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 2000)
@@ -260,19 +260,19 @@ describe('Lookahead', () => {
 		getOrderedPartsAfterPlayheadMock.mockClear()
 		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = undefined
 		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = -1
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 10)
 	})
 
-	testInFiber('PartInstances translation', () => {
+	testInFiber('PartInstances translation', async () => {
 		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValue(fakeParts.map((p) => p.part))
 
@@ -291,13 +291,13 @@ describe('Lookahead', () => {
 		}
 
 		// With a previous
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expectLookaheadForLayerMock(playlistId, [], expectedPrevious, fakeParts)
 
@@ -313,13 +313,13 @@ describe('Lookahead', () => {
 			nowInPart: partInstancesInfo.current!.nowInPart,
 			allPieces: partInstancesInfo.current!.pieceInstances,
 		}
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expectLookaheadForLayerMock(playlistId, [expectedCurrent], expectedPrevious, fakeParts)
 
@@ -335,26 +335,26 @@ describe('Lookahead', () => {
 			nowInPart: partInstancesInfo.next!.nowInPart,
 			allPieces: partInstancesInfo.next!.pieceInstances,
 		}
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 
 		// current has autonext
 		partInstancesInfo.current.partInstance.part.autoNext = true
 		expectedNext.onTimeline = true
-		runPlayoutOperationWithCache(
+		await runPlayoutOperationWithCache(
 			null,
 			'test',
 			playlistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
 			null,
-			(cache) => getLookeaheadObjects(cache, partInstancesInfo)
+			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
 		)
 		expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 	})

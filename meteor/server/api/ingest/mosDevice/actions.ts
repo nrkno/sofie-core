@@ -8,7 +8,7 @@ import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { parseMosString } from './lib'
-import { WrapAsyncCallback } from '../../../../lib/lib'
+import { waitForPromise, WrapAsyncCallback } from '../../../../lib/lib'
 import * as _ from 'underscore'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 
@@ -46,7 +46,7 @@ export namespace MOSDeviceActions {
 								)
 							}
 
-							handleMosRundownData(peripheralDevice, mosRunningOrder, false)
+							waitForPromise(handleMosRundownData(peripheralDevice, mosRunningOrder, false))
 
 							// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
 							cb(null, TriggerReloadDataResponse.WORKING)
@@ -77,7 +77,7 @@ export namespace MOSDeviceActions {
 			)
 		}
 	}
-	function setStoryStatus(
+	async function setStoryStatus(
 		deviceId: PeripheralDeviceId,
 		rundown: Rundown,
 		storyId: string,
@@ -103,7 +103,7 @@ export namespace MOSDeviceActions {
 		})
 	}
 
-	export function setPieceInOutPoint(
+	export async function setPieceInOutPoint(
 		rundown: Rundown,
 		piece: Piece,
 		partCache: IngestPart,

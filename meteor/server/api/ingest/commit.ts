@@ -81,7 +81,7 @@ export async function CommitIngestOperation(
 	let trappedInPlaylistId: [RundownPlaylistId, string] | undefined
 	if (beforeRundown?.playlistId && (beforeRundown.playlistId !== targetPlaylistId[0] || data.removeRundown)) {
 		const beforePlaylistId = beforeRundown.playlistId
-		runPlayoutOperationWithLock(
+		await runPlayoutOperationWithLock(
 			null,
 			'ingest.commit.removeRundownFromOldPlaylist',
 			beforePlaylistId,
@@ -147,7 +147,7 @@ export async function CommitIngestOperation(
 
 						if (newPlaylist) {
 							// ensure the 'old' playout is updated to remove any references to the rundown
-							updatePlayoutAfterChangingRundownInPlaylist(newPlaylist, oldPlaylistLock, null)
+							await updatePlayoutAfterChangingRundownInPlaylist(newPlaylist, oldPlaylistLock, null)
 						}
 					}
 				}
@@ -171,11 +171,11 @@ export async function CommitIngestOperation(
 		if (tmpNewPlaylist.studioId !== ingestCache.Studio.doc._id)
 			throw new Meteor.Error(404, `Rundown Playlist "${newPlaylistId[0]}" exists but belongs to another studio!`)
 	}
-	runStudioOperationWithLock(
+	await runStudioOperationWithLock(
 		'ingest.commit.saveRundownToPlaylist',
 		ingestCache.Studio.doc._id,
 		StudioLockFunctionPriority.MISC,
-		(studioLock) =>
+		async (studioLock) =>
 			runPlayoutOperationWithLockFromStudioOperation(
 				'ingest.commit.saveRundownToPlaylist',
 				studioLock,
@@ -489,13 +489,13 @@ export async function regeneratePlaylistAndRundownOrder(
 /**
  * Ensure that the playlist triggers a playout update if it is active
  */
-export function updatePlayoutAfterChangingRundownInPlaylist(
+export async function updatePlayoutAfterChangingRundownInPlaylist(
 	playlist: RundownPlaylist,
 	playlistLock: PlaylistLock,
 	insertedRundown: ReadonlyDeep<Rundown> | null
-) {
+): Promise<void> {
 	// ensure the 'old' playout is updated to remove any references to the rundown
-	runPlayoutOperationWithCacheFromStudioOperation(
+	return runPlayoutOperationWithCacheFromStudioOperation(
 		'updatePlayoutAfterChangingRundownInPlaylist',
 		playlistLock,
 		playlist,

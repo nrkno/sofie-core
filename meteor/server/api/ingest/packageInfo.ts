@@ -39,7 +39,9 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: Package
 						const packageIds = pendingPackageUpdates.get(pkg.rundownId)
 						if (packageIds) {
 							pendingPackageUpdates.delete(pkg.rundownId)
-							onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds)
+							onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds).catch((e) => {
+								logger.error(`Updating ExpectedPackages for Rundown "${pkg.rundownId}" failed: ${e}`)
+							})
 						}
 					},
 					1000
@@ -60,7 +62,10 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: Package
 
 const pendingPackageUpdates = new Map<RundownId, Array<ExpectedPackageId>>()
 
-function onUpdatedPackageInfoForRundown(rundownId: RundownId, packageIds: Array<ExpectedPackageId>) {
+async function onUpdatedPackageInfoForRundown(
+	rundownId: RundownId,
+	packageIds: Array<ExpectedPackageId>
+): Promise<void> {
 	if (packageIds.length === 0) {
 		return
 	}
