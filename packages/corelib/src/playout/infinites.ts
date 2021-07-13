@@ -19,7 +19,10 @@ import { getPieceGroupId } from './ids'
 import { DBShowStyleBase } from '../dataModel/ShowStyleBase'
 import _ = require('underscore')
 
-export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type MongoQuery<T> = any // TODO
+
+export function buildPiecesStartingInThisPartQuery(part: DBPart): MongoQuery<Piece> {
 	return { startPartId: part._id }
 }
 
@@ -28,7 +31,7 @@ export function buildPastInfinitePiecesForThisPartQuery(
 	partsIdsBeforeThisInSegment: PartId[],
 	segmentsIdsBeforeThisInRundown: SegmentId[],
 	rundownIdsBeforeThisInPlaylist: RundownId[]
-): Mongo.Query<Piece> | null {
+): MongoQuery<Piece> | null {
 	const fragments = _.compact([
 		partsIdsBeforeThisInSegment.length > 0
 			? {

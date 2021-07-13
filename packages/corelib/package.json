@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.36.0-in-development",
+	"version": "1.37.0-in-development",
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -41,7 +41,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "^1.36.0-in-development",
+		"@sofie-automation/blueprints-integration": "^1.37.0-in-development",
 		"tslib": "^2.1.0",
 		"type-fest": "^1.2.2",
 		"underscore": "1.12.0"

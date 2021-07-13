@@ -54,8 +54,11 @@ import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInsta
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
-import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
+import {
+	processAndPrunePieceInstanceTimings,
+	PieceInstanceWithTimings,
+} from '@sofie-automation/corelib/dist/playout/infinites'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'

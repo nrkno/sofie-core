@@ -27,7 +27,7 @@ import { CacheForIngest } from '../ingest/cache'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { Rundown } from '../../../lib/collections/Rundowns'
 
-// /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
+/** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
 
 /**
