@@ -14,29 +14,18 @@ import { Studios } from '../../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { PackageStatus } from './PackageStatus'
 
-interface IExpectedPackagesStatusProps {}
-
 interface IIExpectedPackagesStatusTrackedProps {
 	expectedPackageWorkStatuses: ExpectedPackageWorkStatus[]
 	expectedPackages: ExpectedPackageDB[]
 }
 
-interface IPackageManagerStatusState {}
-
-export const ExpectedPackagesStatus = translateWithTracker<
-	IExpectedPackagesStatusProps,
-	{},
-	IIExpectedPackagesStatusTrackedProps
->(() => {
+export const ExpectedPackagesStatus = translateWithTracker<{}, {}, IIExpectedPackagesStatusTrackedProps>(() => {
 	return {
 		expectedPackageWorkStatuses: ExpectedPackageWorkStatuses.find({}).fetch(),
 		expectedPackages: ExpectedPackages.find({}).fetch(),
 	}
 })(
-	class PackageManagerStatus extends MeteorReactComponent<
-		Translated<IExpectedPackagesStatusProps & IIExpectedPackagesStatusTrackedProps>,
-		IPackageManagerStatusState
-	> {
+	class PackageManagerStatus extends MeteorReactComponent<Translated<IIExpectedPackagesStatusTrackedProps>, {}> {
 		constructor(props) {
 			super(props)
 		}
@@ -92,7 +81,7 @@ export const ExpectedPackagesStatus = translateWithTracker<
 
 			// sort:
 			const keys: { packageId: string; order: number; created: number }[] = []
-			Object.keys(packagesWithWorkStatuses).map((packageId) => {
+			Object.keys(packagesWithWorkStatuses).forEach((packageId) => {
 				const p = packagesWithWorkStatuses[packageId]
 
 				let order = 0
