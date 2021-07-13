@@ -1,16 +1,18 @@
-import { registerCollection, ProtectedString, ProtectedStringProperties, protectString, omit } from '../lib'
+import { registerCollection, ProtectedStringProperties, protectString, omit } from '../lib'
 import { IBlueprintPieceInstance, IBlueprintResolvedPieceInstance } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { Piece, PieceId } from './Pieces'
-import { PartInstanceId } from './PartInstances'
-import { RundownId } from './Rundowns'
+import { Piece } from './Pieces'
 import { registerIndex } from '../database'
 import { PartialDeep } from 'type-fest'
-import { RundownPlaylistActivationId } from './RundownPlaylists'
-
-/** A string, identifying a PieceInstance */
-export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
-export type PieceInstanceInfiniteId = ProtectedString<'PieceInstanceInfiniteId'>
+import {
+	PieceInstanceId,
+	PieceInstanceInfiniteId,
+	RundownId,
+	RundownPlaylistActivationId,
+	PartInstanceId,
+	PieceId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { PieceInstanceId, PieceInstanceInfiniteId }
 
 export function unprotectPieceInstance(pieceInstance: PieceInstance): IBlueprintPieceInstance
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined

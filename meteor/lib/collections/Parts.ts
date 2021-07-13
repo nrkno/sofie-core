@@ -1,14 +1,11 @@
-import { RundownId } from './Rundowns'
-import { SegmentId } from './Segments'
-import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
+import { applyClassToDocument, registerCollection, ProtectedStringProperties } from '../lib'
 import { IBlueprintPartDB, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ITranslatableMessage } from '../api/TranslatableMessage'
-
-/** A string, identifying a Part */
-export type PartId = ProtectedString<'PartId'>
+import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { PartId }
 
 /** A "Line" in NRK Lingo. */
 export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {

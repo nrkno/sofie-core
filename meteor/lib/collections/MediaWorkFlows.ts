@@ -1,11 +1,8 @@
-import { registerCollection, Time, ProtectedString } from '../lib'
+import { registerCollection, Time } from '../lib'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
-import { PeripheralDeviceId } from './PeripheralDevices'
 import { registerIndex } from '../database'
-
-/** A string, identifying a MediaWorkFlow */
-export type MediaWorkFlowId = ProtectedString<'MediaWorkFlowId'>
+import { MediaWorkFlowId, StudioId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { MediaWorkFlowId }
 
 export interface MediaWorkFlow {
 	_id: MediaWorkFlowId

@@ -1,17 +1,14 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time, registerCollection, ProtectedString, assertNever } from '../lib'
+import { Time, registerCollection, assertNever } from '../lib'
 
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
 import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
 import { createMongoCollection } from './lib'
 import { DeviceConfigManifest } from '../api/deviceConfig'
-import { StudioId } from './Studios'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
-
-/** A string, identifying a PeripheralDevice */
-export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>
-
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { PeripheralDeviceId }
 export interface PeripheralDevice {
 	_id: PeripheralDeviceId
 

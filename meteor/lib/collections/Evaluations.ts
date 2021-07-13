@@ -1,14 +1,15 @@
 import { UserId } from '../typings/meteor'
-import { Time, registerCollection, ProtectedString } from '../lib'
+import { Time, registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
-import { RundownPlaylistId } from './RundownPlaylists'
-import { SnapshotId } from './Snapshots'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
-
-/** A string, identifying a Evaluation */
-export type EvaluationId = ProtectedString<'EvaluationId'>
+import {
+	EvaluationId,
+	StudioId,
+	RundownPlaylistId,
+	SnapshotId,
+	OrganizationId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { EvaluationId }
 
 export interface Evaluation extends EvaluationBase {
 	_id: EvaluationId

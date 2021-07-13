@@ -1,11 +1,9 @@
-import { getCurrentTime, Time, registerCollection, ProtectedString } from '../lib'
+import { getCurrentTime, Time, registerCollection } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
-import { PeripheralDeviceId } from './PeripheralDevices'
 import { registerIndex } from '../database'
-
-/** A string, identifying a PeripheralDeviceCommand */
-export type PeripheralDeviceCommandId = ProtectedString<'PeripheralDeviceCommandId'>
+import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { PeripheralDeviceCommandId }
 
 export interface PeripheralDeviceCommand {
 	_id: PeripheralDeviceCommandId

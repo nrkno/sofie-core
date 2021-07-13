@@ -1,9 +1,7 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
-import { UserId } from './Users'
-
-/** A string, identifying a Organization */
-export type OrganizationId = ProtectedString<'OrganizationId'>
+import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { OrganizationId }
 
 /** An organization is the entity that owns data (studios, rundowns, etc..) in Sofie */
 export interface DBOrganizationBase {

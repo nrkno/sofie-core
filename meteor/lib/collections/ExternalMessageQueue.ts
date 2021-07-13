@@ -1,15 +1,12 @@
-import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
+import { Time, registerCollection, ProtectedStringProperties } from '../lib'
 import {
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
 } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
-import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
-
-/** A string, identifying a ExternalMessageQueueObj */
-export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObjId'>
+import { ExternalMessageQueueObjId, StudioId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { ExternalMessageQueueObjId }
 
 export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlueprintExternalMessageQueueObj, '_id'> {
 	_id: ExternalMessageQueueObjId

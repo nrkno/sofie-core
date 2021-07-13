@@ -1,14 +1,10 @@
 import { RundownAPI } from '../api/rundown'
-import { PartId } from './Parts'
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { IBlueprintPieceGeneric, IBlueprintPieceDB } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { RundownId } from './Rundowns'
-import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
-
-/** A string, identifying a Piece */
-export type PieceId = ProtectedString<'PieceId'>
+import { RundownId, SegmentId, PartId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { PieceId }
 
 /** A Single item in a Part: script, VT, cameras */
 export interface PieceGeneric extends IBlueprintPieceGeneric {

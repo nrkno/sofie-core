@@ -1,12 +1,11 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 
 import { ConfigManifestEntry, BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
-
-/** A string, identifying a Blueprint */
-export type BlueprintId = ProtectedString<'BlueprintId'>
+import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { BlueprintId }
 
 export interface Blueprint {
 	_id: BlueprintId

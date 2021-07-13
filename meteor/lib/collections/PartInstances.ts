@@ -2,7 +2,6 @@ import * as _ from 'underscore'
 import {
 	applyClassToDocument,
 	registerCollection,
-	ProtectedString,
 	ProtectedStringProperties,
 	protectString,
 	unprotectString,
@@ -14,16 +13,19 @@ import {
 	IBlueprintPartInstanceTimings,
 } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { DBPart, Part, PartId } from './Parts'
-import { RundownId } from './Rundowns'
-import { SegmentId } from './Segments'
+import { DBPart, Part } from './Parts'
 import { registerIndex } from '../database'
-import { RundownPlaylistActivationId } from './RundownPlaylists'
 import { PartialDeep } from 'type-fest'
+import {
+	PartInstanceId,
+	SegmentPlayoutId,
+	PartId,
+	RundownPlaylistActivationId,
+	SegmentId,
+	RundownId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { PartInstanceId, SegmentPlayoutId }
 
-/** A string, identifying a PartInstance */
-export type PartInstanceId = ProtectedString<'PartInstanceId'>
-export type SegmentPlayoutId = ProtectedString<'SegmentPlayoutId'>
 export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
 	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>

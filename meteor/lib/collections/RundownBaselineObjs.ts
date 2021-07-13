@@ -1,11 +1,9 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { TimelineObjGeneric } from './Timeline'
 import { createMongoCollection } from './lib'
-import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
-
-/** A string, identifying a RundownBaselineObj */
-export type RundownBaselineObjId = ProtectedString<'RundownBaselineObjId'>
+import { RundownBaselineObjId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { RundownBaselineObjId }
 
 export interface RundownBaselineObj {
 	_id: RundownBaselineObjId

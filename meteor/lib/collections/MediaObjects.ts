@@ -1,11 +1,10 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
 import { registerIndex } from '../database'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 
-/** A string, identifying a MediaObj */
-export type MediaObjId = ProtectedString<'MediaObjId'>
+import { MediaObjId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { MediaObjId }
 
 export interface MediaObject0 {
 	_id: MediaObjId

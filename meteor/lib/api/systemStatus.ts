@@ -1,4 +1,6 @@
 import { ProtectedString } from '../lib'
+import { SystemInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { SystemInstanceId }
 
 export type ExternalStatus = 'OK' | 'FAIL' | 'WARNING' | 'UNDEFINED'
 
@@ -18,8 +20,6 @@ export enum StatusCode {
 	FATAL = 5,
 }
 
-/** An id, representing the currently running instance of this process */
-export type SystemInstanceId = ProtectedString<'SystemInstanceId'>
 export interface CheckObj {
 	description: string
 	status: ExternalStatus

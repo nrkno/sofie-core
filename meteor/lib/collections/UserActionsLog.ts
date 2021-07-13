@@ -1,12 +1,8 @@
-import { Time, registerCollection, ProtectedString, TimeDuration } from '../lib'
+import { Time, registerCollection, TimeDuration } from '../lib'
 import { createMongoCollection } from './lib'
-import { UserId } from './Users'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
-
-/** A string, identifying a UserActionsLogItem */
-export type UserActionsLogItemId = ProtectedString<'UserActionsLogItemId'>
-
+import { UserActionsLogItemId, OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { UserActionsLogItemId }
 export interface UserActionsLogItem {
 	_id: UserActionsLogItemId
 

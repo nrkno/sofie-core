@@ -1,16 +1,10 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
-import { StudioId } from './Studios'
-import { RundownId } from './Rundowns'
-import { PartId } from './Parts'
 import { registerIndex } from '../database'
+import { ExpectedPlayoutItemId, StudioId, RundownId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { ExpectedPlayoutItemId }
 
-/** A string, identifying a Rundown
- * @deprecated
- */
-export type ExpectedPlayoutItemId = ProtectedString<'ExpectedPlayoutItemId'>
-/** @deprecated */
 export interface ExpectedPlayoutItemBase extends ExpectedPlayoutItemGeneric {
 	/** Globally unique id of the item */
 	_id: ExpectedPlayoutItemId

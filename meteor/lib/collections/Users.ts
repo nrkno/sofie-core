@@ -1,11 +1,10 @@
 import { Meteor } from 'meteor/meteor'
-import { registerCollection, ProtectedString, unprotectString } from '../lib'
-import { OrganizationId, UserRoles, Organizations, Organization } from './Organization'
+import { registerCollection, unprotectString } from '../lib'
+import { UserRoles, Organizations, Organization } from './Organization'
 import { registerIndex } from '../database'
+import { UserId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { wrapMongoCollection } from './lib'
-
-/** A string, identifying a User */
-export type UserId = ProtectedString<'UserId'>
+export { UserId }
 
 export interface UserProfile {
 	name: string

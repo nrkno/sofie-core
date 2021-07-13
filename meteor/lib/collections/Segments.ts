@@ -1,12 +1,11 @@
-import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { RundownId } from './Rundowns'
+import { registerCollection, ProtectedStringProperties } from '../lib'
 import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
 import { SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
+import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { SegmentId }
 
-/** A string, identifying a Segment */
-export type SegmentId = ProtectedString<'SegmentId'>
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB, '_id'> {
 	_id: SegmentId

@@ -1,12 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintShowStyleVariant } from '@sofie-automation/blueprints-integration'
-import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
+import { registerCollection, ProtectedStringProperties } from '../lib'
+import { ShowStyleBase } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-
-/** A string, identifying a ShowStyleVariant */
-export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
+import { ShowStyleVariantId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { ShowStyleVariantId }
 
 export interface DBShowStyleVariant extends ProtectedStringProperties<IBlueprintShowStyleVariant, '_id'> {
 	_id: ShowStyleVariantId

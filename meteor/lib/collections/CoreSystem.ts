@@ -1,14 +1,15 @@
 import { FindOptions } from '../typings/meteor'
-import { registerCollection, ProtectedString, protectString } from '../lib'
+import { registerCollection, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import * as semver from 'semver'
 import { createMongoCollection } from './lib'
-import { BlueprintId } from './Blueprints'
 import _ from 'underscore'
 import { StatusCode } from '../api/systemStatus'
+import { CoreSystemId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { CoreSystemId }
 
-export const SYSTEM_ID = protectString('core')
+export const SYSTEM_ID: CoreSystemId = protectString('core')
 
 /**
  * Criticality level for service messages. Specification of criticality in server
@@ -38,9 +39,6 @@ export interface ServiceMessage {
 export interface ExternalServiceMessage extends Omit<ServiceMessage, 'timestamp'> {
 	timestamp: Date
 }
-
-/** A string, identifying a CoreSystem */
-export type CoreSystemId = ProtectedString<'CoreSystemId'>
 
 export interface ICoreSystem {
 	_id: CoreSystemId // always is 'core'

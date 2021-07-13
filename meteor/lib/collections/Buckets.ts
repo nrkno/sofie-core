@@ -1,9 +1,9 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { registerIndex } from '../database'
-
-export type BucketId = ProtectedString<'BucketId'>
+import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { BucketId }
 
 /**
  * A Bucket is an container for AdLib pieces that do not come from a MOS gateway and are

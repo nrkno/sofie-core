@@ -1,11 +1,8 @@
-import { registerCollection, ProtectedString } from '../lib'
-
+import { registerCollection } from '../lib'
 import { TranslationsBundleType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { BlueprintId } from './Blueprints'
-
-/** A string identifying a translations bundle */
-export type TranslationsBundleId = ProtectedString<'TranslationsBundleId'>
+import { TranslationsBundleId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { TranslationsBundleId }
 
 export type Translation = { original: string; translation: string }
 

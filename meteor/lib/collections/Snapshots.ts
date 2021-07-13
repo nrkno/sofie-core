@@ -1,10 +1,14 @@
-import { Time, registerCollection, ProtectedString } from '../lib'
+import { Time, registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
-import { RundownId } from './Rundowns'
-import { RundownPlaylistId } from './RundownPlaylists'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import {
+	SnapshotId,
+	StudioId,
+	RundownId,
+	RundownPlaylistId,
+	OrganizationId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { SnapshotId }
 
 export enum SnapshotType {
 	RUNDOWN = 'rundown', // to be deprecated?
@@ -12,8 +16,6 @@ export enum SnapshotType {
 	SYSTEM = 'system',
 	DEBUG = 'debug',
 }
-/** A string, identifying a Snapshot */
-export type SnapshotId = ProtectedString<'SnapshotId'>
 
 export interface SnapshotBase {
 	_id: SnapshotId

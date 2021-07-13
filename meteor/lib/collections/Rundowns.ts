@@ -1,27 +1,28 @@
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
+import { Time, applyClassToDocument, registerCollection, ProtectedStringProperties } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery } from '../typings/meteor'
-import { StudioId } from './Studios'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist } from './RundownPlaylists'
 import { createMongoCollection } from './lib'
 import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
-import { PeripheralDeviceId } from './PeripheralDevices'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import {
+	RundownPlaylistId,
+	OrganizationId,
+	StudioId,
+	RundownId,
+	PeripheralDeviceId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { RundownId }
 
-export enum RundownHoldState {
-	NONE = 0,
-	PENDING = 1, // During STK
-	ACTIVE = 2, // During full, STK is played
-	COMPLETE = 3, // During full, full is played
-}
+import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+export { RundownHoldState }
 
 export interface RundownImportVersions {
 	studio: string
@@ -31,8 +32,7 @@ export interface RundownImportVersions {
 
 	core: string
 }
-/** A string, identifying a Rundown */
-export type RundownId = ProtectedString<'RundownId'>
+
 /** This is a very uncomplete mock-up of the Rundown object */
 export interface DBRundown
 	extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {

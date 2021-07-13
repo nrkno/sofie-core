@@ -1,19 +1,23 @@
 import { registerCollection, ProtectedString, Time } from '../lib'
 import { TimelineObjectCoreExt, TSR, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { StudioId, ResultingMappingRoutes } from './Studios'
-import { PartInstanceId } from './PartInstances'
-import { PieceInstanceId, PieceInstanceInfiniteId } from './PieceInstances'
-import { RundownPlaylistId } from './RundownPlaylists'
-import { BlueprintId } from './Blueprints'
+import { ResultingMappingRoutes } from './Studios'
+import { PieceInstanceInfiniteId } from './PieceInstances'
+import {
+	TimelineObjId,
+	BlueprintId,
+	PieceInstanceId,
+	RundownPlaylistId,
+	PartInstanceId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { TimelineObjId }
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
 	GROUP = 'group',
 }
 
-/** A string, identifying a TimelineObj */
-export type TimelineObjId = ProtectedString<'TimelineObjId'>
 export type TimelineHash = ProtectedString<'TimelineHash'>
 
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }

@@ -10,11 +10,10 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
-import { BlueprintId } from './Blueprints'
-import { ShowStyleBaseId } from './ShowStyleBases'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
+import { StudioId, BlueprintId, ShowStyleBaseId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { StudioId }
 
 export interface MappingsExt {
 	[layerName: string]: MappingExt
@@ -45,8 +44,6 @@ export interface IStudioSettings {
 	 * A higher value adds delays in playout, but reduces the risk of missed frames. */
 	nowSafeLatency?: number
 }
-/** A string, identifying a Studio */
-export type StudioId = ProtectedString<'StudioId'>
 export type MappingsHash = ProtectedString<'MappingsHash'>
 
 /** A set of available layer groups in a given installation */

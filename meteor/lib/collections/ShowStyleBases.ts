@@ -1,18 +1,16 @@
 import { Meteor } from 'meteor/meteor'
-import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
+import { registerCollection, ProtectedStringProperties } from '../lib'
 import { IBlueprintShowStyleBase } from '@sofie-automation/blueprints-integration'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
-import { BlueprintId } from './Blueprints'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import { ShowStyleBaseId, BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { ShowStyleBaseId }
 
 export interface HotkeyDefinition {
 	_id: string
 	key: string
 	label: string
 }
-/** A string, identifying a ShowStyleBase */
-export type ShowStyleBaseId = ProtectedString<'ShowStyleBaseId'>
 export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintShowStyleBase, '_id' | 'blueprintId'> {
 	_id: ShowStyleBaseId
 

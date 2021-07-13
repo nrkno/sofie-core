@@ -1,10 +1,9 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { BlueprintId } from './Blueprints'
-import { ShowStyleBaseId } from './ShowStyleBases'
-import { UserId } from './Users'
 import { registerIndex } from '../database'
+import { RundownLayoutId, UserId, ShowStyleBaseId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { RundownLayoutId }
 
 /**
  * The view targeted by this layout:
@@ -142,9 +141,6 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	queueAllAdlibs?: boolean
 	toggleOnSingleClick?: boolean
 }
-
-/** A string, identifying a RundownLayout */
-export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
 
 export interface RundownLayoutBase {
 	_id: RundownLayoutId

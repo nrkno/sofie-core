@@ -1,10 +1,9 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { RundownId } from './Rundowns'
-import { SegmentId } from './Segments'
-import { PartId } from './Parts'
 import { registerIndex } from '../database'
+import { IngestDataCacheObjId, RundownId, SegmentId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { IngestDataCacheObjId }
 
 export enum IngestCacheType {
 	RUNDOWN = 'rundown',
@@ -12,9 +11,6 @@ export enum IngestCacheType {
 	PART = 'part',
 }
 export type IngestCacheData = IngestRundown | IngestSegment | IngestPart
-
-/** A string, identifying a IngestDataCacheObj */
-export type IngestDataCacheObjId = ProtectedString<'IngestDataCacheObjId'>
 
 export interface IngestDataCacheObjBase {
 	_id: IngestDataCacheObjId

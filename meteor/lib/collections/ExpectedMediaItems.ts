@@ -1,17 +1,16 @@
-import { registerCollection, Time, ProtectedString } from '../lib'
+import { registerCollection, Time } from '../lib'
 import { createMongoCollection } from './lib'
-import { RundownId } from './Rundowns'
-import { PartId } from './Parts'
-import { StudioId } from './Studios'
-import { BucketId } from './Buckets'
-import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
-import { AdLibActionId } from './AdLibActions'
-
-/** A string, identifying a ExpectedMediaItem
- * @deprecated
- */
-export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
+import {
+	ExpectedMediaItemId,
+	PartId,
+	RundownId,
+	StudioId,
+	BucketId,
+	PieceId,
+	AdLibActionId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { ExpectedMediaItemId }
 
 /** @deprecated */
 export interface ExpectedMediaItemBase {

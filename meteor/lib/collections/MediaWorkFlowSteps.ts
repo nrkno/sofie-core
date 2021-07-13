@@ -1,13 +1,14 @@
-import { registerCollection, ProtectedString } from '../lib'
+import { registerCollection } from '../lib'
 import { createMongoCollection } from './lib'
-import { PeripheralDeviceId } from './PeripheralDevices'
-import { StudioId } from './Studios'
-import { MediaWorkFlowId } from './MediaWorkFlows'
 import { MediaManagerAPI } from '../api/mediaManager'
 import { registerIndex } from '../database'
-
-/** A string, identifying a MediaWorkFlowStep */
-export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>
+import {
+	MediaWorkFlowStepId,
+	StudioId,
+	PeripheralDeviceId,
+	MediaWorkFlowId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { MediaWorkFlowStepId }
 
 export abstract class MediaWorkFlowStep {
 	_id: MediaWorkFlowStepId
