@@ -1,5 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { removeCollectionProperty } from './lib'
 
 /*
  * **************************************************************************************
@@ -26,4 +27,6 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// },
 	//
 	//
+
+	removeCollectionProperty('PeripheralDevices', {}, 'expectedVersion'),
 ])
