@@ -12,7 +12,7 @@ import {
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 	processAndPrunePieceInstanceTimings,
-} from '../../../lib/rundown/infinites'
+} from '@sofie-automation/corelib/dist/playout/infinites'
 import { profiler } from '../profiler'
 import { Meteor } from 'meteor/meteor'
 import {

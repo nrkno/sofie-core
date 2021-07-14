@@ -339,11 +339,6 @@ describe('lib/lib', () => {
 			expect(mongoFindOptions(rawDocs, { skip: 4 }).map((s) => s._id)).toEqual(['5', '6', '7'])
 			expect(mongoFindOptions(rawDocs, { skip: 2, limit: 3 }).map((s) => s._id)).toEqual(['3', '4', '5'])
 		})
-		test('transform', () => {
-			expect(() => mongoFindOptions(rawDocs, { transform: () => ({ _id: '1' }) })).toThrowError(
-				'options.transform not implemented'
-			)
-		})
 
 		interface SomeDoc {
 			_id: ProtectedString<any>

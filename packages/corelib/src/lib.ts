@@ -5,10 +5,16 @@ import fastClone = require('fast-clone')
 import { Random } from './random'
 import { ProtectedString, protectString } from './protectedString'
 import * as objectPath from 'object-path'
+import * as crypto from 'crypto'
 
 export type TimeDuration = number
 
 export type ArrayElement<A> = A extends readonly (infer T)[] ? T : never
+
+export function getHash(str: string): string {
+	const hash = crypto.createHash('sha1')
+	return hash.update(str).digest('base64').replace(/[+/=]/g, '_') // remove +/= from strings, because they cause troubles
+}
 
 /**
  * @enum - A translatable message (i18next)

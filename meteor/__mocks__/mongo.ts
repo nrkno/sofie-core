@@ -226,7 +226,7 @@ export namespace MongoMock {
 				const count = this.update(docs[0]._id, modifier, options)
 				return { insertedId: undefined, numberAffected: count }
 			} else {
-				const doc = mongoModify(query, { _id: id }, modifier)
+				const doc = mongoModify<T>(query, { _id: id } as any, modifier)
 				const insertedId = this.insert(doc)
 				return { insertedId: insertedId, numberAffected: undefined }
 			}

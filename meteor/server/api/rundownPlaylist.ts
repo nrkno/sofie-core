@@ -499,7 +499,7 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 }
 
 function sortDefaultRundownInPlaylistOrder(rundowns: ReadonlyDeep<Array<DBRundown>>): ReadonlyDeep<Array<DBRundown>> {
-	return mongoFindOptions<ReadonlyDeep<DBRundown>, ReadonlyDeep<DBRundown>>(rundowns, {
+	return mongoFindOptions<ReadonlyDeep<DBRundown>>(rundowns, {
 		sort: {
 			expectedStart: 1,
 			name: 1,

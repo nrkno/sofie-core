@@ -34,8 +34,15 @@ import { RundownPlaylistActivationId, RundownPlaylistId } from '../../../lib/col
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap, PieceGroupMetadata, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
+import {
+	PieceInstanceWithTimings,
+	processAndPrunePieceInstanceTimings,
+} from '@sofie-automation/corelib/dist/playout/infinites'
+import {
+	createPieceGroupAndCap,
+	PieceGroupMetadata,
+	PieceTimelineMetadata,
+} from '@sofie-automation/corelib/dist/playout/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
@@ -117,7 +124,7 @@ function resolvePieceTimeline(
 
 	const unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
-		const obj = (obj0 as any) as TimelineObjRundown
+		const obj = obj0 as any as TimelineObjRundown
 		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
 
 		if (!id) return

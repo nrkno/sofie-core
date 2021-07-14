@@ -17,6 +17,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import _ = require('underscore')
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
+import { removeRundownPlaylistFromDb } from 'src/rundownPlaylists'
 
 /**
  * This is a cache used for playout operations.

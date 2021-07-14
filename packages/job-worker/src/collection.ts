@@ -45,7 +45,7 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	remove(selector: FilterQuery<TDoc> | TDoc['_id']): Promise<Array<TDoc['_id']>>
 	update(selector: FilterQuery<TDoc> | TDoc['_id'], modifier: UpdateQuery<TDoc>): Promise<number>
 
-	/** Returns true if a doc was replace, false if inserted */
+	/** Returns true if a doc was replaced, false if inserted */
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean>
 
 	bulkWrite(ops: Array<BulkWriteOperation<TDoc>>): Promise<unknown>

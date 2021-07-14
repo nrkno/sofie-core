@@ -107,7 +107,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 			}
 		})
 
-		const res = mongoFindOptions(results, options)
+		const res = mongoFindOptions(results, options as any)
 		if (span) span.end()
 		return res
 	}

@@ -8,6 +8,9 @@ import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DbCacheReadCollection } from '../cache/CacheCollection'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { ReadonlyDeep } from 'type-fest'
 
 // export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -538,9 +541,11 @@ export function substituteObjectIds(
 
 	const enable = clone<TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[]>(rawEnable)
 	applyToArray(enable, (enable0) => {
-		for (const key in _.keys(enable0)) {
-			if (typeof enable0[key] === 'string') {
-				enable0[key] = replaceIds(enable0[key])
+		for (const key0 in enable0) {
+			const key = key0 as keyof TSR.Timeline.TimelineEnable
+			const oldVal = enable0[key]
+			if (typeof oldVal === 'string') {
+				enable0[key] = replaceIds(oldVal)
 			}
 		}
 	})
@@ -608,39 +613,39 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 // 	return false
 // }
 
-// export function getRundownsSegmentsAndPartsFromCache(
-// 	partsCache: DbCacheReadCollection<Part, DBPart>,
-// 	segmentsCache: DbCacheReadCollection<Segment, DBSegment>,
-// 	rundowns: Array<ReadonlyDeep<DBRundown>>
-// ): { segments: Segment[]; parts: Part[] } {
-// 	const segments = RundownPlaylist._sortSegments(
-// 		segmentsCache.findFetch(
-// 			{},
-// 			{
-// 				sort: {
-// 					rundownId: 1,
-// 					_rank: 1,
-// 				},
-// 			}
-// 		),
-// 		rundowns
-// 	)
+export function getRundownsSegmentsAndPartsFromCache(
+	partsCache: DbCacheReadCollection<DBPart>,
+	segmentsCache: DbCacheReadCollection<DBSegment>,
+	rundowns: Array<ReadonlyDeep<DBRundown>>
+): { segments: DBSegment[]; parts: DBPart[] } {
+	const segments = RundownPlaylist._sortSegments(
+		segmentsCache.findFetch(
+			{},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
+				},
+			}
+		),
+		rundowns
+	)
 
-// 	const parts = RundownPlaylist._sortPartsInner(
-// 		partsCache.findFetch(
-// 			{},
-// 			{
-// 				sort: {
-// 					rundownId: 1,
-// 					_rank: 1,
-// 				},
-// 			}
-// 		),
-// 		segments
-// 	)
+	const parts = RundownPlaylist._sortPartsInner(
+		partsCache.findFetch(
+			{},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
+				},
+			}
+		),
+		segments
+	)
 
-// 	return {
-// 		segments: segments,
-// 		parts: parts,
-// 	}
-// }
+	return {
+		segments: segments,
+		parts: parts,
+	}
+}

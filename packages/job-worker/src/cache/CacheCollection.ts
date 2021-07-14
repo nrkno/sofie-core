@@ -1,14 +1,10 @@
 import { FindOptions, ICollection, MongoModifier, MongoQuery } from '../collection'
 import { ReadonlyDeep } from 'type-fest'
-import {
-	isProtectedString,
-	ProtectedString,
-	protectString,
-	unprotectString,
-} from '@sofie-automation/corelib/dist/protectedString'
+import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { profiler } from '../profiler'
 import _ = require('underscore')
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { FindOneOptions, mongoFindOptions, mongoModify, mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import { BulkWriteOperation } from 'mongodb'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
@@ -64,12 +60,12 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		}
 
 		let docsToSearch = this.documents
-		if (selector['_id'] && _.isString(selector['_id'])) {
+		if ('_id' in selector && selector['_id'] && isProtectedString(selector['_id'])) {
 			// Optimization: Make the lookup as small as possible:
 			docsToSearch = new Map()
-			const doc = this.documents.get(protectString(selector['_id']))
+			const doc = this.documents.get(selector['_id'])
 			if (doc) {
-				docsToSearch.set(protectString(selector['_id']), doc)
+				docsToSearch.set(selector['_id'], doc)
 			}
 		}
 
@@ -83,7 +79,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 					? selector === (_id as any)
 					: _.isFunction(selector)
 					? selector(doc.document)
-					: mongoWhere(doc.document, selector)
+					: mongoWhere(doc.document, selector as any)
 			) {
 				if (doc.document['_id'] !== _id) {
 					throw new Error(`Error: document._id "${doc.document['_id']}" is not equal to the key "${_id}"`)
@@ -239,7 +235,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 
 			const newDoc: TDoc = _.isFunction(modifier)
 				? modifier(clone(doc))
-				: mongoModify(selectorInModify, clone(doc), modifier)
+				: mongoModify(selectorInModify as any, clone(doc), modifier as any)
 			if (newDoc._id !== _id) {
 				throw new Error(
 					`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`

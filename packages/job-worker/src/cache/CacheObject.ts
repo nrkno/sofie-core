@@ -7,6 +7,7 @@ import { logger } from '../logging'
 import { Changes } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
 import _ = require('underscore')
+import { mongoModify } from '@sofie-automation/corelib/dist/mongo'
 
 /**
  * Caches a single object, allowing reads from cache, but not writes
@@ -21,6 +22,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 
 	protected constructor(
 		protected readonly _collection: ICollection<TDoc>,
+		// @ts-expect-error used for typings
 		private readonly _optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	) {
@@ -237,7 +239,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 		if (this._inserted && !this.isToBeRemoved) {
 			const span = profiler.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
 
-			await this._collection.upsert(this._document._id, this._document)
+			await this._collection.replace(this._document)
 
 			if (span) span.end()
 

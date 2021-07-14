@@ -11,7 +11,7 @@ import {
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 	PieceInstanceWithTimings,
-} from './rundown/infinites'
+} from '@sofie-automation/corelib/dist/playout/infinites'
 import { FindOptions } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
 import { getCurrentTime, protectString, unprotectString } from './lib'

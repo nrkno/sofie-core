@@ -1,13 +1,10 @@
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ReadonlyDeep } from 'type-fest'
 import {
-	BlueprintManifestType,
 	ShowStyleBlueprintManifest,
 	SomeBlueprintManifest,
 	StudioBlueprintManifest,
 	SystemBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { VM } from 'vm2'

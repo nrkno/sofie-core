@@ -22,7 +22,7 @@ import {
 import { PartId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { DBPartInstance, unprotectPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { clone, getRandomString, omit } from '@sofie-automation/corelib/dist/lib'
+import { clone, getHash, getRandomString, omit } from '@sofie-automation/corelib/dist/lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib'

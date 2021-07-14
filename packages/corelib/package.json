@@ -42,6 +42,7 @@
 	],
 	"dependencies": {
 		"@sofie-automation/blueprints-integration": "^1.37.0-in-development",
+		"@types/meteor": "1.4.47",
 		"object-path": "^0.11.5",
 		"tslib": "^2.1.0",
 		"type-fest": "^1.2.2",
