@@ -462,14 +462,21 @@ export interface MediaWorkFlowStepRevision {
 	_rev: string
 }
 export namespace PeripheralDeviceAPI {
-	export import StatusCode = PeripheralDeviceStatusCode
+	export enum StatusCode {
+		UNKNOWN = 0, // Status unknown
+		GOOD = 1, // All good and green
+		WARNING_MINOR = 2, // Everything is not OK, operation is not affected
+		WARNING_MAJOR = 3, // Everything is not OK, operation might be affected
+		BAD = 4, // Operation affected, possible to recover
+		FATAL = 5, // Operation affected, not possible to recover without manual interference
+	}
 
 	// Note The actual type of a device is determined by the Category, Type and SubType
 
 	export type StatusObject = PeripheralDeviceStatusObject
 	// Note The actual type of a device is determined by the Category, Type and SubType
-	export import DeviceCategory = PeripheralDeviceCategory
-	export import DeviceType = PeripheralDeviceType
+	export const DeviceCategory = PeripheralDeviceCategory
+	export const DeviceType = PeripheralDeviceType
 	export type DeviceSubType = SUBTYPE_PROCESS | TSR.DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
 	/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
@@ -479,8 +486,8 @@ export namespace PeripheralDeviceAPI {
 	export type Spreadsheet_DeviceType = 'spreadsheet_connection'
 
 	export interface InitOptions {
-		category: DeviceCategory
-		type: DeviceType
+		category: PeripheralDeviceCategory
+		type: PeripheralDeviceType
 		subType: DeviceSubType
 
 		name: string

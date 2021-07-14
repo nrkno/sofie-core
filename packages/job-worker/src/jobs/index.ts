@@ -2,12 +2,15 @@ import { IDirectCollections } from '../collection'
 import * as Agent from 'elastic-apm-node'
 import { ReadonlyDeep } from 'type-fest'
 import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // APM types are not exported https://github.com/elastic/apm-agent-nodejs/pull/1775
 export type ApmSpan = ReturnType<typeof Agent.startSpan>
 
 export interface JobContext {
 	readonly directCollections: Readonly<IDirectCollections>
+
+	readonly studioId: StudioId
 
 	// TODO - these probably shouldnt be here because they relate to a rundown, and not a job
 	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>

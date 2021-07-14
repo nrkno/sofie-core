@@ -4,13 +4,11 @@ import { MongoClient } from 'mongodb'
 import { IDirectCollections, wrapMongoCollection } from './collection'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { JobContext } from './jobs'
-import { CacheForPlayout } from './playout/cache'
-import { CacheForStudio } from './studio/cache'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { updateStudioTimeline, updateTimeline } from './playout/timeline'
 import { loadBlueprintById, loadStudioBlueprint } from './blueprints/cache'
 import { BlueprintManifestType } from '../../blueprints-integration/dist'
+import { studioJobHandlers, StudioJobs } from './jobs/jobs'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -93,6 +91,8 @@ void (async () => {
 					const context: JobContext = {
 						directCollections: collections,
 
+						studioId,
+
 						studioBlueprint: studioBlueprint,
 						showStyleBlueprint: { blueprint: showBlueprint, blueprintId: blueprintId },
 
@@ -117,41 +117,10 @@ void (async () => {
 async function runJob(context: JobContext, name: string, data: any): Promise<any> {
 	// TODO
 
-	switch (name) {
-		case 'updateTimeline':
-			return updateTimelineDebug(context, data)
-		default:
-			console.log('Unhandled job', name)
-	}
-
-	return `Had success at ${Date.now()}`
-}
-
-async function updateTimelineDebug(context: JobContext, _data: any): Promise<void> {
-	console.log('running updateTimelineDebug')
-	const studioCache = await CacheForStudio.create(context, studioId)
-
-	const activePlaylists = studioCache.getActiveRundownPlaylists()
-	if (activePlaylists.length > 1) {
-		throw new Error(`Too many active playlists`)
-	} else if (activePlaylists.length > 0) {
-		studioCache._abortActiveTimeout() // no changes have been made or should be kept
-
-		const playlist = activePlaylists[0]
-		console.log('for playlist', playlist._id)
-
-		const initCache = await CacheForPlayout.createPreInit(context, playlist, false)
-		// TODO - any extra validity checks?
-
-		const playoutCache = await CacheForPlayout.fromInit(context, initCache)
-
-		await updateTimeline(context, playoutCache)
-
-		await playoutCache.saveAllToDatabase()
+	const handler = studioJobHandlers[name as StudioJobs]
+	if (handler) {
+		return handler(context, data)
 	} else {
-		console.log('for studio')
-		await updateStudioTimeline(context, studioCache)
-		await studioCache.saveAllToDatabase()
+		throw new Error(`Unknown job name: "${name}"`)
 	}
-	console.log('done')
 }
