@@ -21,7 +21,7 @@
 		"set-version": "lerna version --exact --no-changelog --no-git-tag-version --no-push --yes",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001236;caniuse-lite@1.0.30001237;mos-gateway@1.36.0-in-testing.6;playout-gateway@1.36.0-in-testing.6\"",
+		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001236;caniuse-lite@1.0.30001237;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\")\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
 		"test": "lerna run --concurrency 2 --stream test"
 	},
