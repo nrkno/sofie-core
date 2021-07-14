@@ -9,6 +9,7 @@ import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/Rundo
 import { JobContext } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import {
+	BlueprintResultBaseline,
 	OnGenerateTimelineObj,
 	PieceLifespan,
 	Time,
@@ -20,6 +21,7 @@ import {
 import { protectString, unprotectObjectArray, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
 	OnGenerateTimelineObjExt,
+	StatObjectMetadata,
 	TimelineContentTypeOther,
 	TimelineObjGeneric,
 	TimelineObjGroupPart,
@@ -53,75 +55,107 @@ import {
 	processAndPrunePieceInstanceTimings,
 	PieceInstanceWithTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { CacheForStudioBase } from '../studio/cache'
+import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
 import { getLookeaheadObjects } from './lookahead'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
-import { TimelineEventContext } from '../blueprints/context'
+import { StudioBaselineContext, TimelineEventContext } from '../blueprints/context'
 import { getShowStyleCompound } from '../showStyles'
+import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 
-// 	// Ensure there isn't a playlist active, as that should be using a different function call
-// 	if (isCacheForStudio(cache)) {
-// 		const activePlaylists = cache.getActiveRundownPlaylists()
-// 		if (activePlaylists.length > 0) {
-// 			throw new Meteor.Error(500, `Studio has an active playlist`)
-// 		}
+// export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
+// 	const playlists = cache.getActiveRundownPlaylists()
+// 	if (playlists.length === 1) {
+// 		return runPlayoutOperationWithCacheFromStudioOperation(
+// 			'updateStudioOrPlaylistTimeline',
+// 			cache,
+// 			playlists[0],
+// 			PlayoutLockFunctionPriority.USER_PLAYOUT,
+// 			null,
+// 			async (playlistCache) => {
+// 				await updateTimeline(playlistCache)
+// 			}
+// 		)
 // 	} else {
-// 		if (cache.Playlist.doc.activationId) {
-// 			throw new Meteor.Error(500, `Studio has an active playlist`)
-// 		}
+// 		return updateStudioTimeline(cache)
 // 	}
-
-// 	let baselineObjects: TimelineObjRundown[] = []
-// 	let studioBaseline: BlueprintResultBaseline | undefined
-
-// 	const studioBlueprint = await loadStudioBlueprint(studio)
-// 	if (studioBlueprint) {
-// 		const watchedPackages = waitForPromise(
-// 			WatchedPackagesHelper.create(studio._id, {
-// 				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
-// 			})
-// 		)
-
-// 		const blueprint = studioBlueprint.blueprint
-// 		studioBaseline = blueprint.getBaseline(
-// 			new StudioBaselineContext(
-// 				{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
-// 				studio,
-// 				watchedPackages
-// 			)
-// 		)
-// 		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
-
-// 		const id = `baseline_version`
-// 		baselineObjects.push(
-// 			literal<TimelineObjRundown>({
-// 				id: id,
-// 				objectType: TimelineObjType.RUNDOWN,
-// 				enable: { start: 0 },
-// 				layer: id,
-// 				metaData: literal<StatObjectMetadata>({
-// 					versions: {
-// 						core: PackageInfo.versionExtended || PackageInfo.version,
-// 						blueprintId: studio.blueprintId,
-// 						blueprintVersion: blueprint.blueprintVersion,
-// 						studio: studio._rundownVersionHash,
-// 					},
-// 				}),
-// 				content: {
-// 					deviceType: TSR.DeviceType.ABSTRACT,
-// 				},
-// 			})
-// 		)
-// 	}
-
-// 	processAndSaveTimelineObjects(cache, baselineObjects, undefined)
-// 	if (studioBaseline) {
-// 		updateBaselineExpectedPackagesOnStudio(cache, studioBaseline)
-// 	}
-
-// 	logger.debug('updateStudioTimeline done!')
-// 	if (span) span.end()
 // }
+
+function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
+	const cache2 = cache as CacheForStudio
+	return !!cache2.isStudio
+}
+
+export async function updateStudioTimeline(
+	context: JobContext,
+	cache: CacheForStudio | CacheForPlayout
+): Promise<void> {
+	const span = context.startSpan('updateStudioTimeline')
+	logger.debug('updateStudioTimeline running...')
+	const studio = cache.Studio.doc
+	// Ensure there isn't a playlist active, as that should be using a different function call
+	if (isCacheForStudio(cache)) {
+		const activePlaylists = cache.getActiveRundownPlaylists()
+		if (activePlaylists.length > 0) {
+			throw new Error(`Studio has an active playlist`)
+		}
+	} else {
+		if (cache.Playlist.doc.activationId) {
+			throw new Error(`Studio has an active playlist`)
+		}
+	}
+
+	let baselineObjects: TimelineObjRundown[] = []
+	let studioBaseline: BlueprintResultBaseline | undefined
+
+	const studioBlueprint = context.studioBlueprint
+	if (studioBlueprint) {
+		const watchedPackages = await WatchedPackagesHelper.create(context, studio._id, {
+			fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+		})
+
+		const blueprint = studioBlueprint.blueprint
+		studioBaseline = blueprint.getBaseline(
+			new StudioBaselineContext(
+				{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+				studio,
+				context.studioBlueprint,
+				watchedPackages
+			)
+		)
+		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
+
+		const id = `baseline_version`
+		baselineObjects.push(
+			literal<TimelineObjRundown>({
+				id: id,
+				objectType: TimelineObjType.RUNDOWN,
+				enable: { start: 0 },
+				layer: id,
+				metaData: literal<StatObjectMetadata>({
+					versions: {
+						core: '0.1.2', // PackageInfo.versionExtended || PackageInfo.version, // TODO
+						blueprintId: studio.blueprintId,
+						blueprintVersion: blueprint.blueprintVersion,
+						studio: studio._rundownVersionHash,
+					},
+				}),
+				content: {
+					deviceType: TSR.DeviceType.ABSTRACT,
+				},
+			})
+		)
+	}
+
+	processAndSaveTimelineObjects(context, cache, baselineObjects, undefined)
+	if (studioBaseline) {
+		// updateBaselineExpectedPackagesOnStudio(cache, studioBaseline) // TODO
+	}
+
+	logger.debug('updateStudioTimeline done!')
+	if (span) span.end()
+}
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...

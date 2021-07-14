@@ -1,5 +1,6 @@
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
+	BlueprintManifestType,
 	ShowStyleBlueprintManifest,
 	SomeBlueprintManifest,
 	StudioBlueprintManifest,
@@ -8,7 +9,9 @@ import {
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { VM } from 'vm2'
-import { JobContext } from '../jobs'
+import { ReadonlyDeep } from 'type-fest'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { IDirectCollections } from '../collection'
 
 export const BLUEPRINT_CACHE_CONTROL = { disable: false }
 
@@ -43,29 +46,28 @@ export interface WrappedShowStyleBlueprint {
 // 	}
 // }
 
-// export async function loadStudioBlueprint(studio: ReadonlyDeep<DBStudio>): Promise<WrappedStudioBlueprint | undefined> {
-// 	if (!studio.blueprintId) return undefined
+export async function loadStudioBlueprint(
+	collections: IDirectCollections,
+	studio: ReadonlyDeep<DBStudio>
+): Promise<WrappedStudioBlueprint | undefined> {
+	if (!studio.blueprintId) return undefined
 
-// 	const blueprintManifest = await loadBlueprintById(studio.blueprintId)
-// 	if (!blueprintManifest) {
-// 		throw new Meteor.Error(
-// 			404,
-// 			`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`
-// 		)
-// 	}
+	const blueprintManifest = await loadBlueprintById(collections, studio.blueprintId)
+	if (!blueprintManifest) {
+		throw new Error(`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
+	}
 
-// 	if (blueprintManifest.blueprintType !== BlueprintManifestType.STUDIO) {
-// 		throw new Meteor.Error(
-// 			500,
-// 			`Blueprint "${studio.blueprintId}" is not valid for a Studio "${studio._id}" (${blueprintManifest.blueprintType})!`
-// 		)
-// 	}
+	if (blueprintManifest.blueprintType !== BlueprintManifestType.STUDIO) {
+		throw new Error(
+			`Blueprint "${studio.blueprintId}" is not valid for a Studio "${studio._id}" (${blueprintManifest.blueprintType})!`
+		)
+	}
 
-// 	return {
-// 		blueprintId: studio.blueprintId,
-// 		blueprint: blueprintManifest,
-// 	}
-// }
+	return {
+		blueprintId: studio.blueprintId,
+		blueprint: blueprintManifest,
+	}
+}
 
 // export async function loadShowStyleBlueprint(
 // 	context: JobContext,
@@ -94,17 +96,17 @@ export interface WrappedShowStyleBlueprint {
 // 	}
 // }
 
-const blueprintDocCache: { [blueprintId: string]: Blueprint } = {}
+// const blueprintDocCache: { [blueprintId: string]: Blueprint } = {}
 export async function loadBlueprintById(
-	context: JobContext,
+	collections: IDirectCollections,
 	blueprintId: BlueprintId
 ): Promise<SomeBlueprintManifest | undefined> {
-	let blueprint: Blueprint | undefined = blueprintDocCache[unprotectString(blueprintId)]
-	if (!blueprint || BLUEPRINT_CACHE_CONTROL.disable) {
-		blueprint = await context.directCollections.Blueprints.findOne(blueprintId)
+	// let blueprint: Blueprint | undefined = blueprintDocCache[unprotectString(blueprintId)]
+	// if (!blueprint || BLUEPRINT_CACHE_CONTROL.disable) {
+	const blueprint = await collections.Blueprints.findOne(blueprintId)
 
-		if (blueprint && !BLUEPRINT_CACHE_CONTROL.disable) blueprintDocCache[unprotectString(blueprintId)] = blueprint
-	}
+	// 	if (blueprint && !BLUEPRINT_CACHE_CONTROL.disable) blueprintDocCache[unprotectString(blueprintId)] = blueprint
+	// }
 
 	if (!blueprint) return undefined
 	if (blueprint.code) {

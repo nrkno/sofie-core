@@ -30,6 +30,15 @@
 // import { ReadonlyDeep } from 'type-fest'
 // import { processAdLibActionITranslatableMessages } from '../../../lib/api/TranslatableMessage'
 
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ReadonlyDeep } from 'type-fest'
+import { ICommonContext, TimelineObjectCoreExt, TSR } from '@sofie-automation/blueprints-integration'
+import { CommonContext } from './context'
+import { prefixAllObjectIds } from '../playout/lib'
+import { BlueprintId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+
 // /**
 //  *
 //  * allowNowForPiece: allows the pieces to use a start of 'now', should be true for adlibs and false for ingest
@@ -98,56 +107,54 @@
 // 	return processedPieces
 // }
 
-// function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
-// 	if (Array.isArray(enable)) {
-// 		return !!enable.find((e) => e.start === 'now')
-// 	} else {
-// 		return enable.start === 'now'
-// 	}
-// }
+function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
+	if (Array.isArray(enable)) {
+		return !!enable.find((e) => e.start === 'now')
+	} else {
+		return enable.start === 'now'
+	}
+}
 
-// export function postProcessTimelineObjects(
-// 	innerContext: ICommonContext,
-// 	pieceId: PieceId,
-// 	blueprintId: BlueprintId,
-// 	timelineObjects: TSR.TSRTimelineObjBase[],
-// 	prefixAllTimelineObjects: boolean, // TODO: remove, default to true?
-// 	timelineUniqueIds: Set<string> = new Set<string>()
-// ) {
-// 	let newObjs = timelineObjects.map((o: TimelineObjectCoreExt, i) => {
-// 		const obj: TimelineObjRundown = {
-// 			...o,
-// 			id: o.id,
-// 			objectType: TimelineObjType.RUNDOWN,
-// 		}
+export function postProcessTimelineObjects(
+	innerContext: ICommonContext,
+	pieceId: PieceId,
+	blueprintId: BlueprintId,
+	timelineObjects: TSR.TSRTimelineObjBase[],
+	prefixAllTimelineObjects: boolean, // TODO: remove, default to true?
+	timelineUniqueIds: Set<string> = new Set<string>()
+): TimelineObjRundown[] {
+	let newObjs = timelineObjects.map((o: TimelineObjectCoreExt, i) => {
+		const obj: TimelineObjRundown = {
+			...o,
+			id: o.id,
+			objectType: TimelineObjType.RUNDOWN,
+		}
 
-// 		if (!obj.id) obj.id = innerContext.getHashId(pieceId + '_' + i++)
-// 		if (isNow(obj.enable))
-// 			throw new Meteor.Error(
-// 				400,
-// 				`Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(
-// 					unprotectString(pieceId)
-// 				)}")`
-// 			)
+		if (!obj.id) obj.id = innerContext.getHashId(pieceId + '_' + i++)
+		if (isNow(obj.enable))
+			throw new Error(
+				`Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(
+					unprotectString(pieceId)
+				)}")`
+			)
 
-// 		if (timelineUniqueIds.has(obj.id))
-// 			throw new Meteor.Error(
-// 				400,
-// 				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("${innerContext.unhashId(
-// 					obj.id
-// 				)}")`
-// 			)
-// 		timelineUniqueIds.add(obj.id)
+		if (timelineUniqueIds.has(obj.id))
+			throw new Error(
+				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("${innerContext.unhashId(
+					obj.id
+				)}")`
+			)
+		timelineUniqueIds.add(obj.id)
 
-// 		return obj
-// 	})
+		return obj
+	})
 
-// 	if (prefixAllTimelineObjects) {
-// 		newObjs = prefixAllObjectIds(newObjs, unprotectString(pieceId) + '_')
-// 	}
+	if (prefixAllTimelineObjects) {
+		newObjs = prefixAllObjectIds(newObjs, unprotectString(pieceId) + '_')
+	}
 
-// 	return newObjs
-// }
+	return newObjs
+}
 
 // export function postProcessAdLibPieces(
 // 	innerContext: ICommonContext,
@@ -238,13 +245,13 @@
 // 	)
 // }
 
-// export function postProcessStudioBaselineObjects(
-// 	studio: ReadonlyDeep<Studio>,
-// 	objs: TSR.TSRTimelineObjBase[]
-// ): TimelineObjRundown[] {
-// 	const context = new CommonContext({ identifier: 'studio', name: 'studio' })
-// 	return postProcessTimelineObjects(context, protectString('studio'), studio.blueprintId!, objs, false)
-// }
+export function postProcessStudioBaselineObjects(
+	studio: ReadonlyDeep<DBStudio>,
+	objs: TSR.TSRTimelineObjBase[]
+): TimelineObjRundown[] {
+	const context = new CommonContext({ identifier: 'studio', name: 'studio' })
+	return postProcessTimelineObjects(context, protectString('studio'), studio.blueprintId!, objs, false)
+}
 
 // export function postProcessRundownBaselineItems(
 // 	innerContext: ICommonContext,

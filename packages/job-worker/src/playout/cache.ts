@@ -57,9 +57,10 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 
 	static async createPreInit(
 		context: JobContext,
-		tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>
+		tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>,
+		reloadPlaylist = true
 	): Promise<CacheForPlayoutPreInit> {
-		const initData = await CacheForPlayoutPreInit.loadInitData(context, tmpPlaylist, true, undefined)
+		const initData = await CacheForPlayoutPreInit.loadInitData(context, tmpPlaylist, reloadPlaylist, undefined)
 		return new CacheForPlayoutPreInit(tmpPlaylist._id, ...initData)
 	}
 

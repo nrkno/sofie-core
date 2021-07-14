@@ -9,6 +9,8 @@ import {
 	IRundownContext,
 	IEventContext,
 	ITimelineEventContext,
+	PackageInfo,
+	IStudioBaselineContext,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
@@ -38,6 +40,7 @@ import {
 } from '../config'
 import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../cache'
 import _ = require('underscore')
+import { WatchedPackagesHelper } from './watchedPackages'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -125,19 +128,20 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	}
 }
 
-// export class StudioBaselineContext extends StudioContext implements IStudioBaselineContext {
-// 	constructor(
-// 		contextInfo: UserContextInfo,
-// 		studio: ReadonlyDeep<Studio>,
-// 		private readonly watchedPackages: WatchedPackagesHelper
-// 	) {
-// 		super(contextInfo, studio)
-// 	}
+export class StudioBaselineContext extends StudioContext implements IStudioBaselineContext {
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<DBStudio>,
+		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		private readonly watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, studio, studioBlueprint)
+	}
 
-// 	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
-// 		return this.watchedPackages.getPackageInfo(packageId)
-// 	}
-// }
+	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
+		return this.watchedPackages.getPackageInfo(packageId)
+	}
+}
 
 // export class StudioUserContext extends StudioContext implements IStudioUserContext {
 // 	public readonly notes: INoteBase[] = []

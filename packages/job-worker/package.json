@@ -49,6 +49,7 @@
 		"deepmerge": "^4.2.2",
 		"elastic-apm-node": "^3.11.0",
 		"mongodb": "^4.0.0",
+		"p-lazy": "^3.1.0",
 		"superfly-timeline": "^8.2.0",
 		"threadedclass": "^0.8.3",
 		"tslib": "^2.1.0",

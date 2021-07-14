@@ -39,7 +39,7 @@ export type MongoModifier<TDoc> = UpdateFilter<TDoc>
 export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	readonly name: string
 
-	findFetch(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<Array<TDoc>>
+	findFetch(selector?: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>>
 	findOne(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined>
 	insertOne(doc: TDoc | ReadonlyDeep<TDoc>): Promise<TDoc['_id']>
 	remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number>
@@ -93,11 +93,14 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		return this.#collection.collectionName
 	}
 
-	async findFetch(selector: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<Array<TDoc>> {
+	async findFetch(selector: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>> {
 		return this.#collection.find(selector as any, options).toArray()
 	}
 
 	async findOne(selector: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined> {
+		if (typeof selector === 'string') {
+			selector = { _id: selector }
+		}
 		return this.#collection.findOne(selector, options)
 	}
 
@@ -122,11 +125,19 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		modifier: MongoModifier<TDoc>
 		// options?: UpdateOptions
 	): Promise<number> {
+		if (typeof selector === 'string') {
+			selector = { _id: selector }
+		}
+
 		const res = await this.#collection.updateMany(selector, modifier)
 		return res.upsertedCount
 	}
 
 	async remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
+		if (typeof selector === 'string') {
+			selector = { _id: selector }
+		}
+
 		const res = await this.#collection.deleteMany(selector)
 		return res.deletedCount
 	}
