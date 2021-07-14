@@ -603,7 +603,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					this.subscribe(PubSub.parts, {
 						rundownId: { $in: rundownIDs },
 					})
-					this.subscribe(PubSub.partInstances, {
+					this.subscribe(PubSub.partInstancesSimple, {
 						rundownId: { $in: rundownIDs },
 						reset: { $ne: true },
 					})
