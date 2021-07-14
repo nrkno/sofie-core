@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
+
+
+### Bug Fixes
+
+* repeating script can occur in prompter in some situations ([3b73994](https://github.com/nrkno/tv-automation-server-core/commit/3b7399492892c642a2bbb0eb56665f0e0f202c31))
+
 ## [1.36.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.5) (2021-07-14)
 
 
