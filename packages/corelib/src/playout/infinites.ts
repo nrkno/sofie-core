@@ -18,9 +18,7 @@ import { unprotectString, protectString } from '../protectedString'
 import { getPieceGroupId } from './ids'
 import { DBShowStyleBase } from '../dataModel/ShowStyleBase'
 import _ = require('underscore')
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type MongoQuery<T> = any // TODO
+import { MongoQuery } from '../mongo'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): MongoQuery<Piece> {
 	return { startPartId: part._id }

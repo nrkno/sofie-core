@@ -17,7 +17,8 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import _ = require('underscore')
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
-import { removeRundownPlaylistFromDb } from 'src/rundownPlaylists'
+import { removeRundownPlaylistFromDb } from '../rundownPlaylists'
+import { getRundownsSegmentsAndPartsFromCache } from './lib'
 
 /**
  * This is a cache used for playout operations.
@@ -339,7 +340,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 			// Ignoring any deferred functions
 
-			await removeRundownPlaylistFromDb(this.Playlist.doc)
+			await removeRundownPlaylistFromDb(this.context, this.Playlist.doc)
 
 			super.assertNoChanges()
 			span?.end()

@@ -11,6 +11,7 @@ import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
+import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
 
 // export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -618,7 +619,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 	segmentsCache: DbCacheReadCollection<DBSegment>,
 	rundowns: Array<ReadonlyDeep<DBRundown>>
 ): { segments: DBSegment[]; parts: DBPart[] } {
-	const segments = RundownPlaylist._sortSegments(
+	const segments = sortSegmentsInRundowns(
 		segmentsCache.findFetch(
 			{},
 			{
@@ -631,7 +632,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 		rundowns
 	)
 
-	const parts = RundownPlaylist._sortPartsInner(
+	const parts = sortPartsInSortedSegments(
 		partsCache.findFetch(
 			{},
 			{

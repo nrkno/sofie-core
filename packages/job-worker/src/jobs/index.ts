@@ -9,6 +9,7 @@ export type ApmSpan = ReturnType<typeof Agent.startSpan>
 export interface JobContext {
 	readonly directCollections: Readonly<IDirectCollections>
 
+	// TODO - these probably shouldnt be here because they relate to a rundown, and not a job
 	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 	readonly showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>
 

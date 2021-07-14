@@ -2,12 +2,17 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, normalizeArray, normalizeArrayFunc, unprotectString } from '../lib'
+import { Time, applyClassToDocument, normalizeArrayFunc, unprotectString } from '../lib'
 import { Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
 import { Segments, Segment, DBSegment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
+import {
+	sortPartsInSegments,
+	sortPartsInSortedSegments,
+	sortSegmentsInRundowns,
+} from '@sofie-automation/corelib/dist/playout/playlist'
 import { PartInstance, PartInstances } from './PartInstances'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -343,16 +348,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
 	static _sortSegments(segments: Segment[], rundowns: Array<ReadonlyDeep<DBRundown>>) {
-		const rundownsMap = normalizeArray(rundowns, '_id')
-		return segments.sort((a, b) => {
-			if (a.rundownId === b.rundownId) {
-				return a._rank - b._rank
-			} else {
-				const rdA = rundownsMap[unprotectString(a.rundownId)]
-				const rdB = rundownsMap[unprotectString(b.rundownId)]
-				return rdA._rank - rdB._rank
-			}
-		})
+		return sortSegmentsInRundowns(segments, rundowns)
 	}
 	static _matchSegmentsAndRundowns<T extends DBRundown, E extends DBSegment>(segments: E[], rundowns: T[]) {
 		const rundownsMap = new Map<
@@ -374,21 +370,10 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		return Array.from(rundownsMap.values())
 	}
 	static _sortParts(parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
-		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))
+		return sortPartsInSegments(parts, rundowns, segments)
 	}
 	static _sortPartsInner<P extends DBPart>(parts: P[], sortedSegments: DBSegment[]): P[] {
-		const segmentRanks: { [segmentId: string]: number } = {}
-		_.each(sortedSegments, (segment, i) => (segmentRanks[unprotectString(segment._id)] = i))
-
-		return parts.sort((a, b) => {
-			if (a.segmentId === b.segmentId) {
-				return a._rank - b._rank
-			} else {
-				const segA = segmentRanks[unprotectString(a.segmentId)]
-				const segB = segmentRanks[unprotectString(b.segmentId)]
-				return segA - segB
-			}
-		})
+		return sortPartsInSortedSegments(parts, sortedSegments)
 	}
 }
 

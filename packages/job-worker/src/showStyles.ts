@@ -16,20 +16,26 @@
 // import { ShowStyleContentWriteAccess } from '../security/showStyle'
 // import { Credentials } from '../security/lib/credentials'
 // import { OrganizationId } from '../../lib/collections/Organization'
-// import deepmerge from 'deepmerge'
 // import { ReadonlyDeep } from 'type-fest'
 // import { DBRundown } from '../../lib/collections/Rundowns'
 
-// export async function getShowStyleCompound(
-// 	showStyleVariantId: ShowStyleVariantId
-// ): Promise<ShowStyleCompound | undefined> {
-// 	const showStyleVariant = await ShowStyleVariants.findOneAsync(showStyleVariantId)
-// 	if (!showStyleVariant) return undefined
-// 	const showStyleBase = await ShowStyleBases.findOneAsync(showStyleVariant.showStyleBaseId)
-// 	if (!showStyleBase) return undefined
+import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
+import { JobContext } from './jobs'
+import * as deepmerge from 'deepmerge'
 
-// 	return createShowStyleCompound(showStyleBase, showStyleVariant)
-// }
+export async function getShowStyleCompound(
+	context: JobContext,
+	showStyleVariantId: ShowStyleVariantId
+): Promise<ShowStyleCompound | undefined> {
+	const showStyleVariant = await context.directCollections.ShowStyleVariants.findOne(showStyleVariantId)
+	if (!showStyleVariant) return undefined
+	const showStyleBase = await context.directCollections.ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
+	if (!showStyleBase) return undefined
+
+	return createShowStyleCompound(showStyleBase, showStyleVariant)
+}
 // export async function getShowStyleCompoundForRundown(
 // 	rundown: Pick<ReadonlyDeep<DBRundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
 // ): Promise<ShowStyleCompound> {
@@ -55,25 +61,25 @@
 // 	return compound
 // }
 
-// export function createShowStyleCompound(
-// 	showStyleBase: ShowStyleBase,
-// 	showStyleVariant: ShowStyleVariant
-// ): ShowStyleCompound | undefined {
-// 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
+export function createShowStyleCompound(
+	showStyleBase: DBShowStyleBase,
+	showStyleVariant: DBShowStyleVariant
+): ShowStyleCompound | undefined {
+	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
-// 	const configs = deepmerge(showStyleBase.blueprintConfig, showStyleVariant.blueprintConfig, {
-// 		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
-// 	})
+	const configs = deepmerge(showStyleBase.blueprintConfig, showStyleVariant.blueprintConfig, {
+		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
+	})
 
-// 	return {
-// 		...showStyleBase,
-// 		showStyleVariantId: showStyleVariant._id,
-// 		name: `${showStyleBase.name}-${showStyleVariant.name}`,
-// 		blueprintConfig: configs,
-// 		_rundownVersionHash: showStyleBase._rundownVersionHash,
-// 		_rundownVersionHashVariant: showStyleVariant._rundownVersionHash,
-// 	}
-// }
+	return {
+		...showStyleBase,
+		showStyleVariantId: showStyleVariant._id,
+		name: `${showStyleBase.name}-${showStyleVariant.name}`,
+		blueprintConfig: configs,
+		_rundownVersionHash: showStyleBase._rundownVersionHash,
+		_rundownVersionHashVariant: showStyleVariant._rundownVersionHash,
+	}
+}
 
 // export async function insertShowStyleBase(context: MethodContext | Credentials): Promise<ShowStyleBaseId> {
 // 	const access = OrganizationContentWriteAccess.studio(context)

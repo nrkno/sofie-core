@@ -57,6 +57,7 @@ import { CacheForStudioBase } from '../studio/cache'
 import { getLookeaheadObjects } from './lookahead'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { TimelineEventContext } from '../blueprints/context'
+import { getShowStyleCompound } from '../showStyles'
 
 // 	// Ensure there isn't a playlist active, as that should be using a different function call
 // 	if (isCacheForStudio(cache)) {
@@ -266,7 +267,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
-			const pShowStyle = cache.activationCache.getShowStyleCompound(activeRundown)
+			const pShowStyle = getShowStyleCompound(context, activeRundown.showStyleVariantId) // TODO - cache
 
 			const showStyle = await pShowStyle
 			if (!showStyle) {

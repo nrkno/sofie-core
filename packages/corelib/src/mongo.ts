@@ -41,14 +41,14 @@ export interface UpsertOptions {
 	multi?: boolean
 }
 /** Mongo Selector. Contains everything that can be sent into collection.find(selector) */
-export type MongoSelector<TDoc> = any // Mongo.Selector<TDoc>
+export type MongoSelector<_TDoc> = any // Mongo.Selector<TDoc>
 /**
  * Subset of MongoSelector, only allows direct queries, not QueryWithModifiers such as $explain etc.
  * Used for simplified expressions (ie not using $and, $or etc..)
  * */
-export type MongoQuery<TDoc> = any //Mongo.Query<TDoc>
-export type MongoQueryKey<T> = any //RegExp | T | Mongo.FieldExpression<T> // Allowed properties in a Mongo.Query
-export type MongoModifier<TDoc> = any //Mongo.Modifier<TDoc>
+export type MongoQuery<_TDoc> = any //Mongo.Query<TDoc>
+export type MongoQueryKey<_TDoc> = any //RegExp | T | Mongo.FieldExpression<T> // Allowed properties in a Mongo.Query
+export type MongoModifier<_TDoc> = any //Mongo.Modifier<TDoc>
 
 /** End of hacks */
 
@@ -210,7 +210,7 @@ export function mongoModify<TDoc extends { _id: ProtectedString<any> }>(
 				setOntoPath(doc, key, selector, value)
 			})
 		} else if (key === '$unset') {
-			_.each(value, (value: any, key: string) => {
+			_.each(value, (_value: any, key: string) => {
 				unsetPath(doc, key, selector)
 			})
 		} else if (key === '$push') {
@@ -374,6 +374,8 @@ export function pullFromPath<T>(obj: Record<string, unknown>, path: string, matc
 				)
 
 			return (o[lastAttr] = _.filter(o[lastAttr] as any, (entry: T) => !_.isMatch(entry, matchValue)))
+		} else {
+			return undefined
 		}
 	}
 	mutatePath(obj, path, {}, mutator)

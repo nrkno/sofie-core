@@ -46,6 +46,7 @@
 		"@sofie-automation/blueprints-integration":"^1.37.0-in-development",
 		"@sofie-automation/corelib": "^1.37.0-in-development",
 		"bullmq": "^1.14.7",
+		"deepmerge": "^4.2.2",
 		"elastic-apm-node": "^3.11.0",
 		"mongodb": "^3.6.4",
 		"superfly-timeline": "^8.2.0",
