@@ -66,14 +66,22 @@ export namespace PrompterAPI {
 
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 
-		const groupedParts = getSegmentsWithPartInstances(playlist, undefined, undefined, undefined, undefined, undefined, {
-			fields: {
-				isTaken: 0,
-				previousPartEndState: 0,
-				takeCount: 0,
-				timings: 0,
-			},
-		})
+		const groupedParts = getSegmentsWithPartInstances(
+			playlist,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{
+				fields: {
+					isTaken: 0,
+					previousPartEndState: 0,
+					takeCount: 0,
+					timings: 0,
+				},
+			}
+		)
 
 		// const groupedParts = _.groupBy(parts, (p) => p.segmentId)
 
