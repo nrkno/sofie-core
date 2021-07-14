@@ -9098,9 +9098,9 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-"v-connection@git+https://github.com/olzzon/v-connection.git#v20210604_1":
+"v-connection@git+https://github.com/olzzon/v-connection#v20210604_1":
   version "0.0.1"
-  resolved "git+https://github.com/olzzon/v-connection.git#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
+  resolved "git+https://github.com/olzzon/v-connection#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
