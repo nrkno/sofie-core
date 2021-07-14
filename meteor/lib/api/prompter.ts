@@ -50,21 +50,13 @@ export namespace PrompterAPI {
 
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 
-		const groupedParts = getSegmentsWithPartInstances(
-			playlist,
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			{
-				fields: {
-					isTaken: 0,
-					previousPartEndState: 0,
-					takeCount: 0,
-				},
-			}
-		)
+		const groupedParts = getSegmentsWithPartInstances(playlist, undefined, undefined, undefined, undefined, undefined, {
+			fields: {
+				isTaken: 0,
+				previousPartEndState: 0,
+				takeCount: 0,
+			},
+		})
 
 		// const groupedParts = _.groupBy(parts, (p) => p.segmentId)
 
@@ -95,7 +87,6 @@ export namespace PrompterAPI {
 		}
 
 		groupedParts.forEach(({ segment, partInstances }, segmentIndex) => {
-			console.log(segment)
 			const segmentId = segment._id
 			if (segment && segment.isHidden) {
 				// Skip if is hidden
@@ -150,7 +141,7 @@ export namespace PrompterAPI {
 					if (piece.content) {
 						const content = piece.content as ScriptContent
 						if (content.fullScript) {
-							if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) > 0) {
+							if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) >= 0) {
 								return // piece already included in prompter script
 							}
 							piecesIncluded.push(piece.continuesRefId || piece._id)
