@@ -21,7 +21,7 @@ export function ensureCollectionProperty<T = any>(
 	defaultValue: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
-	const collection: TransformedCollection<T, any> = Collections[collectionName]
+	const collection = Collections.get(collectionName)
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {

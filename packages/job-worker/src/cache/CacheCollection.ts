@@ -1,11 +1,17 @@
-import { FindOptions, ICollection, MongoModifier, MongoQuery } from '../collection'
+import { ICollection, MongoModifier, MongoQuery } from '../collection'
 import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { profiler } from '../profiler'
 import _ = require('underscore')
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { FindOneOptions, mongoFindOptions, mongoModify, mongoWhere } from '@sofie-automation/corelib/dist/mongo'
-import { BulkWriteOperation } from 'mongodb'
+import {
+	FindOneOptions,
+	FindOptions,
+	mongoFindOptions,
+	mongoModify,
+	mongoWhere,
+} from '@sofie-automation/corelib/dist/mongo'
+import { AnyBulkWriteOperation } from 'mongodb'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
 import { Changes } from '../db/changes'
@@ -309,7 +315,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 			return changes
 		}
 
-		const updates: BulkWriteOperation<TDoc>[] = []
+		const updates: AnyBulkWriteOperation<TDoc>[] = []
 		const removedDocs: TDoc['_id'][] = []
 		this.documents.forEach((doc, id) => {
 			if (doc === null) {
@@ -320,7 +326,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 					updates.push({
 						replaceOne: {
 							filter: {
-								_id: id as any,
+								_id: id,
 							},
 							replacement: doc.document,
 							upsert: true,
@@ -331,7 +337,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 					updates.push({
 						replaceOne: {
 							filter: {
-								_id: id as any,
+								_id: id,
 							},
 							replacement: doc.document,
 						},

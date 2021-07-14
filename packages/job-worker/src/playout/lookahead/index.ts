@@ -24,7 +24,7 @@ import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/di
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone } from '@sofie-automation/corelib/dist/lib'
-import { FilterQuery } from 'mongodb'
+import { Filter as FilterQuery } from 'mongodb'
 import _ = require('underscore')
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
 
@@ -68,7 +68,7 @@ export async function getLookeaheadObjects(
 		invalid: { $ne: true },
 	}
 	const pPiecesToSearch = context.directCollections.Pieces.findFetch(piecesToSearchQuery, {
-		fields: {
+		projection: {
 			metaData: 0,
 
 			// these are known to be chunky when they exist

@@ -34,7 +34,7 @@
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": ">=12.20"
+		"node": ">=14.17"
 	},
 	"files": [
 		"/dist",
@@ -45,10 +45,10 @@
 	"dependencies": {
 		"@sofie-automation/blueprints-integration":"^1.37.0-in-development",
 		"@sofie-automation/corelib": "^1.37.0-in-development",
-		"bullmq": "^1.14.7",
+		"bullmq": "^1.39.0",
 		"deepmerge": "^4.2.2",
 		"elastic-apm-node": "^3.11.0",
-		"mongodb": "^3.6.4",
+		"mongodb": "^4.0.0",
 		"superfly-timeline": "^8.2.0",
 		"threadedclass": "^0.8.3",
 		"tslib": "^2.1.0",

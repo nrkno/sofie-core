@@ -1,6 +1,6 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { BulkWriteOperation, FilterQuery, UpdateQuery } from 'mongodb'
+import { AnyBulkWriteOperation, Collection as MongoCollection, Filter, FindOptions, UpdateFilter } from 'mongodb'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
@@ -28,27 +28,27 @@ import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timel
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 
-// @ts-ignore
-export interface FindOptions<T> {
-	// TODO
-}
+// // @ts-ignore
+// export interface FindOptions<T> {
+// 	// TODO
+// }
 
-export type MongoQuery<TDoc> = FilterQuery<TDoc>
-export type MongoModifier<TDoc> = UpdateQuery<TDoc>
+export type MongoQuery<TDoc> = Filter<TDoc>
+export type MongoModifier<TDoc> = UpdateFilter<TDoc>
 
 export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	readonly name: string
 
-	findFetch(selector?: FilterQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<Array<TDoc>>
-	findOne(selector?: FilterQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined>
-	insert(doc: TDoc | ReadonlyDeep<TDoc>): Promise<TDoc['_id']>
-	remove(selector: FilterQuery<TDoc> | TDoc['_id']): Promise<Array<TDoc['_id']>>
-	update(selector: FilterQuery<TDoc> | TDoc['_id'], modifier: UpdateQuery<TDoc>): Promise<number>
+	findFetch(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<Array<TDoc>>
+	findOne(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined>
+	insertOne(doc: TDoc | ReadonlyDeep<TDoc>): Promise<TDoc['_id']>
+	remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number>
+	update(selector: MongoQuery<TDoc> | TDoc['_id'], modifier: MongoModifier<TDoc>): Promise<number>
 
 	/** Returns true if a doc was replaced, false if inserted */
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean>
 
-	bulkWrite(ops: Array<BulkWriteOperation<TDoc>>): Promise<unknown>
+	bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>): Promise<unknown>
 }
 
 export interface IDirectCollections {
@@ -79,4 +79,76 @@ export interface IDirectCollections {
 
 	ExpectedPackages: ICollection<ExpectedPackageDB>
 	PackageInfos: ICollection<PackageInfoDB>
+}
+
+/** This is for the mock mongo collection, as internally it is sync and so we dont need or want to play around with fibers */
+class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements ICollection<TDoc> {
+	readonly #collection: MongoCollection<TDoc>
+
+	constructor(collection: MongoCollection<TDoc>) {
+		this.#collection = collection
+	}
+
+	get name(): string {
+		return this.#collection.collectionName
+	}
+
+	async findFetch(selector: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<Array<TDoc>> {
+		return this.#collection.find(selector as any, options).toArray()
+	}
+
+	async findOne(selector: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined> {
+		return this.#collection.findOne(selector, options)
+	}
+
+	async insertOne(doc: TDoc): Promise<TDoc['_id']> {
+		// TODO - fill in id if missing?
+		const res = await this.#collection.insertOne(doc as any)
+		return res.insertedId
+	}
+
+	async replace(doc: TDoc): Promise<boolean> {
+		const res = await this.#collection.replaceOne(doc._id, doc)
+		return res.matchedCount > 0
+	}
+
+	// async insertMany(docs: TDoc[]): Promise<Array<TDoc['_id']>> {
+	// 	const res = await this.#collection.insertMany(docs as any)
+	// 	return res.insertedIds
+	// }
+
+	async update(
+		selector: MongoQuery<TDoc> | TDoc['_id'],
+		modifier: MongoModifier<TDoc>
+		// options?: UpdateOptions
+	): Promise<number> {
+		const res = await this.#collection.updateMany(selector, modifier)
+		return res.upsertedCount
+	}
+
+	async remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
+		const res = await this.#collection.deleteMany(selector)
+		return res.deletedCount
+	}
+
+	async bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>): Promise<void> {
+		if (ops.length > 0) {
+			const bulkWriteResult = await this.#collection.bulkWrite(ops, {
+				ordered: false,
+			})
+			if (
+				bulkWriteResult &&
+				Array.isArray(bulkWriteResult.result?.writeErrors) &&
+				bulkWriteResult.result.writeErrors.length
+			) {
+				throw new Error(`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`)
+			}
+		}
+	}
+}
+
+export function wrapMongoCollection<TDoc extends { _id: ProtectedString<any> }>(
+	rawCollection: MongoCollection<TDoc>
+): ICollection<TDoc> {
+	return new WrappedCollection(rawCollection)
 }

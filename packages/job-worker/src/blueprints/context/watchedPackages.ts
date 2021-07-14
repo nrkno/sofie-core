@@ -3,7 +3,7 @@ import { ExpectedPackageDB, ExpectedPackageDBBase } from '@sofie-automation/core
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { JobContext } from '../../jobs'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { FilterQuery } from 'mongodb'
+import { Filter as FilterQuery } from 'mongodb'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
 

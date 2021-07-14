@@ -1,5 +1,5 @@
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
-import { protectString } from '@sofie-automation/corelib/src/protectedString'
+import { protectString } from '../protectedString'
 import { ExpectedPackageDB } from './ExpectedPackages'
 import { ExpectedPackageId, PackageInfoId, PeripheralDeviceId, StudioId } from './Ids'
 

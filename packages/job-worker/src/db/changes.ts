@@ -1,5 +1,5 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { BulkWriteOperation } from 'mongodb'
+import { AnyBulkWriteOperation } from 'mongodb'
 import { profiler } from '../profiler'
 import { ICollection, MongoQuery } from '../collection'
 import _ = require('underscore')
@@ -111,7 +111,7 @@ async function savePreparedChanges<TDoc extends { _id: ProtectedString<any> }>(
 		newObjIds.add(id)
 	}
 
-	const updates: BulkWriteOperation<TDoc>[] = []
+	const updates: AnyBulkWriteOperation<TDoc>[] = []
 	const removedDocs: TDoc['_id'][] = []
 
 	_.each(preparedChanges.changed || [], (oUpdate) => {
@@ -119,7 +119,7 @@ async function savePreparedChanges<TDoc extends { _id: ProtectedString<any> }>(
 		updates.push({
 			replaceOne: {
 				filter: {
-					_id: oUpdate._id as any,
+					_id: oUpdate._id,
 				},
 				replacement: oUpdate,
 			},
@@ -133,7 +133,7 @@ async function savePreparedChanges<TDoc extends { _id: ProtectedString<any> }>(
 		updates.push({
 			replaceOne: {
 				filter: {
-					_id: oInsert._id as any,
+					_id: oInsert._id,
 				},
 				replacement: oInsert,
 				upsert: true,

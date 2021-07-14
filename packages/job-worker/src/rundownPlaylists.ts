@@ -50,7 +50,7 @@ export async function removeRundownPlaylistFromDb(
 
 	// We assume we have the master lock at this point
 	const rundownIds = (
-		await context.directCollections.Rundowns.findFetch({ playlistId: playlist._id }, { fields: { _id: 1 } })
+		await context.directCollections.Rundowns.findFetch({ playlistId: playlist._id }, { projection: { _id: 1 } })
 	).map((r) => r._id)
 
 	await Promise.allSettled([

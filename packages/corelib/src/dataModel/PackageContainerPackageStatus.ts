@@ -1,5 +1,5 @@
 import { ExpectedPackageStatusAPI, Time } from '@sofie-automation/blueprints-integration'
-import { protectString } from '@sofie-automation/corelib/src/protectedString'
+import { protectString } from '../protectedString'
 import { ExpectedPackageId, PackageContainerPackageId, StudioId } from './Ids'
 
 /**
