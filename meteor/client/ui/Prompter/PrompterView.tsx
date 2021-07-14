@@ -20,6 +20,7 @@ import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
+import { Rundowns } from '../../../lib/collections/Rundowns'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -615,6 +616,15 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					})
 				}
 			})
+
+			this.autorun(() => {
+				const rundowns = Rundowns.find({ playlistId: this.props.rundownPlaylistId }).fetch()
+				this.subscribe(PubSub.showStyleBases, {
+					_id: {
+						$in: rundowns.map((rundown) => rundown.showStyleBaseId),
+					},
+				})
+			})
 		}
 
 		getScrollAnchor = () => {
@@ -698,6 +708,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 				lines.push(
 					<div
+						data-obj-id={segment.id}
 						key={'segment_' + segment.id}
 						className={ClassNames(
 							'prompter-segment',
@@ -714,6 +725,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				segment.parts.forEach((part) => {
 					lines.push(
 						<div
+							data-obj-id={segment.id + '_' + part.id}
 							key={'part_' + part.id}
 							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}
 						>
@@ -724,6 +736,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					part.pieces.forEach((line) => {
 						lines.push(
 							<div
+								data-obj-id={segment.id + '_' + part.id + '_' + line.id}
 								key={'line_' + part.id + '_' + segment.id + '_' + line.id}
 								className={ClassNames(
 									'prompter-line',
