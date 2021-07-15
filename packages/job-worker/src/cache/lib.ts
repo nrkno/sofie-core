@@ -4,6 +4,7 @@ import { MongoQuery } from '../collection'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import { ChangedIds, SaveIntoDbHooks, saveIntoBase } from '../db/changes'
+import { JobContext } from '../jobs'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
@@ -15,12 +16,13 @@ export function isDbCacheWritable(
 }
 /** Caches data, allowing reads from cache, but not writes */
 export function saveIntoCache<TDoc extends { _id: ProtectedString<any> }>(
+	context: JobContext,
 	collection: DbCacheWriteCollection<TDoc>,
 	filter: MongoQuery<TDoc>,
 	newData: Array<TDoc>,
 	optionsOrg?: SaveIntoDbHooks<TDoc>
 ): ChangedIds<TDoc['_id']> {
-	return saveIntoBase(collection.name ?? '', collection.findFetch(filter), newData, {
+	return saveIntoBase(context, collection.name ?? '', collection.findFetch(filter), newData, {
 		...optionsOrg,
 		insert: (doc) => collection.insert(doc),
 		update: (doc) => collection.replace(doc),

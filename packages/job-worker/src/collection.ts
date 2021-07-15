@@ -111,7 +111,7 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 	}
 
 	async replace(doc: TDoc): Promise<boolean> {
-		const res = await this.#collection.replaceOne(doc._id, doc)
+		const res = await this.#collection.replaceOne({ _id: doc._id }, doc)
 		return res.matchedCount > 0
 	}
 

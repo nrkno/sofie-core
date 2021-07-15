@@ -20,8 +20,16 @@ export class WatchedPackagesHelper {
 	 * Create a helper with no packages. This should be used where the api is in place, but the update flow hasnt been implemented yet so we don't want to expose any data
 	 */
 	static empty(context: JobContext): WatchedPackagesHelper {
-		const watchedPackages = DbCacheReadCollection.createFromArray(context.directCollections.ExpectedPackages, [])
-		const watchedPackageInfos = DbCacheReadCollection.createFromArray(context.directCollections.PackageInfos, [])
+		const watchedPackages = DbCacheReadCollection.createFromArray(
+			context,
+			context.directCollections.ExpectedPackages,
+			[]
+		)
+		const watchedPackageInfos = DbCacheReadCollection.createFromArray(
+			context,
+			context.directCollections.PackageInfos,
+			[]
+		)
 
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
 	}
@@ -38,6 +46,7 @@ export class WatchedPackagesHelper {
 	): Promise<WatchedPackagesHelper> {
 		// Load all the packages and the infos that are watched
 		const watchedPackages = await DbCacheReadCollection.createFromDatabase(
+			context,
 			context.directCollections.ExpectedPackages,
 			{
 				...filter,
@@ -45,6 +54,7 @@ export class WatchedPackagesHelper {
 			} as any
 		) // TODO: don't use any here
 		const watchedPackageInfos = await DbCacheReadCollection.createFromDatabase(
+			context,
 			context.directCollections.PackageInfos,
 			{
 				studioId: studioId,
@@ -83,12 +93,14 @@ export class WatchedPackagesHelper {
 	 */
 	filter(context: JobContext, func: (pkg: ExpectedPackageDB) => boolean): WatchedPackagesHelper {
 		const watchedPackages = DbCacheReadCollection.createFromArray(
+			context,
 			context.directCollections.ExpectedPackages,
 			this.packages.findFetch(func)
 		)
 
 		const newPackageIds = new Set(watchedPackages.findFetch({}).map((p) => p._id))
 		const watchedPackageInfos = DbCacheReadCollection.createFromArray(
+			context,
 			context.directCollections.PackageInfos,
 			this.packageInfos.findFetch((info) => newPackageIds.has(info.packageId))
 		)

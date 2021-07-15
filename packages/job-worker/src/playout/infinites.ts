@@ -228,6 +228,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 		)
 
 		saveIntoCache(
+			context,
 			cache.PieceInstances,
 			{
 				partInstanceId: nextPartInstance._id,

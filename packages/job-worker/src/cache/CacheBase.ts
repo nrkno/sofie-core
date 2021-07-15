@@ -1,5 +1,4 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { profiler } from '../profiler'
 import * as _ from 'underscore'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
@@ -8,6 +7,7 @@ import { anythingChanged, sumChanges } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
+import { JobContext } from '../jobs'
 
 type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
 
@@ -35,7 +35,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	private _activeTimeout: NodeJS.Timer | null = null
 	private _hasTimedOut = false
 
-	constructor() {
+	constructor(protected readonly context: JobContext) {
 		if (!IS_PRODUCTION) {
 			// When this is set up, we expect saveAllToDatabase() to have been called at the end, otherwise something is wrong
 			const futureError = new Error(`saveAllToDatabase never called`)
@@ -86,7 +86,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	}
 
 	async saveAllToDatabase() {
-		const span = profiler.startSpan('Cache.saveAllToDatabase')
+		const span = this.context.startSpan('Cache.saveAllToDatabase')
 		this._abortActiveTimeout()
 
 		// Execute cache.defer()'s
@@ -151,7 +151,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	 * changes made are an error and will cause issues.
 	 */
 	assertNoChanges(): void {
-		const span = profiler.startSpan('Cache.assertNoChanges')
+		const span = this.context.startSpan('Cache.assertNoChanges')
 
 		function logOrThrowError(error: Error) {
 			if (!IS_PRODUCTION) {

@@ -37,6 +37,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 	public readonly Rundowns: DbCacheReadCollection<DBRundown>
 
 	protected constructor(
+		context: JobContext,
 		playlistId: RundownPlaylistId,
 		// activationCache: ActivationCache,
 		studio: DbCacheReadObject<DBStudio>,
@@ -44,7 +45,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		playlist: DbCacheWriteObject<DBRundownPlaylist>,
 		rundowns: DbCacheReadCollection<DBRundown>
 	) {
-		super()
+		super(context)
 
 		this.PlaylistId = playlistId
 		// this.activationCache = activationCache
@@ -61,7 +62,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		reloadPlaylist = true
 	): Promise<CacheForPlayoutPreInit> {
 		const initData = await CacheForPlayoutPreInit.loadInitData(context, tmpPlaylist, reloadPlaylist, undefined)
-		return new CacheForPlayoutPreInit(tmpPlaylist._id, ...initData)
+		return new CacheForPlayoutPreInit(context, tmpPlaylist._id, ...initData)
 	}
 
 	protected static async loadInitData(
@@ -114,23 +115,30 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		// return [activationCache, studio, peripheralDevices, playlist, rundowns]
 
 		return Promise.all([
-			DbCacheReadObject.createFromDatabase(context.directCollections.Studios, false, tmpPlaylist.studioId),
-			DbCacheReadCollection.createFromDatabase(context.directCollections.PeripheralDevices, {
+			DbCacheReadObject.createFromDatabase(
+				context,
+				context.directCollections.Studios,
+				false,
+				tmpPlaylist.studioId
+			),
+			DbCacheReadCollection.createFromDatabase(context, context.directCollections.PeripheralDevices, {
 				studioId: tmpPlaylist.studioId,
 			}),
 			reloadPlaylist
 				? await DbCacheWriteObject.createFromDatabase(
+						context,
 						context.directCollections.RundownPlaylists,
 						false,
 						tmpPlaylist._id
 				  )
 				: DbCacheWriteObject.createFromDoc<DBRundownPlaylist>(
+						context,
 						context.directCollections.RundownPlaylists,
 						false,
 						tmpPlaylist
 				  ),
 			existingRundowns ??
-				DbCacheReadCollection.createFromDatabase(context.directCollections.Rundowns, {
+				DbCacheReadCollection.createFromDatabase(context, context.directCollections.Rundowns, {
 					playlistId: tmpPlaylist._id,
 				}),
 		])
@@ -144,8 +152,6 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
  */
 export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForStudioBase {
 	private toBeRemoved = false
-
-	private readonly context: JobContext
 
 	public readonly Timeline: DbCacheWriteCollection<TimelineComplete>
 
@@ -171,9 +177,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		timeline: DbCacheWriteCollection<TimelineComplete>,
 		baselineObjects: DbCacheReadCollection<RundownBaselineObj>
 	) {
-		super(playlistId, studio, peripheralDevices, playlist, rundowns)
-
-		this.context = context
+		super(context, playlistId, studio, peripheralDevices, playlist, rundowns)
 
 		this.Timeline = timeline
 
@@ -268,13 +272,13 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		const loadBaselineIds = rundownIds // TODO
 
 		const [segments, parts, ...collections] = await Promise.all([
-			DbCacheReadCollection.createFromDatabase(context.directCollections.Segments, {
+			DbCacheReadCollection.createFromDatabase(context, context.directCollections.Segments, {
 				rundownId: { $in: loadRundownIds },
 			}),
-			DbCacheReadCollection.createFromDatabase(context.directCollections.Parts, {
+			DbCacheReadCollection.createFromDatabase(context, context.directCollections.Parts, {
 				rundownId: { $in: loadRundownIds },
 			}),
-			DbCacheWriteCollection.createFromDatabase(context.directCollections.PartInstances, {
+			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.PartInstances, {
 				playlistActivationId: playlist.activationId,
 				rundownId: { $in: rundownIds },
 				$or: [
@@ -286,14 +290,16 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 					},
 				],
 			}),
-			DbCacheWriteCollection.createFromDatabase(context.directCollections.PieceInstances, {
+			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.PieceInstances, {
 				playlistActivationId: playlist.activationId,
 				rundownId: { $in: rundownIds },
 				partInstanceId: { $in: selectedPartInstanceIds },
 			}),
 			// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
-			DbCacheWriteCollection.createFromDatabase(context.directCollections.Timelines, { _id: playlist.studioId }),
-			DbCacheReadCollection.createFromDatabase(context.directCollections.RundownBaselineObjects, {
+			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Timelines, {
+				_id: playlist.studioId,
+			}),
+			DbCacheReadCollection.createFromDatabase(context, context.directCollections.RundownBaselineObjects, {
 				rundownId: { $in: loadBaselineIds },
 			}),
 		])

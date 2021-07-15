@@ -1,6 +1,5 @@
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { ICollection, MongoModifier } from '../collection'
 import { logger } from '../logging'
@@ -8,6 +7,7 @@ import { Changes } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
 import _ = require('underscore')
 import { mongoModify } from '@sofie-automation/corelib/dist/mongo'
+import { JobContext } from '../jobs'
 
 /**
  * Caches a single object, allowing reads from cache, but not writes
@@ -21,6 +21,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 	protected isToBeRemoved = false
 
 	protected constructor(
+		protected readonly context: JobContext,
 		protected readonly _collection: ICollection<TDoc>,
 		// @ts-expect-error used for typings
 		private readonly _optional: DocOptional,
@@ -34,17 +35,19 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 	}
 
 	public static createFromDoc<TDoc extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	): DbCacheReadObject<TDoc, DocOptional> {
-		return new DbCacheReadObject<TDoc, DocOptional>(collection, optional, doc)
+		return new DbCacheReadObject<TDoc, DocOptional>(context, collection, optional, doc)
 	}
 
 	public static async createFromDatabase<
 		TDoc extends { _id: ProtectedString<any> },
 		DocOptional extends boolean = false
 	>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		optional: DocOptional,
 		id: TDoc['_id']
@@ -56,7 +59,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 			)
 		}
 
-		return DbCacheReadObject.createFromDoc<TDoc, DocOptional>(collection, optional, doc as any)
+		return DbCacheReadObject.createFromDoc<TDoc, DocOptional>(context, collection, optional, doc as any)
 	}
 
 	get doc(): DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc> {
@@ -80,25 +83,28 @@ export class DbCacheWriteObject<
 	private _updated = false
 
 	constructor(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	) {
-		super(collection, optional, doc)
+		super(context, collection, optional, doc)
 	}
 
 	public static createFromDoc<TDoc extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	): DbCacheWriteObject<TDoc, DocOptional> {
-		return new DbCacheWriteObject<TDoc, DocOptional>(collection, optional, doc)
+		return new DbCacheWriteObject<TDoc, DocOptional>(context, collection, optional, doc)
 	}
 
 	public static async createFromDatabase<
 		TDoc extends { _id: ProtectedString<any> },
 		DocOptional extends boolean = false
 	>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		optional: DocOptional,
 		id: TDoc['_id']
@@ -110,7 +116,7 @@ export class DbCacheWriteObject<
 			)
 		}
 
-		return DbCacheWriteObject.createFromDoc<TDoc, DocOptional>(collection, optional, doc as any)
+		return DbCacheWriteObject.createFromDoc<TDoc, DocOptional>(context, collection, optional, doc as any)
 	}
 
 	protected assertNotToBeRemoved(methodName: string): void {
@@ -153,7 +159,7 @@ export class DbCacheWriteObject<
 
 	async updateDatabaseWithData(): Promise<Changes> {
 		if (this._updated && !this.isToBeRemoved) {
-			const span = profiler.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
+			const span = this.context.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
 
 			const pUpdate = await this._collection.replace(this._document)
 			if (!pUpdate) {
@@ -198,24 +204,30 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 > {
 	private _inserted = false
 
-	constructor(collection: ICollection<TDoc>, doc: ReadonlyDeep<TDoc> | undefined) {
-		super(collection, true, doc)
+	constructor(context: JobContext, collection: ICollection<TDoc>, doc: ReadonlyDeep<TDoc> | undefined) {
+		super(context, collection, true, doc)
 	}
 
 	public static createOptionalFromDoc<TDoc extends { _id: ProtectedString<any> }>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		doc: ReadonlyDeep<TDoc> | undefined
 	): DbCacheWriteOptionalObject<TDoc> {
-		return new DbCacheWriteOptionalObject<TDoc>(collection, doc)
+		return new DbCacheWriteOptionalObject<TDoc>(context, collection, doc)
 	}
 
 	public static async createOptionalFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		id: TDoc['_id']
 	): Promise<DbCacheWriteOptionalObject<TDoc>> {
 		const doc = await collection.findOne(id)
 
-		return DbCacheWriteOptionalObject.createOptionalFromDoc<TDoc>(collection, doc as ReadonlyDeep<TDoc> | undefined)
+		return DbCacheWriteOptionalObject.createOptionalFromDoc<TDoc>(
+			context,
+			collection,
+			doc as ReadonlyDeep<TDoc> | undefined
+		)
 	}
 
 	replace(doc: TDoc): ReadonlyDeep<TDoc> {
@@ -237,7 +249,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 
 	async updateDatabaseWithData(): Promise<Changes> {
 		if (this._inserted && !this.isToBeRemoved) {
-			const span = profiler.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
+			const span = this.context.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
 
 			await this._collection.replace(this._document)
 

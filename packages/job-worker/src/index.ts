@@ -9,6 +9,7 @@ import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/
 import { loadBlueprintById, loadStudioBlueprint } from './blueprints/cache'
 import { BlueprintManifestType } from '../../blueprints-integration/dist'
 import { studioJobHandlers, StudioJobs } from './jobs/jobs'
+import { setupApmAgent, startTransaction } from './profiler'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -24,6 +25,8 @@ const connection: ConnectionOptions = {
 const studioId: StudioId = protectString('studio0') // the queue/worker is for a dedicated studio, so the id will be semi-hardcoded
 const token = 'abc' // unique 'id' for the worker
 const worker = new Worker(`studio:${studioId}`, undefined, { connection })
+
+setupApmAgent()
 
 void (async () => {
 	const client = new MongoClient(mongoUri)
@@ -84,6 +87,7 @@ void (async () => {
 
 			// we may not get a job even when blocking, so try again
 			if (job) {
+				const transaction = startTransaction(job.name, 'worker-studio')
 				try {
 					// TODO Something
 					console.log('Running work ', job.id, job.name, JSON.stringify(job.data))
@@ -96,7 +100,10 @@ void (async () => {
 						studioBlueprint: studioBlueprint,
 						showStyleBlueprint: { blueprint: showBlueprint, blueprintId: blueprintId },
 
-						startSpan: () => null,
+						startSpan: (name) => {
+							if (transaction) return transaction.startSpan(name)
+							return null
+						},
 					}
 
 					const result = await runJob(context, job.name, job.data)
@@ -106,6 +113,7 @@ void (async () => {
 					console.log('job errored', e)
 					await job.moveToFailed(e, token)
 				}
+				transaction?.end()
 			}
 		}
 	} finally {

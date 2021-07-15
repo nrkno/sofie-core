@@ -1,7 +1,6 @@
 import { ICollection, MongoModifier, MongoQuery } from '../collection'
 import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { profiler } from '../profiler'
 import _ = require('underscore')
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import {
@@ -15,6 +14,7 @@ import { AnyBulkWriteOperation } from 'mongodb'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
 import { Changes } from '../db/changes'
+import { JobContext } from '../jobs'
 
 type SelectorFunction<TDoc> = (doc: TDoc) => boolean
 type DbCacheCollectionDocument<TDoc> = {
@@ -32,25 +32,27 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
-	protected constructor(protected _collection: ICollection<TDoc>) {
+	protected constructor(protected readonly context: JobContext, protected readonly _collection: ICollection<TDoc>) {
 		//
 	}
 
 	public static createFromArray<TDoc extends { _id: ProtectedString<any> }>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		docs: TDoc[] | ReadonlyDeep<Array<TDoc>>
 	): DbCacheReadCollection<TDoc> {
-		const col = new DbCacheReadCollection(collection)
+		const col = new DbCacheReadCollection(context, collection)
 		col.fillWithDataFromArray(docs as any)
 		return col
 	}
 	public static async createFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		selector: MongoQuery<TDoc>
 	): Promise<DbCacheReadCollection<TDoc>> {
 		const docs = await collection.findFetch(selector)
 
-		return DbCacheReadCollection.createFromArray(collection, docs)
+		return DbCacheReadCollection.createFromArray(context, collection, docs)
 	}
 
 	get name(): string | null {
@@ -58,7 +60,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	}
 
 	findFetch(selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>, options?: FindOptions<TDoc>): TDoc[] {
-		const span = profiler.startSpan(`DBCache.findFetch.${this.name}`)
+		const span = this.context.startSpan(`DBCache.findFetch.${this.name}`)
 
 		selector = selector || {}
 		if (isProtectedString(selector)) {
@@ -106,7 +108,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	}
 
 	async fillWithDataFromDatabase(selector: MongoQuery<TDoc>): Promise<number> {
-		const span = profiler.startSpan(`DBCache.fillWithDataFromDatabase.${this.name}`)
+		const span = this.context.startSpan(`DBCache.fillWithDataFromDatabase.${this.name}`)
 		const docs = await this._collection.findFetch(selector)
 
 		span?.addLabels({ count: docs.length })
@@ -159,26 +161,28 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	}
 
 	public static createFromArray<TDoc extends { _id: ProtectedString<any> }>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		docs: TDoc[]
 	): DbCacheWriteCollection<TDoc> {
-		const col = new DbCacheWriteCollection(collection)
+		const col = new DbCacheWriteCollection(context, collection)
 		col.fillWithDataFromArray(docs as any)
 		return col
 	}
 	public static async createFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
+		context: JobContext,
 		collection: ICollection<TDoc>,
 		selector: MongoQuery<TDoc>
 	): Promise<DbCacheWriteCollection<TDoc>> {
 		const docs = await collection.findFetch(selector)
 
-		return DbCacheWriteCollection.createFromArray(collection, docs)
+		return DbCacheWriteCollection.createFromArray(context, collection, docs)
 	}
 
 	insert(doc: TDoc): TDoc['_id'] {
 		this.assertNotToBeRemoved('insert')
 
-		const span = profiler.startSpan(`DBCache.insert.${this.name}`)
+		const span = this.context.startSpan(`DBCache.insert.${this.name}`)
 
 		const existing = doc._id && this.documents.get(doc._id)
 		if (existing) {
@@ -201,7 +205,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	remove(selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('remove')
 
-		const span = profiler.startSpan(`DBCache.remove.${this.name}`)
+		const span = this.context.startSpan(`DBCache.remove.${this.name}`)
 
 		const removedIds: TDoc['_id'][] = []
 		if (isProtectedString(selector)) {
@@ -227,7 +231,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('update')
 
-		const span = profiler.startSpan(`DBCache.update.${this.name}`)
+		const span = this.context.startSpan(`DBCache.update.${this.name}`)
 
 		const selectorInModify: MongoQuery<TDoc> = _.isFunction(selector)
 			? {}
@@ -272,7 +276,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): boolean {
 		this.assertNotToBeRemoved('replace')
 
-		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
+		const span = this.context.startSpan(`DBCache.replace.${this.name}`)
 		span?.addLabels({ id: unprotectString(doc._id) })
 
 		if (!doc._id) throw new Error(`Error: The (immutable) field '_id' must be defined: "${doc._id}"`)
@@ -299,7 +303,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	}
 
 	async updateDatabaseWithData(): Promise<Changes> {
-		const span = profiler.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
+		const span = this.context.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
 			added: number
 			updated: number

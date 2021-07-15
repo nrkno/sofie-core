@@ -1,29 +1,38 @@
 import * as Agent from 'elastic-apm-node'
+import { logger } from './logging'
 
-// TODO - replace with methods on JobContext
-class Profiler {
-	private active = false
-
-	startSpan(_name: string) {
-		if (!this.active) return
-		return Agent.startSpan(_name)
+let active = false
+export function setupApmAgent(): void {
+	if (process.env.JEST_WORKER_ID) {
+		return
 	}
 
-	startTransaction(description: string, name: string) {
-		if (!this.active) return
-		return Agent.startTransaction(description, name)
-	}
+	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
 
-	setActive(active: boolean) {
-		this.active = active
-		// if (active) {
-		//     Agent.start()
-		// } else {
-		//     Agent.destroy()
-		// }
+	if (APM_HOST && APP_HOST) {
+		logger.info(`APM agent starting up`)
+		Agent.start({
+			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
+			hostname: APP_HOST,
+			serverUrl: APM_HOST,
+			secretToken: APM_SECRET,
+			active: true,
+			transactionSampleRate: 1, // system.apm.transactionSampleRate,
+		})
+		active = true
+	} else {
+		logger.info(`APM agent inactive`)
+		Agent.start({
+			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
+			active: false,
+		})
 	}
 }
 
-const profiler = new Profiler()
+// APM types are not exported https://github.com/elastic/apm-agent-nodejs/pull/1775
+export type ApmTransaction = ReturnType<typeof Agent.startTransaction>
 
-export { profiler }
+export function startTransaction(name: string, namespace: string): ApmTransaction | undefined {
+	if (!active) return undefined
+	return Agent.startTransaction(name, namespace)
+}

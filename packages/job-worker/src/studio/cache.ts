@@ -29,12 +29,13 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 	public readonly Timeline: DbCacheWriteCollection<TimelineComplete>
 
 	private constructor(
+		context: JobContext,
 		studio: DbCacheReadObject<DBStudio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
 		rundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>,
 		timeline: DbCacheWriteCollection<TimelineComplete>
 	) {
-		super()
+		super(context)
 
 		this.Studio = studio
 		this.PeripheralDevices = peripheralDevices
@@ -44,15 +45,22 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 	}
 
 	static async create(context: JobContext, studioId: StudioId): Promise<CacheForStudio> {
-		const studio = await DbCacheReadObject.createFromDatabase(context.directCollections.Studios, false, studioId)
+		const studio = await DbCacheReadObject.createFromDatabase(
+			context,
+			context.directCollections.Studios,
+			false,
+			studioId
+		)
 
 		const collections = await Promise.all([
-			DbCacheReadCollection.createFromDatabase(context.directCollections.PeripheralDevices, { studioId }),
-			DbCacheReadCollection.createFromDatabase(context.directCollections.RundownPlaylists, { studioId }),
-			DbCacheWriteCollection.createFromDatabase(context.directCollections.Timelines, { _id: studioId }),
+			DbCacheReadCollection.createFromDatabase(context, context.directCollections.PeripheralDevices, {
+				studioId,
+			}),
+			DbCacheReadCollection.createFromDatabase(context, context.directCollections.RundownPlaylists, { studioId }),
+			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Timelines, { _id: studioId }),
 		])
 
-		return new CacheForStudio(studio, ...collections)
+		return new CacheForStudio(context, studio, ...collections)
 	}
 
 	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): DBRundownPlaylist[] {

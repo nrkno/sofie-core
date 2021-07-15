@@ -1,9 +1,9 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { AnyBulkWriteOperation } from 'mongodb'
-import { profiler } from '../profiler'
 import { ICollection, MongoQuery } from '../collection'
 import _ = require('underscore')
 import { deleteAllUndefinedProperties, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { JobContext } from '../jobs'
 
 export interface Changes {
 	added: number
@@ -44,12 +44,13 @@ export function anythingChanged(changes: Changes): boolean {
  * @param newData The new data
  */
 export async function saveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
+	context: JobContext,
 	collection: ICollection<TDoc>,
 	filter: MongoQuery<TDoc>,
 	newData: Array<TDoc>,
 	options?: SaveIntoDbHooks<TDoc>
 ): Promise<Changes> {
-	const preparedChanges = await prepareSaveIntoDb(collection, filter, newData, options)
+	const preparedChanges = await prepareSaveIntoDb(context, collection, filter, newData, options)
 
 	return savePreparedChanges(preparedChanges, collection, options ?? {})
 }
@@ -62,6 +63,7 @@ export interface PreparedChanges<T> {
 }
 
 async function prepareSaveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
+	context: JobContext,
 	collection: ICollection<TDoc>,
 	filter: MongoQuery<TDoc>,
 	newData: Array<TDoc>,
@@ -76,7 +78,7 @@ async function prepareSaveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
 
 	const existing = await collection.findFetch(filter)
 
-	saveIntoBase(collection.name, existing, newData, {
+	saveIntoBase(context, collection.name, existing, newData, {
 		...optionsOrg,
 		insert: (doc) => preparedChanges.inserted.push(doc),
 		update: (doc) => preparedChanges.changed.push(doc),
@@ -190,12 +192,13 @@ interface SaveIntoDbHandlers<TDoc> {
 	unchanged?: (o: TDoc) => void
 }
 export function saveIntoBase<TDoc extends { _id: ProtectedString<any> }>(
+	context: JobContext,
 	collectionName: string,
 	oldDocs: TDoc[],
 	newData: Array<TDoc>,
 	options: SaveIntoDbHooks<TDoc> & SaveIntoDbHandlers<TDoc>
 ): ChangedIds<TDoc['_id']> {
-	const span = profiler.startSpan(`DBCache.saveIntoBase.${collectionName}`)
+	const span = context.startSpan(`DBCache.saveIntoBase.${collectionName}`)
 
 	const changes: ChangedIds<TDoc['_id']> = {
 		added: [],
