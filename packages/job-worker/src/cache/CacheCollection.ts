@@ -57,7 +57,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		return this._collection.name
 	}
 
-	findFetch(selector?: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>, options?: FindOptions<TDoc>): TDoc[] {
+	findFetch(selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>, options?: FindOptions<TDoc>): TDoc[] {
 		const span = profiler.startSpan(`DBCache.findFetch.${this.name}`)
 
 		selector = selector || {}
@@ -99,7 +99,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		return res
 	}
 	findOne(
-		selector?: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>,
+		selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>,
 		options?: FindOneOptions<TDoc>
 	): TDoc | undefined {
 		return this.findFetch(selector, options)[0]

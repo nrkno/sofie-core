@@ -2,9 +2,21 @@ import { CacheForPlayout } from '../playout/cache'
 import { updateTimeline, updateStudioTimeline } from '../playout/timeline'
 import { CacheForStudio } from '../studio/cache'
 import { JobContext } from '.'
+import { rundownBaselineAdLibPieceStart } from '../playout/adlib'
+import { PartInstanceId, PieceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export enum StudioJobs {
 	UpdateTimeline = 'updateTimeline',
+	RundownBaselineAdlibStart = 'rundownBaselineAdLibPieceStart',
+}
+
+export interface RundownPlayoutPropsBase {
+	playlistId: RundownPlaylistId
+}
+export interface RundownBaselineAdlibStartProps extends RundownPlayoutPropsBase {
+	partInstanceId: PartInstanceId
+	baselineAdLibPieceId: PieceId
+	queue?: boolean
 }
 
 /** Job Id vs data type */
@@ -12,6 +24,7 @@ export type StudioJobTypes = [StudioJobs.UpdateTimeline, null]
 
 export const studioJobHandlers: { [key in StudioJobs]: (context: JobContext, data: any) => Promise<any> } = {
 	[StudioJobs.UpdateTimeline]: updateTimelineDebug,
+	[StudioJobs.RundownBaselineAdlibStart]: rundownBaselineAdLibPieceStart,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: unknown): Promise<void> {

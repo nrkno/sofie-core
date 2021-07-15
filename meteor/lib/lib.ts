@@ -209,45 +209,6 @@ export const getCollectionStats: (collection: AsyncTransformedCollection<any, an
 	}
 )
 
-/**
- * Returns a rank number, to be used to insert new objects in a ranked list
- * @param before   The element before the one-to-be-inserted, null/undefined if inserted first
- * @param after	   The element after the one-to-be-inserted, null/undefined if inserted last
- * @param i        If inserting multiple elements; the internal rank of the to-be-inserted element
- * @param count    If inserting multiple elements, this is total count of inserted elements
- */
-export function getRank<T extends { _rank: number }>(
-	before: T | null | undefined,
-	after: T | null | undefined,
-	i: number = 0,
-	count: number = 1
-): number {
-	let newRankMax: number
-	let newRankMin: number
-
-	if (after) {
-		if (before) {
-			newRankMin = before._rank
-			newRankMax = after._rank
-		} else {
-			// First
-			newRankMin = after._rank - 1
-			newRankMax = after._rank
-		}
-	} else {
-		if (before) {
-			// Last
-			newRankMin = before._rank
-			newRankMax = before._rank + 1
-		} else {
-			// Empty list
-			newRankMin = 0
-			newRankMax = 1
-		}
-	}
-	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
-}
-
 /** Convenience function, to be used when length of array has previously been verified */
 export function last<T>(values: T[]): T {
 	return _.last(values) as T

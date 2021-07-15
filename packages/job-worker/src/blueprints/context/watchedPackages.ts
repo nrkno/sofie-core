@@ -48,7 +48,7 @@ export class WatchedPackagesHelper {
 			context.directCollections.PackageInfos,
 			{
 				studioId: studioId,
-				packageId: { $in: watchedPackages.findFetch().map((p) => p._id) },
+				packageId: { $in: watchedPackages.findFetch({}).map((p) => p._id) },
 			}
 		)
 
@@ -87,7 +87,7 @@ export class WatchedPackagesHelper {
 			this.packages.findFetch(func)
 		)
 
-		const newPackageIds = new Set(watchedPackages.findFetch().map((p) => p._id))
+		const newPackageIds = new Set(watchedPackages.findFetch({}).map((p) => p._id))
 		const watchedPackageInfos = DbCacheReadCollection.createFromArray(
 			context.directCollections.PackageInfos,
 			this.packageInfos.findFetch((info) => newPackageIds.has(info.packageId))

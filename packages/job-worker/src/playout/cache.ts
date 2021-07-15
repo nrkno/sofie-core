@@ -201,7 +201,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			context,
 			null,
 			initCache.Playlist.doc,
-			initCache.Rundowns.findFetch().map((r) => r._id)
+			initCache.Rundowns.findFetch({}).map((r) => r._id)
 		)
 
 		return new CacheForPlayout(

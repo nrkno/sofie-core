@@ -21,7 +21,12 @@ async function addJobs() {
 	console.log('0')
 	await myQueue.add('updateTimeline', { foo: 'bar' })
 	console.log('1')
-	// await myQueue.add('myJobName2', { qux: 'baz' })
+	await myQueue.add('rundownBaselineAdLibPieceStart', {
+		playlistId: '0HVrcuJm9VWppKINIr7ba30zpKQ_',
+		partInstanceId: 'TXZilha8HiKt9MTNR1T5RtIftlE__ghjvDZeQn8rMiBSjv',
+		baselineAdLibPieceId: 'Va08I68HQde7ScHegLBnkgEGHJQ_',
+		queue: false,
+	})
 	console.log('2')
 	// eslint-disable-next-line no-process-exit
 	process.exit(0)
