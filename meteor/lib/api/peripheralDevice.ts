@@ -475,8 +475,24 @@ export namespace PeripheralDeviceAPI {
 
 	export type StatusObject = PeripheralDeviceStatusObject
 	// Note The actual type of a device is determined by the Category, Type and SubType
-	export const DeviceCategory = PeripheralDeviceCategory
-	export const DeviceType = PeripheralDeviceType
+	export enum DeviceCategory {
+		INGEST = 'ingest',
+		PLAYOUT = 'playout',
+		MEDIA_MANAGER = 'media_manager',
+		PACKAGE_MANAGER = 'package_manager',
+	}
+	export enum DeviceType {
+		// Ingest devices:
+		MOS = 'mos',
+		SPREADSHEET = 'spreadsheet',
+		INEWS = 'inews',
+		// Playout devices:
+		PLAYOUT = 'playout',
+		// Media-manager devices:
+		MEDIA_MANAGER = 'media_manager',
+		// Package_manager devices:
+		PACKAGE_MANAGER = 'package_manager',
+	}
 	export type DeviceSubType = SUBTYPE_PROCESS | TSR.DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
 	/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */

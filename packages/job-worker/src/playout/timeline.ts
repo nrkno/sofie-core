@@ -350,6 +350,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 				)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
 				try {
+					const span = context.startSpan('blueprint.onTimelineGenerate')
 					const tlGenRes = await context.showStyleBlueprint.blueprint.onTimelineGenerate(
 						context2,
 						timelineObjs,
@@ -357,6 +358,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 						currentPartInstance?.previousPartEndState,
 						unprotectObjectArray(resolvedPieces.pieces)
 					)
+					if (span) span.end()
 					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
 							...(object as OnGenerateTimelineObjExt),

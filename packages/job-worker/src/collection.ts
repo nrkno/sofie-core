@@ -1,4 +1,4 @@
-import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import { AnyBulkWriteOperation, Collection as MongoCollection, Filter, FindOptions, UpdateFilter } from 'mongodb'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
@@ -27,6 +27,7 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
+import { startSpanManual } from './profiler'
 
 // // @ts-ignore
 // export interface FindOptions<T> {
@@ -94,24 +95,61 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 	}
 
 	async findFetch(selector: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>> {
-		return this.#collection.find(selector as any, options).toArray()
+		const span = startSpanManual('WrappedCollection.findFetch')
+		if (span) {
+			span.addLabels({
+				collection: this.name,
+				query: JSON.stringify(selector),
+			})
+		}
+		const res = await this.#collection.find(selector as any, options).toArray()
+		if (span) span.end()
+		return res
 	}
 
 	async findOne(selector: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined> {
+		const span = startSpanManual('WrappedCollection.findOne')
+		if (span) {
+			span.addLabels({
+				collection: this.name,
+				query: JSON.stringify(selector),
+			})
+		}
+
 		if (typeof selector === 'string') {
 			selector = { _id: selector }
 		}
-		return this.#collection.findOne(selector, options)
+		const res = await this.#collection.findOne(selector, options)
+		if (span) span.end()
+		return res
 	}
 
 	async insertOne(doc: TDoc): Promise<TDoc['_id']> {
+		const span = startSpanManual('WrappedCollection.insertOne')
+		if (span) {
+			span.addLabels({
+				collection: this.name,
+				id: unprotectString(doc._id),
+			})
+		}
+
 		// TODO - fill in id if missing?
 		const res = await this.#collection.insertOne(doc as any)
+		if (span) span.end()
 		return res.insertedId
 	}
 
 	async replace(doc: TDoc): Promise<boolean> {
+		const span = startSpanManual('WrappedCollection.replace')
+		if (span) {
+			span.addLabels({
+				collection: this.name,
+				id: unprotectString(doc._id),
+			})
+		}
+
 		const res = await this.#collection.replaceOne({ _id: doc._id }, doc)
+		if (span) span.end()
 		return res.matchedCount > 0
 	}
 
@@ -125,24 +163,50 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		modifier: MongoModifier<TDoc>
 		// options?: UpdateOptions
 	): Promise<number> {
+		const span = startSpanManual('WrappedCollection.update')
+		if (span) {
+			span.addLabels({
+				collection: this.name,
+				query: JSON.stringify(selector),
+			})
+		}
+
 		if (typeof selector === 'string') {
 			selector = { _id: selector }
 		}
 
 		const res = await this.#collection.updateMany(selector, modifier)
+		if (span) span.end()
 		return res.upsertedCount
 	}
 
 	async remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
+		const span = startSpanManual('WrappedCollection.remove')
+		if (span) {
+			span.addLabels({
+				collection: this.name,
+				query: JSON.stringify(selector),
+			})
+		}
+
 		if (typeof selector === 'string') {
 			selector = { _id: selector }
 		}
 
 		const res = await this.#collection.deleteMany(selector)
+		if (span) span.end()
 		return res.deletedCount
 	}
 
 	async bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>): Promise<void> {
+		const span = startSpanManual('WrappedCollection.bulkWrite')
+		if (span) {
+			span.addLabels({
+				collection: this.name,
+				opCount: ops.length,
+			})
+		}
+
 		if (ops.length > 0) {
 			const bulkWriteResult = await this.#collection.bulkWrite(ops, {
 				ordered: false,
@@ -155,6 +219,8 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 				throw new Error(`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`)
 			}
 		}
+
+		if (span) span.end()
 	}
 }
 

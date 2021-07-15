@@ -31,8 +31,14 @@ export function setupApmAgent(): void {
 
 // APM types are not exported https://github.com/elastic/apm-agent-nodejs/pull/1775
 export type ApmTransaction = ReturnType<typeof Agent.startTransaction>
+export type ApmSpan = ReturnType<typeof Agent.startSpan>
 
 export function startTransaction(name: string, namespace: string): ApmTransaction | undefined {
 	if (!active) return undefined
 	return Agent.startTransaction(name, namespace)
+}
+
+export function startSpanManual(name: string): ApmSpan | undefined {
+	if (!active) return undefined
+	return Agent.startSpan(name)
 }

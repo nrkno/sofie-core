@@ -21,6 +21,7 @@ import { check } from 'meteor/check'
 import { StudioId } from '../../../lib/collections/Studios'
 import { ensureNextPartIsValid } from '../ingest/updateNext'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
+import { profiler } from '../profiler'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -58,6 +59,8 @@ if (!Settings.enableUserAccounts) {
 				check(studioId, String)
 				logger.info(`debug_updateTimeline: "${studioId}"`)
 
+				const transaction = profiler.startTransaction('updateTimeline', 'meteor-debug')
+
 				waitForPromise(
 					runStudioOperationWithCache(
 						'debug_updateTimeline',
@@ -68,6 +71,8 @@ if (!Settings.enableUserAccounts) {
 						}
 					)
 				)
+
+				if (transaction) transaction.end()
 			} catch (e) {
 				logger.error(e)
 				throw e
