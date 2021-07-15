@@ -1491,6 +1491,14 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
+"@sofie-automation/blueprints-integration@file:blueprints-integration":
+  version "1.37.0-in-development"
+  dependencies:
+    moment "2.29.1"
+    timeline-state-resolver-types "^6.1.0-release36.0"
+    tslib "^2.1.0"
+    underscore "1.13.1"
+
 "@sofie-automation/code-standard-preset@^0.4.1":
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-0.4.2.tgz#bd149d5979e9df2d08f3ff8546e10ac2c5294003"

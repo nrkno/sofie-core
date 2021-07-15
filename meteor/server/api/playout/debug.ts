@@ -22,6 +22,8 @@ import { StudioId } from '../../../lib/collections/Studios'
 import { ensureNextPartIsValid } from '../ingest/updateNext'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { profiler } from '../profiler'
+import { QueueStudioJob } from '../../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -73,6 +75,29 @@ if (!Settings.enableUserAccounts) {
 				)
 
 				if (transaction) transaction.end()
+			} catch (e) {
+				logger.error(e)
+				throw e
+			}
+		},
+		debug_updateTimeline2: (studioId: StudioId) => {
+			try {
+				check(studioId, String)
+				logger.info(`debug_updateTimeline2: "${studioId}"`)
+
+				const transaction = profiler.startTransaction('updateTimeline2', 'meteor-debug')
+
+				const job = waitForPromise(QueueStudioJob(StudioJobs.UpdateTimeline, studioId, undefined))
+
+				const span = transaction?.startSpan('queued-job')
+				waitForPromise(job.complete)
+				span?.end()
+
+				console.log(waitForPromise(job.getTimings))
+
+				if (transaction) transaction.end()
+
+				logger.info(`debug_updateTimeline2: "${studioId}" - done`)
 			} catch (e) {
 				logger.error(e)
 				throw e

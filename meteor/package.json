@@ -58,6 +58,7 @@
 		"amqplib": "^0.8.0",
 		"bcrypt": "^5.0.1",
 		"body-parser": "^1.19.0",
+		"bullmq": "^1.39.0",
 		"classnames": "^2.3.1",
 		"core-js": "^3.14.0",
 		"cubic-spline": "^3.0.3",

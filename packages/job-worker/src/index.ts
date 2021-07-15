@@ -5,10 +5,11 @@ import { IDirectCollections, wrapMongoCollection } from './collection'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { JobContext } from './jobs'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { loadBlueprintById, loadStudioBlueprint } from './blueprints/cache'
 import { BlueprintManifestType } from '../../blueprints-integration/dist'
-import { studioJobHandlers, StudioJobs } from './jobs/jobs'
+import { studioJobHandlers } from './jobs/jobs'
 import { setupApmAgent, startTransaction } from './profiler'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
@@ -24,7 +25,7 @@ const connection: ConnectionOptions = {
 
 const studioId: StudioId = protectString('studio0') // the queue/worker is for a dedicated studio, so the id will be semi-hardcoded
 const token = 'abc' // unique 'id' for the worker
-const worker = new Worker(`studio:${studioId}`, undefined, { connection })
+const worker = new Worker(getStudioQueueName(studioId), undefined, { connection })
 
 setupApmAgent()
 
@@ -125,10 +126,9 @@ void (async () => {
 	}
 })()
 
-async function runJob(context: JobContext, name: string, data: any): Promise<any> {
-	// TODO
-
-	const handler = studioJobHandlers[name as StudioJobs]
+async function runJob(context: JobContext, name: string, data: unknown): Promise<unknown> {
+	// Execute function, or fail if no handler
+	const handler = (studioJobHandlers as any)[name]
 	if (handler) {
 		return handler(context, data)
 	} else {
