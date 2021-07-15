@@ -55,6 +55,8 @@ import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from
 import { getShowStyleCompound } from './showStyles'
 import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { SnapshotId } from '../../lib/collections/Snapshots'
+import { QueueStudioJob } from '../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -551,6 +553,37 @@ export async function rundownBaselineAdLibPieceStart(
 			queue
 		)
 	)
+}
+export async function rundownBaselineAdLibPieceStart2(
+	context: MethodContext,
+	rundownPlaylistId: RundownPlaylistId,
+	partInstanceId: PartInstanceId,
+	adlibPieceId: PieceId,
+	queue: boolean
+): Promise<ClientAPI.ClientResponse<void>> {
+	check(rundownPlaylistId, String)
+	check(partInstanceId, String)
+	check(adlibPieceId, String)
+
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
+
+	const job = await QueueStudioJob(StudioJobs.RundownBaselineAdlibStart, playlist.studioId, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		baselineAdLibPieceId: adlibPieceId,
+		queue: queue,
+	})
+
+	// TODO - the error handling here is very different
+
+	const span = profiler.startSpan('queued-job')
+	await job.complete
+	span?.end()
+
+	console.log(await job.getTimings)
+
+	return ClientAPI.responseSuccess(undefined)
 }
 export async function sourceLayerStickyPieceStart(
 	context: MethodContext,
@@ -1050,6 +1083,23 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return traceAction(
 			UserActionAPIMethods.baselineAdLibPieceStart,
 			rundownBaselineAdLibPieceStart,
+			this,
+			rundownPlaylistId,
+			partInstanceId,
+			adlibPieceId,
+			queue
+		)
+	}
+	async baselineAdLibPieceStart2(
+		_userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		adlibPieceId: PieceId,
+		queue: boolean
+	) {
+		return traceAction(
+			UserActionAPIMethods.baselineAdLibPieceStart2,
+			rundownBaselineAdLibPieceStart2,
 			this,
 			rundownPlaylistId,
 			partInstanceId,
