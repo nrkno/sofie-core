@@ -4,7 +4,7 @@ import { MongoClient } from 'mongodb'
 import { IDirectCollections, wrapMongoCollection } from './collection'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { JobContext } from './jobs'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { loadBlueprintById, loadStudioBlueprint } from './blueprints/cache'
 import { BlueprintManifestType } from '../../blueprints-integration/dist'
@@ -88,8 +88,11 @@ void (async () => {
 			// we may not get a job even when blocking, so try again
 			if (job) {
 				const transaction = startTransaction(job.name, 'worker-studio')
+				if (transaction) {
+					transaction.setLabel('studioId', unprotectString(studioId))
+				}
+
 				try {
-					// TODO Something
 					console.log('Running work ', job.id, job.name, JSON.stringify(job.data))
 
 					const context: JobContext = {

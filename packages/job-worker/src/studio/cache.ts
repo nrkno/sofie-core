@@ -45,6 +45,7 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 	}
 
 	static async create(context: JobContext, studioId: StudioId): Promise<CacheForStudio> {
+		const span = context.startSpan('CacheForStudio.create')
 		const studio = await DbCacheReadObject.createFromDatabase(
 			context,
 			context.directCollections.Studios,
@@ -60,7 +61,9 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Timelines, { _id: studioId }),
 		])
 
-		return new CacheForStudio(context, studio, ...collections)
+		const res = new CacheForStudio(context, studio, ...collections)
+		if (span) span.end()
+		return res
 	}
 
 	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): DBRundownPlaylist[] {

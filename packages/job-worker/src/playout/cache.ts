@@ -19,6 +19,7 @@ import _ = require('underscore')
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { removeRundownPlaylistFromDb } from '../rundownPlaylists'
 import { getRundownsSegmentsAndPartsFromCache } from './lib'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 /**
  * This is a cache used for playout operations.
@@ -61,8 +62,13 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 		reloadPlaylist = true
 	): Promise<CacheForPlayoutPreInit> {
+		const span = context.startSpan('CacheForPlayoutPreInit.createPreInit')
+		if (span) span.setLabel('playlistId', unprotectString(tmpPlaylist._id))
+
 		const initData = await CacheForPlayoutPreInit.loadInitData(context, tmpPlaylist, reloadPlaylist, undefined)
-		return new CacheForPlayoutPreInit(context, tmpPlaylist._id, ...initData)
+		const res = new CacheForPlayoutPreInit(context, tmpPlaylist._id, ...initData)
+		if (span) span.end()
+		return res
 	}
 
 	protected static async loadInitData(
@@ -198,6 +204,9 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	// }
 
 	static async fromInit(context: JobContext, initCache: CacheForPlayoutPreInit): Promise<CacheForPlayout> {
+		const span = context.startSpan('CacheForPlayout.fromInit')
+		if (span) span.setLabel('playlistId', unprotectString(initCache.PlaylistId))
+
 		// we are claiming the collections
 		initCache._abortActiveTimeout()
 
@@ -208,7 +217,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			initCache.Rundowns.findFetch({}).map((r) => r._id)
 		)
 
-		return new CacheForPlayout(
+		const res = new CacheForPlayout(
 			context,
 			initCache.PlaylistId,
 			// initCache.activationCache,
@@ -218,6 +227,9 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			initCache.Rundowns,
 			...content
 		)
+
+		if (span) span.end()
+		return res
 	}
 
 	// static async fromIngest(

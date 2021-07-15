@@ -50,9 +50,19 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		collection: ICollection<TDoc>,
 		selector: MongoQuery<TDoc>
 	): Promise<DbCacheReadCollection<TDoc>> {
+		const span = context.startSpan('DbCacheReadCollection.createFromDatabase')
+		if (span) {
+			span.addLabels({
+				collection: collection.name,
+				query: JSON.stringify(selector),
+			})
+		}
+
 		const docs = await collection.findFetch(selector)
 
-		return DbCacheReadCollection.createFromArray(context, collection, docs)
+		const res = DbCacheReadCollection.createFromArray(context, collection, docs)
+		if (span) span.end()
+		return res
 	}
 
 	get name(): string | null {
@@ -174,9 +184,19 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		collection: ICollection<TDoc>,
 		selector: MongoQuery<TDoc>
 	): Promise<DbCacheWriteCollection<TDoc>> {
+		const span = context.startSpan('DbCacheWriteCollection.createFromDatabase')
+		if (span) {
+			span.addLabels({
+				collection: collection.name,
+				query: JSON.stringify(selector),
+			})
+		}
+
 		const docs = await collection.findFetch(selector)
 
-		return DbCacheWriteCollection.createFromArray(context, collection, docs)
+		const res = DbCacheWriteCollection.createFromArray(context, collection, docs)
+		if (span) span.end()
+		return res
 	}
 
 	insert(doc: TDoc): TDoc['_id'] {

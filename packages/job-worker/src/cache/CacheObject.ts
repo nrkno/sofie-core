@@ -52,6 +52,14 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 		optional: DocOptional,
 		id: TDoc['_id']
 	): Promise<DbCacheReadObject<TDoc, DocOptional>> {
+		const span = context.startSpan('DbCacheReadObject.createFromDatabase')
+		if (span) {
+			span.addLabels({
+				collection: collection.name,
+				id: unprotectString(id),
+			})
+		}
+
 		const doc = await collection.findOne(id)
 		if (!doc && !optional) {
 			throw new Error(
@@ -59,7 +67,9 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 			)
 		}
 
-		return DbCacheReadObject.createFromDoc<TDoc, DocOptional>(context, collection, optional, doc as any)
+		const res = DbCacheReadObject.createFromDoc<TDoc, DocOptional>(context, collection, optional, doc as any)
+		if (span) span.end()
+		return res
 	}
 
 	get doc(): DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc> {
@@ -109,6 +119,14 @@ export class DbCacheWriteObject<
 		optional: DocOptional,
 		id: TDoc['_id']
 	): Promise<DbCacheWriteObject<TDoc, DocOptional>> {
+		const span = context.startSpan('DbCacheWriteObject.createFromDatabase')
+		if (span) {
+			span.addLabels({
+				collection: collection.name,
+				id: unprotectString(id),
+			})
+		}
+
 		const doc = await collection.findOne(id)
 		if (!doc && !optional) {
 			throw new Error(
@@ -116,7 +134,9 @@ export class DbCacheWriteObject<
 			)
 		}
 
-		return DbCacheWriteObject.createFromDoc<TDoc, DocOptional>(context, collection, optional, doc as any)
+		const res = DbCacheWriteObject.createFromDoc<TDoc, DocOptional>(context, collection, optional, doc as any)
+		if (span) span.end()
+		return res
 	}
 
 	protected assertNotToBeRemoved(methodName: string): void {
@@ -221,13 +241,23 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 		collection: ICollection<TDoc>,
 		id: TDoc['_id']
 	): Promise<DbCacheWriteOptionalObject<TDoc>> {
+		const span = context.startSpan('DbCacheWriteOptionalObject.createOptionalFromDatabase')
+		if (span) {
+			span.addLabels({
+				collection: collection.name,
+				id: unprotectString(id),
+			})
+		}
+
 		const doc = await collection.findOne(id)
 
-		return DbCacheWriteOptionalObject.createOptionalFromDoc<TDoc>(
+		const res = DbCacheWriteOptionalObject.createOptionalFromDoc<TDoc>(
 			context,
 			collection,
 			doc as ReadonlyDeep<TDoc> | undefined
 		)
+		if (span) span.end()
+		return res
 	}
 
 	replace(doc: TDoc): ReadonlyDeep<TDoc> {
