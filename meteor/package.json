@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"start": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run debug --\" \"npm run watch-types -- --preserveWatchOutput\"",
-		"debug": "meteor run --inspect",
+		"debug": "meteor run ",
 		"libs:syncVersions": "cd ../packages && yarn sync-version",
 		"libs:syncVersionsAndChangelogs": "cd ../packages && yarn sync-version-and-changelog",
 		"postinstall": "meteor npm run prepareForTest",

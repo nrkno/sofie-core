@@ -1,5 +1,5 @@
 import { logger } from './logging'
-import { ConnectionOptions, Worker } from 'bullmq'
+import { ConnectionOptions, QueueScheduler, Worker } from 'bullmq'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -23,6 +23,9 @@ const connection: ConnectionOptions = {
 const studioId: StudioId = protectString('studio0') // the queue/worker is for a dedicated studio, so the id will be semi-hardcoded
 const token = 'abc' // unique 'id' for the worker
 const studioQueue = new Worker(getStudioQueueName(studioId), undefined, { connection })
+
+// This is needed to handle timeouts or something
+const studioScheduler = new QueueScheduler(getStudioQueueName(studioId), { connection })
 
 setupApmAgent()
 
@@ -55,6 +58,7 @@ void (async () => {
 				try {
 					console.log('Running work ', job.id, job.name, JSON.stringify(job.data))
 
+					// TODO - this never resolves if the worker dies. Hopefully the bug will be fixed, or swap it out for threadedclass https://github.com/andywer/threads.js/issues/386
 					const result = await studioWorker.runJob(job.name, job.data)
 
 					await job.moveToCompleted(result, token, false)
@@ -62,6 +66,7 @@ void (async () => {
 					console.log('job errored', e)
 					await job.moveToFailed(e, token)
 				}
+				console.log('the end')
 				transaction?.end()
 			}
 		}

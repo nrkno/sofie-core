@@ -4,6 +4,7 @@ import { CacheForStudio } from '../studio/cache'
 import { JobContext } from '.'
 import { rundownBaselineAdLibPieceStart } from '../playout/adlib'
 import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
+import { lockPlaylist } from './lock'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -34,14 +35,19 @@ async function updateTimelineDebug(context: JobContext, _data: void): Promise<vo
 		const playlist = activePlaylists[0]
 		console.log('for playlist', playlist._id)
 
-		const initCache = await CacheForPlayout.createPreInit(context, playlist, false)
-		// TODO - any extra validity checks?
+		const playlistLock = await lockPlaylist(context, playlist._id)
+		try {
+			const initCache = await CacheForPlayout.createPreInit(context, playlistLock, playlist, false)
+			// TODO - any extra validity checks?
 
-		const playoutCache = await CacheForPlayout.fromInit(context, initCache)
+			const playoutCache = await CacheForPlayout.fromInit(context, initCache)
 
-		await updateTimeline(context, playoutCache)
+			await updateTimeline(context, playoutCache)
 
-		await playoutCache.saveAllToDatabase()
+			await playoutCache.saveAllToDatabase()
+		} finally {
+			await playlistLock.release()
+		}
 	} else {
 		console.log('for studio')
 		await updateStudioTimeline(context, studioCache)

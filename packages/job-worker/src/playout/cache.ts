@@ -20,6 +20,7 @@ import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/Run
 import { removeRundownPlaylistFromDb } from '../rundownPlaylists'
 import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { PlaylistLock } from '../jobs/lock'
 
 /**
  * This is a cache used for playout operations.
@@ -28,6 +29,8 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 	public readonly isPlayout = true
 	public readonly PlaylistId: RundownPlaylistId
+
+	public readonly PlaylistLock: PlaylistLock
 
 	// public readonly activationCache: ActivationCache
 
@@ -39,6 +42,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 
 	protected constructor(
 		context: JobContext,
+		playlistLock: PlaylistLock,
 		playlistId: RundownPlaylistId,
 		// activationCache: ActivationCache,
 		studio: DbCacheReadObject<DBStudio>,
@@ -50,6 +54,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 
 		this.PlaylistId = playlistId
 		// this.activationCache = activationCache
+		this.PlaylistLock = playlistLock
 
 		this.Studio = studio
 		this.PeripheralDevices = peripheralDevices
@@ -59,14 +64,19 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 
 	static async createPreInit(
 		context: JobContext,
+		playlistLock: PlaylistLock,
 		tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 		reloadPlaylist = true
 	): Promise<CacheForPlayoutPreInit> {
 		const span = context.startSpan('CacheForPlayoutPreInit.createPreInit')
 		if (span) span.setLabel('playlistId', unprotectString(tmpPlaylist._id))
 
+		if (!playlistLock.isLocked) {
+			throw new Error('Cannot create cache with released playlist lock')
+		}
+
 		const initData = await CacheForPlayoutPreInit.loadInitData(context, tmpPlaylist, reloadPlaylist, undefined)
-		const res = new CacheForPlayoutPreInit(context, tmpPlaylist._id, ...initData)
+		const res = new CacheForPlayoutPreInit(context, playlistLock, tmpPlaylist._id, ...initData)
 		if (span) span.end()
 		return res
 	}
@@ -170,12 +180,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 	protected constructor(
 		context: JobContext,
-		playlistId: RundownPlaylistId,
-		// activationCache: ActivationCache,
-		studio: DbCacheReadObject<DBStudio>,
-		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
-		playlist: DbCacheWriteObject<DBRundownPlaylist>,
-		rundowns: DbCacheReadCollection<DBRundown>,
+		initCache: CacheForPlayoutPreInit,
 		segments: DbCacheReadCollection<DBSegment>,
 		parts: DbCacheReadCollection<DBPart>,
 		partInstances: DbCacheWriteCollection<DBPartInstance>,
@@ -183,7 +188,15 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		timeline: DbCacheWriteCollection<TimelineComplete>,
 		baselineObjects: DbCacheReadCollection<RundownBaselineObj>
 	) {
-		super(context, playlistId, studio, peripheralDevices, playlist, rundowns)
+		super(
+			context,
+			initCache.PlaylistLock,
+			initCache.PlaylistId,
+			initCache.Studio,
+			initCache.PeripheralDevices,
+			initCache.Playlist,
+			initCache.Rundowns
+		)
 
 		this.Timeline = timeline
 
@@ -217,16 +230,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			initCache.Rundowns.findFetch({}).map((r) => r._id)
 		)
 
-		const res = new CacheForPlayout(
-			context,
-			initCache.PlaylistId,
-			// initCache.activationCache,
-			initCache.Studio,
-			initCache.PeripheralDevices,
-			initCache.Playlist,
-			initCache.Rundowns,
-			...content
-		)
+		const res = new CacheForPlayout(context, initCache, ...content)
 
 		if (span) span.end()
 		return res
@@ -353,6 +357,10 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 
 	async saveAllToDatabase() {
+		if (!this.PlaylistLock.isLocked) {
+			throw new Error('Cannot save changes with released playlist lock')
+		}
+
 		if (this.toBeRemoved) {
 			const span = this.context.startSpan('CacheForPlayout.saveAllToDatabase')
 			this._abortActiveTimeout()

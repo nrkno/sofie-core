@@ -20,6 +20,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
+import { lockPlaylist } from '../jobs/lock'
 
 // export namespace ServerPlayoutAdLibAPI {
 // 	export async function pieceTakeNow(
@@ -196,21 +197,24 @@ export async function runAsPlayoutJob<TRes>(
 		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
 	}
 
-	// TODO - this is where we should be locking the playlist
+	const playlistLock = await lockPlaylist(context, playlist._id)
+	try {
+		const initCache = await CacheForPlayoutPreInit.createPreInit(context, playlistLock, playlist, false)
 
-	const initCache = await CacheForPlayoutPreInit.createPreInit(context, playlist, false)
+		if (preInitFcn) {
+			await preInitFcn(initCache)
+		}
 
-	if (preInitFcn) {
-		await preInitFcn(initCache)
+		const fullCache = await CacheForPlayout.fromInit(context, initCache)
+
+		const res = await fcn(fullCache)
+
+		await fullCache.saveAllToDatabase()
+
+		return res
+	} finally {
+		await playlistLock.release()
 	}
-
-	const fullCache = await CacheForPlayout.fromInit(context, initCache)
-
-	const res = await fcn(fullCache)
-
-	await fullCache.saveAllToDatabase()
-
-	return res
 }
 
 export async function rundownBaselineAdLibPieceStart(
