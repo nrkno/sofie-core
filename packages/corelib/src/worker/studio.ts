@@ -1,10 +1,14 @@
-import { PartInstanceId, PieceId, PieceInstanceId, RundownPlaylistId, StudioId } from '../dataModel/Ids'
+import { PartId, PartInstanceId, PieceId, PieceInstanceId, RundownPlaylistId, StudioId } from '../dataModel/Ids'
 
 export enum StudioJobs {
 	UpdateTimeline = 'updateTimeline',
 	AdlibPieceStart = 'adLibPieceStart',
 	TakePieceAsAdlibNow = 'takePieceAsAdlibNow',
 	StartStickyPieceOnSourceLayer = 'startStickyPieceOnSourceLayer',
+	StopPiecesOnSourceLayers = 'stopPiecesOnSourceLayers',
+	MoveNextPart = 'moveNextPart',
+	ActivateHold = 'activateHold',
+	DeactivateHold = 'deactivateHold',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -23,6 +27,16 @@ export interface TakePieceAsAdlibNowProps extends RundownPlayoutPropsBase {
 export interface StartStickyPieceOnSourceLayerProps extends RundownPlayoutPropsBase {
 	sourceLayerId: string
 }
+export interface StopPiecesOnSourceLayersProps extends RundownPlayoutPropsBase {
+	partInstanceId: PartInstanceId
+	sourceLayerIds: string[]
+}
+export interface MoveNextPartProps extends RundownPlayoutPropsBase {
+	partDelta: number
+	segmentDelta: number
+}
+export type ActivateHoldProps = RundownPlayoutPropsBase
+export type DeactivateHoldProps = RundownPlayoutPropsBase
 
 /**
  * Set of valid functions, of form:
@@ -33,6 +47,10 @@ export type StudioJobFunc = {
 	[StudioJobs.AdlibPieceStart]: (data: AdlibPieceStartProps) => void
 	[StudioJobs.TakePieceAsAdlibNow]: (data: TakePieceAsAdlibNowProps) => void
 	[StudioJobs.StartStickyPieceOnSourceLayer]: (data: StartStickyPieceOnSourceLayerProps) => void
+	[StudioJobs.StopPiecesOnSourceLayers]: (data: StopPiecesOnSourceLayersProps) => void
+	[StudioJobs.MoveNextPart]: (data: MoveNextPartProps) => PartId | null
+	[StudioJobs.ActivateHold]: (data: ActivateHoldProps) => void
+	[StudioJobs.DeactivateHold]: (data: DeactivateHoldProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

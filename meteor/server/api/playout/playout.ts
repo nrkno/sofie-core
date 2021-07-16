@@ -364,37 +364,6 @@ export namespace ServerPlayoutAPI {
 		// update lookahead and the next part when we have an auto-next
 		await updateTimeline(cache)
 	}
-	export async function moveNextPart(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		partDelta: number,
-		segmentDelta: number
-	): Promise<PartId | null> {
-		check(rundownPlaylistId, String)
-		check(partDelta, Number)
-		check(segmentDelta, Number)
-
-		return runPlayoutOperationWithCache(
-			access,
-			'moveNextPart',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				if (!partDelta && !segmentDelta)
-					throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${partDelta}, ${segmentDelta})`)
-
-				const playlist = cache.Playlist.doc
-				if (!playlist.activationId)
-					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
-
-				if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE)
-					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" cannot change next during hold!`)
-			},
-			async (cache) => {
-				return moveNextPartInner(cache, partDelta, segmentDelta)
-			}
-		)
-	}
 	export async function moveNextPartInner(
 		cache: CacheForPlayout,
 		partDelta: number,
@@ -522,90 +491,6 @@ export namespace ServerPlayoutAPI {
 				await updateTimeline(cache)
 
 				return ClientAPI.responseSuccess(undefined)
-			}
-		)
-	}
-	export async function activateHold(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId
-	): Promise<void> {
-		check(rundownPlaylistId, String)
-		logger.debug('rundownActivateHold')
-
-		return runPlayoutOperationWithCache(
-			access,
-			'activateHold',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-				if (!playlist.activationId)
-					throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
-
-				if (!playlist.currentPartInstanceId)
-					throw new Meteor.Error(400, `Rundown Playlist "${rundownPlaylistId}" no current part!`)
-				if (!playlist.nextPartInstanceId)
-					throw new Meteor.Error(400, `Rundown Playlist "${rundownPlaylistId}" no next part!`)
-
-				if (playlist.holdState) {
-					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" already doing a hold!`)
-				}
-			},
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-				if (!currentPartInstance)
-					throw new Meteor.Error(404, `PartInstance "${playlist.currentPartInstanceId}" not found!`)
-				if (!nextPartInstance)
-					throw new Meteor.Error(404, `PartInstance "${playlist.nextPartInstanceId}" not found!`)
-
-				if (
-					currentPartInstance.part.holdMode !== PartHoldMode.FROM ||
-					nextPartInstance.part.holdMode !== PartHoldMode.TO
-				) {
-					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" incompatible pair of HoldMode!`)
-				}
-				if (currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId) {
-					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" cannot hold between segments!`)
-				}
-
-				const hasDynamicallyInserted = cache.PieceInstances.findOne(
-					(p) => p.partInstanceId === currentPartInstance._id && p.dynamicallyInserted
-				)
-				if (hasDynamicallyInserted)
-					throw new Meteor.Error(
-						400,
-						`RundownPlaylist "${rundownPlaylistId}" cannot hold once an adlib has been used!`
-					)
-
-				cache.Playlist.update({ $set: { holdState: RundownHoldState.PENDING } })
-
-				await updateTimeline(cache)
-			}
-		)
-	}
-	export async function deactivateHold(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId
-	): Promise<void> {
-		check(rundownPlaylistId, String)
-		logger.debug('deactivateHold')
-
-		return runPlayoutOperationWithCache(
-			access,
-			'deactivateHold',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-
-				if (playlist.holdState !== RundownHoldState.PENDING)
-					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" is not pending a hold!`)
-			},
-			async (cache) => {
-				cache.Playlist.update({ $set: { holdState: RundownHoldState.NONE } })
-
-				await updateTimeline(cache)
 			}
 		)
 	}
@@ -1163,59 +1048,6 @@ export namespace ServerPlayoutAPI {
 	 */
 	export async function callTakeWithCache(cache: CacheForPlayout, now: number) {
 		return takeNextPartInnerSync(cache, now)
-	}
-	export async function sourceLayerOnPartStop(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		sourceLayerIds: string[]
-	): Promise<void> {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(sourceLayerIds, Match.OneOf(String, Array))
-
-		return runPlayoutOperationWithCache(
-			access,
-			'sourceLayerOnPartStop',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
-
-				if (sourceLayerIds.length === 0) return
-
-				const playlist = cache.Playlist.doc
-				if (!playlist.activationId)
-					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-				if (playlist.currentPartInstanceId !== partInstanceId)
-					throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
-			},
-			async (cache) => {
-				const partInstance = cache.PartInstances.findOne(partInstanceId)
-				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
-				const lastStartedPlayback = partInstance.timings?.startedPlayback
-				if (!lastStartedPlayback)
-					throw new Meteor.Error(405, `Part "${partInstanceId}" has yet to start playback!`)
-
-				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
-				if (!rundown) throw new Meteor.Error(501, `Rundown "${partInstance.rundownId}" not found!`)
-
-				const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
-				if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found!`)
-
-				ServerPlayoutAdLibAPI.innerStopPieces(
-					cache,
-					showStyleBase,
-					partInstance,
-					(pieceInstance) => sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1,
-					undefined
-				)
-
-				await syncPlayheadInfinitesForNextPartInstance(cache)
-
-				await updateTimeline(cache)
-			}
-		)
 	}
 
 	export async function updateStudioBaseline(context: MethodContext, studioId: StudioId): Promise<string | false> {

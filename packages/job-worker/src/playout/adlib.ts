@@ -1,10 +1,10 @@
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance, rewrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { getRandomId, getRank, literal } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, getRandomId, getRank, literal } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import {
@@ -36,11 +36,13 @@ import {
 } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MongoQuery } from '../collection'
+import { ReadonlyDeep } from 'type-fest'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
 	return runAsPlayoutJob(
@@ -515,109 +517,110 @@ export function innerStartAdLibPiece(
 	if (span) span.end()
 }
 
-// 	export function innerStopPieces(
-// 		cache: CacheForPlayout,
-// 		showStyleBase: ReadonlyDeep<ShowStyleBase>,
-// 		currentPartInstance: PartInstance,
-// 		filter: (pieceInstance: PieceInstance) => boolean,
-// 		timeOffset: number | undefined
-// 	) {
-// 		const span = profiler.startSpan('innerStopPieces')
-// 		const stoppedInstances: PieceInstanceId[] = []
+export function innerStopPieces(
+	context: JobContext,
+	cache: CacheForPlayout,
+	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	currentPartInstance: DBPartInstance,
+	filter: (pieceInstance: PieceInstance) => boolean,
+	timeOffset: number | undefined
+): Array<PieceInstanceId> {
+	const span = context.startSpan('innerStopPieces')
+	const stoppedInstances: PieceInstanceId[] = []
 
-// 		const lastStartedPlayback = currentPartInstance.timings?.startedPlayback
-// 		if (lastStartedPlayback === undefined) {
-// 			throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
-// 		}
+	const lastStartedPlayback = currentPartInstance.timings?.startedPlayback
+	if (lastStartedPlayback === undefined) {
+		throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
+	}
 
-// 		const resolvedPieces = getResolvedPieces(cache, showStyleBase, currentPartInstance)
-// 		const stopAt = getCurrentTime() + (timeOffset || 0)
-// 		const relativeStopAt = stopAt - lastStartedPlayback
+	const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, currentPartInstance)
+	const stopAt = getCurrentTime() + (timeOffset || 0)
+	const relativeStopAt = stopAt - lastStartedPlayback
 
-// 		const stoppedInfiniteIds = new Set<PieceId>()
+	const stoppedInfiniteIds = new Set<PieceId>()
 
-// 		for (const pieceInstance of resolvedPieces) {
-// 			if (
-// 				!pieceInstance.userDuration &&
-// 				!pieceInstance.piece.virtual &&
-// 				filter(pieceInstance) &&
-// 				pieceInstance.resolvedStart !== undefined &&
-// 				pieceInstance.resolvedStart <= relativeStopAt &&
-// 				!pieceInstance.stoppedPlayback
-// 			) {
-// 				switch (pieceInstance.piece.lifespan) {
-// 					case PieceLifespan.WithinPart:
-// 					case PieceLifespan.OutOnSegmentChange:
-// 					case PieceLifespan.OutOnRundownChange: {
-// 						logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
-// 						const up: Partial<PieceInstance> = {
-// 							userDuration: {
-// 								end: relativeStopAt,
-// 							},
-// 						}
-// 						if (pieceInstance.infinite) {
-// 							stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
-// 						}
+	for (const pieceInstance of resolvedPieces) {
+		if (
+			!pieceInstance.userDuration &&
+			!pieceInstance.piece.virtual &&
+			filter(pieceInstance) &&
+			pieceInstance.resolvedStart !== undefined &&
+			pieceInstance.resolvedStart <= relativeStopAt &&
+			!pieceInstance.stoppedPlayback
+		) {
+			switch (pieceInstance.piece.lifespan) {
+				case PieceLifespan.WithinPart:
+				case PieceLifespan.OutOnSegmentChange:
+				case PieceLifespan.OutOnRundownChange: {
+					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
+					const up: Partial<PieceInstance> = {
+						userDuration: {
+							end: relativeStopAt,
+						},
+					}
+					if (pieceInstance.infinite) {
+						stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
+					}
 
-// 						cache.PieceInstances.update(
-// 							{
-// 								_id: pieceInstance._id,
-// 							},
-// 							{
-// 								$set: up,
-// 							}
-// 						)
+					cache.PieceInstances.update(
+						{
+							_id: pieceInstance._id,
+						},
+						{
+							$set: up,
+						}
+					)
 
-// 						stoppedInstances.push(pieceInstance._id)
-// 						break
-// 					}
-// 					case PieceLifespan.OutOnSegmentEnd:
-// 					case PieceLifespan.OutOnRundownEnd:
-// 					case PieceLifespan.OutOnShowStyleEnd: {
-// 						logger.info(
-// 							`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt} with a virtual`
-// 						)
+					stoppedInstances.push(pieceInstance._id)
+					break
+				}
+				case PieceLifespan.OutOnSegmentEnd:
+				case PieceLifespan.OutOnRundownEnd:
+				case PieceLifespan.OutOnShowStyleEnd: {
+					logger.info(
+						`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt} with a virtual`
+					)
 
-// 						const pieceId: PieceId = getRandomId()
-// 						cache.PieceInstances.insert({
-// 							...rewrapPieceToInstance(
-// 								{
-// 									_id: pieceId,
-// 									externalId: '-',
-// 									enable: { start: relativeStopAt },
-// 									lifespan: pieceInstance.piece.lifespan,
-// 									sourceLayerId: pieceInstance.piece.sourceLayerId,
-// 									outputLayerId: pieceInstance.piece.outputLayerId,
-// 									invalid: false,
-// 									name: '',
-// 									startPartId: currentPartInstance.part._id,
-// 									status: RundownAPI.PieceStatusCode.UNKNOWN,
-// 									virtual: true,
-// 									content: {
-// 										timelineObjects: [],
-// 									},
-// 								},
-// 								currentPartInstance.playlistActivationId,
-// 								currentPartInstance.rundownId,
-// 								currentPartInstance._id
-// 							),
-// 							dynamicallyInserted: getCurrentTime(),
-// 							infinite: {
-// 								infiniteInstanceId: getRandomId(),
-// 								infinitePieceId: pieceId,
-// 								fromPreviousPart: false,
-// 							},
-// 						})
+					const pieceId: PieceId = getRandomId()
+					cache.PieceInstances.insert({
+						...rewrapPieceToInstance(
+							{
+								_id: pieceId,
+								externalId: '-',
+								enable: { start: relativeStopAt },
+								lifespan: pieceInstance.piece.lifespan,
+								sourceLayerId: pieceInstance.piece.sourceLayerId,
+								outputLayerId: pieceInstance.piece.outputLayerId,
+								invalid: false,
+								name: '',
+								startPartId: currentPartInstance.part._id,
+								status: PieceStatusCode.UNKNOWN,
+								virtual: true,
+								content: {
+									timelineObjects: [],
+								},
+							},
+							currentPartInstance.playlistActivationId,
+							currentPartInstance.rundownId,
+							currentPartInstance._id
+						),
+						dynamicallyInserted: getCurrentTime(),
+						infinite: {
+							infiniteInstanceId: getRandomId(),
+							infinitePieceId: pieceId,
+							fromPreviousPart: false,
+						},
+					})
 
-// 						stoppedInstances.push(pieceInstance._id)
-// 						break
-// 					}
-// 					default:
-// 						assertNever(pieceInstance.piece.lifespan)
-// 				}
-// 			}
-// 		}
+					stoppedInstances.push(pieceInstance._id)
+					break
+				}
+				default:
+					assertNever(pieceInstance.piece.lifespan)
+			}
+		}
+	}
 
-// 		if (span) span.end()
-// 		return stoppedInstances
-// 	}
+	if (span) span.end()
+	return stoppedInstances
+}

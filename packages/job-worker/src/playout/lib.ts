@@ -6,13 +6,18 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstanceId, RundownId, SegmentId, SegmentPlayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
-import { CacheForPlayout, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './cache'
+import {
+	CacheForPlayout,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
+	getRundownIDsFromCache,
+	getSelectedPartInstancesFromCache,
+} from './cache'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
@@ -20,61 +25,68 @@ import {
 } from './infinites'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/corelib/dist/constants'
+import { logger } from '../logging'
+import { getCurrentTime } from '../lib'
 
 // export const LOW_PRIO_DEFER_TIME = 40 // ms
 
-// /**
-//  * Reset the rundownPlaylist (all of the rundowns within the playlist):
-//  * Remove all dynamically inserted/updated pieces, parts, timings etc..
-//  */
-// export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void> {
-// 	logger.info('resetRundownPlaylist ' + cache.Playlist.doc._id)
-// 	// Remove all dunamically inserted pieces (adlibs etc)
-// 	// const rundownIds = new Set(getRundownIDsFromCache(cache))
+/**
+ * Reset the rundownPlaylist (all of the rundowns within the playlist):
+ * Remove all dynamically inserted/updated pieces, parts, timings etc..
+ */
+export async function resetRundownPlaylist(context: JobContext, cache: CacheForPlayout): Promise<void> {
+	logger.info('resetRundownPlaylist ' + cache.Playlist.doc._id)
+	// Remove all dunamically inserted pieces (adlibs etc)
+	// const rundownIds = new Set(getRundownIDsFromCache(cache))
 
-// 	const partInstancesToRemove = new Set(cache.PartInstances.remove((p) => p.rehearsal))
-// 	cache.PieceInstances.remove((p) => partInstancesToRemove.has(p.partInstanceId))
+	const partInstancesToRemove = new Set(cache.PartInstances.remove((p) => p.rehearsal))
+	cache.PieceInstances.remove((p) => partInstancesToRemove.has(p.partInstanceId))
 
-// 	cache.PartInstances.update((p) => !p.reset, {
-// 		$set: {
-// 			reset: true,
-// 		},
-// 	})
-// 	cache.PieceInstances.update((p) => !p.reset, {
-// 		$set: {
-// 			reset: true,
-// 		},
-// 	})
+	cache.PartInstances.update((p) => !p.reset, {
+		$set: {
+			reset: true,
+		},
+	})
+	cache.PieceInstances.update((p) => !p.reset, {
+		$set: {
+			reset: true,
+		},
+	})
 
-// 	cache.Playlist.update({
-// 		$set: {
-// 			previousPartInstanceId: null,
-// 			currentPartInstanceId: null,
-// 			holdState: RundownHoldState.NONE,
-// 		},
-// 		$unset: {
-// 			startedPlayback: 1,
-// 			rundownsStartedPlayback: 1,
-// 			previousPersistentState: 1,
-// 			trackedAbSessions: 1,
-// 		},
-// 	})
+	cache.Playlist.update({
+		$set: {
+			previousPartInstanceId: null,
+			currentPartInstanceId: null,
+			holdState: RundownHoldState.NONE,
+		},
+		$unset: {
+			startedPlayback: 1,
+			rundownsStartedPlayback: 1,
+			previousPersistentState: 1,
+			trackedAbSessions: 1,
+		},
+	})
 
-// 	if (cache.Playlist.doc.activationId) {
-// 		// generate a new activationId
-// 		cache.Playlist.update({
-// 			$set: {
-// 				activationId: getRandomId(),
-// 			},
-// 		})
+	if (cache.Playlist.doc.activationId) {
+		// generate a new activationId
+		cache.Playlist.update({
+			$set: {
+				activationId: getRandomId(),
+			},
+		})
 
-// 		// put the first on queue:
-// 		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
-// 		await setNextPart(cache, firstPart)
-// 	} else {
-// 		await setNextPart(cache, null)
-// 	}
-// }
+		// put the first on queue:
+		const firstPart = selectNextPart(
+			context,
+			cache.Playlist.doc,
+			null,
+			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+		)
+		await setNextPart(context, cache, firstPart)
+	} else {
+		await setNextPart(context, cache, null)
+	}
+}
 
 export interface SelectNextPartResult {
 	part: DBPart
@@ -595,31 +607,34 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 	})
 }
 
-// /**
-//  * time in ms before an autotake when we don't accept takes/updates
-//  */
-// const AUTOTAKE_UPDATE_DEBOUNCE = 5000
-// const AUTOTAKE_TAKE_DEBOUNCE = 1000
+/**
+ * time in ms before an autotake when we don't accept takes/updates
+ */
+const AUTOTAKE_UPDATE_DEBOUNCE = 5000
+const AUTOTAKE_TAKE_DEBOUNCE = 1000
 
-// export function isTooCloseToAutonext(currentPartInstance: ReadonlyDeep<PartInstance> | undefined, isTake?: boolean) {
-// 	if (!currentPartInstance || !currentPartInstance.part.autoNext) return false
+export function isTooCloseToAutonext(
+	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
+	isTake?: boolean
+): boolean {
+	if (!currentPartInstance || !currentPartInstance.part.autoNext) return false
 
-// 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
+	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
 
-// 	const start = currentPartInstance.timings?.startedPlayback
-// 	const offset = currentPartInstance.timings?.playOffset
-// 	if (start !== undefined && offset !== undefined && currentPartInstance.part.expectedDuration) {
-// 		// date.now - start = playback duration, duration + offset gives position in part
-// 		const playbackDuration = getCurrentTime() - start + offset
+	const start = currentPartInstance.timings?.startedPlayback
+	const offset = currentPartInstance.timings?.playOffset
+	if (start !== undefined && offset !== undefined && currentPartInstance.part.expectedDuration) {
+		// date.now - start = playback duration, duration + offset gives position in part
+		const playbackDuration = getCurrentTime() - start + offset
 
-// 		// If there is an auto next planned
-// 		if (Math.abs(currentPartInstance.part.expectedDuration - playbackDuration) < debounce) {
-// 			return true
-// 		}
-// 	}
+		// If there is an auto next planned
+		if (Math.abs(currentPartInstance.part.expectedDuration - playbackDuration) < debounce) {
+			return true
+		}
+	}
 
-// 	return false
-// }
+	return false
+}
 
 export function getRundownsSegmentsAndPartsFromCache(
 	partsCache: DbCacheReadCollection<DBPart>,

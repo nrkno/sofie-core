@@ -10,6 +10,7 @@ export enum UserErrorMessage {
 	InactiveRundown,
 	DuringHold,
 	NoCurrentPart,
+	NoCurrentOrNextPart,
 	AdlibCurrentPart,
 	AdlibNotFound,
 	AdlibUnplayable,
@@ -19,6 +20,13 @@ export enum UserErrorMessage {
 	SourceLayerNotSticky,
 	SourceLayerStickyNothingFound,
 	BucketAdlibIncompatible,
+	TakeDuringTransition,
+	TakeCloseToAutonext,
+	HoldNotCancelable,
+	HoldNeedsNextPart,
+	HoldAlreadyActive,
+	HoldIncompatibleParts,
+	HoldAfterAdlib,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -26,6 +34,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.InactiveRundown]: t(`Rundown must be active!`),
 	[UserErrorMessage.DuringHold]: t(`Can not be used during a hold!`),
 	[UserErrorMessage.NoCurrentPart]: t(`Rundown must be playing!`),
+	[UserErrorMessage.NoCurrentOrNextPart]: t(`Rundown must be playing or have a next!`),
 	[UserErrorMessage.AdlibCurrentPart]: t(`AdLibs can be only placed in a currently playing part!`),
 	[UserErrorMessage.AdlibNotFound]: t(`AdLib could not be found!`),
 	[UserErrorMessage.AdlibUnplayable]: t(`Cannot take unplayable AdLib`),
@@ -35,6 +44,8 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.SourceLayerNotSticky]: t(`Layer does not allow sticky pieces!`),
 	[UserErrorMessage.SourceLayerStickyNothingFound]: t(`Nothing was found on layer!`),
 	[UserErrorMessage.BucketAdlibIncompatible]: t(`Bucket AdLib is not compatible with this Rundown!`),
+	[UserErrorMessage.TakeDuringTransition]: t(`Cannot take during a transition`),
+	[UserErrorMessage.TakeCloseToAutonext]: t(`Cannot take close to an AUTO`),
 }
 
 export class UserError {

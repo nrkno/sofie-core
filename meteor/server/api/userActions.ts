@@ -240,19 +240,12 @@ export async function moveNext(
 ): Promise<ClientAPI.ClientResponse<PartId | null>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
-	if (!playlist.activationId)
-		return ClientAPI.responseError('Rundown Playlist is not active, please activate it first')
 
-	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
-		return ClientAPI.responseError('The Next cannot be changed during a Hold!')
-	}
-	if (!playlist.nextPartInstanceId && !playlist.currentPartInstanceId) {
-		return ClientAPI.responseError('RundownPlaylist has no next and no current part!')
-	}
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.moveNextPart(access, rundownPlaylistId, horisontalDelta, verticalDelta)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.MoveNextPart, {
+		playlistId: rundownPlaylistId,
+		partDelta: horisontalDelta,
+		segmentDelta: verticalDelta,
+	})
 }
 export async function prepareForBroadcast(
 	context: MethodContext,
@@ -512,17 +505,16 @@ export async function sourceLayerOnPartStop(
 ): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
-	check(sourceLayerIds, Match.OneOf(String, Array))
+	check(sourceLayerIds, Array)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.sourceLayerOnPartStop(access, rundownPlaylistId, partInstanceId, sourceLayerIds)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.StopPiecesOnSourceLayers, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		sourceLayerIds: sourceLayerIds,
+	})
 }
 export async function rundownBaselineAdLibPieceStart(
 	context: MethodContext,
@@ -572,29 +564,14 @@ export async function activateHold(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.currentPartInstanceId)
-		return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
-	if (!playlist.nextPartInstanceId)
-		return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
-
-	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-	if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${playlist.currentPartInstanceId}" not found!`)
-	if (!nextPartInstance) throw new Meteor.Error(404, `PartInstance "${playlist.nextPartInstanceId}" not found!`)
-	if (!undo && playlist.holdState) {
-		return ClientAPI.responseError(`Rundown is already doing a hold!`)
-	}
-	if (undo && playlist.holdState !== RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[playlist.holdState || 0]}`)
-	}
-
-	if (!undo && currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId) {
-		return ClientAPI.responseError(400, `Can't do hold between segments!`)
-	}
-
 	if (undo) {
-		return ClientAPI.responseSuccess(await ServerPlayoutAPI.deactivateHold(access, rundownPlaylistId))
+		return runUserAction(playlist.studioId, StudioJobs.DeactivateHold, {
+			playlistId: rundownPlaylistId,
+		})
 	} else {
-		return ClientAPI.responseSuccess(await ServerPlayoutAPI.activateHold(access, rundownPlaylistId))
+		return runUserAction(playlist.studioId, StudioJobs.ActivateHold, {
+			playlistId: rundownPlaylistId,
+		})
 	}
 }
 export function userSaveEvaluation(context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {

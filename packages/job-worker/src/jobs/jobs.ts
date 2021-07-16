@@ -5,6 +5,7 @@ import { JobContext } from '.'
 import { adLibPieceStart, startStickyPieceOnSourceLayer, takePieceAsAdlibNow } from '../playout/adlib'
 import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { lockPlaylist } from './lock'
+import { activateHold, deactivateHold, moveNextPart, stopPiecesOnSourceLayers } from '../playout/playout'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -22,6 +23,10 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.AdlibPieceStart]: adLibPieceStart,
 	[StudioJobs.TakePieceAsAdlibNow]: takePieceAsAdlibNow,
 	[StudioJobs.StartStickyPieceOnSourceLayer]: startStickyPieceOnSourceLayer,
+	[StudioJobs.StopPiecesOnSourceLayers]: stopPiecesOnSourceLayers,
+	[StudioJobs.MoveNextPart]: moveNextPart,
+	[StudioJobs.ActivateHold]: activateHold,
+	[StudioJobs.DeactivateHold]: deactivateHold,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {
