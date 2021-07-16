@@ -63,30 +63,6 @@ if (!Settings.enableUserAccounts) {
 
 				const transaction = profiler.startTransaction('updateTimeline', 'meteor-debug')
 
-				waitForPromise(
-					runStudioOperationWithCache(
-						'debug_updateTimeline',
-						studioId,
-						StudioLockFunctionPriority.USER_PLAYOUT,
-						async (cache) => {
-							await updateStudioOrPlaylistTimeline(cache)
-						}
-					)
-				)
-
-				if (transaction) transaction.end()
-			} catch (e) {
-				logger.error(e)
-				throw e
-			}
-		},
-		debug_updateTimeline2: (studioId: StudioId) => {
-			try {
-				check(studioId, String)
-				logger.info(`debug_updateTimeline2: "${studioId}"`)
-
-				const transaction = profiler.startTransaction('updateTimeline2', 'meteor-debug')
-
 				const job = waitForPromise(QueueStudioJob(StudioJobs.UpdateTimeline, studioId, undefined))
 
 				const span = transaction?.startSpan('queued-job')
@@ -97,7 +73,7 @@ if (!Settings.enableUserAccounts) {
 
 				if (transaction) transaction.end()
 
-				logger.info(`debug_updateTimeline2: "${studioId}" - done`)
+				logger.info(`debug_updateTimeline: "${studioId}" - done`)
 			} catch (e) {
 				logger.error(e)
 				throw e

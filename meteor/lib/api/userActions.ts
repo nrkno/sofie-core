@@ -110,13 +110,6 @@ export interface NewUserActionAPI extends MethodContext {
 		adlibPieceId: PieceId,
 		queue: boolean
 	)
-	baselineAdLibPieceStart2(
-		userEvent: string,
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		adlibPieceId: PieceId,
-		queue: boolean
-	)
 	sourceLayerStickyPieceStart(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
@@ -262,7 +255,6 @@ export enum UserActionAPIMethods {
 	'segmentAdLibPieceStart' = 'userAction.segmentAdLibPieceStart',
 	'sourceLayerOnPartStop' = 'userAction.sourceLayerOnPartStop',
 	'baselineAdLibPieceStart' = 'userAction.baselineAdLibPieceStart',
-	'baselineAdLibPieceStart2' = 'userAction.baselineAdLibPieceStart2',
 
 	'sourceLayerStickyPieceStart' = 'userAction.sourceLayerStickyPieceStart',
 

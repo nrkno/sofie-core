@@ -539,34 +539,11 @@ export async function rundownBaselineAdLibPieceStart(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Can't start AdLib piece when the Rundown is in Hold mode!`)
-	}
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.rundownBaselineAdLibPieceStart(
-			access,
-			rundownPlaylistId,
-			partInstanceId,
-			adlibPieceId,
-			queue
-		)
-	)
-}
-export async function rundownBaselineAdLibPieceStart2(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	partInstanceId: PartInstanceId,
-	adlibPieceId: PieceId,
-	queue: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(partInstanceId, String)
-	check(adlibPieceId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
+	// if (!playlist.activationId)
+	// 	return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
+	// if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
+	// 	return ClientAPI.responseError(`Can't start AdLib piece when the Rundown is in Hold mode!`)
+	// }
 
 	const job = await QueueStudioJob(StudioJobs.RundownBaselineAdlibStart, playlist.studioId, {
 		playlistId: rundownPlaylistId,
@@ -581,7 +558,7 @@ export async function rundownBaselineAdLibPieceStart2(
 	await job.complete
 	span?.end()
 
-	console.log(await job.getTimings)
+	// console.log(await job.getTimings)
 
 	return ClientAPI.responseSuccess(undefined)
 }
@@ -1083,23 +1060,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return traceAction(
 			UserActionAPIMethods.baselineAdLibPieceStart,
 			rundownBaselineAdLibPieceStart,
-			this,
-			rundownPlaylistId,
-			partInstanceId,
-			adlibPieceId,
-			queue
-		)
-	}
-	async baselineAdLibPieceStart2(
-		_userEvent: string,
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		adlibPieceId: PieceId,
-		queue: boolean
-	) {
-		return traceAction(
-			UserActionAPIMethods.baselineAdLibPieceStart2,
-			rundownBaselineAdLibPieceStart2,
 			this,
 			rundownPlaylistId,
 			partInstanceId,
