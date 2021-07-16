@@ -11,6 +11,7 @@ export enum UserErrorMessage {
 	AdlibDuringHold,
 	AdlibCurrentPart,
 	AdlibNotFound,
+	AdlibUnplayable,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -19,6 +20,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.AdlibDuringHold]: t(`AdLibs can not be used in combination with hold!`),
 	[UserErrorMessage.AdlibCurrentPart]: t(`AdLibs can be only placed in a currently playing part!`),
 	[UserErrorMessage.AdlibNotFound]: t(`AdLib could not be found!`),
+	[UserErrorMessage.AdlibUnplayable]: t(`Cannot take unplayable AdLib`),
 }
 
 export class UserError {

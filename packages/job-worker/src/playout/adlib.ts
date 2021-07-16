@@ -5,11 +5,10 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
-import { ReadOnlyCache } from '../cache/CacheBase'
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
-import { RundownBaselineAdlibStartProps, RundownPlayoutPropsBase } from '@sofie-automation/corelib/dist/worker/studio'
-import { CacheForPlayout, CacheForPlayoutPreInit, getOrderedSegmentsAndPartsFromPlayoutCache } from './cache'
+import { AdlibPieceStartProps } from '@sofie-automation/corelib/dist/worker/studio'
+import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, runAsPlayoutJob } from './cache'
 import { updateTimeline } from './timeline'
 import { selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
@@ -20,7 +19,6 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { lockPlaylist } from '../jobs/lock'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 // export namespace ServerPlayoutAdLibAPI {
@@ -139,93 +137,8 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 // 			}
 // 		)
 // 	}
-// 	export async function segmentAdLibPieceStart(
-// 		access: VerifiedRundownPlaylistContentAccess,
-// 		rundownPlaylistId: RundownPlaylistId,
-// 		partInstanceId: PartInstanceId,
-// 		adLibPieceId: PieceId,
-// 		queue: boolean
-// 	): Promise<void> {
-// 		return runPlayoutOperationWithCache(
-// 			access,
-// 			'segmentAdLibPieceStart',
-// 			rundownPlaylistId,
-// 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
-// 				if (!playlist.activationId)
-// 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
-// 				if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-// 					throw new Meteor.Error(403, `Part AdLib-pieces can not be used in combination with hold!`)
-// 				}
 
-// 				if (!queue && playlist.currentPartInstanceId !== partInstanceId)
-// 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
-// 			},
-// 			async (cache) => {
-// 				const partInstance = cache.PartInstances.findOne(partInstanceId)
-// 				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
-// 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
-// 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
-
-// 				const adLibPiece = AdLibPieces.findOne({
-// 					_id: adLibPieceId,
-// 					rundownId: partInstance.rundownId,
-// 				})
-// 				if (!adLibPiece) throw new Meteor.Error(404, `Part Ad Lib Item "${adLibPieceId}" not found!`)
-// 				if (adLibPiece.invalid)
-// 					throw new Meteor.Error(404, `Cannot take invalid Part Ad Lib Item "${adLibPieceId}"!`)
-// 				if (adLibPiece.floated)
-// 					throw new Meteor.Error(404, `Cannot take floated Part Ad Lib Item "${adLibPieceId}"!`)
-
-// 				await innerStartOrQueueAdLibPiece(cache, rundown, queue, partInstance, adLibPiece)
-// 			}
-// 		)
-// 	}
-
-/**
- * Run a typical playout job
- * This means loading the playout cache in stages, doing some calculations and saving the result
- */
-export async function runAsPlayoutJob<TRes>(
-	context: JobContext,
-	data: RundownPlayoutPropsBase,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
-	fcn: (cache: CacheForPlayout) => Promise<TRes>
-): Promise<TRes> {
-	if (!data.playlistId) {
-		throw new Error(`Job is missing playlistId`)
-	}
-
-	const playlist = await context.directCollections.RundownPlaylists.findOne(data.playlistId)
-	if (!playlist || playlist.studioId !== context.studioId) {
-		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
-	}
-
-	const playlistLock = await lockPlaylist(context, playlist._id)
-	try {
-		const initCache = await CacheForPlayoutPreInit.createPreInit(context, playlistLock, playlist, false)
-
-		if (preInitFcn) {
-			await preInitFcn(initCache)
-		}
-
-		const fullCache = await CacheForPlayout.fromInit(context, initCache)
-
-		const res = await fcn(fullCache)
-
-		await fullCache.saveAllToDatabase()
-
-		return res
-	} finally {
-		await playlistLock.release()
-	}
-}
-
-export async function rundownBaselineAdLibPieceStart(
-	context: JobContext,
-	data: RundownBaselineAdlibStartProps
-): Promise<void> {
+export async function adLibPieceStart(context: JobContext, data: AdlibPieceStartProps): Promise<void> {
 	return runAsPlayoutJob(
 		context,
 		// 'rundownBaselineAdLibPieceStart',
@@ -246,14 +159,33 @@ export async function rundownBaselineAdLibPieceStart(
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${partInstance.rundownId}" not found!`)
 
-			const adLibPiece = await context.directCollections.RundownBaselineAdLibPieces.findOne({
-				_id: data.baselineAdLibPieceId,
-				rundownId: partInstance.rundownId,
-			})
+			let adLibPiece: AdLibPiece | undefined
+			if (data.pieceType === 'baseline') {
+				adLibPiece = await context.directCollections.RundownBaselineAdLibPieces.findOne({
+					_id: data.adLibPieceId,
+					rundownId: partInstance.rundownId,
+				})
+			} else if (data.pieceType === 'normal') {
+				adLibPiece = await context.directCollections.AdLibPieces.findOne({
+					_id: data.adLibPieceId,
+					rundownId: partInstance.rundownId,
+				})
+			}
+
 			if (!adLibPiece)
 				throw UserError.from(
-					new Error(`Rundown Baseline Ad Lib Item "${data.baselineAdLibPieceId}" not found!`),
+					new Error(`Rundown "${data.pieceType}" AdLib Piece "${data.adLibPieceId}" not found!`),
 					UserErrorMessage.AdlibNotFound
+				)
+			if (adLibPiece.invalid)
+				throw UserError.from(
+					new Error(`Cannot take invalid AdLib Piece "${data.adLibPieceId}"!`),
+					UserErrorMessage.AdlibUnplayable
+				)
+			if (adLibPiece.floated)
+				throw UserError.from(
+					new Error(`Cannot take floated AdLib Piece "${data.adLibPieceId}"!`),
+					UserErrorMessage.AdlibUnplayable
 				)
 
 			await innerStartOrQueueAdLibPiece(context, cache, rundown, !!data.queue, partInstance, adLibPiece)

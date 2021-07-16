@@ -2,15 +2,16 @@ import { PartInstanceId, PieceId, RundownPlaylistId, StudioId } from '../dataMod
 
 export enum StudioJobs {
 	UpdateTimeline = 'updateTimeline',
-	RundownBaselineAdlibStart = 'rundownBaselineAdLibPieceStart',
+	AdlibPieceStart = 'adLibPieceStart',
 }
 
 export interface RundownPlayoutPropsBase {
 	playlistId: RundownPlaylistId
 }
-export interface RundownBaselineAdlibStartProps extends RundownPlayoutPropsBase {
+export interface AdlibPieceStartProps extends RundownPlayoutPropsBase {
 	partInstanceId: PartInstanceId
-	baselineAdLibPieceId: PieceId
+	adLibPieceId: PieceId
+	pieceType: 'baseline' | 'normal'
 	queue?: boolean
 }
 
@@ -20,7 +21,7 @@ export interface RundownBaselineAdlibStartProps extends RundownPlayoutPropsBase 
  */
 export type StudioJobFunc = {
 	[StudioJobs.UpdateTimeline]: () => void
-	[StudioJobs.RundownBaselineAdlibStart]: (data: RundownBaselineAdlibStartProps) => void
+	[StudioJobs.AdlibPieceStart]: (data: AdlibPieceStartProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

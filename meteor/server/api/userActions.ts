@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { Awaited, getCurrentTime, getHash, makePromise, waitForPromise } from '../../lib/lib'
+import { Awaited, getCurrentTime, getHash, makePromise } from '../../lib/lib'
 import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
@@ -64,6 +64,49 @@ export function setMinimumTakeSpan(span: number) {
 	// Used in tests
 	MINIMUM_TAKE_SPAN = span
 }
+
+/**
+ * Run a user action via the worker. Before calling you MUST check the user is allowed to do the operation
+ * @param studioId Id of the studio
+ * @param name The name/id of the operation
+ * @param data Data for the operation
+ * @returns Wrapped 'client safe' response. Includes translatable friendly error messages
+ */
+async function runUserAction<T extends keyof StudioJobFunc>(
+	studioId: StudioId,
+	name: T,
+	data: Parameters<StudioJobFunc[T]>[0]
+): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
+	try {
+		const job = await QueueStudioJob(name, studioId, data)
+
+		const span = profiler.startSpan('queued-job')
+		const res = await job.complete
+		span?.end()
+
+		// TODO - track timings
+		// console.log(await job.getTimings)
+
+		return ClientAPI.responseSuccess(res)
+	} catch (e) {
+		console.log('raw', e, JSON.stringify(e))
+
+		let userError: UserError
+		if (UserError.isUserError(e)) {
+			userError = e
+		} else {
+			// Rewrap errors as a UserError
+			const err = e instanceof Error ? e : new Error(e)
+			userError = UserError.from(err, UserErrorMessage.InternalError)
+		}
+
+		logger.error(`UserAction "${name}" failed: ${userError.rawError.toString()}`)
+
+		// TODO - this isnt great, but is good enough for a prototype
+		return ClientAPI.responseError(JSON.stringify(userError.message))
+	}
+}
+
 /*
 	The functions in this file are used to provide a pre-check, before calling the real functions.
 	The pre-checks should contain relevant checks, to return user-friendly messages instead of throwing a nasty error.
@@ -496,15 +539,13 @@ export async function segmentAdLibPieceStart(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
-	}
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.segmentAdLibPieceStart(access, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.AdlibPieceStart, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		adLibPieceId: adlibPieceId,
+		pieceType: 'normal',
+		queue: !!queue,
+	})
 }
 export async function sourceLayerOnPartStop(
 	context: MethodContext,
@@ -526,40 +567,6 @@ export async function sourceLayerOnPartStop(
 		await ServerPlayoutAPI.sourceLayerOnPartStop(access, rundownPlaylistId, partInstanceId, sourceLayerIds)
 	)
 }
-async function runUserAction<T extends keyof StudioJobFunc>(
-	studioId: StudioId,
-	name: T,
-	data: Parameters<StudioJobFunc[T]>[0]
-): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
-	try {
-		const job = await QueueStudioJob(name, studioId, data)
-
-		const span = profiler.startSpan('queued-job')
-		const res = await job.complete
-		span?.end()
-
-		// TODO - track timings
-		// console.log(await job.getTimings)
-
-		return ClientAPI.responseSuccess(res)
-	} catch (e) {
-		console.log('raw', e, JSON.stringify(e))
-
-		let userError: UserError
-		if (UserError.isUserError(e)) {
-			userError = e
-		} else {
-			// Rewrap errors as a UserError
-			const err = e instanceof Error ? e : new Error(e)
-			userError = UserError.from(err, UserErrorMessage.InternalError)
-		}
-
-		logger.error(`UserAction "${name}" failed: ${userError.rawError.toString()}`)
-
-		// TODO - this isnt great, but is good enough for a prototype
-		return ClientAPI.responseError(JSON.stringify(userError.message))
-	}
-}
 export async function rundownBaselineAdLibPieceStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
@@ -574,11 +581,12 @@ export async function rundownBaselineAdLibPieceStart(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	return runUserAction(playlist.studioId, StudioJobs.RundownBaselineAdlibStart, {
+	return runUserAction(playlist.studioId, StudioJobs.AdlibPieceStart, {
 		playlistId: rundownPlaylistId,
 		partInstanceId: partInstanceId,
-		baselineAdLibPieceId: adlibPieceId,
-		queue: queue,
+		adLibPieceId: adlibPieceId,
+		pieceType: 'baseline',
+		queue: !!queue,
 	})
 }
 export async function sourceLayerStickyPieceStart(
@@ -931,11 +939,9 @@ export async function traceAction<T extends (...args: any[]) => any>(
 	...args: Parameters<T>
 ): Promise<Awaited<ReturnType<T>>> {
 	const transaction = profiler.startTransaction(description, 'userAction')
-	return makePromise(() => {
-		const res = waitForPromise(fn(...args))
-		if (transaction) transaction.end()
-		return res
-	})
+	const res = await fn(...args)
+	if (transaction) transaction.end()
+	return res
 }
 
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {

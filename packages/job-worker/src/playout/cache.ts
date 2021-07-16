@@ -1,7 +1,7 @@
 import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 // import { ActivationCache, getActivationCache } from '../cache/ActivationCache'
 import { DbCacheReadObject, DbCacheWriteObject } from '../cache/CacheObject'
-import { CacheBase } from '../cache/CacheBase'
+import { CacheBase, ReadOnlyCache } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -20,7 +20,8 @@ import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/Run
 import { removeRundownPlaylistFromDb } from '../rundownPlaylists'
 import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { PlaylistLock } from '../jobs/lock'
+import { lockPlaylist, PlaylistLock } from '../jobs/lock'
+import { RundownPlayoutPropsBase } from '@sofie-automation/corelib/dist/worker/studio'
 
 /**
  * This is a cache used for playout operations.
@@ -423,4 +424,43 @@ export function getShowStyleIdsRundownMappingFromCache(cache: CacheForPlayout): 
 	}
 
 	return ret
+}
+
+/**
+ * Run a typical playout job
+ * This means loading the playout cache in stages, doing some calculations and saving the result
+ */
+export async function runAsPlayoutJob<TRes>(
+	context: JobContext,
+	data: RundownPlayoutPropsBase,
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
+	fcn: (cache: CacheForPlayout) => Promise<TRes>
+): Promise<TRes> {
+	if (!data.playlistId) {
+		throw new Error(`Job is missing playlistId`)
+	}
+
+	const playlist = await context.directCollections.RundownPlaylists.findOne(data.playlistId)
+	if (!playlist || playlist.studioId !== context.studioId) {
+		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
+	}
+
+	const playlistLock = await lockPlaylist(context, playlist._id)
+	try {
+		const initCache = await CacheForPlayoutPreInit.createPreInit(context, playlistLock, playlist, false)
+
+		if (preInitFcn) {
+			await preInitFcn(initCache)
+		}
+
+		const fullCache = await CacheForPlayout.fromInit(context, initCache)
+
+		const res = await fcn(fullCache)
+
+		await fullCache.saveAllToDatabase()
+
+		return res
+	} finally {
+		await playlistLock.release()
+	}
 }
