@@ -29,6 +29,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { isAnyQueuedWorkRunning } from '../../codeControl'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	const span = profiler.startSpan('takeNextPartInner')
@@ -226,9 +227,7 @@ function afterTakeUpdateTimingsAndEvents(
 		})
 
 		// Simulate playout, if no gateway
-		const playoutDevices = cache.PeripheralDevices.findFetch(
-			(d) => d.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
-		)
+		const playoutDevices = cache.PeripheralDevices.findFetch((d) => d.type === PeripheralDeviceType.PLAYOUT)
 		if (playoutDevices.length === 0) {
 			logger.info(
 				`No Playout gateway attached to studio, reporting PartInstance "${

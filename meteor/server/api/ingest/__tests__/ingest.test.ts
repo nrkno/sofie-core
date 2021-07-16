@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceCategory } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
@@ -58,7 +58,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		device = env.ingestDevice
 
 		device2 = setupMockPeripheralDevice(
-			PeripheralDeviceAPI.DeviceCategory.INGEST,
+			PeripheralDeviceCategory.INGEST,
 			// @ts-ignore
 			'mockDeviceType',
 			PeripheralDeviceAPI.SUBTYPE_PROCESS,

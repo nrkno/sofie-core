@@ -32,8 +32,7 @@ import {
 	DBShowStyleVariant,
 } from '../../../lib/collections/ShowStyleVariants'
 import { check } from '../../../lib/check'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { Mongo } from 'meteor/mongo'
 
@@ -147,7 +146,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		check(deviceId, String)
 
 		const selector: Mongo.Selector<PeripheralDevice> = {
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}
 		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
@@ -170,7 +169,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		const parentDevice = PeripheralDevices.findOne(
 			{
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
 				studioId: this.studio._id,
 			},
 			{
@@ -205,7 +204,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}
 
 		const selector: Mongo.Selector<PeripheralDevice> = {
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}
 		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
@@ -239,7 +238,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		m[`settings.devices.${deviceId}`] = 1
 		PeripheralDevices.update(
 			{
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
 				studioId: this.studio._id,
 			},
 			{

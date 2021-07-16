@@ -7,7 +7,12 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Route, NavLink, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
 
 import { Studio, Studios } from '../../lib/collections/Studios'
-import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDevices,
+	PeripheralDeviceStatusCode,
+	PeripheralDeviceType,
+} from '../../lib/collections/PeripheralDevices'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 import StudioSettings from './Settings/StudioSettings'
@@ -81,21 +86,21 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			this.state = {}
 		}
 
-		statusCodeString(statusCode: PeripheralDeviceAPI.StatusCode) {
+		statusCodeString(statusCode: PeripheralDeviceStatusCode) {
 			const t = this.props.t
 
 			switch (statusCode) {
-				case PeripheralDeviceAPI.StatusCode.UNKNOWN:
+				case PeripheralDeviceStatusCode.UNKNOWN:
 					return t('Unknown')
-				case PeripheralDeviceAPI.StatusCode.GOOD:
+				case PeripheralDeviceStatusCode.GOOD:
 					return t('Good')
-				case PeripheralDeviceAPI.StatusCode.WARNING_MINOR:
+				case PeripheralDeviceStatusCode.WARNING_MINOR:
 					return t('Minor Warning')
-				case PeripheralDeviceAPI.StatusCode.WARNING_MAJOR:
+				case PeripheralDeviceStatusCode.WARNING_MAJOR:
 					return t('Warning')
-				case PeripheralDeviceAPI.StatusCode.BAD:
+				case PeripheralDeviceStatusCode.BAD:
 					return t('Bad')
-				case PeripheralDeviceAPI.StatusCode.FATAL:
+				case PeripheralDeviceStatusCode.FATAL:
 					return t('Fatal')
 			}
 		}
@@ -106,7 +111,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			if (!studio.blueprintId) return true
 			const peripherals = this.props.peripheralDevices.filter((device) => device.studioId === studio._id)
 			if (!peripherals.length) return true
-			if (!peripherals.filter((device) => device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT).length) return true
+			if (!peripherals.filter((device) => device.type === PeripheralDeviceType.PLAYOUT).length) return true
 			return false
 		}
 
@@ -140,17 +145,17 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			}
 		}
 
-		deviceTypeString(type: PeripheralDeviceAPI.DeviceType) {
+		deviceTypeString(type: PeripheralDeviceType) {
 			const t = this.props.t
 
 			switch (type) {
-				case PeripheralDeviceAPI.DeviceType.MOS:
+				case PeripheralDeviceType.MOS:
 					return t('MOS Gateway')
-				case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
+				case PeripheralDeviceType.SPREADSHEET:
 					return t('Spreadsheet Gateway')
-				case PeripheralDeviceAPI.DeviceType.PLAYOUT:
+				case PeripheralDeviceType.PLAYOUT:
 					return t('Play-out Gateway')
-				case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
+				case PeripheralDeviceType.MEDIA_MANAGER:
 					return t('Media Manager')
 				default:
 					return t('Unknown Device')

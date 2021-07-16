@@ -1,6 +1,11 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDevices,
+	PeripheralDeviceStatusCode,
+	PeripheralDeviceType,
+} from '../../../lib/collections/PeripheralDevices'
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -35,18 +40,18 @@ interface IDeviceItemProps {
 }
 interface IDeviceItemState {}
 
-export function statusCodeToString(t: i18next.TFunction, statusCode: PeripheralDeviceAPI.StatusCode) {
-	return statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN
+export function statusCodeToString(t: i18next.TFunction, statusCode: PeripheralDeviceStatusCode) {
+	return statusCode === PeripheralDeviceStatusCode.UNKNOWN
 		? t('Unknown')
-		: statusCode === PeripheralDeviceAPI.StatusCode.GOOD
+		: statusCode === PeripheralDeviceStatusCode.GOOD
 		? t('Good')
-		: statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR
+		: statusCode === PeripheralDeviceStatusCode.WARNING_MINOR
 		? t('Minor Warning')
-		: statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR
+		: statusCode === PeripheralDeviceStatusCode.WARNING_MAJOR
 		? t('Warning')
-		: statusCode === PeripheralDeviceAPI.StatusCode.BAD
+		: statusCode === PeripheralDeviceStatusCode.BAD
 		? t('Bad')
-		: statusCode === PeripheralDeviceAPI.StatusCode.FATAL
+		: statusCode === PeripheralDeviceStatusCode.FATAL
 		? t('Fatal')
 		: t('Unknown')
 }
@@ -64,11 +69,11 @@ export const DeviceItem = reacti18next.withTranslation()(
 			const t = this.props.t
 
 			switch (this.props.device.type) {
-				case PeripheralDeviceAPI.DeviceType.MOS:
+				case PeripheralDeviceType.MOS:
 					return t('MOS Gateway')
-				case PeripheralDeviceAPI.DeviceType.PLAYOUT:
+				case PeripheralDeviceType.PLAYOUT:
 					return t('Play-out Gateway')
-				case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
+				case PeripheralDeviceType.MEDIA_MANAGER:
 					return t('Media Manager')
 				default:
 					return t('Unknown Device')
@@ -211,7 +216,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 							overlay={t('Connect some devices to the playout gateway')}
 							visible={
 								getHelpMode() &&
-								this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+								this.props.device.type === PeripheralDeviceType.PLAYOUT &&
 								this.props.toplevel === true &&
 								!this.props.hasChildren &&
 								this.props.hasChildren !== undefined
@@ -241,7 +246,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 					<div className="actions-container">
 						<div className="device-item__actions">
 							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.CASPARCG ? (
 								<React.Fragment>
 									<button
@@ -258,7 +263,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 								</React.Fragment>
 							) : null}
 							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.HYPERDECK ? (
 								<React.Fragment>
 									<button
@@ -274,7 +279,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 								</React.Fragment>
 							) : null}
 							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.QUANTEL ? (
 								<React.Fragment>
 									<button
@@ -721,17 +726,17 @@ export const PeripheralDeviceStatus = reacti18next.withTranslation()(
 		render() {
 			const statusClassNames = [
 				'device-status',
-				this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.UNKNOWN || !this.props.device.connected
+				this.props.device.status.statusCode === PeripheralDeviceStatusCode.UNKNOWN || !this.props.device.connected
 					? 'device-status--unknown'
-					: this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.GOOD
+					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.GOOD
 					? 'device-status--good'
-					: this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MINOR
+					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.WARNING_MINOR
 					? 'device-status--minor-warning'
-					: this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR
+					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.WARNING_MAJOR
 					? 'device-status--warning'
-					: this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.BAD
+					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.BAD
 					? 'device-status--bad'
-					: this.props.device.status.statusCode === PeripheralDeviceAPI.StatusCode.FATAL
+					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.FATAL
 					? 'device-status--fatal'
 					: '',
 			].join(' ')

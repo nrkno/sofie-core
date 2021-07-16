@@ -6,6 +6,7 @@ import {
 	PeripheralDevices,
 	getStudioIdFromDevice,
 	PeripheralDeviceId,
+	PeripheralDeviceCategory,
 } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
@@ -90,7 +91,7 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 			404,
 			`PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" not found`
 		)
-	if (device.category !== PeripheralDeviceAPI.DeviceCategory.INGEST)
+	if (device.category !== PeripheralDeviceCategory.INGEST)
 		throw new Meteor.Error(
 			404,
 			`PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" is not an INGEST device!`

@@ -12,6 +12,7 @@ import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import { profiler } from '../profiler'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boolean): Promise<void> {
 	logger.info('Activating rundown ' + cache.Playlist.doc._id + (rehearsal ? ' (Rehearsal)' : ''))
@@ -184,7 +185,7 @@ export async function prepareStudioForBroadcast(cache: CacheForPlayout, okToDest
 	const rundownPlaylistToBeActivated = cache.Playlist.doc
 	logger.info('prepareStudioForBroadcast ' + cache.Studio.doc._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	await Promise.allSettled(
 		playoutDevices.map(async (device) =>
@@ -214,7 +215,7 @@ export async function prepareStudioForBroadcast(cache: CacheForPlayout, okToDest
 export async function standDownStudio(cache: CacheForPlayout, okToDestoryStuff: boolean): Promise<void> {
 	logger.info('standDownStudio ' + cache.Studio.doc._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	await Promise.allSettled(
 		playoutDevices.map(async (device) =>

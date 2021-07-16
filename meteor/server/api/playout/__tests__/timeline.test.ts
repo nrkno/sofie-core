@@ -16,6 +16,10 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../.
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
 	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
@@ -28,8 +32,8 @@ describe('Timeline', () => {
 	beforeEach(async () => {
 		env = await setupDefaultStudioEnvironment()
 		setupMockPeripheralDevice(
-			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceCategory.PLAYOUT,
+			PeripheralDeviceType.PLAYOUT,
 			PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			env.studio
 		)

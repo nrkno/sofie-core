@@ -20,6 +20,10 @@ import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { MeteorCall } from '../../../lib/api/methods'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -98,8 +102,8 @@ describe('Migrations', () => {
 
 		// Connect a Playout-gateway to the system:
 		setupMockPeripheralDevice(
-			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceCategory.PLAYOUT,
+			PeripheralDeviceType.PLAYOUT,
 			PeripheralDeviceAPI.SUBTYPE_PROCESS
 		)
 

@@ -15,7 +15,11 @@ import '../api'
 import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { AdLibPieces } from '../../../../lib/collections/AdLibPieces'
@@ -81,8 +85,8 @@ describe('Playout API', () => {
 	beforeEach(async () => {
 		env = await setupDefaultStudioEnvironment()
 		playoutDevice = setupMockPeripheralDevice(
-			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceCategory.PLAYOUT,
+			PeripheralDeviceType.PLAYOUT,
 			PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			env.studio
 		)

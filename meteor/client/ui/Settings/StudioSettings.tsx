@@ -22,7 +22,12 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle, faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDevices,
+	PeripheralDeviceType,
+} from '../../../lib/collections/PeripheralDevices'
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
@@ -39,7 +44,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
@@ -133,7 +137,7 @@ const StudioDevices = withTranslation()(
 		isPlayoutConnected() {
 			let connected = false
 			this.props.studioDevices.map((device) => {
-				if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) connected = true
+				if (device.type === PeripheralDeviceType.PLAYOUT) connected = true
 			})
 			return connected
 		}
@@ -1365,8 +1369,8 @@ const StudioPackageManagerSettings = withTranslation()(
 
 			PeripheralDevices.find().forEach((device) => {
 				if (
-					device.category === PeripheralDeviceAPI.DeviceCategory.PLAYOUT &&
-					device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+					device.category === PeripheralDeviceCategory.PLAYOUT &&
+					device.type === PeripheralDeviceType.PLAYOUT &&
 					device.settings
 				) {
 					const settings = device.settings as PlayoutDeviceSettings
@@ -2189,7 +2193,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						$exists: false,
 					},
 					type: {
-						$eq: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+						$eq: PeripheralDeviceType.PLAYOUT,
 					},
 				},
 				{

@@ -14,8 +14,11 @@ import { RundownAPI, RundownPlaylistValidateBlueprintConfigResult } from '../../
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDeviceId,
+	PeripheralDeviceStatusCode,
+} from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Parts, PartId, Part } from '../../../lib/collections/Parts'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
@@ -297,7 +300,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 					const parent = devices.find((i) => i._id === item.parentDeviceId)
 
-					if (item.status.statusCode !== PeripheralDeviceAPI.StatusCode.GOOD || !item.connected) {
+					if (item.status.statusCode !== PeripheralDeviceStatusCode.GOOD || !item.connected) {
 						newNotification = new Notification(
 							item._id,
 							this.convertDeviceStatus(item),
@@ -305,7 +308,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							'Devices',
 							getCurrentTime(),
 							true,
-							parent && parent.connected && item.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MAJOR
+							parent && parent.connected && item.status.statusCode >= PeripheralDeviceStatusCode.WARNING_MAJOR
 								? [
 										{
 											label: t('Restart'),
@@ -862,17 +865,17 @@ class RundownViewNotifier extends WithManagedTracker {
 			return NoticeLevel.CRITICAL
 		}
 		switch (device.status.statusCode) {
-			case PeripheralDeviceAPI.StatusCode.GOOD:
+			case PeripheralDeviceStatusCode.GOOD:
 				return NoticeLevel.NOTIFICATION
-			case PeripheralDeviceAPI.StatusCode.UNKNOWN:
+			case PeripheralDeviceStatusCode.UNKNOWN:
 				return NoticeLevel.CRITICAL
-			case PeripheralDeviceAPI.StatusCode.WARNING_MAJOR:
+			case PeripheralDeviceStatusCode.WARNING_MAJOR:
 				return NoticeLevel.WARNING
-			case PeripheralDeviceAPI.StatusCode.WARNING_MINOR:
+			case PeripheralDeviceStatusCode.WARNING_MINOR:
 				return NoticeLevel.WARNING
-			case PeripheralDeviceAPI.StatusCode.BAD:
+			case PeripheralDeviceStatusCode.BAD:
 				return NoticeLevel.CRITICAL
-			case PeripheralDeviceAPI.StatusCode.FATAL:
+			case PeripheralDeviceStatusCode.FATAL:
 				return NoticeLevel.CRITICAL
 			default:
 				return NoticeLevel.NOTIFICATION

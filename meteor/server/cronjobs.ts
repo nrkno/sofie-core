@@ -1,6 +1,6 @@
 import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { getCurrentTime, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
@@ -85,13 +85,13 @@ Meteor.startup(() => {
 			// restart casparcg
 			if (system?.cron?.casparCGRestart?.enabled) {
 				PeripheralDevices.find({
-					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+					type: PeripheralDeviceType.PLAYOUT,
 				}).forEach((device) => {
 					PeripheralDevices.find({
 						parentDeviceId: device._id,
 					}).forEach((subDevice) => {
 						if (
-							subDevice.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							subDevice.type === PeripheralDeviceType.PLAYOUT &&
 							subDevice.subType === TSR.DeviceType.CASPARCG
 						) {
 							logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')

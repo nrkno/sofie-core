@@ -8,7 +8,6 @@ import { PartInstanceId } from '../collections/PartInstances'
 import {
 	PeripheralDeviceId,
 	PeripheralDevice,
-	PeripheralDeviceStatusCode,
 	PeripheralDeviceStatusObject,
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
@@ -462,37 +461,37 @@ export interface MediaWorkFlowStepRevision {
 	_rev: string
 }
 export namespace PeripheralDeviceAPI {
-	export enum StatusCode {
-		UNKNOWN = 0, // Status unknown
-		GOOD = 1, // All good and green
-		WARNING_MINOR = 2, // Everything is not OK, operation is not affected
-		WARNING_MAJOR = 3, // Everything is not OK, operation might be affected
-		BAD = 4, // Operation affected, possible to recover
-		FATAL = 5, // Operation affected, not possible to recover without manual interference
-	}
+	// export enum StatusCode {
+	// 	UNKNOWN = 0, // Status unknown
+	// 	GOOD = 1, // All good and green
+	// 	WARNING_MINOR = 2, // Everything is not OK, operation is not affected
+	// 	WARNING_MAJOR = 3, // Everything is not OK, operation might be affected
+	// 	BAD = 4, // Operation affected, possible to recover
+	// 	FATAL = 5, // Operation affected, not possible to recover without manual interference
+	// }
 
 	// Note The actual type of a device is determined by the Category, Type and SubType
 
 	export type StatusObject = PeripheralDeviceStatusObject
 	// Note The actual type of a device is determined by the Category, Type and SubType
-	export enum DeviceCategory {
-		INGEST = 'ingest',
-		PLAYOUT = 'playout',
-		MEDIA_MANAGER = 'media_manager',
-		PACKAGE_MANAGER = 'package_manager',
-	}
-	export enum DeviceType {
-		// Ingest devices:
-		MOS = 'mos',
-		SPREADSHEET = 'spreadsheet',
-		INEWS = 'inews',
-		// Playout devices:
-		PLAYOUT = 'playout',
-		// Media-manager devices:
-		MEDIA_MANAGER = 'media_manager',
-		// Package_manager devices:
-		PACKAGE_MANAGER = 'package_manager',
-	}
+	// export enum DeviceCategory {
+	// 	INGEST = 'ingest',
+	// 	PLAYOUT = 'playout',
+	// 	MEDIA_MANAGER = 'media_manager',
+	// 	PACKAGE_MANAGER = 'package_manager',
+	// }
+	// export enum DeviceType {
+	// 	// Ingest devices:
+	// 	MOS = 'mos',
+	// 	SPREADSHEET = 'spreadsheet',
+	// 	INEWS = 'inews',
+	// 	// Playout devices:
+	// 	PLAYOUT = 'playout',
+	// 	// Media-manager devices:
+	// 	MEDIA_MANAGER = 'media_manager',
+	// 	// Package_manager devices:
+	// 	PACKAGE_MANAGER = 'package_manager',
+	// }
 	export type DeviceSubType = SUBTYPE_PROCESS | TSR.DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
 	/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */

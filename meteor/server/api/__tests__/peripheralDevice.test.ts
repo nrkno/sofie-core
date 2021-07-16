@@ -1,7 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDevices,
+	PeripheralDeviceStatusCode,
+	PeripheralDeviceType,
+} from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
@@ -160,8 +166,8 @@ describe('test peripheralDevice general API methods', () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 
 		const options: PeripheralDeviceAPI.InitOptions = {
-			category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-			type: PeripheralDeviceAPI.DeviceType.MOS,
+			category: PeripheralDeviceCategory.INGEST,
+			type: PeripheralDeviceType.MOS,
 			subType: 'mos_connection',
 			name: 'test',
 			connectionId: 'test',
@@ -180,14 +186,14 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('setStatus', () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
-			statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+			statusCode: PeripheralDeviceStatusCode.GOOD,
 		})
 		Meteor.call(PeripheralDeviceAPIMethods.setStatus, device._id, device.token, {
-			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
+			statusCode: PeripheralDeviceStatusCode.WARNING_MINOR,
 			messages: ["Something's not right"],
 		})
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
-			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
+			statusCode: PeripheralDeviceStatusCode.WARNING_MINOR,
 			messages: ["Something's not right"],
 		})
 	})
@@ -482,7 +488,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		PeripheralDevices.update(device._id, {
 			$set: {
-				type: PeripheralDeviceAPI.DeviceType.SPREADSHEET,
+				type: PeripheralDeviceType.SPREADSHEET,
 			},
 		})
 		Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
@@ -492,7 +498,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		PeripheralDevices.update(device._id, {
 			$set: {
-				type: PeripheralDeviceAPI.DeviceType.MOS,
+				type: PeripheralDeviceType.MOS,
 			},
 		})
 	})
@@ -506,7 +512,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		PeripheralDevices.update(device._id, {
 			$set: {
-				type: PeripheralDeviceAPI.DeviceType.SPREADSHEET,
+				type: PeripheralDeviceType.SPREADSHEET,
 			},
 		})
 
@@ -532,8 +538,8 @@ describe('test peripheralDevice general API methods', () => {
 	// Note: this test fails, due to a backwards-compatibility hack in #c579c8f0
 	// testInFiber('initialize with bad arguments', () => {
 	// 	let options: PeripheralDeviceAPI.InitOptions = {
-	// 		category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-	// 		type: PeripheralDeviceAPI.DeviceType.MOS,
+	// 		category: PeripheralDeviceCategory.INGEST,
+	// 		type: PeripheralDeviceType.MOS,
 	// 		subType: 'mos_connection',
 	// 		name: 'test',
 	// 		connectionId: 'test',
@@ -603,7 +609,7 @@ describe('test peripheralDevice general API methods', () => {
 				organizationId: null,
 				name: 'Mock Media Manager',
 				studioId: env.studio._id,
-				category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
+				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
 					deviceConfig: [],
 				},
@@ -613,11 +619,11 @@ describe('test peripheralDevice general API methods', () => {
 				lastConnected: 0,
 				lastSeen: 0,
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: PeripheralDeviceStatusCode.GOOD,
 				},
 				subType: '_process',
 				token: 'MockToken',
-				type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+				type: PeripheralDeviceType.MEDIA_MANAGER,
 			})
 			device = PeripheralDevices.findOne(deviceId)!
 			MediaWorkFlows.insert({
@@ -772,7 +778,7 @@ describe('test peripheralDevice general API methods', () => {
 				organizationId: null,
 				name: 'Mock Media Manager',
 				studioId: env.studio._id,
-				category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
+				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
 					deviceConfig: [],
 				},
@@ -782,11 +788,11 @@ describe('test peripheralDevice general API methods', () => {
 				lastConnected: 0,
 				lastSeen: 0,
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: PeripheralDeviceStatusCode.GOOD,
 				},
 				subType: '_process',
 				token: 'MockToken',
-				type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+				type: PeripheralDeviceType.MEDIA_MANAGER,
 			})
 			device = PeripheralDevices.findOne(deviceId)!
 

@@ -2,7 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDeviceId,
+	PeripheralDeviceStatusCode,
+	PeripheralDeviceType,
+} from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, getRandomId, applyToArray, stringifyObjects } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
@@ -115,7 +120,7 @@ export namespace ServerPeripheralDeviceAPI {
 				organizationId: null,
 				created: getCurrentTime(),
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN,
+					statusCode: PeripheralDeviceStatusCode.UNKNOWN,
 				},
 				studioId: protectString(''),
 				connected: true,
@@ -164,8 +169,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(status, Object)
 		check(status.statusCode, Number)
 		if (
-			status.statusCode < PeripheralDeviceAPI.StatusCode.UNKNOWN ||
-			status.statusCode > PeripheralDeviceAPI.StatusCode.FATAL
+			status.statusCode < PeripheralDeviceStatusCode.UNKNOWN ||
+			status.statusCode > PeripheralDeviceStatusCode.FATAL
 		) {
 			throw new Meteor.Error(400, 'device status code is not known')
 		}
@@ -541,7 +546,7 @@ export namespace ServerPeripheralDeviceAPI {
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+		if (peripheralDevice.type !== PeripheralDeviceType.SPREADSHEET) {
 			throw new Meteor.Error(400, 'can only request user auth token for peripheral device of spreadsheet type')
 		}
 		check(authUrl, String)
@@ -560,7 +565,7 @@ export namespace ServerPeripheralDeviceAPI {
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+		if (peripheralDevice.type !== PeripheralDeviceType.SPREADSHEET) {
 			throw new Meteor.Error(400, 'can only store access token for peripheral device of spreadsheet type')
 		}
 

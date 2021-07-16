@@ -65,8 +65,7 @@ import { NotificationCenterPanel } from '../lib/notifications/NotificationCenter
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
@@ -1532,7 +1531,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							.fetch()
 							.map((i) => i._id),
 					},
-					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+					type: PeripheralDeviceType.PLAYOUT,
 					subType: TSR.DeviceType.CASPARCG,
 				}).fetch()) ||
 			undefined,
@@ -2421,7 +2420,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const attachedPlayoutGateways = PeripheralDevices.find({
 					studioId: this.props.studio._id,
 					connected: true,
-					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+					type: PeripheralDeviceType.PLAYOUT,
 				}).fetch()
 				if (attachedPlayoutGateways.length === 0) {
 					NotificationCenter.push(

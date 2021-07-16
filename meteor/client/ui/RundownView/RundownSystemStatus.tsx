@@ -3,10 +3,15 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDevices,
+	PeripheralDeviceStatusCode,
+	PeripheralDeviceType,
+} from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -73,10 +78,10 @@ interface OnLineOffLineList {
 }
 
 interface ITrackedProps {
-	mosStatus: PeripheralDeviceAPI.StatusCode
+	mosStatus: PeripheralDeviceStatusCode
 	mosLastUpdate: Time
 	mosDevices: OnLineOffLineList
-	playoutStatus: PeripheralDeviceAPI.StatusCode
+	playoutStatus: PeripheralDeviceStatusCode
 	playoutDevices: OnLineOffLineList
 }
 
@@ -115,30 +120,28 @@ export const RundownSystemStatus = translateWithTracker(
 		attachedDevices = attachedDevices.concat(subDevices)
 
 		const ingestDevices = attachedDevices.filter(
-			(i) =>
-				i.category === PeripheralDeviceAPI.DeviceCategory.INGEST ||
-				i.category === PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
+			(i) => i.category === PeripheralDeviceCategory.INGEST || i.category === PeripheralDeviceCategory.MEDIA_MANAGER
 		)
-		const playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
+		const playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceType.PLAYOUT)
 
 		const [ingest, playout] = [ingestDevices, playoutDevices].map((devices) => {
 			const status = devices
 				.filter((i) => !i.ignore)
-				.reduce((memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
+				.reduce((memo: PeripheralDeviceStatusCode, device: PeripheralDevice) => {
 					if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
 						return device.status.statusCode
 					} else if (!device.connected) {
-						return PeripheralDeviceAPI.StatusCode.FATAL
+						return PeripheralDeviceStatusCode.FATAL
 					} else {
 						return memo
 					}
-				}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
+				}, PeripheralDeviceStatusCode.UNKNOWN)
 			const onlineOffline: OnLineOffLineList = {
 				onLine: devices.filter(
-					(device) => device.connected && device.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR
+					(device) => device.connected && device.status.statusCode < PeripheralDeviceStatusCode.WARNING_MINOR
 				),
 				offLine: devices.filter(
-					(device) => !device.connected || device.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR
+					(device) => !device.connected || device.status.statusCode >= PeripheralDeviceStatusCode.WARNING_MINOR
 				),
 			}
 			const lastUpdate = devices.reduce((memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
@@ -212,11 +215,11 @@ export const RundownSystemStatus = translateWithTracker(
 					<div className="rundown-system-status__indicators">
 						<div
 							className={ClassNames('indicator', 'mos', {
-								good: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.GOOD,
-								minor: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
-								major: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
-								bad: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.BAD,
-								fatal: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.FATAL,
+								good: this.props.mosStatus === PeripheralDeviceStatusCode.GOOD,
+								minor: this.props.mosStatus === PeripheralDeviceStatusCode.WARNING_MINOR,
+								major: this.props.mosStatus === PeripheralDeviceStatusCode.WARNING_MAJOR,
+								bad: this.props.mosStatus === PeripheralDeviceStatusCode.BAD,
+								fatal: this.props.mosStatus === PeripheralDeviceStatusCode.FATAL,
 							})}
 						>
 							<div className="indicator__tooltip">
@@ -261,11 +264,11 @@ export const RundownSystemStatus = translateWithTracker(
 						</div>
 						<div
 							className={ClassNames('indicator', 'playout', {
-								good: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.GOOD,
-								minor: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
-								major: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
-								bad: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.BAD,
-								fatal: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.FATAL,
+								good: this.props.playoutStatus === PeripheralDeviceStatusCode.GOOD,
+								minor: this.props.playoutStatus === PeripheralDeviceStatusCode.WARNING_MINOR,
+								major: this.props.playoutStatus === PeripheralDeviceStatusCode.WARNING_MAJOR,
+								bad: this.props.playoutStatus === PeripheralDeviceStatusCode.BAD,
+								fatal: this.props.playoutStatus === PeripheralDeviceStatusCode.FATAL,
 							})}
 						>
 							<div className="indicator__tooltip">

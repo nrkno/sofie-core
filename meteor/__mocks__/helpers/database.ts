@@ -1,5 +1,10 @@
 import * as _ from 'underscore'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PeripheralDeviceType,
+	PeripheralDeviceCategory,
+} from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
@@ -84,8 +89,8 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 
 let dbI: number = 0
 export function setupMockPeripheralDevice(
-	category: PeripheralDeviceAPI.DeviceCategory,
-	type: PeripheralDeviceAPI.DeviceType,
+	category: PeripheralDeviceCategory,
+	type: PeripheralDeviceType,
 	subType: PeripheralDeviceAPI.DeviceSubType,
 	studio?: Studio,
 	doc?: Partial<PeripheralDevice>
@@ -415,8 +420,8 @@ export async function setupDefaultStudioEnvironment(
 		organizationId: organizationId,
 	})
 	const ingestDevice = setupMockPeripheralDevice(
-		PeripheralDeviceAPI.DeviceCategory.INGEST,
-		PeripheralDeviceAPI.DeviceType.MOS,
+		PeripheralDeviceCategory.INGEST,
+		PeripheralDeviceType.MOS,
 		PeripheralDeviceAPI.SUBTYPE_PROCESS,
 		studio,
 		{ organizationId: organizationId }

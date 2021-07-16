@@ -6,7 +6,11 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dat
 export { PeripheralDeviceId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 export * from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export const PeripheralDevices = createMongoCollection<PeripheralDevice, PeripheralDevice>(
@@ -76,18 +80,18 @@ export function getExpectedLatency(peripheralDevice: PeripheralDevice): {
 }
 export function getExternalNRCSName(device: PeripheralDevice | undefined): string {
 	if (device) {
-		if (device.category === PeripheralDeviceAPI.DeviceCategory.INGEST) {
-			if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+		if (device.category === PeripheralDeviceCategory.INGEST) {
+			if (device.type === PeripheralDeviceType.MOS) {
 				// This is a hack, to be replaced with something better later:
 				return 'ENPS'
-			} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
+			} else if (device.type === PeripheralDeviceType.INEWS) {
 				return 'iNews'
-			} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+			} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
 				return 'Google Sheet'
 			} else if (
-				device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT ||
-				device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER ||
-				device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER
+				device.type === PeripheralDeviceType.PLAYOUT ||
+				device.type === PeripheralDeviceType.MEDIA_MANAGER ||
+				device.type === PeripheralDeviceType.PACKAGE_MANAGER
 			) {
 				// These aren't ingest gateways
 			} else {

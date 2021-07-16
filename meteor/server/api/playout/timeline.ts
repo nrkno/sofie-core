@@ -53,7 +53,7 @@ import { PackageInfo } from '../../coreSystem'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
+import { getExpectedLatency, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import {
 	processAndPrunePieceInstanceTimings,
 	PieceInstanceWithTimings,
@@ -198,7 +198,7 @@ function processAndSaveTimelineObjects(
 		theNowTime = forceNowToTime
 	} else {
 		const playoutDevices = cache.PeripheralDevices.findFetch(
-			(device) => device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+			(device) => device.type === PeripheralDeviceType.PLAYOUT
 		)
 		if (
 			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature

@@ -10,7 +10,11 @@ import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDevices,
+	PeripheralDeviceType,
+} from '../../lib/collections/PeripheralDevices'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -317,8 +321,8 @@ export const addSteps = addMigrationSteps('0.25.0', [
 			_.each(devices, (device) => {
 				if (_.has(device, 'type') && !_.has(device, 'category')) {
 					const m: {
-						category: PeripheralDeviceAPI.DeviceCategory
-						type: PeripheralDeviceAPI.DeviceType
+						category: PeripheralDeviceCategory
+						type: PeripheralDeviceType
 						subType: PeripheralDeviceAPI.DeviceSubType
 					} = {
 						category: 'unknown' as any,
@@ -334,16 +338,16 @@ export const addSteps = addMigrationSteps('0.25.0', [
 					const oldDeviceType = device.type as any as OLDDeviceType
 
 					if (oldDeviceType === OLDDeviceType.MOSDEVICE) {
-						m.category = PeripheralDeviceAPI.DeviceCategory.INGEST
-						m.type = PeripheralDeviceAPI.DeviceType.MOS
+						m.category = PeripheralDeviceCategory.INGEST
+						m.type = PeripheralDeviceType.MOS
 						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
 					} else if (oldDeviceType === OLDDeviceType.PLAYOUT) {
-						m.category = PeripheralDeviceAPI.DeviceCategory.PLAYOUT
-						m.type = PeripheralDeviceAPI.DeviceType.PLAYOUT
+						m.category = PeripheralDeviceCategory.PLAYOUT
+						m.type = PeripheralDeviceType.PLAYOUT
 						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
 					} else if (oldDeviceType === OLDDeviceType.MEDIA_MANAGER) {
-						m.category = PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
-						m.type = PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
+						m.category = PeripheralDeviceCategory.MEDIA_MANAGER
+						m.type = PeripheralDeviceType.MEDIA_MANAGER
 						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
 					} else if (oldDeviceType === OLDDeviceType.OTHER) {
 						// Unknown sub-device

@@ -20,6 +20,10 @@ import {
 } from '../playout/lockFunction'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -32,11 +36,11 @@ export namespace IngestActions {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		// TODO: refacor this into something nicer perhaps?
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+		if (device.type === PeripheralDeviceType.MOS) {
 			return MOSDeviceActions.reloadRundown(device, rundown)
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+		} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
 			return GenericDeviceActions.reloadRundown(device, rundown)
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
+		} else if (device.type === PeripheralDeviceType.INEWS) {
 			return GenericDeviceActions.reloadRundown(device, rundown)
 		} else {
 			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
@@ -46,10 +50,10 @@ export namespace IngestActions {
 	export function reloadSegment(rundown: Rundown, segment: Segment): TriggerReloadDataResponse {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+		if (device.type === PeripheralDeviceType.MOS) {
 			// MOS doesn't support reloading a segment, so do the whole rundown
 			return MOSDeviceActions.reloadRundown(device, rundown)
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
+		} else if (device.type === PeripheralDeviceType.INEWS) {
 			return GenericDeviceActions.reloadSegment(device, rundown, segment)
 		} else {
 			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
@@ -90,8 +94,8 @@ export namespace IngestActions {
 		}
 
 		if (
-			device.category === PeripheralDeviceAPI.DeviceCategory.INGEST &&
-			device.type === PeripheralDeviceAPI.DeviceType.MOS // TODO: refacor this into something nicer perhaps?
+			device.category === PeripheralDeviceCategory.INGEST &&
+			device.type === PeripheralDeviceType.MOS // TODO: refacor this into something nicer perhaps?
 		) {
 			MOSDeviceActions.notifyCurrentPlayingPart(
 				device,

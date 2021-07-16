@@ -11,7 +11,11 @@ import '../api'
 import { activateRundownPlaylist, prepareStudioForBroadcast } from '../actions'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '../../../../lib/collections/PeripheralDevices'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
 import { protectString } from '../../../../lib/lib'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
@@ -29,8 +33,8 @@ describe('Playout Actions', () => {
 		env = await setupDefaultStudioEnvironment()
 
 		playoutDevice = setupMockPeripheralDevice(
-			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceCategory.PLAYOUT,
+			PeripheralDeviceType.PLAYOUT,
 			PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			env.studio
 		)

@@ -4,12 +4,8 @@ import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
 import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps, MediaWorkFlowStep, MediaWorkFlowStepId } from '../../../lib/collections/MediaWorkFlowSteps'
-import {
-	PeripheralDeviceAPI,
-	MediaWorkFlowRevision,
-	MediaWorkFlowStepRevision,
-} from '../../../lib/api/peripheralDevice'
-import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { MediaWorkFlowRevision, MediaWorkFlowStepRevision } from '../../../lib/api/peripheralDevice'
+import { PeripheralDeviceId, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 
@@ -72,7 +68,7 @@ export namespace MediaManagerIntegration {
 		obj: MediaWorkFlow | null
 	): void {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER)
+		if (peripheralDevice.type !== PeripheralDeviceType.MEDIA_MANAGER)
 			throw new Meteor.Error(
 				400,
 				`Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `
@@ -112,7 +108,7 @@ export namespace MediaManagerIntegration {
 		obj: MediaWorkFlowStep | null
 	): void {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER)
+		if (peripheralDevice.type !== PeripheralDeviceType.MEDIA_MANAGER)
 			throw new Meteor.Error(
 				400,
 				`Device "${peripheralDevice._id}".type is "${peripheralDevice.type}", should be MEDIA_MANAGER `

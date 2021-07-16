@@ -10,7 +10,7 @@ import { RundownId } from '../../lib/collections/Rundowns'
 import { protectString } from '../../lib/lib'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import { ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
-import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, getStudioIdFromDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
@@ -70,7 +70,7 @@ export namespace RundownReadAccess {
 		if (!rundownContent(selector, cred)) return null
 
 		const mediaManagerDevice = PeripheralDevices.findOne({
-			type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+			type: PeripheralDeviceType.MEDIA_MANAGER,
 			token: cred.token,
 		})
 
@@ -97,7 +97,7 @@ export namespace RundownReadAccess {
 		if (!rundownContent(selector, cred)) return null
 
 		const playoutDevice = PeripheralDevices.findOne({
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			type: PeripheralDeviceType.PLAYOUT,
 			token: cred.token,
 		})
 		if (!playoutDevice) return false

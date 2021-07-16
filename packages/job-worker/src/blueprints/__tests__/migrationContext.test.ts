@@ -19,6 +19,7 @@ import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import { PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {
@@ -396,7 +397,7 @@ describe('Test blueprint migrationContext', () => {
 					name: 'Fake parent device',
 					organizationId: null,
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-					category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+					category: PeripheralDeviceCategory.PLAYOUT,
 					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 					studioId: studio._id,
 					created: 0,
@@ -426,7 +427,7 @@ describe('Test blueprint migrationContext', () => {
 				const device = PeripheralDevices.findOne({
 					studioId: studio._id,
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-					category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+					category: PeripheralDeviceCategory.PLAYOUT,
 					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 				})
 				expect(device).toBeTruthy()

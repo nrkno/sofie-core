@@ -1,7 +1,12 @@
 import { check } from '../../lib/check'
 import { makePromise, waitForPromise, waitForPromiseAll } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceId,
+	PeripheralDevices,
+	PeripheralDeviceType,
+} from '../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../lib/api/methods'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioId } from '../../lib/collections/Studios'
@@ -34,8 +39,8 @@ export namespace PackageManagerAPI {
 
 		const packageManagerDevices = PeripheralDevices.find({
 			studioId: studioId,
-			category: PeripheralDeviceAPI.DeviceCategory.PACKAGE_MANAGER,
-			type: PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER,
+			category: PeripheralDeviceCategory.PACKAGE_MANAGER,
+			type: PeripheralDeviceType.PACKAGE_MANAGER,
 			subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 		}).fetch()
 

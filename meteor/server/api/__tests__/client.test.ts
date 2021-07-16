@@ -6,7 +6,11 @@ import { protectString, makePromise } from '../../../lib/lib'
 import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { setLoggerLevel } from '../logger'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
-import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceId,
+	PeripheralDeviceType,
+} from '../../../lib/collections/PeripheralDevices'
 import { setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
@@ -21,8 +25,8 @@ describe('ClientAPI', () => {
 	// let mockDeviceToken: string = 'Not set yet'
 	beforeAllInFiber(() => {
 		const mockDevice = setupMockPeripheralDevice(
-			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceCategory.PLAYOUT,
+			PeripheralDeviceType.PLAYOUT,
 			PeripheralDeviceAPI.SUBTYPE_PROCESS
 		)
 		mockDeviceId = mockDevice._id
