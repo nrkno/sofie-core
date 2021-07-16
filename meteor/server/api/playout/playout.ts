@@ -1062,44 +1062,6 @@ export namespace ServerPlayoutAPI {
 			pieceInstanceIdOrPieceIdToCopy
 		)
 	}
-	export async function segmentAdLibPieceStart(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		adLibPieceId: PieceId,
-		queue: boolean
-	) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(adLibPieceId, String)
-
-		return ServerPlayoutAdLibAPI.segmentAdLibPieceStart(
-			access,
-			rundownPlaylistId,
-			partInstanceId,
-			adLibPieceId,
-			queue
-		)
-	}
-	export async function rundownBaselineAdLibPieceStart(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		baselineAdLibPieceId: PieceId,
-		queue: boolean
-	) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(baselineAdLibPieceId, String)
-
-		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(
-			access,
-			rundownPlaylistId,
-			partInstanceId,
-			baselineAdLibPieceId,
-			queue
-		)
-	}
 	export async function sourceLayerStickyPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
