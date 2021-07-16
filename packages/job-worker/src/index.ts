@@ -7,6 +7,7 @@ import { setupApmAgent, startTransaction } from './profiler'
 import { createMongoConnection } from './db'
 import { spawn, Thread, Worker as ThreadWorker } from 'threads'
 import { StudioMethods } from './workers/studio'
+import { UserError } from '@sofie-automation/corelib/dist/error'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -64,7 +65,10 @@ void (async () => {
 					await job.moveToCompleted(result, token, false)
 				} catch (e) {
 					console.log('job errored', e)
-					await job.moveToFailed(e, token)
+					// stringify the error to preserve the UserError
+					const e2 = e instanceof Error ? e : new Error(UserError.toJSON(e))
+
+					await job.moveToFailed(e2, token)
 				}
 				console.log('the end')
 				transaction?.end()

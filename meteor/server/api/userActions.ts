@@ -56,7 +56,8 @@ import { getShowStyleCompound } from './showStyles'
 import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { SnapshotId } from '../../lib/collections/Snapshots'
 import { QueueStudioJob } from '../worker/worker'
-import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -525,6 +526,40 @@ export async function sourceLayerOnPartStop(
 		await ServerPlayoutAPI.sourceLayerOnPartStop(access, rundownPlaylistId, partInstanceId, sourceLayerIds)
 	)
 }
+async function runUserAction<T extends keyof StudioJobFunc>(
+	studioId: StudioId,
+	name: T,
+	data: Parameters<StudioJobFunc[T]>[0]
+): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
+	try {
+		const job = await QueueStudioJob(name, studioId, data)
+
+		const span = profiler.startSpan('queued-job')
+		const res = await job.complete
+		span?.end()
+
+		// TODO - track timings
+		// console.log(await job.getTimings)
+
+		return ClientAPI.responseSuccess(res)
+	} catch (e) {
+		console.log('raw', e, JSON.stringify(e))
+
+		let userError: UserError
+		if (UserError.isUserError(e)) {
+			userError = e
+		} else {
+			// Rewrap errors as a UserError
+			const err = e instanceof Error ? e : new Error(e)
+			userError = UserError.from(err, UserErrorMessage.InternalError)
+		}
+
+		logger.error(`UserAction "${name}" failed: ${userError.rawError.toString()}`)
+
+		// TODO - this isnt great, but is good enough for a prototype
+		return ClientAPI.responseError(JSON.stringify(userError.message))
+	}
+}
 export async function rundownBaselineAdLibPieceStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
@@ -539,28 +574,12 @@ export async function rundownBaselineAdLibPieceStart(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	// if (!playlist.activationId)
-	// 	return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	// if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-	// 	return ClientAPI.responseError(`Can't start AdLib piece when the Rundown is in Hold mode!`)
-	// }
-
-	const job = await QueueStudioJob(StudioJobs.RundownBaselineAdlibStart, playlist.studioId, {
+	return runUserAction(playlist.studioId, StudioJobs.RundownBaselineAdlibStart, {
 		playlistId: rundownPlaylistId,
 		partInstanceId: partInstanceId,
 		baselineAdLibPieceId: adlibPieceId,
 		queue: queue,
 	})
-
-	// TODO - the error handling here is very different
-
-	const span = profiler.startSpan('queued-job')
-	await job.complete
-	span?.end()
-
-	// console.log(await job.getTimings)
-
-	return ClientAPI.responseSuccess(undefined)
 }
 export async function sourceLayerStickyPieceStart(
 	context: MethodContext,

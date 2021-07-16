@@ -21,6 +21,7 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
 import { lockPlaylist } from '../jobs/lock'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 // export namespace ServerPlayoutAdLibAPI {
 // 	export async function pieceTakeNow(
@@ -182,6 +183,10 @@ import { lockPlaylist } from '../jobs/lock'
 // 		)
 // 	}
 
+/**
+ * Run a typical playout job
+ * This means loading the playout cache in stages, doing some calculations and saving the result
+ */
 export async function runAsPlayoutJob<TRes>(
 	context: JobContext,
 	data: RundownPlayoutPropsBase,
@@ -227,14 +232,13 @@ export async function rundownBaselineAdLibPieceStart(
 		data,
 		async (cache) => {
 			const playlist = cache.Playlist.doc
-			if (!playlist.activationId)
-				throw new Error(`Rundown Baseline AdLib-pieces can be only placed in an active rundown!`)
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.AdlibInactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-				throw new Error(`Part AdLib-pieces can not be used in combination with hold!`)
+				throw UserError.create(UserErrorMessage.AdlibDuringHold)
 			}
 
 			if (!data.queue && playlist.currentPartInstanceId !== data.partInstanceId)
-				throw new Error(`Rundown Baseline AdLib-pieces can be only placed in a currently playing part!`)
+				throw UserError.create(UserErrorMessage.AdlibCurrentPart)
 		},
 		async (cache) => {
 			const partInstance = cache.PartInstances.findOne(data.partInstanceId)
@@ -246,7 +250,11 @@ export async function rundownBaselineAdLibPieceStart(
 				_id: data.baselineAdLibPieceId,
 				rundownId: partInstance.rundownId,
 			})
-			if (!adLibPiece) throw new Error(`Rundown Baseline Ad Lib Item "${data.baselineAdLibPieceId}" not found!`)
+			if (!adLibPiece)
+				throw UserError.from(
+					new Error(`Rundown Baseline Ad Lib Item "${data.baselineAdLibPieceId}" not found!`),
+					UserErrorMessage.AdlibNotFound
+				)
 
 			await innerStartOrQueueAdLibPiece(context, cache, rundown, !!data.queue, partInstance, adLibPiece)
 		}

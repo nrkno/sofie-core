@@ -4,6 +4,7 @@ import { Queue, ConnectionOptions, QueueEvents, Job } from 'bullmq'
 import { logger } from '../../lib/logging'
 import PLazy from 'p-lazy'
 import _ from 'underscore'
+import { UserError } from '@sofie-automation/corelib/dist/error'
 
 // class QueueWrapper {}
 
@@ -37,7 +38,7 @@ const studioQueueCache = new Map<StudioId, [Queue, QueueEvents]>()
 // type WrappedResultExt<TRes> = WrappedResult<TRes> & {
 // 	completedTime: number
 // }
-type WrappedResult<T> = JobTimings & ({ error: Error } | { result: T })
+type WrappedResult<T> = JobTimings & ({ error: Error | UserError } | { result: T })
 
 /**
  * Queue a job for a studio
@@ -84,8 +85,16 @@ export async function QueueStudioJob<T extends keyof StudioJobFunc>(
 				completedTime: Date.now(),
 			}
 		} catch (e) {
+			let e2 = e
+			try {
+				// Try and parse it as a UserError
+				e2 = UserError.tryFromJSON(e.message)
+			} catch (_e) {
+				// ignore
+			}
+
 			return {
-				error: e,
+				error: e2,
 				queueTime: queuedTime,
 				startedTime: job.processedOn,
 				finishedTime: job.finishedOn,
