@@ -1,16 +1,12 @@
 import { logger } from './logging'
 import { ConnectionOptions, Worker } from 'bullmq'
-import { MongoClient } from 'mongodb'
-import { IDirectCollections, wrapMongoCollection } from './collection'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { JobContext } from './jobs'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
-import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { loadBlueprintById, loadStudioBlueprint } from './blueprints/cache'
-import { BlueprintManifestType } from '../../blueprints-integration/dist'
-import { studioJobHandlers } from './jobs/jobs'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupApmAgent, startTransaction } from './profiler'
+import { createMongoConnection } from './db'
+import { spawn, Thread, Worker as ThreadWorker } from 'threads'
+import { StudioMethods } from './workers/studio'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -19,72 +15,35 @@ logger.info('Starting ')
 console.log('hello world')
 
 const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
+const mongoDb = 'meteor'
 const connection: ConnectionOptions = {
 	// TODO - something here?
 }
 
 const studioId: StudioId = protectString('studio0') // the queue/worker is for a dedicated studio, so the id will be semi-hardcoded
 const token = 'abc' // unique 'id' for the worker
-const worker = new Worker(getStudioQueueName(studioId), undefined, { connection })
+const studioQueue = new Worker(getStudioQueueName(studioId), undefined, { connection })
 
 setupApmAgent()
 
 void (async () => {
-	const client = new MongoClient(mongoUri)
+	const client = await createMongoConnection(mongoUri)
+
+	const studioWorker = await spawn<StudioMethods>(new ThreadWorker('./workers/studio'))
+	Thread.events(studioWorker).subscribe((event) => console.log('Thread event:', event))
 
 	try {
-		await client.connect()
-
-		const database = client.db('meteor') // TODO - dynamic
-		const collections: IDirectCollections = Object.seal({
-			AdLibActions: wrapMongoCollection(database.collection(CollectionName.AdLibActions)),
-			AdLibPieces: wrapMongoCollection(database.collection(CollectionName.AdLibPieces)),
-			Blueprints: wrapMongoCollection(database.collection(CollectionName.Blueprints)),
-			BucketAdLibActions: wrapMongoCollection(database.collection(CollectionName.BucketAdLibActions)),
-			BucketAdLibPieces: wrapMongoCollection(database.collection(CollectionName.BucketAdLibPieces)),
-			ExpectedMediaItems: wrapMongoCollection(database.collection(CollectionName.ExpectedMediaItems)),
-			ExpectedPlayoutItems: wrapMongoCollection(database.collection(CollectionName.ExpectedPlayoutItems)),
-			IngestDataCache: wrapMongoCollection(database.collection(CollectionName.IngestDataCache)),
-			Parts: wrapMongoCollection(database.collection(CollectionName.Parts)),
-			PartInstances: wrapMongoCollection(database.collection(CollectionName.PartInstances)),
-			PeripheralDevices: wrapMongoCollection(database.collection(CollectionName.PeripheralDevices)),
-			PeripheralDeviceCommands: wrapMongoCollection(database.collection(CollectionName.PeripheralDeviceCommands)),
-			Pieces: wrapMongoCollection(database.collection(CollectionName.Pieces)),
-			PieceInstances: wrapMongoCollection(database.collection(CollectionName.PieceInstances)),
-			Rundowns: wrapMongoCollection(database.collection(CollectionName.Rundowns)),
-			RundownBaselineAdLibActions: wrapMongoCollection(
-				database.collection(CollectionName.RundownBaselineAdLibActions)
-			),
-			RundownBaselineAdLibPieces: wrapMongoCollection(
-				database.collection(CollectionName.RundownBaselineAdLibPieces)
-			),
-			RundownBaselineObjects: wrapMongoCollection(database.collection(CollectionName.RundownBaselineObjects)),
-			RundownPlaylists: wrapMongoCollection(database.collection(CollectionName.RundownPlaylists)),
-			Segments: wrapMongoCollection(database.collection(CollectionName.Segments)),
-			ShowStyleBases: wrapMongoCollection(database.collection(CollectionName.ShowStyleBases)),
-			ShowStyleVariants: wrapMongoCollection(database.collection(CollectionName.ShowStyleVariants)),
-			Studios: wrapMongoCollection(database.collection(CollectionName.Studios)),
-			Timelines: wrapMongoCollection(database.collection(CollectionName.Timelines)),
-
-			ExpectedPackages: wrapMongoCollection(database.collection(CollectionName.ExpectedPackages)),
-			PackageInfos: wrapMongoCollection(database.collection(CollectionName.PackageInfos)),
-		})
-
-		const tmpStudio = await collections.Studios.findOne(studioId)
-		if (!tmpStudio) throw new Error('Missing studio')
-		const studioBlueprint = await loadStudioBlueprint(collections, tmpStudio)
-		if (!studioBlueprint) throw new Error('Missing studio blueprint')
-
-		const blueprintId: BlueprintId = protectString('distriktsnyheter0')
-		const showBlueprint = await loadBlueprintById(collections, blueprintId) // HACK
-		if (!showBlueprint || showBlueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE)
-			throw new Error('Missing showstyle blueprint')
+		await studioWorker.init(mongoUri, mongoDb, studioId)
+		// const collections = getMongoCollections(client, mongoDb)
 
 		// eslint-disable-next-line no-constant-condition
 		while (true) {
-			const job = await worker.getNextJob(token, {
+			const job = await studioQueue.getNextJob(token, {
 				// block: true, // wait for there to be a job ready
 			})
+
+			// TODO - job lock may timeout, we need to run at an interval to make sure it doesnt
+			// TODO - enforce a timeout? we could kill the thread once it reaches the limit as a hard abort
 
 			// we may not get a job even when blocking, so try again
 			if (job) {
@@ -96,21 +55,7 @@ void (async () => {
 				try {
 					console.log('Running work ', job.id, job.name, JSON.stringify(job.data))
 
-					const context: JobContext = {
-						directCollections: collections,
-
-						studioId,
-
-						studioBlueprint: studioBlueprint,
-						showStyleBlueprint: { blueprint: showBlueprint, blueprintId: blueprintId },
-
-						startSpan: (name) => {
-							if (transaction) return transaction.startSpan(name)
-							return null
-						},
-					}
-
-					const result = await runJob(context, job.name, job.data)
+					const result = await studioWorker.runJob(job.name, job.data)
 
 					await job.moveToCompleted(result, token, false)
 				} catch (e) {
@@ -121,17 +66,9 @@ void (async () => {
 			}
 		}
 	} finally {
+		await Thread.terminate(studioWorker)
+
 		// Ensures that the client will close when you finish/error
 		await client.close()
 	}
 })()
-
-async function runJob(context: JobContext, name: string, data: unknown): Promise<unknown> {
-	// Execute function, or fail if no handler
-	const handler = (studioJobHandlers as any)[name]
-	if (handler) {
-		return handler(context, data)
-	} else {
-		throw new Error(`Unknown job name: "${name}"`)
-	}
-}

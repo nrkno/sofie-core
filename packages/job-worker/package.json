@@ -43,7 +43,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration":"1.37.0-in-development",
+		"@sofie-automation/blueprints-integration": "1.37.0-in-development",
 		"@sofie-automation/corelib": "1.37.0-in-development",
 		"bullmq": "^1.39.0",
 		"deepmerge": "^4.2.2",
@@ -52,6 +52,7 @@
 		"p-lazy": "^3.1.0",
 		"superfly-timeline": "^8.2.0",
 		"threadedclass": "^0.8.3",
+		"threads": "^1.6.5",
 		"tslib": "^2.1.0",
 		"type-fest": "^0.21.1",
 		"underscore": "1.12.0",

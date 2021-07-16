@@ -10,6 +10,7 @@
 			"@sofie-automation/job-worker": ["./src/index.ts"]
 		},
 		"resolveJsonModule": true,
-		"types": ["node"]
+		"types": ["node"],
+		"skipLibCheck": true
 	}
 }
