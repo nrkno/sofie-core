@@ -7,20 +7,34 @@ function t(key: string): string {
 
 export enum UserErrorMessage {
 	InternalError,
-	AdlibInactiveRundown,
-	AdlibDuringHold,
+	InactiveRundown,
+	DuringHold,
+	NoCurrentPart,
 	AdlibCurrentPart,
 	AdlibNotFound,
 	AdlibUnplayable,
+	PieceAsAdlibNotFound,
+	PieceAsAdlibWrongType,
+	PieceAsAdlibCurrentlyLive,
+	SourceLayerNotSticky,
+	SourceLayerStickyNothingFound,
+	BucketAdlibIncompatible,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.InternalError]: t(`An internal error occured!`),
-	[UserErrorMessage.AdlibInactiveRundown]: t(`AdLibs can be only placed in an active rundown!`),
-	[UserErrorMessage.AdlibDuringHold]: t(`AdLibs can not be used in combination with hold!`),
+	[UserErrorMessage.InactiveRundown]: t(`Rundown must be active!`),
+	[UserErrorMessage.DuringHold]: t(`Can not be used during a hold!`),
+	[UserErrorMessage.NoCurrentPart]: t(`Rundown must be playing!`),
 	[UserErrorMessage.AdlibCurrentPart]: t(`AdLibs can be only placed in a currently playing part!`),
 	[UserErrorMessage.AdlibNotFound]: t(`AdLib could not be found!`),
 	[UserErrorMessage.AdlibUnplayable]: t(`Cannot take unplayable AdLib`),
+	[UserErrorMessage.PieceAsAdlibNotFound]: t(`Piece to take was not found!`),
+	[UserErrorMessage.PieceAsAdlibWrongType]: t(`Piece to take is not of a 'LOWER_THIRD' item!`),
+	[UserErrorMessage.PieceAsAdlibCurrentlyLive]: t(`Piece to take is already live!`),
+	[UserErrorMessage.SourceLayerNotSticky]: t(`Layer does not allow sticky pieces!`),
+	[UserErrorMessage.SourceLayerStickyNothingFound]: t(`Nothing was found on layer!`),
+	[UserErrorMessage.BucketAdlibIncompatible]: t(`Bucket AdLib is not compatible with this Rundown!`),
 }
 
 export class UserError {
@@ -28,10 +42,12 @@ export class UserError {
 		// super()
 	}
 
+	/** Create a UserError with a custom error for the log */
 	static from(err: Error, key: UserErrorMessage, args?: { [k: string]: any }): UserError {
 		return new UserError(err, { key: UserErrorMessagesTranslations[key], args })
 	}
 
+	/** Create a UserError duplicating the same error for the log */
 	static create(key: UserErrorMessage, args?: { [k: string]: any }): UserError {
 		return UserError.from(new Error(UserErrorMessagesTranslations[key]), key, args)
 	}

@@ -4,15 +4,30 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, getRank, literal } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
-import { AdlibPieceStartProps } from '@sofie-automation/corelib/dist/worker/studio'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, runAsPlayoutJob } from './cache'
+import {
+	AdlibPieceStartProps,
+	StartStickyPieceOnSourceLayerProps,
+	TakePieceAsAdlibNowProps,
+} from '@sofie-automation/corelib/dist/worker/studio'
+import {
+	CacheForPlayout,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
+	getRundownIDsFromCache,
+	getSelectedPartInstancesFromCache,
+	runAsPlayoutJob,
+} from './cache'
 import { updateTimeline } from './timeline'
-import { selectNextPart, setNextPart } from './lib'
+import { prefixAllObjectIds, selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
-import { convertAdLibToPieceInstance, setupPieceInstanceInfiniteProperties } from './pieces'
+import {
+	convertAdLibToPieceInstance,
+	convertPieceToAdLibPiece,
+	getResolvedPieces,
+	setupPieceInstanceInfiniteProperties,
+} from './pieces'
 import { updatePartInstanceRanks } from '../rundown'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -20,123 +35,125 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { MongoQuery } from '../collection'
 
-// export namespace ServerPlayoutAdLibAPI {
-// 	export async function pieceTakeNow(
-// 		access: VerifiedRundownPlaylistContentAccess,
-// 		rundownPlaylistId: RundownPlaylistId,
-// 		partInstanceId: PartInstanceId,
-// 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
-// 	): Promise<void> {
-// 		return runPlayoutOperationWithCache(
-// 			access,
-// 			'pieceTakeNow',
-// 			rundownPlaylistId,
-// 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
-// 				if (!playlist.activationId)
-// 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
-// 				if (playlist.currentPartInstanceId !== partInstanceId)
-// 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
-// 			},
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
-// 				if (!playlist.activationId)
-// 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
+export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
+	return runAsPlayoutJob(
+		context,
+		// 'pieceTakeNow',
+		data,
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
+				throw UserError.create(UserErrorMessage.DuringHold)
+			}
 
-// 				const rundownIds = getRundownIDsFromCache(cache)
+			if (playlist.currentPartInstanceId !== data.partInstanceId)
+				throw UserError.create(UserErrorMessage.AdlibCurrentPart)
+		},
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
-// 				const pieceInstanceToCopy = cache.PieceInstances.findOne({
-// 					_id: pieceInstanceIdOrPieceIdToCopy as PieceInstanceId,
-// 					rundownId: { $in: rundownIds },
-// 				})
-// 				const pieceToCopy = pieceInstanceToCopy
-// 					? pieceInstanceToCopy.piece
-// 					: (Pieces.findOne({
-// 							_id: pieceInstanceIdOrPieceIdToCopy as PieceId,
-// 							startRundownId: { $in: rundownIds },
-// 					  }) as Piece)
-// 				if (!pieceToCopy) {
-// 					throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
-// 				}
+			const rundownIds = getRundownIDsFromCache(cache)
 
-// 				const partInstance = cache.PartInstances.findOne(partInstanceId)
-// 				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
+			const pieceInstanceToCopy = cache.PieceInstances.findOne(
+				data.pieceInstanceIdOrPieceIdToCopy as PieceInstanceId
+			)
 
-// 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
-// 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
+			const pieceToCopy = pieceInstanceToCopy
+				? pieceInstanceToCopy.piece
+				: ((await context.directCollections.Pieces.findOne({
+						_id: data.pieceInstanceIdOrPieceIdToCopy as PieceId,
+						startRundownId: { $in: rundownIds },
+				  })) as Piece)
+			if (!pieceToCopy) {
+				throw UserError.from(
+					new Error(`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" not found!`),
+					UserErrorMessage.PieceAsAdlibNotFound
+				)
+			}
 
-// 				const showStyleBase = rundown.getShowStyleBase() // todo: database
-// 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-// 				if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
-// 					throw new Meteor.Error(
-// 						403,
-// 						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a LOWER_THIRD item!`
-// 					)
+			const partInstance = cache.PartInstances.findOne(data.partInstanceId)
+			if (!partInstance) throw new Error(`PartInstance "${data.partInstanceId}" not found!`)
+			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
+			if (!rundown) throw new Error(`Rundown "${partInstance.rundownId}" not found!`)
 
-// 				const newPieceInstance = convertAdLibToPieceInstance(
-// 					playlist.activationId,
-// 					pieceToCopy,
-// 					partInstance,
-// 					false
-// 				)
-// 				if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-// 					newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
-// 						_.map(newPieceInstance.piece.content.timelineObjects, (obj) => {
-// 							return literal<TimelineObjGeneric>({
-// 								...obj,
-// 								// @ts-ignore _id
-// 								_id: obj.id || obj._id,
-// 								studioId: protectString(''), // set later
-// 								objectType: TimelineObjType.RUNDOWN,
-// 							})
-// 						}),
-// 						unprotectString(newPieceInstance._id)
-// 					)
-// 				}
+			const showStyleBase = rundown.getShowStyleBase() // todo: database
+			const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
+			if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
+				throw UserError.from(
+					new Error(
+						`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" wrong type "${sourceLayer?.type}"!`
+					),
+					UserErrorMessage.PieceAsAdlibWrongType
+				)
 
-// 				// Disable the original piece if from the same Part
-// 				if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
-// 					// Ensure the piece being copied isnt currently live
-// 					if (
-// 						pieceInstanceToCopy.startedPlayback &&
-// 						pieceInstanceToCopy.startedPlayback <= getCurrentTime()
-// 					) {
-// 						const resolvedPieces = getResolvedPieces(cache, showStyleBase, partInstance)
-// 						const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
+			const newPieceInstance = convertAdLibToPieceInstance(
+				context,
+				playlist.activationId,
+				pieceToCopy,
+				partInstance,
+				false
+			)
+			if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
+				newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
+					newPieceInstance.piece.content.timelineObjects.map((obj) => {
+						return literal<TimelineObjGeneric>({
+							...obj,
+							objectType: TimelineObjType.RUNDOWN,
+						})
+					}),
+					unprotectString(newPieceInstance._id)
+				)
+			}
 
-// 						if (
-// 							resolvedPieceBeingCopied &&
-// 							resolvedPieceBeingCopied.resolvedDuration !== undefined &&
-// 							(resolvedPieceBeingCopied.infinite ||
-// 								resolvedPieceBeingCopied.resolvedStart + resolvedPieceBeingCopied.resolvedDuration >=
-// 									getCurrentTime())
-// 						) {
-// 							// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
-// 							throw new Meteor.Error(
-// 								409,
-// 								`PieceInstance "${pieceInstanceToCopy._id}" is currently live and cannot be used as an ad-lib`
-// 							)
-// 						}
-// 					}
+			// Disable the original piece if from the same Part
+			if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
+				// Ensure the piece being copied isnt currently live
+				if (pieceInstanceToCopy.startedPlayback && pieceInstanceToCopy.startedPlayback <= getCurrentTime()) {
+					const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, partInstance)
+					const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
 
-// 					cache.PieceInstances.update(pieceInstanceToCopy._id, {
-// 						$set: {
-// 							disabled: true,
-// 							hidden: true,
-// 						},
-// 					})
-// 				}
+					if (
+						resolvedPieceBeingCopied &&
+						resolvedPieceBeingCopied.resolvedDuration !== undefined &&
+						(resolvedPieceBeingCopied.infinite ||
+							resolvedPieceBeingCopied.resolvedStart + resolvedPieceBeingCopied.resolvedDuration >=
+								getCurrentTime())
+					) {
+						// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
+						throw UserError.from(
+							new Error(
+								`PieceInstance "${pieceInstanceToCopy._id}" is currently live and cannot be used as an ad-lib`
+							),
+							UserErrorMessage.PieceAsAdlibCurrentlyLive
+						)
+					}
+				}
 
-// 				cache.PieceInstances.insert(newPieceInstance)
+				cache.PieceInstances.update(pieceInstanceToCopy._id, {
+					$set: {
+						disabled: true,
+						hidden: true,
+					},
+				})
+			}
 
-// 				await syncPlayheadInfinitesForNextPartInstance(cache)
+			cache.PieceInstances.insert(newPieceInstance)
 
-// 				await updateTimeline(cache)
-// 			}
-// 		)
-// 	}
+			await syncPlayheadInfinitesForNextPartInstance(context, cache)
+
+			await updateTimeline(context, cache)
+		}
+	)
+}
 
 export async function adLibPieceStart(context: JobContext, data: AdlibPieceStartProps): Promise<void> {
 	return runAsPlayoutJob(
@@ -145,9 +162,9 @@ export async function adLibPieceStart(context: JobContext, data: AdlibPieceStart
 		data,
 		async (cache) => {
 			const playlist = cache.Playlist.doc
-			if (!playlist.activationId) throw UserError.create(UserErrorMessage.AdlibInactiveRundown)
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-				throw UserError.create(UserErrorMessage.AdlibDuringHold)
+				throw UserError.create(UserErrorMessage.DuringHold)
 			}
 
 			if (!data.queue && playlist.currentPartInstanceId !== data.partInstanceId)
@@ -159,7 +176,7 @@ export async function adLibPieceStart(context: JobContext, data: AdlibPieceStart
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${partInstance.rundownId}" not found!`)
 
-			let adLibPiece: AdLibPiece | undefined
+			let adLibPiece: AdLibPiece | BucketAdLib | undefined
 			if (data.pieceType === 'baseline') {
 				adLibPiece = await context.directCollections.RundownBaselineAdLibPieces.findOne({
 					_id: data.adLibPieceId,
@@ -170,11 +187,27 @@ export async function adLibPieceStart(context: JobContext, data: AdlibPieceStart
 					_id: data.adLibPieceId,
 					rundownId: partInstance.rundownId,
 				})
+			} else if (data.pieceType === 'bucket') {
+				const bucketAdlib = await context.directCollections.BucketAdLibPieces.findOne({
+					_id: data.adLibPieceId,
+					studioId: context.studioId,
+				})
+
+				if (bucketAdlib && bucketAdlib.showStyleVariantId !== rundown.showStyleVariantId) {
+					throw UserError.from(
+						new Error(
+							`Bucket AdLib "${data.adLibPieceId}" is not compatible with rundown "${rundown._id}"!`
+						),
+						UserErrorMessage.BucketAdlibIncompatible
+					)
+				}
+
+				adLibPiece = bucketAdlib
 			}
 
 			if (!adLibPiece)
 				throw UserError.from(
-					new Error(`Rundown "${data.pieceType}" AdLib Piece "${data.adLibPieceId}" not found!`),
+					new Error(`AdLib Piece "${data.adLibPieceId}" ("${data.pieceType}") not found!`),
 					UserErrorMessage.AdlibNotFound
 				)
 			if (adLibPiece.invalid)
@@ -253,98 +286,95 @@ async function innerStartOrQueueAdLibPiece(
 	if (span) span.end()
 }
 
-// 	export async function sourceLayerStickyPieceStart(
-// 		access: VerifiedRundownPlaylistContentAccess,
-// 		rundownPlaylistId: RundownPlaylistId,
-// 		sourceLayerId: string
-// 	): Promise<void> {
-// 		return runPlayoutOperationWithCache(
-// 			access,
-// 			'sourceLayerStickyPieceStart',
-// 			rundownPlaylistId,
-// 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
-// 				if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
-// 				if (!playlist.activationId)
-// 					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-// 				if (!playlist.currentPartInstanceId)
-// 					throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
-// 			},
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
+export async function startStickyPieceOnSourceLayer(
+	context: JobContext,
+	data: StartStickyPieceOnSourceLayerProps
+): Promise<void> {
+	return runAsPlayoutJob(
+		context,
+		// 'sourceLayerStickyPieceStart',
+		data,
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
+				throw UserError.create(UserErrorMessage.DuringHold)
+			}
+			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
 
-// 				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-// 				if (!currentPartInstance)
-// 					throw new Meteor.Error(
-// 						501,
-// 						`Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`
-// 					)
+			// if (!data.queue && playlist.currentPartInstanceId !== data.partInstanceId)
+			// 	throw UserError.create(UserErrorMessage.AdlibCurrentPart)
+		},
+		async (cache) => {
+			const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+			if (!currentPartInstance) throw UserError.create(UserErrorMessage.NoCurrentPart)
 
-// 				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
-// 				if (!rundown)
-// 					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
+			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
 
-// 				const showStyleBase = await cache.activationCache.getShowStyleBase(rundown)
+			const showStyleBase = await cache.activationCache.getShowStyleBase(rundown)
+			const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === data.sourceLayerId)
+			if (!sourceLayer) throw new Error(`Source layer "${data.sourceLayerId}" not found!`)
 
-// 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-// 				if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
-// 				if (!sourceLayer.isSticky)
-// 					throw new Meteor.Error(
-// 						400,
-// 						`Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`
-// 					)
+			if (!sourceLayer.isSticky)
+				throw UserError.from(
+					new Error(`Only sticky layers can be restarted. "${data.sourceLayerId}" is not sticky.`),
+					UserErrorMessage.SourceLayerNotSticky
+				)
 
-// 				const lastPieceInstance = innerFindLastPieceOnLayer(
-// 					cache,
-// 					[sourceLayer._id],
-// 					sourceLayer.stickyOriginalOnly || false
-// 				)
+			const lastPieceInstance = await innerFindLastPieceOnLayer(
+				context,
+				cache,
+				[sourceLayer._id],
+				sourceLayer.stickyOriginalOnly || false
+			)
+			if (!lastPieceInstance) {
+				throw UserError.create(UserErrorMessage.SourceLayerStickyNothingFound)
+			}
 
-// 				if (lastPieceInstance) {
-// 					const lastPiece = convertPieceToAdLibPiece(lastPieceInstance.piece)
-// 					await innerStartOrQueueAdLibPiece(cache, rundown, false, currentPartInstance, lastPiece)
-// 				}
-// 			}
-// 		)
-// 	}
+			const lastPiece = convertPieceToAdLibPiece(context, lastPieceInstance.piece)
+			await innerStartOrQueueAdLibPiece(context, cache, rundown, false, currentPartInstance, lastPiece)
+		}
+	)
+}
 
-// 	export function innerFindLastPieceOnLayer(
-// 		cache: CacheForPlayout,
-// 		sourceLayerId: string[],
-// 		originalOnly: boolean,
-// 		customQuery?: MongoQuery<PieceInstance>
-// 	) {
-// 		const span = profiler.startSpan('innerFindLastPieceOnLayer')
-// 		const rundownIds = getRundownIDsFromCache(cache)
+export function innerFindLastPieceOnLayer(
+	context: JobContext,
+	cache: CacheForPlayout,
+	sourceLayerId: string[],
+	originalOnly: boolean,
+	customQuery?: MongoQuery<PieceInstance>
+): Promise<PieceInstance | undefined> {
+	const span = context.startSpan('innerFindLastPieceOnLayer')
+	const rundownIds = getRundownIDsFromCache(cache)
 
-// 		const query = {
-// 			...customQuery,
-// 			playlistActivationId: cache.Playlist.doc.activationId,
-// 			rundownId: { $in: rundownIds },
-// 			'piece.sourceLayerId': { $in: sourceLayerId },
-// 			startedPlayback: {
-// 				$exists: true,
-// 			},
-// 		}
+	const query = {
+		...customQuery,
+		playlistActivationId: cache.Playlist.doc.activationId,
+		rundownId: { $in: rundownIds },
+		'piece.sourceLayerId': { $in: sourceLayerId },
+		startedPlayback: {
+			$exists: true,
+		},
+	}
 
-// 		if (originalOnly) {
-// 			// Ignore adlibs if using original only
-// 			query.dynamicallyInserted = {
-// 				$exists: false,
-// 			}
-// 		}
+	if (originalOnly) {
+		// Ignore adlibs if using original only
+		query.dynamicallyInserted = {
+			$exists: false,
+		}
+	}
 
-// 		if (span) span.end()
+	if (span) span.end()
 
-// 		// Note: This does not want to use the cache, as we want to search as far back as we can
-// 		// TODO - will this cause problems?
-// 		return PieceInstances.findOne(query, {
-// 			sort: {
-// 				startedPlayback: -1,
-// 			},
-// 		})
-// 	}
+	// Note: This does not want to use the cache, as we want to search as far back as we can
+	// TODO - will this cause problems?
+	return context.directCollections.PieceInstances.findOne(query, {
+		sort: {
+			startedPlayback: -1,
+		},
+	})
+}
 
 // 	export function innerFindLastScriptedPieceOnLayer(
 // 		cache: CacheForPlayout,
@@ -591,52 +621,3 @@ export function innerStartAdLibPiece(
 // 		if (span) span.end()
 // 		return stoppedInstances
 // 	}
-// 	export async function startBucketAdlibPiece(
-// 		access: VerifiedRundownPlaylistContentAccess,
-// 		rundownPlaylistId: RundownPlaylistId,
-// 		partInstanceId: PartInstanceId,
-// 		bucketAdlibId: PieceId,
-// 		queue: boolean
-// 	): Promise<void> {
-// 		const bucketAdlib = BucketAdLibs.findOne(bucketAdlibId)
-// 		if (!bucketAdlib) throw new Meteor.Error(404, `Bucket Adlib "${bucketAdlibId}" not found!`)
-
-// 		return runPlayoutOperationWithCache(
-// 			access,
-// 			'startBucketAdlibPiece',
-// 			rundownPlaylistId,
-// 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
-// 				if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-// 				if (!playlist.activationId)
-// 					throw new Meteor.Error(403, `Bucket AdLib-pieces can be only placed in an active rundown!`)
-// 				if (!playlist.currentPartInstanceId)
-// 					throw new Meteor.Error(400, `A part needs to be active to use a bucket adlib`)
-// 				if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-// 					throw new Meteor.Error(403, `Buckete AdLib-pieces can not be used in combination with hold!`)
-// 				}
-// 				if (!queue && playlist.currentPartInstanceId !== partInstanceId)
-// 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
-// 			},
-// 			async (cache) => {
-// 				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-// 				if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
-// 				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
-// 				if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
-
-// 				if (
-// 					bucketAdlib.showStyleVariantId !== rundown.showStyleVariantId ||
-// 					bucketAdlib.studioId !== rundown.studioId
-// 				) {
-// 					throw new Meteor.Error(
-// 						404,
-// 						`Bucket AdLib "${bucketAdlibId}" is not compatible with rundown "${rundown._id}"!`
-// 					)
-// 				}
-
-// 				await innerStartOrQueueAdLibPiece(cache, rundown, queue, currentPartInstance, bucketAdlib)
-// 			}
-// 		)
-// 	}
-// }

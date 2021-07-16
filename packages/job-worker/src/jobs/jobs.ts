@@ -2,7 +2,7 @@ import { CacheForPlayout } from '../playout/cache'
 import { updateTimeline, updateStudioTimeline } from '../playout/timeline'
 import { CacheForStudio } from '../studio/cache'
 import { JobContext } from '.'
-import { adLibPieceStart } from '../playout/adlib'
+import { adLibPieceStart, startStickyPieceOnSourceLayer, takePieceAsAdlibNow } from '../playout/adlib'
 import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { lockPlaylist } from './lock'
 
@@ -20,6 +20,8 @@ export type StudioJobHandlers = {
 export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.UpdateTimeline]: updateTimelineDebug,
 	[StudioJobs.AdlibPieceStart]: adLibPieceStart,
+	[StudioJobs.TakePieceAsAdlibNow]: takePieceAsAdlibNow,
+	[StudioJobs.StartStickyPieceOnSourceLayer]: startStickyPieceOnSourceLayer,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {

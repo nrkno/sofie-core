@@ -2,7 +2,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
-import { PieceId } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
 	Time,
@@ -1041,36 +1040,6 @@ export namespace ServerPlayoutAPI {
 				}
 			}
 		)
-	}
-	/**
-	 * Make a copy of a piece and start playing it now
-	 */
-	export async function pieceTakeNow(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
-	) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(pieceInstanceIdOrPieceIdToCopy, String)
-
-		return ServerPlayoutAdLibAPI.pieceTakeNow(
-			access,
-			rundownPlaylistId,
-			partInstanceId,
-			pieceInstanceIdOrPieceIdToCopy
-		)
-	}
-	export async function sourceLayerStickyPieceStart(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		sourceLayerId: string
-	) {
-		check(rundownPlaylistId, String)
-		check(sourceLayerId, String)
-
-		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(access, rundownPlaylistId, sourceLayerId)
 	}
 	export async function executeAction(
 		access: VerifiedRundownPlaylistContentAccess,

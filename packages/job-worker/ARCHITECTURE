@@ -27,3 +27,9 @@ This thread is responsible for ingest/rundown scoped operations.
 Any use of CacheForIngest must be done here.
 
 Any saving of changes must be done while the playlist lock is held. This is to ensure that there isnt another operation running which could fetch data invalid data in the middle of the save.
+
+
+### Buckets???
+
+One per studio?
+May not need any locking due to being single document (from the playout perspective)?

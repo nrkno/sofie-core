@@ -11,7 +11,7 @@ import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { StudioId } from '../../lib/collections/Studios'
 import { Pieces, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
+import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -23,12 +23,7 @@ import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
-import {
-	PieceInstances,
-	PieceInstanceId,
-	PieceInstancePiece,
-	omitPiecePropertiesForInstance,
-} from '../../lib/collections/PieceInstances'
+import { PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
@@ -41,7 +36,6 @@ import { pushWorkToQueue } from '../codeControl'
 import { ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
 import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
-import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
@@ -408,48 +402,11 @@ export async function pieceTakeNow(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	if (playlist.currentPartInstanceId !== partInstanceId)
-		return ClientAPI.responseError(`Part AdLib-pieces can be only placed in a current part!`)
-
-	let pieceToCopy: PieceInstancePiece | undefined
-	let rundownId: RundownId | undefined
-	const pieceInstanceToCopy = await PieceInstances.findOneAsync(pieceInstanceIdOrPieceIdToCopy)
-	if (pieceInstanceToCopy) {
-		pieceToCopy = pieceInstanceToCopy.piece
-		rundownId = pieceInstanceToCopy.rundownId
-	} else {
-		const piece = await Pieces.findOneAsync(pieceInstanceIdOrPieceIdToCopy)
-		if (piece) {
-			pieceToCopy = omitPiecePropertiesForInstance(piece)
-			rundownId = piece.startRundownId
-		}
-	}
-	if (!pieceToCopy || !rundownId) {
-		throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
-	}
-
-	const rundown = await Rundowns.findOneAsync(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-
-	const partInstance = await PartInstances.findOneAsync({
-		_id: partInstanceId,
-		rundownId: rundown._id,
+	return runUserAction(playlist.studioId, StudioJobs.TakePieceAsAdlibNow, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		pieceInstanceIdOrPieceIdToCopy: pieceInstanceIdOrPieceIdToCopy,
 	})
-	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
-
-	const showStyleBase = rundown.getShowStyleBase()
-	const sourceLayerId = pieceToCopy.sourceLayerId
-	const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-	if (sourceL && (sourceL.type !== SourceLayerType.LOWER_THIRD || sourceL.exclusiveGroup))
-		return ClientAPI.responseError(
-			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a LOWER_THIRD piece!`
-		)
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.pieceTakeNow(access, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
-	)
 }
 export async function pieceSetInOutPoints(
 	context: MethodContext,
@@ -600,14 +557,10 @@ export async function sourceLayerStickyPieceStart(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting a sticky-item!`)
-	if (!playlist.currentPartInstanceId)
-		return ClientAPI.responseError(`No part is playing, please Take a part before starting a sticky-item.`)
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.sourceLayerStickyPieceStart(access, rundownPlaylistId, sourceLayerId)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.StartStickyPieceOnSourceLayer, {
+		playlistId: rundownPlaylistId,
+		sourceLayerId: sourceLayerId,
+	})
 }
 export async function activateHold(
 	context: MethodContext,
@@ -841,7 +794,7 @@ export async function bucketsSaveActionIntoBucket(
 	return ClientAPI.responseSuccess(result)
 }
 
-export function bucketAdlibStart(
+export async function bucketAdlibStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
@@ -853,17 +806,15 @@ export function bucketAdlibStart(
 	check(bucketAdlibId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-
 	const playlist = access.playlist
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
-	}
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAdLibAPI.startBucketAdlibPiece(access, rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.AdlibPieceStart, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		adLibPieceId: bucketAdlibId,
+		pieceType: 'bucket',
+		queue: !!queue,
+	})
 }
 
 let restartToken: string | undefined = undefined
