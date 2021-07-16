@@ -85,7 +85,7 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${partInstance.rundownId}" not found!`)
 
-			const showStyleBase = rundown.getShowStyleBase() // todo: database
+			const showStyleBase = await cache.getShowStyleBase(rundown)
 			const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
 			if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
 				throw UserError.from(
@@ -312,7 +312,7 @@ export async function startStickyPieceOnSourceLayer(
 			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
 
-			const showStyleBase = await cache.activationCache.getShowStyleBase(rundown)
+			const showStyleBase = await cache.getShowStyleBase(rundown)
 			const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === data.sourceLayerId)
 			if (!sourceLayer) throw new Error(`Source layer "${data.sourceLayerId}" not found!`)
 

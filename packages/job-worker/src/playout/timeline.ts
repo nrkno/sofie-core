@@ -59,7 +59,6 @@ import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
 import { getLookeaheadObjects } from './lookahead'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { StudioBaselineContext, TimelineEventContext } from '../blueprints/context'
-import { getShowStyleCompound } from '../showStyles'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
@@ -301,9 +300,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
-			const pShowStyle = getShowStyleCompound(context, activeRundown.showStyleVariantId) // TODO - cache
-
-			const showStyle = await pShowStyle
+			const showStyle = await cache.getShowStyleCompound(activeRundown)
 			if (!showStyle) {
 				throw new Error(
 					`ShowStyleBase "${activeRundown.showStyleBaseId}" not found! (referenced by Rundown "${activeRundown._id}")`
