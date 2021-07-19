@@ -143,7 +143,12 @@ function apiRemoveRundownLayout(context: MethodContext, id: RundownLayoutId) {
 }
 
 class ServerRundownLayoutsAPI extends MethodContextAPI implements NewRundownLayoutsAPI {
-	createRundownLayout(name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId, regionId: CustomizableRegions) {
+	createRundownLayout(
+		name: string,
+		type: RundownLayoutType,
+		showStyleBaseId: ShowStyleBaseId,
+		regionId: CustomizableRegions
+	) {
 		return makePromise(() => apiCreateRundownLayout(this, name, type, showStyleBaseId, regionId))
 	}
 	removeRundownLayout(rundownLayoutId: RundownLayoutId) {

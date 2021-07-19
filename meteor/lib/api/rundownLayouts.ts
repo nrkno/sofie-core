@@ -36,7 +36,7 @@ export enum RundownLayoutsAPIMethods {
 	'createRundownLayout' = 'rundownLayout.createRundownLayout',
 }
 
-export interface LayoutDescriptor<T extends RundownLayoutBase> {
+export interface LayoutDescriptor {
 	supportedElements: RundownLayoutElementType[]
 	filtersTitle?: string // e.g. tabs/panels
 	supportsFilters?: boolean
@@ -57,24 +57,24 @@ export interface CustomizableRegionLayout {
 }
 
 class RundownLayoutsRegistry {
-	private shelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutShelfBase>> = new Map()
-	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownViewLayout>> = new Map()
-	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutShelfBase>> = new Map()
-	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutRundownHeader>> = new Map()
+	private shelfLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
 
-	public RegisterShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutShelfBase>) {
+	public RegisterShelfLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.shelfLayouts.set(id, description)
 	}
 
-	public RegisterRundownViewLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public RegisterRundownViewLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.rundownViewLayouts.set(id, description)
 	}
 
-	public RegisterMiniShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public RegisterMiniShelfLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.miniShelfLayouts.set(id, description)
 	}
 
-	public RegisterRundownHeaderLayouts(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public RegisterRundownHeaderLayouts(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.rundownHeaderLayouts.set(id, description)
 	}
 
@@ -95,7 +95,7 @@ class RundownLayoutsRegistry {
 	}
 
 	private wrapToCustomizableRegionLayout(
-		layouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutBase>>
+		layouts: Map<RundownLayoutType, LayoutDescriptor>
 	): CustomizableRegionLayout[] {
 		return Array.from(layouts.entries()).map(([layoutType, descriptor]) => {
 			return literal<CustomizableRegionLayout>({

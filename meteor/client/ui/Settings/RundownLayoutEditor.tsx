@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import * as React from 'react'
 import ClassNames from 'classnames'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -303,7 +302,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const isShelfLayout = RundownLayoutsAPI.IsLayoutForShelf(item)
 			const isRundownViewLayout = RundownLayoutsAPI.IsLayoutForRundownView(item)
 			const isRundownHeaderLayout = RundownLayoutsAPI.IsLayoutForRundownHeader(item)
-			const isMiniShelfLayout = RundownLayoutsAPI.IsLayoutForMiniShelf(item)
 
 			return (
 				<React.Fragment>
@@ -363,7 +361,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const { t } = this.props
 			return (this.props.rundownLayouts || [])
 				.filter((l) => l.regionId === this.props.customRegion._id && this.props.layoutTypes.includes(l.type))
-				.map((item, index) => {
+				.map((item) => {
 					const layout = this.props.customRegion.layouts.find((l) => l.type === item.type)
 					return (
 						<React.Fragment key={unprotectString(item._id)}>
@@ -388,10 +386,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									))}
 								</td>
 								<td className="settings-studio-rundown-layouts-table__actions table-item-actions c3">
-									<button className="action-btn" onClick={(e) => this.downloadItem(item)}>
+									<button className="action-btn" onClick={() => this.downloadItem(item)}>
 										<FontAwesomeIcon icon={faDownload} />
 									</button>
-									<button className="action-btn" onClick={(e) => this.editItem(item)}>
+									<button className="action-btn" onClick={() => this.editItem(item)}>
 										<FontAwesomeIcon icon={faPencilAlt} />
 									</button>
 									<button className="action-btn" onClick={(e) => this.onDeleteLayout(e, item)}>
@@ -434,7 +432,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										<div>{this.renderElements(item, layout)}</div>
 										{layout?.supportedElements.length ? (
 											<div className="mod mls">
-												<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
+												<button className="btn btn-secondary" onClick={() => this.onAddElement(item)}>
 													<FontAwesomeIcon icon={faPlus} />
 													&nbsp;
 													{layout?.filtersTitle
@@ -447,10 +445,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											<>
 												<div>{RundownLayoutsAPI.isDashboardLayout(item) ? this.renderActionButtons(item) : null}</div>
 												<div className="mod mls">
-													<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+													<button className="btn btn-primary right" onClick={() => this.finishEditItem(item)}>
 														<FontAwesomeIcon icon={faCheck} />
 													</button>
-													<button className="btn btn-secondary" onClick={(e) => this.onAddButton(item)}>
+													<button className="btn btn-secondary" onClick={() => this.onAddButton(item)}>
 														<FontAwesomeIcon icon={faPlus} />
 														&nbsp;
 														{t('Add button')}
@@ -460,7 +458,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										) : (
 											<>
 												<div className="mod mls">
-													<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+													<button className="btn btn-primary right" onClick={() => this.finishEditItem(item)}>
 														<FontAwesomeIcon icon={faCheck} />
 													</button>
 												</div>
@@ -548,8 +546,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 
 		render() {
-			const { t } = this.props
-
 			return (
 				<div className="studio-edit rundown-layout-editor">
 					<h2 className="mhn">{this.props.customRegion.title}</h2>

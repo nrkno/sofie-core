@@ -1,7 +1,7 @@
 import React from 'react'
 import { withTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../../../lib/api/rundownLayouts'
-import { RundownLayoutBase, RundownLayoutId, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
 import { unprotectString } from '../../../../../lib/lib'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'

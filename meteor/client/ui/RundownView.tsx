@@ -78,7 +78,6 @@ import {
 	RundownLayoutBase,
 	RundownLayoutId,
 	RundownViewLayout,
-	DashboardLayout,
 	RundownLayoutShelfBase,
 	RundownLayoutRundownHeader,
 } from '../../lib/collections/RundownLayouts'
@@ -414,7 +413,9 @@ const TimingDisplay = withTranslation()(
 										) : null
 									) : (
 										<span className="timing-clock plan-end right visual-last-child">
-											<span className="timing-clock-label right">{this.props.layout?.expectedEndText ? this.props.layout.expectedEndText : t('Expected End')}</span>
+											<span className="timing-clock-label right">
+												{this.props.layout?.expectedEndText ? this.props.layout.expectedEndText : t('Expected End')}
+											</span>
 											<Moment
 												interval={0}
 												format="HH:mm:ss"
