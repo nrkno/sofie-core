@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.6...v1.36.0-in-testing.7) (2021-07-20)
+
+
+### Features
+
+* Apply rundown header / view layouts to rundown ([d1f2838](https://github.com/nrkno/tv-automation-server-core/commit/d1f2838c6c8a963554ddfd9eba787ea653c3d722))
+* Describe rundown view and shelf layouts through manifests ([3773b1e](https://github.com/nrkno/tv-automation-server-core/commit/3773b1eb93151c98902a12edc8a75c71933d6f80))
+* Scope layouts to their settings section ([9bbcc22](https://github.com/nrkno/tv-automation-server-core/commit/9bbcc2212c29805f4f4df68805bccb57170e8334))
+* Select mini shelf layout in rundown view ([f0c602f](https://github.com/nrkno/tv-automation-server-core/commit/f0c602f1e7c9256dac318371c38177ed117ae7d0))
+* Select rundown layout from lobby and use selected layouts as defaults ([63b8764](https://github.com/nrkno/tv-automation-server-core/commit/63b8764d27547a844dcd4a0c78132cb1c0ae0dcc))
+* Skeleton of rundown layout registry ([9680210](https://github.com/nrkno/tv-automation-server-core/commit/96802109e7caca14a3f1fc01d1b97cd37a56a150))
+
+
+### Bug Fixes
+
+* Filter supported elements ([ff82d13](https://github.com/nrkno/tv-automation-server-core/commit/ff82d13cd03344c4e04b2dc215d97871f4a89e07))
+* Fixes after rebase ([08aa9b6](https://github.com/nrkno/tv-automation-server-core/commit/08aa9b67070e8d22ff867f784ca8d162eb198a8a))
+* Lint errors ([1b67f7f](https://github.com/nrkno/tv-automation-server-core/commit/1b67f7f814a9994e98a86aa693fe2bd1889a3284))
+* Post-rebase ([52ec5d8](https://github.com/nrkno/tv-automation-server-core/commit/52ec5d878712bde7ee98c0f44ad904ef39bd1e29))
+
+## [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
+
+
+### Bug Fixes
+
+* repeating script can occur in prompter in some situations ([3b73994](https://github.com/nrkno/tv-automation-server-core/commit/3b7399492892c642a2bbb0eb56665f0e0f202c31))
+
+## [1.36.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.5) (2021-07-14)
+
+
+### Bug Fixes
+
+* repeating script can occur in prompter in some situations ([3b73994](https://github.com/nrkno/tv-automation-server-core/commit/3b7399492892c642a2bbb0eb56665f0e0f202c31))
+
 ## [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
 
 ## [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)

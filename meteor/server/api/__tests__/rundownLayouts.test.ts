@@ -6,7 +6,12 @@ import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mo
 import { protectString, literal, unprotectString } from '../../../lib/lib'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
-import { RundownLayoutType, RundownLayouts, RundownLayout } from '../../../lib/collections/RundownLayouts'
+import {
+	RundownLayoutType,
+	RundownLayouts,
+	RundownLayout,
+	CustomizableRegions,
+} from '../../../lib/collections/RundownLayouts'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundownLayouts') // include in order to create the Meteor methods needed
@@ -58,11 +63,11 @@ describe('Rundown Layouts', () => {
 				filters: [],
 				showStyleBaseId: env.showStyleBaseId,
 				type: RundownLayoutType.RUNDOWN_LAYOUT,
-				exposeAsShelf: false,
 				exposeAsStandalone: false,
 				icon: '',
 				iconColor: '',
 				openByDefault: false,
+				regionId: CustomizableRegions.Shelf,
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}
