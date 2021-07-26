@@ -39,8 +39,6 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 
 interface IProps {
 	id: string

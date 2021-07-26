@@ -588,4 +588,24 @@ export namespace PlaylistTiming {
 			? timing.expectedDuration
 			: undefined
 	}
+
+	export function sortTiminings(a, b): number {
+		// Compare start times, then allow rundowns with start time to be first
+		if (
+			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&
+			PlaylistTiming.isPlaylistTimingForwardTime(b.timing)
+		)
+			return a.timing.expectedStart - b.timing.expectedStart
+		if (PlaylistTiming.isPlaylistTimingForwardTime(a.timing)) return -1
+		if (PlaylistTiming.isPlaylistTimingForwardTime(b.timing)) return 1
+
+		// Compare end times, then allow rundowns with end time to be first
+		if (PlaylistTiming.isPlaylistTimingBackTime(a.timing) && PlaylistTiming.isPlaylistTimingBackTime(b.timing))
+			return a.timing.expectedEnd - b.timing.expectedEnd
+		if (PlaylistTiming.isPlaylistTimingBackTime(a.timing)) return -1
+		if (PlaylistTiming.isPlaylistTimingBackTime(b.timing)) return 1
+
+		// No timing
+		return 0
+	}
 }

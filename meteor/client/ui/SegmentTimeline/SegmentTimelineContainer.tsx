@@ -43,7 +43,7 @@ import RundownViewEventBus, {
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { checkPieceContentStatus, getNoteTypeForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
-import { computeSegmentDuration, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -302,7 +302,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.playlist.holdState !== nextProps.playlist.holdState ||
 			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 			props.playlist.activationId !== nextProps.playlist.activationId ||
-			props.playlist.expectedStart !== nextProps.playlist.expectedStart
+			PlaylistTiming.getExpectedStart(props.playlist.timing) !==
+				PlaylistTiming.getExpectedStart(nextProps.playlist.timing)
 		) {
 			return true
 		}

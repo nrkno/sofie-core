@@ -13,6 +13,7 @@ import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -66,6 +67,10 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		props.rundown.name
 	)
 
+	const expectedStart = PlaylistTiming.getExpectedStart(rundown.timing)
+	const expectedDuration = PlaylistTiming.getExpectedDuration(rundown.timing)
+	const expectedEnd = PlaylistTiming.getExpectedEnd(rundown.timing)
+
 	return connectDropTarget(
 		<li id={htmlElementId} className={classNames.join(' ')}>
 			<span className="rundown-list-item__name">
@@ -107,28 +112,28 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyleName}</Link> : showStyleName || ''}
 			</span>
 			<span className="rundown-list-item__text">
-				{rundown.expectedStart ? (
-					<DisplayFormattedTime timestamp={rundown.expectedStart} t={t} />
-				) : rundown.expectedEnd && rundown.expectedDuration ? (
-					<DisplayFormattedTime timestamp={rundown.expectedEnd - rundown.expectedDuration} t={t} />
+				{expectedStart ? (
+					<DisplayFormattedTime displayTimestamp={expectedStart} t={t} />
+				) : expectedEnd && expectedDuration ? (
+					<DisplayFormattedTime displayTimestamp={expectedEnd - expectedDuration} t={t} />
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
 			</span>
 			<span className="rundown-list-item__text">
-				{rundown.expectedDuration ? (
+				{expectedDuration ? (
 					isOnlyRundownInPlaylist && playlist.loop ? (
 						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
 							<span>
 								{t('({{timecode}})', {
-									timecode: RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true),
+									timecode: RundownUtils.formatDiffToTimecode(expectedDuration, false, true, true, false, true),
 								})}
 								&nbsp;
 								<LoopingIcon />
 							</span>
 						</Tooltip>
 					) : (
-						RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)
+						RundownUtils.formatDiffToTimecode(expectedDuration, false, true, true, false, true)
 					)
 				) : isOnlyRundownInPlaylist && playlist.loop ? (
 					<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
@@ -141,16 +146,16 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				)}
 			</span>
 			<span className="rundown-list-item__text">
-				{rundown.expectedEnd ? (
-					<DisplayFormattedTime timestamp={rundown.expectedEnd} t={t} />
-				) : rundown.expectedStart && rundown.expectedDuration ? (
-					<DisplayFormattedTime timestamp={rundown.expectedStart + rundown.expectedDuration} t={t} />
+				{expectedEnd ? (
+					<DisplayFormattedTime displayTimestamp={expectedEnd} t={t} />
+				) : expectedStart && expectedDuration ? (
+					<DisplayFormattedTime displayTimestamp={expectedStart + expectedDuration} t={t} />
 				) : (
 					<span className="dimmed">{t('Not set')}</span>
 				)}
 			</span>
 			<span className="rundown-list-item__text">
-				<DisplayFormattedTime timestamp={rundown.modified} t={t} />
+				<DisplayFormattedTime displayTimestamp={rundown.modified} t={t} />
 			</span>
 			{rundownLayouts.some(
 				(l) =>

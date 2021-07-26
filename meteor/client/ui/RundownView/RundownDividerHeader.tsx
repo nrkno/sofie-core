@@ -6,6 +6,7 @@ import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
 import { withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IProps {
 	rundown: Rundown
@@ -67,11 +68,14 @@ const MarkerCountdownText = withTranslation()(
  */
 export const RundownDividerHeader = withTranslation()(function RundownDividerHeader(props: Translated<IProps>) {
 	const { t, rundown, playlist } = props
+	const expectedStart = PlaylistTiming.getExpectedStart(rundown.timing)
+	const expectedDuration = PlaylistTiming.getExpectedDuration(rundown.timing)
+	const expectedEnd = PlaylistTiming.getExpectedEnd(rundown.timing)
 	return (
 		<div className="rundown-divider-timeline">
 			<h2 className="rundown-divider-timeline__title">{rundown.name}</h2>
 			{rundown.name !== playlist.name && <h3 className="rundown-divider-timeline__playlist-name">{playlist.name}</h3>}
-			{rundown.expectedStart ? (
+			{expectedStart ? (
 				<div className="rundown-divider-timeline__expected-start">
 					<span>{t('Planned Start')}</span>&nbsp;
 					<Moment
@@ -80,22 +84,22 @@ export const RundownDividerHeader = withTranslation()(function RundownDividerHea
 							sameElse: 'lll',
 						}}
 					>
-						{rundown.expectedStart}
+						{expectedStart}
 					</Moment>
 					&nbsp;
 					<MarkerCountdownText
 						className="rundown-divider-timeline__expected-start__countdown"
-						markerTimestamp={rundown.expectedStart}
+						markerTimestamp={expectedStart}
 					/>
 				</div>
 			) : null}
-			{rundown.expectedDuration ? (
+			{expectedDuration ? (
 				<div className="rundown-divider-timeline__expected-duration">
 					<span>{t('Planned Duration')}</span>&nbsp;
-					{RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)}
+					{RundownUtils.formatDiffToTimecode(expectedDuration, false, true, true, false, true)}
 				</div>
 			) : null}
-			{rundown.expectedEnd ? (
+			{expectedEnd ? (
 				<div className="rundown-divider-timeline__expected-end">
 					<span>{t('Planned End')}</span>&nbsp;
 					<Moment
@@ -104,12 +108,12 @@ export const RundownDividerHeader = withTranslation()(function RundownDividerHea
 							sameElse: 'lll',
 						}}
 					>
-						{rundown.expectedEnd}
+						{expectedEnd}
 					</Moment>
 					&nbsp;
 					<MarkerCountdownText
 						className="rundown-divider-timeline__expected-end__countdown"
-						markerTimestamp={rundown.expectedEnd}
+						markerTimestamp={expectedEnd}
 					/>
 				</div>
 			) : null}

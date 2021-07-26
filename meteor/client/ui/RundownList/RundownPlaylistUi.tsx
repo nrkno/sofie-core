@@ -40,6 +40,7 @@ import { getAllowStudio } from '../../lib/localStorage'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -292,27 +293,24 @@ export const RundownPlaylistUi = DropTarget(
 					) : null
 				})
 
+				const playlistExpectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing)
+				const playlistExpectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
+				const playlistExpectedEnd = PlaylistTiming.getExpectedEnd(playlist.timing)
+
 				const expectedDuration =
-					playlist.expectedDuration !== undefined &&
+					playlistExpectedDuration !== undefined &&
 					(playlist.loop ? (
 						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
 							<span>
 								{t('({{timecode}})', {
-									timecode: RundownUtils.formatDiffToTimecode(
-										playlist.expectedDuration,
-										false,
-										true,
-										true,
-										false,
-										true
-									),
+									timecode: RundownUtils.formatDiffToTimecode(playlistExpectedDuration, false, true, true, false, true),
 								})}
 								&nbsp;
 								<LoopingIcon />
 							</span>
 						</Tooltip>
 					) : (
-						RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true)
+						RundownUtils.formatDiffToTimecode(playlistExpectedDuration, false, true, true, false, true)
 					))
 
 				const classNames = ClassNames(['rundown-playlist', { droptarget: isActiveDropZone }])
@@ -340,10 +338,10 @@ export const RundownPlaylistUi = DropTarget(
 								) : null}
 							</span>
 							<span className="rundown-list-item__text">
-								{playlist.expectedStart ? (
-									<DisplayFormattedTime timestamp={playlist.expectedStart} t={t} />
-								) : playlist.expectedEnd && playlist.expectedDuration ? (
-									<DisplayFormattedTime timestamp={playlist.expectedEnd - playlist.expectedDuration} t={t} />
+								{playlistExpectedStart ? (
+									<DisplayFormattedTime displayTimestamp={playlistExpectedStart} t={t} />
+								) : playlistExpectedEnd && playlistExpectedDuration ? (
+									<DisplayFormattedTime displayTimestamp={playlistExpectedEnd - playlistExpectedDuration} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}
@@ -360,16 +358,16 @@ export const RundownPlaylistUi = DropTarget(
 								)}
 							</span>
 							<span className="rundown-list-item__text">
-								{playlist.expectedEnd ? (
-									<DisplayFormattedTime timestamp={playlist.expectedEnd} t={t} />
-								) : playlist.expectedStart && playlist.expectedDuration ? (
-									<DisplayFormattedTime timestamp={playlist.expectedStart + playlist.expectedDuration} t={t} />
+								{playlistExpectedEnd ? (
+									<DisplayFormattedTime displayTimestamp={playlistExpectedEnd} t={t} />
+								) : playlistExpectedStart && playlistExpectedDuration ? (
+									<DisplayFormattedTime displayTimestamp={playlistExpectedStart + playlistExpectedDuration} t={t} />
 								) : (
 									<span className="dimmed">{t('Not set')}</span>
 								)}
 							</span>
 							<span className="rundown-list-item__text">
-								<DisplayFormattedTime timestamp={playlist.modified} t={t} />
+								<DisplayFormattedTime displayTimestamp={playlist.modified} t={t} />
 							</span>
 							{rundownLayouts.some(
 								(l) =>
@@ -396,7 +394,11 @@ export const RundownPlaylistUi = DropTarget(
 )
 
 function createProgressBarRow(playlist: RundownPlaylistUi): React.ReactElement | null {
-	if (playlist.activationId && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
+	if (
+		playlist.activationId &&
+		PlaylistTiming.getExpectedDuration(playlist.timing) !== undefined &&
+		playlist.startedPlayback
+	) {
 		return <ActiveProgressBar rundownPlaylist={playlist} />
 	}
 

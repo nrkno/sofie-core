@@ -20,6 +20,7 @@ import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Part } from '../../../lib/collections/Parts'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -72,9 +73,7 @@ function getShowStyleBaseIdSegmentPartUi(
 			_rank: 1,
 			showStyleBaseId: 1,
 			name: 1,
-			expectedStart: 1,
-			expectedDuration: 1,
-			expectedEnd: 1,
+			timing: 1,
 		},
 	})
 	showStyleBaseId = currentRundown?.showStyleBaseId
@@ -317,8 +316,10 @@ export class PresenterScreenBase extends MeteorReactComponent<
 			const nextPart = this.props.nextPartInstance
 			const nextSegment = this.props.nextSegment
 
-			const overUnderClock = playlist.expectedDuration
-				? (this.props.timingDurations.asDisplayedPlaylistDuration || 0) - playlist.expectedDuration
+			const expectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing)
+			const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
+			const overUnderClock = expectedDuration
+				? (this.props.timingDurations.asDisplayedPlaylistDuration || 0) - expectedDuration
 				: (this.props.timingDurations.asDisplayedPlaylistDuration || 0) -
 				  (this.props.timingDurations.totalPlaylistDuration || 0)
 
@@ -363,9 +364,9 @@ export class PresenterScreenBase extends MeteorReactComponent<
 									<Timediff time={currentPartCountdown} />
 								</div>
 							</>
-						) : playlist.expectedStart ? (
+						) : expectedStart ? (
 							<div className="presenter-screen__rundown-countdown">
-								<Timediff time={playlist.expectedStart - getCurrentTime()} />
+								<Timediff time={expectedStart - getCurrentTime()} />
 							</div>
 						) : null}
 					</div>
