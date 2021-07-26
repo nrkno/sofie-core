@@ -37,8 +37,8 @@ export enum RundownLayoutsAPIMethods {
 	'createRundownLayout' = 'rundownLayout.createRundownLayout',
 }
 
-export interface LayoutDescriptor<_T extends RundownLayoutBase> {
-	supportedFilters?: RundownLayoutElementType[]
+export interface LayoutDescriptor {
+	supportedFilters: RundownLayoutElementType[]
 	filtersTitle?: string // e.g. tabs/panels
 }
 
@@ -52,40 +52,49 @@ export interface CustomizableRegionLayout {
 	_id: string
 	type: RundownLayoutType
 	filtersTitle?: string
-	supportedFilters?: RundownLayoutElementType[]
+	supportedFilters: RundownLayoutElementType[]
 }
 
 class RundownLayoutsRegistry {
-	private shelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutShelfBase>> = new Map()
-	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownViewLayout>> = new Map()
-	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutRundownHeader>> = new Map()
+	private shelfLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
 
-	public registerShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutShelfBase>) {
+	public registerShelfLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.shelfLayouts.set(id, description)
 	}
 
-	public registerRundownViewLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public registerRundownViewLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.rundownViewLayouts.set(id, description)
 	}
 
-	public registerRundownHeaderLayouts(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public registerMiniShelfLayout(id: RundownLayoutType, description: LayoutDescriptor) {
+		this.miniShelfLayouts.set(id, description)
+	}
+
+	public registerRundownHeaderLayouts(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.rundownHeaderLayouts.set(id, description)
 	}
 
-	public isShelfLayout(regionId: string) {
+	public isShelfLayout(regionId: CustomizableRegions) {
 		return regionId === CustomizableRegions.Shelf
 	}
 
-	public isRudownViewLayout(regionId: string) {
+	public isRudownViewLayout(regionId: CustomizableRegions) {
 		return regionId === CustomizableRegions.RundownView
 	}
 
-	public isRundownHeaderLayout(regionId: string) {
+	public isMiniShelfLayout(regionId: CustomizableRegions) {
+		return regionId === CustomizableRegions.MiniShelf
+	}
+
+	public isRundownHeaderLayout(regionId: CustomizableRegions) {
 		return regionId === CustomizableRegions.RundownHeader
 	}
 
 	private wrapToCustomizableRegionLayout(
-		layouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutBase>>
+		layouts: Map<RundownLayoutType, LayoutDescriptor>
 	): CustomizableRegionLayout[] {
 		return Array.from(layouts.entries()).map(([layoutType, descriptor]) => {
 			return literal<CustomizableRegionLayout>({
@@ -96,7 +105,7 @@ class RundownLayoutsRegistry {
 		})
 	}
 
-	public getSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
+	public GetSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
 		return [
 			{
 				_id: CustomizableRegions.RundownView,
@@ -107,6 +116,11 @@ class RundownLayoutsRegistry {
 				_id: CustomizableRegions.Shelf,
 				title: t('Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts),
+			},
+			{
+				_id: CustomizableRegions.MiniShelf,
+				title: t('Mini Shelf Layouts'),
+				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts),
 			},
 			{
 				_id: CustomizableRegions.RundownHeader,
@@ -137,6 +151,12 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 		],
 	})
+	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
+		supportedFilters: [],
+	})
+	registry.registerMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
+		supportedFilters: [],
+	})
 	registry.registerRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
 		supportedFilters: [],
 	})
@@ -145,7 +165,7 @@ export namespace RundownLayoutsAPI {
 	})
 
 	export function getSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
-		return registry.getSettingsManifest(t)
+		return registry.GetSettingsManifest(t)
 	}
 
 	export function isLayoutWithFilters(layout: RundownLayoutBase): layout is RundownLayoutWithFilters {
@@ -158,6 +178,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isLayoutForRundownView(layout: RundownLayoutBase): layout is RundownViewLayout {
 		return registry.isRudownViewLayout(layout.regionId)
+	}
+
+	export function isLayoutForMiniShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
+		return registry.isMiniShelfLayout(layout.regionId)
 	}
 
 	export function isLayoutForRundownHeader(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {

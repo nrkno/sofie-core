@@ -97,6 +97,10 @@ export const SourceLayerItem = withTranslation()(
 			})
 		}
 
+		convertTimeToPixels = (time: number) => {
+			return Math.round(this.props.timeScale * time)
+		}
+
 		getItemLabelOffsetLeft = (): React.CSSProperties => {
 			if (this.props.relative) {
 				return {}
@@ -141,16 +145,16 @@ export const SourceLayerItem = withTranslation()(
 							this.props.scrollLeft + liveLineHistoryWithMargin / this.props.timeScale <
 								inPoint + duration + this.props.partStartsAt - outTransitionDuration
 						) {
-							const targetPos =
-								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
-								this.props.timeScale
+							const targetPos = this.convertTimeToPixels(
+								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
+							)
 
 							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -179,16 +183,16 @@ export const SourceLayerItem = withTranslation()(
 							this.props.scrollLeft + liveLineHistoryWithMargin / this.props.timeScale >=
 								inPoint + duration + this.props.partStartsAt - outTransitionDuration
 						) {
-							const targetPos =
-								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
-								this.props.timeScale
+							const targetPos = this.convertTimeToPixels(
+								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
+							)
 
 							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -215,16 +219,16 @@ export const SourceLayerItem = withTranslation()(
 							this.props.scrollLeft > inPoint + this.props.partStartsAt + inTransitionDuration &&
 							this.props.scrollLeft < inPoint + duration + this.props.partStartsAt - outTransitionDuration
 						) {
-							const targetPos =
-								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
-								this.props.timeScale
+							const targetPos = this.convertTimeToPixels(
+								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
+							)
 
 							const styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -249,7 +253,7 @@ export const SourceLayerItem = withTranslation()(
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
-										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
 										: nextIsTouching
 										? '100%'
 										: 'none',
@@ -383,12 +387,9 @@ export const SourceLayerItem = withTranslation()(
 				}
 			} else {
 				return {
-					left:
-						Math.floor(((piece.renderedInPoint || 0) + inTransitionDuration) * this.props.timeScale).toString() + 'px',
+					left: this.convertTimeToPixels((piece.renderedInPoint || 0) + inTransitionDuration).toString() + 'px',
 					width:
-						Math.round(
-							(itemDuration - inTransitionDuration - outTransitionDuration) * this.props.timeScale
-						).toString() + 'px',
+						this.convertTimeToPixels(itemDuration - inTransitionDuration - outTransitionDuration).toString() + 'px',
 				}
 			}
 		}
@@ -746,7 +747,7 @@ export const SourceLayerItem = withTranslation()(
 									wipe: innerPiece.transitions.inTransition.type === PieceTransitionType.WIPE,
 								})}
 								style={{
-									width: ((innerPiece.transitions.inTransition.duration || 0) * this.props.timeScale).toString() + 'px',
+									width: this.convertTimeToPixels(innerPiece.transitions.inTransition.duration || 0).toString() + 'px',
 								}}
 							/>
 						) : null}
@@ -759,8 +760,7 @@ export const SourceLayerItem = withTranslation()(
 									wipe: innerPiece.transitions.outTransition.type === PieceTransitionType.WIPE,
 								})}
 								style={{
-									width:
-										((innerPiece.transitions.outTransition.duration || 0) * this.props.timeScale).toString() + 'px',
+									width: this.convertTimeToPixels(innerPiece.transitions.outTransition.duration || 0).toString() + 'px',
 								}}
 							/>
 						) : null}

@@ -113,9 +113,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const { t } = this.props
 
 			const layout = this.props.customRegion.layouts.find((l) => l.type === item.type)
-			const filtersTitle = layout?.filtersTitle ? t(layout.filtersTitle) : t('New Filter')
+			const filtersTitle = layout?.filtersTitle ? layout.filtersTitle : t('New Filter')
 
-			if (!layout?.supportedFilters?.length) {
+			if (!layout?.supportedFilters.length) {
 				return
 			}
 
@@ -335,9 +335,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					{isShelfLayout && <ShelfLayoutSettings item={item} />}
 					{isRundownHeaderLayout && <RundownHeaderLayoutSettings item={item} />}
 					{isRundownViewLayout && <RundownViewLayoutSettings item={item} layouts={this.props.rundownLayouts} />}
-					{layout?.supportedFilters?.length && RundownLayoutsAPI.isLayoutWithFilters(item) ? (
+					{RundownLayoutsAPI.isLayoutWithFilters(item) && layout?.supportedFilters.length ? (
 						<React.Fragment>
-							<h4 className="mod mhs">{layout?.filtersTitle ? t(`${layout?.filtersTitle}`) : t('Filters')}</h4>
+							<h4 className="mod mhs">{layout?.filtersTitle ?? t('Filters')}</h4>
 							{item.filters.length === 0 ? (
 								<p className="text-s dimmed mhs">{t('There are no filters set up yet')}</p>
 							) : null}
@@ -387,10 +387,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									))}
 								</td>
 								<td className="settings-studio-rundown-layouts-table__actions table-item-actions c3">
-									<button className="action-btn" onClick={(_e) => this.downloadItem(item)}>
+									<button className="action-btn" onClick={() => this.downloadItem(item)}>
 										<FontAwesomeIcon icon={faDownload} />
 									</button>
-									<button className="action-btn" onClick={(_e) => this.editItem(item)}>
+									<button className="action-btn" onClick={() => this.editItem(item)}>
 										<FontAwesomeIcon icon={faPencilAlt} />
 									</button>
 									<button className="action-btn" onClick={(e) => this.onDeleteLayout(e, item)}>
@@ -431,12 +431,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											</div>
 										</div>
 										<div>{this.renderElements(item, layout)}</div>
-										{layout?.supportedFilters?.length ? (
+										{layout?.supportedFilters.length ? (
 											<div className="mod mls">
-												<button className="btn btn-secondary" onClick={(_e) => this.onAddElement(item)}>
+												<button className="btn btn-secondary" onClick={() => this.onAddElement(item)}>
 													<FontAwesomeIcon icon={faPlus} />
 													&nbsp;
-													{layout?.filtersTitle ?? t(`Add filter`)}
+													{layout?.filtersTitle
+														? t('Add {{filtersTitle}}', { filtersTitle: layout?.filtersTitle })
+														: t(`Add filter`)}
 												</button>
 											</div>
 										) : null}
@@ -444,10 +446,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											<>
 												<div>{RundownLayoutsAPI.isDashboardLayout(item) ? this.renderActionButtons(item) : null}</div>
 												<div className="mod mls">
-													<button className="btn btn-primary right" onClick={(_e) => this.finishEditItem(item)}>
+													<button className="btn btn-primary right" onClick={() => this.finishEditItem(item)}>
 														<FontAwesomeIcon icon={faCheck} />
 													</button>
-													<button className="btn btn-secondary" onClick={(_e) => this.onAddButton(item)}>
+													<button className="btn btn-secondary" onClick={() => this.onAddButton(item)}>
 														<FontAwesomeIcon icon={faPlus} />
 														&nbsp;
 														{t('Add button')}
@@ -457,7 +459,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										) : (
 											<>
 												<div className="mod mls">
-													<button className="btn btn-primary right" onClick={(_e) => this.finishEditItem(item)}>
+													<button className="btn btn-primary right" onClick={() => this.finishEditItem(item)}>
 														<FontAwesomeIcon icon={faCheck} />
 													</button>
 												</div>

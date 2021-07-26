@@ -161,6 +161,10 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		return this.props.isLiveSegment ? this.calculateSegmentDuration() : this.state.totalSegmentDuration
 	}
 
+	convertTimeToPixels = (time: number) => {
+		return Math.round(this.props.timeScale * time)
+	}
+
 	renderZoomTimeline() {
 		return this.props.parts.map((part) => {
 			return (
@@ -368,6 +372,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	setTimelineRef = (el: HTMLDivElement) => {
 		this.timeline = el
+	}
+
+	convertTimeToPixels = (time: number) => {
+		return Math.round(this.props.timeScale * time)
 	}
 
 	onTimelineResize = (size: number[]) => {
@@ -651,8 +659,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	timelineStyle() {
 		return {
-			transform:
-				'translate3d(-' + Math.floor(this.props.scrollLeft * this.props.timeScale).toString() + 'px, 0, 0.1px)',
+			transform: 'translate3d(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px, 0, 0.1px)',
 			willChange: 'transform',
 		}
 	}
@@ -664,8 +671,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			const historyTimeDuration = this.props.liveLineHistorySize / this.props.timeScale
 
 			const pixelPostion = Math.floor(
-				this.props.livePosition * this.props.timeScale -
-					(!this.props.followLiveLine ? this.props.scrollLeft * this.props.timeScale : 0)
+				this.convertTimeToPixels(this.props.livePosition) -
+					(!this.props.followLiveLine ? this.convertTimeToPixels(this.props.scrollLeft) : 0)
 			)
 			const lineStyle = {
 				left:
@@ -1025,6 +1032,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							partId={countdownToPartId}
 							hideOnZero={!useTimeOfDayCountdowns}
 							useWallClock={useTimeOfDayCountdowns}
+							playlist={this.props.playlist}
 							label={
 								useTimeOfDayCountdowns ? (
 									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>

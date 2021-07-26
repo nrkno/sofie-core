@@ -165,7 +165,7 @@ export interface RundownLayoutBase {
 	icon: string
 	iconColor: string
 	/* Customizable region that the layout modifies. */
-	regionId: string
+	regionId: CustomizableRegions
 }
 
 export interface RundownLayoutWithFilters extends RundownLayoutBase {
@@ -178,6 +178,7 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	/** Expose as a layout that can be selected by the user in the lobby view */
 	exposeAsSelectableLayout: boolean
 	shelfLayout: RundownLayoutId
+	miniShelfLayout: RundownLayoutId
 	rundownHeaderLayout: RundownLayoutId
 }
 
@@ -230,7 +231,6 @@ export interface DashboardLayoutActionButton {
 
 export interface DashboardLayout extends RundownLayoutShelfBase {
 	type: RundownLayoutType.DASHBOARD_LAYOUT
-	filters: RundownLayoutElementBase[]
 	actionButtons?: DashboardLayoutActionButton[]
 }
 

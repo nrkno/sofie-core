@@ -9,6 +9,7 @@ import {
 	ExpectedPackageDBBase,
 	ExpectedPackageDBFromAdLibAction,
 	ExpectedPackageDBFromBaselineAdLibAction,
+	ExpectedPackageDBFromBaselineAdLibPiece,
 	ExpectedPackageDBFromBucketAdLib,
 	ExpectedPackageDBFromBucketAdLibAction,
 	ExpectedPackageDBFromPiece,
@@ -38,6 +39,9 @@ import { saveIntoCache } from '../../cache/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout } from '../playout/cache'
 import { CacheForStudio } from '../studio/cache'
+import { SegmentId } from '../../../lib/collections/Segments'
+import { PartId } from '../../../lib/collections/Parts'
+import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
@@ -50,24 +54,49 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	const adlibs = cache.AdLibPieces.findFetch({})
 	const actions = cache.AdLibActions.findFetch({})
 
+	const partToSegmentIdMap = new Map<PartId, SegmentId>()
+	for (const part of cache.Parts.findFetch({})) {
+		partToSegmentIdMap.set(part._id, part.segmentId)
+	}
+
 	// todo: keep expectedPackage of the currently playing partInstance
 
 	const expectedPackages: ExpectedPackageDB[] = [
-		...generateExpectedPackagesForPiece(studio, cache.RundownId, pieces),
-		...generateExpectedPackagesForPiece(studio, cache.RundownId, adlibs),
-		...generateExpectedPackagesForAdlibAction(studio, cache.RundownId, actions),
+		...generateExpectedPackagesForPiece(
+			studio,
+			cache.RundownId,
+			partToSegmentIdMap,
+			pieces,
+			ExpectedPackageDBType.PIECE
+		),
+		...generateExpectedPackagesForPiece(
+			studio,
+			cache.RundownId,
+			partToSegmentIdMap,
+			adlibs,
+			ExpectedPackageDBType.ADLIB_PIECE
+		),
+		...generateExpectedPackagesForAdlibAction(studio, cache.RundownId, partToSegmentIdMap, actions),
 	]
 
-	const omitTypes = [ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS]
+	// RUNDOWN_BASELINE_OBJECTS follow their own flow
+	const preserveTypesDuringSave = [ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS]
 
 	// Only regenerate the baseline types if they are already loaded into memory
+	// If the cache isn't already loaded, then we haven't made any changes to the baseline adlibs
+	// This means we can skip regenerating them as it is guaranteed there will be no changes
 	const baselineAdlibPieceCache = cache.RundownBaselineAdLibPieces.getIfLoaded()
 	if (baselineAdlibPieceCache) {
 		expectedPackages.push(
-			...generateExpectedPackagesForPiece(studio, cache.RundownId, baselineAdlibPieceCache.findFetch())
+			...generateExpectedPackagesForBaselineAdlibPiece(
+				studio,
+				cache.RundownId,
+				baselineAdlibPieceCache.findFetch()
+			)
 		)
 	} else {
-		omitTypes.push(ExpectedPackageDBType.BASELINE_ADLIB_ACTION) // TODO - should be BASELINE_ADLIB_PIECE
+		// We haven't regenerated anything, so preserve the values in the save
+		preserveTypesDuringSave.push(ExpectedPackageDBType.BASELINE_ADLIB_PIECE)
 	}
 	const baselineAdlibActionCache = cache.RundownBaselineAdLibActions.getIfLoaded()
 	if (baselineAdlibActionCache) {
@@ -79,16 +108,22 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 			)
 		)
 	} else {
-		omitTypes.push(ExpectedPackageDBType.BASELINE_ADLIB_ACTION)
+		// We haven't regenerated anything, so preserve the values in the save
+		preserveTypesDuringSave.push(ExpectedPackageDBType.BASELINE_ADLIB_ACTION)
 	}
 
 	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
 		cache.ExpectedPackages,
 		{
-			// RUNDOWN_BASELINE_OBJECTS follow their own flow
-			fromPieceType: { $nin: omitTypes as any },
+			fromPieceType: { $nin: preserveTypesDuringSave as any },
 		},
-		expectedPackages
+		expectedPackages,
+		{
+			beforeUpdate: (expPackage: ExpectedPackageDB, pre?: ExpectedPackageDB) => {
+				if (pre) expPackage.created = pre.created // Retain the created property
+				return expPackage
+			},
+		}
 	)
 }
 export function generateExpectedPackagesForPartInstance(
@@ -114,6 +149,7 @@ export function generateExpectedPackagesForPartInstance(
 				packages.push({
 					...base,
 					rundownId,
+					segmentId: partInstance.part.segmentId,
 					pieceId: pieceInstance.piece._id,
 					fromPieceType: ExpectedPackageDBType.PIECE,
 				})
@@ -125,9 +161,37 @@ export function generateExpectedPackagesForPartInstance(
 function generateExpectedPackagesForPiece(
 	studio: ReadonlyDeep<Studio>,
 	rundownId: RundownId,
-	pieces: (Piece | AdLibPiece)[]
+	partToSegmentIdMap: Map<PartId, SegmentId>,
+	pieces: (Piece | AdLibPiece)[],
+	type: ExpectedPackageDBType.PIECE | ExpectedPackageDBType.ADLIB_PIECE
 ) {
 	const packages: ExpectedPackageDBFromPiece[] = []
+	for (const piece of pieces) {
+		const partId = 'startPartId' in piece ? piece.startPartId : piece.partId
+		if (piece.expectedPackages && partId) {
+			const segmentId = partToSegmentIdMap.get(partId)
+			if (segmentId) {
+				const bases = generateExpectedPackageBases(studio, piece._id, piece.expectedPackages)
+				for (const base of bases) {
+					packages.push({
+						...base,
+						rundownId,
+						segmentId,
+						pieceId: piece._id,
+						fromPieceType: type,
+					})
+				}
+			}
+		}
+	}
+	return packages
+}
+function generateExpectedPackagesForBaselineAdlibPiece(
+	studio: ReadonlyDeep<Studio>,
+	rundownId: RundownId,
+	pieces: RundownBaselineAdLibItem[]
+) {
+	const packages: ExpectedPackageDBFromBaselineAdLibPiece[] = []
 	for (const piece of pieces) {
 		if (piece.expectedPackages) {
 			const bases = generateExpectedPackageBases(studio, piece._id, piece.expectedPackages)
@@ -136,7 +200,7 @@ function generateExpectedPackagesForPiece(
 					...base,
 					rundownId,
 					pieceId: piece._id,
-					fromPieceType: ExpectedPackageDBType.PIECE,
+					fromPieceType: ExpectedPackageDBType.BASELINE_ADLIB_PIECE,
 				})
 			}
 		}
@@ -146,19 +210,24 @@ function generateExpectedPackagesForPiece(
 function generateExpectedPackagesForAdlibAction(
 	studio: ReadonlyDeep<Studio>,
 	rundownId: RundownId,
+	partToSegmentIdMap: Map<PartId, SegmentId>,
 	actions: AdLibAction[]
 ) {
 	const packages: ExpectedPackageDBFromAdLibAction[] = []
 	for (const action of actions) {
 		if (action.expectedPackages) {
-			const bases = generateExpectedPackageBases(studio, action._id, action.expectedPackages)
-			for (const base of bases) {
-				packages.push({
-					...base,
-					rundownId,
-					pieceId: action._id,
-					fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
-				})
+			const segmentId = partToSegmentIdMap.get(action.partId)
+			if (segmentId) {
+				const bases = generateExpectedPackageBases(studio, action._id, action.expectedPackages)
+				for (const base of bases) {
+					packages.push({
+						...base,
+						rundownId,
+						segmentId,
+						pieceId: action._id,
+						fromPieceType: ExpectedPackageDBType.ADLIB_ACTION,
+					})
+				}
 			}
 		}
 	}
@@ -232,8 +301,10 @@ function generateExpectedPackageBases(
 		bases.push({
 			...expectedPackage,
 			_id: protectString(`${ownerId}_${id}`),
+			blueprintPackageId: id,
 			contentVersionHash: getContentVersionHash(expectedPackage),
 			studioId: studio._id,
+			created: Date.now(),
 		})
 	}
 	return bases
@@ -308,7 +379,13 @@ export function updateBaselineExpectedPackagesOnRundown(
 				rundownId: cache.RundownId,
 				pieceId: null,
 			}
-		})
+		}),
+		{
+			beforeUpdate: (expPackage: ExpectedPackageDB, pre?: ExpectedPackageDB) => {
+				if (pre) expPackage.created = pre.created // Retain the created property
+				return expPackage
+			},
+		}
 	)
 }
 

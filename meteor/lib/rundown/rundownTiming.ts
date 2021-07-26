@@ -9,6 +9,7 @@ import _ from 'underscore'
 import {
 	findPartInstanceInMapOrWrapToTemporary,
 	PartInstance,
+	PartInstanceId,
 	wrapPartToTemporaryInstance,
 } from '../collections/PartInstances'
 import { Part, PartId } from '../collections/Parts'
@@ -29,6 +30,11 @@ export class RundownTimingCalculator {
 	private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
 
 	private linearParts: Array<[PartId, number | null]> = []
+
+	// this.previousPartInstanceId is used to check if the previousPart has changed since last iteration.
+	private previousPartInstanceId: PartInstanceId | null = null
+	private lastTakeAt: number | undefined = undefined
+
 	// look at the comments on RundownTimingContext to understand what these do
 	private partDurations: Record<string, number> = {}
 	private partExpectedDurations: Record<string, number> = {}
@@ -274,7 +280,22 @@ export class RundownTimingCalculator {
 				this.partDisplayDurations[partInstancePartId] = partDisplayDuration
 				this.partDisplayDurationsNoPlayback[partInstancePartId] = partDisplayDurationNoPlayback
 				startsAtAccumulator += this.partDurations[partInstancePartId]
-				displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId] // || this.props.defaultDuration || 3000
+
+				if (playlist.previousPartInstanceId !== partInstance._id) {
+					displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId]
+				} else {
+					if (this.previousPartInstanceId !== playlist.previousPartInstanceId) {
+						this.lastTakeAt = now
+						this.previousPartInstanceId = playlist.previousPartInstanceId || ''
+					}
+					const durationToTake =
+						this.lastTakeAt && lastStartedPlayback
+							? this.lastTakeAt - lastStartedPlayback
+							: this.partDisplayDurations[partInstancePartId]
+					this.partDisplayDurations[partInstancePartId] = durationToTake
+					displayStartsAtAccumulator += durationToTake
+				}
+
 				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				if (memberOfDisplayDurationGroup) {

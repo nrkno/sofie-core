@@ -19,7 +19,6 @@ import { check } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
-	IUserNotesContext,
 	IStudioContext,
 	IStudioUserContext,
 	BlueprintMappings,
@@ -36,6 +35,9 @@ import {
 	ITimelineEventContext,
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
+	PackageInfo,
+	IStudioBaselineContext,
+	IShowStyleUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -68,7 +70,7 @@ import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
 import _ from 'underscore'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Meteor } from 'meteor/meteor'
-
+import { WatchedPackagesHelper } from './watchedPackages'
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
 	name: string
@@ -147,10 +149,23 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
 	}
-
 	getStudioMappings(): Readonly<BlueprintMappings> {
 		// @ts-ignore ProtectedString deviceId not compatible with string
 		return this.studio.mappings
+	}
+}
+
+export class StudioBaselineContext extends StudioContext implements IStudioBaselineContext {
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		private readonly watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, studio)
+	}
+
+	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 
@@ -213,14 +228,15 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 }
 
-export class ShowStyleUserContext extends ShowStyleContext implements IUserNotesContext {
+export class ShowStyleUserContext extends ShowStyleContext implements IShowStyleUserContext {
 	public readonly notes: INoteBase[] = []
 	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(
 		contextInfo: UserContextInfo,
 		studio: ReadonlyDeep<Studio>,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, studio, showStyleCompound)
 	}
@@ -250,6 +266,10 @@ export class ShowStyleUserContext extends ShowStyleContext implements IUserNotes
 				},
 			})
 		}
+	}
+
+	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 
@@ -309,7 +329,8 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<Studio>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		rundown: ReadonlyDeep<Rundown>
+		rundown: ReadonlyDeep<Rundown>,
+		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, studio, showStyleCompound, rundown)
 	}
@@ -333,6 +354,10 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 			},
 			partExternalId: partExternalId,
 		})
+	}
+
+	getPackageInfo(packageId): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 
