@@ -15,11 +15,11 @@ export function getIsFilterActive(
 ): { active: boolean; activePieceInstance: PieceInstance | undefined } {
 	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist.currentPartInstanceId, true)
 	let activePieceInstance: PieceInstance | undefined
-	let activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
-	let containsEveryRequiredLayer = panel.requireAllSourcelayers
+	const activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
+	const containsEveryRequiredLayer = panel.requireAllSourcelayers
 		? panel.requiredLayers?.length && panel.requiredLayers.every((s) => activeLayers.includes(s))
 		: false
-	let containsRequiredLayer = containsEveryRequiredLayer
+	const containsRequiredLayer = containsEveryRequiredLayer
 		? true
 		: panel.requiredLayers && panel.requiredLayers.length
 		? panel.requiredLayers.some((s) => activeLayers.includes(s))

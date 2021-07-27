@@ -2,6 +2,7 @@ import React from 'react'
 import timer from 'react-timer-hoc'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../../lib/lib'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 export interface IActiveProgressBarProps {
 	rundownPlaylist: RundownPlaylist
@@ -10,7 +11,8 @@ export interface IActiveProgressBarProps {
 export const ActiveProgressBar = timer(1000)(
 	class ActiveProgressBar extends React.Component<IActiveProgressBarProps> {
 		render() {
-			const { startedPlayback, expectedDuration } = this.props.rundownPlaylist
+			const { startedPlayback, timing } = this.props.rundownPlaylist
+			const expectedDuration = PlaylistTiming.getExpectedDuration(timing)
 			if (startedPlayback && expectedDuration) {
 				const progress = Math.min(((getCurrentTime() - startedPlayback) / expectedDuration) * 100, 100)
 

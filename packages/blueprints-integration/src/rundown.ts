@@ -1,6 +1,6 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { ExpectedPackage, ListenToPackageUpdate } from './package'
+import { ExpectedPackage } from './package'
 import { SomeTimelineContent } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
@@ -9,17 +9,62 @@ export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
 	name: string
 
-	/** Expected start should be set to the expected time this rundown playlist should run on air */
-	expectedStart?: Time
-	/** Expected duration of the rundown playlist */
-	expectedDuration?: number
-	/** Expected end time of the rundown playlist */
-	expectedEnd?: Time
+	/** Playlist timing information */
+	timing: RundownPlaylistTiming
 	/** Should the rundown playlist use out-of-order timing mode (unplayed content will be played eventually) as opposed to normal timing mode (unplayed content behind the OnAir line has been skipped) */
 	outOfOrderTiming?: boolean
 	/** Should the rundown playlist loop at the end */
 	loop?: boolean
+	/** Should time-of-day clocks be used instead of countdowns by default */
+	timeOfDayCountdowns?: boolean
 }
+
+export enum PlaylistTimingType {
+	None = 'none',
+	ForwardTime = 'forward-time',
+	BackTime = 'back-time',
+}
+
+export interface PlaylistTimingBase {
+	type: PlaylistTimingType
+}
+
+export interface PlaylistTimingNone {
+	type: PlaylistTimingType.None
+}
+
+export interface PlaylistTimingForwardTime extends PlaylistTimingBase {
+	type: PlaylistTimingType.ForwardTime
+	/** Expected start should be set to the expected time this rundown playlist should run on air */
+	expectedStart: Time
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
+	/** Expected end time of the rundown playlist
+	 *  In this timing mode this is only for display before the show starts as an "expected" end time,
+	 *  during the show this display value will be calculated from expected start + remaining playlist duration.
+	 *  If this is not set, `expectedDuration` will be used (if set) in addition to expectedStart.
+	 */
+	expectedEnd?: Time
+}
+
+export interface PlaylistTimingBackTime extends PlaylistTimingBase {
+	type: PlaylistTimingType.BackTime
+	/** Expected start should be set to the expected time this rundown playlist should run on air
+	 *  In this timing mode this is only for display before the show starts as an "expected" start time,
+	 *  during the show this display will be set to when the show actually started.
+	 */
+	expectedStart?: Time
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
+	/** Expected end time of the rundown playlist */
+	expectedEnd: Time
+}
+
+export type RundownPlaylistTiming = PlaylistTimingNone | PlaylistTimingForwardTime | PlaylistTimingBackTime
 
 /** The Rundown generated from Blueprint */
 export interface IBlueprintRundown<TMetadata = unknown> {
@@ -30,12 +75,8 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 	/** Rundown description: Longer user-presentable description of the rundown */
 	description?: string
 
-	/** Expected start should be set to the expected time this rundown should run on air */
-	expectedStart?: Time
-	/** Expected duration of the rundown */
-	expectedDuration?: number
-	/** Expected end time of the rundown */
-	expectedEnd?: Time
+	/** Rundown timing information */
+	timing: RundownPlaylistTiming
 
 	/** Arbitrary data storage for plugins */
 	metaData?: TMetadata
@@ -43,8 +84,11 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 	/** A hint to the Core that the Rundown should be a part of a playlist */
 	playlistExternalId?: string
 
-	/** Whether the end of the rundown marks a commercial break */
-	endIsBreak?: boolean
+	/**
+	 * Whether the end of the rundown marks a break in the show.
+	 * Allows the Next Break timer in the Rundown Header to time to the end of this rundown when looking for the next break.
+	 */
+	endOfRundownIsShowBreak?: boolean
 }
 
 /** The Rundown sent from Core */
@@ -100,7 +144,7 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	transitionPrerollDuration?: number | null
 	/** How long to keep the old part alive during the transition */
 	transitionKeepaliveDuration?: number | null
-	/** How long the transition is active for */
+	/** How long the transition is active for (used to block another take from happening) */
 	transitionDuration?: number | null
 	/** Should we block a transition at the out of this Part */
 	disableOutTransition?: boolean
@@ -287,9 +331,6 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	 * @todo
 	 */
 	expectedPackages?: ExpectedPackage.Any[]
-
-	/** @todo: to be defined */
-	listenToPackageInfoUpdates?: ListenToPackageUpdate[]
 
 	/** HACK: Some pieces have side effects on other pieces, and pruning them when they have finished playback will cause playout glitches. This will tell core to not always preserve it */
 	hasSideEffects?: boolean

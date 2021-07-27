@@ -5,7 +5,7 @@ import {
 	RundownLayoutBase,
 	RundownLayoutSegmentTiming,
 } from '../../../lib/collections/RundownLayouts'
-import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -46,7 +46,7 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		let { t, panel } = this.props
+		const { t, panel } = this.props
 
 		return (
 			<div
@@ -80,8 +80,8 @@ export const SegmentTimingPanel = translateWithTracker<
 >(
 	(props: ISegmentTimingPanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
-			let livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
-			let liveSegment = livePart ? props.playlist.getSegments({ _id: livePart.segmentId })[0] : undefined
+			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
+			const liveSegment = livePart ? props.playlist.getSegments({ _id: livePart.segmentId })[0] : undefined
 
 			const { active } = getIsFilterActive(props.playlist, props.panel)
 

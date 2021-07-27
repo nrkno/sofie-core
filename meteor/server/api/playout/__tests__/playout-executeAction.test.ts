@@ -38,6 +38,8 @@ const {
 
 jest.mock('../../playout/timeline')
 import { updateTimeline } from '../../playout/timeline'
+import { AdLibActionId } from '../../../../lib/collections/AdLibActions'
+import { protectString } from '../../../../lib/lib'
 type TupdateTimeline = jest.MockedFunction<typeof updateTimeline>
 const updateTimelineMock = updateTimeline as TupdateTimeline
 
@@ -93,11 +95,12 @@ describe('Playout API', () => {
 		})
 
 		testInFiber('throws errors', () => {
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
 
 			expect(() =>
-				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
 			).toThrowError(/ShowStyle blueprint .* does not support executing actions/)
 
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
@@ -122,7 +125,7 @@ describe('Playout API', () => {
 				},
 			})
 			expect(() =>
-				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
 			).toThrowError('action execution threw')
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
@@ -159,9 +162,10 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
@@ -199,9 +203,10 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
@@ -239,9 +244,10 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
@@ -278,9 +284,10 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
 
 			const timesTakeCalled = mockTake.mock.calls.length
 			mockTake.mockRestore()
@@ -318,9 +325,10 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
 
 			const timesTakeCalled = mockTake.mock.calls.length
 			mockTake.mockRestore()

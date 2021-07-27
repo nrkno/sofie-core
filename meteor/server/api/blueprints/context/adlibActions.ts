@@ -42,6 +42,7 @@ import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
+import { WatchedPackagesHelper } from './watchedPackages'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -60,8 +61,14 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	public nextPartState: ActionPartChange = ActionPartChange.NONE
 	public takeAfterExecute: boolean
 
-	constructor(contextInfo: UserContextInfo, cache: CacheForPlayout, showStyle: ShowStyleCompound, rundown: Rundown) {
-		super(contextInfo, cache.Studio.doc, showStyle)
+	constructor(
+		contextInfo: UserContextInfo,
+		cache: CacheForPlayout,
+		showStyle: ShowStyleCompound,
+		rundown: Rundown,
+		watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, cache.Studio.doc, showStyle, watchedPackages)
 		this._cache = cache
 		this.rundown = rundown
 		this.takeAfterExecute = false

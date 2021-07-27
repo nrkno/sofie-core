@@ -12,6 +12,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTranslation } from 'react-i18next'
 import { PlaylistStartTiming } from '../RundownView/RundownTiming/PlaylistStartTiming'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IPlaylistStartTimerPanelProps {
 	layout: RundownLayoutBase
@@ -32,9 +33,9 @@ export class PlaylistStartTimerPanelInner extends MeteorReactComponent<
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
-		let { playlist } = this.props
+		const { playlist } = this.props
 
-		if (!playlist.expectedDuration) {
+		if (!PlaylistTiming.getExpectedDuration(playlist.timing)) {
 			return null
 		}
 

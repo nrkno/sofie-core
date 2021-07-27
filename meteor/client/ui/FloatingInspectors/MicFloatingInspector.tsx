@@ -18,7 +18,7 @@ interface IProps {
 export function MicFloatingInspector(props: IProps) {
 	const { t } = useTranslation()
 
-	let { startOfScript, endOfScript, breakScript } = GetScriptPreview(props.content.fullScript || '')
+	const { startOfScript, endOfScript, breakScript } = GetScriptPreview(props.content.fullScript || '')
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>

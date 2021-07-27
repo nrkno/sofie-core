@@ -1,6 +1,6 @@
 import PLazy from 'p-lazy'
 
-/** Lazy initialise a value */
+/** Lazy initialise a value. */
 export class LazyInitialise<T> {
 	#value!: T
 	#loading: PLazy<void> | undefined
@@ -24,7 +24,7 @@ export class LazyInitialise<T> {
 
 	/** Return the value, loading it if required */
 	public async get(): Promise<T> {
-		if (this.#loading) {
+		if (!this.isLoaded()) {
 			await this.#loading
 		}
 
@@ -33,7 +33,7 @@ export class LazyInitialise<T> {
 
 	/** Get the value if it is already loaded */
 	public getIfLoaded(): T | undefined {
-		if (!this.#loading) {
+		if (this.isLoaded()) {
 			return this.#value
 		} else {
 			return undefined

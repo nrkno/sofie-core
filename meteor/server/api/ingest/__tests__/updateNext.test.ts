@@ -38,6 +38,9 @@ async function createMockRO(): Promise<RundownId> {
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
 		activationId: protectString('active'),
+		timing: {
+			type: 'none' as any,
+		},
 	})
 
 	Rundowns.insert({
@@ -55,6 +58,9 @@ async function createMockRO(): Promise<RundownId> {
 		_rank: 0,
 		externalNRCSName: 'mockNRCS',
 		organizationId: protectString(''),
+		timing: {
+			type: 'none' as any,
+		},
 	})
 
 	await saveIntoDb(

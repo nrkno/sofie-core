@@ -26,7 +26,7 @@ export class TextLabelPanel extends MeteorReactComponent<ITextLabelPanelProps, I
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		let { panel } = this.props
+		const { panel } = this.props
 
 		return (
 			<div

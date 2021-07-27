@@ -36,8 +36,6 @@ import RundownLayoutEditor from './RundownLayoutEditor'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { MeteorCall } from '../../../lib/api/methods'
-import { Settings } from '../../../lib/Settings'
-import { RundownLayoutType } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface IProps {
@@ -226,7 +224,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<HotkeyLegendSettings showStyleBase={showStyleBase} />
 						</div>
 					</div>
-					{RundownLayoutsAPI.GetSettingsManifest().map((region) => {
+					{RundownLayoutsAPI.getSettingsManifest(t).map((region) => {
 						return (
 							<div className="row" key={region._id}>
 								<div className="col c12 r1-c12">

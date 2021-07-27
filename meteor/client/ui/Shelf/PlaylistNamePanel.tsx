@@ -2,10 +2,8 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import {
 	DashboardLayoutPlaylistName,
-	DashboardLayoutTextLabel,
 	RundownLayoutBase,
 	RundownLayoutPlaylistName,
-	RundownLayoutTextLabel,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -37,7 +35,7 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		let { panel } = this.props
+		const { panel } = this.props
 
 		return (
 			<div
@@ -65,8 +63,8 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IPlaylistNamePannelTrackedProps>(
 	(props: IPlaylistNamePanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
-			let livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
-			let currentRundown = props.playlist.getRundowns({ _id: livePart.rundownId })[0]
+			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
+			const currentRundown = props.playlist.getRundowns({ _id: livePart.rundownId })[0]
 
 			return {
 				currentRundown,

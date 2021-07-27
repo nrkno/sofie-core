@@ -7,6 +7,7 @@ import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
 import ClassNames from 'classnames'
+import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
 
 interface IEndTimingProps {
 	rundownPlaylist: RundownPlaylist
@@ -18,11 +19,14 @@ export const PlaylistStartTiming = withTranslation()(
 	withTiming<IEndTimingProps & WithTranslation, {}>()(
 		class PlaylistStartTiming extends React.Component<Translated<WithTiming<IEndTimingProps>>> {
 			render() {
-				let { t, rundownPlaylist } = this.props
-				let expectedStart = rundownPlaylist.expectedStart
-					? rundownPlaylist.expectedStart
-					: rundownPlaylist.expectedDuration && rundownPlaylist.expectedEnd
-					? rundownPlaylist.expectedEnd - rundownPlaylist.expectedDuration
+				const { t, rundownPlaylist } = this.props
+				const playlistExpectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
+				const playlistExpectedEnd = PlaylistTiming.getExpectedEnd(rundownPlaylist.timing)
+				const playlistExpectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
+				const expectedStart = playlistExpectedStart
+					? playlistExpectedStart
+					: playlistExpectedDuration && playlistExpectedEnd
+					? playlistExpectedEnd - playlistExpectedDuration
 					: undefined
 
 				return (
@@ -33,19 +37,15 @@ export const PlaylistStartTiming = withTranslation()(
 									<span className="timing-clock-label left">{t('Started')}</span>
 									<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.startedPlayback} />
 								</span>
-							) : rundownPlaylist.expectedStart ? (
+							) : playlistExpectedStart ? (
 								<span className="timing-clock plan-start left">
 									<span className="timing-clock-label left">{t('Planned Start')}</span>
-									<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.expectedStart} />
+									<Moment interval={0} format="HH:mm:ss" date={playlistExpectedStart} />
 								</span>
-							) : rundownPlaylist.expectedEnd && rundownPlaylist.expectedDuration ? (
+							) : playlistExpectedEnd && playlistExpectedDuration ? (
 								<span className="timing-clock plan-start left">
 									<span className="timing-clock-label left">{t('Expected Start')}</span>
-									<Moment
-										interval={0}
-										format="HH:mm:ss"
-										date={rundownPlaylist.expectedEnd - rundownPlaylist.expectedDuration}
-									/>
+									<Moment interval={0} format="HH:mm:ss" date={playlistExpectedEnd - playlistExpectedDuration} />
 								</span>
 							) : null)}
 						{!this.props.hideDiff && expectedStart && (

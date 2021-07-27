@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [1.35.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.0-in-testing.0...v1.35.0-in-testing.1) (2021-06-10)
+# [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.6...v1.36.0-in-testing.7) (2021-07-20)
 
 **Note:** Version bump only for package playout-gateway
 
@@ -11,7 +11,82 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-# [1.35.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.35.0-in-testing.0) (2021-06-09)
+# [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.36.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.5) (2021-07-14)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.36.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.36.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
+
+
+### Features
+
+* rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
+
+
+
+
+
+## [1.35.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.0...v1.35.1-0) (2021-07-12)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.35.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.34.0...v1.35.0) (2021-07-07)
+
+
+
+# [1.35.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.3...v1.35.0-in-testing.1) (2021-06-10)
+
+
+
+# [1.35.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.3-0...v1.35.0-in-testing.0) (2021-06-09)
 
 
 ### Features
@@ -21,74 +96,72 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-# [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
 
 
-### Bug Fixes
+# [1.35.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.0-in-testing.0...v1.35.0-in-testing.1) (2021-06-10)
 
-* Add vMix Config Manifest ([ccfb466](https://github.com/nrkno/tv-automation-server-core/commit/ccfb46661c9f7950ca79b8652afc90d0b09502c7))
-* gateways not reporting package versions ([127881f](https://github.com/nrkno/tv-automation-server-core/commit/127881fea90645d9ad7b637c2ebcf6879ae8fd3d))
+**Note:** Version bump only for package playout-gateway
 
-
-
-# [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
-
-
-
-# [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
-
-
-### Bug Fixes
-
-* update ci flow for lerna building and version bumping [publish] ([8494483](https://github.com/nrkno/tv-automation-server-core/commit/8494483be5ffa6d58e9761bcfea2210716afbab8))
-* **playout-gw:** upload files to the right atem ([47bc15b](https://github.com/nrkno/tv-automation-server-core/commit/47bc15bcb9d38234995d1c25105e4d71aef611f7))
-
+# [1.35.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.35.0-in-testing.0) (2021-06-09)
 
 ### Features
 
-* Config manifest for Sisyfos setLabelToLayerName ([d3d559e](https://github.com/nrkno/tv-automation-server-core/commit/d3d559ec8f733b38df4906ccf721ab2ba244c976))
-* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
-* playout-gw atem clip uploading ([ba602f5](https://github.com/nrkno/tv-automation-server-core/commit/ba602f55800bc7e07c6ea2f04645910528fb18c5))
-* playout-gw media objects ([e98e9ee](https://github.com/nrkno/tv-automation-server-core/commit/e98e9ee775f353d00df63bccdf0ccb55fff2743a))
-* zero-based configs for ATEM and Sisyfos devices ([5d0b79a](https://github.com/nrkno/tv-automation-server-core/commit/5d0b79a735f3778293a18e0901147b63c5399010))
+- add baseline expectedPlayoutItems support to Playout Gateway ([#521](https://github.com/nrkno/tv-automation-server-core/issues/521)) ([a2b7fa8](https://github.com/nrkno/tv-automation-server-core/commit/a2b7fa82d680df77774f5514f498d9906a90aa16))
+- require node 12.20 for all packages ([776e0d5](https://github.com/nrkno/tv-automation-server-core/commit/776e0d5c3e402b394990aafea8e7be4f44f8753f))
 
+# [1.34.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0...v1.34.0) (2021-06-28)
 
+### Bug Fixes
 
-
+- playout-gateway atem media uploading ([6159ab3](https://github.com/nrkno/tv-automation-server-core/commit/6159ab3485d7d0f2679cc3b754efcceae471565c))
 
 # [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+
+### Bug Fixes
+
+- Add vMix Config Manifest ([ccfb466](https://github.com/nrkno/tv-automation-server-core/commit/ccfb46661c9f7950ca79b8652afc90d0b09502c7))
+- gateways not reporting package versions ([127881f](https://github.com/nrkno/tv-automation-server-core/commit/127881fea90645d9ad7b637c2ebcf6879ae8fd3d))
+
+# [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
+
+# [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
+
+### Bug Fixes
+
+- update ci flow for lerna building and version bumping [publish] ([8494483](https://github.com/nrkno/tv-automation-server-core/commit/8494483be5ffa6d58e9761bcfea2210716afbab8))
+- **playout-gw:** upload files to the right atem ([47bc15b](https://github.com/nrkno/tv-automation-server-core/commit/47bc15bcb9d38234995d1c25105e4d71aef611f7))
+
+### Features
+
+- Config manifest for Sisyfos setLabelToLayerName ([d3d559e](https://github.com/nrkno/tv-automation-server-core/commit/d3d559ec8f733b38df4906ccf721ab2ba244c976))
+- import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+- playout-gw atem clip uploading ([ba602f5](https://github.com/nrkno/tv-automation-server-core/commit/ba602f55800bc7e07c6ea2f04645910528fb18c5))
+- playout-gw media objects ([e98e9ee](https://github.com/nrkno/tv-automation-server-core/commit/e98e9ee775f353d00df63bccdf0ccb55fff2743a))
+- zero-based configs for ATEM and Sisyfos devices ([5d0b79a](https://github.com/nrkno/tv-automation-server-core/commit/5d0b79a735f3778293a18e0901147b63c5399010))
+
+# [1.34.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.0...v1.34.0-in-testing.0) (2021-05-18)
+
 # [1.33.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.2...v1.33.0) (2021-06-15)
 
-
 ### Bug Fixes
 
-* gateways not reporting package versions ([127881f](https://github.com/nrkno/tv-automation-server-core/commit/127881fea90645d9ad7b637c2ebcf6879ae8fd3d))
-
-
+- gateways not reporting package versions ([127881f](https://github.com/nrkno/tv-automation-server-core/commit/127881fea90645d9ad7b637c2ebcf6879ae8fd3d))
 
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 
-
-
 # [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
-
 
 ### Bug Fixes
 
-* update ci flow for lerna building and version bumping [publish] ([8494483](https://github.com/nrkno/tv-automation-server-core/commit/8494483be5ffa6d58e9761bcfea2210716afbab8))
-* **playout-gw:** upload files to the right atem ([47bc15b](https://github.com/nrkno/tv-automation-server-core/commit/47bc15bcb9d38234995d1c25105e4d71aef611f7))
-
+- update ci flow for lerna building and version bumping [publish] ([8494483](https://github.com/nrkno/tv-automation-server-core/commit/8494483be5ffa6d58e9761bcfea2210716afbab8))
+- **playout-gw:** upload files to the right atem ([47bc15b](https://github.com/nrkno/tv-automation-server-core/commit/47bc15bcb9d38234995d1c25105e4d71aef611f7))
 
 ### Features
 
-* Config manifest for Sisyfos setLabelToLayerName ([d3d559e](https://github.com/nrkno/tv-automation-server-core/commit/d3d559ec8f733b38df4906ccf721ab2ba244c976))
-* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
-* playout-gw atem clip uploading ([ba602f5](https://github.com/nrkno/tv-automation-server-core/commit/ba602f55800bc7e07c6ea2f04645910528fb18c5))
-* playout-gw media objects ([e98e9ee](https://github.com/nrkno/tv-automation-server-core/commit/e98e9ee775f353d00df63bccdf0ccb55fff2743a))
-
-
-
-
+- Config manifest for Sisyfos setLabelToLayerName ([d3d559e](https://github.com/nrkno/tv-automation-server-core/commit/d3d559ec8f733b38df4906ccf721ab2ba244c976))
+- import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+- playout-gw atem clip uploading ([ba602f5](https://github.com/nrkno/tv-automation-server-core/commit/ba602f55800bc7e07c6ea2f04645910528fb18c5))
+- playout-gw media objects ([e98e9ee](https://github.com/nrkno/tv-automation-server-core/commit/e98e9ee775f353d00df63bccdf0ccb55fff2743a))
 
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 
@@ -96,35 +169,25 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* Add vMix Config Manifest ([ccfb466](https://github.com/nrkno/tv-automation-server-core/commit/ccfb46661c9f7950ca79b8652afc90d0b09502c7))
-* gateways not reporting package versions ([127881f](https://github.com/nrkno/tv-automation-server-core/commit/127881fea90645d9ad7b637c2ebcf6879ae8fd3d))
-
-
+- Add vMix Config Manifest ([ccfb466](https://github.com/nrkno/tv-automation-server-core/commit/ccfb46661c9f7950ca79b8652afc90d0b09502c7))
+- gateways not reporting package versions ([127881f](https://github.com/nrkno/tv-automation-server-core/commit/127881fea90645d9ad7b637c2ebcf6879ae8fd3d))
 
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 
-
-
 # [1.33.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.19.0-in-testing.2...v1.33.0-in-development.0) (2021-04-22)
-
 
 ### Bug Fixes
 
-* update ci flow for lerna building and version bumping [publish] ([8494483](https://github.com/nrkno/tv-automation-server-core/commit/8494483be5ffa6d58e9761bcfea2210716afbab8))
-* **playout-gw:** upload files to the right atem ([47bc15b](https://github.com/nrkno/tv-automation-server-core/commit/47bc15bcb9d38234995d1c25105e4d71aef611f7))
-
+- update ci flow for lerna building and version bumping [publish] ([8494483](https://github.com/nrkno/tv-automation-server-core/commit/8494483be5ffa6d58e9761bcfea2210716afbab8))
+- **playout-gw:** upload files to the right atem ([47bc15b](https://github.com/nrkno/tv-automation-server-core/commit/47bc15bcb9d38234995d1c25105e4d71aef611f7))
 
 ### Features
 
-* Config manifest for Sisyfos setLabelToLayerName ([d3d559e](https://github.com/nrkno/tv-automation-server-core/commit/d3d559ec8f733b38df4906ccf721ab2ba244c976))
-* import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
-* playout-gw atem clip uploading ([ba602f5](https://github.com/nrkno/tv-automation-server-core/commit/ba602f55800bc7e07c6ea2f04645910528fb18c5))
-* playout-gw media objects ([e98e9ee](https://github.com/nrkno/tv-automation-server-core/commit/e98e9ee775f353d00df63bccdf0ccb55fff2743a))
-* zero-based configs for ATEM and Sisyfos devices ([5d0b79a](https://github.com/nrkno/tv-automation-server-core/commit/5d0b79a735f3778293a18e0901147b63c5399010))
-
-
-
-
+- Config manifest for Sisyfos setLabelToLayerName ([d3d559e](https://github.com/nrkno/tv-automation-server-core/commit/d3d559ec8f733b38df4906ccf721ab2ba244c976))
+- import gateways to packages ([240d938](https://github.com/nrkno/tv-automation-server-core/commit/240d93822bc3f0c00d1e41cadb0954b81e72f6be))
+- playout-gw atem clip uploading ([ba602f5](https://github.com/nrkno/tv-automation-server-core/commit/ba602f55800bc7e07c6ea2f04645910528fb18c5))
+- playout-gw media objects ([e98e9ee](https://github.com/nrkno/tv-automation-server-core/commit/e98e9ee775f353d00df63bccdf0ccb55fff2743a))
+- zero-based configs for ATEM and Sisyfos devices ([5d0b79a](https://github.com/nrkno/tv-automation-server-core/commit/5d0b79a735f3778293a18e0901147b63c5399010))
 
 # [1.33.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.33.0-in-development.0...v1.33.0-in-testing.1) (2021-04-22)
 

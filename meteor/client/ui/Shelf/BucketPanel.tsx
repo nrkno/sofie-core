@@ -504,6 +504,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								MeteorCall.userAction.executeAction(
 									e,
 									this.props.playlist._id,
+									bucketAction.adlibAction._id,
 									bucketAction.adlibAction.actionId,
 									bucketAction.adlibAction.userData,
 									mode?.data
@@ -811,7 +812,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 															: ''
 													}
-													disabled={adlib.showStyleVariantId !== this.props.showStyleVariantId}
+													// Hack: Julian: The adlibs are still executable, so the colour change was reported as a bug https://app.asana.com/0/1200403895331886/1200477738053366.
+													// They should be disabled, but we don't have the structure in place for multiple versions, or even regenerating them when changing variant so this will have to do for now
+													// disabled={adlib.showStyleVariantId !== this.props.showStyleVariantId}
 													findAdLib={this.findAdLib}
 													moveAdLib={this.moveAdLib}
 													editableName={this.props.editedPiece === adlib._id}

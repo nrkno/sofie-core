@@ -31,46 +31,64 @@ export function buildPastInfinitePiecesForThisPartQuery(
 	partsIdsBeforeThisInSegment: PartId[],
 	segmentsIdsBeforeThisInRundown: SegmentId[],
 	rundownIdsBeforeThisInPlaylist: RundownId[]
-): Mongo.Query<Piece> {
-	return {
-		invalid: { $ne: true },
-		startPartId: { $ne: part._id },
-		$or: [
-			{
-				// same segment, and previous part
-				lifespan: {
-					$in: [
-						PieceLifespan.OutOnSegmentEnd,
-						PieceLifespan.OutOnSegmentChange,
-						PieceLifespan.OutOnRundownEnd,
-						PieceLifespan.OutOnRundownChange,
-						PieceLifespan.OutOnShowStyleEnd,
-					],
-				},
-				startRundownId: part.rundownId,
-				startSegmentId: part.segmentId,
-				startPartId: { $in: partsIdsBeforeThisInSegment },
-			},
-			{
-				// same rundown, and previous segment
-				lifespan: {
-					$in: [
-						PieceLifespan.OutOnRundownEnd,
-						PieceLifespan.OutOnRundownChange,
-						PieceLifespan.OutOnShowStyleEnd,
-					],
-				},
-				startRundownId: part.rundownId,
-				startSegmentId: { $in: segmentsIdsBeforeThisInRundown },
-			},
-			{
-				// previous rundown
-				lifespan: {
-					$in: [PieceLifespan.OutOnShowStyleEnd],
-				},
-				startRundownId: { $in: rundownIdsBeforeThisInPlaylist },
-			},
-		],
+): Mongo.Query<Piece> | null {
+	const fragments = _.compact([
+		partsIdsBeforeThisInSegment.length > 0
+			? {
+					// same segment, and previous part
+					lifespan: {
+						$in: [
+							PieceLifespan.OutOnSegmentEnd,
+							PieceLifespan.OutOnSegmentChange,
+							PieceLifespan.OutOnRundownEnd,
+							PieceLifespan.OutOnRundownChange,
+							PieceLifespan.OutOnShowStyleEnd,
+						],
+					},
+					startRundownId: part.rundownId,
+					startSegmentId: part.segmentId,
+					startPartId: { $in: partsIdsBeforeThisInSegment },
+			  }
+			: undefined,
+		segmentsIdsBeforeThisInRundown.length > 0
+			? {
+					// same rundown, and previous segment
+					lifespan: {
+						$in: [
+							PieceLifespan.OutOnRundownEnd,
+							PieceLifespan.OutOnRundownChange,
+							PieceLifespan.OutOnShowStyleEnd,
+						],
+					},
+					startRundownId: part.rundownId,
+					startSegmentId: { $in: segmentsIdsBeforeThisInRundown },
+			  }
+			: undefined,
+		rundownIdsBeforeThisInPlaylist.length > 0
+			? {
+					// previous rundown
+					lifespan: {
+						$in: [PieceLifespan.OutOnShowStyleEnd],
+					},
+					startRundownId: { $in: rundownIdsBeforeThisInPlaylist },
+			  }
+			: undefined,
+	])
+
+	if (fragments.length === 0) {
+		return null
+	} else if (fragments.length === 1) {
+		return {
+			invalid: { $ne: true },
+			startPartId: { $ne: part._id },
+			...fragments[0],
+		}
+	} else {
+		return {
+			invalid: { $ne: true },
+			startPartId: { $ne: part._id },
+			$or: fragments,
+		}
 	}
 }
 
@@ -209,6 +227,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			instance._id = protectString(`${instance._id}_continue`)
 			instance.dynamicallyInserted = p.dynamicallyInserted
 			instance.adLibSourceId = p.adLibSourceId
+			instance.startedPlayback = p.startedPlayback
 
 			if (p.infinite) {
 				// This was copied from before, so we know we can force the time to 0
@@ -456,7 +475,7 @@ export function getPieceInstancesForPart(
 export interface PieceInstanceWithTimings extends PieceInstance {
 	/**
 	 * This is a maximum end point of the pieceInstance.
-	 * If the pieceInstance also has a enable.duration of userDuration set then the shortest one will need to be used
+	 * If the pieceInstance also has a enable.duration or userDuration set then the shortest one will need to be used
 	 * This can be:
 	 *  - 'now', if it was stopped by something that does not need a preroll (or is virtual)
 	 *  - '#something.start + 100', if it was stopped by something that needs a preroll

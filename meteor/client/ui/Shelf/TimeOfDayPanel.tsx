@@ -29,7 +29,7 @@ class TimeOfDayPanelInner extends MeteorReactComponent<Translated<ITimeOfDayPane
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		let { t, panel } = this.props
+		const { t, panel } = this.props
 
 		return (
 			<div

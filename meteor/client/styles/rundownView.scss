@@ -87,7 +87,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	animation-duration: 1s;
 	animation-fill-mode: forwards;
 	animation-iteration-count: infinite;
-	animation-name: placeholder-shimmer;
+	// animation-name: placeholder-shimmer;
 	animation-timing-function: linear;
 
 	&::before {
@@ -246,6 +246,15 @@ body.no-overflow {
 
 	z-index: 10000;
 	pointer-events: none;
+
+	@media screen and (prefer-reduced-motion: reduce) {
+		// if prefer-reduced-motion is set in the browser, the animation will be skipped
+		animation: none;
+	}
+
+	&--reduce-animation {
+		animation-timing-function: steps(3, end); // used in development, show a 1fps animation
+	}
 }
 
 .header.rundown {
@@ -725,7 +734,11 @@ svg.icon {
 		letter-spacing: 0;
 		font-weight: 400;
 
+		cursor: pointer;
+		transition: 0.3s color;
+
 		> span.negative {
+			transition: none;
 			color: $general-late-color;
 			font-weight: 500;
 		}
@@ -756,6 +769,17 @@ svg.icon {
 	.segment-timeline__timeUntil {
 		color: #888;
 	}
+
+	&.time-of-day-countdowns {
+		.segment-timeline__duration {
+			color: #888;
+		}
+		.segment-timeline__timeUntil {
+			color: #fff;
+			font-weight: 500;
+		}
+	}
+
 	.segment-timeline__unsynced {
 		text-transform: uppercase;
 	}
@@ -1351,7 +1375,8 @@ svg.icon {
 					left: 2px;
 					text-transform: uppercase;
 					font-weight: bold;
-					line-height: 1em;
+					line-height: 0.9em;
+					background: $segment-background-color;
 					white-space: nowrap;
 					word-wrap: none;
 					color: $part-start-color;
@@ -1990,9 +2015,9 @@ svg.icon {
 					text-align: right;
 					margin: 0;
 					padding: 0 0.3em;
-					max-width: calc(100% - 10px);
 					overflow: hidden;
 					text-overflow: clip;
+					background: inherit;
 
 					> * {
 						position: relative;
@@ -2418,6 +2443,24 @@ svg.icon {
 
 		> svg.icon {
 			width: 1.4em;
+		}
+	}
+
+	> .playlist-looping-header__countdown {
+		font-size: 1.05em;
+		margin-right: 1em;
+		line-height: 1.4em;
+
+		&:first-of-type {
+			margin-left: 3em;
+		}
+
+		&.playlist-looping-header__countdown--time-of-day {
+			font-weight: 600;
+		}
+
+		&.playlist-looping-header__countdown--countdown {
+			font-weight: 300;
 		}
 	}
 }

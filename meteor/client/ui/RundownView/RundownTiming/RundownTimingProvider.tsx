@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
-import * as _ from 'underscore'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Part, PartId } from '../../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../../lib/lib'
@@ -15,6 +14,8 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
 // LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
+
+const CURRENT_TIME_GRANULARITY = 1000 / 60
 
 /**
  * RundownTimingProvider properties.
@@ -145,8 +146,12 @@ export const RundownTimingProvider = withTracker<
 			}
 		}
 
+		calmDownTiming = (time: number) => {
+			return Math.round(time / CURRENT_TIME_GRANULARITY) * CURRENT_TIME_GRANULARITY
+		}
+
 		onRefreshTimer = () => {
-			const now = getCurrentTime()
+			const now = this.calmDownTiming(getCurrentTime())
 			const isLowResolution = this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0
 			this.updateDurations(now, isLowResolution)
 			this.dispatchHREvent(now)

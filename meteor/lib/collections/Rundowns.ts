@@ -5,7 +5,7 @@ import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery } from '../typings/meteor'
 import { StudioId } from './Studios'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
+import { IBlueprintRundownDB, RundownPlaylistTiming } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
@@ -86,9 +86,7 @@ export class Rundown implements DBRundown {
 	public organizationId: OrganizationId
 	public name: string
 	public description?: string
-	public expectedStart?: Time
-	public expectedDuration?: number
-	public expectedEnd?: Time
+	public timing: RundownPlaylistTiming
 	public metaData?: unknown
 	// From IBlueprintRundownDB:
 	public _id: RundownId
@@ -107,7 +105,7 @@ export class Rundown implements DBRundown {
 	public notifiedCurrentPlayingPartExternalId?: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
-	public endIsBreak?: boolean
+	public endOfRundownIsShowBreak?: boolean
 	public externalNRCSName: string
 	public playlistId: RundownPlaylistId
 	public playlistIdIsSetInSofie?: boolean

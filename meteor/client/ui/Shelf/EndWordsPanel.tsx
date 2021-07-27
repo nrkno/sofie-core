@@ -39,10 +39,10 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
-		let { t, livePieceInstance, panel } = this.props
-		let content = livePieceInstance?.piece.content as Partial<ScriptContent> | undefined
+		const { t, livePieceInstance, panel } = this.props
+		const content = livePieceInstance?.piece.content as Partial<ScriptContent> | undefined
 
-		let { endOfScript } = GetScriptPreview(content?.fullScript || '')
+		const { endOfScript } = GetScriptPreview(content?.fullScript || '')
 
 		return (
 			<div
@@ -67,7 +67,7 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 
 export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, IEndsWordsPanelTrackedProps>(
 	(props: IEndsWordsPanelProps) => {
-		let { activePieceInstance } = getIsFilterActive(props.playlist, props.panel)
+		const { activePieceInstance } = getIsFilterActive(props.playlist, props.panel)
 		return { livePieceInstance: activePieceInstance }
 	},
 	(_data, props: IEndsWordsPanelProps, nextProps: IEndsWordsPanelProps) => {

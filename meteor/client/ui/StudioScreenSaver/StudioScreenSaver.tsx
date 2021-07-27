@@ -9,6 +9,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import classNames from 'classnames'
 import { Clock } from './Clock'
 import { Countdown } from './Countdown'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IProps {
 	// the studio to be displayed in the screen saver
@@ -51,28 +52,26 @@ export const findNextPlaylist = (props: IProps) => {
 				studioId: props.studioId,
 			},
 			{
-				sort: {
-					expectedStart: 1,
-				},
 				fields: {
 					name: 1,
-					expectedStart: 1,
-					expectedDuration: 1,
-					expectedEnd: 1,
+					timing: 1,
 					studioId: 1,
 				},
 			}
 		)
 			.fetch()
+			.sort(PlaylistTiming.sortTiminings)
 			.find((rundownPlaylist) => {
-				if (rundownPlaylist.expectedStart && rundownPlaylist.expectedStart > now) {
+				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
+				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
+				if (expectedStart && expectedStart > now) {
 					// is expected to start next
 					return true
 				} else if (
-					rundownPlaylist.expectedStart &&
-					rundownPlaylist.expectedDuration &&
-					rundownPlaylist.expectedStart <= now &&
-					rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration > now
+					expectedStart &&
+					expectedDuration &&
+					expectedStart <= now &&
+					expectedStart + expectedDuration > now
 				) {
 					// should be live right now
 					return true
@@ -321,7 +320,8 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 
 		render() {
 			const { t, rundownPlaylist } = this.props
-			const hasRundown = rundownPlaylist && rundownPlaylist.expectedStart
+			const expectedStart = rundownPlaylist && PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
+			const hasRundown = !!expectedStart
 			return (
 				<div
 					className={classNames('studio-screen-saver', {
@@ -340,14 +340,11 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 						ref={this.setInfoElement}
 					>
 						<Clock className="studio-screen-saver__clock" />
-						{hasRundown && rundownPlaylist && rundownPlaylist.expectedStart ? (
+						{hasRundown && rundownPlaylist && expectedStart ? (
 							<>
 								<div className="studio-screen-saver__info__label">{t('Next scheduled show')}</div>
 								<div className="studio-screen-saver__info__rundown">{rundownPlaylist.name}</div>
-								<Countdown
-									className="studio-screen-saver__info__countdown"
-									expectedStart={rundownPlaylist.expectedStart}
-								/>
+								<Countdown className="studio-screen-saver__info__countdown" expectedStart={expectedStart} />
 							</>
 						) : (
 							this.props.studio?.name && (

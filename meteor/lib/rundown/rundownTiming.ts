@@ -1,7 +1,15 @@
+import {
+	PlaylistTimingBackTime,
+	PlaylistTimingForwardTime,
+	PlaylistTimingNone,
+	PlaylistTimingType,
+	RundownPlaylistTiming,
+} from '@sofie-automation/blueprints-integration'
 import _ from 'underscore'
 import {
 	findPartInstanceInMapOrWrapToTemporary,
 	PartInstance,
+	PartInstanceId,
 	wrapPartToTemporaryInstance,
 } from '../collections/PartInstances'
 import { Part, PartId } from '../collections/Parts'
@@ -13,10 +21,20 @@ import { Settings } from '../Settings'
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
 
+interface BreakProps {
+	rundownsBeforeNextBreak: Rundown[]
+	breakIsLastRundown
+}
+
 export class RundownTimingCalculator {
 	private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
 
 	private linearParts: Array<[PartId, number | null]> = []
+
+	// this.previousPartInstanceId is used to check if the previousPart has changed since last iteration.
+	private previousPartInstanceId: PartInstanceId | null = null
+	private lastTakeAt: number | undefined = undefined
+
 	// look at the comments on RundownTimingContext to understand what these do
 	private partDurations: Record<string, number> = {}
 	private partExpectedDurations: Record<string, number> = {}
@@ -26,6 +44,10 @@ export class RundownTimingCalculator {
 	private partDisplayDurations: Record<string, number> = {}
 	private partDisplayDurationsNoPlayback: Record<string, number> = {}
 	private displayDurationGroups: Record<string, number> = {}
+	private breakProps: {
+		props: BreakProps | undefined
+		state: string | undefined
+	} = { props: undefined, state: undefined }
 
 	updateDurations(
 		now: number,
@@ -47,11 +69,8 @@ export class RundownTimingCalculator {
 		let startsAtAccumulator = 0
 		let displayStartsAtAccumulator = 0
 
-		let rundownExpectedDurations: Record<string, number> = {}
-		let rundownAsPlayedDurations: Record<string, number> = {}
-
-		let segmentExpectedDurations: Record<string, number> = {}
-		let segmentAsPlayedDurations: Record<string, number> = {}
+		const rundownExpectedDurations: Record<string, number> = {}
+		const rundownAsPlayedDurations: Record<string, number> = {}
 
 		let rundownsBeforeNextBreak: Rundown[] | undefined
 		let breakIsLastRundown: boolean | undefined
@@ -63,13 +82,7 @@ export class RundownTimingCalculator {
 		let currentAIndex = -1
 
 		if (playlist) {
-			const breakProps = currentRundown
-				? this.getRundownsBeforeNextBreak(
-						rundowns,
-						currentRundown,
-						rundowns.filter((r) => r.endIsBreak)
-				  )
-				: undefined
+			const breakProps = currentRundown ? this.getRundownsBeforeNextBreak(rundowns, currentRundown) : undefined
 
 			if (breakProps) {
 				rundownsBeforeNextBreak = breakProps.rundownsBeforeNextBreak
@@ -219,11 +232,6 @@ export class RundownTimingCalculator {
 						rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)] +=
 							valToAddToAsPlayedDuration
 					}
-					if (!segmentAsPlayedDurations[unprotectString(partInstance.segmentId)]) {
-						segmentAsPlayedDurations[unprotectString(partInstance.segmentId)] = valToAddToAsPlayedDuration
-					} else {
-						segmentAsPlayedDurations[unprotectString(partInstance.segmentId)] += valToAddToAsPlayedDuration
-					}
 				}
 
 				// asDisplayed is the actual duration so far and expected durations in unplayed lines
@@ -272,7 +280,22 @@ export class RundownTimingCalculator {
 				this.partDisplayDurations[partInstancePartId] = partDisplayDuration
 				this.partDisplayDurationsNoPlayback[partInstancePartId] = partDisplayDurationNoPlayback
 				startsAtAccumulator += this.partDurations[partInstancePartId]
-				displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId] // || this.props.defaultDuration || 3000
+
+				if (playlist.previousPartInstanceId !== partInstance._id) {
+					displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId]
+				} else {
+					if (this.previousPartInstanceId !== playlist.previousPartInstanceId) {
+						this.lastTakeAt = now
+						this.previousPartInstanceId = playlist.previousPartInstanceId || ''
+					}
+					const durationToTake =
+						this.lastTakeAt && lastStartedPlayback
+							? this.lastTakeAt - lastStartedPlayback
+							: this.partDisplayDurations[partInstancePartId]
+					this.partDisplayDurations[partInstancePartId] = durationToTake
+					displayStartsAtAccumulator += durationToTake
+				}
+
 				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
 				if (memberOfDisplayDurationGroup) {
@@ -302,11 +325,6 @@ export class RundownTimingCalculator {
 					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] = partExpectedDuration
 				} else {
 					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] += partExpectedDuration
-				}
-				if (!segmentExpectedDurations[unprotectString(partInstance.segmentId)]) {
-					segmentExpectedDurations[unprotectString(partInstance.segmentId)] = partExpectedDuration
-				} else {
-					segmentExpectedDurations[unprotectString(partInstance.segmentId)] += partExpectedDuration
 				}
 			})
 
@@ -379,8 +397,6 @@ export class RundownTimingCalculator {
 			asPlayedPlaylistDuration: asPlayedRundownDuration,
 			rundownExpectedDurations,
 			rundownAsPlayedDurations,
-			segmentExpectedDurations,
-			segmentAsPlayedDurations,
 			partCountdown: _.object(this.linearParts),
 			partDurations: this.partDurations,
 			partPlayed: this.partPlayed,
@@ -420,30 +436,41 @@ export class RundownTimingCalculator {
 
 	private getRundownsBeforeNextBreak(
 		orderedRundowns: Rundown[],
-		currentRundown: Rundown | undefined,
-		breakRundowns: Rundown[]
-	): { rundownsBeforeNextBreak: Rundown[]; breakIsLastRundown } | undefined {
-		if (!currentRundown) {
-			return undefined
+		currentRundown: Rundown | undefined
+	): BreakProps | undefined {
+		const currentState = orderedRundowns.map((r) => r.endOfRundownIsShowBreak ?? '_').join('')
+		if (this.breakProps.state !== currentState) {
+			this.recalculateBreaks(orderedRundowns, currentRundown)
 		}
 
-		let currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
+		this.breakProps.state = currentState
+		return this.breakProps.props
+	}
+
+	private recalculateBreaks(orderedRundowns: Rundown[], currentRundown: Rundown | undefined) {
+		if (!currentRundown) {
+			this.breakProps.props = undefined
+			return
+		}
+
+		const currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
 
 		if (currentRundownIndex === -1) {
-			return undefined
+			this.breakProps.props = undefined
+			return
 		}
 
-		let nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
+		const nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
 			if (index < currentRundownIndex) {
 				return false
 			}
 
-			return breakRundowns.some((r) => r._id == rundown._id)
+			return rundown.endOfRundownIsShowBreak === true
 		})
 
-		return {
+		this.breakProps.props = {
 			rundownsBeforeNextBreak: orderedRundowns.slice(currentRundownIndex, nextBreakIndex + 1),
-			breakIsLastRundown: nextBreakIndex === orderedRundowns.length,
+			breakIsLastRundown: nextBreakIndex === orderedRundowns.length - 1,
 		}
 	}
 }
@@ -461,10 +488,6 @@ export interface RundownTimingContext {
 	rundownExpectedDurations?: Record<string, number>
 	/** This is the complete duration of each rundown: as planned for the unplayed content, and as-run for the played-out, but ignoring unplayed/unplayable parts in order */
 	rundownAsPlayedDurations?: Record<string, number>
-	/** Expected duration of each segment in playlist (based on part expected durations) */
-	segmentExpectedDurations?: Record<string, number>
-	/** Complete duration of each segment; as planned for unplayed content, and as-run for the played-out, but ignoring unplayed/unplayable parts in order */
-	segmentAsPlayedDurations?: Record<string, number>
 	/** this is the countdown to each of the parts relative to the current on air part. */
 	partCountdown?: Record<string, number>
 	/** The calculated durations of each of the Parts: as-planned/as-run depending on state. */
@@ -513,7 +536,7 @@ export function computeSegmentDuration(
 	partIds: PartId[],
 	display?: boolean
 ): number {
-	let partDurations = timingDurations.partDurations
+	const partDurations = timingDurations.partDurations
 
 	if (partDurations === undefined) return 0
 
@@ -524,4 +547,65 @@ export function computeSegmentDuration(
 			(display ? Settings.defaultDisplayDuration : 0)
 		return memo + partDuration
 	}, 0)
+}
+
+export namespace PlaylistTiming {
+	export function isPlaylistTimingNone(timing: RundownPlaylistTiming): timing is PlaylistTimingNone {
+		return timing.type === PlaylistTimingType.None
+	}
+
+	export function isPlaylistTimingForwardTime(timing: RundownPlaylistTiming): timing is PlaylistTimingForwardTime {
+		return timing.type === PlaylistTimingType.ForwardTime
+	}
+
+	export function isPlaylistTimingBackTime(timing: RundownPlaylistTiming): timing is PlaylistTimingBackTime {
+		return timing.type === PlaylistTimingType.BackTime
+	}
+
+	export function getExpectedStart(timing: RundownPlaylistTiming): number | undefined {
+		return PlaylistTiming.isPlaylistTimingForwardTime(timing)
+			? timing.expectedStart
+			: PlaylistTiming.isPlaylistTimingBackTime(timing)
+			? // Use expectedStart if present, otherwise try to calculate from expectedEnd - expectedDuration
+			  timing.expectedStart ||
+			  (timing.expectedDuration ? timing.expectedEnd - timing.expectedDuration : undefined)
+			: undefined
+	}
+
+	export function getExpectedEnd(timing: RundownPlaylistTiming): number | undefined {
+		return PlaylistTiming.isPlaylistTimingBackTime(timing)
+			? timing.expectedEnd
+			: PlaylistTiming.isPlaylistTimingForwardTime(timing)
+			? timing.expectedEnd ||
+			  (timing.expectedDuration ? timing.expectedStart + timing.expectedDuration : undefined)
+			: undefined
+	}
+
+	export function getExpectedDuration(timing: RundownPlaylistTiming): number | undefined {
+		return PlaylistTiming.isPlaylistTimingForwardTime(timing)
+			? timing.expectedDuration
+			: PlaylistTiming.isPlaylistTimingBackTime(timing)
+			? timing.expectedDuration
+			: undefined
+	}
+
+	export function sortTiminings(a, b): number {
+		// Compare start times, then allow rundowns with start time to be first
+		if (
+			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&
+			PlaylistTiming.isPlaylistTimingForwardTime(b.timing)
+		)
+			return a.timing.expectedStart - b.timing.expectedStart
+		if (PlaylistTiming.isPlaylistTimingForwardTime(a.timing)) return -1
+		if (PlaylistTiming.isPlaylistTimingForwardTime(b.timing)) return 1
+
+		// Compare end times, then allow rundowns with end time to be first
+		if (PlaylistTiming.isPlaylistTimingBackTime(a.timing) && PlaylistTiming.isPlaylistTimingBackTime(b.timing))
+			return a.timing.expectedEnd - b.timing.expectedEnd
+		if (PlaylistTiming.isPlaylistTimingBackTime(a.timing)) return -1
+		if (PlaylistTiming.isPlaylistTimingBackTime(b.timing)) return 1
+
+		// No timing
+		return 0
+	}
 }

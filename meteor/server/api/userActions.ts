@@ -53,6 +53,7 @@ import { PackageManagerAPI } from './packageManager'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 import { getShowStyleCompound } from './showStyles'
+import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { SnapshotId } from '../../lib/collections/Snapshots'
 
 let MINIMUM_TAKE_SPAN = 1000
@@ -388,9 +389,9 @@ export function pieceTakeNow(
 	const showStyleBase = rundown.getShowStyleBase()
 	const sourceLayerId = pieceToCopy.sourceLayerId
 	const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-	if (sourceL && (sourceL.type !== SourceLayerType.GRAPHICS || sourceL.exclusiveGroup))
+	if (sourceL && (sourceL.type !== SourceLayerType.LOWER_THIRD || sourceL.exclusiveGroup))
 		return ClientAPI.responseError(
-			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS piece!`
+			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a LOWER_THIRD piece!`
 		)
 
 	return ClientAPI.responseSuccess(
@@ -445,11 +446,13 @@ export function pieceSetInOutPoints(
 export function executeAction(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
+	actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 	actionId: string,
 	userData: any,
 	triggerMode?: string
 ) {
 	check(rundownPlaylistId, String)
+	check(actionDocId, String)
 	check(actionId, String)
 	check(userData, Match.Any)
 	check(triggerMode, Match.Maybe(String))
@@ -463,7 +466,7 @@ export function executeAction(
 		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionId, userData, triggerMode)
+		ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionDocId, actionId, userData, triggerMode)
 	)
 }
 export function segmentAdLibPieceStart(
@@ -576,6 +579,10 @@ export function activateHold(
 	}
 	if (undo && playlist.holdState !== RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[playlist.holdState || 0]}`)
+	}
+
+	if (!undo && currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId) {
+		return ClientAPI.responseError(400, `Can't do hold between segments!`)
 	}
 
 	if (undo) {
@@ -947,6 +954,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	executeAction(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
@@ -956,6 +964,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			executeAction,
 			this,
 			rundownPlaylistId,
+			actionDocId,
 			actionId,
 			userData,
 			triggerMode

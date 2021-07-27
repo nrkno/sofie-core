@@ -118,19 +118,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	onCanvasResize = (entries: ResizeObserverEntry[]) => {
 		let box: DOMRectReadOnly | undefined
 
-		if (
-			entries &&
-			entries.length &&
-			entries[0].contentBoxSize !== undefined &&
-			entries[0].contentBoxSize!.width !== undefined
-		) {
-			box = entries[0].contentBoxSize
-		} else if (
-			entries &&
-			entries.length &&
-			entries[0].contentRect !== undefined &&
-			entries[0].contentRect!.width !== undefined
-		) {
+		if (entries && entries.length && entries[0].contentRect?.width !== undefined) {
 			box = entries[0].contentRect
 		}
 

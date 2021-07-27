@@ -39,7 +39,7 @@ class SystemStatusPanelInner extends MeteorReactComponent<
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		let { t, panel } = this.props
+		const { t, panel } = this.props
 
 		return (
 			<div
@@ -69,8 +69,8 @@ class SystemStatusPanelInner extends MeteorReactComponent<
 
 export const SystemStatusPanel = translateWithTracker<ISystemStatusPanelProps, IState, ISystemStatusPanelTrackedProps>(
 	(props: ISystemStatusPanelProps) => {
-		let rundownIds = props.playlist.getRundownIDs() ?? []
-		let firstRundown = rundownIds.length ? props.playlist.getRundowns({ _id: rundownIds[0] })[0] : undefined
+		const rundownIds = props.playlist.getRundownIDs() ?? []
+		const firstRundown = rundownIds.length ? props.playlist.getRundowns({ _id: rundownIds[0] })[0] : undefined
 		return {
 			rundownIds,
 			firstRundown,

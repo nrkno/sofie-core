@@ -24,6 +24,7 @@ import {
 	updateExpectedPackagesForBucketAdLibAction,
 } from './expectedPackages'
 import { ShowStyleUserContext } from '../blueprints/context'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -37,6 +38,8 @@ export function updateBucketAdlibFromIngestData(
 ): void {
 	const { blueprint, blueprintId } = waitForPromise(loadShowStyleBlueprint(showStyle))
 
+	const watchedPackages = WatchedPackagesHelper.empty()
+
 	const context = new ShowStyleUserContext(
 		{
 			name: `Bucket Ad-Lib`,
@@ -44,7 +47,8 @@ export function updateBucketAdlibFromIngestData(
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
 		},
 		studio,
-		showStyle
+		showStyle,
+		watchedPackages
 	)
 	if (!blueprint.getAdlibItem) throw new Meteor.Error(501, "This blueprint doesn't support ingest AdLibs")
 	const rawAdlib = blueprint.getAdlibItem(context, ingestData)

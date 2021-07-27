@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import * as React from 'react'
 import ClassNames from 'classnames'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -114,9 +113,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const { t } = this.props
 
 			const layout = this.props.customRegion.layouts.find((l) => l.type === item.type)
-			const filtersTitle = layout?.filtersTitle ? t(layout.filtersTitle) : t('New Filter')
+			const filtersTitle = layout?.filtersTitle ? layout.filtersTitle : t('New Filter')
 
-			if (!layout?.supportedElements.length) {
+			if (!layout?.supportedFilters.length) {
 				return
 			}
 
@@ -300,10 +299,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		renderElements(item: RundownLayoutBase, layout: CustomizableRegionLayout | undefined) {
 			const { t } = this.props
 
-			const isShelfLayout = RundownLayoutsAPI.IsLayoutForShelf(item)
-			const isRundownViewLayout = RundownLayoutsAPI.IsLayoutForRundownView(item)
-			const isRundownHeaderLayout = RundownLayoutsAPI.IsLayoutForRundownHeader(item)
-			const isMiniShelfLayout = RundownLayoutsAPI.IsLayoutForMiniShelf(item)
+			const isShelfLayout = RundownLayoutsAPI.isLayoutForShelf(item)
+			const isRundownViewLayout = RundownLayoutsAPI.isLayoutForRundownView(item)
+			const isRundownHeaderLayout = RundownLayoutsAPI.isLayoutForRundownHeader(item)
 
 			return (
 				<React.Fragment>
@@ -337,24 +335,25 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					{isShelfLayout && <ShelfLayoutSettings item={item} />}
 					{isRundownHeaderLayout && <RundownHeaderLayoutSettings item={item} />}
 					{isRundownViewLayout && <RundownViewLayoutSettings item={item} layouts={this.props.rundownLayouts} />}
-					{layout?.supportsFilters ? (
+					{RundownLayoutsAPI.isLayoutWithFilters(item) && layout?.supportedFilters.length ? (
 						<React.Fragment>
-							<h4 className="mod mhs">{layout?.filtersTitle ? t(`${layout?.filtersTitle}`) : t('Filters')}</h4>
+							<h4 className="mod mhs">{layout?.filtersTitle ?? t('Filters')}</h4>
 							{item.filters.length === 0 ? (
 								<p className="text-s dimmed mhs">{t('There are no filters set up yet')}</p>
 							) : null}
 						</React.Fragment>
 					) : null}
-					{item.filters.map((tab, index) => (
-						<FilterEditor
-							key={tab._id}
-							item={item}
-							filter={tab}
-							index={index}
-							showStyleBase={this.props.showStyleBase}
-							supportedElements={layout?.supportedElements ?? []}
-						/>
-					))}
+					{RundownLayoutsAPI.isLayoutWithFilters(item) &&
+						item.filters.map((tab, index) => (
+							<FilterEditor
+								key={tab._id}
+								item={item}
+								filter={tab}
+								index={index}
+								showStyleBase={this.props.showStyleBase}
+								supportedFilters={layout?.supportedFilters ?? []}
+							/>
+						))}
 				</React.Fragment>
 			)
 		}
@@ -363,7 +362,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const { t } = this.props
 			return (this.props.rundownLayouts || [])
 				.filter((l) => l.regionId === this.props.customRegion._id && this.props.layoutTypes.includes(l.type))
-				.map((item, index) => {
+				.map((item) => {
 					const layout = this.props.customRegion.layouts.find((l) => l.type === item.type)
 					return (
 						<React.Fragment key={unprotectString(item._id)}>
@@ -388,10 +387,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									))}
 								</td>
 								<td className="settings-studio-rundown-layouts-table__actions table-item-actions c3">
-									<button className="action-btn" onClick={(e) => this.downloadItem(item)}>
+									<button className="action-btn" onClick={() => this.downloadItem(item)}>
 										<FontAwesomeIcon icon={faDownload} />
 									</button>
-									<button className="action-btn" onClick={(e) => this.editItem(item)}>
+									<button className="action-btn" onClick={() => this.editItem(item)}>
 										<FontAwesomeIcon icon={faPencilAlt} />
 									</button>
 									<button className="action-btn" onClick={(e) => this.onDeleteLayout(e, item)}>
@@ -432,12 +431,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											</div>
 										</div>
 										<div>{this.renderElements(item, layout)}</div>
-										{layout?.supportedElements.length ? (
+										{layout?.supportedFilters.length ? (
 											<div className="mod mls">
-												<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
+												<button className="btn btn-secondary" onClick={() => this.onAddElement(item)}>
 													<FontAwesomeIcon icon={faPlus} />
 													&nbsp;
-													{t(`Add ${layout?.filtersTitle?.toLowerCase() ?? 'filter'}`)}
+													{layout?.filtersTitle
+														? t('Add {{filtersTitle}}', { filtersTitle: layout?.filtersTitle })
+														: t(`Add filter`)}
 												</button>
 											</div>
 										) : null}
@@ -445,10 +446,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											<>
 												<div>{RundownLayoutsAPI.isDashboardLayout(item) ? this.renderActionButtons(item) : null}</div>
 												<div className="mod mls">
-													<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+													<button className="btn btn-primary right" onClick={() => this.finishEditItem(item)}>
 														<FontAwesomeIcon icon={faCheck} />
 													</button>
-													<button className="btn btn-secondary" onClick={(e) => this.onAddButton(item)}>
+													<button className="btn btn-secondary" onClick={() => this.onAddButton(item)}>
 														<FontAwesomeIcon icon={faPlus} />
 														&nbsp;
 														{t('Add button')}
@@ -458,7 +459,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										) : (
 											<>
 												<div className="mod mls">
-													<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+													<button className="btn btn-primary right" onClick={() => this.finishEditItem(item)}>
 														<FontAwesomeIcon icon={faCheck} />
 													</button>
 												</div>
@@ -546,8 +547,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 
 		render() {
-			const { t } = this.props
-
 			return (
 				<div className="studio-edit rundown-layout-editor">
 					<h2 className="mhn">{this.props.customRegion.title}</h2>

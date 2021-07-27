@@ -78,7 +78,6 @@ import {
 	RundownLayoutBase,
 	RundownLayoutId,
 	RundownViewLayout,
-	DashboardLayout,
 	RundownLayoutShelfBase,
 	RundownLayoutRundownHeader,
 } from '../../lib/collections/RundownLayouts'
@@ -99,7 +98,6 @@ import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
-import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioPackageContainersContext from './RundownView/StudioPackageContainersContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from './Shelf/ShelfDashboardLayout'
@@ -111,6 +109,7 @@ import { RundownName } from './RundownView/RundownTiming/RundownName'
 import { TimeOfDay } from './RundownView/RundownTiming/TimeOfDay'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -149,15 +148,17 @@ const WarningDisplay = withTranslation()(
 					})
 				}
 
+				const expectedStart = PlaylistTiming.getExpectedStart(this.props.playlist.timing)
+				const expectedDuration = PlaylistTiming.getExpectedDuration(this.props.playlist.timing)
+
 				if (
 					this.props.playlist.activationId &&
 					this.props.playlist.rehearsal &&
-					this.props.playlist.expectedStart &&
+					expectedStart &&
 					// the expectedStart is near
-					getCurrentTime() + REHEARSAL_MARGIN > this.props.playlist.expectedStart &&
+					getCurrentTime() + REHEARSAL_MARGIN > expectedStart &&
 					// but it's not horribly in the past
-					getCurrentTime() <
-						this.props.playlist.expectedStart + (this.props.playlist.expectedDuration || 60 * 60 * 1000) &&
+					getCurrentTime() < expectedStart + (expectedDuration || 60 * 60 * 1000) &&
 					!this.props.inActiveRundownView &&
 					!this.state.plannedStartCloseShown
 				) {
@@ -254,6 +255,19 @@ const TimingDisplay = withTranslation()(
 
 				if (!rundownPlaylist) return null
 
+				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
+				const expectedEnd = PlaylistTiming.getExpectedEnd(rundownPlaylist.timing)
+				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
+				const showEndTiming =
+					this.props.timingDurations.rundownsBeforeNextBreak?.length &&
+					(!this.props.layout?.hideExpectedEndBeforeBreak ||
+						(this.props.timingDurations.breakIsLastRundown && this.props.layout?.lastRundownIsNotBreak))
+				const showNextBreakTiming =
+					rundownPlaylist.startedPlayback &&
+					this.props.timingDurations.rundownsBeforeNextBreak?.length &&
+					this.props.layout?.showNextBreakTiming &&
+					!(this.props.timingDurations.breakIsLastRundown && this.props.layout.lastRundownIsNotBreak)
+
 				return (
 					<div className="timing mod">
 						<PlaylistStartTiming rundownPlaylist={rundownPlaylist} hideDiff={true} />
@@ -275,25 +289,22 @@ const TimingDisplay = withTranslation()(
 								) : null}
 							</span>
 						)}
-						{!rundownPlaylist.startedPlayback ||
-						this.props.timingDurations.breakIsLastRundown ||
-						!(this.props.timingDurations.rundownsBeforeNextBreak && this.props.layout?.hideExpectedEndBeforeBreak) ? (
+						{showEndTiming ? (
 							<PlaylistEndTiming
+								rundownPlaylist={rundownPlaylist}
 								loop={rundownPlaylist.loop}
-								expectedStart={rundownPlaylist.expectedStart}
-								expectedEnd={rundownPlaylist.expectedEnd}
-								expectedDuration={rundownPlaylist.expectedDuration}
+								expectedStart={expectedStart}
+								expectedEnd={expectedEnd}
+								expectedDuration={expectedDuration}
 								endLabel={this.props.layout?.expectedEndText}
 								rundownCount={this.props.rundownCount}
 							/>
 						) : null}
-						{rundownPlaylist.startedPlayback &&
-						this.props.timingDurations.rundownsBeforeNextBreak &&
-						this.props.layout?.showNextBreakTiming &&
-						!(this.props.timingDurations.breakIsLastRundown && this.props.layout.lastRundownIsNotBreak) ? (
+						{showNextBreakTiming ? (
 							<NextBreakTiming
-								rundownsBeforeBreak={this.props.timingDurations.rundownsBeforeNextBreak}
+								rundownsBeforeBreak={this.props.timingDurations.rundownsBeforeNextBreak!}
 								breakText={this.props.layout?.nextBreakText}
+								lastChild={!showEndTiming}
 							/>
 						) : null}
 					</div>
@@ -302,6 +313,12 @@ const TimingDisplay = withTranslation()(
 		}
 	)
 )
+
+interface INextBreakTimingProps {
+	loop?: boolean
+	rundownsBeforeBreak: Rundown[]
+	breakText?: string
+}
 
 interface HotkeyDefinition {
 	key: string
@@ -731,15 +748,20 @@ const RundownHeader = withTranslation()(
 		}
 
 		rundownShouldHaveStarted() {
-			return getCurrentTime() > (this.props.playlist.expectedStart || 0)
+			return getCurrentTime() > (PlaylistTiming.getExpectedStart(this.props.playlist.timing) || 0)
 		}
 		rundownWillShortlyStart() {
 			return (
-				!this.rundownShouldHaveEnded() && getCurrentTime() > (this.props.playlist.expectedStart || 0) - REHEARSAL_MARGIN
+				!this.rundownShouldHaveEnded() &&
+				getCurrentTime() > (PlaylistTiming.getExpectedStart(this.props.playlist.timing) || 0) - REHEARSAL_MARGIN
 			)
 		}
 		rundownShouldHaveEnded() {
-			return getCurrentTime() > (this.props.playlist.expectedStart || 0) + (this.props.playlist.expectedDuration || 0)
+			return (
+				getCurrentTime() >
+				(PlaylistTiming.getExpectedStart(this.props.playlist.timing) || 0) +
+					(PlaylistTiming.getExpectedDuration(this.props.playlist.timing) || 0)
+			)
 		}
 
 		handleAnotherPlaylistActive = (
@@ -1491,7 +1513,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const shelfLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.shelfLayoutId)
 			let isInspectorShelfExpanded = false
 
-			if (shelfLayout && RundownLayoutsAPI.IsLayoutForShelf(shelfLayout)) {
+			if (shelfLayout && RundownLayoutsAPI.isLayoutForShelf(shelfLayout)) {
 				isInspectorShelfExpanded = shelfLayout.openByDefault
 			}
 
@@ -1578,7 +1600,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 
 				// Try to load defaults from rundown view layouts
-				if (selectedViewLayout && RundownLayoutsAPI.IsLayoutForRundownView(selectedViewLayout)) {
+				if (selectedViewLayout && RundownLayoutsAPI.isLayoutForRundownView(selectedViewLayout)) {
 					const rundownLayout = selectedViewLayout as RundownViewLayout
 					if (!selectedShelfLayout && rundownLayout.shelfLayout) {
 						selectedShelfLayout = props.rundownLayouts.find((i) => i._id === rundownLayout.shelfLayout)
@@ -1600,19 +1622,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				// if still not found, use the first one
 				if (!selectedShelfLayout) {
-					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForShelf(i))
+					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForShelf(i))
 				}
 
 				if (!selectedViewLayout) {
-					selectedViewLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForRundownView(i))
+					selectedViewLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownView(i))
 				}
 
 				if (!selectedHeaderLayout) {
-					selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForRundownHeader(i))
+					selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
 				}
 
 				if (!selectedMiniShelfLayout) {
-					selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.IsLayoutForMiniShelf(i))
+					selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
 				}
 			}
 
@@ -1626,16 +1648,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			return {
 				shelfLayout:
-					selectedShelfLayout && RundownLayoutsAPI.IsLayoutForShelf(selectedShelfLayout)
+					selectedShelfLayout && RundownLayoutsAPI.isLayoutForShelf(selectedShelfLayout)
 						? selectedShelfLayout
 						: undefined,
 				rundownViewLayout: selectedViewLayout,
 				rundownHeaderLayout:
-					selectedHeaderLayout && RundownLayoutsAPI.IsLayoutForRundownHeader(selectedHeaderLayout)
+					selectedHeaderLayout && RundownLayoutsAPI.isLayoutForRundownHeader(selectedHeaderLayout)
 						? selectedHeaderLayout
 						: undefined,
 				miniShelfLayout:
-					selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
+					selectedMiniShelfLayout && RundownLayoutsAPI.isLayoutForMiniShelf(selectedMiniShelfLayout)
 						? selectedMiniShelfLayout
 						: undefined,
 				currentRundown,
@@ -2331,7 +2353,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						)}
 						<div className="segment-timeline-container">{this.renderSegments()}</div>
 						{this.props.playlist?.loop && (
-							<PlaylistLoopingHeader position="end" multiRundown={this.props.matchedSegments.length > 1} />
+							<PlaylistLoopingHeader
+								position="end"
+								multiRundown={this.props.matchedSegments.length > 1}
+								showCountdowns={!!(this.props.playlist.activationId && this.props.playlist.currentPartInstanceId)}
+							/>
 						)}
 					</React.Fragment>
 				)
@@ -2565,7 +2591,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									<ErrorBoundary>
 										{this.state.studioMode && !Settings.disableBlurBorder && (
 											<KeyboardFocusIndicator>
-												<div className="rundown-view__focus-lost-frame"></div>
+												<div
+													className={ClassNames('rundown-view__focus-lost-frame', {
+														'rundown-view__focus-lost-frame--reduce-animation': Meteor.isDevelopment,
+													})}
+												></div>
 											</KeyboardFocusIndicator>
 										)}
 									</ErrorBoundary>

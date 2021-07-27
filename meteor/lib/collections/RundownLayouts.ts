@@ -310,11 +310,14 @@ export interface RundownLayoutBase {
 	userId?: UserId
 	name: string
 	type: RundownLayoutType
-	filters: RundownLayoutElementBase[]
 	icon: string
 	iconColor: string
 	/* Customizable region that the layout modifies. */
-	regionId: string
+	regionId: CustomizableRegions
+}
+
+export interface RundownLayoutWithFilters extends RundownLayoutBase {
+	filters: RundownLayoutElementBase[]
 }
 
 export interface RundownViewLayout extends RundownLayoutBase {
@@ -327,7 +330,7 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	rundownHeaderLayout: RundownLayoutId
 }
 
-export interface RundownLayoutShelfBase extends RundownLayoutBase {
+export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
 	exposeAsStandalone: boolean
 	openByDefault: boolean
 	startingHeight?: number
@@ -376,7 +379,6 @@ export interface DashboardLayoutActionButton {
 
 export interface DashboardLayout extends RundownLayoutShelfBase {
 	type: RundownLayoutType.DASHBOARD_LAYOUT
-	filters: RundownLayoutElementBase[]
 	actionButtons?: DashboardLayoutActionButton[]
 }
 

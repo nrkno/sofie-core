@@ -15,7 +15,7 @@ import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Run
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
-import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
+import { RundownPlaylistTiming, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
@@ -61,12 +61,8 @@ export interface DBRundownPlaylist {
 	created: Time
 	/** Last modified timestamp */
 	modified: Time
-	/** When the playlist is expected to start */
-	expectedStart?: Time
-	/** How long the playlist is expected to take ON AIR */
-	expectedDuration?: number
-	/** When the playlist is expected to end */
-	expectedEnd?: Time
+	/** Rundown timing information */
+	timing: RundownPlaylistTiming
 	/** Is the playlist in rehearsal mode (can be used, when active: true) */
 	rehearsal?: boolean
 	/** Playout hold state */
@@ -75,6 +71,10 @@ export interface DBRundownPlaylist {
 	activationId?: RundownPlaylistActivationId
 	/** Should the playlist loop at the end */
 	loop?: boolean
+	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
+	outOfOrderTiming?: boolean
+	/** Should time-of-day clocks be used instead of countdowns by default */
+	timeOfDayCountdowns?: boolean
 
 	/** the id of the Live Part - if empty, no part in this rundown is live */
 	currentPartInstanceId: PartInstanceId | null
@@ -87,8 +87,6 @@ export interface DBRundownPlaylist {
 	/** the id of the Previous Part */
 	previousPartInstanceId: PartInstanceId | null
 
-	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
-	outOfOrderTiming?: boolean
 	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
 	nextSegmentId?: SegmentId
 
@@ -120,9 +118,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public startedPlayback?: Time
 	public lastIncorrectPartPlaybackReported?: Time
 	public rundownsStartedPlayback?: Record<string, Time>
-	public expectedStart?: Time
-	public expectedDuration?: number
-	public expectedEnd?: Time
+	public timing: RundownPlaylistTiming
 	public rehearsal?: boolean
 	public holdState?: RundownHoldState
 	public activationId?: RundownPlaylistActivationId
@@ -134,6 +130,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public previousPartInstanceId: PartInstanceId | null
 	public loop?: boolean
 	public outOfOrderTiming?: boolean
+	public timeOfDayCountdowns?: boolean
 	public rundownRanksAreSetInSofie?: boolean
 
 	public previousPersistentState?: TimelinePersistentState
@@ -211,9 +208,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				name: 1,
 				_rank: 1,
 				playlistId: 1,
-				expectedStart: 1,
-				expectedDuration: 1,
-				expectedEnd: 1,
+				timing: 1,
 				showStyleBaseId: 1,
 			},
 		})

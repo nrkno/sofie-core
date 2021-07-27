@@ -40,7 +40,7 @@ class PartTimingPanelInner extends MeteorReactComponent<
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		let { t, panel } = this.props
+		const { t, panel } = this.props
 
 		return (
 			<div
@@ -77,8 +77,8 @@ class PartTimingPanelInner extends MeteorReactComponent<
 export const PartTimingPanel = translateWithTracker<IPartTimingPanelProps, IState, IPartTimingPanelTrackedProps>(
 	(props: IPartTimingPanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
-			let livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
-			let { active } = getIsFilterActive(props.playlist, props.panel)
+			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
+			const { active } = getIsFilterActive(props.playlist, props.panel)
 
 			return { active, livePart }
 		}

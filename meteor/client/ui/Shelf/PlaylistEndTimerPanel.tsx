@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import {
 	DashboardLayoutPlaylistEndTimer,
-	DashboardLayoutPlaylistStartTimer,
 	RundownLayoutBase,
 	RundownLayoutPlaylistEndTimer,
 } from '../../../lib/collections/RundownLayouts'
@@ -12,8 +11,8 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTranslation } from 'react-i18next'
-import { PlaylistStartTiming } from '../RundownView/RundownTiming/PlaylistStartTiming'
 import { PlaylistEndTiming } from '../RundownView/RundownTiming/PlaylistEndTiming'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IPlaylistStartTimerPanelProps {
 	visible?: boolean
@@ -35,9 +34,9 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
-		let { playlist, panel } = this.props
+		const { playlist, panel } = this.props
 
-		if (!playlist.expectedDuration) {
+		if (!PlaylistTiming.getExpectedDuration(playlist.timing)) {
 			return null
 		}
 
@@ -54,10 +53,11 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
 				)}
 			>
 				<PlaylistEndTiming
+					rundownPlaylist={this.props.playlist}
 					loop={playlist.loop}
-					expectedStart={playlist.expectedStart}
-					expectedEnd={playlist.expectedEnd}
-					expectedDuration={playlist.expectedDuration}
+					expectedStart={PlaylistTiming.getExpectedStart(playlist.timing)}
+					expectedEnd={PlaylistTiming.getExpectedEnd(playlist.timing)}
+					expectedDuration={PlaylistTiming.getExpectedDuration(playlist.timing)}
 					endLabel={panel.expectedEndText}
 					hideCountdown={panel.hideCountdown}
 					hideDiff={panel.hideDiff}

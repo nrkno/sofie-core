@@ -467,6 +467,7 @@ export function handleRemovedSegment(
 		}
 	)
 }
+
 export function handleUpdatedSegment(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,

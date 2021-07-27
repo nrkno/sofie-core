@@ -75,6 +75,10 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
+import { AdLibActionId } from '../../../lib/collections/AdLibActions'
+import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { profiler } from '../profiler'
 
 /**
@@ -567,6 +571,9 @@ export namespace ServerPlayoutAPI {
 				) {
 					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" incompatible pair of HoldMode!`)
 				}
+				if (currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId) {
+					throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" cannot hold between segments!`)
+				}
 
 				const hasDynamicallyInserted = cache.PieceInstances.findOne(
 					(p) => p.partInstanceId === currentPartInstance._id && p.dynamicallyInserted
@@ -751,23 +758,26 @@ export namespace ServerPlayoutAPI {
 					_id: pieceInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
-				if (dynamicallyInserted && !pieceInstance) return // if it was dynamically inserted, it's okay if we can't find it
-				if (!pieceInstance)
+
+				if (pieceInstance) {
+					const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
+					if (!isPlaying) {
+						logger.info(
+							`onPiecePlaybackStarted: Playout reports pieceInstance "${pieceInstanceId}" has started playback on timestamp ${new Date(
+								startedPlayback
+							).toISOString()}`
+						)
+						await reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
+
+						// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
+					}
+				} else if (!playlist.activationId) {
+					logger.warn(`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`)
+				} else {
 					throw new Meteor.Error(
 						404,
 						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
-
-				const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
-				if (!isPlaying) {
-					logger.info(
-						`Playout reports pieceInstance "${pieceInstanceId}" has started playback on timestamp ${new Date(
-							startedPlayback
-						).toISOString()}`
-					)
-					await reportPieceHasStarted(playlist, pieceInstance, startedPlayback)
-
-					// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 				}
 			}
 		)
@@ -801,22 +811,25 @@ export namespace ServerPlayoutAPI {
 					_id: pieceInstanceId,
 					rundownId: { $in: rundowns.map((r) => r._id) },
 				})
-				if (dynamicallyInserted && !pieceInstance) return // if it was dynamically inserted, it's okay if we can't find it
-				if (!pieceInstance)
+
+				if (pieceInstance) {
+					const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
+					if (isPlaying) {
+						logger.info(
+							`onPiecePlaybackStopped: Playout reports pieceInstance "${pieceInstanceId}" has stopped playback on timestamp ${new Date(
+								stoppedPlayback
+							).toISOString()}`
+						)
+
+						await reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
+					}
+				} else if (!playlist.activationId) {
+					logger.warn(`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
+				} else {
 					throw new Meteor.Error(
 						404,
 						`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
-
-				const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
-				if (isPlaying) {
-					logger.info(
-						`Playout reports pieceInstance "${pieceInstanceId}" has stopped playback on timestamp ${new Date(
-							stoppedPlayback
-						).toISOString()}`
-					)
-
-					await reportPieceHasStopped(playlist, pieceInstance, stoppedPlayback)
 				}
 			}
 		)
@@ -998,9 +1011,9 @@ export namespace ServerPlayoutAPI {
 			'onPartPlaybackStopped',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-			async () => {
+			async (_lock, playlist) => {
 				// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
-				const rundowns = await Rundowns.findFetchAsync({ playlistId: rundownPlaylistId })
+				const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
 
 				const partInstance = await PartInstances.findOneAsync({
 					_id: partInstanceId,
@@ -1013,17 +1026,19 @@ export namespace ServerPlayoutAPI {
 					const isPlaying = partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
 					if (isPlaying) {
 						logger.info(
-							`Playout reports PartInstance "${partInstanceId}" has stopped playback on timestamp ${new Date(
+							`onPartPlaybackStopped: Playout reports PartInstance "${partInstanceId}" has stopped playback on timestamp ${new Date(
 								stoppedPlayback
 							).toISOString()}`
 						)
 
-						await reportPartInstanceHasStopped(rundownPlaylistId, partInstance, stoppedPlayback)
+						await reportPartInstanceHasStopped(playlist._id, partInstance, stoppedPlayback)
 					}
+				} else if (!playlist.activationId) {
+					logger.warn(`onPartPlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
 				} else {
 					throw new Meteor.Error(
 						404,
-						`PartInstance "${partInstanceId}" in RundownPlayst "${rundownPlaylistId}" not found!`
+						`PartInstance "${partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
 				}
 			}
@@ -1100,16 +1115,18 @@ export namespace ServerPlayoutAPI {
 	export function executeAction(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: any,
 		triggerMode?: string
 	) {
 		check(rundownPlaylistId, String)
+		check(actionDocId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
 		check(triggerMode, Match.Maybe(String))
 
-		return executeActionInner(access, rundownPlaylistId, async (actionContext, _cache, _rundown) => {
+		return executeActionInner(access, rundownPlaylistId, actionDocId, async (actionContext, _cache, _rundown) => {
 			const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
 			if (!blueprint.blueprint.executeAction) {
 				throw new Meteor.Error(
@@ -1127,6 +1144,7 @@ export namespace ServerPlayoutAPI {
 	export function executeActionInner(
 		access: VerifiedRundownPlaylistContentAccess,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		func: (
 			context: ActionExecutionContext,
 			cache: CacheForPlayout,
@@ -1165,7 +1183,15 @@ export namespace ServerPlayoutAPI {
 				if (!rundown)
 					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
 
-				const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
+				const [showStyle, watchedPackages] = await Promise.all([
+					cache.activationCache.getShowStyleCompound(rundown),
+					WatchedPackagesHelper.create(cache.Studio.doc._id, {
+						pieceId: actionDocId,
+						fromPieceType: {
+							$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
+						},
+					}),
+				])
 				const actionContext = new ActionExecutionContext(
 					{
 						name: `${rundown.name}(${playlist.name})`,
@@ -1176,7 +1202,8 @@ export namespace ServerPlayoutAPI {
 					},
 					cache,
 					showStyle,
-					rundown
+					rundown,
+					watchedPackages
 				)
 
 				// If any action cannot be done due to timings, that needs to be rejected by the context

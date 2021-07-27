@@ -7,19 +7,23 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../../lib/rundown'
 import { WithTiming, withTiming } from './withTiming'
 import ClassNames from 'classnames'
+import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
 
 interface INextBreakTimingProps {
 	loop?: boolean
 	rundownsBeforeBreak: Rundown[]
 	breakText?: string
+	lastChild?: boolean
 }
 
 export const NextBreakTiming = withTranslation()(
 	withTiming<INextBreakTimingProps & WithTranslation, {}>()(
-		class PlaylistEndTiming extends React.Component<Translated<WithTiming<INextBreakTimingProps>>> {
+		class NextBreakEndTiming extends React.Component<Translated<WithTiming<INextBreakTimingProps>>> {
 			render() {
-				let { t, rundownsBeforeBreak } = this.props
-				let breakRundown = rundownsBeforeBreak.length ? rundownsBeforeBreak[rundownsBeforeBreak.length - 1] : undefined
+				const { t, rundownsBeforeBreak } = this.props
+				const breakRundown = rundownsBeforeBreak.length
+					? rundownsBeforeBreak[rundownsBeforeBreak.length - 1]
+					: undefined
 
 				const rundownAsPlayedDuration = this.props.timingDurations.rundownAsPlayedDurations
 					? rundownsBeforeBreak.reduce(
@@ -39,15 +43,17 @@ export const NextBreakTiming = withTranslation()(
 					return null
 				}
 
+				const expectedEnd = PlaylistTiming.getExpectedEnd(breakRundown.timing)
+
 				return (
 					<React.Fragment>
-						<span className="timing-clock plan-end right">
+						<span className={ClassNames('timing-clock plan-end right', { 'visual-last-child': this.props.lastChild })}>
 							<span className="timing-clock-label right">{t(this.props.breakText || 'Next Break')}</span>
-							<Moment interval={0} format="HH:mm:ss" date={breakRundown.expectedEnd} />
+							<Moment interval={0} format="HH:mm:ss" date={expectedEnd} />
 						</span>
-						{!this.props.loop && breakRundown.expectedEnd ? (
+						{!this.props.loop && expectedEnd ? (
 							<span className="timing-clock countdown plan-end right">
-								{RundownUtils.formatDiffToTimecode(getCurrentTime() - breakRundown.expectedEnd, true, true, true)}
+								{RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedEnd, true, true, true)}
 							</span>
 						) : null}
 						{accumulatedExpectedDurations ? (

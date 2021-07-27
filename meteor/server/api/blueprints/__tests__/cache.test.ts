@@ -362,6 +362,9 @@ describe('Test blueprint cache', () => {
 					name: 'test',
 					externalNRCSName: 'mockNRCS',
 					organizationId: protectString(''),
+					timing: {
+						type: 'none' as any,
+					},
 				})
 			)
 		}
