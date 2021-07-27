@@ -12,7 +12,6 @@ import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../../playout/lockFunction'
 import { saveIntoDb } from '../../../lib/database'
-import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 jest.mock('../../playout/playout')
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
@@ -40,7 +39,7 @@ async function createMockRO(): Promise<RundownId> {
 		previousPartInstanceId: null,
 		activationId: protectString('active'),
 		timing: {
-			type: PlaylistTimingType.None,
+			type: 'none' as any,
 		},
 	})
 
@@ -60,7 +59,7 @@ async function createMockRO(): Promise<RundownId> {
 		externalNRCSName: 'mockNRCS',
 		organizationId: protectString(''),
 		timing: {
-			type: PlaylistTimingType.None,
+			type: 'none' as any,
 		},
 	})
 

@@ -1,4 +1,3 @@
-import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { PartInstance } from '../../collections/PartInstances'
 import { DBPart, Part, PartId } from '../../collections/Parts'
 import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
@@ -22,7 +21,7 @@ function makeMockPlaylist(): RundownPlaylist {
 			nextPartInstanceId: null,
 			previousPartInstanceId: null,
 			timing: {
-				type: PlaylistTimingType.None,
+				type: 'none' as any,
 			},
 		})
 	)
@@ -54,7 +53,7 @@ function makeMockRundown(id: string, playlistId: string, rank: number) {
 			_id: protectString(id),
 			externalId: id,
 			timing: {
-				type: PlaylistTimingType.None,
+				type: 'none' as any,
 			},
 			studioId: protectString('studio0'),
 			showStyleBaseId: protectString(''),
@@ -114,7 +113,7 @@ describe('rundown Timing Calculator', () => {
 		const timing = new RundownTimingCalculator()
 		const playlist: RundownPlaylist = makeMockPlaylist()
 		playlist.timing = {
-			type: PlaylistTimingType.ForwardTime,
+			type: 'forward-time' as any,
 			expectedStart: 0,
 			expectedDuration: 40000,
 		}
@@ -204,7 +203,7 @@ describe('rundown Timing Calculator', () => {
 		const timing = new RundownTimingCalculator()
 		const playlist: RundownPlaylist = makeMockPlaylist()
 		playlist.timing = {
-			type: PlaylistTimingType.ForwardTime,
+			type: 'forward-time' as any,
 			expectedStart: 0,
 			expectedDuration: 40000,
 		}
@@ -294,7 +293,7 @@ describe('rundown Timing Calculator', () => {
 		const timing = new RundownTimingCalculator()
 		const playlist: RundownPlaylist = makeMockPlaylist()
 		playlist.timing = {
-			type: PlaylistTimingType.ForwardTime,
+			type: 'forward-time' as any,
 			expectedStart: 0,
 			expectedDuration: 40000,
 		}
@@ -388,7 +387,7 @@ describe('rundown Timing Calculator', () => {
 		const timing = new RundownTimingCalculator()
 		const playlist: RundownPlaylist = makeMockPlaylist()
 		playlist.timing = {
-			type: PlaylistTimingType.ForwardTime,
+			type: 'forward-time' as any,
 			expectedStart: 0,
 			expectedDuration: 40000,
 		}

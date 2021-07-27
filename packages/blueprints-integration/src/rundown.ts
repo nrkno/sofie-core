@@ -21,8 +21,8 @@ export interface IBlueprintRundownPlaylistInfo {
 
 export enum PlaylistTimingType {
 	None = 'none',
-	ForwardTime = 'forward_time',
-	BackTime = 'back_time',
+	ForwardTime = 'forward-time',
+	BackTime = 'back-time',
 }
 
 export interface PlaylistTimingBase {

@@ -8,7 +8,7 @@ import { DBRundown, RundownId } from '../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../lib/collections/Segments'
 import { PartId, DBPart } from '../lib/collections/Parts'
 import { RundownAPI } from '../lib/api/rundown'
-import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PieceId, Piece } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
@@ -31,7 +31,7 @@ export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioI
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
 		timing: {
-			type: PlaylistTimingType.None,
+			type: 'none' as any,
 		},
 	}
 }
@@ -70,7 +70,7 @@ export function defaultRundown(
 
 		externalNRCSName: 'mock',
 		timing: {
-			type: PlaylistTimingType.None,
+			type: 'none' as any,
 		},
 	}
 }

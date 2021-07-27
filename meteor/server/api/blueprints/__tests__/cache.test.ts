@@ -15,7 +15,6 @@ import {
 	BlueprintManifestType,
 	BlueprintResultRundown,
 	BlueprintResultSegment,
-	PlaylistTimingType,
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
@@ -364,7 +363,7 @@ describe('Test blueprint cache', () => {
 					externalNRCSName: 'mockNRCS',
 					organizationId: protectString(''),
 					timing: {
-						type: PlaylistTimingType.None,
+						type: 'none' as any,
 					},
 				})
 			)
