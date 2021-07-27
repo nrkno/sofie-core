@@ -2,6 +2,7 @@ import { DeviceOptionsAny } from 'timeline-state-resolver-types'
 import { ConfigItemValue } from './common'
 import { OmitId } from './lib'
 import { IBlueprintShowStyleVariant, IOutputLayer, ISourceLayer } from './showStyle'
+import { IBlueprintTriggeredActions } from './triggers'
 import { BlueprintMapping } from './studio'
 
 export interface MigrationStepInput {
@@ -88,6 +89,11 @@ export interface MigrationContextShowStyle {
 	getVariantConfig: (variantId: string, configId: string) => ConfigItemValue | undefined
 	setVariantConfig: (variantId: string, configId: string, value: ConfigItemValue) => void
 	removeVariantConfig: (variantId: string, configId: string) => void
+
+	getAllTriggeredActions: () => IBlueprintTriggeredActions[]
+	getTriggeredAction: (triggeredActionsId: string) => IBlueprintTriggeredActions
+	setTriggeredAction: (triggeredActions: IBlueprintTriggeredActions) => void
+	removeTriggeredAction: (triggeredActionsId: string) => void
 }
 
 export interface MigrationStepBase {
