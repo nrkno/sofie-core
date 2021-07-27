@@ -2265,8 +2265,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		renderSegments() {
-			const { t } = this.props
-
 			if (this.props.matchedSegments) {
 				let globalIndex = 0
 				const rundowns = this.props.matchedSegments.map((m) => m.rundown._id)
@@ -2336,6 +2334,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													countdownToSegmentRequireLayers={
 														this.state.rundownViewLayout?.countdownToSegmentRequireLayers
 													}
+													staticSegmentDuration={this.state.rundownViewLayout?.staticSegmentDuration}
 												/>
 											</VirtualElement>
 										</ErrorBoundary>

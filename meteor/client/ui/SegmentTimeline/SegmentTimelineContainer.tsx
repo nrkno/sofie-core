@@ -115,6 +115,7 @@ interface IProps {
 	ownNextPartInstance: PartInstance | undefined
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined
+	staticSegmentDuration: boolean | undefined
 }
 interface IState {
 	scrollLeft: number
@@ -963,6 +964,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						lastValidPartIndex={this.props.lastValidPartIndex}
 						onHeaderNoteClick={this.props.onHeaderNoteClick}
 						showCountdownToSegment={this.props.showCountdownToSegment}
+						staticSegmentDuration={this.props.staticSegmentDuration}
 					/>
 				)) ||
 				null

@@ -9,6 +9,8 @@ interface ISegmentDurationProps {
 	label?: ReactNode
 	/** If set, the timer will display just the played out duration */
 	countUp?: boolean
+	/** Always show planned segment duration instead of counting up/down */
+	static?: boolean
 }
 
 /**
@@ -32,17 +34,18 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 
 		const duration = budget - playedOut
 
-		return props.countUp ? (
+		return (
 			<>
 				{props.label}
-				<span>{RundownUtils.formatDiffToTimecode(playedOut, false, false, true, false, true, '+')}</span>
-			</>
-		) : (
-			<>
-				{props.label}
-				<span className={duration < 0 ? 'negative' : undefined}>
-					{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
-				</span>
+				{props.static ? (
+					<span>{RundownUtils.formatDiffToTimecode(budget, false, false, true, false, true, '+')}</span>
+				) : props.countUp ? (
+					<span>{RundownUtils.formatDiffToTimecode(playedOut, false, false, true, false, true, '+')}</span>
+				) : (
+					<span className={duration < 0 ? 'negative' : undefined}>
+						{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
+					</span>
+				)}
 			</>
 		)
 	}
