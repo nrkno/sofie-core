@@ -678,6 +678,12 @@ svg.icon {
 				color: $rundown-divider-color;
 			}
 		}
+
+		// Add a tiny bit of padding so the break text doesn't look squashed against the side of the segment container
+		.segment-timeline__timeUntil,
+		.segment-timeline__timeUntil__label {
+			padding-right: 0.3vw;
+		}
 	}
 
 	&.live {

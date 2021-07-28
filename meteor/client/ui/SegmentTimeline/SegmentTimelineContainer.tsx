@@ -267,13 +267,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		let displayLiveLineCounter: boolean = true
 		if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.activeLayerIds) {
-			let { active } = getIsFilterActive(props.playlist, props.rundownViewLayout.liveLineProps)
+			const { active } = getIsFilterActive(props.playlist, props.rundownViewLayout.liveLineProps)
 			displayLiveLineCounter = active
 		}
 
 		let showCountdownToSegment = true
 		if (props.countdownToSegmentRequireLayers?.length) {
-			let sourcelayersInSegment = o.parts
+			const sourcelayersInSegment = o.parts
 				.map((pa) => pa.pieces.map((pi) => pi.sourceLayer?._id))
 				.flat()
 				.filter((s) => !!s) as string[]

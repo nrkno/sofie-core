@@ -12,7 +12,6 @@ import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import Escape from 'react-escape'
 import * as i18next from 'i18next'
-import Moment from 'react-moment'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
@@ -314,12 +313,6 @@ const TimingDisplay = withTranslation()(
 		}
 	)
 )
-
-interface INextBreakTimingProps {
-	loop?: boolean
-	rundownsBeforeBreak: Rundown[]
-	breakText?: string
-}
 
 interface HotkeyDefinition {
 	key: string
@@ -1632,7 +1625,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				if (!selectedViewLayout) {
 					selectedViewLayout = props.rundownLayouts.find((i) =>
-						RundownLayoutsAPI.IsLayoutForRundownView(i)
+						RundownLayoutsAPI.isLayoutForRundownView(i)
 					) as RundownViewLayout
 				}
 
@@ -2272,8 +2265,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		renderSegments() {
-			const { t } = this.props
-
 			if (this.props.matchedSegments) {
 				let globalIndex = 0
 				const rundowns = this.props.matchedSegments.map((m) => m.rundown._id)
@@ -2349,9 +2340,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									)
 								}
 							})}
-							{this.state.rundownViewLayout?.showBreaksAsSegments && rundownAndSegments.rundown.endIsBreak && (
-								<BreakSegment breakTime={rundownAndSegments.rundown.expectedEnd} />
-							)}
+							{this.state.rundownViewLayout?.showBreaksAsSegments &&
+								rundownAndSegments.rundown.endOfRundownIsShowBreak && (
+									<BreakSegment breakTime={PlaylistTiming.getExpectedEnd(rundownAndSegments.rundown.timing)} />
+								)}
 						</React.Fragment>
 					)
 				})

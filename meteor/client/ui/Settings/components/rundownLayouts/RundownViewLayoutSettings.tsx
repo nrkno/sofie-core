@@ -95,7 +95,7 @@ export default withTranslation()(
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={() => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -124,7 +124,7 @@ export default withTranslation()(
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={() => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
@@ -194,7 +194,7 @@ export default withTranslation()(
 							collection={RundownLayouts}
 							className="mod mas"
 							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={(v) => undefined}
+							mutateUpdateValue={() => undefined}
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
