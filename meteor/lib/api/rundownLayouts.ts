@@ -26,6 +26,7 @@ import {
 	RundownLayoutSytemStatus,
 	RundownLayoutShowStyleDisplay,
 	RundownLayoutWithFilters,
+	RundownLayoutPresenterView,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -70,6 +71,7 @@ class RundownLayoutsRegistry {
 	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
 	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
 	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private presenterViewLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
 
 	public registerShelfLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.shelfLayouts.set(id, description)
@@ -87,6 +89,10 @@ class RundownLayoutsRegistry {
 		this.rundownHeaderLayouts.set(id, description)
 	}
 
+	public registerPresenterViewLayout(id: RundownLayoutType, description: LayoutDescriptor) {
+		this.presenterViewLayouts.set(id, description)
+	}
+
 	public isShelfLayout(regionId: CustomizableRegions) {
 		return regionId === CustomizableRegions.Shelf
 	}
@@ -101,6 +107,10 @@ class RundownLayoutsRegistry {
 
 	public isRundownHeaderLayout(regionId: CustomizableRegions) {
 		return regionId === CustomizableRegions.RundownHeader
+	}
+
+	public isPresenterViewLayout(regionId: CustomizableRegions) {
+		return regionId === CustomizableRegions.PresenterView
 	}
 
 	private wrapToCustomizableRegionLayout(
@@ -136,6 +146,11 @@ class RundownLayoutsRegistry {
 				_id: CustomizableRegions.RundownHeader,
 				title: t('Rundown Header Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts),
+			},
+			{
+				_id: CustomizableRegions.PresenterView,
+				title: t('Presenter View Layouts'),
+				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts),
 			},
 		]
 	}
@@ -189,6 +204,13 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.SYSTEM_STATUS,
 		],
 	})
+	registry.registerPresenterViewLayout(RundownLayoutType.CLOCK_PRESENTER_VIEW_LAYOUT, {
+		supportedFilters: [],
+	})
+	registry.registerPresenterViewLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
+		filtersTitle: 'Layout Elements',
+		supportedFilters: [RundownLayoutElementType.PIECE_COUNTDOWN],
+	})
 
 	export function getSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
 		return registry.GetSettingsManifest(t)
@@ -200,6 +222,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
 		return registry.isShelfLayout(layout.regionId)
+	}
+
+	export function isLayoutForPresenterView(layout: RundownLayoutBase): layout is RundownLayoutPresenterView {
+		return registry.isPresenterViewLayout(layout.regionId)
 	}
 
 	export function isLayoutForRundownView(layout: RundownLayoutBase): layout is RundownViewLayout {

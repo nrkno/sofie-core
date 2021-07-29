@@ -20,6 +20,7 @@ export enum RundownLayoutType {
 	RUNDOWN_LAYOUT = 'rundown_layout',
 	DASHBOARD_LAYOUT = 'dashboard_layout',
 	RUNDOWN_HEADER_LAYOUT = 'rundown_header_layout',
+	CLOCK_PRESENTER_VIEW_LAYOUT = 'clock_presenter_view_layout',
 }
 
 export enum CustomizableRegions {
@@ -27,6 +28,7 @@ export enum CustomizableRegions {
 	Shelf = 'shelf_layouts',
 	MiniShelf = 'mini_shelf_layouts',
 	RundownHeader = 'rundown_header_layouts',
+	PresenterView = 'presenter_view_layouts',
 }
 
 /**
@@ -356,6 +358,10 @@ export interface RundownLayoutRundownHeader extends RundownLayoutBase {
 	showNextBreakTiming: boolean
 	/** If true, don't treat the last rundown as a break even if it's marked as one */
 	lastRundownIsNotBreak: boolean
+}
+
+export interface RundownLayoutPresenterView extends RundownLayoutBase {
+	type: RundownLayoutType.CLOCK_PRESENTER_VIEW_LAYOUT
 }
 
 export enum ActionButtonType {
