@@ -1,4 +1,6 @@
 @import '../colorScheme';
+$liveline-timecode-color: $general-countdown-to-next-color; //$general-live-color;
+$hold-status-color: $liveline-timecode-color;
 
 .presenter-screen {
 	position: fixed;
@@ -180,5 +182,149 @@
 
 	.clocks-counter-heavy {
 		font-weight: 600;
+	}
+
+	.dashboard {
+		.timing {
+			margin: 0 0;
+			min-width: auto;
+			width: 100%;
+			text-align: center;
+
+			.timing-clock {
+				position: relative;
+				margin-right: 1em;
+				font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
+				font-weight: 100;
+				color: $general-clock;
+				font-size: 1.5em;
+				margin-top: 0.8em;
+				word-break: keep-all;
+				white-space: nowrap;
+
+				&.visual-last-child {
+					margin-right: 0;
+				}
+
+				&.countdown {
+					font-weight: 400;
+				}
+
+				&.playback-started {
+					display: inline-block;
+					width: 25%;
+				}
+
+				&.left {
+					text-align: left;
+				}
+
+				&.time-now {
+					position: absolute;
+					top: 0.05em;
+					left: 50%;
+					transform: translateX(-50%);
+					margin-top: 0px;
+					margin-right: 0;
+					font-size: 2.3em;
+					font-weight: 100;
+					text-align: center;
+				}
+
+				&.current-remaining {
+					position: absolute;
+					left: calc(50% + 3.5em);
+					text-align: left;
+					color: $liveline-timecode-color;
+					font-weight: 500;
+
+					.overtime {
+						color: $general-fast-color;
+						text-shadow: 0px 0px 6px $general-fast-color--shadow;
+					}
+				}
+
+				.timing-clock-label {
+					position: absolute;
+					top: -1em;
+					color: #b8b8b8;
+					text-transform: uppercase;
+					white-space: nowrap;
+					font-weight: 300;
+					font-size: 0.5em;
+
+					&.left {
+						left: 0;
+						right: auto;
+						text-align: left;
+					}
+
+					&.right {
+						right: 0;
+						left: auto;
+						text-align: right;
+					}
+
+					&.hide-overflow {
+						overflow: hidden;
+						text-overflow: ellipsis;
+						width: 100%;
+					}
+
+					&.rundown-name {
+						width: auto;
+						max-width: calc(40vw - 138px);
+						min-width: 100%;
+
+						> strong {
+							margin-right: 0.4em;
+						}
+
+						> svg.icon.looping {
+							width: 1.4em;
+							height: 1.4em;
+						}
+					}
+				}
+
+				&.heavy-light {
+					font-weight: 600;
+
+					&.heavy {
+						// color: $general-late-color;
+						color: #ffe900;
+						background: none;
+					}
+
+					&.light {
+						color: $general-fast-color;
+						text-shadow: 0px 0px 6px $general-fast-color--shadow;
+						background: none;
+					}
+				}
+			}
+
+			.rundown__header-status {
+				position: absolute;
+				font-size: 0.7rem;
+				text-transform: uppercase;
+				background: #fff;
+				border-radius: 1rem;
+				line-height: 1em;
+				font-weight: 700;
+				color: #000;
+				top: 2.4em;
+				left: 0;
+				padding: 2px 5px 1px;
+
+				&.rundown__header-status--hold {
+					background: $hold-status-color;
+				}
+			}
+
+			.timing-clock-header-label {
+				font-weight: 100px;
+			}
+		}
 	}
 }

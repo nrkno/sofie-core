@@ -27,6 +27,7 @@ import {
 	RundownLayoutShowStyleDisplay,
 	RundownLayoutWithFilters,
 	RundownLayoutPresenterView,
+	RundownLayoutStudioName,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -209,7 +210,15 @@ export namespace RundownLayoutsAPI {
 	})
 	registry.registerPresenterViewLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
 		filtersTitle: 'Layout Elements',
-		supportedFilters: [RundownLayoutElementType.PIECE_COUNTDOWN],
+		supportedFilters: [
+			RundownLayoutElementType.PART_TIMING,
+			RundownLayoutElementType.TEXT_LABEL,
+			RundownLayoutElementType.SEGMENT_TIMING,
+			RundownLayoutElementType.PLAYLIST_END_TIMER,
+			RundownLayoutElementType.TIME_OF_DAY,
+			RundownLayoutElementType.PLAYLIST_NAME,
+			RundownLayoutElementType.STUDIO_NAME,
+		],
 	})
 
 	export function getSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
@@ -300,6 +309,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isPlaylistName(element: RundownLayoutElementBase): element is RundownLayoutPlaylistName {
 		return element.type === RundownLayoutElementType.PLAYLIST_NAME
+	}
+
+	export function isStudioName(element: RundownLayoutElementBase): element is RundownLayoutStudioName {
+		return element.type === RundownLayoutElementType.STUDIO_NAME
 	}
 
 	export function isTimeOfDay(element: RundownLayoutElementBase): element is RundownLayoutTimeOfDay {

@@ -45,7 +45,7 @@ export class PlaylistStartTimerPanelInner extends MeteorReactComponent<
 				style={_.extend(
 					isDashboardLayout
 						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPlaylistStartTimer), height: 1 }),
+								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPlaylistStartTimer) }),
 								fontSize: ((this.props.panel as DashboardLayoutPlaylistStartTimer).scale || 1) * 1.5 + 'em',
 						  }
 						: {}

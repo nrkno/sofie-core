@@ -37,14 +37,14 @@ class TimeOfDayPanelInner extends MeteorReactComponent<Translated<ITimeOfDayPane
 				style={_.extend(
 					isDashboardLayout
 						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutTimeOfDay), height: 1 }),
+								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutTimeOfDay) }),
 								fontSize: ((panel as DashboardLayoutTimeOfDay).scale || 1) * 1.5 + 'em',
 						  }
 						: {}
 				)}
 			>
 				<span className="timing-clock left">
-					<span className="timing-clock-label">{t('Local Time')}</span>
+					{!panel.hideLabel && <span className="timing-clock-label">{t('Local Time')}</span>}
 					<TimeOfDay />
 				</span>
 			</div>

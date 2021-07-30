@@ -40,7 +40,7 @@ class ShowStylePanelInner extends MeteorReactComponent<Translated<IShowStylePane
 				style={_.extend(
 					isDashboardLayout
 						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutShowStyleDisplay), height: 1 }),
+								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutShowStyleDisplay) }),
 								fontSize: ((panel as DashboardLayoutShowStyleDisplay).scale || 1) * 1.5 + 'em',
 						  }
 						: {}

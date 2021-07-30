@@ -75,9 +75,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 			<div
 				className="piece-countdown-panel"
 				style={_.extend(
-					isDashboardLayout
-						? dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPieceCountdown), height: 1 })
-						: {},
+					isDashboardLayout ? dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPieceCountdown) }) : {},
 					{
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}

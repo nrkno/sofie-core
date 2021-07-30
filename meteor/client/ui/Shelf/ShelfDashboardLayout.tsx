@@ -25,6 +25,7 @@ import { TimeOfDayPanel } from './TimeOfDayPanel'
 import { SystemStatusPanel } from './SystemStatusPanel'
 import { ShowStylePanel } from './ShowStylePanel'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { StudioNamePanel } from './StudioNamePanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -136,6 +137,14 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							<TextLabelPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						) : RundownLayoutsAPI.isPlaylistName(panel) ? (
 							<PlaylistNamePanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+						) : RundownLayoutsAPI.isStudioName(panel) ? (
+							<StudioNamePanel
+								key={panel._id}
+								studio={props.studio}
+								playlist={props.playlist}
+								layout={rundownLayout}
+								panel={panel}
+							/>
 						) : RundownLayoutsAPI.isTimeOfDay(panel) ? (
 							<TimeOfDayPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						) : RundownLayoutsAPI.isSystemStatus(panel) ? (

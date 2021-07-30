@@ -54,6 +54,7 @@ export enum RundownLayoutElementType {
 	PART_TIMING = 'part_timing',
 	TEXT_LABEL = 'text_label',
 	PLAYLIST_NAME = 'playlist_name',
+	STUDIO_NAME = 'studio_name',
 	TIME_OF_DAY = 'time_of_day',
 	SYSTEM_STATUS = 'system_status',
 	SHOWSTYLE_DISPLAY = 'showstyle_display',
@@ -117,6 +118,8 @@ export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBas
 export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.PLAYLIST_END_TIMER
 	expectedEndText: string
+	hidePlannedEndLabel: boolean
+	hideDiffLabel: boolean
 	hideCountdown: boolean
 	hideDiff: boolean
 	hidePlannedEnd: boolean
@@ -129,12 +132,14 @@ export interface RundownLayoutEndWords extends RundownLayoutElementBase, Require
 export interface RundownLayoutSegmentTiming extends RundownLayoutElementBase, RequiresActiveLayers {
 	type: RundownLayoutElementType.SEGMENT_TIMING
 	timingType: 'count_down' | 'count_up'
+	hideLabel: boolean
 }
 
 export interface RundownLayoutPartTiming extends RundownLayoutElementBase, RequiresActiveLayers {
 	type: RundownLayoutElementType.PART_TIMING
 	timingType: 'count_down' | 'count_up'
 	speakCountDown: boolean
+	hideLabel: boolean
 }
 
 export interface RundownLayoutTextLabel extends RundownLayoutElementBase {
@@ -147,8 +152,13 @@ export interface RundownLayoutPlaylistName extends RundownLayoutElementBase {
 	showCurrentRundownName: boolean
 }
 
+export interface RundownLayoutStudioName extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.STUDIO_NAME
+}
+
 export interface RundownLayoutTimeOfDay extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.TIME_OF_DAY
+	hideLabel: boolean
 }
 
 export interface RundownLayoutSytemStatus extends RundownLayoutElementBase {
@@ -208,6 +218,7 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -215,6 +226,7 @@ export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdo
 export interface DashboardLayoutPlaylistStartTimer extends RundownLayoutPlaylistStartTimer {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -222,6 +234,7 @@ export interface DashboardLayoutPlaylistStartTimer extends RundownLayoutPlaylist
 export interface DashboardLayoutPlaylistEndTimer extends RundownLayoutPlaylistEndTimer {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -229,6 +242,7 @@ export interface DashboardLayoutPlaylistEndTimer extends RundownLayoutPlaylistEn
 export interface DashboardLayoutEndsWords extends RundownLayoutEndWords {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -236,6 +250,7 @@ export interface DashboardLayoutEndsWords extends RundownLayoutEndWords {
 export interface DashboardLayoutSegmentCountDown extends RundownLayoutSegmentTiming {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -243,6 +258,7 @@ export interface DashboardLayoutSegmentCountDown extends RundownLayoutSegmentTim
 export interface DashboardLayoutPartCountDown extends RundownLayoutPartTiming {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -250,6 +266,7 @@ export interface DashboardLayoutPartCountDown extends RundownLayoutPartTiming {
 export interface DashboardLayoutTextLabel extends RundownLayoutTextLabel {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -257,6 +274,15 @@ export interface DashboardLayoutTextLabel extends RundownLayoutTextLabel {
 export interface DashboardLayoutPlaylistName extends RundownLayoutPlaylistName {
 	x: number
 	y: number
+	height: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutStudioName extends RundownLayoutStudioName {
+	x: number
+	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -264,6 +290,7 @@ export interface DashboardLayoutPlaylistName extends RundownLayoutPlaylistName {
 export interface DashboardLayoutTimeOfDay extends RundownLayoutTimeOfDay {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -271,6 +298,7 @@ export interface DashboardLayoutTimeOfDay extends RundownLayoutTimeOfDay {
 export interface DashboardLayoutSystemStatus extends RundownLayoutSytemStatus {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }
@@ -278,6 +306,7 @@ export interface DashboardLayoutSystemStatus extends RundownLayoutSytemStatus {
 export interface DashboardLayoutShowStyleDisplay extends RundownLayoutShowStyleDisplay {
 	x: number
 	y: number
+	height: number
 	width: number
 	scale: number
 }

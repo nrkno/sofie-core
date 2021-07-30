@@ -23,6 +23,7 @@ import {
 	RundownLayouts,
 	RundownLayoutSegmentTiming,
 	RundownLayoutShowStyleDisplay,
+	RundownLayoutStudioName,
 	RundownLayoutSytemStatus,
 	RundownLayoutTextLabel,
 	RundownLayoutTimeOfDay,
@@ -887,6 +888,32 @@ export default withTranslation()(
 					</label>
 					<div className="mod mvs mhs">
 						<label className="field">
+							{t('Hide Planned End Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hidePlannedEndLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Diff Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideDiffLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
 							{t('Hide Diff')}
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -988,13 +1015,26 @@ export default withTranslation()(
 							></EditAttribute>
 						</label>
 					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
 					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
 					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
 
-		renderPartCountDown(
+		renderPartTiming(
 			item: RundownLayoutBase,
 			tab: RundownLayoutPartTiming,
 			index: number,
@@ -1017,6 +1057,19 @@ export default withTranslation()(
 								collection={RundownLayouts}
 								className="input text-input input-l"
 							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
 						</label>
 					</div>
 					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
@@ -1107,6 +1160,34 @@ export default withTranslation()(
 			)
 		}
 
+		renderStudioName(
+			item: RundownLayoutBase,
+			tab: RundownLayoutStudioName,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
 		renderShowStyleDisplay(
 			item: RundownLayoutBase,
 			tab: RundownLayoutShowStyleDisplay,
@@ -1183,6 +1264,19 @@ export default withTranslation()(
 								type="text"
 								collection={RundownLayouts}
 								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
 							/>
 						</label>
 					</div>
@@ -1456,7 +1550,7 @@ export default withTranslation()(
 								isDashboardLayout
 						  )
 						: RundownLayoutsAPI.isPartTiming(this.props.filter)
-						? this.renderPartCountDown(
+						? this.renderPartTiming(
 								this.props.item,
 								this.props.filter,
 								this.props.index,
@@ -1473,6 +1567,14 @@ export default withTranslation()(
 						  )
 						: RundownLayoutsAPI.isPlaylistName(this.props.filter)
 						? this.renderPlaylistName(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isStudioName(this.props.filter)
+						? this.renderStudioName(
 								this.props.item,
 								this.props.filter,
 								this.props.index,
