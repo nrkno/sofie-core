@@ -115,7 +115,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const layout = this.props.customRegion.layouts.find((l) => l.type === item.type)
 			const filtersTitle = layout?.filtersTitle ? layout.filtersTitle : t('New Filter')
 
-			if (!layout?.supportedElements.length) {
+			if (!layout?.supportedFilters.length) {
 				return
 			}
 
@@ -299,9 +299,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		renderElements(item: RundownLayoutBase, layout: CustomizableRegionLayout | undefined) {
 			const { t } = this.props
 
-			const isShelfLayout = RundownLayoutsAPI.IsLayoutForShelf(item)
-			const isRundownViewLayout = RundownLayoutsAPI.IsLayoutForRundownView(item)
-			const isRundownHeaderLayout = RundownLayoutsAPI.IsLayoutForRundownHeader(item)
+			const isShelfLayout = RundownLayoutsAPI.isLayoutForShelf(item)
+			const isRundownViewLayout = RundownLayoutsAPI.isLayoutForRundownView(item)
+			const isRundownHeaderLayout = RundownLayoutsAPI.isLayoutForRundownHeader(item)
 
 			return (
 				<React.Fragment>
@@ -335,7 +335,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					{isShelfLayout && <ShelfLayoutSettings item={item} />}
 					{isRundownHeaderLayout && <RundownHeaderLayoutSettings item={item} />}
 					{isRundownViewLayout && <RundownViewLayoutSettings item={item} layouts={this.props.rundownLayouts} />}
-					{layout?.supportsFilters ? (
+					{RundownLayoutsAPI.isLayoutWithFilters(item) && layout?.supportedFilters.length ? (
 						<React.Fragment>
 							<h4 className="mod mhs">{layout?.filtersTitle ?? t('Filters')}</h4>
 							{item.filters.length === 0 ? (
@@ -343,16 +343,17 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							) : null}
 						</React.Fragment>
 					) : null}
-					{item.filters.map((tab, index) => (
-						<FilterEditor
-							key={tab._id}
-							item={item}
-							filter={tab}
-							index={index}
-							showStyleBase={this.props.showStyleBase}
-							supportedElements={layout?.supportedElements ?? []}
-						/>
-					))}
+					{RundownLayoutsAPI.isLayoutWithFilters(item) &&
+						item.filters.map((tab, index) => (
+							<FilterEditor
+								key={tab._id}
+								item={item}
+								filter={tab}
+								index={index}
+								showStyleBase={this.props.showStyleBase}
+								supportedFilters={layout?.supportedFilters ?? []}
+							/>
+						))}
 				</React.Fragment>
 			)
 		}
@@ -430,7 +431,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											</div>
 										</div>
 										<div>{this.renderElements(item, layout)}</div>
-										{layout?.supportedElements.length ? (
+										{layout?.supportedFilters.length ? (
 											<div className="mod mls">
 												<button className="btn btn-secondary" onClick={() => this.onAddElement(item)}>
 													<FontAwesomeIcon icon={faPlus} />

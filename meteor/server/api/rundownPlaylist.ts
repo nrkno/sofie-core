@@ -53,6 +53,7 @@ import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { checkAccessToPlaylist } from './lib'
+import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
 
 export async function removeEmptyPlaylists(studioId: StudioId): Promise<void> {
 	return runStudioOperationWithCache(
@@ -171,8 +172,7 @@ export function produceRundownPlaylistInfoFromRundown(
 			organizationId: studio.organizationId,
 			studioId: studio._id,
 			name: playlistInfo.playlist.name,
-			expectedStart: playlistInfo.playlist.expectedStart,
-			expectedDuration: playlistInfo.playlist.expectedDuration,
+			timing: playlistInfo.playlist.timing,
 
 			loop: playlistInfo.playlist.loop,
 
@@ -213,8 +213,7 @@ function defaultPlaylistForRundown(
 		organizationId: studio.organizationId,
 		studioId: studio._id,
 		name: rundown.name,
-		expectedStart: rundown.expectedStart,
-		expectedDuration: rundown.expectedDuration,
+		timing: rundown.timing,
 
 		modified: getCurrentTime(),
 	}
@@ -501,9 +500,8 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 function sortDefaultRundownInPlaylistOrder(rundowns: ReadonlyDeep<Array<DBRundown>>): ReadonlyDeep<Array<DBRundown>> {
 	return mongoFindOptions<ReadonlyDeep<DBRundown>, ReadonlyDeep<DBRundown>>(rundowns, {
 		sort: {
-			expectedStart: 1,
 			name: 1,
 			_id: 1,
 		},
-	})
+	}).sort(PlaylistTiming.sortTiminings)
 }

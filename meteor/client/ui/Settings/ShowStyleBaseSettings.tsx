@@ -224,7 +224,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<HotkeyLegendSettings showStyleBase={showStyleBase} />
 						</div>
 					</div>
-					{RundownLayoutsAPI.GetSettingsManifest(t).map((region) => {
+					{RundownLayoutsAPI.getSettingsManifest(t).map((region) => {
 						return (
 							<div className="row" key={region._id}>
 								<div className="col c12 r1-c12">
