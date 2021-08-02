@@ -58,6 +58,9 @@ export enum RundownLayoutElementType {
 	TIME_OF_DAY = 'time_of_day',
 	SYSTEM_STATUS = 'system_status',
 	SHOWSTYLE_DISPLAY = 'showstyle_display',
+	SEGMENT_NAME = 'segment_name',
+	PART_NAME = 'part_name',
+	COLORED_BOX = 'colored_box',
 }
 
 export interface RundownLayoutElementBase {
@@ -167,6 +170,22 @@ export interface RundownLayoutSytemStatus extends RundownLayoutElementBase {
 
 export interface RundownLayoutShowStyleDisplay extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.SHOWSTYLE_DISPLAY
+}
+
+export interface RundownLayoutSegmentName extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.SEGMENT_NAME
+	segment: 'current' | 'next'
+}
+
+export interface RundownLayoutPartName extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PART_NAME
+	part: 'current' | 'next'
+	showPieceIconColor: boolean
+}
+
+export interface RundownLayoutColoredBox extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.COLORED_BOX
+	iconColor: string
 }
 
 /**
@@ -304,6 +323,30 @@ export interface DashboardLayoutSystemStatus extends RundownLayoutSytemStatus {
 }
 
 export interface DashboardLayoutShowStyleDisplay extends RundownLayoutShowStyleDisplay {
+	x: number
+	y: number
+	height: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutSegmentName extends RundownLayoutSegmentName {
+	x: number
+	y: number
+	height: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutPartName extends RundownLayoutPartName {
+	x: number
+	y: number
+	height: number
+	width: number
+	scale: number
+}
+
+export interface DashboardLayoutColoredBox extends RundownLayoutColoredBox {
 	x: number
 	y: number
 	height: number

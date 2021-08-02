@@ -26,6 +26,9 @@ import { SystemStatusPanel } from './SystemStatusPanel'
 import { ShowStylePanel } from './ShowStylePanel'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { StudioNamePanel } from './StudioNamePanel'
+import { SegmentNamePanel } from './SegmentNamePanel'
+import { PartNamePanel } from './PartNamePanel'
+import { ColoredBoxPanel } from './ColoredBoxPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -145,6 +148,16 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								layout={rundownLayout}
 								panel={panel}
 							/>
+						) : RundownLayoutsAPI.isSegmentName(panel) ? (
+							<SegmentNamePanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+						) : RundownLayoutsAPI.isPartName(panel) ? (
+							<PartNamePanel
+								key={panel._id}
+								playlist={props.playlist}
+								layout={rundownLayout}
+								panel={panel}
+								showStyleBase={props.showStyleBase}
+							/>
 						) : RundownLayoutsAPI.isTimeOfDay(panel) ? (
 							<TimeOfDayPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						) : RundownLayoutsAPI.isSystemStatus(panel) ? (
@@ -164,6 +177,8 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								showStyleBase={props.showStyleBase}
 								showStyleVariant={props.showStyleVariant}
 							/>
+						) : RundownLayoutsAPI.isColoredBox(panel) ? (
+							<ColoredBoxPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						) : null
 					)}
 			{rundownLayout.actionButtons && (

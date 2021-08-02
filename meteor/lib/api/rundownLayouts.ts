@@ -28,6 +28,9 @@ import {
 	RundownLayoutWithFilters,
 	RundownLayoutPresenterView,
 	RundownLayoutStudioName,
+	RundownLayoutSegmentName,
+	RundownLayoutPartName,
+	RundownLayoutColoredBox,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -218,6 +221,9 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.TIME_OF_DAY,
 			RundownLayoutElementType.PLAYLIST_NAME,
 			RundownLayoutElementType.STUDIO_NAME,
+			RundownLayoutElementType.SEGMENT_NAME,
+			RundownLayoutElementType.PART_NAME,
+			RundownLayoutElementType.COLORED_BOX,
 		],
 	})
 
@@ -325,6 +331,18 @@ export namespace RundownLayoutsAPI {
 
 	export function isShowStyleDisplay(element: RundownLayoutElementBase): element is RundownLayoutShowStyleDisplay {
 		return element.type === RundownLayoutElementType.SHOWSTYLE_DISPLAY
+	}
+
+	export function isSegmentName(element: RundownLayoutElementBase): element is RundownLayoutSegmentName {
+		return element.type === RundownLayoutElementType.SEGMENT_NAME
+	}
+
+	export function isPartName(element: RundownLayoutElementBase): element is RundownLayoutPartName {
+		return element.type === RundownLayoutElementType.PART_NAME
+	}
+
+	export function isColoredBox(element: RundownLayoutElementBase): element is RundownLayoutColoredBox {
+		return element.type === RundownLayoutElementType.COLORED_BOX
 	}
 
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {

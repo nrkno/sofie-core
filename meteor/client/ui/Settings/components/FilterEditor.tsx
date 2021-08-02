@@ -10,17 +10,20 @@ import {
 	RundownLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
 	RundownLayoutBase,
+	RundownLayoutColoredBox,
 	RundownLayoutElementBase,
 	RundownLayoutElementType,
 	RundownLayoutEndWords,
 	RundownLayoutExternalFrame,
 	RundownLayoutFilterBase,
+	RundownLayoutPartName,
 	RundownLayoutPartTiming,
 	RundownLayoutPieceCountdown,
 	RundownLayoutPlaylistEndTimer,
 	RundownLayoutPlaylistName,
 	RundownLayoutPlaylistStartTimer,
 	RundownLayouts,
+	RundownLayoutSegmentName,
 	RundownLayoutSegmentTiming,
 	RundownLayoutShowStyleDisplay,
 	RundownLayoutStudioName,
@@ -33,6 +36,7 @@ import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { withTranslation } from 'react-i18next'
+import { defaultColorPickerPalette } from '../../../lib/colorPicker'
 
 interface IProps {
 	item: RundownLayoutBase
@@ -1188,6 +1192,146 @@ export default withTranslation()(
 			)
 		}
 
+		renderSegmentName(
+			item: RundownLayoutBase,
+			tab: RundownLayoutSegmentName,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Segment')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.segment`}
+								obj={this.props.item}
+								options={['current', 'next']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderPartName(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPartName,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Part')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.part`}
+								obj={this.props.item}
+								options={['current', 'next']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show Piece Icon Color')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.showPieceIconColor`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+							<span className="text-s dimmed">{t('Use color of primary piece as background of panel')}</span>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderColoredBox(
+			item: RundownLayoutBase,
+			tab: RundownLayoutColoredBox,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Box color')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.iconColor`}
+								obj={item}
+								options={defaultColorPickerPalette}
+								type="colorpicker"
+								collection={RundownLayouts}
+								className="input text-input input-s"
+							></EditAttribute>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
 		renderShowStyleDisplay(
 			item: RundownLayoutBase,
 			tab: RundownLayoutShowStyleDisplay,
@@ -1575,6 +1719,30 @@ export default withTranslation()(
 						  )
 						: RundownLayoutsAPI.isStudioName(this.props.filter)
 						? this.renderStudioName(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isSegmentName(this.props.filter)
+						? this.renderSegmentName(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isPartName(this.props.filter)
+						? this.renderPartName(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isColoredBox(this.props.filter)
+						? this.renderColoredBox(
 								this.props.item,
 								this.props.filter,
 								this.props.index,
