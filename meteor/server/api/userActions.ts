@@ -29,7 +29,6 @@ import { SegmentId, Segment, Segments } from '../../lib/collections/Segments'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { pushWorkToQueue } from '../codeControl'
 import { ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
 import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
@@ -49,12 +48,6 @@ import { SnapshotId } from '../../lib/collections/Snapshots'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-
-let MINIMUM_TAKE_SPAN = 1000
-export function setMinimumTakeSpan(span: number) {
-	// Used in tests
-	MINIMUM_TAKE_SPAN = span
-}
 
 /**
  * Run a user action via the worker. Before calling you MUST check the user is allowed to do the operation

@@ -1,3 +1,4 @@
+import { Time } from '@sofie-automation/blueprints-integration'
 import {
 	AdLibActionId,
 	PartId,
@@ -25,6 +26,10 @@ export enum StudioJobs {
 	SetNextPart = 'setNextPart',
 	ExecuteAction = 'executeAction',
 	TakeNextPart = 'takeNextPart',
+	OnPiecePlaybackStarted = 'onPiecePlaybackStarted',
+	OnPiecePlaybackStopped = 'onPiecePlaybackStopped',
+	OnPartPlaybackStarted = 'onPartPlaybackStarted',
+	OnPartPlaybackStopped = 'onPartPlaybackStopped',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -73,7 +78,22 @@ export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	triggerMode?: string
 }
 export type TakeNextPartProps = RundownPlayoutPropsBase
-
+export interface OnPiecePlaybackStartedProps extends RundownPlayoutPropsBase {
+	pieceInstanceId: PieceInstanceId
+	startedPlayback: Time
+}
+export interface OnPiecePlaybackStoppedProps extends RundownPlayoutPropsBase {
+	pieceInstanceId: PieceInstanceId
+	stoppedPlayback: Time
+}
+export interface OnPartPlaybackStartedProps extends RundownPlayoutPropsBase {
+	partInstanceId: PartInstanceId
+	startedPlayback: Time
+}
+export interface OnPartPlaybackStoppedProps extends RundownPlayoutPropsBase {
+	partInstanceId: PartInstanceId
+	stoppedPlayback: Time
+}
 /**
  * Set of valid functions, of form:
  * `id: [data, return]`
@@ -94,6 +114,10 @@ export type StudioJobFunc = {
 	[StudioJobs.SetNextPart]: (data: SetNextPartProps) => void
 	[StudioJobs.ExecuteAction]: (data: ExecuteActionProps) => void
 	[StudioJobs.TakeNextPart]: (data: TakeNextPartProps) => void
+	[StudioJobs.OnPiecePlaybackStarted]: (data: OnPiecePlaybackStartedProps) => void
+	[StudioJobs.OnPiecePlaybackStopped]: (data: OnPiecePlaybackStoppedProps) => void
+	[StudioJobs.OnPartPlaybackStarted]: (data: OnPartPlaybackStartedProps) => void
+	[StudioJobs.OnPartPlaybackStopped]: (data: OnPartPlaybackStoppedProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

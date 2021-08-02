@@ -12,6 +12,7 @@ import {
 	PackageInfo,
 	IStudioBaselineContext,
 	IShowStyleUserContext,
+	IPartEventContext,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
@@ -358,33 +359,37 @@ export class RundownEventContext extends RundownContext implements IEventContext
 // 	}
 // }
 
-// export class PartEventContext extends RundownContext implements IPartEventContext {
-// 	readonly part: Readonly<IBlueprintPartInstance>
+export class PartEventContext extends RundownContext implements IPartEventContext {
+	readonly part: Readonly<IBlueprintPartInstance>
 
-// 	constructor(
-// 		eventName: string,
-// 		studio: ReadonlyDeep<Studio>,
-// 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-// 		rundown: ReadonlyDeep<Rundown>,
-// 		partInstance: PartInstance
-// 	) {
-// 		super(
-// 			{
-// 				name: `Event: ${eventName}`,
-// 				identifier: `rundownId=${rundown._id},blueprintId=${showStyleCompound.blueprintId}`,
-// 			},
-// 			studio,
-// 			showStyleCompound,
-// 			rundown
-// 		)
+	constructor(
+		eventName: string,
+		studio: ReadonlyDeep<DBStudio>,
+		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		rundown: ReadonlyDeep<DBRundown>,
+		partInstance: DBPartInstance
+	) {
+		super(
+			{
+				name: `Event: ${eventName}`,
+				identifier: `rundownId=${rundown._id},blueprintId=${showStyleCompound.blueprintId}`,
+			},
+			studio,
+			studioBlueprint,
+			showStyleCompound,
+			showStyleBlueprint,
+			rundown
+		)
 
-// 		this.part = unprotectPartInstance(partInstance)
-// 	}
+		this.part = unprotectPartInstance(partInstance)
+	}
 
-// 	getCurrentTime(): number {
-// 		return getCurrentTime()
-// 	}
-// }
+	getCurrentTime(): number {
+		return getCurrentTime()
+	}
+}
 
 interface ABSessionInfoExt extends ABSessionInfo {
 	/** Whether to store this session on the playlist (ie, whether it is still valid) */

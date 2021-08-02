@@ -482,3 +482,29 @@ export async function runAsPlayoutJob<TRes>(
 		await playlistLock.release()
 	}
 }
+
+/**
+ * Run a minimal playout job
+ * This avoids loading the cache
+ */
+export async function runAsPlayoutLock<TRes>(
+	context: JobContext,
+	data: RundownPlayoutPropsBase,
+	fcn: (playlist: DBRundownPlaylist) => Promise<TRes>
+): Promise<TRes> {
+	if (!data.playlistId) {
+		throw new Error(`Job is missing playlistId`)
+	}
+
+	const playlist = await context.directCollections.RundownPlaylists.findOne(data.playlistId)
+	if (!playlist || playlist.studioId !== context.studioId) {
+		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
+	}
+
+	const playlistLock = await lockPlaylist(context, playlist._id)
+	try {
+		return await fcn(playlist)
+	} finally {
+		await playlistLock.release()
+	}
+}

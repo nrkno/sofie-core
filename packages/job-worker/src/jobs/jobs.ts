@@ -12,6 +12,10 @@ import {
 	deactivateRundownPlaylist,
 	executeAction,
 	moveNextPart,
+	onPartPlaybackStarted,
+	onPartPlaybackStopped,
+	onPiecePlaybackStarted,
+	onPiecePlaybackStopped,
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
 	setNextPart,
@@ -44,6 +48,10 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.SetNextPart]: setNextPart,
 	[StudioJobs.ExecuteAction]: executeAction,
 	[StudioJobs.TakeNextPart]: takeNextPart,
+	[StudioJobs.OnPiecePlaybackStarted]: onPiecePlaybackStarted,
+	[StudioJobs.OnPiecePlaybackStopped]: onPiecePlaybackStopped,
+	[StudioJobs.OnPartPlaybackStarted]: onPartPlaybackStarted,
+	[StudioJobs.OnPartPlaybackStopped]: onPartPlaybackStopped,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {

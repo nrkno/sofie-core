@@ -13,7 +13,6 @@ import { getCurrentTime, protectString, makePromise, getRandomId, applyToArray, 
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
-import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { URL } from 'url'
@@ -51,6 +50,8 @@ import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { profiler } from './profiler'
+import { QueueStudioJob } from '../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 
@@ -389,13 +390,14 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		await ServerPlayoutAPI.onPartPlaybackStarted(
-			context,
-			peripheralDevice,
-			r.rundownPlaylistId,
-			r.partInstanceId,
-			r.time
-		)
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
+
+		await QueueStudioJob(StudioJobs.OnPartPlaybackStarted, peripheralDevice.studioId, {
+			playlistId: r.rundownPlaylistId,
+			partInstanceId: r.partInstanceId,
+			startedPlayback: r.time,
+		})
 
 		transaction?.end()
 	}
@@ -407,14 +409,20 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('partPlaybackStopped', apmNamespace)
 
-		// This is called from the playout-gateway when an
-		checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		await ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownPlaylistId, r.partInstanceId, r.time)
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
+
+		await QueueStudioJob(StudioJobs.OnPartPlaybackStopped, peripheralDevice.studioId, {
+			playlistId: r.rundownPlaylistId,
+			partInstanceId: r.partInstanceId,
+			stoppedPlayback: r.time,
+		})
 
 		transaction?.end()
 	}
@@ -426,21 +434,21 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('piecePlaybackStarted', apmNamespace)
 
-		// This is called from the playout-gateway when an auto-next event occurs
-		checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		await ServerPlayoutAPI.onPiecePlaybackStarted(
-			context,
-			r.rundownPlaylistId,
-			r.pieceInstanceId,
-			!!r.dynamicallyInserted,
-			r.time
-		)
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
+
+		await QueueStudioJob(StudioJobs.OnPiecePlaybackStarted, peripheralDevice.studioId, {
+			playlistId: r.rundownPlaylistId,
+			pieceInstanceId: r.pieceInstanceId,
+			startedPlayback: r.time,
+		})
 
 		transaction?.end()
 	}
@@ -452,21 +460,21 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('piecePlaybackStopped', apmNamespace)
 
-		// This is called from the playout-gateway when an auto-next event occurs
-		checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		await ServerPlayoutAPI.onPiecePlaybackStopped(
-			context,
-			r.rundownPlaylistId,
-			r.pieceInstanceId,
-			!!r.dynamicallyInserted,
-			r.time
-		)
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
+
+		await QueueStudioJob(StudioJobs.OnPiecePlaybackStopped, peripheralDevice.studioId, {
+			playlistId: r.rundownPlaylistId,
+			pieceInstanceId: r.pieceInstanceId,
+			stoppedPlayback: r.time,
+		})
 
 		transaction?.end()
 	}
