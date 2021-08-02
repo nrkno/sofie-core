@@ -2,11 +2,10 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { DBRundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
+import { DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, isPartPlayable } from '../../../lib/collections/Parts'
 import {
 	getCurrentTime,
-	Time,
 	clone,
 	literal,
 	protectString,
@@ -27,69 +26,11 @@ import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { DbCacheReadCollection } from '../../cache/CacheCollection'
-import {
-	CacheForPlayout,
-	getOrderedSegmentsAndPartsFromPlayoutCache,
-	getRundownIDsFromCache,
-	getSelectedPartInstancesFromCache,
-} from './cache'
+import { CacheForPlayout, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './cache'
 import { Settings } from '../../../lib/Settings'
 import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
-
-/**
- * Reset the rundownPlaylist (all of the rundowns within the playlist):
- * Remove all dynamically inserted/updated pieces, parts, timings etc..
- */
-export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void> {
-	logger.info('resetRundownPlaylist ' + cache.Playlist.doc._id)
-	// Remove all dunamically inserted pieces (adlibs etc)
-	// const rundownIds = new Set(getRundownIDsFromCache(cache))
-
-	const partInstancesToRemove = new Set(cache.PartInstances.remove((p) => p.rehearsal))
-	cache.PieceInstances.remove((p) => partInstancesToRemove.has(p.partInstanceId))
-
-	cache.PartInstances.update((p) => !p.reset, {
-		$set: {
-			reset: true,
-		},
-	})
-	cache.PieceInstances.update((p) => !p.reset, {
-		$set: {
-			reset: true,
-		},
-	})
-
-	cache.Playlist.update({
-		$set: {
-			previousPartInstanceId: null,
-			currentPartInstanceId: null,
-			holdState: RundownHoldState.NONE,
-		},
-		$unset: {
-			startedPlayback: 1,
-			rundownsStartedPlayback: 1,
-			previousPersistentState: 1,
-			trackedAbSessions: 1,
-		},
-	})
-
-	if (cache.Playlist.doc.activationId) {
-		// generate a new activationId
-		cache.Playlist.update({
-			$set: {
-				activationId: getRandomId(),
-			},
-		})
-
-		// put the first on queue:
-		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
-		await setNextPart(cache, firstPart)
-	} else {
-		await setNextPart(cache, null)
-	}
-}
 
 export interface SelectNextPartResult {
 	part: DBPart
@@ -417,29 +358,6 @@ export async function setNextPart(
 
 	if (span) span.end()
 }
-export function setNextSegment(cache: CacheForPlayout, nextSegment: Segment | null) {
-	const span = profiler.startSpan('setNextSegment')
-	if (nextSegment) {
-		// Just run so that errors will be thrown if something wrong:
-		const partsInSegment = cache.Parts.findFetch({ segmentId: nextSegment._id })
-		if (!partsInSegment.find((p) => p.isPlayable())) {
-			throw new Meteor.Error(400, 'Segment contains no valid parts')
-		}
-
-		cache.Playlist.update({
-			$set: {
-				nextSegmentId: nextSegment._id,
-			},
-		})
-	} else {
-		cache.Playlist.update({
-			$unset: {
-				nextSegmentId: 1,
-			},
-		})
-	}
-	if (span) span.end()
-}
 
 /**
  * Cleanup any orphaned (deleted) segments and partinstances once they are no longer being played
@@ -535,18 +453,6 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 	if (removePartInstanceIds.length > 0) {
 		cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
 		cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
-	}
-}
-
-export function onPartHasStoppedPlaying(cache: CacheForPlayout, partInstance: PartInstance, stoppedPlayingTime: Time) {
-	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
-		cache.PartInstances.update(partInstance._id, {
-			$set: {
-				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
-			},
-		})
-	} else {
-		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
 	}
 }
 

@@ -4,16 +4,12 @@
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import * as _ from 'underscore'
 import { ReadonlyDeep } from 'type-fest'
-import { Piece } from '../../../lib/collections/Pieces'
 import {
 	literal,
-	extendMandadory,
 	getCurrentTime,
 	clone,
 	normalizeArray,
-	protectString,
 	unprotectString,
-	flatten,
 	applyToArray,
 	getRandomId,
 } from '../../../lib/lib'
@@ -25,25 +21,11 @@ import {
 	OnGenerateTimelineObjExt,
 } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
-import { TimelineObjectCoreExt, TSR, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { TSR, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { transformTimeline, TimelineContentObject } from '@sofie-automation/corelib/dist/playout/timeline'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { Random } from 'meteor/random'
-import { prefixAllObjectIds } from './lib'
-import { RundownPlaylistActivationId, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { PartInstance } from '../../../lib/collections/PartInstances'
-import {
-	PieceInstanceWithTimings,
-	processAndPrunePieceInstanceTimings,
-} from '@sofie-automation/corelib/dist/playout/infinites'
-import {
-	createPieceGroupAndCap,
-	PieceGroupMetadata,
-	PieceTimelineMetadata,
-} from '@sofie-automation/corelib/dist/playout/pieces'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { PieceGroupMetadata, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { profiler } from '../profiler'
 import { getPieceFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
@@ -200,53 +182,6 @@ function resolvePieceTimeline(
 	return resolvedPieces
 }
 
-export function getResolvedPieces(
-	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<ShowStyleBase>,
-	partInstance: PartInstance
-): ResolvedPieceInstance[] {
-	const span = profiler.startSpan('getResolvedPieces')
-	const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
-
-	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
-
-	const now = getCurrentTime()
-	const partStarted = partInstance.timings?.startedPlayback
-	const nowInPart = now - (partStarted ?? 0)
-
-	const preprocessedPieces: ReadonlyDeep<PieceInstanceWithTimings[]> = processAndPrunePieceInstanceTimings(
-		showStyleBase,
-		pieceInstances,
-		nowInPart
-	)
-
-	const objs = flatten(
-		preprocessedPieces.map((piece) => {
-			const r = createPieceGroupAndCap(piece)
-			return [r.pieceGroup, ...r.capObjs]
-		})
-	)
-	objs.forEach((o) => {
-		applyToArray(o.enable, (enable) => {
-			if (enable.start === 'now' && partStarted) {
-				// Emulate playout starting now. TODO - ensure didnt break other uses
-				enable.start = nowInPart
-			} else if (enable.start === 0 || enable.start === 'now') {
-				enable.start = 1
-			}
-		})
-	})
-
-	const resolvedPieces = resolvePieceTimeline(
-		transformTimeline(objs),
-		0,
-		pieceInststanceMap,
-		`PartInstance #${partInstance._id}`
-	)
-
-	if (span) span.end()
-	return resolvedPieces
-}
 export function getResolvedPiecesFromFullTimeline(
 	cache: CacheForPlayout,
 	allObjs: TimelineObjGeneric[]
@@ -300,91 +235,6 @@ export function getResolvedPiecesFromFullTimeline(
 		pieces: resolvedPieces,
 		time: now,
 	}
-}
-
-export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece {
-	const span = profiler.startSpan('convertPieceToAdLibPiece')
-	// const oldId = piece._id
-	const newId = Random.id()
-	const newAdLibPiece = literal<AdLibPiece>({
-		...piece,
-		_id: protectString(newId),
-		_rank: 0,
-		expectedDuration: piece.enable.duration,
-		rundownId: protectString(''),
-	})
-
-	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {
-		const contentObjects = newAdLibPiece.content.timelineObjects
-		const objs = prefixAllObjectIds(
-			_.compact(
-				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
-					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						objectType: TimelineObjType.RUNDOWN,
-					})
-				})
-			),
-			newId + '_'
-		)
-		newAdLibPiece.content.timelineObjects = objs
-	}
-
-	if (span) span.end()
-	return newAdLibPiece
-}
-
-export function convertAdLibToPieceInstance(
-	playlistActivationId: RundownPlaylistActivationId,
-	adLibPiece: AdLibPiece | Piece | BucketAdLib | PieceInstancePiece,
-	partInstance: PartInstance,
-	queue: boolean
-): PieceInstance {
-	const span = profiler.startSpan('convertAdLibToPieceInstance')
-	let duration: number | undefined = undefined
-	if (adLibPiece['expectedDuration']) {
-		duration = adLibPiece['expectedDuration']
-	} else if (adLibPiece['enable'] && adLibPiece['enable'].duration) {
-		duration = adLibPiece['enable'].duration
-	}
-
-	const newPieceId = Random.id()
-	const newPieceInstance = literal<PieceInstance>({
-		_id: protectString(`${partInstance._id}_${newPieceId}`),
-		rundownId: partInstance.rundownId,
-		partInstanceId: partInstance._id,
-		playlistActivationId,
-		adLibSourceId: adLibPiece._id,
-		dynamicallyInserted: queue ? undefined : getCurrentTime(),
-		piece: literal<PieceInstancePiece>({
-			...(_.omit(adLibPiece, '_rank', 'expectedDuration', 'partId', 'rundownId') as PieceInstancePiece), // TODO - this could be typed stronger
-			_id: protectString(newPieceId),
-			startPartId: partInstance.part._id,
-			enable: {
-				start: queue ? 0 : 'now',
-				duration: !queue && adLibPiece.lifespan === PieceLifespan.WithinPart ? duration : undefined,
-			},
-		}),
-	})
-
-	setupPieceInstanceInfiniteProperties(newPieceInstance)
-
-	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-		const contentObjects = newPieceInstance.piece.content.timelineObjects
-		const objs = prefixAllObjectIds(
-			_.compact(
-				_.map(contentObjects, (obj) => {
-					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						objectType: TimelineObjType.RUNDOWN,
-					})
-				})
-			),
-			newPieceId + '_'
-		)
-		newPieceInstance.piece.content.timelineObjects = objs
-	}
-
-	if (span) span.end()
-	return newPieceInstance
 }
 
 export function setupPieceInstanceInfiniteProperties(pieceInstance: PieceInstance): void {

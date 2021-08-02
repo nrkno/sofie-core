@@ -6,7 +6,6 @@ import {
 	TimelineObjHoldMode,
 	TSR,
 	PieceLifespan,
-	BlueprintResultBaseline,
 	OnGenerateTimelineObj,
 	TimelineObjClassesCore,
 } from '@sofie-automation/blueprints-integration'
@@ -19,7 +18,6 @@ import {
 	TimelineContentTypeOther,
 	TimelineObjGroupPart,
 	TimelineObjPartAbstract,
-	StatObjectMetadata,
 	OnGenerateTimelineObjExt,
 } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
@@ -36,23 +34,19 @@ import {
 	getRandomId,
 	applyToArray,
 	protectString,
-	waitForPromise,
 } from '../../../lib/lib'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
-import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import { StudioBaselineContext, TimelineEventContext } from '../blueprints/context'
-import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
+import { TimelineEventContext } from '../blueprints/context'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
-import { PackageInfo } from '../../coreSystem'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getExpectedLatency, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import {
 	processAndPrunePieceInstanceTimings,
@@ -63,104 +57,8 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '@sofie-automation/corelib/dist/playout/ids'
-import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
-import { PlayoutLockFunctionPriority, runPlayoutOperationWithCacheFromStudioOperation } from './lockFunction'
+import { CacheForStudioBase } from '../studio/cache'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
-import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
-import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
-import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-
-export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
-	const playlists = cache.getActiveRundownPlaylists()
-	if (playlists.length === 1) {
-		return runPlayoutOperationWithCacheFromStudioOperation(
-			'updateStudioOrPlaylistTimeline',
-			cache,
-			playlists[0],
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (playlistCache) => {
-				await updateTimeline(playlistCache)
-			}
-		)
-	} else {
-		return updateStudioTimeline(cache)
-	}
-}
-
-function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
-	const cache2 = cache as CacheForStudio
-	return !!cache2.isStudio
-}
-
-export async function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout): Promise<void> {
-	const span = profiler.startSpan('updateStudioTimeline')
-	logger.debug('updateStudioTimeline running...')
-	const studio = cache.Studio.doc
-
-	// Ensure there isn't a playlist active, as that should be using a different function call
-	if (isCacheForStudio(cache)) {
-		const activePlaylists = cache.getActiveRundownPlaylists()
-		if (activePlaylists.length > 0) {
-			throw new Meteor.Error(500, `Studio has an active playlist`)
-		}
-	} else {
-		if (cache.Playlist.doc.activationId) {
-			throw new Meteor.Error(500, `Studio has an active playlist`)
-		}
-	}
-
-	let baselineObjects: TimelineObjRundown[] = []
-	let studioBaseline: BlueprintResultBaseline | undefined
-
-	const studioBlueprint = await loadStudioBlueprint(studio)
-	if (studioBlueprint) {
-		const watchedPackages = waitForPromise(
-			WatchedPackagesHelper.create(studio._id, {
-				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
-			})
-		)
-
-		const blueprint = studioBlueprint.blueprint
-		studioBaseline = blueprint.getBaseline(
-			new StudioBaselineContext(
-				{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
-				studio,
-				watchedPackages
-			)
-		)
-		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
-
-		const id = `baseline_version`
-		baselineObjects.push(
-			literal<TimelineObjRundown>({
-				id: id,
-				objectType: TimelineObjType.RUNDOWN,
-				enable: { start: 0 },
-				layer: id,
-				metaData: literal<StatObjectMetadata>({
-					versions: {
-						core: PackageInfo.versionExtended || PackageInfo.version,
-						blueprintId: studio.blueprintId,
-						blueprintVersion: blueprint.blueprintVersion,
-						studio: studio._rundownVersionHash,
-					},
-				}),
-				content: {
-					deviceType: TSR.DeviceType.ABSTRACT,
-				},
-			})
-		)
-	}
-
-	processAndSaveTimelineObjects(cache, baselineObjects, undefined)
-	if (studioBaseline) {
-		updateBaselineExpectedPackagesOnStudio(cache, studioBaseline)
-	}
-
-	logger.debug('updateStudioTimeline done!')
-	if (span) span.end()
-}
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...

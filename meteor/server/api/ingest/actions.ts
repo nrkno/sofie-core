@@ -1,11 +1,9 @@
 import { getPeripheralDeviceFromRundown } from './lib'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
 import { check } from '../../../lib/check'
-import { resetRundownPlaylist } from '../playout/lib'
 import { regenerateRundown } from './rundownInput'
 import { logger } from '../../logging'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -13,17 +11,15 @@ import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
-import {
-	runPlayoutOperationWithLock,
-	runPlayoutOperationWithCacheFromStudioOperation,
-	PlayoutLockFunctionPriority,
-} from '../playout/lockFunction'
+import { runPlayoutOperationWithLock, PlayoutLockFunctionPriority } from '../playout/lockFunction'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { QueueStudioJob } from '../../worker/worker'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -121,7 +117,7 @@ export namespace IngestActions {
 				'regenerateRundownPlaylist',
 				rundownPlaylistId,
 				PlayoutLockFunctionPriority.MISC,
-				async (playlistLock) => {
+				async () => {
 					const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 					if (!rundownPlaylist)
 						throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
@@ -143,14 +139,10 @@ export namespace IngestActions {
 					if (purgeExisting) {
 						await removeRundownsFromDb(rundowns.map((r) => r._id))
 					} else {
-						await runPlayoutOperationWithCacheFromStudioOperation(
-							'regenerateRundownPlaylist:init',
-							playlistLock,
-							rundownPlaylist,
-							PlayoutLockFunctionPriority.MISC,
-							null,
-							async (cache) => resetRundownPlaylist(cache)
-						)
+						const job = await QueueStudioJob(StudioJobs.ResetRundownPlaylist, rundownPlaylist.studioId, {
+							playlistId: rundownPlaylist._id,
+						})
+						await job.complete
 					}
 
 					// exit the sync function, so the cache is written back

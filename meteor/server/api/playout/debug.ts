@@ -8,7 +8,7 @@ import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { forceClearAllActivationCaches } from '../../cache/ActivationCache'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { updateStudioOrPlaylistTimeline, updateTimeline } from './timeline'
+import { updateTimeline } from './timeline'
 import { forceClearAllBlueprintConfigCaches } from '../blueprints/config'
 import {
 	PlayoutLockFunctionPriority,
