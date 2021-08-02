@@ -1,6 +1,6 @@
-import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ReadonlyDeep } from 'type-fest'
-import { AnyBulkWriteOperation, Collection as MongoCollection, Filter, FindOptions, UpdateFilter } from 'mongodb'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { MongoClient, AnyBulkWriteOperation, Filter, FindOptions, UpdateFilter } from 'mongodb'
+import { wrapMongoCollection } from './collection'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
@@ -27,12 +27,8 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
-import { startSpanManual } from './profiler'
-
-// // @ts-ignore
-// export interface FindOptions<T> {
-// 	// TODO
-// }
+import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { ReadonlyDeep } from 'type-fest'
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
@@ -82,150 +78,38 @@ export interface IDirectCollections {
 	PackageInfos: ICollection<PackageInfoDB>
 }
 
-/** This is for the mock mongo collection, as internally it is sync and so we dont need or want to play around with fibers */
-class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements ICollection<TDoc> {
-	readonly #collection: MongoCollection<TDoc>
+export function getMongoCollections(client: MongoClient, dbName: string): IDirectCollections {
+	const database = client.db(dbName)
+	const collections: IDirectCollections = Object.seal({
+		AdLibActions: wrapMongoCollection(database.collection(CollectionName.AdLibActions)),
+		AdLibPieces: wrapMongoCollection(database.collection(CollectionName.AdLibPieces)),
+		Blueprints: wrapMongoCollection(database.collection(CollectionName.Blueprints)),
+		BucketAdLibActions: wrapMongoCollection(database.collection(CollectionName.BucketAdLibActions)),
+		BucketAdLibPieces: wrapMongoCollection(database.collection(CollectionName.BucketAdLibPieces)),
+		ExpectedMediaItems: wrapMongoCollection(database.collection(CollectionName.ExpectedMediaItems)),
+		ExpectedPlayoutItems: wrapMongoCollection(database.collection(CollectionName.ExpectedPlayoutItems)),
+		IngestDataCache: wrapMongoCollection(database.collection(CollectionName.IngestDataCache)),
+		Parts: wrapMongoCollection(database.collection(CollectionName.Parts)),
+		PartInstances: wrapMongoCollection(database.collection(CollectionName.PartInstances)),
+		PeripheralDevices: wrapMongoCollection(database.collection(CollectionName.PeripheralDevices)),
+		PeripheralDeviceCommands: wrapMongoCollection(database.collection(CollectionName.PeripheralDeviceCommands)),
+		Pieces: wrapMongoCollection(database.collection(CollectionName.Pieces)),
+		PieceInstances: wrapMongoCollection(database.collection(CollectionName.PieceInstances)),
+		Rundowns: wrapMongoCollection(database.collection(CollectionName.Rundowns)),
+		RundownBaselineAdLibActions: wrapMongoCollection(
+			database.collection(CollectionName.RundownBaselineAdLibActions)
+		),
+		RundownBaselineAdLibPieces: wrapMongoCollection(database.collection(CollectionName.RundownBaselineAdLibPieces)),
+		RundownBaselineObjects: wrapMongoCollection(database.collection(CollectionName.RundownBaselineObjects)),
+		RundownPlaylists: wrapMongoCollection(database.collection(CollectionName.RundownPlaylists)),
+		Segments: wrapMongoCollection(database.collection(CollectionName.Segments)),
+		ShowStyleBases: wrapMongoCollection(database.collection(CollectionName.ShowStyleBases)),
+		ShowStyleVariants: wrapMongoCollection(database.collection(CollectionName.ShowStyleVariants)),
+		Studios: wrapMongoCollection(database.collection(CollectionName.Studios)),
+		Timelines: wrapMongoCollection(database.collection(CollectionName.Timelines)),
 
-	constructor(collection: MongoCollection<TDoc>) {
-		this.#collection = collection
-	}
-
-	get name(): string {
-		return this.#collection.collectionName
-	}
-
-	async findFetch(selector: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>> {
-		const span = startSpanManual('WrappedCollection.findFetch')
-		if (span) {
-			span.addLabels({
-				collection: this.name,
-				query: JSON.stringify(selector),
-			})
-		}
-		const res = await this.#collection.find(selector as any, options).toArray()
-		if (span) span.end()
-		return res
-	}
-
-	async findOne(selector: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined> {
-		const span = startSpanManual('WrappedCollection.findOne')
-		if (span) {
-			span.addLabels({
-				collection: this.name,
-				query: JSON.stringify(selector),
-			})
-		}
-
-		if (typeof selector === 'string') {
-			selector = { _id: selector }
-		}
-		const res = await this.#collection.findOne(selector, options)
-		if (span) span.end()
-		return res
-	}
-
-	async insertOne(doc: TDoc): Promise<TDoc['_id']> {
-		const span = startSpanManual('WrappedCollection.insertOne')
-		if (span) {
-			span.addLabels({
-				collection: this.name,
-				id: unprotectString(doc._id),
-			})
-		}
-
-		// TODO - fill in id if missing?
-		const res = await this.#collection.insertOne(doc as any)
-		if (span) span.end()
-		return res.insertedId
-	}
-
-	async replace(doc: TDoc): Promise<boolean> {
-		const span = startSpanManual('WrappedCollection.replace')
-		if (span) {
-			span.addLabels({
-				collection: this.name,
-				id: unprotectString(doc._id),
-			})
-		}
-
-		const res = await this.#collection.replaceOne({ _id: doc._id }, doc)
-		if (span) span.end()
-		return res.matchedCount > 0
-	}
-
-	// async insertMany(docs: TDoc[]): Promise<Array<TDoc['_id']>> {
-	// 	const res = await this.#collection.insertMany(docs as any)
-	// 	return res.insertedIds
-	// }
-
-	async update(
-		selector: MongoQuery<TDoc> | TDoc['_id'],
-		modifier: MongoModifier<TDoc>
-		// options?: UpdateOptions
-	): Promise<number> {
-		const span = startSpanManual('WrappedCollection.update')
-		if (span) {
-			span.addLabels({
-				collection: this.name,
-				query: JSON.stringify(selector),
-			})
-		}
-
-		if (typeof selector === 'string') {
-			selector = { _id: selector }
-		}
-
-		const res = await this.#collection.updateMany(selector, modifier)
-		if (span) span.end()
-		return res.upsertedCount
-	}
-
-	async remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
-		const span = startSpanManual('WrappedCollection.remove')
-		if (span) {
-			span.addLabels({
-				collection: this.name,
-				query: JSON.stringify(selector),
-			})
-		}
-
-		if (typeof selector === 'string') {
-			selector = { _id: selector }
-		}
-
-		const res = await this.#collection.deleteMany(selector)
-		if (span) span.end()
-		return res.deletedCount
-	}
-
-	async bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>): Promise<void> {
-		const span = startSpanManual('WrappedCollection.bulkWrite')
-		if (span) {
-			span.addLabels({
-				collection: this.name,
-				opCount: ops.length,
-			})
-		}
-
-		if (ops.length > 0) {
-			const bulkWriteResult = await this.#collection.bulkWrite(ops, {
-				ordered: false,
-			})
-			if (
-				bulkWriteResult &&
-				Array.isArray(bulkWriteResult.result?.writeErrors) &&
-				bulkWriteResult.result.writeErrors.length
-			) {
-				throw new Error(`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`)
-			}
-		}
-
-		if (span) span.end()
-	}
-}
-
-export function wrapMongoCollection<TDoc extends { _id: ProtectedString<any> }>(
-	rawCollection: MongoCollection<TDoc>
-): ICollection<TDoc> {
-	return new WrappedCollection(rawCollection)
+		ExpectedPackages: wrapMongoCollection(database.collection(CollectionName.ExpectedPackages)),
+		PackageInfos: wrapMongoCollection(database.collection(CollectionName.PackageInfos)),
+	})
+	return collections
 }

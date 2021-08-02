@@ -1,6 +1,6 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { AnyBulkWriteOperation } from 'mongodb'
-import { ICollection, MongoQuery } from '../collection'
+import { ICollection, MongoQuery } from './collections'
 import _ = require('underscore')
 import { deleteAllUndefinedProperties, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs'

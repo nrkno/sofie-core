@@ -1,4 +1,4 @@
-import { ICollection, MongoModifier, MongoQuery } from '../collection'
+import { ICollection, MongoModifier, MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')

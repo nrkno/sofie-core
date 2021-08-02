@@ -40,7 +40,7 @@ import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel
 import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { MongoQuery } from '../collection'
+import { MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 

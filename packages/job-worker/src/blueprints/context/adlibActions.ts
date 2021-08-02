@@ -32,7 +32,7 @@ import {
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { JobContext } from '../../jobs'
-import { MongoQuery } from '../../collection'
+import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	innerFindLastPieceOnLayer,

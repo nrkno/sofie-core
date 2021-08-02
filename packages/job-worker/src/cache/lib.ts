@@ -1,6 +1,6 @@
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
-import { MongoQuery } from '../collection'
+import { MongoQuery } from '../db'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import { ChangedIds, SaveIntoDbHooks, saveIntoBase } from '../db/changes'

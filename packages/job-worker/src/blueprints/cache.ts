@@ -11,7 +11,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { VM } from 'vm2'
 import { ReadonlyDeep } from 'type-fest'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { IDirectCollections } from '../collection'
+import { IDirectCollections } from '../db'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 export const BLUEPRINT_CACHE_CONTROL = { disable: false }

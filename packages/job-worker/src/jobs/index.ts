@@ -1,4 +1,4 @@
-import { IDirectCollections } from '../collection'
+import { IDirectCollections } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { WrappedStudioBlueprint } from '../blueprints/cache'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'

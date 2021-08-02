@@ -1,7 +1,7 @@
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { ICollection, MongoModifier } from '../collection'
+import { ICollection, MongoModifier } from '../db'
 import { logger } from '../logging'
 import { Changes } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
