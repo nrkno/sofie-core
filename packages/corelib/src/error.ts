@@ -35,6 +35,7 @@ export enum UserErrorMessage {
 	ActionsNotSupported,
 	TakeNoNextPart,
 	TakeRateLimit,
+	DisableNoPieceFound,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -73,6 +74,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.ActionsNotSupported]: t(`AdLib Actions are not supported in the current Rundown`),
 	[UserErrorMessage.TakeNoNextPart]: t(`No Next point found, please set a part as Next before doing a TAKE.`),
 	[UserErrorMessage.TakeRateLimit]: t(`Ignoring TAKES that are too quick after eachother ({{duration}} ms)`),
+	[UserErrorMessage.DisableNoPieceFound]: t(`Found no future pieces`),
 }
 
 export class UserError {

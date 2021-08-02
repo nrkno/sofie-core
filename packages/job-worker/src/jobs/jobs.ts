@@ -1,4 +1,4 @@
-import { CacheForPlayout } from '../playout/cache'
+import { CacheForPlayout, runAsPlayoutJob, runInPlaylistLock } from '../playout/cache'
 import { updateTimeline, updateStudioTimeline } from '../playout/timeline'
 import { CacheForStudio } from '../studio/cache'
 import { JobContext } from '.'
@@ -10,6 +10,7 @@ import {
 	activateRundownPlaylist,
 	deactivateHold,
 	deactivateRundownPlaylist,
+	disableNextPiece,
 	executeAction,
 	moveNextPart,
 	onPartPlaybackStarted,
@@ -19,9 +20,11 @@ import {
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
 	setNextPart,
+	setNextSegment,
 	stopPiecesOnSourceLayers,
 	takeNextPart,
 } from '../playout/playout'
+import { runAsStudioJob } from '../studio/lock'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -46,44 +49,36 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.ActivateRundownPlaylist]: activateRundownPlaylist,
 	[StudioJobs.DeactivateRundownPlaylist]: deactivateRundownPlaylist,
 	[StudioJobs.SetNextPart]: setNextPart,
+	[StudioJobs.SetNextSegment]: setNextSegment,
 	[StudioJobs.ExecuteAction]: executeAction,
 	[StudioJobs.TakeNextPart]: takeNextPart,
 	[StudioJobs.OnPiecePlaybackStarted]: onPiecePlaybackStarted,
 	[StudioJobs.OnPiecePlaybackStopped]: onPiecePlaybackStopped,
 	[StudioJobs.OnPartPlaybackStarted]: onPartPlaybackStarted,
 	[StudioJobs.OnPartPlaybackStopped]: onPartPlaybackStopped,
+	[StudioJobs.DisableNextPiece]: disableNextPiece,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {
 	console.log('running updateTimelineDebug')
-	const studioCache = await CacheForStudio.create(context, context.studioId)
+	await runAsStudioJob(context, async (studioCache) => {
+		const activePlaylists = studioCache.getActiveRundownPlaylists()
+		if (activePlaylists.length > 1) {
+			throw new Error(`Too many active playlists`)
+		} else if (activePlaylists.length > 0) {
+			studioCache._abortActiveTimeout() // no changes have been made or should be kept
 
-	const activePlaylists = studioCache.getActiveRundownPlaylists()
-	if (activePlaylists.length > 1) {
-		throw new Error(`Too many active playlists`)
-	} else if (activePlaylists.length > 0) {
-		studioCache._abortActiveTimeout() // no changes have been made or should be kept
+			const playlist = activePlaylists[0]
+			console.log('for playlist', playlist._id)
 
-		const playlist = activePlaylists[0]
-		console.log('for playlist', playlist._id)
-
-		const playlistLock = await lockPlaylist(context, playlist._id)
-		try {
-			const initCache = await CacheForPlayout.createPreInit(context, playlistLock, playlist, false)
-			// TODO - any extra validity checks?
-
-			const playoutCache = await CacheForPlayout.fromInit(context, initCache)
-
-			await updateTimeline(context, playoutCache)
-
-			await playoutCache.saveAllToDatabase()
-		} finally {
-			await playlistLock.release()
+			await runAsPlayoutJob(context, { playlistId: playlist._id }, null, async (playoutCache) => {
+				await updateTimeline(context, playoutCache)
+			})
+		} else {
+			console.log('for studio')
+			await updateStudioTimeline(context, studioCache)
+			await studioCache.saveAllToDatabase()
 		}
-	} else {
-		console.log('for studio')
-		await updateStudioTimeline(context, studioCache)
-		await studioCache.saveAllToDatabase()
-	}
+	})
 	console.log('done')
 }

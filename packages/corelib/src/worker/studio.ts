@@ -7,6 +7,7 @@ import {
 	PieceInstanceId,
 	RundownBaselineAdLibActionId,
 	RundownPlaylistId,
+	SegmentId,
 	StudioId,
 } from '../dataModel/Ids'
 
@@ -24,12 +25,15 @@ export enum StudioJobs {
 	ActivateRundownPlaylist = 'activateRundownPlaylist',
 	DeactivateRundownPlaylist = 'deactivateRundownPlaylist',
 	SetNextPart = 'setNextPart',
+	SetNextSegment = 'setNextSegment',
 	ExecuteAction = 'executeAction',
 	TakeNextPart = 'takeNextPart',
 	OnPiecePlaybackStarted = 'onPiecePlaybackStarted',
 	OnPiecePlaybackStopped = 'onPiecePlaybackStopped',
 	OnPartPlaybackStarted = 'onPartPlaybackStarted',
 	OnPartPlaybackStopped = 'onPartPlaybackStopped',
+	DisableNextPiece = 'disableNextPiece',
+	UpdateStudioBaseline = 'updateStudioBaseline',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -61,6 +65,7 @@ export type DeactivateHoldProps = RundownPlayoutPropsBase
 export type PrepareRundownForBroadcastProps = RundownPlayoutPropsBase
 export interface ResetRundownPlaylistProps extends RundownPlayoutPropsBase {
 	activate?: 'active' | 'rehearsal'
+	forceActivate?: boolean
 }
 export interface ActivateRundownPlaylistProps extends RundownPlayoutPropsBase {
 	rehearsal: boolean
@@ -70,6 +75,9 @@ export interface SetNextPartProps extends RundownPlayoutPropsBase {
 	nextPartId: PartId | null
 	setManually?: boolean
 	nextTimeOffset?: number
+}
+export interface SetNextSegmentProps extends RundownPlayoutPropsBase {
+	nextSegmentId: SegmentId | null
 }
 export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	actionDocId: AdLibActionId | RundownBaselineAdLibActionId
@@ -94,6 +102,11 @@ export interface OnPartPlaybackStoppedProps extends RundownPlayoutPropsBase {
 	partInstanceId: PartInstanceId
 	stoppedPlayback: Time
 }
+export interface DisableNextPieceProps extends RundownPlayoutPropsBase {
+	undo: boolean
+}
+export type UpdateStudioBaselineProps = Record<string, unknown>
+
 /**
  * Set of valid functions, of form:
  * `id: [data, return]`
@@ -112,12 +125,15 @@ export type StudioJobFunc = {
 	[StudioJobs.ActivateRundownPlaylist]: (data: ActivateRundownPlaylistProps) => void
 	[StudioJobs.DeactivateRundownPlaylist]: (data: DeactivateRundownPlaylistProps) => void
 	[StudioJobs.SetNextPart]: (data: SetNextPartProps) => void
+	[StudioJobs.SetNextSegment]: (data: SetNextSegmentProps) => void
 	[StudioJobs.ExecuteAction]: (data: ExecuteActionProps) => void
 	[StudioJobs.TakeNextPart]: (data: TakeNextPartProps) => void
 	[StudioJobs.OnPiecePlaybackStarted]: (data: OnPiecePlaybackStartedProps) => void
 	[StudioJobs.OnPiecePlaybackStopped]: (data: OnPiecePlaybackStoppedProps) => void
 	[StudioJobs.OnPartPlaybackStarted]: (data: OnPartPlaybackStartedProps) => void
 	[StudioJobs.OnPartPlaybackStopped]: (data: OnPartPlaybackStoppedProps) => void
+	[StudioJobs.DisableNextPiece]: (data: DisableNextPieceProps) => void
+	[StudioJobs.UpdateStudioBaseline]: (data: UpdateStudioBaselineProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

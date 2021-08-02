@@ -134,39 +134,11 @@ export async function setNextSegment(
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
-	if (!playlist.activationId)
-		return ClientAPI.responseError('Rundown is not active, please activate it before setting a part as Next')
 
-	let nextSegment: Segment | null = null
-
-	if (nextSegmentId) {
-		nextSegment = (await Segments.findOneAsync(nextSegmentId)) || null
-		if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
-
-		const rundownIds = playlist.getRundownIDs()
-		if (rundownIds.indexOf(nextSegment.rundownId) === -1) {
-			throw new Meteor.Error(
-				404,
-				`Segment "${nextSegmentId}" does not belong to Rundown Playlist "${rundownPlaylistId}"!`
-			)
-		}
-
-		const partsInSegment = await Parts.findFetchAsync({
-			rundownId: nextSegment.rundownId,
-			segmentId: nextSegment._id,
-		})
-		const firstValidPartInSegment = partsInSegment.find((p) => p.isPlayable())
-
-		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
-
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-		if (!currentPartInstance || !nextPartInstance || nextPartInstance.segmentId !== currentPartInstance.segmentId) {
-			// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart
-			return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, firstValidPartInSegment._id, true, 0)
-		}
-	}
-
-	return ServerPlayoutAPI.setNextSegment(access, rundownPlaylistId, nextSegmentId)
+	return runUserAction(playlist.studioId, StudioJobs.SetNextSegment, {
+		playlistId: rundownPlaylistId,
+		nextSegmentId,
+	})
 }
 export async function moveNext(
 	context: MethodContext,
@@ -233,10 +205,13 @@ export async function forceResetAndActivate(
 
 	check(rehearsal, Boolean)
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.ResetRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+		activate: rehearsal ? 'rehearsal' : 'active',
+		forceActivate: true,
+	})
 }
 export async function activate(
 	context: MethodContext,
@@ -277,8 +252,12 @@ export async function disableNextPiece(
 	undo?: boolean
 ): Promise<ClientAPI.ClientResponse<void>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
-	return ServerPlayoutAPI.disableNextPiece(access, rundownPlaylistId, undo)
+	return runUserAction(playlist.studioId, StudioJobs.DisableNextPiece, {
+		playlistId: rundownPlaylistId,
+		undo: !!undo,
+	})
 }
 export async function pieceTakeNow(
 	context: MethodContext,

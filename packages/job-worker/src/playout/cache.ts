@@ -463,8 +463,7 @@ export async function runAsPlayoutJob<TRes>(
 		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
 	}
 
-	const playlistLock = await lockPlaylist(context, playlist._id)
-	try {
+	return runInPlaylistLock(context, playlist._id, async (playlistLock) => {
 		const initCache = await CacheForPlayoutPreInit.createPreInit(context, playlistLock, playlist, false)
 
 		if (preInitFcn) {
@@ -478,9 +477,7 @@ export async function runAsPlayoutJob<TRes>(
 		await fullCache.saveAllToDatabase()
 
 		return res
-	} finally {
-		await playlistLock.release()
-	}
+	})
 }
 
 /**
@@ -501,9 +498,17 @@ export async function runAsPlayoutLock<TRes>(
 		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
 	}
 
-	const playlistLock = await lockPlaylist(context, playlist._id)
+	return runInPlaylistLock(context, playlist._id, async () => fcn(playlist))
+}
+
+export async function runInPlaylistLock<TRes>(
+	context: JobContext,
+	playlistId: RundownPlaylistId,
+	fcn: (lock: PlaylistLock) => Promise<TRes>
+): Promise<TRes> {
+	const playlistLock = await lockPlaylist(context, playlistId)
 	try {
-		return await fcn(playlist)
+		return await fcn(playlistLock)
 	} finally {
 		await playlistLock.release()
 	}

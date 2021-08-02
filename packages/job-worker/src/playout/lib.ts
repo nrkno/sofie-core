@@ -417,30 +417,6 @@ export async function setNextPart(
 	if (span) span.end()
 }
 
-// export function setNextSegment(cache: CacheForPlayout, nextSegment: Segment | null) {
-// 	const span = profiler.startSpan('setNextSegment')
-// 	if (nextSegment) {
-// 		// Just run so that errors will be thrown if something wrong:
-// 		const partsInSegment = cache.Parts.findFetch({ segmentId: nextSegment._id })
-// 		if (!partsInSegment.find((p) => p.isPlayable())) {
-// 			throw new Meteor.Error(400, 'Segment contains no valid parts')
-// 		}
-
-// 		cache.Playlist.update({
-// 			$set: {
-// 				nextSegmentId: nextSegment._id,
-// 			},
-// 		})
-// 	} else {
-// 		cache.Playlist.update({
-// 			$unset: {
-// 				nextSegmentId: 1,
-// 			},
-// 		})
-// 	}
-// 	if (span) span.end()
-// }
-
 /**
  * Cleanup any orphaned (deleted) segments and partinstances once they are no longer being played
  * @param cache

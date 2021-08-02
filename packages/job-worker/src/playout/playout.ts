@@ -20,6 +20,9 @@ import {
 	OnPiecePlaybackStoppedProps,
 	OnPartPlaybackStoppedProps,
 	OnPartPlaybackStartedProps,
+	DisableNextPieceProps,
+	SetNextSegmentProps,
+	UpdateStudioBaselineProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { logger } from '../logging'
 import _ = require('underscore')
@@ -39,13 +42,14 @@ import {
 	selectNextPart,
 	setNextPart as libSetNextPart,
 } from './lib'
-import { updateTimeline } from './timeline'
+import { updateStudioTimeline, updateTimeline } from './timeline'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import {
 	activateRundownPlaylist as libActivateRundownPlaylist,
 	deactivateRundownPlaylist as libDeactivateRundownPlaylist,
+	deactivateRundownPlaylistInner,
 	prepareStudioForBroadcast,
 	standDownStudio,
 } from './actions'
@@ -56,7 +60,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import {
 	afterTake,
@@ -70,6 +74,12 @@ import {
 	reportPieceHasStarted,
 	reportPieceHasStopped,
 } from '../blueprints/events'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { sortPieceInstancesByStart } from './pieces'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { runAsStudioJob } from '../studio/lock'
+import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
+import { CacheForStudio } from '../studio/cache'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -142,8 +152,37 @@ export async function resetRundownPlaylist(context: JobContext, data: ResetRundo
 			}
 
 			if (data.activate) {
-				// Check if any other playlists are active, as we will be activating this one
-				await checkNoOtherPlaylistsActive(context, playlist)
+				if (data.forceActivate) {
+					const anyOtherActivePlaylists = await getActiveRundownPlaylistsInStudioFromDb(
+						context,
+						playlist.studioId,
+						playlist._id
+					)
+					if (anyOtherActivePlaylists.length > 0) {
+						const errors: any[] = []
+						// Try deactivating everything in parallel, although there should only ever be one active
+						await Promise.allSettled(
+							anyOtherActivePlaylists.map(async (otherRundownPlaylist) =>
+								runAsPlayoutJob(
+									context,
+									// 'forceResetAndActivateRundownPlaylist',
+									{ playlistId: otherRundownPlaylist._id },
+									null,
+									async (otherCache) => {
+										await deactivateRundownPlaylistInner(context, otherCache)
+									}
+								).catch((e) => errors.push(e))
+							)
+						)
+						if (errors.length > 0) {
+							// Ok, something went wrong, but check if the active rundowns where deactivated?
+							await checkNoOtherPlaylistsActive(context, playlist)
+						}
+					}
+				} else {
+					// Check if any other playlists are active, as we will be activating this one
+					await checkNoOtherPlaylistsActive(context, playlist)
+				}
 			}
 		},
 		async (cache) => {
@@ -160,69 +199,7 @@ export async function resetRundownPlaylist(context: JobContext, data: ResetRundo
 		}
 	)
 }
-// 	/**
-// 	 * Activate the rundownPlaylist, decativate any other running rundowns
-// 	 */
-// 	export async function forceResetAndActivateRundownPlaylist(
-// 		access: VerifiedRundownPlaylistContentAccess,
-// 		rundownPlaylistId: RundownPlaylistId,
-// 		rehearsal: boolean
-// 	): Promise<void> {
-// 		check(rehearsal, Boolean)
-// 		return runPlayoutOperationWithCache(
-// 			access,
-// 			'forceResetAndActivateRundownPlaylist',
-// 			rundownPlaylistId,
-// 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
 
-// 				const anyOtherActivePlaylists = await getActiveRundownPlaylistsInStudioFromDb(
-// 					playlist.studioId,
-// 					playlist._id
-// 				)
-// 				if (anyOtherActivePlaylists.length > 0) {
-// 					const errors: any[] = []
-// 					// Try deactivating everything in parallel, although there should only ever be one active
-// 					await Promise.allSettled(
-// 						anyOtherActivePlaylists.map(async (otherRundownPlaylist) =>
-// 							runPlayoutOperationWithCacheFromStudioOperation(
-// 								'forceResetAndActivateRundownPlaylist',
-// 								cache,
-// 								otherRundownPlaylist,
-// 								PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 								null,
-// 								async (otherCache) => {
-// 									await deactivateRundownPlaylistInner(otherCache)
-// 								}
-// 							).catch((e) => errors.push(e))
-// 						)
-// 					)
-// 					if (errors.length > 0) {
-// 						// Ok, something went wrong, but check if the active rundowns where deactivated?
-// 						const anyOtherActivePlaylistsStill = await getActiveRundownPlaylistsInStudioFromDb(
-// 							playlist.studioId,
-// 							playlist._id
-// 						)
-// 						if (anyOtherActivePlaylistsStill.length) {
-// 							// No they weren't, we can't continue..
-// 							throw errors.join(',')
-// 						} else {
-// 							// They where deactivated, log the error and continue
-// 							logger.error(errors.join(','))
-// 						}
-// 					}
-// 				}
-// 			},
-// 			async (cache) => {
-// 				await libResetRundownPlaylist(cache)
-
-// 				await prepareStudioForBroadcast(cache, true)
-
-// 				await libActivateRundownPlaylist(cache, rehearsal)
-// 			}
-// 		)
-// 	}
 /**
  * Only activate the rundown, don't reset anything
  */
@@ -489,40 +466,64 @@ export async function moveNextPartInner(
 		throw new Error(`Missing delta to move by!`)
 	}
 }
-// 	export async function setNextSegment(
-// 		access: VerifiedRundownPlaylistContentAccess,
-// 		rundownPlaylistId: RundownPlaylistId,
-// 		nextSegmentId: SegmentId | null
-// 	): Promise<ClientAPI.ClientResponse<void>> {
-// 		check(rundownPlaylistId, String)
-// 		if (nextSegmentId) check(nextSegmentId, String)
+export async function setNextSegment(context: JobContext, data: SetNextSegmentProps): Promise<void> {
+	return runAsPlayoutJob(
+		context,
+		// 'setNextSegment',
+		data,
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
-// 		return runPlayoutOperationWithCache(
-// 			access,
-// 			'setNextSegment',
-// 			rundownPlaylistId,
-// 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
-// 				if (!playlist.activationId)
-// 					throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
-// 			},
-// 			async (cache) => {
-// 				let nextSegment: Segment | null = null
-// 				if (nextSegmentId) {
-// 					nextSegment = cache.Segments.findOne(nextSegmentId) || null
-// 					if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
-// 				}
+			if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
+				throw UserError.create(UserErrorMessage.DuringHold)
+			}
+		},
+		async (cache) => {
+			let nextSegment: DBSegment | null = null
+			if (data.nextSegmentId) {
+				nextSegment = cache.Segments.findOne(data.nextSegmentId) || null
+				if (!nextSegment) throw new Error(`Segment "${data.nextSegmentId}" not found!`)
+			}
 
-// 				libSetNextSegment(cache, nextSegment)
+			if (nextSegment) {
+				// Just run so that errors will be thrown if something wrong:
+				const playablePartsInSegment = cache.Parts.findFetch((p) => p.segmentId === data.nextSegmentId).filter(
+					(p) => isPartPlayable(p)
+				)
+				if (playablePartsInSegment.length === 0) {
+					throw new Error('Segment contains no valid parts')
+				}
 
-// 				// Update any future lookaheads
-// 				await updateTimeline(cache)
+				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+				if (
+					!currentPartInstance ||
+					!nextPartInstance ||
+					nextPartInstance.segmentId !== currentPartInstance.segmentId
+				) {
+					// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart
+					await setNextPartInner(context, cache, playablePartsInSegment[0])
+				} else {
+					// Set the whole segemnt as next
+					cache.Playlist.update({
+						$set: {
+							nextSegmentId: nextSegment._id,
+						},
+					})
+				}
+			} else {
+				cache.Playlist.update({
+					$unset: {
+						nextSegmentId: 1,
+					},
+				})
+			}
 
-// 				return ClientAPI.responseSuccess(undefined)
-// 			}
-// 		)
-// 	}
+			// Update any future lookaheads
+			await updateTimeline(context, cache)
+		}
+	)
+}
 export async function activateHold(context: JobContext, data: ActivateHoldProps): Promise<void> {
 	return runAsPlayoutJob(
 		context,
@@ -583,122 +584,108 @@ export async function deactivateHold(context: JobContext, data: DeactivateHoldPr
 		}
 	)
 }
-// 	export async function disableNextPiece(
-// 		access: VerifiedRundownPlaylistContentAccess,
-// 		rundownPlaylistId: RundownPlaylistId,
-// 		undo?: boolean
-// 	): Promise<ClientAPI.ClientResponse<void>> {
-// 		check(rundownPlaylistId, String)
+export async function disableNextPiece(context: JobContext, data: DisableNextPieceProps): Promise<void> {
+	return runAsPlayoutJob(
+		context,
+		// 'disableNextPiece',
+		data,
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
-// 		return runPlayoutOperationWithCache(
-// 			access,
-// 			'disableNextPiece',
-// 			rundownPlaylistId,
-// 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
-// 				if (!playlist.currentPartInstanceId) throw new Meteor.Error(401, `No current part!`)
-// 			},
-// 			async (cache) => {
-// 				const playlist = cache.Playlist.doc
+			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
+		},
+		async (cache) => {
+			const playlist = cache.Playlist.doc
 
-// 				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-// 				if (!currentPartInstance)
-// 					throw new Meteor.Error(404, `PartInstance "${playlist.currentPartInstanceId}" not found!`)
+			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+			if (!currentPartInstance) throw new Error(`PartInstance "${playlist.currentPartInstanceId}" not found!`)
 
-// 				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
-// 				if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
-// 				const showStyleBase = rundown.getShowStyleBase()
+			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
+			const showStyleBase = await cache.getShowStyleBase(rundown)
 
-// 				// @ts-ignore stringify
-// 				// logger.info(o)
-// 				// logger.info(JSON.stringify(o, '', 2))
+			// logger.info(o)
+			// logger.info(JSON.stringify(o, '', 2))
 
-// 				const allowedSourceLayers = normalizeArrayToMap(showStyleBase.sourceLayers, '_id')
+			const allowedSourceLayers = normalizeArrayToMap(showStyleBase.sourceLayers, '_id')
 
-// 				// logger.info('nowInPart', nowInPart)
-// 				// logger.info('filteredPieces', filteredPieces)
-// 				const getNextPiece = (partInstance: PartInstance, ignoreStartedPlayback: boolean) => {
-// 					// Find next piece to disable
+			// logger.info('nowInPart', nowInPart)
+			// logger.info('filteredPieces', filteredPieces)
+			const getNextPiece = (partInstance: DBPartInstance, ignoreStartedPlayback: boolean) => {
+				// Find next piece to disable
 
-// 					let nowInPart = 0
-// 					if (!ignoreStartedPlayback && partInstance.timings?.startedPlayback) {
-// 						nowInPart = getCurrentTime() - partInstance.timings?.startedPlayback
-// 					}
+				let nowInPart = 0
+				if (!ignoreStartedPlayback && partInstance.timings?.startedPlayback) {
+					nowInPart = getCurrentTime() - partInstance.timings?.startedPlayback
+				}
 
-// 					const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstance._id)
+				const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstance._id)
 
-// 					const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
-// 						const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
-// 						if (
-// 							sourceLayer &&
-// 							sourceLayer.allowDisable &&
-// 							!piece.piece.virtual &&
-// 							!piece.piece.isTransition
-// 						)
-// 							return true
-// 						return false
-// 					})
+				const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
+					const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+					if (sourceLayer && sourceLayer.allowDisable && !piece.piece.virtual && !piece.piece.isTransition)
+						return true
+					return false
+				})
 
-// 					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
-// 						_.sortBy(filteredPieces, (piece: PieceInstance) => {
-// 							const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
-// 							return sourceLayer?._rank || -9999
-// 						}),
-// 						nowInPart
-// 					)
+				const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
+					_.sortBy(filteredPieces, (piece: PieceInstance) => {
+						const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+						return sourceLayer?._rank || -9999
+					}),
+					nowInPart
+				)
 
-// 					const findLast: boolean = !!undo
+				const findLast = !!data.undo
 
-// 					if (findLast) sortedPieces.reverse()
+				if (findLast) sortedPieces.reverse()
 
-// 					return sortedPieces.find((piece) => {
-// 						return (
-// 							piece.piece.enable.start >= nowInPart &&
-// 							((!undo && !piece.disabled) || (undo && piece.disabled))
-// 						)
-// 					})
-// 				}
+				return sortedPieces.find((piece) => {
+					return (
+						piece.piece.enable.start >= nowInPart &&
+						((!data.undo && !piece.disabled) || (data.undo && piece.disabled))
+					)
+				})
+			}
 
-// 				if (nextPartInstance?.timings) {
-// 					// pretend that the next part never has played (even if it has)
-// 					delete nextPartInstance.timings.startedPlayback
-// 				}
+			if (nextPartInstance?.timings) {
+				// pretend that the next part never has played (even if it has)
+				delete nextPartInstance.timings.startedPlayback
+			}
 
-// 				const partInstances: Array<[PartInstance | undefined, boolean]> = [
-// 					[currentPartInstance, false],
-// 					[nextPartInstance, true], // If not found in currently playing part, let's look in the next one:
-// 				]
-// 				if (undo) partInstances.reverse()
+			const partInstances: Array<[DBPartInstance | undefined, boolean]> = [
+				[currentPartInstance, false],
+				[nextPartInstance, true], // If not found in currently playing part, let's look in the next one:
+			]
+			if (data.undo) partInstances.reverse()
 
-// 				let nextPieceInstance: PieceInstance | undefined
+			let nextPieceInstance: PieceInstance | undefined
 
-// 				for (const [partInstance, ignoreStartedPlayback] of partInstances) {
-// 					if (partInstance) {
-// 						nextPieceInstance = getNextPiece(partInstance, ignoreStartedPlayback)
-// 						if (nextPieceInstance) break
-// 					}
-// 				}
+			for (const [partInstance, ignoreStartedPlayback] of partInstances) {
+				if (partInstance) {
+					nextPieceInstance = getNextPiece(partInstance, ignoreStartedPlayback)
+					if (nextPieceInstance) break
+				}
+			}
 
-// 				if (nextPieceInstance) {
-// 					logger.info((undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
-// 					cache.PieceInstances.update(nextPieceInstance._id, {
-// 						$set: {
-// 							disabled: !undo,
-// 						},
-// 					})
+			if (nextPieceInstance) {
+				logger.info((data.undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
+				cache.PieceInstances.update(nextPieceInstance._id, {
+					$set: {
+						disabled: !data.undo,
+					},
+				})
 
-// 					await updateTimeline(cache)
+				await updateTimeline(context, cache)
+			} else {
+				cache.assertNoChanges()
 
-// 					return ClientAPI.responseSuccess(undefined)
-// 				} else {
-// 					cache.assertNoChanges()
-
-// 					return ClientAPI.responseError(404, 'Found no future pieces')
-// 				}
-// 			}
-// 		)
-// 	}
+				throw UserError.create(UserErrorMessage.DisableNoPieceFound)
+			}
+		}
+	)
+}
 
 /**
  * Triggered from Playout-gateway when a Piece has started playing
@@ -1106,117 +1093,38 @@ export async function stopPiecesOnSourceLayers(
 	)
 }
 
-// 	export async function updateStudioBaseline(context: MethodContext, studioId: StudioId): Promise<string | false> {
-// 		StudioContentWriteAccess.baseline(context, studioId)
+export async function updateStudioBaseline(
+	context: JobContext,
+	_data: UpdateStudioBaselineProps
+): Promise<string | false> {
+	return runAsStudioJob(context, async (cache) => {
+		const activePlaylists = cache.getActiveRundownPlaylists()
 
-// 		check(studioId, String)
+		if (activePlaylists.length === 0) {
+			await updateStudioTimeline(context, cache)
+			return shouldUpdateStudioBaselineInner(context, cache)
+		} else {
+			return shouldUpdateStudioBaselineInner(context, cache)
+		}
+	})
+}
 
-// 		return runStudioOperationWithCache(
-// 			'updateStudioBaseline',
-// 			studioId,
-// 			StudioLockFunctionPriority.USER_PLAYOUT,
-// 			async (cache) => {
-// 				const activePlaylists = cache.getActiveRundownPlaylists()
+async function shouldUpdateStudioBaselineInner(context: JobContext, cache: CacheForStudio): Promise<string | false> {
+	const studio = cache.Studio.doc
 
-// 				if (activePlaylists.length === 0) {
-// 					await updateStudioTimeline(cache)
-// 					return shouldUpdateStudioBaselineInner(cache)
-// 				} else {
-// 					return shouldUpdateStudioBaselineInner(cache)
-// 				}
-// 			}
-// 		)
-// 	}
+	if (cache.getActiveRundownPlaylists().length > 0) return false
 
-// 	export async function shouldUpdateStudioBaseline(
-// 		context: MethodContext,
-// 		studioId: StudioId
-// 	): Promise<string | false> {
-// 		StudioContentWriteAccess.baseline(context, studioId)
+	const timeline = cache.Timeline.findOne(studio._id)
+	const blueprint = studio.blueprintId ? await context.directCollections.Blueprints.findOne(studio.blueprintId) : null
+	if (!blueprint) return 'missingBlueprint'
 
-// 		check(studioId, String)
-
-// 		return runStudioOperationWithCache(
-// 			'shouldUpdateStudioBaseline',
-// 			studioId,
-// 			StudioLockFunctionPriority.MISC,
-// 			async (cache) => {
-// 				return shouldUpdateStudioBaselineInner(cache)
-// 			}
-// 		)
-// 	}
-// 	async function shouldUpdateStudioBaselineInner(cache: CacheForStudio): Promise<string | false> {
-// 		const studio = cache.Studio.doc
-
-// 		const activePlaylists = cache.getActiveRundownPlaylists()
-// 		if (activePlaylists.length === 0) {
-// 			const studioTimeline = cache.Timeline.findOne(studio._id)
-// 			if (!studioTimeline) return 'noBaseline'
-// 			const markerObject = studioTimeline.timeline.find((x) => x.id === `baseline_version`)
-// 			if (!markerObject) return 'noBaseline'
-// 			// Accidental inclusion of one timeline code below - random ... don't know why
-// 			// const studioTimeline = cache.Timeline.findOne(studioId)
-// 			// if (!studioTimeline) return 'noBaseline'
-// 			// const markerObject = studioTimeline.timeline.find(
-// 			// 	(x) => x._id === protectString(`${studio._id}_baseline_version`)
-// 			// )
-// 			// if (!markerObject) return 'noBaseline'
-
-// 			const versionsContent = (markerObject.metaData as Partial<StatObjectMetadata> | undefined)?.versions
-
-// 			if (versionsContent?.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
-
-// 			if (versionsContent?.studio !== (studio._rundownVersionHash || 0)) return 'studio'
-
-// 			if (versionsContent?.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
-// 			if (studio.blueprintId) {
-// 				const blueprint = await Blueprints.findOneAsync(studio.blueprintId)
-// 				if (!blueprint) return 'blueprintUnknown'
-// 				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
-// 			}
-// 		}
-
-// 		return false
-// 	}
-
-// 	export function switchRouteSet(context: MethodContext, studioId: StudioId, routeSetId: string, state: boolean) {
-// 		check(studioId, String)
-// 		check(routeSetId, String)
-// 		check(state, Boolean)
-
-// 		const allowed = StudioContentWriteAccess.routeSet(context, studioId)
-// 		if (!allowed) throw new Meteor.Error(403, `Not allowed to edit RouteSet on studio ${studioId}`)
-
-// 		const studio = allowed.studio
-// 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
-
-// 		if (studio.routeSets[routeSetId] === undefined)
-// 			throw new Meteor.Error(404, `RouteSet "${routeSetId}" not found!`)
-// 		const routeSet = studio.routeSets[routeSetId]
-// 		if (routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && state === false)
-// 			throw new Meteor.Error(400, `RouteSet "${routeSetId}" is ACTIVATE_ONLY`)
-
-// 		const modification = {}
-// 		modification[`routeSets.${routeSetId}.active`] = state
-
-// 		if (studio.routeSets[routeSetId].exclusivityGroup && state === true) {
-// 			_.each(studio.routeSets, (otherRouteSet, otherRouteSetId) => {
-// 				if (otherRouteSetId === routeSetId) return
-// 				if (otherRouteSet.exclusivityGroup === routeSet.exclusivityGroup) {
-// 					modification[`routeSets.${otherRouteSetId}.active`] = false
-// 				}
-// 			})
-// 		}
-
-// 		Studios.update(studioId, {
-// 			$set: modification,
-// 		})
-
-// 		// TODO: Run update timeline here
-
-// 		return ClientAPI.responseSuccess(undefined)
-// 	}
-// }
+	return libShouldUpdateStudioBaselineInner(
+		'0.1.2', // PackageInfo.versionExtended || PackageInfo.version, // TODO
+		studio,
+		timeline,
+		blueprint
+	)
+}
 
 // interface UpdateTimelineFromIngestDataTimeout {
 // 	timeout?: number

@@ -1,112 +1,28 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
-import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
-import { getCurrentTime, Time, normalizeArrayToMap, unprotectString, isStringOrProtectedString } from '../../../lib/lib'
-import { StatObjectMetadata } from '../../../lib/collections/Timeline'
-import { Segment, SegmentId } from '../../../lib/collections/Segments'
+import { RundownHoldState } from '../../../lib/collections/Rundowns'
+import { DBPart, PartId } from '../../../lib/collections/Parts'
+import { isStringOrProtectedString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
 import { ClientAPI } from '../../../lib/api/client'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { updateStudioTimeline, updateTimeline } from './timeline'
-import {
-	resetRundownPlaylist as libResetRundownPlaylist,
-	setNextPart as libsetNextPart,
-	setNextSegment as libSetNextSegment,
-} from './lib'
-import {
-	prepareStudioForBroadcast,
-	activateRundownPlaylist as libActivateRundownPlaylist,
-	deactivateRundownPlaylistInner,
-} from './actions'
-import { sortPieceInstancesByStart } from './pieces'
+import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { updateTimeline } from './timeline'
+import { setNextPart as libsetNextPart } from './lib'
+
 import { PackageInfo } from '../../coreSystem'
-import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
-import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
 import { StudioContentWriteAccess } from '../../security/studio'
-import { check, Match } from '../../../lib/check'
-import {
-	runPlayoutOperationWithCacheFromStudioOperation,
-	runPlayoutOperationWithCache,
-	PlayoutLockFunctionPriority,
-} from './lockFunction'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
-import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
-import { CacheForStudio } from '../studio/cache'
-import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { check } from '../../../lib/check'
+import { runPlayoutOperationWithCache, PlayoutLockFunctionPriority } from './lockFunction'
+import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 import { profiler } from '../profiler'
+import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
+import { Timeline } from '../../../lib/collections/Timeline'
 
 export namespace ServerPlayoutAPI {
-	/**
-	 * Activate the rundownPlaylist, decativate any other running rundowns
-	 */
-	export async function forceResetAndActivateRundownPlaylist(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		rehearsal: boolean
-	): Promise<void> {
-		check(rehearsal, Boolean)
-		return runPlayoutOperationWithCache(
-			access,
-			'forceResetAndActivateRundownPlaylist',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-
-				const anyOtherActivePlaylists = await getActiveRundownPlaylistsInStudioFromDb(
-					playlist.studioId,
-					playlist._id
-				)
-				if (anyOtherActivePlaylists.length > 0) {
-					const errors: any[] = []
-					// Try deactivating everything in parallel, although there should only ever be one active
-					await Promise.allSettled(
-						anyOtherActivePlaylists.map(async (otherRundownPlaylist) =>
-							runPlayoutOperationWithCacheFromStudioOperation(
-								'forceResetAndActivateRundownPlaylist',
-								cache,
-								otherRundownPlaylist,
-								PlayoutLockFunctionPriority.USER_PLAYOUT,
-								null,
-								async (otherCache) => {
-									await deactivateRundownPlaylistInner(otherCache)
-								}
-							).catch((e) => errors.push(e))
-						)
-					)
-					if (errors.length > 0) {
-						// Ok, something went wrong, but check if the active rundowns where deactivated?
-						const anyOtherActivePlaylistsStill = await getActiveRundownPlaylistsInStudioFromDb(
-							playlist.studioId,
-							playlist._id
-						)
-						if (anyOtherActivePlaylistsStill.length) {
-							// No they weren't, we can't continue..
-							throw errors.join(',')
-						} else {
-							// They where deactivated, log the error and continue
-							logger.error(errors.join(','))
-						}
-					}
-				}
-			},
-			async (cache) => {
-				await libResetRundownPlaylist(cache)
-
-				await prepareStudioForBroadcast(cache, true)
-
-				await libActivateRundownPlaylist(cache, rehearsal)
-			}
-		)
-	}
-
 	export async function setNextPartInner(
 		cache: CacheForPlayout,
 		nextPartId: PartId | DBPart | null,
@@ -133,228 +49,41 @@ export namespace ServerPlayoutAPI {
 		// update lookahead and the next part when we have an auto-next
 		await updateTimeline(cache)
 	}
-	export async function setNextSegment(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		nextSegmentId: SegmentId | null
-	): Promise<ClientAPI.ClientResponse<void>> {
-		check(rundownPlaylistId, String)
-		if (nextSegmentId) check(nextSegmentId, String)
-
-		return runPlayoutOperationWithCache(
-			access,
-			'setNextSegment',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-				if (!playlist.activationId)
-					throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
-			},
-			async (cache) => {
-				let nextSegment: Segment | null = null
-				if (nextSegmentId) {
-					nextSegment = cache.Segments.findOne(nextSegmentId) || null
-					if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
-				}
-
-				libSetNextSegment(cache, nextSegment)
-
-				// Update any future lookaheads
-				await updateTimeline(cache)
-
-				return ClientAPI.responseSuccess(undefined)
-			}
-		)
-	}
-	export async function disableNextPiece(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		undo?: boolean
-	): Promise<ClientAPI.ClientResponse<void>> {
-		check(rundownPlaylistId, String)
-
-		return runPlayoutOperationWithCache(
-			access,
-			'disableNextPiece',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-				if (!playlist.currentPartInstanceId) throw new Meteor.Error(401, `No current part!`)
-			},
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-
-				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-				if (!currentPartInstance)
-					throw new Meteor.Error(404, `PartInstance "${playlist.currentPartInstanceId}" not found!`)
-
-				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
-				if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
-				const showStyleBase = rundown.getShowStyleBase()
-
-				// @ts-ignore stringify
-				// logger.info(o)
-				// logger.info(JSON.stringify(o, '', 2))
-
-				const allowedSourceLayers = normalizeArrayToMap(showStyleBase.sourceLayers, '_id')
-
-				// logger.info('nowInPart', nowInPart)
-				// logger.info('filteredPieces', filteredPieces)
-				const getNextPiece = (partInstance: PartInstance, ignoreStartedPlayback: boolean) => {
-					// Find next piece to disable
-
-					let nowInPart = 0
-					if (!ignoreStartedPlayback && partInstance.timings?.startedPlayback) {
-						nowInPart = getCurrentTime() - partInstance.timings?.startedPlayback
-					}
-
-					const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstance._id)
-
-					const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
-						const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
-						if (
-							sourceLayer &&
-							sourceLayer.allowDisable &&
-							!piece.piece.virtual &&
-							!piece.piece.isTransition
-						)
-							return true
-						return false
-					})
-
-					const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
-						_.sortBy(filteredPieces, (piece: PieceInstance) => {
-							const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
-							return sourceLayer?._rank || -9999
-						}),
-						nowInPart
-					)
-
-					const findLast: boolean = !!undo
-
-					if (findLast) sortedPieces.reverse()
-
-					return sortedPieces.find((piece) => {
-						return (
-							piece.piece.enable.start >= nowInPart &&
-							((!undo && !piece.disabled) || (undo && piece.disabled))
-						)
-					})
-				}
-
-				if (nextPartInstance?.timings) {
-					// pretend that the next part never has played (even if it has)
-					delete nextPartInstance.timings.startedPlayback
-				}
-
-				const partInstances: Array<[PartInstance | undefined, boolean]> = [
-					[currentPartInstance, false],
-					[nextPartInstance, true], // If not found in currently playing part, let's look in the next one:
-				]
-				if (undo) partInstances.reverse()
-
-				let nextPieceInstance: PieceInstance | undefined
-
-				for (const [partInstance, ignoreStartedPlayback] of partInstances) {
-					if (partInstance) {
-						nextPieceInstance = getNextPiece(partInstance, ignoreStartedPlayback)
-						if (nextPieceInstance) break
-					}
-				}
-
-				if (nextPieceInstance) {
-					logger.info((undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
-					cache.PieceInstances.update(nextPieceInstance._id, {
-						$set: {
-							disabled: !undo,
-						},
-					})
-
-					await updateTimeline(cache)
-
-					return ClientAPI.responseSuccess(undefined)
-				} else {
-					cache.assertNoChanges()
-
-					return ClientAPI.responseError(404, 'Found no future pieces')
-				}
-			}
-		)
-	}
-
-	export async function updateStudioBaseline(context: MethodContext, studioId: StudioId): Promise<string | false> {
-		StudioContentWriteAccess.baseline(context, studioId)
-
-		check(studioId, String)
-
-		return runStudioOperationWithCache(
-			'updateStudioBaseline',
-			studioId,
-			StudioLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const activePlaylists = cache.getActiveRundownPlaylists()
-
-				if (activePlaylists.length === 0) {
-					await updateStudioTimeline(cache)
-					return shouldUpdateStudioBaselineInner(cache)
-				} else {
-					return shouldUpdateStudioBaselineInner(cache)
-				}
-			}
-		)
-	}
 
 	export async function shouldUpdateStudioBaseline(
 		context: MethodContext,
 		studioId: StudioId
 	): Promise<string | false> {
-		StudioContentWriteAccess.baseline(context, studioId)
+		const { studio } = StudioContentWriteAccess.baseline(context, studioId)
 
 		check(studioId, String)
 
-		return runStudioOperationWithCache(
-			'shouldUpdateStudioBaseline',
-			studioId,
-			StudioLockFunctionPriority.MISC,
-			async (cache) => {
-				return shouldUpdateStudioBaselineInner(cache)
-			}
-		)
-	}
-	async function shouldUpdateStudioBaselineInner(cache: CacheForStudio): Promise<string | false> {
-		const studio = cache.Studio.doc
+		// This is intentionally not in a lock/queue, as doing so will cause it to block playout performance, and being wrong is harmless
 
-		const activePlaylists = cache.getActiveRundownPlaylists()
-		if (activePlaylists.length === 0) {
-			const studioTimeline = cache.Timeline.findOne(studio._id)
-			if (!studioTimeline) return 'noBaseline'
-			const markerObject = studioTimeline.timeline.find((x) => x.id === `baseline_version`)
-			if (!markerObject) return 'noBaseline'
-			// Accidental inclusion of one timeline code below - random ... don't know why
-			// const studioTimeline = cache.Timeline.findOne(studioId)
-			// if (!studioTimeline) return 'noBaseline'
-			// const markerObject = studioTimeline.timeline.find(
-			// 	(x) => x._id === protectString(`${studio._id}_baseline_version`)
-			// )
-			// if (!markerObject) return 'noBaseline'
+		if (studio) {
+			const activePlaylists = await RundownPlaylists.findFetchAsync(
+				{ studioId: studio._id, activationId: { $exists: true } },
+				{ fields: { _id: 1 } }
+			)
+			if (activePlaylists.length > 0) return false
 
-			const versionsContent = (markerObject.metaData as Partial<StatObjectMetadata> | undefined)?.versions
+			const [timeline, blueprint] = await Promise.all([
+				Timeline.findOneAsync(studio._id),
+				studio.blueprintId
+					? Blueprints.findOneAsync(studio.blueprintId, { fields: { blueprintVersion: 1 } })
+					: null,
+			])
+			if (blueprint === undefined) return 'missingBlueprint'
 
-			if (versionsContent?.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
-
-			if (versionsContent?.studio !== (studio._rundownVersionHash || 0)) return 'studio'
-
-			if (versionsContent?.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
-			if (studio.blueprintId) {
-				const blueprint = await Blueprints.findOneAsync(studio.blueprintId)
-				if (!blueprint) return 'blueprintUnknown'
-				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
-			}
+			return shouldUpdateStudioBaselineInner(
+				PackageInfo.versionExtended || PackageInfo.version,
+				studio,
+				timeline,
+				blueprint
+			)
+		} else {
+			return false
 		}
-
-		return false
 	}
 
 	export function switchRouteSet(context: MethodContext, studioId: StudioId, routeSetId: string, state: boolean) {

@@ -1,4 +1,4 @@
-import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -44,8 +44,10 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 		this.Timeline = timeline
 	}
 
-	static async create(context: JobContext, studioId: StudioId): Promise<CacheForStudio> {
+	static async create(context: JobContext): Promise<CacheForStudio> {
 		const span = context.startSpan('CacheForStudio.create')
+
+		const studioId = context.studioId
 		const studio = await DbCacheReadObject.createFromDatabase(
 			context,
 			context.directCollections.Studios,
