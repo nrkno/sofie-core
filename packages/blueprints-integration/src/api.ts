@@ -148,7 +148,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
-	) => void // Promise<void> | void
+	) => Promise<void>
 
 	/** Generate adlib piece from ingest data */
 	getAdlibItem?: (

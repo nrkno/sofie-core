@@ -29,6 +29,12 @@ export enum UserErrorMessage {
 	HoldAfterAdlib,
 	RundownAlreadyActive,
 	RundownAlreadyActiveNames,
+	RundownResetWhileActive,
+	PartNotFound,
+	PartNotPlayable,
+	ActionsNotSupported,
+	TakeNoNextPart,
+	TakeRateLimit,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -59,6 +65,14 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.RundownAlreadyActiveNames]: t(
 		`Only one rundown can be active at the same time. Currently active rundowns: {{names}}`
 	),
+	[UserErrorMessage.RundownResetWhileActive]: t(
+		`RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.`
+	),
+	[UserErrorMessage.PartNotFound]: t(`The selected part does not exist`),
+	[UserErrorMessage.PartNotPlayable]: t(`The selected part cannot be played`),
+	[UserErrorMessage.ActionsNotSupported]: t(`AdLib Actions are not supported in the current Rundown`),
+	[UserErrorMessage.TakeNoNextPart]: t(`No Next point found, please set a part as Next before doing a TAKE.`),
+	[UserErrorMessage.TakeRateLimit]: t(`Ignoring TAKES that are too quick after eachother ({{duration}} ms)`),
 }
 
 export class UserError {

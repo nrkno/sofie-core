@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
@@ -19,7 +18,6 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
@@ -28,7 +26,6 @@ import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
 import { SegmentId, Segment, Segments } from '../../lib/collections/Segments'
-import { Settings } from '../../lib/Settings'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
@@ -101,59 +98,15 @@ async function runUserAction<T extends keyof StudioJobFunc>(
 	}
 }
 
-/*
-	The functions in this file are used to provide a pre-check, before calling the real functions.
-	The pre-checks should contain relevant checks, to return user-friendly messages instead of throwing a nasty error.
-
-	If it's not possible to perform an action due to an internal error (such as data not found, etc)
-		-> throw an error
-	If it's not possible to perform an action due to something the user can easily fix
-		-> ClientAPI.responseError('Friendly message')
-*/
-
-// TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
 export async function take(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
 ): Promise<ClientAPI.ClientResponse<void>> {
-	// Called by the user. Wont throw as nasty errors
-	const now = getCurrentTime()
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
-	return pushWorkToQueue(`userActionsTake_${rundownPlaylistId}`, 'take', async () => {
-		const access = checkAccessToPlaylist(context, rundownPlaylistId)
-		const playlist = access.playlist
-
-		if (!playlist.activationId) {
-			return ClientAPI.responseError(`Rundown is not active, please activate the rundown before doing a TAKE.`)
-		}
-		if (!playlist.nextPartInstanceId) {
-			return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
-		}
-		if (playlist.currentPartInstanceId) {
-			const currentPartInstance = await PartInstances.findOneAsync(playlist.currentPartInstanceId)
-			if (currentPartInstance && currentPartInstance.timings) {
-				const lastStartedPlayback = currentPartInstance.timings.startedPlayback || 0
-				const lastTake = currentPartInstance.timings.take || 0
-				const lastChange = Math.max(lastTake, lastStartedPlayback)
-				if (now - lastChange < MINIMUM_TAKE_SPAN) {
-					logger.debug(
-						`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentPartInstance._id}: ${
-							getCurrentTime() - lastStartedPlayback
-						}`
-					)
-					logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
-					return ClientAPI.responseError(
-						`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`
-					)
-				}
-			} else {
-				// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
-				logger.error(
-					`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${rundownPlaylistId}", not found!`
-				)
-			}
-		}
-		return ServerPlayoutAPI.takeNextPart(access, playlist._id)
+	return runUserAction(playlist.studioId, StudioJobs.TakeNextPart, {
+		playlistId: rundownPlaylistId,
 	})
 }
 
@@ -162,30 +115,20 @@ export async function setNext(
 	rundownPlaylistId: RundownPlaylistId,
 	nextPartId: PartId | null,
 	setManually?: boolean,
-	timeOffset?: number | undefined
+	nextTimeOffset?: number | undefined
 ): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	if (nextPartId) check(nextPartId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
-	if (!playlist.activationId)
-		return ClientAPI.responseError(
-			'RundownPlaylist is not active, please activate it before setting a part as Next'
-		)
 
-	let nextPart: Part | undefined
-	if (nextPartId) {
-		nextPart = await Parts.findOneAsync(nextPartId)
-		if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
-
-		if (!nextPart.isPlayable()) return ClientAPI.responseError('Part is unplayable, cannot set as next.')
-	}
-
-	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
-		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
-	}
-	return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, nextPartId, setManually, timeOffset)
+	return runUserAction(playlist.studioId, StudioJobs.SetNextPart, {
+		playlistId: rundownPlaylistId,
+		nextPartId,
+		setManually,
+		nextTimeOffset,
+	})
 }
 export async function setNextSegment(
 	context: MethodContext,
@@ -269,13 +212,9 @@ export async function resetRundownPlaylist(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
-		return ClientAPI.responseError(
-			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
-		)
-	}
-
-	return ClientAPI.responseSuccess(await ServerPlayoutAPI.resetRundownPlaylist(access, rundownPlaylistId))
+	return runUserAction(playlist.studioId, StudioJobs.ResetRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+	})
 }
 export async function resetAndActivate(
 	context: MethodContext,
@@ -287,27 +226,10 @@ export async function resetAndActivate(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
-		return ClientAPI.responseError(
-			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
-		)
-	}
-	const anyOtherActiveRundownPlaylists = await getActiveRundownPlaylistsInStudioFromDb(
-		playlist.studioId,
-		playlist._id
-	)
-	if (anyOtherActiveRundownPlaylists.length) {
-		return ClientAPI.responseError(
-			409,
-			'Only one rundownPlaylist can be active at the same time. Currently active rundownPlaylists: ' +
-				_.map(anyOtherActiveRundownPlaylists, (p) => p.name).join(', '),
-			anyOtherActiveRundownPlaylists
-		)
-	}
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.resetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.ResetRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+		activate: rehearsal ? 'rehearsal' : 'active',
+	})
 }
 export async function forceResetAndActivate(
 	context: MethodContext,
@@ -334,25 +256,21 @@ export async function activate(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
-
-	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError(
-			409,
-			'Only one rundown can be active at the same time. Currently active rundowns: ' +
-				_.map(anyOtherActiveRundowns, (p) => p.name).join(', '),
-			anyOtherActiveRundowns
-		)
-	}
-	return ClientAPI.responseSuccess(await ServerPlayoutAPI.activateRundownPlaylist(access, playlist._id, rehearsal))
+	return runUserAction(playlist.studioId, StudioJobs.ActivateRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+		rehearsal,
+	})
 }
 export async function deactivate(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
 ): Promise<ClientAPI.ClientResponse<void>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
-	return ClientAPI.responseSuccess(await ServerPlayoutAPI.deactivateRundownPlaylist(access, rundownPlaylistId))
+	return runUserAction(playlist.studioId, StudioJobs.DeactivateRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+	})
 }
 export async function unsyncRundown(
 	context: MethodContext,
@@ -453,14 +371,13 @@ export async function executeAction(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before executing an action!`)
-	if (!playlist.currentPartInstanceId)
-		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionDocId, actionId, userData, triggerMode)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.ExecuteAction, {
+		playlistId: rundownPlaylistId,
+		actionDocId,
+		actionId,
+		userData,
+		triggerMode,
+	})
 }
 export async function segmentAdLibPieceStart(
 	context: MethodContext,

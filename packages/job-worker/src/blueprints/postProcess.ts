@@ -34,78 +34,85 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { ICommonContext, TimelineObjectCoreExt, TSR } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPiece,
+	ICommonContext,
+	IShowStyleContext,
+	TimelineObjectCoreExt,
+	TSR,
+} from '@sofie-automation/blueprints-integration'
 import { CommonContext } from './context'
 import { prefixAllObjectIds } from '../playout/lib'
-import { BlueprintId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, PartId, PieceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { JobContext } from '../jobs'
+import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
-// /**
-//  *
-//  * allowNowForPiece: allows the pieces to use a start of 'now', should be true for adlibs and false for ingest
-//  * prefixAllTimelineObjects: Add a prefix to the timeline object ids, to ensure duplicate ids don't occur when inserting a copy of a piece
-//  */
-// export function postProcessPieces(
-// 	innerContext: IShowStyleContext,
-// 	pieces: IBlueprintPiece[],
-// 	blueprintId: BlueprintId,
-// 	rundownId: RundownId,
-// 	segmentId: SegmentId,
-// 	partId: PartId,
-// 	allowNowForPiece?: boolean,
-// 	prefixAllTimelineObjects?: boolean,
-// 	setInvalid?: boolean
-// ): Piece[] {
-// 	const span = profiler.startSpan('blueprints.postProcess.postProcessPieces')
+/**
+ *
+ * allowNowForPiece: allows the pieces to use a start of 'now', should be true for adlibs and false for ingest
+ * prefixAllTimelineObjects: Add a prefix to the timeline object ids, to ensure duplicate ids don't occur when inserting a copy of a piece
+ */
+export function postProcessPieces(
+	context: JobContext,
+	innerContext: IShowStyleContext,
+	pieces: IBlueprintPiece[],
+	blueprintId: BlueprintId,
+	rundownId: RundownId,
+	segmentId: SegmentId,
+	partId: PartId,
+	allowNowForPiece?: boolean,
+	prefixAllTimelineObjects?: boolean,
+	setInvalid?: boolean
+): Piece[] {
+	const span = context.startSpan('blueprints.postProcess.postProcessPieces')
 
-// 	const externalIds = new Map<string, number>()
-// 	const timelineUniqueIds = new Set<string>()
+	const externalIds = new Map<string, number>()
+	const timelineUniqueIds = new Set<string>()
 
-// 	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
-// 		const i = externalIds.get(orgPiece.externalId) ?? 0
-// 		externalIds.set(orgPiece.externalId, i + 1)
-// 		const piece: Piece = {
-// 			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
-// 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
-// 			continuesRefId: protectString(orgPiece.continuesRefId),
-// 			startRundownId: rundownId,
-// 			startSegmentId: segmentId,
-// 			startPartId: partId,
-// 			status: RundownAPI.PieceStatusCode.UNKNOWN,
-// 			invalid: setInvalid ?? false,
-// 		}
+	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
+		const i = externalIds.get(orgPiece.externalId) ?? 0
+		externalIds.set(orgPiece.externalId, i + 1)
+		const piece: Piece = {
+			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
+			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
+			continuesRefId: protectString(orgPiece.continuesRefId),
+			startRundownId: rundownId,
+			startSegmentId: segmentId,
+			startPartId: partId,
+			status: PieceStatusCode.UNKNOWN,
+			invalid: setInvalid ?? false,
+		}
 
-// 		if (!piece.externalId && !piece.isTransition)
-// 			throw new Meteor.Error(
-// 				400,
-// 				`Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${innerContext.unhashId(
-// 					unprotectString(piece._id)
-// 				)}")`
-// 			)
-// 		if (!allowNowForPiece && piece.enable.start === 'now')
-// 			throw new Meteor.Error(
-// 				400,
-// 				`Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${innerContext.unhashId(
-// 					unprotectString(piece._id)
-// 				)}")`
-// 			)
+		if (!piece.externalId && !piece.isTransition)
+			throw new Error(
+				`Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${innerContext.unhashId(
+					unprotectString(piece._id)
+				)}")`
+			)
+		if (!allowNowForPiece && piece.enable.start === 'now')
+			throw new Error(
+				`Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${innerContext.unhashId(
+					unprotectString(piece._id)
+				)}")`
+			)
 
-// 		if (piece.content?.timelineObjects) {
-// 			piece.content.timelineObjects = postProcessTimelineObjects(
-// 				innerContext,
-// 				piece._id,
-// 				blueprintId,
-// 				piece.content.timelineObjects,
-// 				prefixAllTimelineObjects || false,
-// 				timelineUniqueIds
-// 			)
-// 		}
+		if (piece.content?.timelineObjects) {
+			piece.content.timelineObjects = postProcessTimelineObjects(
+				innerContext,
+				piece._id,
+				blueprintId,
+				piece.content.timelineObjects,
+				prefixAllTimelineObjects || false,
+				timelineUniqueIds
+			)
+		}
 
-// 		return piece
-// 	})
+		return piece
+	})
 
-// 	span?.end()
-// 	return processedPieces
-// }
+	span?.end()
+	return processedPieces
+}
 
 function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
 	if (Array.isArray(enable)) {

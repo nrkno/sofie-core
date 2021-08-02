@@ -1,4 +1,13 @@
-import { PartId, PartInstanceId, PieceId, PieceInstanceId, RundownPlaylistId, StudioId } from '../dataModel/Ids'
+import {
+	AdLibActionId,
+	PartId,
+	PartInstanceId,
+	PieceId,
+	PieceInstanceId,
+	RundownBaselineAdLibActionId,
+	RundownPlaylistId,
+	StudioId,
+} from '../dataModel/Ids'
 
 export enum StudioJobs {
 	UpdateTimeline = 'updateTimeline',
@@ -10,6 +19,12 @@ export enum StudioJobs {
 	ActivateHold = 'activateHold',
 	DeactivateHold = 'deactivateHold',
 	PrepareRundownForBroadcast = 'prepareRundownForBroadcast',
+	ResetRundownPlaylist = 'resetRundownPlaylist',
+	ActivateRundownPlaylist = 'activateRundownPlaylist',
+	DeactivateRundownPlaylist = 'deactivateRundownPlaylist',
+	SetNextPart = 'setNextPart',
+	ExecuteAction = 'executeAction',
+	TakeNextPart = 'takeNextPart',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -39,6 +54,25 @@ export interface MoveNextPartProps extends RundownPlayoutPropsBase {
 export type ActivateHoldProps = RundownPlayoutPropsBase
 export type DeactivateHoldProps = RundownPlayoutPropsBase
 export type PrepareRundownForBroadcastProps = RundownPlayoutPropsBase
+export interface ResetRundownPlaylistProps extends RundownPlayoutPropsBase {
+	activate?: 'active' | 'rehearsal'
+}
+export interface ActivateRundownPlaylistProps extends RundownPlayoutPropsBase {
+	rehearsal: boolean
+}
+export type DeactivateRundownPlaylistProps = RundownPlayoutPropsBase
+export interface SetNextPartProps extends RundownPlayoutPropsBase {
+	nextPartId: PartId | null
+	setManually?: boolean
+	nextTimeOffset?: number
+}
+export interface ExecuteActionProps extends RundownPlayoutPropsBase {
+	actionDocId: AdLibActionId | RundownBaselineAdLibActionId
+	actionId: string
+	userData: any
+	triggerMode?: string
+}
+export type TakeNextPartProps = RundownPlayoutPropsBase
 
 /**
  * Set of valid functions, of form:
@@ -54,6 +88,12 @@ export type StudioJobFunc = {
 	[StudioJobs.ActivateHold]: (data: ActivateHoldProps) => void
 	[StudioJobs.DeactivateHold]: (data: DeactivateHoldProps) => void
 	[StudioJobs.PrepareRundownForBroadcast]: (data: PrepareRundownForBroadcastProps) => void
+	[StudioJobs.ResetRundownPlaylist]: (data: ResetRundownPlaylistProps) => void
+	[StudioJobs.ActivateRundownPlaylist]: (data: ActivateRundownPlaylistProps) => void
+	[StudioJobs.DeactivateRundownPlaylist]: (data: DeactivateRundownPlaylistProps) => void
+	[StudioJobs.SetNextPart]: (data: SetNextPartProps) => void
+	[StudioJobs.ExecuteAction]: (data: ExecuteActionProps) => void
+	[StudioJobs.TakeNextPart]: (data: TakeNextPartProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

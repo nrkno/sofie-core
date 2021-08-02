@@ -11,6 +11,7 @@ import {
 	ITimelineEventContext,
 	PackageInfo,
 	IStudioBaselineContext,
+	IShowStyleUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
@@ -41,6 +42,7 @@ import {
 import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../cache'
 import _ = require('underscore')
 import { WatchedPackagesHelper } from './watchedPackages'
+import { INoteBase, NoteType } from '@sofie-automation/corelib/dist/dataModel/Notes'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -204,50 +206,53 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 }
 
-// export class ShowStyleUserContext extends ShowStyleContext implements IShowStyleUserContext {
-// 	public readonly notes: INoteBase[] = []
-// 	private readonly tempSendNotesIntoBlackHole: boolean
+export class ShowStyleUserContext extends ShowStyleContext implements IShowStyleUserContext {
+	public readonly notes: INoteBase[] = []
+	private readonly tempSendNotesIntoBlackHole: boolean
 
-// 	constructor(
-// 		contextInfo: UserContextInfo,
-// 		studio: ReadonlyDeep<Studio>,
-// 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-// 		private readonly watchedPackages: WatchedPackagesHelper
-// 	) {
-// 		super(contextInfo, studio, showStyleCompound)
-// 	}
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<DBStudio>,
+		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		private readonly watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, studio, studioBlueprint, showStyleCompound, showStyleBlueprint)
+		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
+	}
 
-// 	notifyUserError(message: string, params?: { [key: string]: any }): void {
-// 		if (this.tempSendNotesIntoBlackHole) {
-// 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-// 		} else {
-// 			this.notes.push({
-// 				type: NoteType.ERROR,
-// 				message: {
-// 					key: message,
-// 					args: params,
-// 				},
-// 			})
-// 		}
-// 	}
-// 	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-// 		if (this.tempSendNotesIntoBlackHole) {
-// 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-// 		} else {
-// 			this.notes.push({
-// 				type: NoteType.WARNING,
-// 				message: {
-// 					key: message,
-// 					args: params,
-// 				},
-// 			})
-// 		}
-// 	}
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
 
-// 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
-// 		return this.watchedPackages.getPackageInfo(packageId)
-// 	}
-// }
+	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
+	}
+}
 
 /** Rundown */
 

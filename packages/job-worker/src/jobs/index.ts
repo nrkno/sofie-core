@@ -2,12 +2,15 @@ import { IDirectCollections } from '../collection'
 import { ReadonlyDeep } from 'type-fest'
 import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ISettings } from '@sofie-automation/corelib/dist/settings'
 import { ApmSpan } from '../profiler'
 
 export { ApmSpan }
 
 export interface JobContext {
 	readonly directCollections: Readonly<IDirectCollections>
+
+	readonly settings: ReadonlyDeep<ISettings>
 
 	readonly studioId: StudioId
 

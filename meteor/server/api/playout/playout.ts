@@ -2,20 +2,12 @@
 import { Meteor } from 'meteor/meteor'
 import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
-import {
-	getCurrentTime,
-	Time,
-	normalizeArrayToMap,
-	unprotectString,
-	isStringOrProtectedString,
-	getRandomId,
-} from '../../../lib/lib'
+import { getCurrentTime, Time, normalizeArrayToMap, unprotectString, isStringOrProtectedString } from '../../../lib/lib'
 import { StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
-import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportPartInstanceHasStarted,
@@ -26,7 +18,6 @@ import {
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { updateStudioTimeline, updateTimeline } from './timeline'
 import {
 	resetRundownPlaylist as libResetRundownPlaylist,
@@ -38,14 +29,11 @@ import {
 import {
 	prepareStudioForBroadcast,
 	activateRundownPlaylist as libActivateRundownPlaylist,
-	deactivateRundownPlaylist as libDeactivateRundownPlaylist,
 	deactivateRundownPlaylistInner,
-	standDownStudio,
 } from './actions'
 import { sortPieceInstancesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
-import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
@@ -57,10 +45,7 @@ import {
 	takeNextPartInnerSync,
 	updatePartInstanceOnTake,
 } from './take'
-import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
-import { Settings } from '../../../lib/Settings'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import {
 	runPlayoutOperationWithLock,
 	runPlayoutOperationWithCacheFromStudioOperation,
@@ -72,10 +57,6 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
 import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
-import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
-import { AdLibActionId } from '../../../lib/collections/AdLibActions'
-import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { profiler } from '../profiler'
 
 /**
@@ -84,62 +65,6 @@ import { profiler } from '../profiler'
 const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
 
 export namespace ServerPlayoutAPI {
-	/**
-	 * Reset the broadcast, to be used during testing.
-	 * The User might have run through the rundown and wants to start over and try again
-	 */
-	export async function resetRundownPlaylist(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId
-	): Promise<void> {
-		return runPlayoutOperationWithCache(
-			access,
-			'resetRundownPlaylist',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-				if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
-					throw new Meteor.Error(401, `resetRundownPlaylist can only be run in rehearsal!`)
-			},
-			async (cache) => {
-				await libResetRundownPlaylist(cache)
-
-				if (cache.Playlist.doc.activationId) {
-					// Only update the timeline if this is the active playlist
-					await updateTimeline(cache)
-				}
-			}
-		)
-	}
-	/**
-	 * Activate the rundown, final preparations before going on air
-	 * To be triggered by the User a short while before going on air
-	 */
-	export async function resetAndActivateRundownPlaylist(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		rehearsal?: boolean
-	): Promise<void> {
-		return runPlayoutOperationWithCache(
-			access,
-			'resetAndActivateRundownPlaylist',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-				if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
-					throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
-			},
-			async (cache) => {
-				await libResetRundownPlaylist(cache)
-
-				await prepareStudioForBroadcast(cache, true)
-
-				await libActivateRundownPlaylist(cache, !!rehearsal) // Activate rundown
-			}
-		)
-	}
 	/**
 	 * Activate the rundownPlaylist, decativate any other running rundowns
 	 */
@@ -200,48 +125,6 @@ export namespace ServerPlayoutAPI {
 				await prepareStudioForBroadcast(cache, true)
 
 				await libActivateRundownPlaylist(cache, rehearsal)
-			}
-		)
-	}
-	/**
-	 * Only activate the rundown, don't reset anything
-	 */
-	export async function activateRundownPlaylist(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		rehearsal: boolean
-	): Promise<void> {
-		check(rehearsal, Boolean)
-		return runPlayoutOperationWithCache(
-			access,
-			'activateRundownPlaylist',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => {
-				await prepareStudioForBroadcast(cache, true)
-
-				await libActivateRundownPlaylist(cache, rehearsal)
-			}
-		)
-	}
-	/**
-	 * Deactivate the rundown
-	 */
-	export async function deactivateRundownPlaylist(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId
-	): Promise<void> {
-		return runPlayoutOperationWithCache(
-			access,
-			'deactivateRundownPlaylist',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => {
-				await standDownStudio(cache, true)
-
-				await libDeactivateRundownPlaylist(cache)
 			}
 		)
 	}
@@ -883,123 +766,6 @@ export namespace ServerPlayoutAPI {
 						404,
 						`PartInstance "${partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
 					)
-				}
-			}
-		)
-	}
-	export async function executeAction(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
-		actionId: string,
-		userData: any,
-		triggerMode?: string
-	) {
-		check(rundownPlaylistId, String)
-		check(actionDocId, String)
-		check(actionId, String)
-		check(userData, Match.Any)
-		check(triggerMode, Match.Maybe(String))
-
-		return executeActionInner(access, rundownPlaylistId, actionDocId, async (actionContext, _cache, _rundown) => {
-			const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
-			if (!blueprint.blueprint.executeAction) {
-				throw new Meteor.Error(
-					400,
-					`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
-				)
-			}
-
-			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
-
-			blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
-		})
-	}
-
-	export async function executeActionInner(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
-		func: (
-			context: ActionExecutionContext,
-			cache: CacheForPlayout,
-			rundown: Rundown,
-			currentPartInstance: PartInstance
-		) => Promise<void>
-	): Promise<void> {
-		const now = getCurrentTime()
-
-		return runPlayoutOperationWithCache(
-			access,
-			'executeActionInner',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-
-				if (!playlist.activationId)
-					throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-				if (!playlist.currentPartInstanceId)
-					throw new Meteor.Error(400, `A part needs to be active to execute an action`)
-			},
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-
-				const currentPartInstance = playlist.currentPartInstanceId
-					? cache.PartInstances.findOne(playlist.currentPartInstanceId)
-					: undefined
-				if (!currentPartInstance)
-					throw new Meteor.Error(
-						501,
-						`Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`
-					)
-
-				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
-				if (!rundown)
-					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
-
-				const [showStyle, watchedPackages] = await Promise.all([
-					cache.activationCache.getShowStyleCompound(rundown),
-					WatchedPackagesHelper.create(cache.Studio.doc._id, {
-						pieceId: actionDocId,
-						fromPieceType: {
-							$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
-						},
-					}),
-				])
-				const actionContext = new ActionExecutionContext(
-					{
-						name: `${rundown.name}(${playlist.name})`,
-						identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-							currentPartInstance._id
-						},execution=${getRandomId()}`,
-						tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
-					},
-					cache,
-					showStyle,
-					rundown,
-					watchedPackages
-				)
-
-				// If any action cannot be done due to timings, that needs to be rejected by the context
-				await func(actionContext, cache, rundown, currentPartInstance)
-
-				if (
-					actionContext.currentPartState !== ActionPartChange.NONE ||
-					actionContext.nextPartState !== ActionPartChange.NONE
-				) {
-					await syncPlayheadInfinitesForNextPartInstance(cache)
-				}
-
-				if (actionContext.takeAfterExecute) {
-					await ServerPlayoutAPI.callTakeWithCache(cache, now)
-				} else {
-					if (
-						actionContext.currentPartState !== ActionPartChange.NONE ||
-						actionContext.nextPartState !== ActionPartChange.NONE
-					) {
-						await updateTimeline(cache)
-					}
 				}
 			}
 		)

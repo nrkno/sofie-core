@@ -239,6 +239,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, studio, showStyleCompound)
+		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {

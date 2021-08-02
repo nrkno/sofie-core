@@ -15,6 +15,7 @@ import { protectString, unprotectString } from '@sofie-automation/corelib/dist/p
 import { BlueprintManifestType } from '../../../blueprints-integration/dist'
 import { ReadonlyDeep } from 'type-fest'
 import { setupApmAgent, startTransaction } from '../profiler'
+import { ISettings, DEFAULT_SETTINGS } from '@sofie-automation/corelib/dist/settings'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -66,13 +67,17 @@ const studioMethods = {
 		}
 
 		try {
-			const context: JobContext = Object.seal({
+			const context = Object.seal<JobContext>({
 				directCollections: staticData.collections,
 
 				studioId: staticData.studioId,
 
 				studioBlueprint: staticData.studioBlueprint,
 				showStyleBlueprint: staticData.showStyleBlueprint,
+
+				settings: Object.seal<ISettings>({
+					...DEFAULT_SETTINGS,
+				}),
 
 				startSpan: (spanName: string) => {
 					if (transaction) return transaction.startSpan(spanName)

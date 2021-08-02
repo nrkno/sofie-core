@@ -378,60 +378,67 @@ export function innerFindLastPieceOnLayer(
 	})
 }
 
-// 	export function innerFindLastScriptedPieceOnLayer(
-// 		cache: CacheForPlayout,
-// 		sourceLayerId: string[],
-// 		customQuery?: MongoQuery<Piece>
-// 	) {
-// 		const span = profiler.startSpan('innerFindLastScriptedPieceOnLayer')
+export async function innerFindLastScriptedPieceOnLayer(
+	context: JobContext,
+	cache: CacheForPlayout,
+	sourceLayerId: string[],
+	customQuery?: MongoQuery<Piece>
+): Promise<Piece | undefined> {
+	const span = context.startSpan('innerFindLastScriptedPieceOnLayer')
 
-// 		const playlist = cache.Playlist.doc
-// 		const rundownIds = getRundownIDsFromCache(cache)
+	const playlist = cache.Playlist.doc
+	const rundownIds = getRundownIDsFromCache(cache)
 
-// 		if (!playlist.currentPartInstanceId || !playlist.activationId) {
-// 			return
-// 		}
+	// TODO - this should throw instead of return more?
 
-// 		const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
+	if (!playlist.currentPartInstanceId || !playlist.activationId) {
+		return
+	}
 
-// 		if (!currentPartInstance) {
-// 			return
-// 		}
+	const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
 
-// 		const query = {
-// 			...customQuery,
-// 			startRundownId: { $in: rundownIds },
-// 			sourceLayerId: { $in: sourceLayerId },
-// 		}
+	if (!currentPartInstance) {
+		return
+	}
 
-// 		const pieces = Pieces.find(query, { fields: { _id: 1, startPartId: 1, enable: 1 } }).fetch()
+	const query = {
+		...customQuery,
+		startRundownId: { $in: rundownIds },
+		sourceLayerId: { $in: sourceLayerId },
+	}
 
-// 		const part = cache.Parts.findOne(
-// 			{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },
-// 			{ sort: { _rank: -1 } }
-// 		)
+	const pieces = await context.directCollections.Pieces.findFetch(query, {
+		projection: { _id: 1, startPartId: 1, enable: 1 },
+	})
 
-// 		if (!part) {
-// 			return
-// 		}
+	const part = cache.Parts.findOne(
+		{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },
+		{ sort: { _rank: -1 } }
+	)
 
-// 		const partStarted = currentPartInstance.timings?.startedPlayback
-// 		const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
+	if (!part) {
+		return
+	}
 
-// 		const piece = pieces
-// 			.filter((p) => p.startPartId === part._id && (p.enable.start === 'now' || p.enable.start <= nowInPart))
-// 			.sort((a, b) => {
-// 				if (a.enable.start === 'now' && b.enable.start === 'now') return 0
-// 				if (a.enable.start === 'now') return -1
-// 				if (b.enable.start === 'now') return 1
+	const partStarted = currentPartInstance.timings?.startedPlayback
+	const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
-// 				return b.enable.start - a.enable.start
-// 			})[0]
+	const piece = pieces
+		.filter((p) => p.startPartId === part._id && (p.enable.start === 'now' || p.enable.start <= nowInPart))
+		.sort((a, b) => {
+			if (a.enable.start === 'now' && b.enable.start === 'now') return 0
+			if (a.enable.start === 'now') return -1
+			if (b.enable.start === 'now') return 1
 
-// 		if (span) span.end()
+			return b.enable.start - a.enable.start
+		})[0]
 
-// 		return piece
-// 	}
+	const fullPiece = await context.directCollections.Pieces.findOne(piece._id)
+	if (!fullPiece) return
+
+	if (span) span.end()
+	return fullPiece
+}
 
 export async function innerStartQueuedAdLib(
 	context: JobContext,
