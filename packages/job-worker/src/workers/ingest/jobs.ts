@@ -1,4 +1,4 @@
-import { JobContext } from '.'
+import { JobContext } from '../../jobs'
 import { IngestJobs, IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 
 type ExecutableFunction<T extends keyof IngestJobFunc> = (

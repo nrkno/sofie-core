@@ -1,10 +1,8 @@
-import { CacheForPlayout, runAsPlayoutJob, runInPlaylistLock } from '../playout/cache'
-import { updateTimeline, updateStudioTimeline } from '../playout/timeline'
-import { CacheForStudio } from '../studio/cache'
-import { JobContext } from '.'
-import { adLibPieceStart, startStickyPieceOnSourceLayer, takePieceAsAdlibNow } from '../playout/adlib'
+import { runAsPlayoutJob } from '../../playout/lock'
+import { updateTimeline, updateStudioTimeline } from '../../playout/timeline'
+import { JobContext } from '../../jobs'
+import { adLibPieceStart, startStickyPieceOnSourceLayer, takePieceAsAdlibNow } from '../../playout/adlib'
 import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { lockPlaylist } from './lock'
 import {
 	activateHold,
 	activateRundownPlaylist,
@@ -23,8 +21,9 @@ import {
 	setNextSegment,
 	stopPiecesOnSourceLayers,
 	takeNextPart,
-} from '../playout/playout'
-import { runAsStudioJob } from '../studio/lock'
+	updateStudioBaseline,
+} from '../../playout/playout'
+import { runAsStudioJob } from '../../studio/lock'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -57,6 +56,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.OnPartPlaybackStarted]: onPartPlaybackStarted,
 	[StudioJobs.OnPartPlaybackStopped]: onPartPlaybackStopped,
 	[StudioJobs.DisableNextPiece]: disableNextPiece,
+	[StudioJobs.UpdateStudioBaseline]: updateStudioBaseline,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {

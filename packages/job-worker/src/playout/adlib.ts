@@ -17,8 +17,8 @@ import {
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getRundownIDsFromCache,
 	getSelectedPartInstancesFromCache,
-	runAsPlayoutJob,
 } from './cache'
+import { runAsPlayoutJob } from './lock'
 import { updateTimeline } from './timeline'
 import { prefixAllObjectIds, selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'

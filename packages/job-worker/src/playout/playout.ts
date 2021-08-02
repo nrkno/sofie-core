@@ -28,13 +28,8 @@ import { logger } from '../logging'
 import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { innerStopPieces } from './adlib'
-import {
-	CacheForPlayout,
-	getOrderedSegmentsAndPartsFromPlayoutCache,
-	getSelectedPartInstancesFromCache,
-	runAsPlayoutJob,
-	runAsPlayoutLock,
-} from './cache'
+import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import { runAsPlayoutJob, runAsPlayoutLock } from './lock'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import {
 	onPartHasStoppedPlaying,

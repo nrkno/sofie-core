@@ -133,7 +133,7 @@ export type StudioJobFunc = {
 	[StudioJobs.OnPartPlaybackStarted]: (data: OnPartPlaybackStartedProps) => void
 	[StudioJobs.OnPartPlaybackStopped]: (data: OnPartPlaybackStoppedProps) => void
 	[StudioJobs.DisableNextPiece]: (data: DisableNextPieceProps) => void
-	[StudioJobs.UpdateStudioBaseline]: (data: UpdateStudioBaselineProps) => void
+	[StudioJobs.UpdateStudioBaseline]: (data: UpdateStudioBaselineProps) => string | false
 }
 
 export function getStudioQueueName(id: StudioId): string {

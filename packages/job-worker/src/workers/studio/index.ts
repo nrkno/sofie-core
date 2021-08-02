@@ -1,28 +1,27 @@
-import { JobContext } from '../jobs'
+import { JobContext } from '../../jobs'
 import { expose } from 'threads/worker'
-import { ingestJobHandlers } from '../jobs/ingest-jobs'
-import { BlueprintId, RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { studioJobHandlers } from './jobs'
+import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoClient } from 'mongodb'
-import { createMongoConnection, getMongoCollections } from '../db'
-import { IDirectCollections } from '../collection'
+import { createMongoConnection, getMongoCollections } from '../../db'
+import { IDirectCollections } from '../../collection'
 import {
 	loadBlueprintById,
 	loadStudioBlueprint,
 	WrappedShowStyleBlueprint,
 	WrappedStudioBlueprint,
-} from '../blueprints/cache'
+} from '../../blueprints/cache'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { BlueprintManifestType } from '../../../blueprints-integration/dist'
+import { BlueprintManifestType } from '../../../../blueprints-integration/dist'
 import { ReadonlyDeep } from 'type-fest'
-import { setupApmAgent, startTransaction } from '../profiler'
-import { DEFAULT_SETTINGS, ISettings } from '@sofie-automation/corelib/dist/settings'
+import { setupApmAgent, startTransaction } from '../../profiler'
+import { ISettings, DEFAULT_SETTINGS } from '@sofie-automation/corelib/dist/settings'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
 	readonly collections: IDirectCollections
 
 	readonly studioId: StudioId
-	readonly rundownId: RundownId
 
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 	showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>
@@ -31,8 +30,8 @@ let staticData: StaticData | undefined
 
 setupApmAgent()
 
-const ingestMethods = {
-	async init(mongoUri: string, mongoDb: string, studioId: StudioId, rundownId: RundownId): Promise<void> {
+const studioMethods = {
+	async init(mongoUri: string, mongoDb: string, studioId: StudioId): Promise<void> {
 		if (staticData) throw new Error('Worker already initialised')
 
 		const mongoClient = await createMongoConnection(mongoUri)
@@ -55,8 +54,6 @@ const ingestMethods = {
 			collections,
 
 			studioId,
-			rundownId,
-
 			studioBlueprint,
 			showStyleBlueprint: { blueprint: showStyleBlueprint, blueprintId },
 		}
@@ -64,10 +61,9 @@ const ingestMethods = {
 	async runJob(jobName: string, data: unknown): Promise<unknown> {
 		if (!staticData) throw new Error('Worker not initialised')
 
-		const transaction = startTransaction(jobName, 'worker-ingest')
+		const transaction = startTransaction(jobName, 'worker-studio')
 		if (transaction) {
 			transaction.setLabel('studioId', unprotectString(staticData.studioId))
-			transaction.setLabel('rundownId', unprotectString(staticData.rundownId))
 		}
 
 		try {
@@ -90,7 +86,7 @@ const ingestMethods = {
 			})
 
 			// Execute function, or fail if no handler
-			const handler = (ingestJobHandlers as any)[jobName]
+			const handler = (studioJobHandlers as any)[jobName]
 			if (handler) {
 				return handler(context, data)
 			} else {
@@ -102,6 +98,6 @@ const ingestMethods = {
 	},
 }
 
-export type IngestMethods = typeof ingestMethods
+export type StudioMethods = typeof studioMethods
 
-expose(ingestMethods)
+expose(studioMethods)
