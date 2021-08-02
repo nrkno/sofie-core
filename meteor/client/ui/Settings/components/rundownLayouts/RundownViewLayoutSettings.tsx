@@ -215,10 +215,10 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Static duration in Segment header')}
+							{t('Fixed duration in Segment header')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={'staticSegmentDuration'}
+								attribute={'fixedSegmentDuration'}
 								obj={this.props.item}
 								type="checkbox"
 								collection={RundownLayouts}

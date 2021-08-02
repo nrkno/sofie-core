@@ -335,7 +335,7 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	/** Only count down to the segment if it contains pieces on these layers */
 	countdownToSegmentRequireLayers: string[]
 	/** Always show planned segment duration instead of counting up/down when the segment is live */
-	staticSegmentDuration: boolean
+	fixedSegmentDuration: boolean
 }
 
 export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {

@@ -10,7 +10,7 @@ interface ISegmentDurationProps {
 	/** If set, the timer will display just the played out duration */
 	countUp?: boolean
 	/** Always show planned segment duration instead of counting up/down */
-	static?: boolean
+	fixed?: boolean
 }
 
 /**
@@ -37,7 +37,7 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 		return (
 			<>
 				{props.label}
-				{props.static ? (
+				{props.fixed ? (
 					<span>{RundownUtils.formatDiffToTimecode(budget, false, false, true, false, true, '+')}</span>
 				) : props.countUp ? (
 					<span>{RundownUtils.formatDiffToTimecode(playedOut, false, false, true, false, true, '+')}</span>
