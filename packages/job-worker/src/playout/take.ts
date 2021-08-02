@@ -22,7 +22,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartEventContext, RundownContext } from '../blueprints/context'
-import { WrappedShowStyleBlueprint } from '../blueprints/cache'
+import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlib'
 import { reportPartInstanceHasStarted } from '../blueprints/events'
 
@@ -95,7 +95,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	)
 
 	const showStyle = await pShowStyle
-	const blueprint = context.showStyleBlueprint
+	const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
 	if (blueprint.blueprint.onPreTake) {
 		const span = context.startSpan('blueprint.onPreTake')
 		try {

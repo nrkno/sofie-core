@@ -1,18 +1,12 @@
 import { JobContext } from '../../jobs'
 import { expose } from 'threads/worker'
 import { studioJobHandlers } from './jobs'
-import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoClient } from 'mongodb'
 import { createMongoConnection, getMongoCollections } from '../../db'
 import { IDirectCollections } from '../../collection'
-import {
-	loadBlueprintById,
-	loadStudioBlueprint,
-	WrappedShowStyleBlueprint,
-	WrappedStudioBlueprint,
-} from '../../blueprints/cache'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { BlueprintManifestType } from '../../../../blueprints-integration/dist'
+import { loadStudioBlueprint, WrappedStudioBlueprint } from '../../blueprints/cache'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import { setupApmAgent, startTransaction } from '../../profiler'
 import { ISettings, DEFAULT_SETTINGS } from '@sofie-automation/corelib/dist/settings'
@@ -24,7 +18,6 @@ interface StaticData {
 	readonly studioId: StudioId
 
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
-	showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>
 }
 let staticData: StaticData | undefined
 
@@ -44,18 +37,12 @@ const studioMethods = {
 		const studioBlueprint = await loadStudioBlueprint(collections, tmpStudio)
 		if (!studioBlueprint) throw new Error('Missing studio blueprint')
 
-		const blueprintId: BlueprintId = protectString('distriktsnyheter0')
-		const showStyleBlueprint = await loadBlueprintById(collections, blueprintId) // HACK
-		if (!showStyleBlueprint || showStyleBlueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE)
-			throw new Error('Missing showstyle blueprint')
-
 		staticData = {
 			mongoClient,
 			collections,
 
 			studioId,
 			studioBlueprint,
-			showStyleBlueprint: { blueprint: showStyleBlueprint, blueprintId },
 		}
 	},
 	async runJob(jobName: string, data: unknown): Promise<unknown> {
@@ -73,7 +60,6 @@ const studioMethods = {
 				studioId: staticData.studioId,
 
 				studioBlueprint: staticData.studioBlueprint,
-				showStyleBlueprint: staticData.showStyleBlueprint,
 
 				settings: Object.seal<ISettings>({
 					...DEFAULT_SETTINGS,

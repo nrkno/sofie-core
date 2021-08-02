@@ -62,6 +62,7 @@ import { StudioBaselineContext, TimelineEventContext } from '../blueprints/conte
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 
 // export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 // 	const playlists = cache.getActiveRundownPlaylists()
@@ -333,12 +334,13 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 			// const showStyleBlueprint0 = await pshowStyleBlueprint
 			// const showStyleBlueprintManifest = context.showStyleBlueprint.blueprint
 
-			if (context.showStyleBlueprint.blueprint.onTimelineGenerate) {
+			const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
+			if (blueprint.blueprint.onTimelineGenerate) {
 				const context2 = new TimelineEventContext(
 					cache.Studio.doc,
 					context.studioBlueprint,
 					showStyle,
-					context.showStyleBlueprint,
+					blueprint,
 					cache.Playlist.doc,
 					activeRundown,
 					previousPartInstance,
@@ -348,7 +350,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
 				try {
 					const span = context.startSpan('blueprint.onTimelineGenerate')
-					const tlGenRes = await context.showStyleBlueprint.blueprint.onTimelineGenerate(
+					const tlGenRes = await blueprint.blueprint.onTimelineGenerate(
 						context2,
 						timelineObjs,
 						cache.Playlist.doc.previousPersistentState,
