@@ -256,22 +256,9 @@ export async function prepareForBroadcast(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (playlist.activationId)
-		return ClientAPI.responseError(
-			'Rundown Playlist is active, please deactivate before preparing it for broadcast'
-		)
-	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
-	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError(
-			409,
-			'Only one rundown can be active at the same time. Currently active rundowns: ' +
-				_.map(anyOtherActiveRundowns, (p) => p.name).join(', '),
-			anyOtherActiveRundowns
-		)
-	}
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(access, rundownPlaylistId)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.PrepareRundownForBroadcast, {
+		playlistId: rundownPlaylistId,
+	})
 }
 export async function resetRundownPlaylist(
 	context: MethodContext,

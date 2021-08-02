@@ -1,6 +1,6 @@
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { applyToArray, clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
-import { TSR } from '@sofie-automation/blueprints-integration'
+import { Time, TSR } from '@sofie-automation/blueprints-integration'
 import _ = require('underscore')
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -536,17 +536,21 @@ function cleanupOrphanedItems(_context: JobContext, cache: CacheForPlayout) {
 	}
 }
 
-// export function onPartHasStoppedPlaying(cache: CacheForPlayout, partInstance: PartInstance, stoppedPlayingTime: Time) {
-// 	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
-// 		cache.PartInstances.update(partInstance._id, {
-// 			$set: {
-// 				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
-// 			},
-// 		})
-// 	} else {
-// 		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
-// 	}
-// }
+export function onPartHasStoppedPlaying(
+	cache: CacheForPlayout,
+	partInstance: DBPartInstance,
+	stoppedPlayingTime: Time
+): void {
+	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
+		cache.PartInstances.update(partInstance._id, {
+			$set: {
+				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
+			},
+		})
+	} else {
+		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
+	}
+}
 
 export function substituteObjectIds(
 	rawEnable: TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[],

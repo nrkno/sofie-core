@@ -27,6 +27,8 @@ export enum UserErrorMessage {
 	HoldAlreadyActive,
 	HoldIncompatibleParts,
 	HoldAfterAdlib,
+	RundownAlreadyActive,
+	RundownAlreadyActiveNames,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -46,6 +48,17 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.BucketAdlibIncompatible]: t(`Bucket AdLib is not compatible with this Rundown!`),
 	[UserErrorMessage.TakeDuringTransition]: t(`Cannot take during a transition`),
 	[UserErrorMessage.TakeCloseToAutonext]: t(`Cannot take close to an AUTO`),
+	[UserErrorMessage.HoldNotCancelable]: t(`Cannot cancel HOLD once it has been taken`),
+	[UserErrorMessage.HoldNeedsNextPart]: t(`Cannot activate HOLD before a part has been taken!`),
+	[UserErrorMessage.HoldAlreadyActive]: t(`Rundown is already doing a HOLD!`),
+	[UserErrorMessage.HoldIncompatibleParts]: t(`Cannot activate HOLD between the current and next parts`),
+	[UserErrorMessage.HoldAfterAdlib]: t(`Cannot activate HOLD once an adlib has been used`),
+	[UserErrorMessage.RundownAlreadyActive]: t(
+		`Rundown Playlist is active, please deactivate before preparing it for broadcast`
+	),
+	[UserErrorMessage.RundownAlreadyActiveNames]: t(
+		`Only one rundown can be active at the same time. Currently active rundowns: {{names}}`
+	),
 }
 
 export class UserError {

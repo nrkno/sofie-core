@@ -12,6 +12,7 @@ import { VM } from 'vm2'
 import { ReadonlyDeep } from 'type-fest'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { IDirectCollections } from '../collection'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 export const BLUEPRINT_CACHE_CONTROL = { disable: false }
 
@@ -69,32 +70,32 @@ export async function loadStudioBlueprint(
 	}
 }
 
-// export async function loadShowStyleBlueprint(
-// 	context: JobContext,
-// 	showStyleBase: ReadonlyDeep<DBShowStyleBase>
-// ): Promise<WrappedShowStyleBlueprint> {
-// 	if (!showStyleBase.blueprintId) {
-// 		throw new Error(`ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
-// 	}
+export async function loadShowStyleBlueprint(
+	context: IDirectCollections,
+	showStyleBase: ReadonlyDeep<DBShowStyleBase>
+): Promise<WrappedShowStyleBlueprint> {
+	if (!showStyleBase.blueprintId) {
+		throw new Error(`ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
+	}
 
-// 	const blueprintManifest = await loadBlueprintById(context, showStyleBase.blueprintId)
-// 	if (!blueprintManifest) {
-// 		throw new Error(
-// 			`Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`
-// 		)
-// 	}
+	const blueprintManifest = await loadBlueprintById(context, showStyleBase.blueprintId)
+	if (!blueprintManifest) {
+		throw new Error(
+			`Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`
+		)
+	}
 
-// 	if (blueprintManifest.blueprintType !== BlueprintManifestType.SHOWSTYLE) {
-// 		throw new Error(
-// 			`Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}" (${blueprintManifest.blueprintType})!`
-// 		)
-// 	}
+	if (blueprintManifest.blueprintType !== BlueprintManifestType.SHOWSTYLE) {
+		throw new Error(
+			`Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}" (${blueprintManifest.blueprintType})!`
+		)
+	}
 
-// 	return {
-// 		blueprintId: showStyleBase.blueprintId,
-// 		blueprint: blueprintManifest,
-// 	}
-// }
+	return {
+		blueprintId: showStyleBase.blueprintId,
+		blueprint: blueprintManifest,
+	}
+}
 
 // const blueprintDocCache: { [blueprintId: string]: Blueprint } = {}
 export async function loadBlueprintById(

@@ -85,45 +85,6 @@ const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
 
 export namespace ServerPlayoutAPI {
 	/**
-	 * Prepare the rundown for transmission
-	 * To be triggered well before the broadcast, since it may take time and cause outputs to flicker
-	 */
-	export async function prepareRundownPlaylistForBroadcast(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId
-	): Promise<void> {
-		return runPlayoutOperationWithCache(
-			access,
-			'prepareRundownPlaylistForBroadcast',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (cache) => {
-				const playlist = cache.Playlist.doc
-				if (playlist.activationId)
-					throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
-
-				const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
-					playlist.studioId,
-					playlist._id
-				)
-				if (anyOtherActiveRundowns.length) {
-					// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
-					throw new Meteor.Error(
-						409,
-						'Only one rundown can be active at the same time. Active rundowns: ' +
-							anyOtherActiveRundowns.map((rundown) => rundown._id)
-					)
-				}
-			},
-			async (cache) => {
-				await libResetRundownPlaylist(cache)
-				await prepareStudioForBroadcast(cache, true)
-
-				await libActivateRundownPlaylist(cache, true) // Activate rundownPlaylist (rehearsal)
-			}
-		)
-	}
-	/**
 	 * Reset the broadcast, to be used during testing.
 	 * The User might have run through the rundown and wants to start over and try again
 	 */

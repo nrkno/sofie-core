@@ -9,6 +9,7 @@ export enum StudioJobs {
 	MoveNextPart = 'moveNextPart',
 	ActivateHold = 'activateHold',
 	DeactivateHold = 'deactivateHold',
+	PrepareRundownForBroadcast = 'prepareRundownForBroadcast',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -37,6 +38,7 @@ export interface MoveNextPartProps extends RundownPlayoutPropsBase {
 }
 export type ActivateHoldProps = RundownPlayoutPropsBase
 export type DeactivateHoldProps = RundownPlayoutPropsBase
+export type PrepareRundownForBroadcastProps = RundownPlayoutPropsBase
 
 /**
  * Set of valid functions, of form:
@@ -51,6 +53,7 @@ export type StudioJobFunc = {
 	[StudioJobs.MoveNextPart]: (data: MoveNextPartProps) => PartId | null
 	[StudioJobs.ActivateHold]: (data: ActivateHoldProps) => void
 	[StudioJobs.DeactivateHold]: (data: DeactivateHoldProps) => void
+	[StudioJobs.PrepareRundownForBroadcast]: (data: PrepareRundownForBroadcastProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

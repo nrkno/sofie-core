@@ -7,6 +7,7 @@ import {
 	ActivateHoldProps,
 	DeactivateHoldProps,
 	MoveNextPartProps,
+	PrepareRundownForBroadcastProps,
 	StopPiecesOnSourceLayersProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { logger } from '../logging'
@@ -20,54 +21,54 @@ import {
 	runAsPlayoutJob,
 } from './cache'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
-import { setNextPart } from './lib'
+import { resetRundownPlaylist, setNextPart } from './lib'
 import { updateTimeline } from './timeline'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { PartHoldMode } from '@sofie-automation/blueprints-integration'
+import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
+import { activateRundownPlaylist, prepareStudioForBroadcast } from './actions'
 
-// /**
-//  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
-//  */
+/**
+ * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
+ */
 // const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
 
-// /**
-//  * Prepare the rundown for transmission
-//  * To be triggered well before the broadcast, since it may take time and cause outputs to flicker
-//  */
-// export async function prepareRundownPlaylistForBroadcast(
-// 	context: JobContext,
-// 	rundownPlaylistId: RundownPlaylistId
-// ): Promise<void> {
-// 	return runAsPlayoutJob(
-// 		context,
-// 		// 'prepareRundownPlaylistForBroadcast',
-// 		data,
-// 		async (cache) => {
-// 			const playlist = cache.Playlist.doc
-// 			if (playlist.activationId)
-// 				throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
+/**
+ * Prepare the rundown for transmission
+ * To be triggered well before the broadcast, since it may take time and cause outputs to flicker
+ */
+export async function prepareRundownPlaylistForBroadcast(
+	context: JobContext,
+	data: PrepareRundownForBroadcastProps
+): Promise<void> {
+	return runAsPlayoutJob(
+		context,
+		// 'prepareRundownPlaylistForBroadcast',
+		data,
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+			if (playlist.activationId) throw UserError.create(UserErrorMessage.RundownAlreadyActive)
 
-// 			const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
-// 				playlist.studioId,
-// 				playlist._id
-// 			)
-// 			if (anyOtherActiveRundowns.length) {
-// 				// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
-// 				throw new Meteor.Error(
-// 					409,
-// 					'Only one rundown can be active at the same time. Active rundowns: ' +
-// 						anyOtherActiveRundowns.map((rundown) => rundown._id)
-// 				)
-// 			}
-// 		},
-// 		async (cache) => {
-// 			await libResetRundownPlaylist(cache)
-// 			await prepareStudioForBroadcast(cache, true)
+			const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
+				context,
+				playlist.studioId,
+				playlist._id
+			)
+			if (anyOtherActiveRundowns.length) {
+				// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
+				throw UserError.create(UserErrorMessage.RundownAlreadyActiveNames, {
+					names: anyOtherActiveRundowns.map((rundown) => rundown.name).join(', '),
+				})
+			}
+		},
+		async (cache) => {
+			await resetRundownPlaylist(context, cache)
+			await prepareStudioForBroadcast(cache, true)
 
-// 			await libActivateRundownPlaylist(cache, true) // Activate rundownPlaylist (rehearsal)
-// 		}
-// 	)
-// }
+			await activateRundownPlaylist(context, cache, true) // Activate rundownPlaylist (rehearsal)
+		}
+	)
+}
 // 	/**
 // 	 * Reset the broadcast, to be used during testing.
 // 	 * The User might have run through the rundown and wants to start over and try again
