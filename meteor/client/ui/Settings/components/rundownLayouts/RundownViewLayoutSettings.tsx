@@ -213,6 +213,24 @@ export default withTranslation()(
 							{t('One of these sourcelayers must have a piece for the countdown to segment on-air to be show')}
 						</span>
 					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Fixed duration in Segment header')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'fixedSegmentDuration'}
+								obj={this.props.item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							></EditAttribute>
+							<span className="text-s dimmed">
+								{t(
+									'The segment duration in the segment header always displays the planned duration instead of acting as a counter'
+								)}
+							</span>
+						</label>
+					</div>
 				</React.Fragment>
 			)
 		}

@@ -81,6 +81,7 @@ interface IProps {
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
 	showCountdownToSegment: boolean
+	fixedSegmentDuration: boolean | undefined
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -1025,6 +1026,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							<SegmentDuration
 								parts={this.props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+								fixed={this.props.fixedSegmentDuration}
 							/>
 						)}
 				</div>
