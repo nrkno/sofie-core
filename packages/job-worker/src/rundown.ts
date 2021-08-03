@@ -54,9 +54,13 @@
 
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
+import { JobContext } from './jobs'
 import { logger } from './logging'
 import { CacheForPlayout } from './playout/cache'
 
@@ -132,25 +136,31 @@ import { CacheForPlayout } from './playout/cache'
 // 		}
 // 	}
 // }
-// /** Return true if the rundown is allowed to be moved out of that playlist */
-// export function allowedToMoveRundownOutOfPlaylist(
-// 	playlist: ReadonlyDeep<RundownPlaylist>,
-// 	rundown: ReadonlyDeep<DBRundown>
-// ) {
-// 	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 
-// 	if (rundown.playlistId !== playlist._id)
-// 		throw new Meteor.Error(
-// 			500,
-// 			`Wrong playlist "${playlist._id}" provided for rundown "${rundown._id}" ("${rundown.playlistId}")`
-// 		)
+/** Return true if the rundown is allowed to be moved out of that playlist */
+export async function allowedToMoveRundownOutOfPlaylist(
+	context: JobContext,
+	playlist: ReadonlyDeep<DBRundownPlaylist>,
+	rundown: ReadonlyDeep<DBRundown>
+): Promise<boolean> {
+	if (rundown.playlistId !== playlist._id)
+		throw new Error(
+			`Wrong playlist "${playlist._id}" provided for rundown "${rundown._id}" ("${rundown.playlistId}")`
+		)
 
-// 	return !(
-// 		playlist.activationId &&
-// 		((currentPartInstance && currentPartInstance.rundownId === rundown._id) ||
-// 			(nextPartInstance && nextPartInstance.rundownId === rundown._id))
-// 	)
-// }
+	const partInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
+	if (!playlist.activationId || partInstanceIds.length === 0) return true
+
+	const selectedPartInstancesInRundown = await context.directCollections.PartInstances.findFetch(
+		{
+			_id: { $in: partInstanceIds },
+			rundownId: rundown._id,
+		},
+		{ projection: { _id: 1 } }
+	)
+
+	return selectedPartInstancesInRundown.length === 0
+}
 
 export type ChangedSegmentsRankInfo = Array<{
 	segmentId: SegmentId

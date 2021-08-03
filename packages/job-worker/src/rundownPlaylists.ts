@@ -7,8 +7,10 @@
 // 			// Skip any playlists which are active
 // 			const playlists = cache.RundownPlaylists.findFetch({ activationId: { $exists: false } })
 
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { getHash } from '@sofie-automation/corelib/dist/lib'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from './jobs'
 
@@ -34,13 +36,13 @@ import { JobContext } from './jobs'
 // 	)
 // }
 
-// /**
-//  * Convert the playlistExternalId into a playlistId.
-//  * When we've received an externalId for a playlist, that can directly be used to reference a playlistId
-//  */
-// export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternalId: string): RundownPlaylistId {
-// 	return protectString(getHash(`${studioId}_${playlistExternalId}`))
-// }
+/**
+ * Convert the playlistExternalId into a playlistId.
+ * When we've received an externalId for a playlist, that can directly be used to reference a playlistId
+ */
+export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternalId: string): RundownPlaylistId {
+	return protectString(getHash(`${studioId}_${playlistExternalId}`))
+}
 
 export async function removeRundownPlaylistFromDb(
 	context: JobContext,

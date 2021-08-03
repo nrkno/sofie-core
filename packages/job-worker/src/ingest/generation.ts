@@ -25,10 +25,9 @@ import {
 } from '../blueprints/postProcess'
 import { saveIntoCache, logChanges } from '../cache/lib'
 import { sumChanges, anythingChanged } from '../db/changes'
-import { getCurrentTime } from '../lib'
+import { getCurrentTime, getSystemVersion } from '../lib'
 import { logger } from '../logging'
 import _ = require('underscore')
-import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { CacheForIngest } from './cache'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
 import {
@@ -523,7 +522,7 @@ export async function updateRundownFromIngestData(
 			showStyleBase: showStyle.base._rundownVersionHash,
 			showStyleVariant: showStyle.variant._rundownVersionHash,
 			blueprint: showStyleBlueprint.blueprint.blueprintVersion,
-			core: PackageInfo.versionExtended || PackageInfo.version,
+			core: getSystemVersion(),
 		},
 
 		created: cache.Rundown.doc?.created ?? getCurrentTime(),

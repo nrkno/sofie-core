@@ -52,7 +52,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { getCurrentTime } from '../lib'
+import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { getRandomId, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
@@ -1113,12 +1113,7 @@ async function shouldUpdateStudioBaselineInner(context: JobContext, cache: Cache
 	const blueprint = studio.blueprintId ? await context.directCollections.Blueprints.findOne(studio.blueprintId) : null
 	if (!blueprint) return 'missingBlueprint'
 
-	return libShouldUpdateStudioBaselineInner(
-		'0.1.2', // PackageInfo.versionExtended || PackageInfo.version, // TODO
-		studio,
-		timeline,
-		blueprint
-	)
+	return libShouldUpdateStudioBaselineInner(getSystemVersion(), studio, timeline, blueprint)
 }
 
 // interface UpdateTimelineFromIngestDataTimeout {

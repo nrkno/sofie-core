@@ -7,16 +7,21 @@ import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { logger } from '../logging'
 import { CacheForPlayout } from '../playout/cache'
 import { isTooCloseToAutonext } from '../playout/lib'
-import { updatePartInstanceRanks } from '../rundown'
-import { removeRundownsFromDb } from '../rundownPlaylists'
+import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
+import { getPlaylistIdFromExternalId, removeRundownsFromDb } from '../rundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
-import { clone, max } from 'underscore'
 import { CacheForIngest } from './cache'
 import { getRundown } from './lib'
 import { JobContext } from '../jobs'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { runAsPlayoutLock } from '../playout/lock'
+import { removeSegmentContents } from './cleanup'
+import { CommitIngestData } from './lock'
+import { clone } from '@sofie-automation/corelib/dist/lib'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { PlaylistLock } from '../jobs/lock'
+import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -66,20 +71,20 @@ export async function CommitIngestOperation(
 			context,
 			// 'ingest.commit.removeRundownFromOldPlaylist',
 			{ playlistId: beforePlaylistId },
-			async (playlist, oldPlaylistLock) => {
+			async (oldPlaylist, oldPlaylistLock) => {
 				// Aquire the playout lock so we can safely modify the playlist contents
 
-				if (playlist && !allowedToMoveRundownOutOfPlaylist(playlist, rundown)) {
+				if (oldPlaylist && !(await allowedToMoveRundownOutOfPlaylist(context, oldPlaylist, rundown))) {
 					// Don't allow removing currently playing rundown playlists:
 					logger.warn(
 						`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`
 					)
 
 					// Discard proposed playlistId changes
-					trappedInPlaylistId = [playlist._id, playlist.externalId]
+					trappedInPlaylistId = [oldPlaylist._id, oldPlaylist.externalId]
 					ingestCache.Rundown.update({
 						$set: {
-							playlistId: playlist._id,
+							playlistId: oldPlaylist._id,
 						},
 					})
 
@@ -114,19 +119,22 @@ export async function CommitIngestOperation(
 					trappedInPlaylistId = undefined
 
 					// Quickly move the rundown out of the playlist, so we an free the old playlist lock sooner
-					Rundowns.update(ingestCache.RundownId, {
+					await context.directCollections.Rundowns.update(ingestCache.RundownId, {
 						$set: {
 							playlistId: protectString('__TMP__'),
 						},
 					})
 
-					if (playlist) {
+					if (oldPlaylist) {
 						// Ensure playlist is regenerated
-						const newPlaylist = await regeneratePlaylistAndRundownOrder(ingestCache.Studio.doc, playlist)
+						const updatedOldPlaylist = await regeneratePlaylistAndRundownOrder(
+							ingestCache.Studio.doc,
+							oldPlaylist
+						)
 
-						if (newPlaylist) {
+						if (updatedOldPlaylist) {
 							// ensure the 'old' playout is updated to remove any references to the rundown
-							await updatePlayoutAfterChangingRundownInPlaylist(newPlaylist, oldPlaylistLock, null)
+							await updatePlayoutAfterChangingRundownInPlaylist(updatedOldPlaylist, oldPlaylistLock, null)
 						}
 					}
 				}
@@ -145,17 +153,25 @@ export async function CommitIngestOperation(
 	// Adopt the rundown into its new/retained playlist.
 	// We have to do the locking 'manually' because the playlist may not exist yet, but that is ok
 	const newPlaylistId: [RundownPlaylistId, string] = trappedInPlaylistId ?? targetPlaylistId
-	const tmpNewPlaylist: DBRundownPlaylist | undefined = RundownPlaylists.findOne(newPlaylistId[0])
-	if (tmpNewPlaylist) {
-		if (tmpNewPlaylist.studioId !== ingestCache.Studio.doc._id)
-			throw new Error(`Rundown Playlist "${newPlaylistId[0]}" exists but belongs to another studio!`)
+	{
+		// Check the new playlist belongs to the same studio
+		const tmpNewPlaylist: Pick<DBRundownPlaylist, 'studioId'> | undefined =
+			await context.directCollections.RundownPlaylists.findOne(newPlaylistId[0], {
+				projection: {
+					studioId: 1,
+				},
+			})
+		if (tmpNewPlaylist) {
+			if (tmpNewPlaylist.studioId !== ingestCache.Studio.doc._id)
+				throw new Error(`Rundown Playlist "${newPlaylistId[0]}" exists but belongs to another studio!`)
+		}
 	}
 
 	await runAsPlayoutLock(
 		context,
 		// 'ingest.commit.saveRundownToPlaylist',
 		{ playlistId: newPlaylistId[0] },
-		async () => {
+		async (_, playlistLock) => {
 			// Ensure the rundown has the correct playlistId
 			ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
 
@@ -179,7 +195,7 @@ export async function CommitIngestOperation(
 					}
 				}
 
-				const emptySegmentIds = Settings.preserveUnsyncedPlayingSegmentContents
+				const emptySegmentIds = context.settings.preserveUnsyncedPlayingSegmentContents
 					? purgeSegmentIds
 					: new Set([...purgeSegmentIds.values(), ...orphanSegmentIds.values()])
 				removeSegmentContents(ingestCache, emptySegmentIds)
@@ -198,15 +214,17 @@ export async function CommitIngestOperation(
 			// Regenerate the full list of expected*Items / packages
 			updateExpectedPackagesOnRundown(ingestCache)
 
-			// Save the rundowns
+			// Save the rundowns and regenerated playlist
 			// This will reorder the rundowns a little before the playlist and the contents, but that is ok
 			await Promise.all([
 				rundownsCollection.updateDatabaseWithData(),
-				RundownPlaylists.upsertAsync(newPlaylist._id, newPlaylist),
+				context.directCollections.RundownPlaylists.replace(newPlaylist),
 			])
 
 			// Create the full playout cache, now we have the rundowns and playlist updated
 			const playoutCache = await CacheForPlayout.fromIngest(
+				context,
+				playlistLock,
 				newPlaylist,
 				rundownsCollection.findFetch({}),
 				ingestCache
@@ -231,7 +249,14 @@ export async function CommitIngestOperation(
 				updatePartInstanceRanks(playoutCache, changedSegmentsInfo)
 
 				// sync changes to the 'selected' partInstances
-				await syncChangesToPartInstances(playoutCache, ingestCache, showStyle, blueprint.blueprint, newRundown)
+				await syncChangesToPartInstances(
+					context,
+					playoutCache,
+					ingestCache,
+					showStyle,
+					blueprint.blueprint,
+					newRundown
+				)
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
@@ -262,7 +287,7 @@ async function generatePlaylistAndRundownsCollection(
 	ingestCache: CacheForIngest,
 	newPlaylistId: RundownPlaylistId,
 	newPlaylistExternalId: string
-): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>]> {
+): Promise<[DBRundownPlaylist, DbCacheWriteCollection<DBRundown>]> {
 	// Load existing playout data
 	const finalRundown = getRundown(ingestCache)
 
@@ -274,7 +299,7 @@ async function generatePlaylistAndRundownsCollection(
 	)
 
 	if (!result) {
-		throw new Meteor.Error(500, `RundownPlaylist had no rundowns, even though ingest created one`)
+		throw new Error(`RundownPlaylist had no rundowns, even though ingest created one`)
 	}
 
 	const [newPlaylist, rundownsCollection] = result
@@ -292,23 +317,21 @@ async function generatePlaylistAndRundownsCollection(
 }
 
 async function generatePlaylistAndRundownsCollectionInner(
-	studio: ReadonlyDeep<Studio>,
-	changedRundown: ReadonlyDeep<Rundown> | undefined,
+	studio: ReadonlyDeep<DBStudio>,
+	changedRundown: ReadonlyDeep<DBRundown> | undefined,
 	newPlaylistId: RundownPlaylistId,
 	newPlaylistExternalId: string,
-	existingPlaylist0?: ReadonlyDeep<RundownPlaylist>,
-	existingRundownsCollection?: DbCacheWriteCollection<Rundown, DBRundown>
-): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>] | null> {
+	existingPlaylist0?: ReadonlyDeep<DBRundownPlaylist>,
+	existingRundownsCollection?: DbCacheWriteCollection<DBRundown>
+): Promise<[DBRundownPlaylist, DbCacheWriteCollection<DBRundown>] | null> {
 	if (existingPlaylist0) {
 		if (existingPlaylist0._id !== newPlaylistId) {
-			throw new Meteor.Error(
-				500,
+			throw new Error(
 				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0._id}") newPlaylistId("${newPlaylistId}") to be the same`
 			)
 		}
 		if (existingPlaylist0.externalId !== newPlaylistExternalId) {
-			throw new Meteor.Error(
-				500,
+			throw new Error(
 				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0.externalId}") newPlaylistExternalId("${newPlaylistExternalId}") to be the same`
 			)
 		}
@@ -420,10 +443,10 @@ function updatePartInstancesBasicProperties(
  * This saves directly to the db (or to the supplied cache collection)
  */
 export async function regeneratePlaylistAndRundownOrder(
-	studio: ReadonlyDeep<Studio>,
-	oldPlaylist: ReadonlyDeep<RundownPlaylist>,
-	existingRundownsCollection?: DbCacheWriteCollection<Rundown, DBRundown>
-): Promise<RundownPlaylist | null> {
+	studio: ReadonlyDeep<DBStudio>,
+	oldPlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	existingRundownsCollection?: DbCacheWriteCollection<DBRundown>
+): Promise<DBRundownPlaylist | null> {
 	const result = await generatePlaylistAndRundownsCollectionInner(
 		studio,
 		undefined,
@@ -457,7 +480,7 @@ export async function regeneratePlaylistAndRundownOrder(
 export async function updatePlayoutAfterChangingRundownInPlaylist(
 	playlist: DBRundownPlaylist,
 	playlistLock: PlaylistLock,
-	insertedRundown: ReadonlyDeep<Rundown> | null
+	insertedRundown: ReadonlyDeep<DBRundown> | null
 ): Promise<void> {
 	// ensure the 'old' playout is updated to remove any references to the rundown
 	return runPlayoutOperationWithCacheFromStudioOperation(

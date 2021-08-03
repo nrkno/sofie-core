@@ -1,44 +1,46 @@
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
-	ShowStyleBlueprintManifest,
-	BlueprintSyncIngestPartInstance,
 	BlueprintSyncIngestNewData,
+	BlueprintSyncIngestPartInstance,
+	ShowStyleBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { ReadonlyDeep } from 'type-fest'
-import _ from 'underscore'
-import { PartNote, SegmentNote } from '../../../lib/api/notes'
-import { PartInstance } from '../../../lib/collections/PartInstances'
-import { Part } from '../../../lib/collections/Parts'
-import { Piece } from '../../../lib/collections/Pieces'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { unprotectObject, unprotectObjectArray, literal, clone } from '../../../lib/lib'
-import { ReadOnlyCache } from '../../cache/CacheBase'
-import { logger } from '../../logging'
-import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
+import { ReadOnlyCache } from '../cache/CacheBase'
+import { JobContext } from '../jobs'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
+import { CacheForIngest } from './cache'
+import { ReadonlyDeep } from 'type-fest'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { clone, literal } from '@sofie-automation/corelib/dist/lib'
+import { unprotectObject, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
+import { logger } from '../logging'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
 import { isTooCloseToAutonext } from '../playout/lib'
-import { CacheForIngest } from './cache'
+import _ = require('underscore')
 
 export async function syncChangesToPartInstances(
+	context: JobContext,
 	cache: CacheForPlayout,
 	ingestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'>,
 	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>,
-	rundown: ReadonlyDeep<Rundown>
+	rundown: ReadonlyDeep<DBRundown>
 ): Promise<void> {
 	if (cache.Playlist.doc.activationId) {
 		if (blueprint.syncIngestUpdateToPartInstance) {
 			const playlistPartInstances = getSelectedPartInstancesFromCache(cache)
 			const instances: Array<{
-				existingPartInstance: PartInstance
-				previousPartInstance: PartInstance | undefined
+				existingPartInstance: DBPartInstance
+				previousPartInstance: DBPartInstance | undefined
 				playStatus: 'current' | 'next'
-				newPart: Part
+				newPart: DBPart
 				piecesThatMayBeActive: Promise<Piece[]>
 			}> = []
 			if (playlistPartInstances.currentPartInstance) {
@@ -49,7 +51,7 @@ export async function syncChangesToPartInstances(
 						previousPartInstance: playlistPartInstances.previousPartInstance,
 						playStatus: 'current',
 						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, newPart),
+						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(context, cache, ingestCache, newPart),
 					})
 				}
 			}
@@ -63,7 +65,7 @@ export async function syncChangesToPartInstances(
 							? 'current'
 							: 'next',
 						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, newPart),
+						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(context, cache, ingestCache, newPart),
 					})
 				}
 			}
@@ -92,6 +94,7 @@ export async function syncChangesToPartInstances(
 				const adlibActions = ingestCache.AdLibActions.findFetch({ partId: partId })
 
 				const proposedPieceInstances = getPieceInstancesForPart(
+					context,
 					cache,
 					previousPartInstance,
 					rundown,
@@ -167,7 +170,7 @@ export async function syncChangesToPartInstances(
 
 				if (existingPartInstance._id === cache.Playlist.doc.currentPartInstanceId) {
 					// This should be run after 'current', before 'next':
-					await syncPlayheadInfinitesForNextPartInstance(cache)
+					await syncPlayheadInfinitesForNextPartInstance(context, cache)
 				}
 			}
 		} else {

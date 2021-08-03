@@ -1,4 +1,4 @@
-import { PeripheralDeviceId, StudioId } from '../dataModel/Ids'
+import { ExpectedPackageId, PeripheralDeviceId, StudioId } from '../dataModel/Ids'
 import * as MOS from 'mos-connection'
 import { IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 
@@ -20,6 +20,8 @@ export enum IngestJobs {
 	MosInsertStory = 'mosInsertStory',
 	MosMoveStory = 'mosMoveStory',
 	MosSwapStory = 'mosSwapStory',
+
+	UpdatedPackageInfos = 'updatedPackageInfos',
 }
 
 export interface IngestPropsBase {
@@ -84,6 +86,10 @@ export interface MosSwapStoryProps extends IngestPropsBase {
 	story1: MOS.MosString128
 }
 
+export interface UpdatedPackageInfosProps extends IngestPropsBase {
+	packageIds: ExpectedPackageId[]
+}
+
 /**
  * Set of valid functions, of form:
  * `id: [data, return]`
@@ -106,6 +112,8 @@ export type IngestJobFunc = {
 	[IngestJobs.MosInsertStory]: (data: MosInsertStoryProps) => void
 	[IngestJobs.MosMoveStory]: (data: MosMoveStoryProps) => void
 	[IngestJobs.MosSwapStory]: (data: MosSwapStoryProps) => void
+
+	[IngestJobs.UpdatedPackageInfos]: (data: UpdatedPackageInfosProps) => void
 }
 
 // TODO - there should probably be a queue per rundown or something. To be improved later

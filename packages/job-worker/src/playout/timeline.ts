@@ -45,7 +45,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { logger } from '../logging'
 import _ = require('underscore')
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { getCurrentTime } from '../lib'
+import { getCurrentTime, getSystemVersion } from '../lib'
 import { getPartFirstObjectId, getPartGroupId, getPieceGroupId } from '@sofie-automation/corelib/dist/playout/ids'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
@@ -135,7 +135,7 @@ export async function updateStudioTimeline(
 				layer: id,
 				metaData: literal<StatObjectMetadata>({
 					versions: {
-						core: '0.1.2', // PackageInfo.versionExtended || PackageInfo.version, // TODO
+						core: getSystemVersion(),
 						blueprintId: studio.blueprintId,
 						blueprintVersion: blueprint.blueprintVersion,
 						studio: studio._rundownVersionHash,

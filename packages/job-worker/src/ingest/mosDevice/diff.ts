@@ -10,6 +10,7 @@ import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestSegment } from '@sofie-automation/blueprints-integration'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { CommitIngestData } from '../lock'
+import { removeSegmentContents } from '../cleanup'
 
 export function diffAndUpdateSegmentIds(
 	context: JobContext,

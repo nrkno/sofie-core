@@ -1,7 +1,7 @@
 import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 // import { ActivationCache, getActivationCache } from '../cache/ActivationCache'
 import { DbCacheReadObject, DbCacheWriteObject } from '../cache/CacheObject'
-import { CacheBase } from '../cache/CacheBase'
+import { CacheBase, ReadOnlyCache } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -23,6 +23,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlaylistLock } from '../jobs/lock'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { getShowStyleCompound } from '../showStyles'
+import { CacheForIngest } from '../ingest/cache'
 
 /**
  * This is a cache used for playout operations.
@@ -182,7 +183,12 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 	protected constructor(
 		context: JobContext,
-		initCache: CacheForPlayoutPreInit,
+		playlistLock: PlaylistLock,
+		playlistId: RundownPlaylistId,
+		studio: DbCacheReadObject<DBStudio>,
+		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
+		playlist: DbCacheWriteObject<DBRundownPlaylist>,
+		rundowns: DbCacheReadCollection<DBRundown>,
 		segments: DbCacheReadCollection<DBSegment>,
 		parts: DbCacheReadCollection<DBPart>,
 		partInstances: DbCacheWriteCollection<DBPartInstance>,
@@ -190,15 +196,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		timeline: DbCacheWriteCollection<TimelineComplete>,
 		baselineObjects: DbCacheReadCollection<RundownBaselineObj>
 	) {
-		super(
-			context,
-			initCache.PlaylistLock,
-			initCache.PlaylistId,
-			initCache.Studio,
-			initCache.PeripheralDevices,
-			initCache.Playlist,
-			initCache.Rundowns
-		)
+		super(context, playlistLock, playlistId, studio, peripheralDevices, playlist, rundowns)
 
 		this.Timeline = timeline
 
@@ -232,33 +230,45 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			initCache.Rundowns.findFetch({}).map((r) => r._id)
 		)
 
-		const res = new CacheForPlayout(context, initCache, ...content)
+		const res = new CacheForPlayout(
+			context,
+			initCache.PlaylistLock,
+			initCache.PlaylistId,
+			initCache.Studio,
+			initCache.PeripheralDevices,
+			initCache.Playlist,
+			initCache.Rundowns,
+			...content
+		)
 
 		if (span) span.end()
 		return res
 	}
 
-	// static async fromIngest(
-	// 	context: JobContext,
-	// 	newPlaylist: ReadonlyDeep<DBRundownPlaylist>,
-	// 	newRundowns: ReadonlyDeep<Array<DBRundown>>,
-	// 	ingestCache: ReadOnlyCache<CacheForIngest>
-	// ): Promise<CacheForPlayout> {
-	// 	const initData = await CacheForPlayoutPreInit.loadInitData(
-	// 		newPlaylist,
-	// 		false,
-	// 		DbCacheReadCollection.createFromArray<Rundown, DBRundown>(Rundowns, newRundowns)
-	// 	)
+	static async fromIngest(
+		context: JobContext,
+		playlistLock: PlaylistLock,
+		newPlaylist: ReadonlyDeep<DBRundownPlaylist>,
+		newRundowns: ReadonlyDeep<Array<DBRundown>>,
+		ingestCache: ReadOnlyCache<CacheForIngest>
+	): Promise<CacheForPlayout> {
+		const initData = await CacheForPlayoutPreInit.loadInitData(
+			context,
+			newPlaylist,
+			false,
+			DbCacheReadCollection.createFromArray<DBRundown>(context, context.directCollections.Rundowns, newRundowns)
+		)
 
-	// 	const contentData = await CacheForPlayout.loadContent(
-	// 		ingestCache,
-	// 		newPlaylist,
-	// 		newRundowns.map((r) => r._id)
-	// 	)
-	// 	const res = new CacheForPlayout(newPlaylist._id, ...initData, ...contentData)
+		const contentData = await CacheForPlayout.loadContent(
+			context,
+			ingestCache,
+			newPlaylist,
+			newRundowns.map((r) => r._id)
+		)
+		const res = new CacheForPlayout(context, playlistLock, newPlaylist._id, ...initData, ...contentData)
 
-	// 	return res
-	// }
+		return res
+	}
 
 	/**
 	 * Intitialise the full content of the cache
