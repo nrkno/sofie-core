@@ -15,8 +15,6 @@ export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
 export * from '@sofie-automation/corelib/dist/mongo'
 
-export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
-
 export function getHash(str: string): string {
 	const hash = crypto.createHash('sha1')
 	return hash

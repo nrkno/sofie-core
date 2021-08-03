@@ -1,5 +1,6 @@
 import { JobContext } from '../../jobs'
 import { IngestJobs, IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
+import { handleMosDeleteStory, handleMosFullStory } from '../../ingest/mosDevice/ingest'
 
 type ExecutableFunction<T extends keyof IngestJobFunc> = (
 	context: JobContext,
@@ -11,9 +12,6 @@ export type IngestJobHandlers = {
 }
 
 export const ingestJobHandlers: IngestJobHandlers = {
-	[IngestJobs.MosFullStory]: mosFullStory,
-}
-
-async function mosFullStory(_data: unknown): Promise<void> {
-	// TODO
+	[IngestJobs.MosFullStory]: handleMosFullStory,
+	[IngestJobs.MosDeleteStory]: handleMosDeleteStory,
 }

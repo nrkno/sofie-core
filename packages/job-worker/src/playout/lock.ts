@@ -49,18 +49,18 @@ export async function runAsPlayoutJob<TRes>(
 export async function runAsPlayoutLock<TRes>(
 	context: JobContext,
 	data: RundownPlayoutPropsBase,
-	fcn: (playlist: DBRundownPlaylist) => Promise<TRes>
+	fcn: (playlist: DBRundownPlaylist | undefined, lock: PlaylistLock) => Promise<TRes>
 ): Promise<TRes> {
 	if (!data.playlistId) {
 		throw new Error(`Job is missing playlistId`)
 	}
 
 	const playlist = await context.directCollections.RundownPlaylists.findOne(data.playlistId)
-	if (!playlist || playlist.studioId !== context.studioId) {
+	if (playlist && playlist.studioId !== context.studioId) {
 		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
 	}
 
-	return runInPlaylistLock(context, playlist._id, async () => fcn(playlist))
+	return runInPlaylistLock(context, data.playlistId, async (lock) => fcn(playlist, lock))
 }
 
 export async function runInPlaylistLock<TRes>(

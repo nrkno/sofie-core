@@ -6,6 +6,7 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Filter as FilterQuery } from 'mongodb'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
+import { CacheForIngest } from '../../ingest/cache'
 
 /**
  * This is a helper class to simplify exposing packageInfo to various places in the blueprints
@@ -65,26 +66,35 @@ export class WatchedPackagesHelper {
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
 	}
 
-	// /**
-	//  * Create a helper, and populate it with data from a CacheForIngest
-	//  * @param studioId The studio this is for
-	//  * @param filter A filter to check if each package should be included
-	//  */
-	// static async createForIngest(
-	// 	cache: CacheForIngest,
-	// 	func: ((pkg: ExpectedPackageDB) => boolean) | undefined
-	// ): Promise<WatchedPackagesHelper> {
-	// 	const packages = cache.ExpectedPackages.findFetch(func)
+	/**
+	 * Create a helper, and populate it with data from a CacheForIngest
+	 * @param studioId The studio this is for
+	 * @param filter A filter to check if each package should be included
+	 */
+	static async createForIngest(
+		context: JobContext,
+		cache: CacheForIngest,
+		func: ((pkg: ExpectedPackageDB) => boolean) | undefined
+	): Promise<WatchedPackagesHelper> {
+		const packages = cache.ExpectedPackages.findFetch(func ?? {})
 
-	// 	// Load all the packages and the infos that are watched
-	// 	const watchedPackages = DbCacheReadCollection.createFromArray(ExpectedPackages, packages)
-	// 	const watchedPackageInfos = await DbCacheReadCollection.createFromDatabase(PackageInfos, {
-	// 		studioId: cache.Studio.doc._id,
-	// 		packageId: { $in: packages.map((p) => p._id) },
-	// 	})
+		// Load all the packages and the infos that are watched
+		const watchedPackages = DbCacheReadCollection.createFromArray(
+			context,
+			context.directCollections.ExpectedPackages,
+			packages
+		)
+		const watchedPackageInfos = await DbCacheReadCollection.createFromDatabase(
+			context,
+			context.directCollections.PackageInfos,
+			{
+				studioId: cache.Studio.doc._id,
+				packageId: { $in: packages.map((p) => p._id) },
+			}
+		)
 
-	// 	return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
-	// }
+		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
+	}
 
 	/**
 	 * Create a new helper with a subset of the data in the current helper.

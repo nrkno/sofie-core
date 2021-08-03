@@ -9,6 +9,8 @@ import * as crypto from 'crypto'
 
 export type TimeDuration = number
 
+export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
+
 export type ArrayElement<A> = A extends readonly (infer T)[] ? T : never
 
 export function getHash(str: string): string {
