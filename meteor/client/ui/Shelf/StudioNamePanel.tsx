@@ -10,6 +10,8 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementPosition } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Studio } from '../../../lib/collections/Studios'
+import { withTranslation } from 'react-i18next'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface IStudioNamePanelProps {
 	visible?: boolean
@@ -23,8 +25,8 @@ interface IState {}
 
 interface IStudioNamePanelTrackedProps {}
 
-export class StudioNamePanel extends MeteorReactComponent<
-	IStudioNamePanelProps & IStudioNamePanelTrackedProps,
+export class StudioNamePanelInner extends MeteorReactComponent<
+	Translated<IStudioNamePanelProps & IStudioNamePanelTrackedProps>,
 	IState
 > {
 	constructor(props) {
@@ -33,7 +35,7 @@ export class StudioNamePanel extends MeteorReactComponent<
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { panel } = this.props
+		const { t, panel } = this.props
 
 		return (
 			<div
@@ -48,9 +50,12 @@ export class StudioNamePanel extends MeteorReactComponent<
 				)}
 			>
 				<div className="wrapper">
+					<span className="studio-name-title">{t('Studio Name')}</span>
 					<span className="studio-name">{this.props.studio.name}</span>
 				</div>
 			</div>
 		)
 	}
 }
+
+export const StudioNamePanel = withTranslation()(StudioNamePanelInner)
