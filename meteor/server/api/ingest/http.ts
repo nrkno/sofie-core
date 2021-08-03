@@ -1,14 +1,15 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
-import { handleUpdatedRundown } from './rundownInput'
 import { Studios, StudioId } from '../../../lib/collections/Studios'
 import { check } from '../../../lib/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
-import { getRundownId } from './lib'
+import { getRundownId, runIngestOperation } from './lib'
 import { protectString, waitForPromise } from '../../../lib/lib'
 import { PickerPOST } from '../http'
 import { getExternalNRCSName } from '../../../lib/collections/PeripheralDevices'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { IngestRundown } from '@sofie-automation/blueprints-integration'
 
 PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 	check(params.studioId, String)
@@ -16,7 +17,7 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 
 	const content = ''
 	try {
-		let ingestRundown = req.body
+		let ingestRundown: any = req.body
 		if (!ingestRundown) throw new Meteor.Error(400, 'Upload rundown: Missing request body')
 		if (typeof ingestRundown !== 'object') {
 			// sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
@@ -37,7 +38,7 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 		}
 	}
 })
-export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
+export function importIngestRundown(studioId: StudioId, ingestRundown: IngestRundown) {
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
 
@@ -51,5 +52,12 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
 			`Cannot replace existing rundown from '${existingDbRundown.externalNRCSName}' with http data`
 		)
 
-	waitForPromise(handleUpdatedRundown(studio, undefined, ingestRundown, true))
+	waitForPromise(
+		runIngestOperation(studio._id, IngestJobs.UpdateRundown, {
+			rundownExternalId: ingestRundown.externalId,
+			peripheralDeviceId: null,
+			ingestRundown: ingestRundown,
+			isCreateAction: true,
+		})
+	)
 }

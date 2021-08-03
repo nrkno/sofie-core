@@ -1,214 +1,23 @@
-// import { Meteor } from 'meteor/meteor'
-// import { check } from '../../../lib/check'
-// import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-// import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
-// import { getCurrentTime, literal } from '../../../lib/lib'
-// import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
-// import { logger } from '../../../lib/logging'
-// import { Studio, StudioId } from '../../../lib/collections/Studios'
-// import { SegmentId, Segments } from '../../../lib/collections/Segments'
-// import {
-// 	RundownIngestDataCache,
-// 	LocalIngestRundown,
-// 	makeNewIngestSegment,
-// 	makeNewIngestPart,
-// 	makeNewIngestRundown,
-// } from './ingestCache'
-// import {
-// 	getSegmentId,
-// 	getStudioFromDevice,
-// 	canRundownBeUpdated,
-// 	canSegmentBeUpdated,
-// 	checkAccessAndGetPeripheralDevice,
-// 	getRundown,
-// } from './lib'
-// import { MethodContext } from '../../../lib/api/methods'
-// import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
-// import { CacheForIngest } from './cache'
-// import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
-// import { removeRundownsFromDb } from '../rundownPlaylist'
-// import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-
-// export namespace RundownInput {
-// 	export async function dataPlaylistGet(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		playlistExternalId: string
-// 	): Promise<IngestPlaylist> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataPlaylistGet', playlistExternalId)
-// 		check(playlistExternalId, String)
-// 		return getIngestPlaylist(peripheralDevice, playlistExternalId)
-// 	}
-// 	// Get info on the current rundowns from this device:
-// 	export async function dataRundownList(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string
-// 	): Promise<string[]> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataRundownList')
-// 		return listIngestRundowns(peripheralDevice)
-// 	}
-// 	export async function dataRundownGet(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string
-// 	): Promise<IngestRundown> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataRundownGet', rundownExternalId)
-// 		check(rundownExternalId, String)
-// 		return getIngestRundown(peripheralDevice, rundownExternalId)
-// 	}
-// 	// Delete, Create & Update Rundown (and it's contents):
-// 	export async function dataRundownDelete(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataRundownDelete', rundownExternalId)
-// 		check(rundownExternalId, String)
-// 		await handleRemovedRundown(peripheralDevice, rundownExternalId)
-// 	}
-// 	export async function dataRundownCreate(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		ingestRundown: IngestRundown
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataRundownCreate', ingestRundown)
-// 		check(ingestRundown, Object)
-// 		await handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, true)
-// 	}
-// 	export async function dataRundownUpdate(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		ingestRundown: IngestRundown
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataRundownUpdate', ingestRundown)
-// 		check(ingestRundown, Object)
-// 		await handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, false)
-// 	}
-// 	export async function dataSegmentGet(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string,
-// 		segmentExternalId: string
-// 	): Promise<IngestSegment> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataSegmentGet', rundownExternalId, segmentExternalId)
-// 		check(rundownExternalId, String)
-// 		check(segmentExternalId, String)
-// 		return getIngestSegment(peripheralDevice, rundownExternalId, segmentExternalId)
-// 	}
-// 	// Delete, Create & Update Segment (and it's contents):
-// 	export async function dataSegmentDelete(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string,
-// 		segmentExternalId: string
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataSegmentDelete', rundownExternalId, segmentExternalId)
-// 		check(rundownExternalId, String)
-// 		check(segmentExternalId, String)
-// 		await handleRemovedSegment(peripheralDevice, rundownExternalId, segmentExternalId)
-// 	}
-// 	export async function dataSegmentCreate(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string,
-// 		ingestSegment: IngestSegment
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataSegmentCreate', rundownExternalId, ingestSegment)
-// 		check(rundownExternalId, String)
-// 		check(ingestSegment, Object)
-// 		await handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment, true)
-// 	}
-// 	export async function dataSegmentUpdate(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string,
-// 		ingestSegment: IngestSegment
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataSegmentUpdate', rundownExternalId, ingestSegment)
-// 		check(rundownExternalId, String)
-// 		check(ingestSegment, Object)
-// 		await handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment, false)
-// 	}
-// 	export async function dataSegmentRanksUpdate(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string,
-// 		newRanks: { [segmentExternalId: string]: number }
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataSegmentRanksUpdate', rundownExternalId, Object.keys(newRanks))
-// 		check(rundownExternalId, String)
-// 		check(newRanks, Object)
-// 		await handleUpdatedSegmentRanks(peripheralDevice, rundownExternalId, newRanks)
-// 	}
-// 	// Delete, Create & Update Part:
-// 	export async function dataPartDelete(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string,
-// 		segmentExternalId: string,
-// 		partExternalId: string
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataPartDelete', rundownExternalId, segmentExternalId, partExternalId)
-// 		check(rundownExternalId, String)
-// 		check(segmentExternalId, String)
-// 		check(partExternalId, String)
-// 		await handleRemovedPart(peripheralDevice, rundownExternalId, segmentExternalId, partExternalId)
-// 	}
-// 	export async function dataPartCreate(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string,
-// 		segmentExternalId: string,
-// 		ingestPart: IngestPart
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataPartCreate', rundownExternalId, segmentExternalId, ingestPart)
-// 		check(rundownExternalId, String)
-// 		check(segmentExternalId, String)
-// 		check(ingestPart, Object)
-// 		await handleUpdatedPart(peripheralDevice, rundownExternalId, segmentExternalId, ingestPart)
-// 	}
-// 	export async function dataPartUpdate(
-// 		context: MethodContext,
-// 		deviceId: PeripheralDeviceId,
-// 		deviceToken: string,
-// 		rundownExternalId: string,
-// 		segmentExternalId: string,
-// 		ingestPart: IngestPart
-// 	): Promise<void> {
-// 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-// 		logger.info('dataPartUpdate', rundownExternalId, segmentExternalId, ingestPart)
-// 		check(rundownExternalId, String)
-// 		check(segmentExternalId, String)
-// 		check(ingestPart, Object)
-// 		await handleUpdatedPart(peripheralDevice, rundownExternalId, segmentExternalId, ingestPart)
-// 	}
-// }
+import { PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	IngestRegenerateRundownProps,
+	IngestRegenerateSegmentProps,
+	IngestRemovePartProps,
+	IngestRemoveRundownProps,
+	IngestRemoveSegmentProps,
+	IngestUpdatePartProps,
+	IngestUpdateRundownProps,
+	IngestUpdateSegmentProps,
+	IngestUpdateSegmentRanksProps,
+} from '@sofie-automation/corelib/dist/worker/ingest'
+import { getCurrentTime } from '../lib'
+import { JobContext } from '../jobs'
+import { logger } from '../logging'
+import { CacheForIngest } from './cache'
+import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
+import { LocalIngestRundown, makeNewIngestPart, makeNewIngestRundown, makeNewIngestSegment } from './ingestCache'
+import { canRundownBeUpdated, canSegmentBeUpdated, getRundown, getSegmentId } from './lib'
+import { CommitIngestData, runAsIngestJob, UpdateIngestRundownAction } from './lock'
 
 // async function getIngestPlaylist(
 // 	peripheralDevice: PeripheralDevice,
@@ -290,38 +99,29 @@
 // 	return rundowns.map((r) => r.externalId)
 // }
 
-// export async function handleRemovedRundown(
-// 	peripheralDevice: PeripheralDevice,
-// 	rundownExternalId: string
-// ): Promise<void> {
-// 	const studio = getStudioFromDevice(peripheralDevice)
+export async function handleRemovedRundown(context: JobContext, data: IngestRemoveRundownProps): Promise<void> {
+	return runAsIngestJob(
+		context,
+		data,
+		() => {
+			// Remove it
+			return UpdateIngestRundownAction.DELETE
+		},
+		async (_context, cache) => {
+			const rundown = getRundown(cache)
 
-// 	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
-// }
-// async function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
-// 	return runIngestOperationWithCache(
-// 		'handleRemovedRundown',
-// 		studioId,
-// 		rundownExternalId,
-// 		() => {
-// 			// Remove it
-// 			return UpdateIngestRundownAction.DELETE
-// 		},
-// 		async (cache) => {
-// 			const rundown = getRundown(cache)
+			return {
+				changedSegmentIds: [],
+				removedSegmentIds: [],
+				renamedSegments: new Map(),
+				removeRundown: data.forceDelete || canRundownBeUpdated(rundown, false),
 
-// 			return {
-// 				changedSegmentIds: [],
-// 				removedSegmentIds: [],
-// 				renamedSegments: new Map(),
-// 				removeRundown: forceDelete || canRundownBeUpdated(rundown, false),
-
-// 				showStyle: undefined,
-// 				blueprint: undefined,
-// 			}
-// 		}
-// 	)
-// }
+				showStyle: undefined,
+				blueprint: undefined,
+			}
+		}
+	)
+}
 // export async function handleRemovedRundownByRundown(rundown: DBRundown, forceDelete?: boolean): Promise<void> {
 // 	if (rundown.restoredFromSnapshotId) {
 // 		// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
@@ -339,305 +139,268 @@
 // 	}
 // }
 
-// /** Handle an updated (or inserted) Rundown */
-// export async function handleUpdatedRundown(
-// 	studio0: Studio | undefined,
-// 	peripheralDevice: PeripheralDevice | undefined,
-// 	newIngestRundown: IngestRundown,
-// 	isCreateAction: boolean
-// ): Promise<void> {
-// 	const studioId = peripheralDevice?.studioId ?? studio0?._id
-// 	if ((!peripheralDevice && !studio0) || !studioId) {
-// 		throw new Meteor.Error(500, `A PeripheralDevice or Studio is required to update a rundown`)
-// 	}
+/** Handle an updated (or inserted) Rundown */
+export async function handleUpdatedRundown(context: JobContext, data: IngestUpdateRundownProps): Promise<void> {
+	return runAsIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown || data.isCreateAction) {
+				// We want to regenerate unmodified
+				return makeNewIngestRundown(data.ingestRundown)
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (context, cache, ingestRundown) => {
+			if (!ingestRundown) throw new Error(`regenerateRundown lost the IngestRundown...`)
 
-// 	if (peripheralDevice && studio0 && peripheralDevice.studioId !== studio0._id) {
-// 		throw new Meteor.Error(
-// 			500,
-// 			`PeripheralDevice "${peripheralDevice._id}" does not belong to studio "${studio0._id}"`
-// 		)
-// 	}
+			return handleUpdatedRundownInner(
+				context,
+				cache,
+				ingestRundown,
+				data.isCreateAction,
+				data.peripheralDeviceId
+			)
+		}
+	)
+}
+export async function handleUpdatedRundownInner(
+	context: JobContext,
+	cache: CacheForIngest,
+	ingestRundown: LocalIngestRundown,
+	isCreateAction: boolean,
+	peripheralDeviceId: PeripheralDeviceId | null
+): Promise<CommitIngestData | null> {
+	if (!canRundownBeUpdated(cache.Rundown.doc, isCreateAction)) return null
 
-// 	const rundownExternalId = newIngestRundown.externalId
-// 	return runIngestOperationWithCache(
-// 		'handleUpdatedRundown',
-// 		studioId,
-// 		rundownExternalId,
-// 		(ingestRundown) => {
-// 			if (ingestRundown || isCreateAction) {
-// 				// We want to regenerate unmodified
-// 				return makeNewIngestRundown(newIngestRundown)
-// 			} else {
-// 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
-// 			}
-// 		},
-// 		async (cache, ingestRundown) => {
-// 			if (!ingestRundown) throw new Meteor.Error(`regenerateRundown lost the IngestRundown...`)
+	logger.info(`${cache.Rundown.doc ? 'Updating' : 'Adding'} rundown ${cache.RundownId}`)
 
-// 			return handleUpdatedRundownInner(cache, ingestRundown, isCreateAction, peripheralDevice)
-// 		}
-// 	)
-// }
-// export async function handleUpdatedRundownInner(
-// 	cache: CacheForIngest,
-// 	ingestRundown: LocalIngestRundown,
-// 	isCreateAction: boolean,
-// 	peripheralDevice?: PeripheralDevice // TODO - to cache?
-// ): Promise<CommitIngestData | null> {
-// 	if (!canRundownBeUpdated(cache.Rundown.doc, isCreateAction)) return null
+	return updateRundownFromIngestData(context, cache, ingestRundown, peripheralDeviceId)
+}
+export async function handleRegenerateRundown(context: JobContext, data: IngestRegenerateRundownProps): Promise<void> {
+	return runAsIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				// We want to regenerate unmodified
+				return ingestRundown
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (context, cache, ingestRundown) => {
+			// If the rundown is orphaned, then we can't regenerate as there wont be any data to use!
+			if (!ingestRundown || !canRundownBeUpdated(cache.Rundown.doc, false)) return null
 
-// 	logger.info(`${cache.Rundown.doc ? 'Updating' : 'Adding'} rundown ${cache.RundownId}`)
+			return updateRundownFromIngestData(context, cache, ingestRundown, data.peripheralDeviceId)
+		}
+	)
+}
 
-// 	return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
-// }
-// export async function regenerateRundown(
-// 	studio: Studio,
-// 	rundownExternalId: string,
-// 	peripheralDevice0: PeripheralDevice | undefined
-// ): Promise<void> {
-// 	return runIngestOperationWithCache(
-// 		'regenerateRundown',
-// 		studio._id,
-// 		rundownExternalId,
-// 		(ingestRundown) => {
-// 			if (ingestRundown) {
-// 				// We want to regenerate unmodified
-// 				return ingestRundown
-// 			} else {
-// 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
-// 			}
-// 		},
-// 		async (cache, ingestRundown) => {
-// 			// If the rundown is orphaned, then we can't regenerate as there wont be any data to use!
-// 			if (!ingestRundown || !canRundownBeUpdated(cache.Rundown.doc, false)) return null
+export async function handleRegenerateSegment(context: JobContext, data: IngestRegenerateSegmentProps): Promise<void> {
+	return runAsIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				// Ensure the target segment exists in the cache
+				const ingestSegment = ingestRundown.segments.find((s) => s.externalId === data.segmentExternalId)
+				if (!ingestSegment) {
+					throw new Error(
+						`Rundown "${data.rundownExternalId}" does not have a Segment "${data.segmentExternalId}" to update`
+					)
+				}
 
-// 			// Try and find the stored peripheralDevice
-// 			const peripheralDevice =
-// 				peripheralDevice0 ??
-// 				(cache.Rundown.doc?.peripheralDeviceId
-// 					? PeripheralDevices.findOne({
-// 							_id: cache.Rundown.doc.peripheralDeviceId,
-// 							studioId: cache.Studio.doc._id,
-// 					  })
-// 					: undefined)
+				// We modify in-place
+				return ingestRundown
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (context, cache, ingestRundown) => {
+			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === data.segmentExternalId)
+			if (!ingestSegment) throw new Error(`IngestSegment "${data.segmentExternalId}" is missing!`)
+			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
+		}
+	)
+}
 
-// 			return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
-// 		}
-// 	)
-// }
+export async function handleRemovedSegment(context: JobContext, data: IngestRemoveSegmentProps): Promise<void> {
+	return runAsIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const oldSegmentsLength = ingestRundown.segments.length
+				ingestRundown.segments = ingestRundown.segments.filter((s) => s.externalId !== data.segmentExternalId)
+				ingestRundown.modified = getCurrentTime()
 
-// export async function handleRemovedSegment(
-// 	peripheralDevice: PeripheralDevice,
-// 	rundownExternalId: string,
-// 	segmentExternalId: string
-// ): Promise<void> {
-// 	const studio = getStudioFromDevice(peripheralDevice)
+				if (ingestRundown.segments.length === oldSegmentsLength) {
+					throw new Error(
+						`Rundown "${data.rundownExternalId}" does not have a Segment "${data.segmentExternalId}" to remove`
+					)
+				}
 
-// 	return runIngestOperationWithCache(
-// 		'handleRemovedSegment',
-// 		studio._id,
-// 		rundownExternalId,
-// 		(ingestRundown) => {
-// 			if (ingestRundown) {
-// 				const oldSegmentsLength = ingestRundown.segments.length
-// 				ingestRundown.segments = ingestRundown.segments.filter((s) => s.externalId !== segmentExternalId)
-// 				ingestRundown.modified = getCurrentTime()
+				// We modify in-place
+				return ingestRundown
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (_context, cache) => {
+			const rundown = getRundown(cache)
+			const segmentId = getSegmentId(rundown._id, data.segmentExternalId)
+			const segment = cache.Segments.findOne(segmentId)
 
-// 				if (ingestRundown.segments.length === oldSegmentsLength) {
-// 					throw new Meteor.Error(
-// 						404,
-// 						`Rundown "${rundownExternalId}" does not have a Segment "${segmentExternalId}" to remove`
-// 					)
-// 				}
+			if (!canSegmentBeUpdated(rundown, segment, false)) {
+				// segment has already been deleted
+				return null
+			} else {
+				return {
+					changedSegmentIds: [],
+					removedSegmentIds: [segmentId],
+					renamedSegments: new Map(),
 
-// 				// We modify in-place
-// 				return ingestRundown
-// 			} else {
-// 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
-// 			}
-// 		},
-// 		async (cache) => {
-// 			const rundown = getRundown(cache)
-// 			const segmentId = getSegmentId(rundown._id, segmentExternalId)
-// 			const segment = cache.Segments.findOne(segmentId)
+					removeRundown: false,
 
-// 			if (!canSegmentBeUpdated(rundown, segment, false)) {
-// 				// segment has already been deleted
-// 				return null
-// 			} else {
-// 				return {
-// 					changedSegmentIds: [],
-// 					removedSegmentIds: [segmentId],
-// 					renamedSegments: new Map(),
+					showStyle: undefined,
+					blueprint: undefined,
+				}
+			}
+		}
+	)
+}
+export async function handleUpdatedSegment(context: JobContext, data: IngestUpdateSegmentProps): Promise<void> {
+	const segmentExternalId = data.ingestSegment.externalId
+	return runAsIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				ingestRundown.segments = ingestRundown.segments.filter((s) => s.externalId !== segmentExternalId)
+				ingestRundown.segments.push(makeNewIngestSegment(data.ingestSegment))
+				ingestRundown.modified = getCurrentTime()
 
-// 					removeRundown: false,
+				// We modify in-place
+				return ingestRundown
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (context, cache, ingestRundown) => {
+			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
+			if (!ingestSegment) throw new Error(`IngestSegment "${segmentExternalId}" is missing!`)
+			return updateSegmentFromIngestData(context, cache, ingestSegment, data.isCreateAction)
+		}
+	)
+}
 
-// 					showStyle: undefined,
-// 					blueprint: undefined,
-// 				}
-// 			}
-// 		}
-// 	)
-// }
-// export async function handleUpdatedSegment(
-// 	peripheralDevice: PeripheralDevice,
-// 	rundownExternalId: string,
-// 	newIngestSegment: IngestSegment,
-// 	isCreateAction: boolean
-// ): Promise<void> {
-// 	const studio = getStudioFromDevice(peripheralDevice)
+export async function handleUpdatedSegmentRanks(
+	context: JobContext,
+	data: IngestUpdateSegmentRanksProps
+): Promise<void> {
+	return runAsIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				// Update ranks on ingest data
+				for (const segment of ingestRundown.segments) {
+					segment.rank = data.newRanks[segment.externalId] ?? segment.rank
+				}
+				// We modify in-place
+				return ingestRundown
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (_context, cache) => {
+			const changedSegmentIds: SegmentId[] = []
+			for (const [externalId, rank] of Object.entries(data.newRanks)) {
+				const segmentId = getSegmentId(cache.RundownId, externalId)
+				const changed = cache.Segments.update(segmentId, {
+					$set: {
+						_rank: rank,
+					},
+				})
 
-// 	const segmentExternalId = newIngestSegment.externalId
+				if (changed.length === 0) {
+					logger.warn(`Failed to update rank of segment "${externalId}" (${data.rundownExternalId})`)
+				} else {
+					changedSegmentIds.push(segmentId)
+				}
+			}
 
-// 	return runIngestOperationWithCache(
-// 		'handleUpdatedSegment',
-// 		studio._id,
-// 		rundownExternalId,
-// 		(ingestRundown) => {
-// 			if (ingestRundown) {
-// 				ingestRundown.segments = ingestRundown.segments.filter((s) => s.externalId !== segmentExternalId)
-// 				ingestRundown.segments.push(makeNewIngestSegment(newIngestSegment))
-// 				ingestRundown.modified = getCurrentTime()
+			return {
+				changedSegmentIds,
+				removedSegmentIds: [],
+				renamedSegments: new Map(),
+				removeRundown: false,
 
-// 				// We modify in-place
-// 				return ingestRundown
-// 			} else {
-// 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
-// 			}
-// 		},
-// 		async (cache, ingestRundown) => {
-// 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
-// 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
-// 			return updateSegmentFromIngestData(cache, ingestSegment, isCreateAction)
-// 		}
-// 	)
-// }
+				showStyle: undefined,
+				blueprint: undefined,
+			}
+		}
+	)
+}
 
-// export async function handleUpdatedSegmentRanks(
-// 	peripheralDevice: PeripheralDevice,
-// 	rundownExternalId: string,
-// 	newRanks: { [segmentExternalId: string]: number }
-// ): Promise<void> {
-// 	const studio = getStudioFromDevice(peripheralDevice)
+export async function handleRemovedPart(context: JobContext, data: IngestRemovePartProps): Promise<void> {
+	return runAsIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const ingestSegment = ingestRundown.segments.find((s) => s.externalId === data.segmentExternalId)
+				if (!ingestSegment) {
+					throw new Error(
+						`Rundown "${data.rundownExternalId}" does not have a Segment "${data.segmentExternalId}" to update`
+					)
+				}
+				ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== data.partExternalId)
+				ingestSegment.modified = getCurrentTime()
 
-// 	return runIngestOperationWithCache(
-// 		'handleUpdatedSegmentRanks',
-// 		studio._id,
-// 		rundownExternalId,
-// 		(ingestRundown) => {
-// 			if (ingestRundown) {
-// 				// Update ranks on ingest data
-// 				for (const segment of ingestRundown.segments) {
-// 					segment.rank = newRanks[segment.externalId] ?? segment.rank
-// 				}
-// 				// We modify in-place
-// 				return ingestRundown
-// 			} else {
-// 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
-// 			}
-// 		},
-// 		async (cache) => {
-// 			const changedSegmentIds: SegmentId[] = []
-// 			for (const [externalId, rank] of Object.entries(newRanks)) {
-// 				const segmentId = getSegmentId(cache.RundownId, externalId)
-// 				const changed = cache.Segments.update(segmentId, {
-// 					$set: {
-// 						_rank: rank,
-// 					},
-// 				})
+				// We modify in-place
+				return ingestRundown
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (context, cache, ingestRundown) => {
+			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === data.segmentExternalId)
+			if (!ingestSegment) throw new Error(`IngestSegment "${data.segmentExternalId}" is missing!`)
+			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
+		}
+	)
+}
 
-// 				if (changed.length === 0) {
-// 					logger.warn(`Failed to update rank of segment "${externalId}" (${rundownExternalId})`)
-// 				} else {
-// 					changedSegmentIds.push(segmentId)
-// 				}
-// 			}
+export async function handleUpdatedPart(context: JobContext, data: IngestUpdatePartProps): Promise<void> {
+	return runAsIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				const ingestSegment = ingestRundown.segments.find((s) => s.externalId === data.segmentExternalId)
+				if (!ingestSegment) {
+					throw new Error(
+						`Rundown "${data.rundownExternalId}" does not have a Segment "${data.segmentExternalId}" to update`
+					)
+				}
+				ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== data.ingestPart.externalId)
+				ingestSegment.parts.push(makeNewIngestPart(data.ingestPart))
+				ingestSegment.modified = getCurrentTime()
 
-// 			return {
-// 				changedSegmentIds,
-// 				removedSegmentIds: [],
-// 				renamedSegments: new Map(),
-// 				removeRundown: false,
-
-// 				showStyle: undefined,
-// 				blueprint: undefined,
-// 			}
-// 		}
-// 	)
-// }
-
-// export async function handleRemovedPart(
-// 	peripheralDevice: PeripheralDevice,
-// 	rundownExternalId: string,
-// 	segmentExternalId: string,
-// 	partExternalId: string
-// ): Promise<void> {
-// 	const studio = getStudioFromDevice(peripheralDevice)
-
-// 	return runIngestOperationWithCache(
-// 		'handleRemovedPart',
-// 		studio._id,
-// 		rundownExternalId,
-// 		(ingestRundown) => {
-// 			if (ingestRundown) {
-// 				const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
-// 				if (!ingestSegment) {
-// 					throw new Meteor.Error(
-// 						404,
-// 						`Rundown "${rundownExternalId}" does not have a Segment "${segmentExternalId}" to update`
-// 					)
-// 				}
-// 				ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== partExternalId)
-// 				ingestSegment.modified = getCurrentTime()
-
-// 				// We modify in-place
-// 				return ingestRundown
-// 			} else {
-// 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
-// 			}
-// 		},
-// 		async (cache, ingestRundown) => {
-// 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
-// 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
-// 			return updateSegmentFromIngestData(cache, ingestSegment, false)
-// 		}
-// 	)
-// }
-// export async function handleUpdatedPart(
-// 	peripheralDevice: PeripheralDevice,
-// 	rundownExternalId: string,
-// 	segmentExternalId: string,
-// 	ingestPart: IngestPart
-// ): Promise<void> {
-// 	const studio = getStudioFromDevice(peripheralDevice)
-
-// 	return runIngestOperationWithCache(
-// 		'handleUpdatedPart',
-// 		studio._id,
-// 		rundownExternalId,
-// 		(ingestRundown) => {
-// 			if (ingestRundown) {
-// 				const ingestSegment = ingestRundown.segments.find((s) => s.externalId === segmentExternalId)
-// 				if (!ingestSegment) {
-// 					throw new Meteor.Error(
-// 						404,
-// 						`Rundown "${rundownExternalId}" does not have a Segment "${segmentExternalId}" to update`
-// 					)
-// 				}
-// 				ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== ingestPart.externalId)
-// 				ingestSegment.parts.push(makeNewIngestPart(ingestPart))
-// 				ingestSegment.modified = getCurrentTime()
-
-// 				// We modify in-place
-// 				return ingestRundown
-// 			} else {
-// 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
-// 			}
-// 		},
-// 		async (cache, ingestRundown) => {
-// 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
-// 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segmentExternalId}" is missing!`)
-// 			return updateSegmentFromIngestData(cache, ingestSegment, false)
-// 		}
-// 	)
-// }
+				// We modify in-place
+				return ingestRundown
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (context, cache, ingestRundown) => {
+			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === data.segmentExternalId)
+			if (!ingestSegment) throw new Error(`IngestSegment "${data.segmentExternalId}" is missing!`)
+			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
+		}
+	)
+}

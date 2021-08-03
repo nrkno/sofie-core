@@ -4,15 +4,14 @@ import { IngestActions } from './actions'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Settings } from '../../../lib/Settings'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
-import { RundownIngestDataCache } from './ingestCache'
 import { Rundowns } from '../../../lib/collections/Rundowns'
-import { handleUpdatedSegment } from './rundownInput'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import { runIngestOperationFromRundown } from './lockFunction'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
+import { runIngestOperation } from './lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
@@ -40,17 +39,12 @@ if (!Settings.enableUserAccounts) {
 			const rundown = Rundowns.findOne(segment.rundownId)
 			if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-			const ingestCache = waitForPromise(RundownIngestDataCache.create(rundown._id))
-			const ingestSegment = ingestCache.fetchSegment(segment._id)
-			if (!ingestSegment) throw new Meteor.Error(404, 'Segment ingest data not found')
-
 			waitForPromise(
-				handleUpdatedSegment(
-					{ studioId: rundown.studioId } as PeripheralDevice,
-					rundown.externalId,
-					ingestSegment,
-					true
-				)
+				runIngestOperation(rundown.studioId, IngestJobs.RegenerateSegment, {
+					rundownExternalId: rundown.externalId,
+					peripheralDeviceId: null,
+					segmentExternalId: segment.externalId,
+				})
 			)
 		},
 		/**

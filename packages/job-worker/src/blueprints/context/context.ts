@@ -13,6 +13,8 @@ import {
 	IStudioBaselineContext,
 	IShowStyleUserContext,
 	IPartEventContext,
+	IStudioUserContext,
+	ISegmentUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
@@ -146,42 +148,46 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 	}
 }
 
-// export class StudioUserContext extends StudioContext implements IStudioUserContext {
-// 	public readonly notes: INoteBase[] = []
-// 	private readonly tempSendNotesIntoBlackHole: boolean
+export class StudioUserContext extends StudioContext implements IStudioUserContext {
+	public readonly notes: INoteBase[] = []
+	private readonly tempSendNotesIntoBlackHole: boolean
 
-// 	constructor(contextInfo: UserContextInfo, studio: ReadonlyDeep<Studio>) {
-// 		super(contextInfo, studio)
-// 		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
-// 	}
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<DBStudio>,
+		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+	) {
+		super(contextInfo, studio, studioBlueprint)
+		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
+	}
 
-// 	notifyUserError(message: string, params?: { [key: string]: any }): void {
-// 		if (this.tempSendNotesIntoBlackHole) {
-// 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-// 		} else {
-// 			this.notes.push({
-// 				type: NoteType.ERROR,
-// 				message: {
-// 					key: message,
-// 					args: params,
-// 				},
-// 			})
-// 		}
-// 	}
-// 	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-// 		if (this.tempSendNotesIntoBlackHole) {
-// 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-// 		} else {
-// 			this.notes.push({
-// 				type: NoteType.WARNING,
-// 				message: {
-// 					key: message,
-// 					args: params,
-// 				},
-// 			})
-// 		}
-// 	}
-// }
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+}
 
 /** Show Style Variant */
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
@@ -306,48 +312,50 @@ export class RundownEventContext extends RundownContext implements IEventContext
 	}
 }
 
-// export interface RawPartNote extends INoteBase {
-// 	partExternalId: string | undefined
-// }
+export interface RawPartNote extends INoteBase {
+	partExternalId: string | undefined
+}
 
-// export class SegmentUserContext extends RundownContext implements ISegmentUserContext {
-// 	public readonly notes: RawPartNote[] = []
+export class SegmentUserContext extends RundownContext implements ISegmentUserContext {
+	public readonly notes: RawPartNote[] = []
 
-// 	constructor(
-// 		contextInfo: ContextInfo,
-// 		studio: ReadonlyDeep<Studio>,
-// 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-// 		rundown: ReadonlyDeep<Rundown>,
-// 		private readonly watchedPackages: WatchedPackagesHelper
-// 	) {
-// 		super(contextInfo, studio, showStyleCompound, rundown)
-// 	}
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<DBStudio>,
+		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		rundown: ReadonlyDeep<DBRundown>,
+		private readonly watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, studio, studioBlueprint, showStyleCompound, showStyleBlueprint, rundown)
+	}
 
-// 	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
-// 		this.notes.push({
-// 			type: NoteType.ERROR,
-// 			message: {
-// 				key: message,
-// 				args: params,
-// 			},
-// 			partExternalId: partExternalId,
-// 		})
-// 	}
-// 	notifyUserWarning(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
-// 		this.notes.push({
-// 			type: NoteType.WARNING,
-// 			message: {
-// 				key: message,
-// 				args: params,
-// 			},
-// 			partExternalId: partExternalId,
-// 		})
-// 	}
+	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
+		this.notes.push({
+			type: NoteType.ERROR,
+			message: {
+				key: message,
+				args: params,
+			},
+			partExternalId: partExternalId,
+		})
+	}
+	notifyUserWarning(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
+		this.notes.push({
+			type: NoteType.WARNING,
+			message: {
+				key: message,
+				args: params,
+			},
+			partExternalId: partExternalId,
+		})
+	}
 
-// 	getPackageInfo(packageId): Readonly<Array<PackageInfo.Any>> {
-// 		return this.watchedPackages.getPackageInfo(packageId)
-// 	}
-// }
+	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
+	}
+}
 
 // /** Events */
 

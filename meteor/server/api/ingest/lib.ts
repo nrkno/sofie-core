@@ -22,6 +22,38 @@ import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { CacheForIngest } from './cache'
+import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
+import { QueueIngestJob } from '../../worker/worker'
+
+/**
+ * Run an ingest operation via the worker.
+ * @param studioId Id of the studio
+ * @param name The name/id of the operation
+ * @param data Data for the operation
+ * @returns Wrapped 'client safe' response. Includes translatable friendly error messages
+ */
+export async function runIngestOperation<T extends keyof IngestJobFunc>(
+	studioId: StudioId,
+	name: T,
+	data: Parameters<IngestJobFunc[T]>[0]
+): Promise<ReturnType<IngestJobFunc[T]>> {
+	try {
+		const job = await QueueIngestJob(name, studioId, data)
+
+		const span = profiler.startSpan('queued-job')
+		const res = await job.complete
+		span?.end()
+
+		// TODO - track timings
+		// console.log(await job.getTimings)
+
+		return res
+	} catch (e) {
+		logger.error(`Ingest operation "${name}" failed: ${e.toString()}`)
+
+		throw e
+	}
+}
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(

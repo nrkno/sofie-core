@@ -1,10 +1,9 @@
-import { getPeripheralDeviceFromRundown } from './lib'
+import { getPeripheralDeviceFromRundown, runIngestOperation } from './lib'
 import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
 import { check } from '../../../lib/check'
-import { regenerateRundown } from './rundownInput'
 import { logger } from '../../logging'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
@@ -20,6 +19,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { QueueStudioJob } from '../../worker/worker'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -157,7 +157,10 @@ export namespace IngestActions {
 		// Fire off all the updates in parallel, in their own low-priority tasks
 		waitForPromiseAll(
 			ingestData.map(async ({ rundownExternalId, studio }) =>
-				regenerateRundown(studio, rundownExternalId, undefined)
+				runIngestOperation(studio._id, IngestJobs.RegenerateRundown, {
+					rundownExternalId: rundownExternalId,
+					peripheralDeviceId: null,
+				})
 			)
 		)
 	}

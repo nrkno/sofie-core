@@ -1,10 +1,9 @@
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentNote, PartNote, RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
@@ -15,9 +14,15 @@ import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/Show
 import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import { ShowStyleUserContext, CommonContext } from '../blueprints/context'
+import { ShowStyleUserContext, CommonContext, StudioUserContext, SegmentUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import { postProcessPieces } from '../blueprints/postProcess'
+import {
+	postProcessAdLibActions,
+	postProcessAdLibPieces,
+	postProcessGlobalAdLibActions,
+	postProcessPieces,
+	postProcessRundownBaselineItems,
+} from '../blueprints/postProcess'
 import { saveIntoCache, logChanges } from '../cache/lib'
 import { sumChanges, anythingChanged } from '../db/changes'
 import { getCurrentTime } from '../lib'
@@ -125,7 +130,9 @@ export async function calculateSegmentsFromIngestData(
 					identifier: `rundownId=${rundown._id},segmentId=${segmentId}`,
 				},
 				cache.Studio.doc,
+				context.studioBlueprint,
 				showStyle,
+				blueprint,
 				rundown,
 				watchedPackages
 			)
@@ -425,7 +432,7 @@ export async function updateRundownFromIngestData(
 	context: JobContext,
 	cache: CacheForIngest,
 	ingestRundown: LocalIngestRundown,
-	peripheralDevice: PeripheralDevice | undefined
+	peripheralDeviceId: PeripheralDeviceId | null
 ): Promise<CommitIngestData> {
 	const span = context.startSpan('ingest.rundownInput.updateRundownFromIngestData')
 
@@ -439,7 +446,8 @@ export async function updateRundownFromIngestData(
 			identifier: `studioId=${cache.Studio.doc._id},rundownId=${cache.RundownId},ingestRundownId=${cache.RundownExternalId}`,
 			tempSendUserNotesIntoBlackHole: true,
 		},
-		cache.Studio.doc
+		cache.Studio.doc,
+		context.studioBlueprint
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
 	const showStyle = await selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
@@ -521,7 +529,7 @@ export async function updateRundownFromIngestData(
 		created: cache.Rundown.doc?.created ?? getCurrentTime(),
 		modified: getCurrentTime(),
 
-		peripheralDeviceId: peripheralDevice?._id,
+		peripheralDeviceId: peripheralDeviceId ?? undefined,
 		externalNRCSName: getExternalNRCSName(peripheralDevice),
 
 		// validated later
@@ -562,6 +570,7 @@ export async function updateRundownFromIngestData(
 			baselineAdlibPieces,
 			{},
 			postProcessAdLibPieces(
+				context,
 				blueprintRundownContext,
 				showStyle.base.blueprintId,
 				dbRundown._id,
@@ -574,6 +583,7 @@ export async function updateRundownFromIngestData(
 			baselineAdlibActions,
 			{},
 			postProcessGlobalAdLibActions(
+				context,
 				blueprintRundownContext,
 				showStyle.base.blueprintId,
 				dbRundown._id,

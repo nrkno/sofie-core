@@ -1,5 +1,6 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { StudioJobFunc, getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
+import { IngestJobFunc, getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
 import { Queue, ConnectionOptions, QueueEvents, Job } from 'bullmq'
 import { logger } from '../../lib/logging'
 import PLazy from 'p-lazy'
@@ -34,6 +35,7 @@ const connection: ConnectionOptions = {
 }
 
 const studioQueueCache = new Map<StudioId, [Queue, QueueEvents]>()
+const ingestQueueCache = new Map<StudioId, [Queue, QueueEvents]>()
 
 // type WrappedResultExt<TRes> = WrappedResult<TRes> & {
 // 	completedTime: number
@@ -59,8 +61,47 @@ export async function QueueStudioJob<T extends keyof StudioJobFunc>(
 		queue0 = [new Queue(queueId, { connection }), new QueueEvents(queueId, { connection })]
 		studioQueueCache.set(studioId, queue0)
 	}
-	const [queue, queueEvents] = queue0
 
+	return pushJobToQueue(queue0[0], queue0[1], name, data)
+}
+
+/**
+ * Queue a job for ingest
+ * @param name Job name
+ * @param studioId Id of the studio
+ * @param data Job payload
+ * @returns Promise resolving once job has been queued successfully
+ */
+export async function QueueIngestJob<T extends keyof IngestJobFunc>(
+	name: T,
+	studioId: StudioId,
+	data: Parameters<IngestJobFunc[T]>[0]
+): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> {
+	let queue0 = ingestQueueCache.get(studioId)
+	if (!queue0) {
+		logger.info(`Setting up work queue for Ingest"${studioId}"`)
+		const queueId = getIngestQueueName(studioId)
+		queue0 = [new Queue(queueId, { connection }), new QueueEvents(queueId, { connection })]
+		ingestQueueCache.set(studioId, queue0)
+	}
+
+	return pushJobToQueue(queue0[0], queue0[1], name, data)
+}
+
+/**
+ * Push a job into a work queue
+ * @param queue Queue to push to
+ * @param queueEvents Event stream for the provided queue
+ * @param name Job name
+ * @param data Job payload
+ * @returns Promise resolving once job has been queued successfully
+ */
+async function pushJobToQueue<T>(
+	queue: Queue,
+	queueEvents: QueueEvents,
+	name: string,
+	data: unknown
+): Promise<WorkerJob<T>> {
 	const queuedTime = Date.now()
 	const job = await queue.add(name, data, {
 		// priority,
@@ -71,11 +112,11 @@ export async function QueueStudioJob<T extends keyof StudioJobFunc>(
 	// TODO - anything else from the old implementation
 
 	// Lazily watch for completion once, to be used for multiple caller promises
-	const completedPromise = PLazy.from<WrappedResult<ReturnType<StudioJobFunc[T]>>>(async () => {
+	const completedPromise = PLazy.from<WrappedResult<T>>(async () => {
 		try {
 			// TODO - this should be rewritten to manuall use queueEvents
 			// After reading the implementation, we can do that and avoid having to load the job again for getTimings
-			const res: ReturnType<StudioJobFunc[T]> = await job.waitUntilFinished(queueEvents)
+			const res: T = await job.waitUntilFinished(queueEvents)
 
 			return {
 				result: res,

@@ -1,6 +1,25 @@
 import { JobContext } from '../../jobs'
 import { IngestJobs, IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
-import { handleMosDeleteStory, handleMosFullStory } from '../../ingest/mosDevice/ingest'
+import {
+	handleMosDeleteStory,
+	handleMosFullStory,
+	handleMosInsertStories,
+	handleMosMoveStories,
+	handleMosRundownData,
+	handleMosRundownMetadata,
+	handleMosSwapStories,
+} from '../../ingest/mosDevice/ingest'
+import {
+	handleRegenerateRundown,
+	handleRegenerateSegment,
+	handleRemovedPart,
+	handleRemovedRundown,
+	handleRemovedSegment,
+	handleUpdatedPart,
+	handleUpdatedRundown,
+	handleUpdatedSegment,
+	handleUpdatedSegmentRanks,
+} from '../../ingest/rundownInput'
 
 type ExecutableFunction<T extends keyof IngestJobFunc> = (
 	context: JobContext,
@@ -12,6 +31,21 @@ export type IngestJobHandlers = {
 }
 
 export const ingestJobHandlers: IngestJobHandlers = {
+	[IngestJobs.RemoveRundown]: handleRemovedRundown,
+	[IngestJobs.UpdateRundown]: handleUpdatedRundown,
+	[IngestJobs.RemoveSegment]: handleRemovedSegment,
+	[IngestJobs.UpdateSegment]: handleUpdatedSegment,
+	[IngestJobs.UpdateSegmentRanks]: handleUpdatedSegmentRanks,
+	[IngestJobs.RemovePart]: handleRemovedPart,
+	[IngestJobs.UpdatePart]: handleUpdatedPart,
+	[IngestJobs.RegenerateRundown]: handleRegenerateRundown,
+	[IngestJobs.RegenerateSegment]: handleRegenerateSegment,
+
+	[IngestJobs.MosRundown]: handleMosRundownData,
+	[IngestJobs.MosRundownMetadata]: handleMosRundownMetadata,
 	[IngestJobs.MosFullStory]: handleMosFullStory,
 	[IngestJobs.MosDeleteStory]: handleMosDeleteStory,
+	[IngestJobs.MosInsertStory]: handleMosInsertStories,
+	[IngestJobs.MosMoveStory]: handleMosMoveStories,
+	[IngestJobs.MosSwapStory]: handleMosSwapStories,
 }

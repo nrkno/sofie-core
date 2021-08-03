@@ -4,13 +4,14 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { parseMosString } from './lib'
 import { waitForPromise, WrapAsyncCallback } from '../../../../lib/lib'
 import * as _ from 'underscore'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
+import { runIngestOperation } from '../lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 export namespace MOSDeviceActions {
 	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => TriggerReloadDataResponse =
@@ -46,7 +47,14 @@ export namespace MOSDeviceActions {
 								)
 							}
 
-							waitForPromise(handleMosRundownData(peripheralDevice, mosRunningOrder, false))
+							waitForPromise(
+								runIngestOperation(rundown.studioId, IngestJobs.MosRundown, {
+									rundownExternalId: rundown.externalId,
+									peripheralDeviceId: peripheralDevice._id,
+									mosRunningOrder: mosRunningOrder,
+									isCreateAction: false,
+								})
+							)
 
 							// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
 							cb(null, TriggerReloadDataResponse.WORKING)

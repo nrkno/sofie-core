@@ -1,40 +1,14 @@
-// import { Piece, PieceId } from '../../../lib/collections/Pieces'
-// import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-// import { protectString, unprotectString, literal, omit } from '../../../lib/lib'
-// import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
-// import { Studio } from '../../../lib/collections/Studios'
-// import { Meteor } from 'meteor/meteor'
-// import {
-// 	TimelineObjectCoreExt,
-// 	IBlueprintPiece,
-// 	IBlueprintAdLibPiece,
-// 	TSR,
-// 	IBlueprintActionManifest,
-// 	ICommonContext,
-// 	IShowStyleContext,
-// } from '@sofie-automation/blueprints-integration'
-// import { RundownAPI } from '../../../lib/api/rundown'
-// import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-// import { RundownImportVersions } from '../../../lib/collections/Rundowns'
-// import { BlueprintId } from '../../../lib/collections/Blueprints'
-// import { PartId } from '../../../lib/collections/Parts'
-// import { BucketId } from '../../../lib/collections/Buckets'
-// import { AdLibAction } from '../../../lib/collections/AdLibActions'
-// import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
-// import { RundownId } from '../../../lib/collections/Rundowns'
-// import { prefixAllObjectIds } from '../playout/lib'
-// import { SegmentId } from '../../../lib/collections/Segments'
-// import { profiler } from '../profiler'
-// import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
-// import { CommonContext, ShowStyleContext } from './context'
-// import { ReadonlyDeep } from 'type-fest'
-// import { processAdLibActionITranslatableMessages } from '../../../lib/api/TranslatableMessage'
-
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import {
+	TimelineObjGeneric,
+	TimelineObjRundown,
+	TimelineObjType,
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import {
+	IBlueprintActionManifest,
+	IBlueprintAdLibPiece,
 	IBlueprintPiece,
 	ICommonContext,
 	IShowStyleContext,
@@ -46,6 +20,10 @@ import { prefixAllObjectIds } from '../playout/lib'
 import { BlueprintId, PartId, PieceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { JobContext } from '../jobs'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { ArrayElement, ITranslatableMessage, literal } from '@sofie-automation/corelib/dist/lib'
 
 /**
  *
@@ -163,94 +141,161 @@ export function postProcessTimelineObjects(
 	return newObjs
 }
 
-// export function postProcessAdLibPieces(
-// 	innerContext: ICommonContext,
-// 	blueprintId: BlueprintId,
-// 	rundownId: RundownId,
-// 	partId: PartId | undefined,
-// 	adLibPieces: IBlueprintAdLibPiece[]
-// ): AdLibPiece[] {
-// 	const span = profiler.startSpan('blueprints.postProcess.postProcessAdLibPieces')
+export function postProcessAdLibPieces(
+	context: JobContext,
+	innerContext: ICommonContext,
+	blueprintId: BlueprintId,
+	rundownId: RundownId,
+	partId: PartId | undefined,
+	adLibPieces: IBlueprintAdLibPiece[]
+): AdLibPiece[] {
+	const span = context.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
-// 	const externalIds = new Map<string, number>()
-// 	const timelineUniqueIds = new Set<string>()
+	const externalIds = new Map<string, number>()
+	const timelineUniqueIds = new Set<string>()
 
-// 	const processedPieces = adLibPieces.map((orgAdlib) => {
-// 		const i = externalIds.get(orgAdlib.externalId) ?? 0
-// 		externalIds.set(orgAdlib.externalId, i + 1)
+	const processedPieces = adLibPieces.map((orgAdlib) => {
+		const i = externalIds.get(orgAdlib.externalId) ?? 0
+		externalIds.set(orgAdlib.externalId, i + 1)
 
-// 		const piece: AdLibPiece = {
-// 			...orgAdlib,
-// 			_id: protectString(
-// 				innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
-// 			),
-// 			rundownId: rundownId,
-// 			partId: partId,
-// 			status: RundownAPI.PieceStatusCode.UNKNOWN,
-// 		}
+		const piece: AdLibPiece = {
+			...orgAdlib,
+			_id: protectString(
+				innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
+			),
+			rundownId: rundownId,
+			partId: partId,
+			status: PieceStatusCode.UNKNOWN,
+		}
 
-// 		if (!piece.externalId)
-// 			throw new Meteor.Error(
-// 				400,
-// 				`Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(
-// 					unprotectString(piece._id)
-// 				)}")`
-// 			)
+		if (!piece.externalId)
+			throw new Error(
+				`Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(
+					unprotectString(piece._id)
+				)}")`
+			)
 
-// 		if (piece.content && piece.content.timelineObjects) {
-// 			piece.content.timelineObjects = postProcessTimelineObjects(
-// 				innerContext,
-// 				piece._id,
-// 				blueprintId,
-// 				piece.content.timelineObjects,
-// 				false,
-// 				timelineUniqueIds
-// 			)
-// 		}
+		if (piece.content && piece.content.timelineObjects) {
+			piece.content.timelineObjects = postProcessTimelineObjects(
+				innerContext,
+				piece._id,
+				blueprintId,
+				piece.content.timelineObjects,
+				false,
+				timelineUniqueIds
+			)
+		}
 
-// 		return piece
-// 	})
+		return piece
+	})
 
-// 	span?.end()
-// 	return processedPieces
-// }
+	span?.end()
+	return processedPieces
+}
 
-// export function postProcessGlobalAdLibActions(
-// 	innerContext: ICommonContext,
-// 	blueprintId: BlueprintId,
-// 	rundownId: RundownId,
-// 	adlibActions: IBlueprintActionManifest[]
-// ): RundownBaselineAdLibAction[] {
-// 	return adlibActions.map((action, i) =>
-// 		literal<RundownBaselineAdLibAction>({
-// 			...action,
-// 			actionId: action.actionId,
-// 			_id: protectString(innerContext.getHashId(`${blueprintId}_global_adlib_action_${i}`)),
-// 			rundownId: rundownId,
-// 			partId: undefined,
-// 			...processAdLibActionITranslatableMessages(action, blueprintId),
-// 		})
-// 	)
-// }
+export function postProcessGlobalAdLibActions(
+	context: JobContext,
+	innerContext: ICommonContext,
+	blueprintId: BlueprintId,
+	rundownId: RundownId,
+	adlibActions: IBlueprintActionManifest[]
+): RundownBaselineAdLibAction[] {
+	return adlibActions.map((action, i) =>
+		literal<RundownBaselineAdLibAction>({
+			...action,
+			actionId: action.actionId,
+			_id: protectString(innerContext.getHashId(`${blueprintId}_global_adlib_action_${i}`)),
+			rundownId: rundownId,
+			partId: undefined,
+			...processAdLibActionITranslatableMessages(action, blueprintId),
+		})
+	)
+}
 
-// export function postProcessAdLibActions(
-// 	innerContext: ICommonContext,
-// 	blueprintId: BlueprintId,
-// 	rundownId: RundownId,
-// 	partId: PartId,
-// 	adlibActions: IBlueprintActionManifest[]
-// ): AdLibAction[] {
-// 	return adlibActions.map((action, i) =>
-// 		literal<AdLibAction>({
-// 			...action,
-// 			actionId: action.actionId,
-// 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_action_${i}`)),
-// 			rundownId: rundownId,
-// 			partId: partId,
-// 			...processAdLibActionITranslatableMessages(action, blueprintId),
-// 		})
-// 	)
-// }
+export function postProcessAdLibActions(
+	context: JobContext,
+	innerContext: ICommonContext,
+	blueprintId: BlueprintId,
+	rundownId: RundownId,
+	partId: PartId,
+	adlibActions: IBlueprintActionManifest[]
+): AdLibAction[] {
+	return adlibActions.map((action, i) =>
+		literal<AdLibAction>({
+			...action,
+			actionId: action.actionId,
+			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_action_${i}`)),
+			rundownId: rundownId,
+			partId: partId,
+			...processAdLibActionITranslatableMessages(action, blueprintId),
+		})
+	)
+}
+
+/**
+ * A utility function to add namespaces to ITranslatableMessages found in AdLib Actions
+ *
+ * @export
+ * @template K
+ * @template T
+ * @param {T} itemOrig
+ * @param {BlueprintId} blueprintId
+ * @param {number} [rank]
+ * @return {*}  {(Pick<K, 'display' | 'triggerModes'>)}
+ */
+function processAdLibActionITranslatableMessages<
+	K extends {
+		display: IBlueprintActionManifest['display'] & {
+			label: ITranslatableMessage
+			triggerLabel?: ITranslatableMessage
+			description?: ITranslatableMessage
+		}
+		triggerModes?: (ArrayElement<IBlueprintActionManifest['triggerModes']> & {
+			display: ArrayElement<IBlueprintActionManifest['triggerModes']>['display'] & {
+				label: ITranslatableMessage
+				description?: ITranslatableMessage
+			}
+		})[]
+	},
+	T extends IBlueprintActionManifest
+>(itemOrig: T, blueprintId: BlueprintId, rank?: number): Pick<K, 'display' | 'triggerModes'> {
+	return {
+		display: {
+			...itemOrig.display,
+			_rank: rank ?? itemOrig.display._rank,
+			label: {
+				...itemOrig.display.label,
+				namespaces: [unprotectString(blueprintId)],
+			},
+			triggerLabel: itemOrig.display.triggerLabel && {
+				...itemOrig.display.triggerLabel,
+				namespaces: [unprotectString(blueprintId)],
+			},
+			description: itemOrig.display.description && {
+				...itemOrig.display.description,
+				namespaces: [unprotectString(blueprintId)],
+			},
+		},
+		triggerModes:
+			itemOrig.triggerModes &&
+			itemOrig.triggerModes.map(
+				(triggerMode): ArrayElement<AdLibAction['triggerModes']> => ({
+					...triggerMode,
+					display: {
+						...triggerMode.display,
+						label: {
+							...triggerMode.display.label,
+							namespaces: [unprotectString(blueprintId)],
+						},
+						description: triggerMode.display.description && {
+							...triggerMode.display.description,
+							namespaces: [unprotectString(blueprintId)],
+						},
+					},
+				})
+			),
+	}
+}
 
 export function postProcessStudioBaselineObjects(
 	studio: ReadonlyDeep<DBStudio>,
@@ -260,13 +305,13 @@ export function postProcessStudioBaselineObjects(
 	return postProcessTimelineObjects(context, protectString('studio'), studio.blueprintId!, objs, false)
 }
 
-// export function postProcessRundownBaselineItems(
-// 	innerContext: ICommonContext,
-// 	blueprintId: BlueprintId,
-// 	baselineItems: TSR.TSRTimelineObjBase[]
-// ): TimelineObjGeneric[] {
-// 	return postProcessTimelineObjects(innerContext, protectString('baseline'), blueprintId, baselineItems, false)
-// }
+export function postProcessRundownBaselineItems(
+	innerContext: ICommonContext,
+	blueprintId: BlueprintId,
+	baselineItems: TSR.TSRTimelineObjBase[]
+): TimelineObjGeneric[] {
+	return postProcessTimelineObjects(innerContext, protectString('baseline'), blueprintId, baselineItems, false)
+}
 
 // export function postProcessBucketAdLib(
 // 	innerContext: ShowStyleContext,

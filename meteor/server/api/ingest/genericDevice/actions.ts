@@ -7,8 +7,9 @@ import { logger } from '../../../logging'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import * as _ from 'underscore'
 import { IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
-import { handleRemovedSegment, handleUpdatedSegment, handleUpdatedRundown } from '../rundownInput'
 import { Segment } from '../../../../lib/collections/Segments'
+import { runIngestOperation } from '../lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 export namespace GenericDeviceActions {
 	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => TriggerReloadDataResponse =
@@ -47,11 +48,14 @@ export namespace GenericDeviceActions {
 									)
 								}
 
-								// if (!iNewsRunningOrder.length) {
-								// 	throw new Meteor.Error(401, iNewsRunningOrder)
-								// }
-
-								waitForPromise(handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, true))
+								waitForPromise(
+									runIngestOperation(rundown.studioId, IngestJobs.UpdateRundown, {
+										rundownExternalId: ingestRundown.externalId,
+										peripheralDeviceId: peripheralDevice._id,
+										ingestRundown: ingestRundown,
+										isCreateAction: true,
+									})
+								)
 
 								cb(null, TriggerReloadDataResponse.COMPLETED)
 							}
@@ -80,17 +84,23 @@ export namespace GenericDeviceActions {
 		PeripheralDeviceAPI.executeFunction(
 			peripheralDevice._id,
 			(err: Error, ingestSegment: IngestSegment | null) => {
-				if (err) {
-					if (_.isString(err) && err.match(/segment does not exist/i)) {
-						waitForPromise(handleRemovedSegment(peripheralDevice, rundown.externalId, segment.externalId))
-						// Don't throw an error, instead return MISSING value
-						cb(null, TriggerReloadDataResponse.MISSING)
+				try {
+					if (err) {
+						if (_.isString(err) && err.match(/segment does not exist/i)) {
+							waitForPromise(
+								runIngestOperation(rundown.studioId, IngestJobs.RemoveSegment, {
+									rundownExternalId: rundown.externalId,
+									peripheralDeviceId: peripheralDevice._id,
+									segmentExternalId: segment.externalId,
+								})
+							)
+							// Don't throw an error, instead return MISSING value
+							cb(null, TriggerReloadDataResponse.MISSING)
+						} else {
+							logger.error('Error in GenericDeviceActions.triggerGetSegment', err)
+							cb(err)
+						}
 					} else {
-						logger.error('Error in GenericDeviceActions.triggerGetSegment', err)
-						cb(err)
-					}
-				} else {
-					try {
 						if (ingestSegment === null) {
 							logger.info('triggerReloadSegment reply with null')
 
@@ -108,14 +118,19 @@ export namespace GenericDeviceActions {
 							}
 
 							waitForPromise(
-								handleUpdatedSegment(peripheralDevice, rundown.externalId, ingestSegment, true)
+								runIngestOperation(rundown.studioId, IngestJobs.UpdateSegment, {
+									rundownExternalId: rundown.externalId,
+									peripheralDeviceId: peripheralDevice._id,
+									ingestSegment,
+									isCreateAction: true,
+								})
 							)
 
 							cb(null, TriggerReloadDataResponse.COMPLETED)
 						}
-					} catch (e) {
-						cb(e)
 					}
+				} catch (e) {
+					cb(e)
 				}
 			},
 			'triggerReloadSegment',
