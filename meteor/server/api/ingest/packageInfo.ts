@@ -77,7 +77,7 @@ async function onUpdatedPackageInfoForRundown(
 		return
 	}
 
-	await runIngestOperation(tmpRundown.studioId, IngestJobs.UpdatedPackageInfos, {
+	await runIngestOperation(tmpRundown.studioId, IngestJobs.PackageInfosUpdated, {
 		rundownExternalId: tmpRundown.externalId,
 		peripheralDeviceId: null,
 		packageIds,

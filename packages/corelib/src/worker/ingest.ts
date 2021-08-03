@@ -21,7 +21,8 @@ export enum IngestJobs {
 	MosMoveStory = 'mosMoveStory',
 	MosSwapStory = 'mosSwapStory',
 
-	UpdatedPackageInfos = 'updatedPackageInfos',
+	ExpectedPackagesRegenerate = 'expectedPackagesRegenerate',
+	PackageInfosUpdated = 'packageInfosUpdated',
 }
 
 export interface IngestPropsBase {
@@ -86,7 +87,8 @@ export interface MosSwapStoryProps extends IngestPropsBase {
 	story1: MOS.MosString128
 }
 
-export interface UpdatedPackageInfosProps extends IngestPropsBase {
+export type ExpectedPackagesRegenerateProps = IngestPropsBase
+export interface PackageInfosUpdatedProps extends IngestPropsBase {
 	packageIds: ExpectedPackageId[]
 }
 
@@ -113,7 +115,8 @@ export type IngestJobFunc = {
 	[IngestJobs.MosMoveStory]: (data: MosMoveStoryProps) => void
 	[IngestJobs.MosSwapStory]: (data: MosSwapStoryProps) => void
 
-	[IngestJobs.UpdatedPackageInfos]: (data: UpdatedPackageInfosProps) => void
+	[IngestJobs.ExpectedPackagesRegenerate]: (data: ExpectedPackagesRegenerateProps) => void
+	[IngestJobs.PackageInfosUpdated]: (data: PackageInfosUpdatedProps) => void
 }
 
 // TODO - there should probably be a queue per rundown or something. To be improved later

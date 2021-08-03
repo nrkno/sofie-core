@@ -7,9 +7,6 @@ import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
-import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
-import { runIngestOperationFromRundown } from './lockFunction'
-import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
@@ -48,30 +45,21 @@ if (!Settings.enableUserAccounts) {
 			)
 		},
 		/**
-		 * Regenerate all the expected media items for all rundowns in the system
-		 * This shouldn't be necessary as ingest will do this for each rundown as part of its workflow
-		 */
-		debug_recreateExpectedMediaItems() {
-			const rundowns = Rundowns.find().fetch()
-
-			waitForPromiseAll(
-				rundowns.map(async (rundown) =>
-					runIngestOperationFromRundown('', rundown, async (cache) =>
-						updateExpectedMediaItemsOnRundown(cache)
-					)
-				)
-			)
-		},
-		/**
-		 * Regenerate all the expected packages for all rundowns in the system
+		 * Regenerate all the expected packages for all rundowns in the system.
+		 * Additionally it will recreate any expectedMediaItems and expectedPlayoutItems.
 		 * This shouldn't be necessary as ingest will do this for each rundown as part of its workflow
 		 */
 		debug_recreateExpectedPackages() {
-			const rundowns = Rundowns.find().fetch()
+			const rundowns = Rundowns.find({
+				restoredFromSnapshotId: { $exists: false },
+			}).fetch()
 
 			waitForPromiseAll(
 				rundowns.map(async (rundown) =>
-					runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
+					runIngestOperation(rundown.studioId, IngestJobs.ExpectedPackagesRegenerate, {
+						rundownExternalId: rundown.externalId,
+						peripheralDeviceId: null,
+					})
 				)
 			)
 		},

@@ -171,7 +171,10 @@ export async function runAsIngestJob(
 // 	})
 // }
 
-async function runInRundownLock(
+/**
+ * Lock the rundown for a quick task without the cache
+ */
+export async function runInRundownLock(
 	_context: JobContext,
 	_rundownExternalId: string,
 	fcn: () => Promise<void>

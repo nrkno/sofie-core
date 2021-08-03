@@ -2,29 +2,23 @@ import { check } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import {
 	ExpectedMediaItems,
-	ExpectedMediaItem,
 	ExpectedMediaItemId,
 	ExpectedMediaItemBucketPiece,
 	ExpectedMediaItemBucketAction,
 	ExpectedMediaItemBase,
-	ExpectedMediaItemRundown,
 } from '../../../lib/collections/ExpectedMediaItems'
-import { RundownId } from '../../../lib/collections/Rundowns'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { PieceId } from '../../../lib/collections/Pieces'
 import { getCurrentTime, getHash, protectString, Subtract, ProtectedString } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../../lib/collections/Studios'
-import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
+import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import {
 	IBlueprintActionManifestDisplayContent,
 	SomeContent,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
-import { CacheForIngest } from './cache'
-import { saveIntoCache } from '../../cache/lib'
 import { saveIntoDb } from '../../lib/database'
 import { interpollateTranslation, translateMessage } from '../../../lib/api/TranslatableMessage'
 
@@ -70,64 +64,6 @@ function generateExpectedMediaItems<T extends ExpectedMediaItemBase>(
 	}
 
 	return result
-}
-
-function generateExpectedMediaItemsFull(
-	studioId: StudioId,
-	rundownId: RundownId,
-	pieces: Piece[],
-	adlibs: AdLibPiece[],
-	actions: AdLibAction[]
-): ExpectedMediaItem[] {
-	const eMIs: ExpectedMediaItem[] = []
-
-	pieces.forEach((doc) =>
-		eMIs.push(
-			...generateExpectedMediaItems<ExpectedMediaItemRundown>(
-				doc._id,
-				{
-					partId: doc.startPartId,
-					rundownId: doc.startRundownId,
-				},
-				studioId,
-				doc.name,
-				doc.content,
-				PieceType.PIECE
-			)
-		)
-	)
-	adlibs.forEach((doc) =>
-		eMIs.push(
-			...generateExpectedMediaItems<ExpectedMediaItemRundown>(
-				doc._id,
-				{
-					partId: doc.partId,
-					rundownId: rundownId,
-				},
-				studioId,
-				doc.name,
-				doc.content,
-				PieceType.ADLIB
-			)
-		)
-	)
-	actions.forEach((doc) =>
-		eMIs.push(
-			...generateExpectedMediaItems<ExpectedMediaItemRundown>(
-				doc._id,
-				{
-					partId: doc.partId,
-					rundownId: rundownId,
-				},
-				studioId,
-				translateMessage(doc.display.label, interpollateTranslation),
-				(doc.display as IBlueprintActionManifestDisplayContent | undefined)?.content,
-				PieceType.ACTION
-			)
-		)
-	)
-
-	return eMIs
 }
 
 export async function cleanUpExpectedMediaItemForBucketAdLibPiece(adLibIds: PieceId[]): Promise<void> {
@@ -212,13 +148,4 @@ export async function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLi
 		},
 		result
 	)
-}
-/** @deprecated */
-export function updateExpectedMediaItemsOnRundown(cache: CacheForIngest): void {
-	const pieces = cache.Pieces.findFetch({})
-	const adlibs = cache.AdLibPieces.findFetch({})
-	const actions = cache.AdLibActions.findFetch({})
-
-	const eMIs = generateExpectedMediaItemsFull(cache.Studio.doc._id, cache.RundownId, pieces, adlibs, actions)
-	saveIntoCache<ExpectedMediaItem, ExpectedMediaItem>(cache.ExpectedMediaItems, {}, eMIs)
 }

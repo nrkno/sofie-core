@@ -20,7 +20,7 @@ import {
 	handleUpdatedSegment,
 	handleUpdatedSegmentRanks,
 } from '../../ingest/rundownInput'
-import { handleUpdatedPackageInfoForRundown } from 'src/ingest/packageInfo'
+import { handleExpectedPackagesRegenerate, handleUpdatedPackageInfoForRundown } from '../../ingest/packageInfo'
 
 type ExecutableFunction<T extends keyof IngestJobFunc> = (
 	context: JobContext,
@@ -50,5 +50,6 @@ export const ingestJobHandlers: IngestJobHandlers = {
 	[IngestJobs.MosMoveStory]: handleMosMoveStories,
 	[IngestJobs.MosSwapStory]: handleMosSwapStories,
 
-	[IngestJobs.UpdatedPackageInfos]: handleUpdatedPackageInfoForRundown,
+	[IngestJobs.ExpectedPackagesRegenerate]: handleExpectedPackagesRegenerate,
+	[IngestJobs.PackageInfosUpdated]: handleUpdatedPackageInfoForRundown,
 }

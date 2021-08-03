@@ -63,6 +63,9 @@ export async function runAsPlayoutLock<TRes>(
 	return runInPlaylistLock(context, data.playlistId, async (lock) => fcn(playlist, lock))
 }
 
+/**
+ * Lock the playlist for a quick task without the cache
+ */
 export async function runInPlaylistLock<TRes>(
 	context: JobContext,
 	playlistId: RundownPlaylistId,

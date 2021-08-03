@@ -160,7 +160,7 @@ export async function handleUpdatedRundown(context: JobContext, data: IngestUpda
 				cache,
 				ingestRundown,
 				data.isCreateAction,
-				data.peripheralDeviceId
+				data.peripheralDeviceId ?? cache.Rundown.doc?.peripheralDeviceId ?? null
 			)
 		}
 	)

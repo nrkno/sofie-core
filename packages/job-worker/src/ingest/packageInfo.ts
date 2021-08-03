@@ -1,14 +1,28 @@
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UpdatedPackageInfosProps } from '@sofie-automation/corelib/dist/worker/ingest'
+import { ExpectedPackagesRegenerateProps, PackageInfosUpdatedProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import { regenerateSegmentsFromIngestData } from './generation'
-import { runAsIngestJob } from './lock'
+import { runAsIngestJob, runInRundownLock } from './lock'
+import { CacheForIngest } from './cache'
+
+export async function handleExpectedPackagesRegenerate(
+	context: JobContext,
+	data: ExpectedPackagesRegenerateProps
+): Promise<void> {
+	await runInRundownLock(context, data.rundownExternalId, async () => {
+		const cache = await CacheForIngest.create(context, data.rundownExternalId)
+
+		await updateExpectedPackagesOnRundown(context, cache)
+
+		await cache.saveAllToDatabase()
+	})
+}
 
 export async function handleUpdatedPackageInfoForRundown(
 	context: JobContext,
-	data: UpdatedPackageInfosProps
+	data: PackageInfosUpdatedProps
 ): Promise<void> {
 	if (data.packageIds.length === 0) {
 		return
