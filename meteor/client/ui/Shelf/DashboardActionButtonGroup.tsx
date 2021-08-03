@@ -14,7 +14,7 @@ export interface IDashboardButtonGroupProps {
 	studioMode: boolean
 	playlist: RundownPlaylist
 
-	onChangeQueueAdLib: (isQueue: boolean, e: any) => void
+	onChangeQueueAdLib?: (isQueue: boolean, e: any) => void
 }
 
 export const DashboardActionButtonGroup = withTranslation()(

@@ -21,12 +21,12 @@ interface IPlaylistNamePanelProps {
 
 interface IState {}
 
-interface IPlaylistNamePannelTrackedProps {
+interface IPlaylistNamePanelTrackedProps {
 	currentRundown?: Rundown
 }
 
 class PlaylistNamePanelInner extends MeteorReactComponent<
-	IPlaylistNamePanelProps & IPlaylistNamePannelTrackedProps,
+	IPlaylistNamePanelProps & IPlaylistNamePanelTrackedProps,
 	IState
 > {
 	constructor(props) {
@@ -43,7 +43,7 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 				style={_.extend(
 					isDashboardLayout
 						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPlaylistName), height: 1 }),
+								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPlaylistName) }),
 								fontSize: ((panel as DashboardLayoutPlaylistName).scale || 1) * 1.5 + 'em',
 						  }
 						: {}
@@ -60,7 +60,7 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 	}
 }
 
-export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IPlaylistNamePannelTrackedProps>(
+export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IPlaylistNamePanelTrackedProps>(
 	(props: IPlaylistNamePanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
 			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]

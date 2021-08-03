@@ -15,6 +15,8 @@ interface IEndTimingProps {
 	expectedDuration?: number
 	expectedEnd?: number
 	endLabel?: string
+	hidePlannedEndLabel?: boolean
+	hideDiffLabel?: boolean
 	hidePlannedEnd?: boolean
 	hideCountdown?: boolean
 	hideDiff?: boolean
@@ -34,12 +36,16 @@ export const PlaylistEndTiming = withTranslation()(
 							this.props.expectedEnd ? (
 								!rundownPlaylist.startedPlayback ? (
 									<span className="timing-clock plan-end right visual-last-child">
-										<span className="timing-clock-label right">{this.props.endLabel ?? t('Planned End')}</span>
+										{!this.props.hidePlannedEndLabel && (
+											<span className="timing-clock-label right">{this.props.endLabel ?? t('Planned End')}</span>
+										)}
 										<Moment interval={0} format="HH:mm:ss" date={expectedEnd} />
 									</span>
 								) : (
 									<span className="timing-clock plan-end right visual-last-child">
-										<span className="timing-clock-label right">{this.props.endLabel ?? t('Expected End')}</span>
+										{!this.props.hidePlannedEndLabel && (
+											<span className="timing-clock-label right">{this.props.endLabel ?? t('Expected End')}</span>
+										)}
 										<Moment interval={0} format="HH:mm:ss" date={expectedEnd} />
 									</span>
 								)
@@ -49,7 +55,9 @@ export const PlaylistEndTiming = withTranslation()(
 									rundownPlaylist.activationId &&
 									rundownPlaylist.currentPartInstanceId ? (
 										<span className="timing-clock plan-end right visual-last-child">
-											<span className="timing-clock-label right">{t('Next Loop at')}</span>
+											{!this.props.hidePlannedEndLabel && (
+												<span className="timing-clock-label right">{t('Next Loop at')}</span>
+											)}
 											<Moment
 												interval={0}
 												format="HH:mm:ss"
@@ -64,7 +72,9 @@ export const PlaylistEndTiming = withTranslation()(
 									) : null
 								) : (
 									<span className="timing-clock plan-end right visual-last-child">
-										<span className="timing-clock-label right">{this.props.endLabel ?? t('Expected End')}</span>
+										{!this.props.hidePlannedEndLabel && (
+											<span className="timing-clock-label right">{this.props.endLabel ?? t('Expected End')}</span>
+										)}
 										<Moment
 											interval={0}
 											format="HH:mm:ss"
@@ -105,7 +115,7 @@ export const PlaylistEndTiming = withTranslation()(
 											(expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0),
 									})}
 								>
-									<span className="timing-clock-label right">{t('Diff')}</span>
+									{!this.props.hideDiffLabel && <span className="timing-clock-label right">{t('Diff')}</span>}
 									{RundownUtils.formatDiffToTimecode(
 										(this.props.timingDurations.asPlayedPlaylistDuration || 0) -
 											(expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0),

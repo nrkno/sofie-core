@@ -4,7 +4,7 @@ import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { IPropsHeader } from './PieceIcon'
 
-interface IFoundPieceInstance {
+export interface IFoundPieceInstance {
 	sourceLayer: ISourceLayer | undefined
 	pieceInstance: PieceInstance | undefined
 }

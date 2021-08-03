@@ -48,16 +48,18 @@ class PartTimingPanelInner extends MeteorReactComponent<
 				style={_.extend(
 					isDashboardLayout
 						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPartCountDown), height: 1 }),
+								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPartCountDown) }),
 								fontSize: ((panel as DashboardLayoutPartCountDown).scale || 1) * 1.5 + 'em',
 						  }
 						: {}
 				)}
 			>
 				<span className="timing-clock left">
-					<span className="timing-clock-label">
-						{panel.timingType === 'count_down' ? t('Part Count Down') : t('Part Count Up')}
-					</span>
+					{!panel.hideLabel && (
+						<span className="timing-clock-label">
+							{panel.timingType === 'count_down' ? t('Part Count Down') : t('Part Count Up')}
+						</span>
+					)}
 					{this.props.active &&
 						(panel.timingType === 'count_down' ? (
 							<CurrentPartRemaining

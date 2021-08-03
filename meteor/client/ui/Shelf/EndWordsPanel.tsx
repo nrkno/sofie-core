@@ -50,7 +50,7 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 				style={_.extend(
 					isDashboardLayout
 						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutEndsWords), height: 1 }),
+								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutEndsWords) }),
 								fontSize: ((panel as DashboardLayoutEndsWords).scale || 1) * 1.5 + 'em',
 						  }
 						: {}

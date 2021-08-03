@@ -26,6 +26,11 @@ import {
 	RundownLayoutSytemStatus,
 	RundownLayoutShowStyleDisplay,
 	RundownLayoutWithFilters,
+	RundownLayoutPresenterView,
+	RundownLayoutStudioName,
+	RundownLayoutSegmentName,
+	RundownLayoutPartName,
+	RundownLayoutColoredBox,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -70,6 +75,7 @@ class RundownLayoutsRegistry {
 	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
 	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
 	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private presenterViewLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
 
 	public registerShelfLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.shelfLayouts.set(id, description)
@@ -87,6 +93,10 @@ class RundownLayoutsRegistry {
 		this.rundownHeaderLayouts.set(id, description)
 	}
 
+	public registerPresenterViewLayout(id: RundownLayoutType, description: LayoutDescriptor) {
+		this.presenterViewLayouts.set(id, description)
+	}
+
 	public isShelfLayout(regionId: CustomizableRegions) {
 		return regionId === CustomizableRegions.Shelf
 	}
@@ -101,6 +111,10 @@ class RundownLayoutsRegistry {
 
 	public isRundownHeaderLayout(regionId: CustomizableRegions) {
 		return regionId === CustomizableRegions.RundownHeader
+	}
+
+	public isPresenterViewLayout(regionId: CustomizableRegions) {
+		return regionId === CustomizableRegions.PresenterView
 	}
 
 	private wrapToCustomizableRegionLayout(
@@ -136,6 +150,11 @@ class RundownLayoutsRegistry {
 				_id: CustomizableRegions.RundownHeader,
 				title: t('Rundown Header Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts),
+			},
+			{
+				_id: CustomizableRegions.PresenterView,
+				title: t('Presenter View Layouts'),
+				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts),
 			},
 		]
 	}
@@ -189,6 +208,24 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.SYSTEM_STATUS,
 		],
 	})
+	registry.registerPresenterViewLayout(RundownLayoutType.CLOCK_PRESENTER_VIEW_LAYOUT, {
+		supportedFilters: [],
+	})
+	registry.registerPresenterViewLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
+		filtersTitle: 'Layout Elements',
+		supportedFilters: [
+			RundownLayoutElementType.PART_TIMING,
+			RundownLayoutElementType.TEXT_LABEL,
+			RundownLayoutElementType.SEGMENT_TIMING,
+			RundownLayoutElementType.PLAYLIST_END_TIMER,
+			RundownLayoutElementType.TIME_OF_DAY,
+			RundownLayoutElementType.PLAYLIST_NAME,
+			RundownLayoutElementType.STUDIO_NAME,
+			RundownLayoutElementType.SEGMENT_NAME,
+			RundownLayoutElementType.PART_NAME,
+			RundownLayoutElementType.COLORED_BOX,
+		],
+	})
 
 	export function getSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
 		return registry.GetSettingsManifest(t)
@@ -200,6 +237,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
 		return registry.isShelfLayout(layout.regionId)
+	}
+
+	export function isLayoutForPresenterView(layout: RundownLayoutBase): layout is RundownLayoutPresenterView {
+		return registry.isPresenterViewLayout(layout.regionId)
 	}
 
 	export function isLayoutForRundownView(layout: RundownLayoutBase): layout is RundownViewLayout {
@@ -276,6 +317,10 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.PLAYLIST_NAME
 	}
 
+	export function isStudioName(element: RundownLayoutElementBase): element is RundownLayoutStudioName {
+		return element.type === RundownLayoutElementType.STUDIO_NAME
+	}
+
 	export function isTimeOfDay(element: RundownLayoutElementBase): element is RundownLayoutTimeOfDay {
 		return element.type === RundownLayoutElementType.TIME_OF_DAY
 	}
@@ -286,6 +331,18 @@ export namespace RundownLayoutsAPI {
 
 	export function isShowStyleDisplay(element: RundownLayoutElementBase): element is RundownLayoutShowStyleDisplay {
 		return element.type === RundownLayoutElementType.SHOWSTYLE_DISPLAY
+	}
+
+	export function isSegmentName(element: RundownLayoutElementBase): element is RundownLayoutSegmentName {
+		return element.type === RundownLayoutElementType.SEGMENT_NAME
+	}
+
+	export function isPartName(element: RundownLayoutElementBase): element is RundownLayoutPartName {
+		return element.type === RundownLayoutElementType.PART_NAME
+	}
+
+	export function isColoredBox(element: RundownLayoutElementBase): element is RundownLayoutColoredBox {
+		return element.type === RundownLayoutElementType.COLORED_BOX
 	}
 
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {

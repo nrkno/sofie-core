@@ -1,25 +1,32 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import {
-	DashboardLayoutTextLabel,
+	DashboardLayoutStudioName,
 	RundownLayoutBase,
-	RundownLayoutTextLabel,
+	RundownLayoutStudioName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementPosition } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { Studio } from '../../../lib/collections/Studios'
 
-interface ITextLabelPanelProps {
+interface IStudioNamePanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
-	panel: RundownLayoutTextLabel
+	panel: RundownLayoutStudioName
 	playlist: RundownPlaylist
+	studio: Studio
 }
 
 interface IState {}
 
-export class TextLabelPanel extends MeteorReactComponent<ITextLabelPanelProps, IState> {
+interface IStudioNamePanelTrackedProps {}
+
+export class StudioNamePanel extends MeteorReactComponent<
+	IStudioNamePanelProps & IStudioNamePanelTrackedProps,
+	IState
+> {
 	constructor(props) {
 		super(props)
 	}
@@ -30,18 +37,18 @@ export class TextLabelPanel extends MeteorReactComponent<ITextLabelPanelProps, I
 
 		return (
 			<div
-				className="text-label-panel"
+				className="studio-name-panel"
 				style={_.extend(
 					isDashboardLayout
 						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutTextLabel) }),
-								fontSize: ((panel as DashboardLayoutTextLabel).scale || 1) * 1.5 + 'em',
+								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutStudioName) }),
+								fontSize: ((panel as DashboardLayoutStudioName).scale || 1) * 1.5 + 'em',
 						  }
 						: {}
 				)}
 			>
 				<div className="wrapper">
-					<span className="text">{this.props.panel.text}</span>
+					<span className="studio-name">{this.props.studio.name}</span>
 				</div>
 			</div>
 		)

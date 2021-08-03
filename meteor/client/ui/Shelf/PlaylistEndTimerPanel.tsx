@@ -46,7 +46,7 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
 				style={_.extend(
 					isDashboardLayout
 						? {
-								...dashboardElementPosition({ ...(panel as DashboardLayoutPlaylistEndTimer), height: 1 }),
+								...dashboardElementPosition({ ...(panel as DashboardLayoutPlaylistEndTimer) }),
 								fontSize: ((panel as DashboardLayoutPlaylistEndTimer).scale || 1) * 1.5 + 'em',
 						  }
 						: {}
@@ -59,6 +59,8 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
 					expectedEnd={PlaylistTiming.getExpectedEnd(playlist.timing)}
 					expectedDuration={PlaylistTiming.getExpectedDuration(playlist.timing)}
 					endLabel={panel.expectedEndText}
+					hidePlannedEndLabel={panel.hidePlannedEndLabel}
+					hideDiffLabel={panel.hideDiffLabel}
 					hideCountdown={panel.hideCountdown}
 					hideDiff={panel.hideDiff}
 					hidePlannedEnd={panel.hidePlannedEnd}

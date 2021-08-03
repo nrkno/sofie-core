@@ -47,7 +47,7 @@ class SystemStatusPanelInner extends MeteorReactComponent<
 				style={_.extend(
 					isDashboardLayout
 						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutSystemStatus), height: 1 }),
+								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutSystemStatus) }),
 								fontSize: ((panel as DashboardLayoutSystemStatus).scale || 1) * 1.5 + 'em',
 						  }
 						: {}
