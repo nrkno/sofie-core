@@ -58,7 +58,7 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
 					expectedStart={PlaylistTiming.getExpectedStart(playlist.timing)}
 					expectedEnd={PlaylistTiming.getExpectedEnd(playlist.timing)}
 					expectedDuration={PlaylistTiming.getExpectedDuration(playlist.timing)}
-					endLabel={panel.expectedEndText}
+					endLabel={panel.plannedEndText}
 					hidePlannedEndLabel={panel.hidePlannedEndLabel}
 					hideDiffLabel={panel.hideDiffLabel}
 					hideCountdown={panel.hideCountdown}

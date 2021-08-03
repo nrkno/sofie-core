@@ -114,13 +114,15 @@ export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
 
 export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.PLAYLIST_START_TIMER
+	plannedStartText: string
 	hideDiff: boolean
-	hideExpectedStart: boolean
+	hidePlannedStart: boolean
 }
 
 export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.PLAYLIST_END_TIMER
-	expectedEndText: string
+	headerHeight: string
+	plannedEndText: string
 	hidePlannedEndLabel: boolean
 	hideDiffLabel: boolean
 	hideCountdown: boolean
@@ -424,7 +426,7 @@ export interface RundownLayout extends RundownLayoutShelfBase {
 
 export interface RundownLayoutRundownHeader extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_HEADER_LAYOUT
-	expectedEndText: string
+	plannedEndText: string
 	nextBreakText: string
 	/** When true, hide the Planned End timer when there is a rundown marked as a break in the future */
 	hideExpectedEndBeforeBreak: boolean

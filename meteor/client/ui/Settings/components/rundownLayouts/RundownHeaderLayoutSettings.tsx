@@ -23,7 +23,7 @@ export default withTranslation()(
 							{t('Expected End text')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={'expectedEndText'}
+								attribute={'plannedEndText'}
 								obj={this.props.item}
 								type="text"
 								collection={RundownLayouts}

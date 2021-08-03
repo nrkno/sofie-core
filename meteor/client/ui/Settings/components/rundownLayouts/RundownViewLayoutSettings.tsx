@@ -86,7 +86,7 @@ export default withTranslation()(
 						</label>
 					</div>
 					<div className="mod mvs mhs">
-						<label className="field">{t('Live line countdown requires sourcelayer')}</label>
+						<label className="field">{t('Live line countdown requires Source Layer')}</label>
 						<EditAttribute
 							modifiedClassName="bghl"
 							attribute={`liveLineProps.requiredLayerIds`}
@@ -111,7 +111,7 @@ export default withTranslation()(
 							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 						/>
 						<span className="text-s dimmed">
-							{t('One of these sourcelayers must have an active piece for the live line countdown to be show')}
+							{t('One of these source layers must have an active piece for the live line countdown to be show')}
 						</span>
 					</div>
 					<div className="mod mvs mhs">
@@ -185,7 +185,7 @@ export default withTranslation()(
 						</label>
 					</div>
 					<div className="mod mvs mhs">
-						<label className="field">{t('Segment countdown requires sourcelayer')}</label>
+						<label className="field">{t('Segment countdown requires source layer')}</label>
 						<EditAttribute
 							modifiedClassName="bghl"
 							attribute={`countdownToSegmentRequireLayers`}
@@ -210,7 +210,7 @@ export default withTranslation()(
 							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 						/>
 						<span className="text-s dimmed">
-							{t('One of these sourcelayers must have a piece for the countdown to segment on-air to be show')}
+							{t('One of these source layers must have a piece for the countdown to segment on-air to be show')}
 						</span>
 					</div>
 					<div className="mod mvs mhs">

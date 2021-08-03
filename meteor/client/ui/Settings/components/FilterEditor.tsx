@@ -826,6 +826,20 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
+							{t('Planned Start Text')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.plannedStartText`}
+								obj={this.props.item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+							<span className="text-s dimmed">{t('Text to show above show start time')}</span>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
 							{t('Hide Diff')}
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -839,10 +853,10 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Hide Expected Start')}
+							{t('Hide Planned Start')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={`filters.${index}.hideExpectedStart`}
+								attribute={`filters.${index}.hidePlannedStart`}
 								obj={item}
 								type="checkbox"
 								collection={RundownLayouts}
@@ -878,18 +892,20 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					<label className="field">
-						{t('Expected End text')}
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.expectedEndText`}
-							obj={this.props.item}
-							type="text"
-							collection={RundownLayouts}
-							className="input text-input input-l"
-						></EditAttribute>
-						<span className="text-s dimmed">{t('Text to show above countdown to end of show')}</span>
-					</label>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Planned End text')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.plannedEndText`}
+								obj={this.props.item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+							<span className="text-s dimmed">{t('Text to show above show end time')}</span>
+						</label>
+					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Hide Planned End Label')}

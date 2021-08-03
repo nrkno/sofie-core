@@ -54,7 +54,8 @@ export class PlaylistStartTimerPanelInner extends MeteorReactComponent<
 				<PlaylistStartTiming
 					rundownPlaylist={this.props.playlist}
 					hideDiff={this.props.panel.hideDiff}
-					hideExpectedStart={this.props.panel.hideExpectedStart}
+					hidePlannedStart={this.props.panel.hidePlannedStart}
+					plannedStartText={this.props.panel.plannedStartText}
 				/>
 			</div>
 		)

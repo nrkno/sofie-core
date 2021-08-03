@@ -296,7 +296,7 @@ const TimingDisplay = withTranslation()(
 								expectedStart={expectedStart}
 								expectedEnd={expectedEnd}
 								expectedDuration={expectedDuration}
-								endLabel={this.props.layout?.expectedEndText}
+								endLabel={this.props.layout?.plannedEndText}
 								rundownCount={this.props.rundownCount}
 							/>
 						) : null}
