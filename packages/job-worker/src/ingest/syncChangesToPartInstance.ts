@@ -1,9 +1,5 @@
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import {
-	BlueprintSyncIngestNewData,
-	BlueprintSyncIngestPartInstance,
-	ShowStyleBlueprintManifest,
-} from '@sofie-automation/blueprints-integration'
+import { BlueprintSyncIngestNewData, BlueprintSyncIngestPartInstance } from '@sofie-automation/blueprints-integration'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { JobContext } from '../jobs'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
@@ -24,17 +20,19 @@ import {
 } from '../playout/infinites'
 import { isTooCloseToAutonext } from '../playout/lib'
 import _ = require('underscore')
+import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context/syncIngestUpdateToPartInstance'
+import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 
 export async function syncChangesToPartInstances(
 	context: JobContext,
 	cache: CacheForPlayout,
 	ingestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'>,
 	showStyle: ReadonlyDeep<ShowStyleCompound>,
-	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>,
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	rundown: ReadonlyDeep<DBRundown>
 ): Promise<void> {
 	if (cache.Playlist.doc.activationId) {
-		if (blueprint.syncIngestUpdateToPartInstance) {
+		if (blueprint.blueprint.syncIngestUpdateToPartInstance) {
 			const playlistPartInstances = getSelectedPartInstancesFromCache(cache)
 			const instances: Array<{
 				existingPartInstance: DBPartInstance
@@ -113,6 +111,7 @@ export async function syncChangesToPartInstances(
 				}
 
 				const syncContext = new SyncIngestUpdateToPartInstanceContext(
+					context,
 					{
 						name: `Update to ${newPart.externalId}`,
 						identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
@@ -120,6 +119,7 @@ export async function syncChangesToPartInstances(
 					cache.Playlist.doc.activationId,
 					cache.Studio.doc,
 					showStyle,
+					blueprint,
 					rundown,
 					existingPartInstance,
 					pieceInstancesInPart,
@@ -129,7 +129,7 @@ export async function syncChangesToPartInstances(
 				// TODO - how can we limit the frequency we run this? (ie, how do we know nothing affecting this has changed)
 				try {
 					// The blueprint handles what in the updated part is going to be synced into the partInstance:
-					blueprint.syncIngestUpdateToPartInstance(
+					blueprint.blueprint.syncIngestUpdateToPartInstance(
 						syncContext,
 						existingResultPartInstance,
 						clone(newResultData),
