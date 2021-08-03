@@ -9,6 +9,8 @@ import {
 	IngestUpdateRundownProps,
 	IngestUpdateSegmentProps,
 	IngestUpdateSegmentRanksProps,
+	UserRemoveRundownProps,
+	UserUnsyncRundownProps,
 } from '@sofie-automation/corelib/dist/worker/ingest'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
@@ -17,7 +19,8 @@ import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
 import { LocalIngestRundown, makeNewIngestPart, makeNewIngestRundown, makeNewIngestSegment } from './ingestCache'
 import { canRundownBeUpdated, canSegmentBeUpdated, getRundown, getSegmentId } from './lib'
-import { CommitIngestData, runAsIngestJob, UpdateIngestRundownAction } from './lock'
+import { CommitIngestData, runAsIngestJob, runAsRundownLock, UpdateIngestRundownAction } from './lock'
+import { removeRundownsFromDb } from '../rundownPlaylists'
 
 // async function getIngestPlaylist(
 // 	peripheralDevice: PeripheralDevice,
@@ -122,22 +125,39 @@ export async function handleRemovedRundown(context: JobContext, data: IngestRemo
 		}
 	)
 }
-// export async function handleRemovedRundownByRundown(rundown: DBRundown, forceDelete?: boolean): Promise<void> {
-// 	if (rundown.restoredFromSnapshotId) {
-// 		// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
-// 		// Note: this bypasses activation checks, but that probably doesnt matter
-// 		await removeRundownsFromDb([rundown._id])
+export async function handleUserRemoveRundown(context: JobContext, data: UserRemoveRundownProps): Promise<void> {
+	const tmpRundown = await context.directCollections.Rundowns.findOne(data.rundownId)
+	if (!tmpRundown || tmpRundown.studioId !== context.studioId) {
+		// Either not found, or belongs to someone else
+		return
+	}
 
-// 		// check if the playlist is now empty
-// 		const rundownCount = Rundowns.find({ playlistId: rundown.playlistId }).count()
-// 		if (rundownCount === 0) {
-// 			// A lazy approach, but good enough for snapshots
-// 			RundownPlaylists.remove(rundown.playlistId)
-// 		}
-// 	} else {
-// 		await handleRemovedRundownFromStudio(rundown.studioId, rundown.externalId, forceDelete)
-// 	}
-// }
+	if (tmpRundown.restoredFromSnapshotId) {
+		return runAsRundownLock(context, data.rundownId, async (rundown) => {
+			if (rundown) {
+				// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
+				// Note: this bypasses activation checks, but that probably doesnt matter
+				await removeRundownsFromDb(context, [rundown._id])
+
+				// check if the playlist is now empty
+				const rundownCount = await context.directCollections.Rundowns.findFetch(
+					{ playlistId: rundown.playlistId },
+					{ projection: { _id: 1 } }
+				)
+				if (rundownCount.length === 0) {
+					// A lazy approach, but good enough for snapshots
+					await context.directCollections.RundownPlaylists.remove(rundown.playlistId)
+				}
+			}
+		})
+	} else {
+		return handleRemovedRundown(context, {
+			rundownExternalId: tmpRundown.externalId,
+			peripheralDeviceId: null,
+			forceDelete: data.force,
+		})
+	}
+}
 
 /** Handle an updated (or inserted) Rundown */
 export async function handleUpdatedRundown(context: JobContext, data: IngestUpdateRundownProps): Promise<void> {
@@ -403,4 +423,20 @@ export async function handleUpdatedPart(context: JobContext, data: IngestUpdateP
 			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
 		}
 	)
+}
+
+export async function handleUserUnsyncRundown(context: JobContext, data: UserUnsyncRundownProps): Promise<void> {
+	return runAsRundownLock(context, data.rundownId, async (rundown) => {
+		if (rundown) {
+			if (!rundown.orphaned) {
+				await context.directCollections.Rundowns.update(rundown._id, {
+					$set: {
+						orphaned: 'deleted',
+					},
+				})
+			} else {
+				logger.info(`Rundown "${rundown._id}" was already unsynced`)
+			}
+		}
+	})
 }

@@ -19,6 +19,8 @@ import {
 	handleUpdatedRundown,
 	handleUpdatedSegment,
 	handleUpdatedSegmentRanks,
+	handleUserRemoveRundown,
+	handleUserUnsyncRundown,
 } from '../../ingest/rundownInput'
 import { handleExpectedPackagesRegenerate, handleUpdatedPackageInfoForRundown } from '../../ingest/packageInfo'
 
@@ -52,4 +54,7 @@ export const ingestJobHandlers: IngestJobHandlers = {
 
 	[IngestJobs.ExpectedPackagesRegenerate]: handleExpectedPackagesRegenerate,
 	[IngestJobs.PackageInfosUpdated]: handleUpdatedPackageInfoForRundown,
+
+	[IngestJobs.UserRemoveRundown]: handleUserRemoveRundown,
+	[IngestJobs.UserUnsyncRundown]: handleUserUnsyncRundown,
 }

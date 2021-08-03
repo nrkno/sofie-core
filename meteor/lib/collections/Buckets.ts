@@ -18,8 +18,8 @@ export interface Bucket {
 
 	/** The studio this bucket belongs to, */
 	studioId: StudioId
-	/** Only the owner can delete a bucket from the RundownView UI. Anyone who can see the bucket can add and remove stuff from it. */
-	userId: string | null
+	// /** Only the owner can delete a bucket from the RundownView UI. Anyone who can see the bucket can add and remove stuff from it. */
+	// userId: string | null
 
 	/** The default width of the bucket. Can possibly be runtime-modified by the user (stored in localStorage?) */
 	width?: number

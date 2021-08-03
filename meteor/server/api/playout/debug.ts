@@ -79,45 +79,6 @@ if (!Settings.enableUserAccounts) {
 				throw e
 			}
 		},
-		/**
-		 * For the active rundown in the studio, ensure that the nexted-part is correct
-		 * This was added while debugging issues with the nexted-part not updating after an ingest operation
-		 * Likely not very useful
-		 */
-		debug_updateNext: (studioId: StudioId) => {
-			try {
-				check(studioId, String)
-				logger.info(`debug_updateNext: "${studioId}"`)
-
-				waitForPromise(
-					runStudioOperationWithCache(
-						'debug_updateNext',
-						studioId,
-						StudioLockFunctionPriority.USER_PLAYOUT,
-						async (cache) => {
-							const playlists = cache.getActiveRundownPlaylists()
-							if (playlists.length === 1) {
-								await runPlayoutOperationWithCacheFromStudioOperation(
-									'updateStudioOrPlaylistTimeline',
-									cache,
-									playlists[0],
-									PlayoutLockFunctionPriority.USER_PLAYOUT,
-									null,
-									async (playlistCache) => {
-										await ensureNextPartIsValid(playlistCache)
-									}
-								)
-							} else {
-								throw new Error('No playlist active')
-							}
-						}
-					)
-				)
-			} catch (e) {
-				logger.error(e)
-				throw e
-			}
-		},
 
 		/**
 		 * Ensure that the infinite pieces on the nexted-part are correct

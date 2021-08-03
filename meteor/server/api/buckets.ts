@@ -121,7 +121,7 @@ export namespace BucketsAPI {
 		context: MethodContext,
 		name: string,
 		studioId: StudioId,
-		userId: string | null
+		_userId: string | null
 	): Promise<Bucket> {
 		const { studio } = OrganizationContentWriteAccess.studio(context, studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio not found: ${studioId}`)
@@ -152,7 +152,7 @@ export namespace BucketsAPI {
 			_rank: rank,
 			name: name,
 			studioId,
-			userId,
+			// userId,
 			width: DEFAULT_BUCKET_WIDTH,
 			buttonWidthScale: 1,
 			buttonHeightScale: 1,

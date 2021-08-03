@@ -1,4 +1,4 @@
-import { ExpectedPackageId, PeripheralDeviceId, StudioId } from '../dataModel/Ids'
+import { ExpectedPackageId, PeripheralDeviceId, RundownId, StudioId } from '../dataModel/Ids'
 import * as MOS from 'mos-connection'
 import { IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 
@@ -23,6 +23,9 @@ export enum IngestJobs {
 
 	ExpectedPackagesRegenerate = 'expectedPackagesRegenerate',
 	PackageInfosUpdated = 'packageInfosUpdated',
+
+	UserRemoveRundown = 'userRemoveRundown',
+	UserUnsyncRundown = 'userUnsyncRundown',
 }
 
 export interface IngestPropsBase {
@@ -87,10 +90,20 @@ export interface MosSwapStoryProps extends IngestPropsBase {
 	story1: MOS.MosString128
 }
 
-export type ExpectedPackagesRegenerateProps = IngestPropsBase
+export interface ExpectedPackagesRegenerateProps {
+	rundownId: RundownId
+}
 export interface PackageInfosUpdatedProps extends IngestPropsBase {
 	packageIds: ExpectedPackageId[]
 }
+
+export interface UserRundownPropsBase {
+	rundownId: RundownId
+}
+export interface UserRemoveRundownProps extends UserRundownPropsBase {
+	force?: boolean
+}
+export type UserUnsyncRundownProps = UserRundownPropsBase
 
 /**
  * Set of valid functions, of form:
@@ -117,6 +130,9 @@ export type IngestJobFunc = {
 
 	[IngestJobs.ExpectedPackagesRegenerate]: (data: ExpectedPackagesRegenerateProps) => void
 	[IngestJobs.PackageInfosUpdated]: (data: PackageInfosUpdatedProps) => void
+
+	[IngestJobs.UserRemoveRundown]: (data: UserRemoveRundownProps) => void
+	[IngestJobs.UserUnsyncRundown]: (data: UserUnsyncRundownProps) => void
 }
 
 // TODO - there should probably be a queue per rundown or something. To be improved later

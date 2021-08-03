@@ -1,4 +1,4 @@
-import { SegmentId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
@@ -12,6 +12,7 @@ import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
 import { getRundownId } from './lib'
 import { JobContext } from '../jobs'
 import { IngestPropsBase } from '@sofie-automation/corelib/dist/worker/ingest'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 export interface CommitIngestData {
 	/** Segment Ids which had any changes */
@@ -65,11 +66,11 @@ export async function runAsIngestJob(
 		throw new Error(`Job is missing rundownExternalId`)
 	}
 
-	return runInRundownLock(context, data.rundownExternalId, async () => {
+	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
+	return runInRundownLock(context, rundownId, async () => {
 		const span = context.startSpan(`ingestLockFunction.${context}`)
 
 		// Load the old ingest data
-		const rundownId = getRundownId(context.studioId, data.rundownExternalId)
 		const pIngestCache = CacheForIngest.create(context, data.rundownExternalId)
 		const ingestObjCache = await RundownIngestDataCache.create(context, rundownId)
 
@@ -172,15 +173,36 @@ export async function runAsIngestJob(
 // }
 
 /**
+ * Run a minimal rundown job
+ * This avoids loading the cache
+ */
+export async function runAsRundownLock<TRes>(
+	context: JobContext,
+	rundownId: RundownId,
+	fcn: (rundown: DBRundown | undefined, lock: unknown) => Promise<TRes>
+): Promise<TRes> {
+	if (!rundownId) {
+		throw new Error(`Job is missing rundownId`)
+	}
+
+	const rundown = await context.directCollections.Rundowns.findOne(rundownId)
+	if (rundown && rundown.studioId !== context.studioId) {
+		throw new Error(`Job rundown "${rundownId}" not found or for another studio`)
+	}
+
+	return runInRundownLock(context, rundownId, async (lock) => fcn(rundown, lock))
+}
+
+/**
  * Lock the rundown for a quick task without the cache
  */
-export async function runInRundownLock(
+export async function runInRundownLock<TRes>(
 	_context: JobContext,
-	_rundownExternalId: string,
-	fcn: () => Promise<void>
-): Promise<void> {
+	_rundownId: RundownId,
+	fcn: (lock: unknown) => Promise<TRes>
+): Promise<TRes> {
 	// TODO - lock Rundown?
-	return fcn()
+	return fcn(null)
 }
 
 function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {

@@ -22,6 +22,7 @@ import { clone } from '@sofie-automation/corelib/dist/lib'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
+import { ensureNextPartIsValid } from './updateNext'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -271,7 +272,7 @@ export async function CommitIngestOperation(
 				await pSaveIngest
 
 				// do some final playout checks, which may load back some Parts data
-				await ensureNextPartIsValid(playoutCache)
+				await ensureNextPartIsValid(context, playoutCache)
 
 				// save the final playout changes
 				await playoutCache.saveAllToDatabase()
@@ -509,7 +510,7 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 				updatePartInstancesBasicProperties(playoutCache, insertedRundown._id, new Map())
 			}
 
-			await ensureNextPartIsValid(playoutCache)
+			await ensureNextPartIsValid(context, playoutCache)
 
 			if (playoutCache.Playlist.doc.activationId) {
 				triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)

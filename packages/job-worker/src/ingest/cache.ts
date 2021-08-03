@@ -50,8 +50,8 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	private constructor(
 		context: JobContext,
 		rundownExternalId: string,
-		studio: DbCacheReadObject<DBStudio>,
 		rundown: DbCacheWriteOptionalObject<DBRundown>,
+		studio: DbCacheReadObject<DBStudio>,
 		segments: DbCacheWriteCollection<DBSegment>,
 		parts: DbCacheWriteCollection<DBPart>,
 		pieces: DbCacheWriteCollection<Piece>,
@@ -106,16 +106,36 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	static async create(context: JobContext, rundownExternalId: string): Promise<CacheForIngest> {
 		const rundownId = getRundownId(context.studioId, rundownExternalId)
 
-		const [studio, rundown] = await Promise.all([
-			DbCacheReadObject.createFromDatabase(context, context.directCollections.Studios, false, context.studioId),
-			DbCacheWriteOptionalObject.createOptionalFromDatabase(
-				context,
-				context.directCollections.Rundowns,
-				rundownId
-			),
-		])
+		const rundownObj = await DbCacheWriteOptionalObject.createOptionalFromDatabase(
+			context,
+			context.directCollections.Rundowns,
+			rundownId
+		)
 
-		const collections = await Promise.all([
+		const collections = await CacheForIngest.loadCollections(context, rundownId)
+
+		const res = new CacheForIngest(context, rundownExternalId, rundownObj, ...collections)
+
+		return res
+	}
+
+	static async createFromRundown(context: JobContext, rundown: DBRundown): Promise<CacheForIngest> {
+		const collections = await CacheForIngest.loadCollections(context, rundown._id)
+
+		const rundownObj = DbCacheWriteOptionalObject.createOptionalFromDoc(
+			context,
+			context.directCollections.Rundowns,
+			rundown
+		)
+
+		const res = new CacheForIngest(context, rundown.externalId, rundownObj, ...collections)
+
+		return res
+	}
+
+	private static async loadCollections(context: JobContext, rundownId: RundownId) {
+		return Promise.all([
+			DbCacheReadObject.createFromDatabase(context, context.directCollections.Studios, false, context.studioId),
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Segments, {
 				rundownId: rundownId,
 			}),
@@ -143,10 +163,6 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 				rundownId: rundownId,
 			}),
 		])
-
-		const res = new CacheForIngest(context, rundownExternalId, studio, rundown, ...collections)
-
-		return res
 	}
 
 	async loadBaselineCollections(): Promise<{

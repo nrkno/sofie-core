@@ -36,7 +36,6 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { handleRemovedRundownByRundown } from './ingest/rundownInput'
 import {
 	moveRundownIntoPlaylist,
 	removeRundownPlaylistFromDb,
@@ -47,10 +46,10 @@ import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { CacheForPlayout } from './playout/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from './playout/lockFunction'
-import { runIngestOperationFromRundown } from './ingest/lockFunction'
-import { getRundown } from './ingest/lib'
+import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { checkAccessToPlaylist } from './lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 export async function selectShowStyleVariant(
 	context: StudioUserContext,
@@ -322,24 +321,18 @@ export namespace ServerRundownAPI {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		await handleRemovedRundownByRundown(access.rundown, true)
+		await runIngestOperation(access.rundown.studioId, IngestJobs.UserRemoveRundown, {
+			rundownId: rundownId,
+			force: true,
+		})
 	}
 
 	export async function unsyncRundown(context: MethodContext, rundownId: RundownId): Promise<void> {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 
-		await runIngestOperationFromRundown('unsyncRundown', access.rundown, async (cache) => {
-			const rundown = getRundown(cache)
-			if (!rundown.orphaned) {
-				cache.Rundown.update({
-					$set: {
-						orphaned: 'deleted',
-					},
-				})
-			} else {
-				logger.info(`Rundown "${rundownId}" was already unsynced`)
-			}
+		await runIngestOperation(access.rundown.studioId, IngestJobs.UserUnsyncRundown, {
+			rundownId: rundownId,
 		})
 	}
 	/** Resync all rundowns in a rundownPlaylist */
