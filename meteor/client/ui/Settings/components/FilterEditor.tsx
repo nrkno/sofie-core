@@ -1442,7 +1442,7 @@ export default withTranslation()(
 						<label className="field">{activeLayerTitle}</label>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`filters.${index}.activeLayerIds`}
+							attribute={`filters.${index}.requiredLayerIds`}
 							obj={item}
 							type="checkbox"
 							collection={RundownLayouts}
@@ -1452,7 +1452,7 @@ export default withTranslation()(
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`filters.${index}.activeLayerIds`}
+							attribute={`filters.${index}.requiredLayerIds`}
 							obj={item}
 							options={this.props.showStyleBase.sourceLayers.map((l) => {
 								return { name: l.name, value: l._id }
@@ -1469,7 +1469,7 @@ export default withTranslation()(
 						<label className="field">{t('Also Require Source Layers')}</label>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`filters.${index}.requiredLayers`}
+							attribute={`filters.${index}.additionalLayers`}
 							obj={item}
 							type="checkbox"
 							collection={RundownLayouts}
@@ -1479,7 +1479,7 @@ export default withTranslation()(
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`filters.${index}.requiredLayers`}
+							attribute={`filters.${index}.additionalLayers`}
 							obj={item}
 							options={this.props.showStyleBase.sourceLayers.map((l) => {
 								return { name: l.name, value: l._id }
@@ -1496,16 +1496,16 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Require All Sourcelayers')}
+							{t('Require All Additional Source Layers')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={`filters.${index}.requireAllSourcelayers`}
+								attribute={`filters.${index}.requireAllAdditionalSourcelayers`}
 								obj={item}
 								type="checkbox"
 								collection={RundownLayouts}
 								className="mod mas"
 							/>
-							<span className="text-s dimmed">{t('All required source layers must have active pieces')}</span>
+							<span className="text-s dimmed">{t('All additional source layers must have active pieces')}</span>
 						</label>
 					</div>
 				</React.Fragment>

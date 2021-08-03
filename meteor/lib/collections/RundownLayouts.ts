@@ -72,19 +72,19 @@ export interface RundownLayoutElementBase {
 
 /**
  * An interface for filters that check for a piece to be present on a source layer to change their behaviour (or in order to perform any action at all).
- * If `activeLayerIds` is empty / undefined, the filter should be treated as "always active".
- * @param activeLayerIds Layers that the filter will check for some active ('live') piece. (Match any layer in array).
- * @param requiredLayers Layers that must be active in addition to the active layers, i.e. "any of `activeLayerIds`, with at least one of `requiredLayers`".
- * @param requireAllSourcelayers Require all layers in `requiredLayers` to contain an active piece.
+ * If `requiredLayerIds` is empty / undefined, the filter should be treated as "always active".
+ * @param requiredLayerIds Layers that the filter will check for some active ('live') piece. (Match any layer in array).
+ * @param additionalLayers Layers that must be active in addition to the active layers, i.e. "any of `requiredLayerIds`, with at least one of `additionalLayers`".
+ * @param requireAllAdditionalSourcelayers Require all layers in `additionalLayers` to contain an active piece.
  */
 export interface RequiresActiveLayers {
-	activeLayerIds?: string[]
-	requiredLayers?: string[]
+	requiredLayerIds?: string[]
+	additionalLayers?: string[]
 	/**
-	 * Require that all required sourcelayers be active.
+	 * Require that all additional sourcelayers be active.
 	 * This allows behaviour to be tied to a combination of e.g. script + VT.
 	 */
-	requireAllSourcelayers: boolean
+	requireAllAdditionalSourcelayers: boolean
 }
 
 export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {

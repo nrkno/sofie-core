@@ -16,31 +16,32 @@ export function getIsFilterActive(
 	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist.currentPartInstanceId, true)
 	let activePieceInstance: PieceInstance | undefined
 	const activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
-	const containsEveryRequiredLayer = panel.requireAllSourcelayers
-		? panel.requiredLayers?.length && panel.requiredLayers.every((s) => activeLayers.includes(s))
+	const containsEveryRequiredLayer = panel.requireAllAdditionalSourcelayers
+		? panel.additionalLayers?.length && panel.additionalLayers.every((s) => activeLayers.includes(s))
 		: false
 	const containsRequiredLayer = containsEveryRequiredLayer
 		? true
-		: panel.requiredLayers && panel.requiredLayers.length
-		? panel.requiredLayers.some((s) => activeLayers.includes(s))
+		: panel.additionalLayers && panel.additionalLayers.length
+		? panel.additionalLayers.some((s) => activeLayers.includes(s))
 		: false
 
 	if (
-		(!panel.requireAllSourcelayers || containsEveryRequiredLayer) &&
-		(!panel.requiredLayers?.length || containsRequiredLayer)
+		(!panel.requireAllAdditionalSourcelayers || containsEveryRequiredLayer) &&
+		(!panel.additionalLayers?.length || containsRequiredLayer)
 	) {
 		activePieceInstance =
-			panel.activeLayerIds && panel.activeLayerIds.length
+			panel.requiredLayerIds && panel.requiredLayerIds.length
 				? _.flatten(Object.values(unfinishedPieces)).find((piece: PieceInstance) => {
 						return (
-							(panel.activeLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
+							(panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
 							piece.partInstanceId === playlist.currentPartInstanceId
 						)
 				  })
 				: undefined
 	}
 	return {
-		active: activePieceInstance !== undefined || (!panel.activeLayerIds?.length && !panel.requiredLayers?.length),
+		active:
+			activePieceInstance !== undefined || (!panel.requiredLayerIds?.length && !panel.additionalLayers?.length),
 		activePieceInstance,
 	}
 }

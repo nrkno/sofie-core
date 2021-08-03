@@ -89,7 +89,7 @@ export default withTranslation()(
 						<label className="field">{t('Live line countdown requires sourcelayer')}</label>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`liveLineProps.activeLayerIds`}
+							attribute={`liveLineProps.requiredLayerIds`}
 							obj={this.props.item}
 							type="checkbox"
 							collection={RundownLayouts}
@@ -99,7 +99,7 @@ export default withTranslation()(
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`liveLineProps.activeLayerIds`}
+							attribute={`liveLineProps.requiredLayerIds`}
 							obj={this.props.item}
 							options={this.props.showStyleBase.sourceLayers.map((l) => {
 								return { name: l.name, value: l._id }
@@ -118,7 +118,7 @@ export default withTranslation()(
 						<label className="field">{t('Also Require Source Layers')}</label>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`liveLineProps.requiredLayers`}
+							attribute={`liveLineProps.additionalLayers`}
 							obj={this.props.item}
 							type="checkbox"
 							collection={RundownLayouts}
@@ -128,7 +128,7 @@ export default withTranslation()(
 						/>
 						<EditAttribute
 							modifiedClassName="bghl"
-							attribute={`liveLineProps.requiredLayers`}
+							attribute={`liveLineProps.additionalLayers`}
 							obj={this.props.item}
 							options={this.props.showStyleBase.sourceLayers.map((l) => {
 								return { name: l.name, value: l._id }
@@ -145,16 +145,16 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Require All Sourcelayers')}
+							{t('Require All Additional Source Layers')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={`liveLineProps.requireAllSourcelayers`}
+								attribute={`liveLineProps.requireAllAdditionalSourcelayers`}
 								obj={this.props.item}
 								type="checkbox"
 								collection={RundownLayouts}
 								className="mod mas"
 							/>
-							<span className="text-s dimmed">{t('All required source layers must have active pieces')}</span>
+							<span className="text-s dimmed">{t('All additional source layers must have active pieces')}</span>
 						</label>
 					</div>
 					<div className="mod mvs mhs">

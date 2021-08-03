@@ -267,7 +267,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		let displayLiveLineCounter: boolean = true
-		if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.activeLayerIds) {
+		if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.requiredLayerIds) {
 			const { active } = getIsFilterActive(props.playlist, props.rundownViewLayout.liveLineProps)
 			displayLiveLineCounter = active
 		}
