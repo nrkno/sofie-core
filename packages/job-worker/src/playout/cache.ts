@@ -1,5 +1,4 @@
 import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-// import { ActivationCache, getActivationCache } from '../cache/ActivationCache'
 import { DbCacheReadObject, DbCacheWriteObject } from '../cache/CacheObject'
 import { CacheBase, ReadOnlyCache } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
@@ -35,8 +34,6 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 
 	public readonly PlaylistLock: PlaylistLock
 
-	// public readonly activationCache: ActivationCache
-
 	public readonly Studio: DbCacheReadObject<DBStudio>
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
@@ -47,7 +44,6 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		context: JobContext,
 		playlistLock: PlaylistLock,
 		playlistId: RundownPlaylistId,
-		// activationCache: ActivationCache,
 		studio: DbCacheReadObject<DBStudio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
 		playlist: DbCacheWriteObject<DBRundownPlaylist>,
@@ -56,7 +52,6 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		super(context)
 
 		this.PlaylistId = playlistId
-		// this.activationCache = activationCache
 		this.PlaylistLock = playlistLock
 
 		this.Studio = studio
@@ -91,48 +86,12 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		existingRundowns: DbCacheReadCollection<DBRundown> | undefined
 	): Promise<
 		[
-			// ActivationCache,
 			DbCacheReadObject<DBStudio>,
 			DbCacheReadCollection<PeripheralDevice>,
 			DbCacheWriteObject<DBRundownPlaylist>,
 			DbCacheReadCollection<DBRundown>
 		]
 	> {
-		// const activationCache = getActivationCache(tmpPlaylist.studioId, tmpPlaylist._id)
-
-		// const [playlist, rundowns] = await Promise.all([
-		// 	reloadPlaylist
-		// 		? await DbCacheWriteObject.createFromDatabase(
-		// 				context.directCollections.RundownPlaylists,
-		// 				false,
-		// 				tmpPlaylist._id
-		// 		  )
-		// 		: DbCacheWriteObject.createFromDoc<DBRundownPlaylist>(
-		// 				context.directCollections.RundownPlaylists,
-		// 				false,
-		// 				tmpPlaylist
-		// 		  ),
-		// 	existingRundowns ??
-		// 		DbCacheReadCollection.createFromDatabase(context.directCollections.Rundowns, {
-		// 			playlistId: tmpPlaylist._id,
-		// 		}),
-		// ])
-
-		// // await activationCache.initialize(playlist.doc, rundowns.findFetch())
-
-		// const studio = DbCacheReadObject.createFromDoc(
-		// 	context.directCollections.Studios,
-		// 	false,
-		// 	activationCache.getStudio()
-		// )
-		// const rawPeripheralDevices = await activationCache.getPeripheralDevices()
-		// const peripheralDevices = DbCacheReadCollection.createFromArray(
-		// 	context.directCollections.PeripheralDevices,
-		// 	rawPeripheralDevices
-		// )
-
-		// return [activationCache, studio, peripheralDevices, playlist, rundowns]
-
 		return Promise.all([
 			DbCacheReadObject.createFromDoc<DBStudio>(
 				context,

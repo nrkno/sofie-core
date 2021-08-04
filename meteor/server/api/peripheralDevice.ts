@@ -37,7 +37,6 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
@@ -523,16 +522,6 @@ export namespace ServerPeripheralDeviceAPI {
 								latencies: peripheralDevice.latencies,
 							},
 						})
-						// Because the ActivationCache is used during playout, we need to update that as well:
-						const activationCache = getValidActivationCache(peripheralDevice.studioId)
-						if (activationCache) {
-							const device = (await activationCache.getPeripheralDevices()).find(
-								(device) => device._id === peripheralDevice._id
-							)
-							if (device) {
-								device.latencies = peripheralDevice.latencies
-							}
-						}
 
 						// Also store the result to userActions, if possible.
 						await UserActionsLog.updateAsync(

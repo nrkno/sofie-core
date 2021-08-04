@@ -3,7 +3,6 @@ import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Settings } from '../../../lib/Settings'
-import { forceClearAllActivationCaches } from '../../cache/ActivationCache'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { forceClearAllBlueprintConfigCaches } from '../blueprints/config'
@@ -107,8 +106,8 @@ if (!Settings.enableUserAccounts) {
 		debug_forceClearAllCaches() {
 			logger.info('forceClearAllCaches')
 
-			forceClearAllActivationCaches()
 			forceClearAllBlueprintConfigCaches()
+			// TODO - hook into workers
 		},
 
 		/**
