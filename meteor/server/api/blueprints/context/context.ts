@@ -16,7 +16,6 @@ import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
 	IStudioContext,
-	IStudioUserContext,
 	BlueprintMappings,
 	IBlueprintSegmentDB,
 	IBlueprintPartInstance,
@@ -27,8 +26,6 @@ import {
 	IRundownContext,
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
-	PackageInfo,
-	IShowStyleUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -40,7 +37,7 @@ import {
 } from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
-import { NoteType, INoteBase } from '../../../../lib/api/notes'
+import { INoteBase } from '../../../../lib/api/notes'
 import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstances, unprotectPieceInstanceArray } from '../../../../lib/collections/PieceInstances'
 import {
@@ -54,7 +51,6 @@ import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessag
 import { ReadonlyDeep } from 'type-fest'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Meteor } from 'meteor/meteor'
-import { WatchedPackagesHelper } from './watchedPackages'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -140,43 +136,6 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	}
 }
 
-export class StudioUserContext extends StudioContext implements IStudioUserContext {
-	public readonly notes: INoteBase[] = []
-	private readonly tempSendNotesIntoBlackHole: boolean
-
-	constructor(contextInfo: UserContextInfo, studio: ReadonlyDeep<Studio>) {
-		super(contextInfo, studio)
-		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
-	}
-
-	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteType.ERROR,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
-	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteType.WARNING,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
-	}
-}
-
 /** Show Style Variant */
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
 	constructor(
@@ -196,52 +155,6 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleCompound.showStyleVariantId, configKey)
-	}
-}
-
-export class ShowStyleUserContext extends ShowStyleContext implements IShowStyleUserContext {
-	public readonly notes: INoteBase[] = []
-	private readonly tempSendNotesIntoBlackHole: boolean
-
-	constructor(
-		contextInfo: UserContextInfo,
-		studio: ReadonlyDeep<Studio>,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		private readonly watchedPackages: WatchedPackagesHelper
-	) {
-		super(contextInfo, studio, showStyleCompound)
-		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
-	}
-
-	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteType.ERROR,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
-	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteType.WARNING,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
-	}
-
-	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
-		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 
