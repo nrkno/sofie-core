@@ -27,18 +27,15 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import {
-	moveRundownIntoPlaylist,
-	removeRundownPlaylistFromDb,
-	restoreRundownsInPlaylistToDefaultOrder,
-} from './rundownPlaylist'
+import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 import { StudioUserContext } from './blueprints/context'
 import { ReadonlyDeep } from 'type-fest'
-import { PlayoutLockFunctionPriority, runPlayoutOperationWithLock } from './playout/lockFunction'
 import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { checkAccessToPlaylist } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { QueueStudioJob } from '../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 export async function selectShowStyleVariant(
 	context: StudioUserContext,
@@ -139,17 +136,12 @@ export namespace ServerRundownAPI {
 
 		const access = checkAccessToPlaylist(context, playlistId)
 
-		await runPlayoutOperationWithLock(
-			access,
-			'removeRundownPlaylist',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			async (_lock, tmpPlaylist) => {
-				logger.info('removeRundownPlaylist ' + playlistId)
+		logger.info('removeRundownPlaylist ' + playlistId)
 
-				await removeRundownPlaylistFromDb(tmpPlaylist)
-			}
-		)
+		const job = await QueueStudioJob(StudioJobs.RemovePlaylist, access.playlist.studioId, {
+			playlistId,
+		})
+		await job.complete
 	}
 	/** Remove an individual rundown */
 	export async function removeRundown(context: MethodContext, rundownId: RundownId): Promise<void> {

@@ -28,12 +28,20 @@ export enum StudioJobs {
 	SetNextSegment = 'setNextSegment',
 	ExecuteAction = 'executeAction',
 	TakeNextPart = 'takeNextPart',
+	DisableNextPiece = 'disableNextPiece',
+	RemovePlaylist = 'removePlaylist',
+
 	OnPiecePlaybackStarted = 'onPiecePlaybackStarted',
 	OnPiecePlaybackStopped = 'onPiecePlaybackStopped',
 	OnPartPlaybackStarted = 'onPartPlaybackStarted',
 	OnPartPlaybackStopped = 'onPartPlaybackStopped',
-	DisableNextPiece = 'disableNextPiece',
+	OnTimelineTriggerTime = 'onTimelineTriggerTime',
+
 	UpdateStudioBaseline = 'updateStudioBaseline',
+	CleanupEmptyPlaylists = 'cleanupEmptyPlaylists',
+
+	DebugRegenerateNextPartInstance = 'debugRegenerateNextPartInstance',
+	DebugSyncInfinitesForNextPartInstance = 'debugSyncInfinitesForNextPartInstance',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -86,6 +94,11 @@ export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	triggerMode?: string
 }
 export type TakeNextPartProps = RundownPlayoutPropsBase
+export interface DisableNextPieceProps extends RundownPlayoutPropsBase {
+	undo: boolean
+}
+export type RemovePlaylistProps = RundownPlayoutPropsBase
+
 export interface OnPiecePlaybackStartedProps extends RundownPlayoutPropsBase {
 	pieceInstanceId: PieceInstanceId
 	startedPlayback: Time
@@ -102,10 +115,12 @@ export interface OnPartPlaybackStoppedProps extends RundownPlayoutPropsBase {
 	partInstanceId: PartInstanceId
 	stoppedPlayback: Time
 }
-export interface DisableNextPieceProps extends RundownPlayoutPropsBase {
-	undo: boolean
+export interface OnTimelineTriggerTimeProps {
+	results: Array<{ id: string; time: number }>
 }
-export type UpdateStudioBaselineProps = Record<string, unknown>
+
+export type DebugRegenerateNextPartInstanceProps = RundownPlayoutPropsBase
+export type DebugSyncInfinitesForNextPartInstanceProps = RundownPlayoutPropsBase
 
 /**
  * Set of valid functions, of form:
@@ -128,12 +143,20 @@ export type StudioJobFunc = {
 	[StudioJobs.SetNextSegment]: (data: SetNextSegmentProps) => void
 	[StudioJobs.ExecuteAction]: (data: ExecuteActionProps) => void
 	[StudioJobs.TakeNextPart]: (data: TakeNextPartProps) => void
+	[StudioJobs.DisableNextPiece]: (data: DisableNextPieceProps) => void
+	[StudioJobs.RemovePlaylist]: (data: RemovePlaylistProps) => void
+
 	[StudioJobs.OnPiecePlaybackStarted]: (data: OnPiecePlaybackStartedProps) => void
 	[StudioJobs.OnPiecePlaybackStopped]: (data: OnPiecePlaybackStoppedProps) => void
 	[StudioJobs.OnPartPlaybackStarted]: (data: OnPartPlaybackStartedProps) => void
 	[StudioJobs.OnPartPlaybackStopped]: (data: OnPartPlaybackStoppedProps) => void
-	[StudioJobs.DisableNextPiece]: (data: DisableNextPieceProps) => void
-	[StudioJobs.UpdateStudioBaseline]: (data: UpdateStudioBaselineProps) => string | false
+	[StudioJobs.OnTimelineTriggerTime]: (data: OnTimelineTriggerTimeProps) => void
+
+	[StudioJobs.UpdateStudioBaseline]: () => string | false
+	[StudioJobs.CleanupEmptyPlaylists]: () => void
+
+	[StudioJobs.DebugRegenerateNextPartInstance]: (data: DebugRegenerateNextPartInstanceProps) => void
+	[StudioJobs.DebugSyncInfinitesForNextPartInstance]: (data: DebugSyncInfinitesForNextPartInstanceProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

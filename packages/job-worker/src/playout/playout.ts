@@ -22,7 +22,7 @@ import {
 	OnPartPlaybackStartedProps,
 	DisableNextPieceProps,
 	SetNextSegmentProps,
-	UpdateStudioBaselineProps,
+	OnTimelineTriggerTimeProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { logger } from '../logging'
 import _ = require('underscore')
@@ -55,7 +55,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { getRandomId, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, getRandomId, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import {
 	afterTake,
@@ -75,6 +75,8 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { runAsStudioJob } from '../studio/lock'
 import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { CacheForStudio } from '../studio/cache'
+import { DbCacheWriteCollection } from '../cache/CacheCollection'
+import { PieceGroupMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -691,6 +693,8 @@ export async function onPiecePlaybackStarted(context: JobContext, data: OnPieceP
 		// 'onPiecePlaybackStarted',
 		data,
 		async (playlist) => {
+			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
+
 			const rundowns = await context.directCollections.Rundowns.findFetch({ playlistId: playlist._id })
 			// This method is called when an auto-next event occurs
 
@@ -730,6 +734,8 @@ export async function onPiecePlaybackStopped(context: JobContext, data: OnPieceP
 		// 'onPiecePlaybackStopped',
 		data,
 		async (playlist) => {
+			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
+
 			const rundowns = await context.directCollections.Rundowns.findFetch({ playlistId: playlist._id })
 
 			// This method is called when an auto-next event occurs
@@ -907,6 +913,8 @@ export async function onPartPlaybackStopped(context: JobContext, data: OnPartPla
 		// 'onPartPlaybackStopped',
 		data,
 		async (playlist) => {
+			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
+
 			// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
 			const rundowns = await context.directCollections.Rundowns.findFetch({ playlistId: playlist._id })
 
@@ -935,6 +943,132 @@ export async function onPartPlaybackStopped(context: JobContext, data: OnPartPla
 			}
 		}
 	)
+}
+
+/**
+ * Called from Playout-gateway when the trigger-time of a timeline object has updated
+ * ( typically when using the "now"-feature )
+ */
+export async function handleTimelineTriggerTime(context: JobContext, data: OnTimelineTriggerTimeProps): Promise<void> {
+	if (data.results.length > 0) {
+		await runAsStudioJob(context, async (studioCache) => {
+			const activePlaylists = studioCache.getActiveRundownPlaylists()
+
+			if (activePlaylists.length === 1) {
+				const activePlaylist = activePlaylists[0]
+				const playlistId = activePlaylist._id
+				await runAsPlayoutLock(context, { playlistId }, async () => {
+					const rundownIDs = (
+						await context.directCollections.Rundowns.findFetch({ playlistId }, { projection: { _id: 1 } })
+					).map((r) => r._id)
+
+					// We only need the PieceInstances, so load just them
+					const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
+						context,
+						context.directCollections.PieceInstances,
+						{
+							rundownId: { $in: rundownIDs },
+						}
+					)
+
+					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
+					timelineTriggerTimeInner(studioCache, data.results, pieceInstanceCache, activePlaylist)
+
+					await pieceInstanceCache.updateDatabaseWithData()
+				})
+			} else {
+				timelineTriggerTimeInner(studioCache, data.results, undefined, undefined)
+			}
+		})
+	}
+}
+
+function timelineTriggerTimeInner(
+	cache: CacheForStudio,
+	results: OnTimelineTriggerTimeProps['results'],
+	pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
+	activePlaylist: DBRundownPlaylist | undefined
+) {
+	let lastTakeTime: number | undefined
+
+	// ------------------------------
+	const timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
+	let tlChanged = false
+
+	_.each(results, (o) => {
+		logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
+
+		const obj = timelineObjs.find((tlo) => tlo.id === o.id)
+		if (obj) {
+			applyToArray(obj.enable, (enable) => {
+				if (enable.start === 'now') {
+					enable.start = o.time
+					enable.setFromNow = true
+
+					tlChanged = true
+				}
+			})
+
+			// TODO - we should do the same for the partInstance.
+			// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
+
+			const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
+			if (objPieceId && activePlaylist && pieceInstanceCache) {
+				logger.info('Update PieceInstance: ', {
+					pieceId: objPieceId,
+					time: new Date(o.time).toTimeString(),
+				})
+
+				const pieceInstance = pieceInstanceCache.findOne(objPieceId)
+				if (pieceInstance) {
+					pieceInstanceCache.update(pieceInstance._id, {
+						$set: {
+							'piece.enable.start': o.time,
+						},
+					})
+
+					const takeTime = pieceInstance.dynamicallyInserted
+					if (pieceInstance.dynamicallyInserted && takeTime) {
+						lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+					}
+				}
+			}
+		}
+	})
+
+	if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
+		// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
+		const remainingNowPieces = pieceInstanceCache.findFetch({
+			partInstanceId: activePlaylist.currentPartInstanceId,
+			dynamicallyInserted: { $exists: true },
+			disabled: { $ne: true },
+		})
+		for (const piece of remainingNowPieces) {
+			const pieceTakeTime = piece.dynamicallyInserted
+			if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
+				// Disable and hide the instance
+				pieceInstanceCache.update(piece._id, {
+					$set: {
+						disabled: true,
+						hidden: true,
+					},
+				})
+			}
+		}
+	}
+	if (tlChanged) {
+		cache.Timeline.update(
+			cache.Studio.doc._id,
+			{
+				$set: {
+					timeline: timelineObjs,
+					timelineHash: getRandomId(),
+					generated: getCurrentTime(),
+				},
+			},
+			true
+		)
+	}
 }
 
 export async function executeAction(context: JobContext, data: ExecuteActionProps): Promise<void> {
@@ -1088,10 +1222,7 @@ export async function stopPiecesOnSourceLayers(
 	)
 }
 
-export async function updateStudioBaseline(
-	context: JobContext,
-	_data: UpdateStudioBaselineProps
-): Promise<string | false> {
+export async function updateStudioBaseline(context: JobContext, _data: void): Promise<string | false> {
 	return runAsStudioJob(context, async (cache) => {
 		const activePlaylists = cache.getActiveRundownPlaylists()
 

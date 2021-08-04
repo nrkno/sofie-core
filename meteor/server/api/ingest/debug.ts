@@ -57,8 +57,7 @@ if (!Settings.enableUserAccounts) {
 			waitForPromiseAll(
 				rundowns.map(async (rundown) =>
 					runIngestOperation(rundown.studioId, IngestJobs.ExpectedPackagesRegenerate, {
-						rundownExternalId: rundown.externalId,
-						peripheralDeviceId: null,
+						rundownId: rundown._id,
 					})
 				)
 			)

@@ -1,15 +1,9 @@
 import * as _ from 'underscore'
-import { DBRundown } from '../../../lib/collections/Rundowns'
-import { Part, DBPart } from '../../../lib/collections/Parts'
+import { DBPart } from '../../../lib/collections/Parts'
 import { clone, applyToArray } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
-import { Segment, DBSegment } from '../../../lib/collections/Segments'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBSegment } from '../../../lib/collections/Segments'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { ReadonlyDeep } from 'type-fest'
-import { DbCacheReadCollection } from '../../cache/CacheCollection'
-
-export const LOW_PRIO_DEFER_TIME = 40 // ms
 
 export interface SelectNextPartResult {
 	part: DBPart

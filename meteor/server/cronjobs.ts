@@ -11,8 +11,9 @@ import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
 import { Studios } from '../lib/collections/Studios'
-import { removeEmptyPlaylists } from './api/rundownPlaylist'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
+import { QueueStudioJob } from './worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -147,8 +148,13 @@ Meteor.startup(() => {
 
 	function cleanupPlaylists() {
 		// Ensure there are no empty playlists on an interval
-		const studios = Studios.find().fetch()
-		waitForPromiseAll(studios.map(async (studio) => removeEmptyPlaylists(studio._id)))
+		const studios = Studios.find({}, { fields: { _id: 1 } }).fetch()
+		waitForPromiseAll(
+			studios.map(async (studio) => {
+				const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studio._id, undefined)
+				await job.complete
+			})
+		)
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
 	cleanupPlaylists()

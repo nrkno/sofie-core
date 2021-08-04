@@ -30,11 +30,7 @@ import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaseli
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { Segments } from '../../lib/collections/Segments'
-import {
-	runStudioOperationWithCache,
-	runStudioOperationWithLock,
-	StudioLockFunctionPriority,
-} from './studio/lockFunction'
+import { runStudioOperationWithLock, StudioLockFunctionPriority } from './studio/lockFunction'
 import {
 	PlayoutLockFunctionPriority,
 	runPlayoutOperationWithLock,
@@ -48,42 +44,10 @@ import { Meteor } from 'meteor/meteor'
 import { BlueprintResultOrderedRundowns } from '@sofie-automation/blueprints-integration'
 import { MethodContext } from '../../lib/api/methods'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
-import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { Random } from 'meteor/random'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { checkAccessToPlaylist } from './lib'
-
-export async function removeEmptyPlaylists(studioId: StudioId): Promise<void> {
-	return runStudioOperationWithCache(
-		'removeEmptyPlaylists',
-		studioId,
-		StudioLockFunctionPriority.MISC,
-		async (cache) => {
-			// Skip any playlists which are active
-			const playlists = cache.RundownPlaylists.findFetch({ activationId: { $exists: false } })
-
-			// We want to run them all in parallel fibers
-			await Promise.allSettled(
-				playlists.map(async (playlist) =>
-					// Take the playlist lock, to ensure we don't fight something else
-					runPlayoutOperationWithLockFromStudioOperation(
-						'removeEmptyPlaylists',
-						cache,
-						playlist,
-						PlayoutLockFunctionPriority.MISC,
-						async () => {
-							const rundowns = Rundowns.find({ playlistId: playlist._id }).count()
-							if (rundowns === 0) {
-								await removeRundownPlaylistFromDb(playlist)
-							}
-						}
-					)
-				)
-			)
-		}
-	)
-}
 
 /**
  * Convert the playlistExternalId into a playlistId.
@@ -93,15 +57,6 @@ export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternal
 	return protectString(getHash(`${studioId}_${playlistExternalId}`))
 }
 
-export async function removeRundownPlaylistFromDb(playlist: ReadonlyDeep<RundownPlaylist>): Promise<void> {
-	if (playlist.activationId)
-		throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is active and cannot be removed`)
-
-	// We assume we have the master lock at this point
-	const rundownIds = Rundowns.find({ playlistId: playlist._id }, { fields: { _id: 1 } }).map((r) => r._id)
-
-	await Promise.allSettled([RundownPlaylists.removeAsync({ _id: playlist._id }), removeRundownsFromDb(rundownIds)])
-}
 export async function removeRundownsFromDb(rundownIds: RundownId[]): Promise<void> {
 	// Note: playlists are not removed by this, one could be left behind empty
 	if (rundownIds.length > 0) {

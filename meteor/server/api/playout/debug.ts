@@ -7,7 +7,6 @@ import { forceClearAllActivationCaches } from '../../cache/ActivationCache'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { forceClearAllBlueprintConfigCaches } from '../blueprints/config'
-import { removeRundownPlaylistFromDb } from '../rundownPlaylist'
 import { check } from 'meteor/check'
 import { StudioId } from '../../../lib/collections/Studios'
 import { profiler } from '../profiler'
@@ -28,7 +27,13 @@ if (!Settings.enableUserAccounts) {
 
 			const playlist = RundownPlaylists.findOne(id)
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${id}" not found`)
-			waitForPromise(removeRundownPlaylistFromDb(playlist))
+
+			const job = waitForPromise(
+				QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
+					playlistId: playlist._id,
+				})
+			)
+			waitForPromise(job.complete)
 		},
 
 		/**
@@ -38,7 +43,14 @@ if (!Settings.enableUserAccounts) {
 		debug_removeAllPlaylists() {
 			logger.debug('Remove all rundowns')
 
-			waitForPromiseAll(RundownPlaylists.find({}).map(async (playlist) => removeRundownPlaylistFromDb(playlist)))
+			waitForPromiseAll(
+				RundownPlaylists.find({}).map(async (playlist) => {
+					const job = await QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
+						playlistId: playlist._id,
+					})
+					await job.complete
+				})
+			)
 		},
 
 		/**
@@ -76,18 +88,16 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			waitForPromise(
-				runPlayoutOperationWithCache(
-					null,
-					'debug_syncPlayheadInfinitesForNextPartInstance',
-					id,
-					PlayoutLockFunctionPriority.MISC,
-					null,
-					async (cache) => {
-						await syncPlayheadInfinitesForNextPartInstance(cache)
-					}
-				)
+			const playlist = RundownPlaylists.findOne(id)
+			if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
+
+			const job = waitForPromise(
+				QueueStudioJob(StudioJobs.DebugSyncInfinitesForNextPartInstance, playlist.studioId, {
+					playlistId: id,
+				})
 			)
+
+			waitForPromise(job.complete)
 		},
 
 		/**
@@ -119,28 +129,16 @@ if (!Settings.enableUserAccounts) {
 		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
 			logger.info('regenerateNextPartInstance')
 
-			waitForPromise(
-				runPlayoutOperationWithCache(
-					null,
-					'debug_regenerateNextPartInstance',
-					id,
-					PlayoutLockFunctionPriority.MISC,
-					null,
-					async (cache) => {
-						const playlist = cache.Playlist.doc
-						if (playlist.nextPartInstanceId && playlist.activationId) {
-							const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-							const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
-							if (part) {
-								await setNextPart(cache, null)
-								await setNextPart(cache, { part: part })
+			const playlist = RundownPlaylists.findOne(id)
+			if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
 
-								await updateTimeline(cache)
-							}
-						}
-					}
-				)
+			const job = waitForPromise(
+				QueueStudioJob(StudioJobs.DebugRegenerateNextPartInstance, playlist.studioId, {
+					playlistId: id,
+				})
 			)
+
+			waitForPromise(job.complete)
 		},
 	})
 }

@@ -10,6 +10,7 @@ import {
 	deactivateRundownPlaylist,
 	disableNextPiece,
 	executeAction,
+	handleTimelineTriggerTime,
 	moveNextPart,
 	onPartPlaybackStarted,
 	onPartPlaybackStopped,
@@ -24,6 +25,12 @@ import {
 	updateStudioBaseline,
 } from '../../playout/playout'
 import { runAsStudioJob } from '../../studio/lock'
+import {
+	handleDebugSyncPlayheadInfinitesForNextPartInstance,
+	handleDebugRegenerateNextPartInstance,
+} from '../../playout/debug'
+import { removeEmptyPlaylists } from '../../studio/cleanup'
+import { handleRemoveRundownPlaylist } from '../../rundownPlaylists'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -51,12 +58,20 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.SetNextSegment]: setNextSegment,
 	[StudioJobs.ExecuteAction]: executeAction,
 	[StudioJobs.TakeNextPart]: takeNextPart,
+	[StudioJobs.DisableNextPiece]: disableNextPiece,
+	[StudioJobs.RemovePlaylist]: handleRemoveRundownPlaylist,
+
 	[StudioJobs.OnPiecePlaybackStarted]: onPiecePlaybackStarted,
 	[StudioJobs.OnPiecePlaybackStopped]: onPiecePlaybackStopped,
 	[StudioJobs.OnPartPlaybackStarted]: onPartPlaybackStarted,
 	[StudioJobs.OnPartPlaybackStopped]: onPartPlaybackStopped,
-	[StudioJobs.DisableNextPiece]: disableNextPiece,
+	[StudioJobs.OnTimelineTriggerTime]: handleTimelineTriggerTime,
+
 	[StudioJobs.UpdateStudioBaseline]: updateStudioBaseline,
+	[StudioJobs.CleanupEmptyPlaylists]: removeEmptyPlaylists,
+
+	[StudioJobs.DebugSyncInfinitesForNextPartInstance]: handleDebugSyncPlayheadInfinitesForNextPartInstance,
+	[StudioJobs.DebugRegenerateNextPartInstance]: handleDebugRegenerateNextPartInstance,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {

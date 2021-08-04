@@ -1,33 +1,21 @@
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, unprotectString, literal, omit } from '../../../lib/lib'
-import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
-import { Studio } from '../../../lib/collections/Studios'
+import { PieceId } from '../../../lib/collections/Pieces'
+import { protectString, unprotectString, omit } from '../../../lib/lib'
+import { TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Meteor } from 'meteor/meteor'
 import {
 	TimelineObjectCoreExt,
-	IBlueprintPiece,
 	IBlueprintAdLibPiece,
 	TSR,
 	IBlueprintActionManifest,
 	ICommonContext,
-	IShowStyleContext,
 } from '@sofie-automation/blueprints-integration'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { RundownImportVersions } from '../../../lib/collections/Rundowns'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
-import { PartId } from '../../../lib/collections/Parts'
 import { BucketId } from '../../../lib/collections/Buckets'
-import { AdLibAction } from '../../../lib/collections/AdLibActions'
-import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { prefixAllObjectIds } from '../playout/lib'
-import { SegmentId } from '../../../lib/collections/Segments'
-import { profiler } from '../profiler'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
-import { CommonContext, ShowStyleContext } from './context'
-import { ReadonlyDeep } from 'type-fest'
+import { ShowStyleContext } from './context'
 import { processAdLibActionITranslatableMessages } from '../../../lib/api/TranslatableMessage'
 
 function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {

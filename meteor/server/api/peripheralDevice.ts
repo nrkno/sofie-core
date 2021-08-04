@@ -9,7 +9,7 @@ import {
 	PeripheralDeviceType,
 } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, getRandomId, applyToArray, stringifyObjects } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, stringifyObjects } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
@@ -37,18 +37,11 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { PieceGroupMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
-import { runStudioOperationWithCache, StudioLockFunctionPriority } from './studio/lockFunction'
-import { PlayoutLockFunctionPriority, runPlayoutOperationWithLockFromStudioOperation } from './playout/lockFunction'
-import { DbCacheWriteCollection } from '../cache/CacheCollection'
-import { CacheForStudio } from './studio/cache'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -233,8 +226,6 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(401, `peripheralDevice "${deviceId}" not attached to a studio`)
 
-		const studioId = peripheralDevice.studioId
-
 		// check(r.time, Number)
 		check(results, Array)
 		_.each(results, (o) => {
@@ -243,137 +234,15 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			await runStudioOperationWithCache(
-				'timelineTriggerTime',
-				studioId,
-				StudioLockFunctionPriority.CALLBACK_PLAYOUT,
-				async (studioCache) => {
-					const activePlaylists = studioCache.getActiveRundownPlaylists()
-
-					if (activePlaylists.length === 1) {
-						const activePlaylist = activePlaylists[0]
-						const playlistId = activePlaylist._id
-						await runPlayoutOperationWithLockFromStudioOperation(
-							'timelineTriggerTime',
-							studioCache,
-							activePlaylist,
-							PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-							async () => {
-								const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
-
-								// We only need the PieceInstances, so load just them
-								const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
-									PieceInstances,
-									{
-										rundownId: { $in: rundownIDs },
-									}
-								)
-
-								// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
-								timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)
-
-								await pieceInstanceCache.updateDatabaseWithData()
-							}
-						)
-					} else {
-						timelineTriggerTimeInner(studioCache, results, undefined, undefined)
-					}
-				}
-			)
+			const job = await QueueStudioJob(StudioJobs.OnTimelineTriggerTime, peripheralDevice.studioId, {
+				results,
+			})
+			await job.complete
 		}
 
 		transaction?.end()
 	}
 
-	function timelineTriggerTimeInner(
-		cache: CacheForStudio,
-		results: PeripheralDeviceAPI.TimelineTriggerTimeResult,
-		pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance> | undefined,
-		activePlaylist: RundownPlaylist | undefined
-	) {
-		let lastTakeTime: number | undefined
-
-		// ------------------------------
-		const timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
-		let tlChanged = false
-
-		_.each(results, (o) => {
-			check(o.id, String)
-
-			logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
-
-			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
-			if (obj) {
-				applyToArray(obj.enable, (enable) => {
-					if (enable.start === 'now') {
-						enable.start = o.time
-						enable.setFromNow = true
-
-						tlChanged = true
-					}
-				})
-
-				// TODO - we should do the same for the partInstance.
-				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
-
-				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
-				if (objPieceId && activePlaylist && pieceInstanceCache) {
-					logger.info('Update PieceInstance: ', {
-						pieceId: objPieceId,
-						time: new Date(o.time).toTimeString(),
-					})
-
-					const pieceInstance = pieceInstanceCache.findOne(objPieceId)
-					if (pieceInstance) {
-						pieceInstanceCache.update(pieceInstance._id, {
-							$set: {
-								'piece.enable.start': o.time,
-							},
-						})
-
-						const takeTime = pieceInstance.dynamicallyInserted
-						if (pieceInstance.dynamicallyInserted && takeTime) {
-							lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
-						}
-					}
-				}
-			}
-		})
-
-		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
-			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-			const remainingNowPieces = pieceInstanceCache.findFetch({
-				partInstanceId: activePlaylist.currentPartInstanceId,
-				dynamicallyInserted: { $exists: true },
-				disabled: { $ne: true },
-			})
-			for (const piece of remainingNowPieces) {
-				const pieceTakeTime = piece.dynamicallyInserted
-				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
-					// Disable and hide the instance
-					pieceInstanceCache.update(piece._id, {
-						$set: {
-							disabled: true,
-							hidden: true,
-						},
-					})
-				}
-			}
-		}
-		if (tlChanged) {
-			cache.Timeline.update(
-				cache.Studio.doc._id,
-				{
-					$set: {
-						timeline: timelineObjs,
-						timelineHash: getRandomId(),
-						generated: getCurrentTime(),
-					},
-				},
-				true
-			)
-		}
-	}
 	export async function partPlaybackStarted(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,

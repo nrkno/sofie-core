@@ -1,40 +1,20 @@
-// export async function removeEmptyPlaylists(studioId: StudioId): Promise<void> {
-// 	return runStudioOperationWithCache(
-// 		'removeEmptyPlaylists',
-// 		studioId,
-// 		StudioLockFunctionPriority.MISC,
-// 		async (cache) => {
-// 			// Skip any playlists which are active
-// 			const playlists = cache.RundownPlaylists.findFetch({ activationId: { $exists: false } })
-
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getHash } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { RemovePlaylistProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from './jobs'
+import { runAsPlayoutLock } from './playout/lock'
 
-// 			// We want to run them all in parallel fibers
-// 			await Promise.allSettled(
-// 				playlists.map(async (playlist) =>
-// 					// Take the playlist lock, to ensure we don't fight something else
-// 					runPlayoutOperationWithLockFromStudioOperation(
-// 						'removeEmptyPlaylists',
-// 						cache,
-// 						playlist,
-// 						PlayoutLockFunctionPriority.MISC,
-// 						async () => {
-// 							const rundowns = Rundowns.find({ playlistId: playlist._id }).count()
-// 							if (rundowns === 0) {
-// 								await removeRundownPlaylistFromDb(playlist)
-// 							}
-// 						}
-// 					)
-// 				)
-// 			)
-// 		}
-// 	)
-// }
+export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
+	// TODO - should this lock each rundown for removal? Perhaps by putting work onto the ingest queue?
+	await runAsPlayoutLock(context, data, async (playlist) => {
+		if (playlist) {
+			await removeRundownPlaylistFromDb(context, playlist)
+		}
+	})
+}
 
 /**
  * Convert the playlistExternalId into a playlistId.
