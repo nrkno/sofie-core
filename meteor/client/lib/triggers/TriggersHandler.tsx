@@ -266,7 +266,7 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 			return []
 		}, [props.rundownPlaylistId]) || []
 
-	const showStyleBase = useTracker(() => ShowStyleBases.findOne(props.showStyleBaseId))
+	const showStyleBase = useTracker(() => ShowStyleBases.findOne(props.showStyleBaseId), [props.showStyleBaseId])
 
 	useSubscriptions(props.rundownPlaylistId, rundownIds, props.showStyleBaseId)
 
@@ -337,3 +337,5 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 
 	return null
 }
+
+window['MountedTriggers'] = MountedTriggers

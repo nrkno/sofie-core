@@ -85,10 +85,10 @@ function wrapRundownBaselineAdLibAction(
 	}
 }
 
-function wrapAdLibPiece<
-	T extends RundownBaselineAdLibItem | AdLibPiece,
-	U extends 'adLibPiece' | 'rundownBaselineAdLibItem'
->(adLib: T, type: U): IWrappedAdLib {
+function wrapAdLibPiece<T extends RundownBaselineAdLibItem | AdLibPiece>(
+	adLib: T,
+	type: 'adLibPiece' | 'rundownBaselineAdLibItem'
+): IWrappedAdLib {
 	return {
 		_id: adLib._id,
 		_rank: adLib._rank,

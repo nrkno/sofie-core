@@ -19,7 +19,7 @@ import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../../lib/collections/Segments'
 import { Studio, Studios, StudioRouteSet } from '../../lib/collections/Studios'
-import { Part, Parts } from '../../lib/collections/Parts'
+import { Part, PartId, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
@@ -101,6 +101,7 @@ import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownVie
 import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioPackageContainersContext from './RundownView/StudioPackageContainersContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
+import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1461,6 +1462,8 @@ interface ITrackedProps {
 	bucketDisplayFilter: number[] | undefined
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
+	currentSegmentPartIds: PartId[]
+	nextSegmentPartIds: PartId[]
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let playlistId
@@ -1563,6 +1566,30 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		bucketDisplayFilter,
 		currentPartInstance,
 		nextPartInstance,
+		currentSegmentPartIds: currentPartInstance
+			? Parts.find(
+					{
+						segmentId: currentPartInstance?.part.segmentId,
+					},
+					{
+						fields: {
+							_id: 1,
+						},
+					}
+			  ).map((part) => part._id)
+			: [],
+		nextSegmentPartIds: nextPartInstance
+			? Parts.find(
+					{
+						segmentId: nextPartInstance?.part.segmentId,
+					},
+					{
+						fields: {
+							_id: 1,
+						},
+					}
+			  ).map((part) => part._id)
+			: [],
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -2697,6 +2724,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											studioRouteSets={this.props.studio.routeSets}
 											studioRouteSetExclusivityGroups={this.props.studio.routeSetExclusivityGroups}
 											onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
+										/>
+									</ErrorBoundary>
+									<ErrorBoundary>
+										<TriggersHandler
+											rundownPlaylistId={this.props.rundownPlaylistId}
+											showStyleBaseId={this.props.showStyleBase._id}
+											currentPartId={this.props.currentPartInstance?.part._id || null}
+											nextPartId={this.props.nextPartInstance?.part._id || null}
+											currentSegmentPartIds={this.props.currentSegmentPartIds}
+											nextSegmentPartIds={this.props.nextSegmentPartIds}
 										/>
 									</ErrorBoundary>
 									<ErrorBoundary>
