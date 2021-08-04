@@ -15,15 +15,25 @@ import {
 	TimelineObjectCoreExt,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
-import { CommonContext } from './context'
+import { CommonContext, ShowStyleContext } from './context'
 import { prefixAllObjectIds } from '../playout/lib'
-import { BlueprintId, PartId, PieceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	BlueprintId,
+	BucketId,
+	PartId,
+	PieceId,
+	RundownId,
+	SegmentId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { JobContext } from '../jobs'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { ArrayElement, ITranslatableMessage, literal } from '@sofie-automation/corelib/dist/lib'
+import { ArrayElement, ITranslatableMessage, literal, omit } from '@sofie-automation/corelib/dist/lib'
+import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
+import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 
 /**
  *
@@ -313,66 +323,66 @@ export function postProcessRundownBaselineItems(
 	return postProcessTimelineObjects(innerContext, protectString('baseline'), blueprintId, baselineItems, false)
 }
 
-// export function postProcessBucketAdLib(
-// 	innerContext: ShowStyleContext,
-// 	itemOrig: IBlueprintAdLibPiece,
-// 	externalId: string,
-// 	blueprintId: BlueprintId,
-// 	bucketId: BucketId,
-// 	rank: number | undefined,
-// 	importVersions: RundownImportVersions
-// ): BucketAdLib {
-// 	const piece: BucketAdLib = {
-// 		...itemOrig,
-// 		_id: protectString(
-// 			innerContext.getHashId(
-// 				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
-// 			)
-// 		),
-// 		externalId,
-// 		studioId: innerContext.studioIdProtected,
-// 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
-// 		bucketId,
-// 		importVersions,
-// 		_rank: rank || itemOrig._rank,
-// 	}
+export function postProcessBucketAdLib(
+	innerContext: ShowStyleContext,
+	itemOrig: IBlueprintAdLibPiece,
+	externalId: string,
+	blueprintId: BlueprintId,
+	bucketId: BucketId,
+	rank: number | undefined,
+	importVersions: RundownImportVersions
+): BucketAdLib {
+	const piece: BucketAdLib = {
+		...itemOrig,
+		_id: protectString(
+			innerContext.getHashId(
+				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
+			)
+		),
+		externalId,
+		studioId: innerContext.studioIdProtected,
+		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
+		bucketId,
+		importVersions,
+		_rank: rank || itemOrig._rank,
+	}
 
-// 	if (piece.content && piece.content.timelineObjects) {
-// 		piece.content.timelineObjects = postProcessTimelineObjects(
-// 			innerContext,
-// 			piece._id,
-// 			blueprintId,
-// 			piece.content.timelineObjects,
-// 			false
-// 		)
-// 	}
+	if (piece.content && piece.content.timelineObjects) {
+		piece.content.timelineObjects = postProcessTimelineObjects(
+			innerContext,
+			piece._id,
+			blueprintId,
+			piece.content.timelineObjects,
+			false
+		)
+	}
 
-// 	return piece
-// }
+	return piece
+}
 
-// export function postProcessBucketAction(
-// 	innerContext: ShowStyleContext,
-// 	itemOrig: IBlueprintActionManifest,
-// 	externalId: string,
-// 	blueprintId: BlueprintId,
-// 	bucketId: BucketId,
-// 	rank: number | undefined,
-// 	importVersions: RundownImportVersions
-// ): BucketAdLibAction {
-// 	const action: BucketAdLibAction = {
-// 		...omit(itemOrig, 'partId'),
-// 		_id: protectString(
-// 			innerContext.getHashId(
-// 				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
-// 			)
-// 		),
-// 		externalId,
-// 		studioId: innerContext.studioIdProtected,
-// 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
-// 		bucketId,
-// 		importVersions,
-// 		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
-// 	}
+export function postProcessBucketAction(
+	innerContext: ShowStyleContext,
+	itemOrig: IBlueprintActionManifest,
+	externalId: string,
+	blueprintId: BlueprintId,
+	bucketId: BucketId,
+	rank: number | undefined,
+	importVersions: RundownImportVersions
+): BucketAdLibAction {
+	const action: BucketAdLibAction = {
+		...omit(itemOrig, 'partId'),
+		_id: protectString(
+			innerContext.getHashId(
+				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
+			)
+		),
+		externalId,
+		studioId: innerContext.studioIdProtected,
+		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
+		bucketId,
+		importVersions,
+		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
+	}
 
-// 	return action
-// }
+	return action
+}

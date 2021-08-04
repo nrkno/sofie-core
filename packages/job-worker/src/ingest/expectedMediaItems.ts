@@ -1,9 +1,17 @@
 import {
 	ExpectedMediaItem,
 	ExpectedMediaItemBase,
+	ExpectedMediaItemBucketAction,
+	ExpectedMediaItemBucketPiece,
 	ExpectedMediaItemRundown,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
-import { ExpectedMediaItemId, RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	AdLibActionId,
+	ExpectedMediaItemId,
+	PieceId,
+	RundownId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getHash, Subtract } from '@sofie-automation/corelib/dist/lib'
 import {
@@ -18,6 +26,10 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { saveIntoCache } from '../cache/lib'
 import { CacheForIngest } from './cache'
 import { JobContext } from '../jobs'
+import { logger } from '../logging'
+import { saveIntoDb } from '../db/changes'
+import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -121,89 +133,84 @@ function generateExpectedMediaItemsFull(
 	return eMIs
 }
 
-// export async function cleanUpExpectedMediaItemForBucketAdLibPiece(adLibIds: PieceId[]): Promise<void> {
-// 	check(adLibIds, [String])
+export async function cleanUpExpectedMediaItemForBucketAdLibPiece(
+	context: JobContext,
+	adLibIds: PieceId[]
+): Promise<void> {
+	const removedItems = await context.directCollections.ExpectedMediaItems.remove({
+		bucketAdLibPieceId: {
+			$in: adLibIds,
+		},
+	})
 
-// 	const removedItems = await ExpectedMediaItems.removeAsync({
-// 		bucketAdLibPieceId: {
-// 			$in: adLibIds,
-// 		},
-// 	})
+	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib items`)
+}
 
-// 	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib items`)
-// }
+export async function cleanUpExpectedMediaItemForBucketAdLibActions(
+	context: JobContext,
+	actionIds: AdLibActionId[]
+): Promise<void> {
+	const removedItems = await context.directCollections.ExpectedMediaItems.remove({
+		bucketAdLibActionId: {
+			$in: actionIds,
+		},
+	})
 
-// export async function cleanUpExpectedMediaItemForBucketAdLibActions(actionIds: AdLibActionId[]): Promise<void> {
-// 	check(actionIds, [String])
+	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib actions`)
+}
 
-// 	const removedItems = await ExpectedMediaItems.removeAsync({
-// 		bucketAdLibActionId: {
-// 			$in: actionIds,
-// 		},
-// 	})
+export async function updateExpectedMediaItemForBucketAdLibPiece(
+	context: JobContext,
+	piece: BucketAdLib
+): Promise<void> {
+	const result = generateExpectedMediaItems<ExpectedMediaItemBucketPiece>(
+		piece._id,
+		{
+			bucketId: piece.bucketId,
+			bucketAdLibPieceId: piece._id,
+		},
+		piece.studioId,
+		piece.name,
+		piece.content,
+		PieceType.ADLIB
+	)
 
-// 	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib actions`)
-// }
+	await saveIntoDb(
+		context,
+		context.directCollections.ExpectedMediaItems,
+		{
+			bucketAdLibPieceId: piece._id,
+		},
+		result
+	)
+}
 
-// export async function updateExpectedMediaItemForBucketAdLibPiece(adLibId: PieceId): Promise<void> {
-// 	check(adLibId, String)
+export async function updateExpectedMediaItemForBucketAdLibAction(
+	context: JobContext,
+	action: BucketAdLibAction
+): Promise<void> {
+	const result = generateExpectedMediaItems<ExpectedMediaItemBucketAction>(
+		action._id,
+		{
+			bucketId: action.bucketId,
+			bucketAdLibActionId: action._id,
+		},
+		action.studioId,
+		translateMessage(action.display.label, interpollateTranslation),
+		(action.display as IBlueprintActionManifestDisplayContent | undefined)?.content,
+		PieceType.ADLIB
+	)
 
-// 	const piece = await BucketAdLibs.findOneAsync(adLibId)
-// 	if (!piece) {
-// 		await cleanUpExpectedMediaItemForBucketAdLibPiece([adLibId])
-// 		throw new Meteor.Error(404, `Bucket AdLib "${adLibId}" not found!`)
-// 	}
+	await saveIntoDb(
+		context,
+		context.directCollections.ExpectedMediaItems,
+		{
+			bucketAdLibActionId: action._id,
+		},
+		result
+	)
+}
 
-// 	const result = generateExpectedMediaItems<ExpectedMediaItemBucketPiece>(
-// 		piece._id,
-// 		{
-// 			bucketId: piece.bucketId,
-// 			bucketAdLibPieceId: piece._id,
-// 		},
-// 		piece.studioId,
-// 		piece.name,
-// 		piece.content,
-// 		PieceType.ADLIB
-// 	)
-
-// 	await saveIntoDb(
-// 		ExpectedMediaItems,
-// 		{
-// 			bucketAdLibPieceId: adLibId,
-// 		},
-// 		result
-// 	)
-// }
-
-// export async function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActionId): Promise<void> {
-// 	check(actionId, String)
-
-// 	const action = await BucketAdLibActions.findOneAsync(actionId)
-// 	if (!action) {
-// 		await cleanUpExpectedMediaItemForBucketAdLibActions([actionId])
-// 		throw new Meteor.Error(404, `Bucket Action "${actionId}" not found!`)
-// 	}
-
-// 	const result = generateExpectedMediaItems<ExpectedMediaItemBucketAction>(
-// 		action._id,
-// 		{
-// 			bucketId: action.bucketId,
-// 			bucketAdLibActionId: action._id,
-// 		},
-// 		action.studioId,
-// 		translateMessage(action.display.label, interpollateTranslation),
-// 		(action.display as IBlueprintActionManifestDisplayContent | undefined)?.content,
-// 		PieceType.ADLIB
-// 	)
-
-// 	await saveIntoDb(
-// 		ExpectedMediaItems,
-// 		{
-// 			bucketAdLibActionId: actionId,
-// 		},
-// 		result
-// 	)
-// }
 /** @deprecated */
 export function updateExpectedMediaItemsOnRundown(context: JobContext, cache: CacheForIngest): void {
 	const pieces = cache.Pieces.findFetch({})

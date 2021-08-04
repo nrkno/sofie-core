@@ -1,6 +1,15 @@
-import { ExpectedPackageId, PeripheralDeviceId, RundownId, StudioId } from '../dataModel/Ids'
+import {
+	AdLibActionId,
+	BucketId,
+	ExpectedPackageId,
+	PeripheralDeviceId,
+	PieceId,
+	RundownId,
+	ShowStyleVariantId,
+	StudioId,
+} from '../dataModel/Ids'
 import * as MOS from 'mos-connection'
-import { IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
+import { IngestAdlib, IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 
 export enum IngestJobs {
 	RemoveRundown = 'removeRundown',
@@ -26,6 +35,12 @@ export enum IngestJobs {
 
 	UserRemoveRundown = 'userRemoveRundown',
 	UserUnsyncRundown = 'userUnsyncRundown',
+
+	// For now these are in this queue, but if this gets split up to be per rundown, then a single bucket queue will be needed
+	BucketItemImport = 'bucketItemImport',
+	BucketRemoveAdlibPiece = 'bucketRemoveAdlibPiece',
+	BucketRemoveAdlibAction = 'bucketRemoveAdlibAction',
+	BucketEmpty = 'bucketEmpty',
 }
 
 export interface IngestPropsBase {
@@ -105,6 +120,21 @@ export interface UserRemoveRundownProps extends UserRundownPropsBase {
 }
 export type UserUnsyncRundownProps = UserRundownPropsBase
 
+export interface BucketPropsBase {
+	bucketId: BucketId
+}
+export interface BucketItemImportProps extends BucketPropsBase {
+	showStyleVariantId: ShowStyleVariantId
+	payload: IngestAdlib
+}
+export interface BucketRemoveAdlibPieceProps extends BucketPropsBase {
+	itemId: PieceId
+}
+export interface BucketRemoveAdlibActionProps extends BucketPropsBase {
+	itemId: AdLibActionId
+}
+export type BucketEmptyProps = BucketPropsBase
+
 /**
  * Set of valid functions, of form:
  * `id: [data, return]`
@@ -133,6 +163,11 @@ export type IngestJobFunc = {
 
 	[IngestJobs.UserRemoveRundown]: (data: UserRemoveRundownProps) => void
 	[IngestJobs.UserUnsyncRundown]: (data: UserUnsyncRundownProps) => void
+
+	[IngestJobs.BucketItemImport]: (data: BucketItemImportProps) => void
+	[IngestJobs.BucketRemoveAdlibPiece]: (data: BucketRemoveAdlibPieceProps) => void
+	[IngestJobs.BucketRemoveAdlibAction]: (data: BucketRemoveAdlibActionProps) => void
+	[IngestJobs.BucketEmpty]: (data: BucketEmptyProps) => void
 }
 
 // TODO - there should probably be a queue per rundown or something. To be improved later

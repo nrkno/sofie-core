@@ -30,7 +30,6 @@ import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
-import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
@@ -46,6 +45,8 @@ import { SnapshotId } from '../../lib/collections/Snapshots'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { runIngestOperation } from './ingest/lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 /**
  * Run a user action via the worker. Before calling you MUST check the user is allowed to do the operation
@@ -630,7 +631,11 @@ export async function bucketAdlibImport(
 	const bucket = await Buckets.findOneAsync(bucketId)
 	if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found`)
 
-	await updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
+	await runIngestOperation(bucket.studioId, IngestJobs.BucketItemImport, {
+		bucketId: bucket._id,
+		showStyleVariantId: showStyleVariantId,
+		payload: ingestItem,
+	})
 
 	return ClientAPI.responseSuccess(undefined)
 }

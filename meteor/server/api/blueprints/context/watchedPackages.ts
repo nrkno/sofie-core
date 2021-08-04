@@ -9,7 +9,6 @@ import { StudioId } from '../../../../lib/collections/Studios'
 import { unprotectObjectArray } from '../../../../lib/lib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { DbCacheReadCollection } from '../../../cache/CacheCollection'
-import { CacheForIngest } from '../../ingest/cache'
 
 /**
  * This is a helper class to simplify exposing packageInfo to various places in the blueprints
@@ -47,27 +46,6 @@ export class WatchedPackagesHelper {
 		const watchedPackageInfos = await DbCacheReadCollection.createFromDatabase(PackageInfos, {
 			studioId: studioId,
 			packageId: { $in: watchedPackages.findFetch().map((p) => p._id) },
-		})
-
-		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
-	}
-
-	/**
-	 * Create a helper, and populate it with data from a CacheForIngest
-	 * @param studioId The studio this is for
-	 * @param filter A filter to check if each package should be included
-	 */
-	static async createForIngest(
-		cache: CacheForIngest,
-		func: ((pkg: ExpectedPackageDB) => boolean) | undefined
-	): Promise<WatchedPackagesHelper> {
-		const packages = cache.ExpectedPackages.findFetch(func)
-
-		// Load all the packages and the infos that are watched
-		const watchedPackages = DbCacheReadCollection.createFromArray(ExpectedPackages, packages)
-		const watchedPackageInfos = await DbCacheReadCollection.createFromDatabase(PackageInfos, {
-			studioId: cache.Studio.doc._id,
-			packageId: { $in: packages.map((p) => p._id) },
 		})
 
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)

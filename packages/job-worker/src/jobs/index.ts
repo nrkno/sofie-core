@@ -5,6 +5,7 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ISettings } from '@sofie-automation/corelib/dist/settings'
 import { ApmSpan } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export { ApmSpan }
 
@@ -29,4 +30,6 @@ export interface JobContext {
 		name: T,
 		data: Parameters<IngestJobFunc[T]>[0]
 	): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> // TODO - this return type isnt the best..
+
+	getStudio(): Promise<DBStudio>
 }
