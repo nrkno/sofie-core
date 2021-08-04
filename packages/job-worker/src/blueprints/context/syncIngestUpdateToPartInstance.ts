@@ -29,7 +29,6 @@ import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext } from '../../jobs'
-import { WrappedShowStyleBlueprint } from '../cache'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownContext
@@ -46,14 +45,20 @@ export class SyncIngestUpdateToPartInstanceContext
 		private readonly playlistActivationId: RundownPlaylistActivationId,
 		studio: ReadonlyDeep<DBStudio>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 		rundown: ReadonlyDeep<DBRundown>,
 		private partInstance: DBPartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'current' | 'next'
 	) {
-		super(contextInfo, studio, _context.getStudioBlueprintConfig(), showStyleCompound, showStyleBlueprint, rundown)
+		super(
+			contextInfo,
+			studio,
+			_context.getStudioBlueprintConfig(),
+			showStyleCompound,
+			_context.getShowStyleBlueprintConfig(showStyleCompound),
+			rundown
+		)
 
 		// Create temporary cache databases
 		this._pieceInstanceCache = DbCacheWriteCollection.createFromArray(

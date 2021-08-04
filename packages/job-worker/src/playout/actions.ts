@@ -106,7 +106,7 @@ export async function activateRundownPlaylist(
 			cache.Studio.doc,
 			context.getStudioBlueprintConfig(),
 			showStyle,
-			blueprint,
+			context.getShowStyleBlueprintConfig(showStyle),
 			rundown
 		)
 		if (blueprint.blueprint.onRundownActivate) {
@@ -128,7 +128,7 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 					cache.Studio.doc,
 					context.getStudioBlueprintConfig(),
 					showStyle,
-					blueprint,
+					context.getShowStyleBlueprintConfig(showStyle),
 					rundown
 				)
 				Promise.resolve(blueprint.blueprint.onRundownDeActivate(context2)).catch(logger.error)

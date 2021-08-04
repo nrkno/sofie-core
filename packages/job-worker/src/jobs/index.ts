@@ -8,7 +8,7 @@ import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { ProcessedStudioConfig } from '../blueprints/config'
+import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 
 export { ApmSpan }
 
@@ -41,4 +41,5 @@ export interface JobContext {
 	getShowStyleCompound(variantId: ShowStyleVariantId, baseId?: ShowStyleBaseId): Promise<ShowStyleCompound>
 
 	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<WrappedShowStyleBlueprint>
+	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig
 }

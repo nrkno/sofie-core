@@ -133,7 +133,7 @@ export async function calculateSegmentsFromIngestData(
 				cache.Studio.doc,
 				context.getStudioBlueprintConfig(),
 				showStyle,
-				blueprint,
+				context.getShowStyleBlueprintConfig(showStyle),
 				rundown,
 				watchedPackages
 			)
@@ -480,7 +480,7 @@ export async function updateRundownFromIngestData(
 		cache.Studio.doc,
 		context.getStudioBlueprintConfig(),
 		showStyle.compound,
-		showStyleBlueprint,
+		context.getShowStyleBlueprintConfig(showStyle.compound),
 		rundownBaselinePackages
 	)
 	const rundownRes = showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)

@@ -106,7 +106,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 						cache.Studio.doc,
 						context.getStudioBlueprintConfig(),
 						showStyle,
-						blueprint,
+						context.getShowStyleBlueprintConfig(showStyle),
 						takeRundown,
 						takePartInstance
 					)
@@ -251,7 +251,7 @@ async function afterTakeUpdateTimingsAndEvents(
 							cache.Studio.doc,
 							context.getStudioBlueprintConfig(),
 							showStyle,
-							blueprint,
+							context.getShowStyleBlueprintConfig(showStyle),
 							takeRundown,
 							takePartInstance
 						)
@@ -270,7 +270,7 @@ async function afterTakeUpdateTimingsAndEvents(
 						cache.Studio.doc,
 						context.getStudioBlueprintConfig(),
 						showStyle,
-						blueprint,
+						context.getShowStyleBlueprintConfig(showStyle),
 						takeRundown,
 						takePartInstance
 					)
@@ -309,7 +309,7 @@ export function updatePartInstanceOnTake(
 			cache.Studio.doc,
 			context.getStudioBlueprintConfig(),
 			showStyle,
-			blueprint,
+			context.getShowStyleBlueprintConfig(showStyle),
 			takeRundown
 		)
 		previousPartEndState = blueprint.blueprint.getEndStateForPart(

@@ -14,7 +14,12 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
-import { preprocessStudioConfig, ProcessedStudioConfig } from '../blueprints/config'
+import {
+	preprocessShowStyleConfig,
+	preprocessStudioConfig,
+	ProcessedShowStyleConfig,
+	ProcessedStudioConfig,
+} from '../blueprints/config'
 
 export class JobContextBase implements JobContext {
 	constructor(
@@ -139,6 +144,21 @@ export class JobContextBase implements JobContext {
 		}
 
 		throw new Error(`Blueprint for ShowStyleBase "${id}" does not exist`)
+	}
+	getShowStyleBlueprintConfig(showStyle: ShowStyleCompound): ProcessedShowStyleConfig {
+		const existing = this.cacheData.showStyleBlueprintConfig.get(showStyle.blueprintId)
+		if (existing) {
+			return existing
+		}
+
+		const blueprint = this.cacheData.showStyleBlueprints.get(showStyle.blueprintId)
+		if (!blueprint)
+			throw new Error(`Blueprint "${showStyle.blueprintId}" must be loaded before its config can be retrieved`)
+
+		const config = preprocessShowStyleConfig(showStyle, blueprint.blueprint)
+		this.cacheData.showStyleBlueprintConfig.set(showStyle.blueprintId, config)
+
+		return clone(config)
 	}
 }
 

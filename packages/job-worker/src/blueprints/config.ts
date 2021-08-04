@@ -1,9 +1,4 @@
-import {
-	BlueprintId,
-	ShowStyleBaseId,
-	ShowStyleVariantId,
-	StudioId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ReadonlyDeep } from 'type-fest'
 import {
@@ -17,7 +12,6 @@ import {
 import { objectPathGet, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { logger } from '../logging'
-import { WrappedShowStyleBlueprint } from './cache'
 import { CommonContext } from './context'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
@@ -166,45 +160,4 @@ export function applyToConfig(
 
 		objectPathSet(res, val.id, newVal)
 	}
-}
-
-const showStyleBlueprintConfigCache = new Map<BlueprintId, Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>>>()
-interface Cache {
-	config: unknown
-}
-
-export function getShowStyleBlueprintConfig(
-	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-	showStyleCompound: ReadonlyDeep<ShowStyleCompound>
-): unknown {
-	let blueprintConfigMap: Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>> | undefined =
-		showStyleCompound.blueprintId ? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId) : new Map()
-	if (!blueprintConfigMap) {
-		blueprintConfigMap = new Map()
-		showStyleBlueprintConfigCache.set(showStyleCompound.blueprintId, blueprintConfigMap)
-	}
-
-	let showStyleBaseMap = blueprintConfigMap.get(showStyleCompound._id)
-	if (!showStyleBaseMap) {
-		showStyleBaseMap = new Map()
-		blueprintConfigMap.set(showStyleCompound._id, showStyleBaseMap)
-	}
-
-	const cachedConfig = showStyleBaseMap.get(showStyleCompound.showStyleVariantId)
-	if (cachedConfig) {
-		return cachedConfig.config
-	}
-
-	const diffs = findMissingConfigs(blueprint.blueprint.showStyleConfigManifest, showStyleCompound.blueprintConfig)
-	if (diffs && diffs.length) {
-		logger.warn(
-			`ShowStyle "${showStyleCompound._id}-${
-				showStyleCompound.showStyleVariantId
-			}" missing required config: ${diffs.join(', ')}`
-		)
-	}
-
-	const compiledConfig = preprocessShowStyleConfig(showStyleCompound, blueprint.blueprint)
-	showStyleBaseMap.set(showStyleCompound.showStyleVariantId, { config: compiledConfig })
-	return compiledConfig
 }

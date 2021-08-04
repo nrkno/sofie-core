@@ -34,13 +34,7 @@ import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist
 import { getCurrentTime } from '../../lib'
 import { protectPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import {
-	getShowStyleBlueprintConfig,
-	getShowStyleConfigRef,
-	getStudioConfigRef,
-	ProcessedStudioConfig,
-} from '../config'
-import { WrappedShowStyleBlueprint } from '../cache'
+import { getShowStyleConfigRef, getStudioConfigRef, ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config'
 import _ = require('underscore')
 import { WatchedPackagesHelper } from './watchedPackages'
 import { INoteBase, NoteType } from '@sofie-automation/corelib/dist/dataModel/Notes'
@@ -191,13 +185,13 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		public readonly showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		public readonly showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>
+		public readonly showStyleBlueprintConfig: ProcessedShowStyleConfig
 	) {
 		super(contextInfo, studio, studioBlueprintConfig)
 	}
 
 	getShowStyleConfig(): unknown {
-		return getShowStyleBlueprintConfig(this.showStyleBlueprint, this.showStyleCompound)
+		return this.showStyleBlueprintConfig
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return getShowStyleConfigRef(this.showStyleCompound.showStyleVariantId, configKey)
@@ -213,10 +207,10 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprint)
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig)
 		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
 	}
 
@@ -265,10 +259,10 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
-		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprint)
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig)
 
 		this.rundownId = unprotectString(rundown._id)
 		this.rundown = unprotectObject(rundown)
@@ -282,7 +276,7 @@ export class RundownEventContext extends RundownContext implements IEventContext
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
 		super(
@@ -293,7 +287,7 @@ export class RundownEventContext extends RundownContext implements IEventContext
 			studio,
 			studioBlueprintConfig,
 			showStyleCompound,
-			showStyleBlueprint,
+			showStyleBlueprintConfig,
 			rundown
 		)
 	}
@@ -315,11 +309,11 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprint, rundown)
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, rundown)
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
@@ -366,7 +360,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: DBPartInstance
 	) {
@@ -378,7 +372,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 			studio,
 			studioBlueprintConfig,
 			showStyleCompound,
-			showStyleBlueprint,
+			showStyleBlueprintConfig,
 			rundown
 		)
 
@@ -410,7 +404,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		playlist: ReadonlyDeep<DBRundownPlaylist>,
 		rundown: ReadonlyDeep<DBRundown>,
 		previousPartInstance: DBPartInstance | undefined,
@@ -425,7 +419,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 			studio,
 			studioBlueprintConfig,
 			showStyleCompound,
-			showStyleBlueprint,
+			showStyleBlueprintConfig,
 			rundown
 		)
 

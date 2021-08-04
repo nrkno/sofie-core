@@ -119,7 +119,6 @@ export async function syncChangesToPartInstances(
 					cache.Playlist.doc.activationId,
 					cache.Studio.doc,
 					showStyle,
-					blueprint,
 					rundown,
 					existingPartInstance,
 					pieceInstancesInPart,

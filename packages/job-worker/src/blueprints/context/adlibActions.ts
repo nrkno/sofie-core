@@ -18,7 +18,6 @@ import { assertNever, clone, getRandomId } from '@sofie-automation/corelib/dist/
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
-import { WrappedShowStyleBlueprint } from '../cache'
 import { ShowStyleUserContext, UserContextInfo } from './context'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
@@ -49,6 +48,7 @@ import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { moveNextPartInner } from '../../playout/playout'
 import _ = require('underscore')
+import { ProcessedShowStyleConfig } from '../config'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -73,7 +73,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		context: JobContext,
 		cache: CacheForPlayout,
 		showStyle: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: DBRundown,
 		watchedPackages: WatchedPackagesHelper
 	) {
@@ -82,7 +82,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			cache.Studio.doc,
 			context.getStudioBlueprintConfig(),
 			showStyle,
-			showStyleBlueprint,
+			showStyleBlueprintConfig,
 			watchedPackages
 		)
 		this._context = context

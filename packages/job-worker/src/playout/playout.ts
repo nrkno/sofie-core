@@ -1148,7 +1148,7 @@ export async function executeActionInner(
 				context,
 				cache,
 				showStyle,
-				blueprint,
+				context.getShowStyleBlueprintConfig(showStyle),
 				rundown,
 				watchedPackages
 			)

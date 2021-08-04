@@ -11,7 +11,7 @@ import {
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
-import { ProcessedStudioConfig } from '../blueprints/config'
+import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 
 export interface WorkerDataCache {
 	studio: DBStudio
@@ -21,6 +21,7 @@ export interface WorkerDataCache {
 	showStyleBases: Map<ShowStyleBaseId, DBShowStyleBase | null> // null when not found
 	showStyleVariants: Map<ShowStyleVariantId, DBShowStyleVariant | null> // null when not found
 	showStyleBlueprints: Map<BlueprintId, WrappedShowStyleBlueprint | null> // null when not found
+	showStyleBlueprintConfig: Map<BlueprintId, ProcessedShowStyleConfig>
 }
 
 export interface InvalidateWorkerDataCache {
@@ -46,6 +47,7 @@ export async function loadWorkerDataCache(
 		showStyleBases: new Map(),
 		showStyleVariants: new Map(),
 		showStyleBlueprints: new Map(),
+		showStyleBlueprintConfig: new Map(),
 	}
 }
 
@@ -108,6 +110,7 @@ export async function invalidateWorkerDataCache(
 	// TODO - showStyleBlueprints on change
 
 	// TODO - showStyleBlueprints inactivity timeout?
+	// TODO - showStyleBlueprintConfig cleanup
 }
 
 async function loadStudioBlueprint(

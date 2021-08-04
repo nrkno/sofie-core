@@ -89,7 +89,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 		studio,
 		context.getStudioBlueprintConfig(),
 		showStyle,
-		blueprint,
+		context.getShowStyleBlueprintConfig(showStyle),
 		watchedPackages
 	)
 	if (!blueprint.blueprint.getAdlibItem) throw new Error("This blueprint doesn't support ingest AdLibs")
