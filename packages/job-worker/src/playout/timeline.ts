@@ -62,7 +62,6 @@ import { StudioBaselineContext, TimelineEventContext } from '../blueprints/conte
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
-import { loadShowStyleBlueprint } from '../blueprints/cache'
 
 // export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 // 	const playlists = cache.getActiveRundownPlaylists()
@@ -301,7 +300,10 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
-			const showStyle = await cache.getShowStyleCompound(activeRundown)
+			const showStyle = await context.getShowStyleCompound(
+				activeRundown.showStyleVariantId,
+				activeRundown.showStyleBaseId
+			)
 			if (!showStyle) {
 				throw new Error(
 					`ShowStyleBase "${activeRundown.showStyleBaseId}" not found! (referenced by Rundown "${activeRundown._id}")`
@@ -331,10 +333,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 
 			timelineObjs = timelineObjs.concat(await pLookaheadObjs)
 
-			// const showStyleBlueprint0 = await pshowStyleBlueprint
-			// const showStyleBlueprintManifest = context.showStyleBlueprint.blueprint
-
-			const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
+			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 			if (blueprint.blueprint.onTimelineGenerate) {
 				const context2 = new TimelineEventContext(
 					cache.Studio.doc,

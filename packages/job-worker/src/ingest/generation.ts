@@ -13,7 +13,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { WrappedShowStyleBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
+import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleUserContext, CommonContext, StudioUserContext, SegmentUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
@@ -40,7 +40,6 @@ import {
 } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
-import { getShowStyleCompoundForRundown } from '../showStyles'
 import { selectShowStyleVariant } from './rundown'
 import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
@@ -101,7 +100,7 @@ export async function calculateSegmentsFromIngestData(
 	}
 
 	if (ingestSegments.length > 0) {
-		const pShowStyle = getShowStyleCompoundForRundown(context, rundown)
+		const pShowStyle = context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 		const pAllRundownWatchedPackages = getWatchedPackagesHelper(
 			context,
 			allRundownWatchedPackages0,
@@ -110,9 +109,8 @@ export async function calculateSegmentsFromIngestData(
 		)
 
 		const showStyle = await pShowStyle
-		const pBlueprint = loadShowStyleBlueprint(context.directCollections, showStyle)
+		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
-		const blueprint = await pBlueprint
 		const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
 		for (const ingestSegment of ingestSegments) {
@@ -464,7 +462,7 @@ export async function updateRundownFromIngestData(
 
 	const pAllRundownWatchedPackages = WatchedPackagesHelper.createForIngest(context, cache, undefined)
 
-	const showStyleBlueprint = await loadShowStyleBlueprint(context.directCollections, showStyle.base)
+	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyle.base._id)
 	const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(

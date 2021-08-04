@@ -3,7 +3,6 @@ import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/d
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { protectString, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
-import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { logger } from '../logging'
 import { createShowStyleCompound } from '../showStyles'
 import _ = require('underscore')
@@ -22,6 +21,7 @@ export async function selectShowStyleVariant(
 		return null
 	}
 	const showStyleBases = await context.directCollections.ShowStyleBases.findFetch({
+		// TODO - cache
 		_id: { $in: clone<Array<ShowStyleBaseId>>(studio.supportedShowStyleBase) },
 	})
 	let showStyleBase = _.first(showStyleBases)
@@ -57,11 +57,12 @@ export async function selectShowStyleVariant(
 		return null
 	}
 	const showStyleVariants = await context.directCollections.ShowStyleVariants.findFetch({
+		// TODO - cache
 		showStyleBaseId: showStyleBase._id,
 	})
 	if (!showStyleVariants.length) throw new Error(`ShowStyleBase "${showStyleBase._id}" has no variants`)
 
-	const showStyleBlueprint = await loadShowStyleBlueprint(context.directCollections, showStyleBase)
+	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyleBase._id)
 	if (!showStyleBlueprint) throw new Error(`ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 
 	const variantId: ShowStyleVariantId | null = protectString(

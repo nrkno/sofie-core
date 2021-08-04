@@ -49,7 +49,7 @@ import {
 	standDownStudio,
 } from './actions'
 import { ReadonlyDeep } from 'type-fest'
-import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
+import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
@@ -600,7 +600,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 
 			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
-			const showStyleBase = await cache.getShowStyleBase(rundown)
+			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
 
 			// logger.info(o)
 			// logger.info(JSON.stringify(o, '', 2))
@@ -843,8 +843,12 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 					const currentRundown = currentPartInstance
 						? cache.Rundowns.findOne(currentPartInstance.rundownId)
 						: undefined
-					const showStyle = await cache.getShowStyleCompound(currentRundown ?? rundown)
-					const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
+					const showStyleRundown = currentRundown ?? rundown
+					const showStyle = await context.getShowStyleCompound(
+						showStyleRundown.showStyleVariantId,
+						showStyleRundown.showStyleBaseId
+					)
+					const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 					updatePartInstanceOnTake(
 						context,
 						cache,
@@ -1123,7 +1127,7 @@ export async function executeActionInner(
 			if (!rundown) throw new Error(`Current Rundown "${currentPartInstance.rundownId}" could not be found`)
 
 			const [showStyle, watchedPackages] = await Promise.all([
-				cache.getShowStyleCompound(rundown),
+				context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId),
 				WatchedPackagesHelper.create(context, cache.Studio.doc._id, {
 					pieceId: actionDocId,
 					fromPieceType: {
@@ -1132,7 +1136,7 @@ export async function executeActionInner(
 				}),
 			])
 
-			const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
+			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 			const actionContext = new ActionExecutionContext(
 				{
 					name: `${rundown.name}(${playlist.name})`,
@@ -1204,7 +1208,7 @@ export async function stopPiecesOnSourceLayers(
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${partInstance.rundownId}" not found!`)
 
-			const showStyleBase = await cache.getShowStyleBase(rundown)
+			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
 			const sourceLayerIds = new Set(data.sourceLayerIds)
 			innerStopPieces(
 				context,

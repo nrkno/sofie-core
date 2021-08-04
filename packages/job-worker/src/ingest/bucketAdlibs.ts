@@ -1,6 +1,5 @@
 import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleUserContext } from '../blueprints/context'
 import { IBlueprintActionManifest, IBlueprintAdLibPiece } from '@sofie-automation/blueprints-integration'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
@@ -12,7 +11,6 @@ import {
 	BucketRemoveAdlibActionProps,
 	BucketRemoveAdlibPieceProps,
 } from '@sofie-automation/corelib/dist/worker/ingest'
-import { getShowStyleCompound } from '../showStyles'
 import {
 	cleanUpExpectedPackagesForBucketAdLibs,
 	cleanUpExpectedPackagesForBucketAdLibsActions,
@@ -73,12 +71,12 @@ async function emptyBucketInner(context: JobContext, id: BucketId): Promise<void
 }
 
 export async function handleBucketItemImport(context: JobContext, data: BucketItemImportProps): Promise<void> {
-	const showStyle = await getShowStyleCompound(context, data.showStyleVariantId)
+	const showStyle = await context.getShowStyleCompound(data.showStyleVariantId)
 	if (!showStyle) throw new Error(`ShowStyleVariant not found: ${data.showStyleVariantId}`)
 
 	const studio = context.studio
 
-	const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
+	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 	const watchedPackages = WatchedPackagesHelper.empty(context)
 

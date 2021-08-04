@@ -20,8 +20,6 @@ import { removeRundownPlaylistFromDb } from '../rundownPlaylists'
 import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlaylistLock } from '../jobs/lock'
-import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { getShowStyleCompound } from '../showStyles'
 import { CacheForIngest } from '../ingest/cache'
 
 /**
@@ -298,22 +296,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		}
 
 		return [segments, parts, ...collections]
-	}
-
-	async getShowStyleBase(rundown: DBRundown): Promise<DBShowStyleBase> {
-		// TODO - implement with caching
-		const showStyleBase = await this.context.directCollections.ShowStyleBases.findOne(rundown.showStyleBaseId)
-		if (!showStyleBase)
-			throw new Error(`ShowStyleBase "${rundown.showStyleBaseId}" for Rundown "${rundown._id}" not found!`)
-		return showStyleBase
-	}
-
-	async getShowStyleCompound(rundown: DBRundown): Promise<ShowStyleCompound> {
-		// TODO - implement with caching
-		const showStyleCompound = await getShowStyleCompound(this.context, rundown.showStyleVariantId)
-		if (!showStyleCompound)
-			throw new Error(`ShowStyleBase "${rundown.showStyleBaseId}" for Rundown "${rundown._id}" not found!`)
-		return showStyleCompound
 	}
 
 	/**

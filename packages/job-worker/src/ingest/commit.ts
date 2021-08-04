@@ -2,7 +2,6 @@ import { SegmentId, PartId, RundownPlaylistId, RundownId } from '@sofie-automati
 import { RundownNote, NoteType } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { logger } from '../logging'
 import { CacheForPlayout } from '../playout/cache'
@@ -27,7 +26,6 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { ensureNextPartIsValid } from './updateNext'
-import { getShowStyleCompoundForRundown } from '../showStyles'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
@@ -55,10 +53,10 @@ export async function CommitIngestOperation(
 		return
 	}
 
-	const showStyle = data.showStyle ?? (await getShowStyleCompoundForRundown(context, rundown))
+	const showStyle =
+		data.showStyle ?? (await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId))
 	const blueprint =
-		(data.showStyle ? data.blueprint : undefined) ??
-		(await loadShowStyleBlueprint(context.directCollections, showStyle))
+		(data.showStyle ? data.blueprint : undefined) ?? (await context.getShowStyleBlueprint(showStyle._id))
 
 	const targetPlaylistId: [RundownPlaylistId, string] = (beforeRundown?.playlistIdIsSetInSofie
 		? [beforeRundown.playlistId, beforeRundown.externalId]

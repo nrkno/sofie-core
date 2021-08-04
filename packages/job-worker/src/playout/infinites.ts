@@ -184,9 +184,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 		const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 		if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
 
-		// !! Database call !!
-		const showStyleBase = await context.directCollections.ShowStyleBases.findOne(rundown.showStyleBaseId) // await cache.activationCache.getShowStyleBase(rundown) // HACK
-		if (!showStyleBase) throw new Error('Failed to load showStyleBAse') // HACK
+		const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
 
 		const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 

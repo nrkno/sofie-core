@@ -22,7 +22,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartEventContext, RundownContext } from '../blueprints/context'
-import { loadShowStyleBlueprint, WrappedShowStyleBlueprint } from '../blueprints/cache'
+import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlib'
 import { reportPartInstanceHasStarted } from '../blueprints/events'
 
@@ -46,7 +46,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
 	const isFirstTake = !cache.Playlist.doc.startedPlayback && !partInstance.part.untimed
 
-	const pShowStyle = cache.getShowStyleCompound(currentRundown)
+	const pShowStyle = context.getShowStyleCompound(currentRundown.showStyleVariantId, currentRundown.showStyleBaseId)
 
 	if (currentPartInstance) {
 		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition
@@ -95,7 +95,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	)
 
 	const showStyle = await pShowStyle
-	const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
+	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 	if (blueprint.blueprint.onPreTake) {
 		const span = context.startSpan('blueprint.onPreTake')
 		try {

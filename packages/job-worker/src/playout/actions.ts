@@ -7,7 +7,6 @@ import { logger } from '../logging'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { onPartHasStoppedPlaying, resetRundownPlaylist, selectNextPart, setNextPart } from './lib'
 import { updateStudioTimeline, updateTimeline } from './timeline'
-import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownEventContext } from '../blueprints/context'
 import { getCurrentTime } from '../lib'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -101,8 +100,8 @@ export async function activateRundownPlaylist(
 
 	cache.defer(async (cache) => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const showStyle = await cache.getShowStyleCompound(rundown)
-		const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
+		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleVariantId)
+		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 		const context2 = new RundownEventContext(
 			cache.Studio.doc,
 			context.studioBlueprint,
@@ -123,8 +122,8 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 
 	cache.defer(async (cache) => {
 		if (rundown) {
-			const showStyle = await cache.getShowStyleCompound(rundown)
-			const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
+			const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
+			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 			if (blueprint.blueprint.onRundownDeActivate) {
 				const context2 = new RundownEventContext(
 					cache.Studio.doc,

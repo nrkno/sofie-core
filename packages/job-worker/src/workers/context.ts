@@ -6,13 +6,14 @@ import { WorkerDataCache } from './caches'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
-import { loadShowStyleBlueprint, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
+import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 
 export class JobContextBase implements JobContext {
 	constructor(
@@ -126,5 +127,32 @@ export class JobContextBase implements JobContext {
 		}
 
 		throw new Error(`Blueprint for ShowStyleBase "${id}" does not exist`)
+	}
+}
+
+async function loadShowStyleBlueprint(
+	context: IDirectCollections,
+	showStyleBase: ReadonlyDeep<DBShowStyleBase>
+): Promise<WrappedShowStyleBlueprint> {
+	if (!showStyleBase.blueprintId) {
+		throw new Error(`ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
+	}
+
+	const blueprintManifest = await loadBlueprintById(context, showStyleBase.blueprintId)
+	if (!blueprintManifest) {
+		throw new Error(
+			`Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`
+		)
+	}
+
+	if (blueprintManifest.blueprintType !== BlueprintManifestType.SHOWSTYLE) {
+		throw new Error(
+			`Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}" (${blueprintManifest.blueprintType})!`
+		)
+	}
+
+	return {
+		blueprintId: showStyleBase.blueprintId,
+		blueprint: blueprintManifest,
 	}
 }

@@ -17,7 +17,7 @@ import { PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dis
 // 		pShowStyle,
 // 		Studios.findOneAsync(rundown.studioId),
 // 		RundownPlaylists.findOneAsync(rundown.playlistId),
-// 		pShowStyle.then(async (ss) => loadShowStyleBlueprint(ss)),
+// 		pShowStyle.then(async (ss) => context.getShowStyleBlueprint(ss)),
 // 	])
 
 // 	if (!studio) throw new Meteor.Error(404, `Studio "${rundown.studioId}" not found!`)

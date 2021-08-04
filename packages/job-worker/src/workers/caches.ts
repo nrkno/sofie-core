@@ -1,5 +1,5 @@
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { loadStudioBlueprint, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { IDirectCollections } from '../db'
 import {
@@ -10,6 +10,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
+import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 
 export interface WorkerDataCache {
 	studio: DBStudio
@@ -102,4 +103,27 @@ export async function invalidateWorkerDataCache(
 	// TODO - showStyleBlueprints on change
 
 	// TODO - showStyleBlueprints inactivity timeout?
+}
+
+async function loadStudioBlueprint(
+	collections: IDirectCollections,
+	studio: ReadonlyDeep<DBStudio>
+): Promise<WrappedStudioBlueprint | undefined> {
+	if (!studio.blueprintId) return undefined
+
+	const blueprintManifest = await loadBlueprintById(collections, studio.blueprintId)
+	if (!blueprintManifest) {
+		throw new Error(`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
+	}
+
+	if (blueprintManifest.blueprintType !== BlueprintManifestType.STUDIO) {
+		throw new Error(
+			`Blueprint "${studio.blueprintId}" is not valid for a Studio "${studio._id}" (${blueprintManifest.blueprintType})!`
+		)
+	}
+
+	return {
+		blueprintId: studio.blueprintId,
+		blueprint: blueprintManifest,
+	}
 }

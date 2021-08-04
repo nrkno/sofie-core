@@ -6,7 +6,7 @@ import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio
 import { QueueScheduler, WorkerOptions, Worker } from 'bullmq'
 import { spawn, Worker as ThreadWorker, ModuleThread, Thread } from 'threads'
 import { startTransaction } from '../../profiler'
-import { StudioMethods } from '.'
+import { StudioMethods } from './child'
 import { ChangeStream, ChangeStreamDocument, MongoClient } from 'mongodb'
 import { InvalidateWorkerDataCache } from '../caches'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
@@ -54,7 +54,7 @@ export class StudioWorkerParent {
 		studioId: StudioId,
 		options: WorkerOptions
 	): Promise<StudioWorkerParent> {
-		const studioWorker = await spawn<StudioMethods>(new ThreadWorker('./workers/studio'))
+		const studioWorker = await spawn<StudioMethods>(new ThreadWorker('./child'))
 
 		// TODO - do more with the events
 		Thread.events(studioWorker).subscribe((event) => console.log('Thread event:', event))
