@@ -20,14 +20,14 @@ const connection: ConnectionOptions = {
 }
 
 const studioId: StudioId = protectString('studio0') // the queue/worker is for a dedicated studio, so the id will be semi-hardcoded
-const token = 'abc' // unique 'id' for the worker
+const workerId = 'abc' // unique 'id' for the worker
 
 setupApmAgent()
 
 void (async () => {
 	const client = await createMongoConnection(mongoUri)
 
-	const studioWorker = await StudioWorkerParent.start(token, studioId, { connection })
+	const studioWorker = await StudioWorkerParent.start(workerId, mongoUri, mongoDb, client, studioId, { connection })
 
 	try {
 		// eslint-disable-next-line no-constant-condition
