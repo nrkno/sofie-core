@@ -6,6 +6,7 @@ import {
 	PieceId,
 	PieceInstanceId,
 	RundownBaselineAdLibActionId,
+	RundownId,
 	RundownPlaylistId,
 	SegmentId,
 	StudioId,
@@ -40,6 +41,9 @@ export enum StudioJobs {
 
 	UpdateStudioBaseline = 'updateStudioBaseline',
 	CleanupEmptyPlaylists = 'cleanupEmptyPlaylists',
+
+	OrderRestoreToDefault = 'orderRestoreToDefault',
+	OrderMoveRundownToPlaylist = 'orderMoveRundownToPlaylist',
 
 	DebugRegenerateNextPartInstance = 'debugRegenerateNextPartInstance',
 	DebugSyncInfinitesForNextPartInstance = 'debugSyncInfinitesForNextPartInstance',
@@ -123,6 +127,16 @@ export interface OnTimelineTriggerTimeProps {
 	results: Array<{ id: string; time: number }>
 }
 
+export type OrderRestoreToDefaultProps = RundownPlayoutPropsBase
+export interface OrderMoveRundownToPlaylistProps {
+	/** The rundown to be moved */
+	rundownId: RundownId
+	/** Which playlist to move into. If null, move into a (new) separate playlist */
+	intoPlaylistId: RundownPlaylistId | null
+	/** The new rundowns in the new playlist */
+	rundownsIdsInPlaylistInOrder: RundownId[]
+}
+
 export type DebugRegenerateNextPartInstanceProps = RundownPlayoutPropsBase
 export type DebugSyncInfinitesForNextPartInstanceProps = RundownPlayoutPropsBase
 
@@ -159,6 +173,9 @@ export type StudioJobFunc = {
 
 	[StudioJobs.UpdateStudioBaseline]: () => string | false
 	[StudioJobs.CleanupEmptyPlaylists]: () => void
+
+	[StudioJobs.OrderRestoreToDefault]: (data: OrderRestoreToDefaultProps) => void
+	[StudioJobs.OrderMoveRundownToPlaylist]: (data: OrderMoveRundownToPlaylistProps) => void
 
 	[StudioJobs.DebugRegenerateNextPartInstance]: (data: DebugRegenerateNextPartInstanceProps) => void
 	[StudioJobs.DebugSyncInfinitesForNextPartInstance]: (data: DebugSyncInfinitesForNextPartInstanceProps) => void

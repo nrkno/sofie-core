@@ -40,7 +40,6 @@ import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { checkAccessAndGetPlaylist, checkAccessAndGetRundown, checkAccessToPlaylist } from './lib'
 import { PackageManagerAPI } from './packageManager'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 import { getShowStyleCompound } from './showStyles'
 import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { SnapshotId } from '../../lib/collections/Snapshots'
@@ -462,7 +461,12 @@ export async function userStoreRundownSnapshot(
 export async function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
 
-	return ClientAPI.responseSuccess(await ServerRundownAPI.removeRundownPlaylist(context, playlist._id))
+	logger.info('removeRundownPlaylist ' + playlistId)
+
+	const job = await QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
+		playlistId,
+	})
+	return ClientAPI.responseSuccess(await job.complete)
 }
 export function resyncRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
@@ -726,9 +730,13 @@ export async function moveRundown(
 	check(rundownId, String)
 	if (intoPlaylistId) check(intoPlaylistId, String)
 
-	return ClientAPI.responseSuccess(
-		await moveRundownIntoPlaylist(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
-	)
+	const rundown = checkAccessAndGetRundown(context, rundownId)
+
+	return runUserAction(rundown.studioId, StudioJobs.OrderMoveRundownToPlaylist, {
+		rundownId: rundownId,
+		intoPlaylistId,
+		rundownsIdsInPlaylistInOrder: rundownsIdsInPlaylistInOrder,
+	})
 }
 export async function restoreRundownOrder(
 	context: MethodContext,
@@ -736,7 +744,12 @@ export async function restoreRundownOrder(
 ): Promise<ClientAPI.ClientResponse<void>> {
 	check(playlistId, String)
 
-	return ClientAPI.responseSuccess(await restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
+	const access = checkAccessToPlaylist(context, playlistId)
+	const playlist = access.playlist
+
+	return runUserAction(playlist.studioId, StudioJobs.OrderRestoreToDefault, {
+		playlistId: playlist._id,
+	})
 }
 
 export async function traceAction<T extends (...args: any[]) => any>(

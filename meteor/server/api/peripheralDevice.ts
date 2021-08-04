@@ -46,8 +46,6 @@ import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
-// import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
-
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
 	export function initialize(

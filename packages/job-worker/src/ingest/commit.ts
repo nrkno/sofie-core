@@ -8,7 +8,11 @@ import { logger } from '../logging'
 import { CacheForPlayout } from '../playout/cache'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
-import { getPlaylistIdFromExternalId, removeRundownsFromDb } from '../rundownPlaylists'
+import {
+	getPlaylistIdFromExternalId,
+	produceRundownPlaylistInfoFromRundown,
+	removeRundownsFromDb,
+} from '../rundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForIngest } from './cache'
 import { getRundown } from './lib'
@@ -18,7 +22,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { runAsPlayoutLock } from '../playout/lock'
 import { removeSegmentContents } from './cleanup'
 import { CommitIngestData } from './lock'
-import { clone } from '@sofie-automation/corelib/dist/lib'
+import { clone, max } from '@sofie-automation/corelib/dist/lib'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
@@ -312,6 +316,7 @@ async function generatePlaylistAndRundownsCollection(
 }
 
 async function generatePlaylistAndRundownsCollectionInner(
+	context: JobContext,
 	studio: ReadonlyDeep<DBStudio>,
 	changedRundown: ReadonlyDeep<DBRundown> | undefined,
 	newPlaylistId: RundownPlaylistId,
@@ -333,11 +338,10 @@ async function generatePlaylistAndRundownsCollectionInner(
 	}
 
 	// Load existing playout data
-	const [existingPlaylist, studioBlueprint, rundownsCollection] = await Promise.all([
+	const [existingPlaylist, rundownsCollection] = await Promise.all([
 		existingPlaylist0
 			? existingPlaylist0
 			: (RundownPlaylists.findOneAsync(newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
-		loadStudioBlueprint(studio),
 		existingRundownsCollection ??
 			DbCacheWriteCollection.createFromDatabase(Rundowns, { playlistId: newPlaylistId }),
 	])
@@ -351,8 +355,9 @@ async function generatePlaylistAndRundownsCollectionInner(
 		// Skip the update, if there are no rundowns left
 		// Generate the new playlist, and ranks for the rundowns
 		const { rundownPlaylist: newPlaylist, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
+			context,
 			studio,
-			studioBlueprint,
+			context.studioBlueprint,
 			existingPlaylist,
 			newPlaylistId,
 			newPlaylistExternalId,
@@ -438,11 +443,13 @@ function updatePartInstancesBasicProperties(
  * This saves directly to the db (or to the supplied cache collection)
  */
 export async function regeneratePlaylistAndRundownOrder(
+	context: JobContext,
 	studio: ReadonlyDeep<DBStudio>,
 	oldPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	existingRundownsCollection?: DbCacheWriteCollection<DBRundown>
 ): Promise<DBRundownPlaylist | null> {
 	const result = await generatePlaylistAndRundownsCollectionInner(
+		context,
 		studio,
 		undefined,
 		oldPlaylist._id,
@@ -473,6 +480,7 @@ export async function regeneratePlaylistAndRundownOrder(
  * Ensure that the playlist triggers a playout update if it is active
  */
 export async function updatePlayoutAfterChangingRundownInPlaylist(
+	context: JobContext,
 	playlist: DBRundownPlaylist,
 	playlistLock: PlaylistLock,
 	insertedRundown: ReadonlyDeep<DBRundown> | null

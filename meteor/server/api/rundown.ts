@@ -3,21 +3,14 @@ import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
-import { unprotectObjectArray, protectString, unprotectString, makePromise, normalizeArray, clone } from '../../lib/lib'
+import { unprotectString, makePromise, normalizeArray } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
-import {
-	ShowStyleVariants,
-	ShowStyleVariant,
-	ShowStyleVariantId,
-	ShowStyleCompound,
-} from '../../lib/collections/ShowStyleVariants'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios } from '../../lib/collections/Studios'
-import { ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
-import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
@@ -27,15 +20,10 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
-import { StudioUserContext } from './blueprints/context'
 import { ReadonlyDeep } from 'type-fest'
 import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
-import { checkAccessToPlaylist } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import { QueueStudioJob } from '../worker/worker'
-import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 /** Return true if the rundown is allowed to be moved out of that playlist */
 export function allowedToMoveRundownOutOfPlaylist(
@@ -58,19 +46,6 @@ export function allowedToMoveRundownOutOfPlaylist(
 }
 
 export namespace ServerRundownAPI {
-	/** Remove a RundownPlaylist and all its contents */
-	export async function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId): Promise<void> {
-		check(playlistId, String)
-
-		const access = checkAccessToPlaylist(context, playlistId)
-
-		logger.info('removeRundownPlaylist ' + playlistId)
-
-		const job = await QueueStudioJob(StudioJobs.RemovePlaylist, access.playlist.studioId, {
-			playlistId,
-		})
-		await job.complete
-	}
 	/** Remove an individual rundown */
 	export async function removeRundown(context: MethodContext, rundownId: RundownId): Promise<void> {
 		check(rundownId, String)
@@ -270,8 +245,8 @@ export namespace ClientRundownAPI {
 }
 
 class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
-	async removeRundownPlaylist(playlistId: RundownPlaylistId) {
-		return ServerRundownAPI.removeRundownPlaylist(this, playlistId)
+	async removeRundownPlaylist(_playlistId: RundownPlaylistId) {
+		throw new Error('Removed')
 	}
 	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(this, playlistId))
@@ -295,14 +270,14 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		return ServerRundownAPI.unsyncRundown(this, rundownId)
 	}
 	async moveRundown(
-		rundownId: RundownId,
-		intoPlaylistId: RundownPlaylistId | null,
-		rundownsIdsInPlaylistInOrder: RundownId[]
+		_rundownId: RundownId,
+		_intoPlaylistId: RundownPlaylistId | null,
+		_rundownsIdsInPlaylistInOrder: RundownId[]
 	) {
-		return moveRundownIntoPlaylist(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
+		throw new Error('Removed')
 	}
-	async restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId) {
-		return restoreRundownsInPlaylistToDefaultOrder(this, playlistId)
+	async restoreRundownsInPlaylistToDefaultOrder(_playlistId: RundownPlaylistId) {
+		throw new Error('Removed')
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

@@ -14,7 +14,7 @@ import { CacheForPlayout } from './playout/cache'
 export async function allowedToMoveRundownOutOfPlaylist(
 	context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
-	rundown: ReadonlyDeep<DBRundown>
+	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'playlistId'>>
 ): Promise<boolean> {
 	if (rundown.playlistId !== playlist._id)
 		throw new Error(

@@ -10,7 +10,6 @@ import {
 } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { SegmentId, Segment } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
@@ -20,8 +19,6 @@ import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprin
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
-import { ReadOnlyCache } from '../../cache/CacheBase'
-import { CacheForIngest } from './cache'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { QueueIngestJob } from '../../worker/worker'
 
@@ -104,14 +101,6 @@ export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio 
 
 	span?.end()
 	return studio
-}
-export function getRundown(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
-	const rundown = cache.Rundown.doc
-	if (!rundown) {
-		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
-		throw new Meteor.Error(404, `Rundown "${rundownId}" ("${cache.RundownExternalId}") not found`)
-	}
-	return rundown
 }
 export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevice {
 	if (!rundown.peripheralDeviceId)

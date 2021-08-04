@@ -72,6 +72,10 @@ const ingestMethods = {
 					if (transaction) return transaction.startSpan(spanName)
 					return null
 				},
+
+				queueIngestJob: () => {
+					throw new Error('Not implemented')
+				},
 			})
 
 			// Execute function, or fail if no handler

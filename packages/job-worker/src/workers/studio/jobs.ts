@@ -30,7 +30,12 @@ import {
 	handleDebugRegenerateNextPartInstance,
 } from '../../playout/debug'
 import { removeEmptyPlaylists } from '../../studio/cleanup'
-import { handleRegenerateRundownPlaylist, handleRemoveRundownPlaylist } from '../../rundownPlaylists'
+import {
+	handleRegenerateRundownPlaylist,
+	handleRemoveRundownPlaylist,
+	moveRundownIntoPlaylist,
+	restoreRundownsInPlaylistToDefaultOrder,
+} from '../../rundownPlaylists'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -70,6 +75,9 @@ export const studioJobHandlers: StudioJobHandlers = {
 
 	[StudioJobs.UpdateStudioBaseline]: updateStudioBaseline,
 	[StudioJobs.CleanupEmptyPlaylists]: removeEmptyPlaylists,
+
+	[StudioJobs.OrderRestoreToDefault]: restoreRundownsInPlaylistToDefaultOrder,
+	[StudioJobs.OrderMoveRundownToPlaylist]: moveRundownIntoPlaylist,
 
 	[StudioJobs.DebugSyncInfinitesForNextPartInstance]: handleDebugSyncPlayheadInfinitesForNextPartInstance,
 	[StudioJobs.DebugRegenerateNextPartInstance]: handleDebugRegenerateNextPartInstance,
