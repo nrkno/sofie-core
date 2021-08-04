@@ -5,8 +5,8 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
 import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
-import { HTMLAttributes } from 'react'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { RundownId } from '../../../lib/collections/Rundowns'
 
@@ -89,12 +89,12 @@ export class NotifierHandle {
 	constructor(notifierId: string, source: Notifier) {
 		this.id = notifierId
 		this.source = source
-		this.handle = (Tracker.nonreactive(() => {
+		this.handle = Tracker.nonreactive(() => {
 			return Tracker.autorun(() => {
 				this.result = source().get()
 				notificationsDep.changed()
 			})
-		}) as any) as Tracker.Computation
+		}) as any as Tracker.Computation
 
 		notifiers[notifierId] = this
 	}
@@ -244,8 +244,8 @@ class NotificationCenter0 {
 
 		return _.flatten(
 			Object.values(notifiers)
-				.map((item, key) => {
-					item.result.forEach((i, itemKey) => {
+				.map((item) => {
+					item.result.forEach((i) => {
 						if (this._isOpen && !i.snoozed) i.snooze()
 						if (
 							this._isConcentrationMode &&
@@ -301,9 +301,9 @@ class NotificationCenter0 {
 		let n = this.getNotifications()
 		if (filters && filters.length) {
 			const matchers = filters.map((filter) => _.matches(filter))
-			n = n.filter((value, index, array) =>
-				_.reduce(
-					matchers.map((m) => m(value)),
+			n = n.filter((v, _index, _array) =>
+				_.reduce<boolean, boolean>(
+					matchers.map((m) => m(v)),
 					(value, memo) => value || memo,
 					false
 				)
@@ -374,7 +374,7 @@ export const NotificationCenter = new NotificationCenter0()
 export class Notification extends EventEmitter {
 	id: string | undefined
 	status: NoticeLevel
-	message: string | React.ReactElement<HTMLElement> | null
+	message: string | React.ReactElement<HTMLElement> | ITranslatableMessage | null
 	source: NotificationsSource
 	persistent?: boolean
 	timeout?: number
@@ -386,7 +386,7 @@ export class Notification extends EventEmitter {
 	constructor(
 		id: string | ProtectedString<any> | undefined,
 		status: NoticeLevel,
-		message: string | React.ReactElement<HTMLElement> | null,
+		message: string | React.ReactElement<HTMLElement> | ITranslatableMessage | null,
 		source: NotificationsSource,
 		created?: Time,
 		persistent?: boolean,
@@ -486,7 +486,7 @@ export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusC
 		: null
 }
 
-window['testNotification'] = function(
+window['testNotification'] = function (
 	delay: number,
 	level: NoticeLevel = NoticeLevel.CRITICAL,
 	fakePersistent: boolean = false

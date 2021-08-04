@@ -1,7 +1,5 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { IBlueprintPieceGeneric } from '@sofie-automation/blueprints-integration'
-import { IModalAttributes, Modal } from '../../../lib/ui/containers/modals/Modal'
 import renderItem from './ItemRenderers/ItemRendererFactory'
 import { PieceUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
@@ -42,7 +40,8 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 				attributes={{
 					className: 'rundown-view__shelf__contents__pane shelf-inspector',
 				}}
-				holdToDisplay={contextMenuHoldToDisplayTime()}>
+				holdToDisplay={contextMenuHoldToDisplayTime()}
+			>
 				{content || false}
 			</ContextMenuTrigger>
 		)

@@ -34,7 +34,8 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 					className={ClassNames(
 						this.props.className,
 						Math.floor((displayTimecode || 0) / 1000) > 0 ? this.props.heavyClassName : undefined
-					)}>
+					)}
+				>
 					{RundownUtils.formatDiffToTimecode(displayTimecode || 0, true, false, true, false, true, '', false, true)}
 				</span>
 			)
@@ -42,8 +43,6 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 
 		speak(displayTime: number) {
 			let text = '' // Say nothing
-
-			navigator.vibrate([400, 300, 400, 300, 400])
 
 			switch (displayTime) {
 				case -1:
@@ -87,15 +86,17 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 		}
 
 		vibrate(displayTime: number) {
-			navigator.vibrate([400, 300, 400, 300, 400])
-
-			switch (displayTime) {
-				case 0:
-					navigator.vibrate([500])
-				case -1:
-				case -2:
-				case -3:
-					navigator.vibrate([250])
+			if ('vibrate' in navigator) {
+				switch (displayTime) {
+					case 0:
+						navigator.vibrate([500])
+						break
+					case -1:
+					case -2:
+					case -3:
+						navigator.vibrate([250])
+						break
+				}
 			}
 		}
 

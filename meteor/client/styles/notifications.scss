@@ -18,6 +18,7 @@
 
 	.notification-pop-up {
 		font-size: 0.9em;
+		letter-spacing: 0.3px;
 		background: #fff;
 		border-radius: 3px;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
@@ -60,9 +61,10 @@
 
 			text-align: center;
 			padding-top: 0.5rem;
+			padding-left: 0.1rem;
 
 			> svg {
-				filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+				filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.15));
 				width: 1.7em;
 				height: 1.7em;
 			}
@@ -99,12 +101,15 @@
 		> .notification-pop-up__contents {
 			flex: 1;
 			padding: 0.625rem 0.9375rem;
+			padding: 0.525rem 0.6375rem;
 			cursor: default;
 
 			> h5 {
 				color: inherit;
 				margin: 0 0 0.5em;
-				font-weight: 400 !important;
+				font-weight: 500 !important;
+				line-height: 1.1em;
+				letter-spacing: 0.02em;
 			}
 
 			> .notification-pop-up__actions {
@@ -151,7 +156,7 @@
 
 		> .notification-pop-up__dismiss {
 			flex: 0;
-			min-width: 2.5rem;
+			min-width: 2.2rem;
 			padding: 0.625rem 0.625rem 0;
 
 			> .notification-pop-up__dismiss__button {
@@ -311,7 +316,7 @@
 	right: 0;
 	bottom: 0;
 	width: calc(#{$notification-center-width} + 4.6875rem);
-	z-index: 290;
+	z-index: 292;
 
 	&::before {
 		content: ' ';

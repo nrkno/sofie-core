@@ -1,5 +1,5 @@
 import * as React from 'react'
-import InView, { useInView } from 'react-intersection-observer'
+import { InView } from 'react-intersection-observer'
 
 export interface IProps {
 	initialShow?: boolean
@@ -179,7 +179,8 @@ export class VirtualElement extends React.Component<IProps, IState> {
 								marginLeft: this.state.marginLeft,
 								marginRight: this.state.marginRight,
 								marginBottom: this.state.marginBottom,
-							}}></div>
+							}}
+						></div>
 					) : (
 						this.props.children
 					)}

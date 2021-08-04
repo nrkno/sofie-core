@@ -10,7 +10,6 @@ import * as VelocityReact from 'velocity-react'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { UserId } from '../../lib/collections/Users'
 import { Settings } from '../../lib/Settings'
 
 interface IPropsHeader {
@@ -66,7 +65,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		})
 	}
 
-	onToggleSupportPanel = (e: React.MouseEvent<HTMLButtonElement>) => {
+	onToggleSupportPanel = () => {
 		this.setState({
 			isSupportPanelOpen: !this.state.isSupportPanelOpen,
 		})
@@ -92,7 +91,8 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 							},
 							easing: 'ease-in',
 							duration: 500,
-						}}>
+						}}
+					>
 						{this.state.isNotificationCenterOpen !== undefined && (
 							<NotificationCenterPanel limitCount={15} filter={this.state.isNotificationCenterOpen} />
 						)}
@@ -111,7 +111,8 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 							},
 							easing: 'ease-in',
 							duration: 500,
-						}}>
+						}}
+					>
 						{this.state.isSupportPanelOpen && <SupportPopUp />}
 					</VelocityReact.VelocityTransitionGroup>
 				</ErrorBoundary>
@@ -192,7 +193,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 	}
 }
 
-export default translateWithTracker((props: IPropsHeader & WithTranslation) => {
+export default translateWithTracker((_props: IPropsHeader & WithTranslation) => {
 	const coreSystem = CoreSystem.findOne()
 	let name: string | undefined = undefined
 

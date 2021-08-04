@@ -25,7 +25,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
-import { literal, unprotectString, ProtectedString } from '../../../lib/lib'
+import { literal, unprotectString, ProtectedString, assertNever } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { withTranslation } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -46,11 +46,12 @@ import {
 	ConfigManifestEntry,
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
-import { Settings } from '../../../lib/Settings'
-import { defaultColorPickerPalette } from '../../lib/colorPicker'
-import { UploadButton } from '../../lib/uploadButton'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutType } from '../../../lib/collections/RundownLayouts'
+import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
+import { Link } from 'react-router-dom'
+import RundownLayoutEditor from './RundownLayoutEditor'
+import { getHelpMode } from '../../lib/localStorage'
+import { SettingsNavigation } from '../../lib/SettingsNavigation'
+import { MeteorCall } from '../../../lib/api/methods'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface IProps {
@@ -73,7 +74,7 @@ interface ITrackedProps {
 	blueprintConfigManifest: ConfigManifestEntry[]
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
-	let showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
+	const showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
 	const compatibleStudios = showStyleBase
 		? Studios.find({
 				supportedShowStyleBase: {
@@ -137,7 +138,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 
 		getLayerMappingsFlat() {
-			let mappings: { [key: string]: MappingsExt } = {}
+			const mappings: { [key: string]: MappingsExt } = {}
 			_.each(this.props.compatibleStudios, (studio) => {
 				mappings[studio.name] = studio.mappings
 			})
@@ -161,6 +162,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		renderEditForm(showStyleBase: ShowStyleBase) {
 			const { t } = this.props
 
+			const layerMappings = this.getLayerMappingsFlat()
+			const sourceLayers = this.getSourceLayersFlat()
+
 			return (
 				<div className="studio-edit mod mhl mvn">
 					<div>
@@ -178,7 +182,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									obj={showStyleBase}
 									type="text"
 									collection={ShowStyleBases}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -197,11 +202,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									type="dropdown"
 									options={this.getOptionBlueprints()}
 									collection={ShowStyleBases}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<SettingsNavigation
 									attribute="blueprintId"
 									obj={this.props.showStyleBase}
-									type="blueprint"></SettingsNavigation>
+									type="blueprint"
+								></SettingsNavigation>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -233,7 +240,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<HotkeyLegendSettings showStyleBase={showStyleBase} />
 						</div>
 					</div>
-					{RundownLayoutsAPI.GetSettingsManifest().map((region) => {
+					{RundownLayoutsAPI.getSettingsManifest(t).map((region) => {
 						return (
 							<div className="row" key={region._id}>
 								<div className="col c12 r1-c12">
@@ -255,8 +262,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								manifest={this.props.blueprintConfigManifest}
 								object={showStyleBase}
 								collection={ShowStyleBases}
-								layerMappings={this.getLayerMappingsFlat()}
-								sourceLayers={this.getSourceLayersFlat()}
+								layerMappings={layerMappings}
+								sourceLayers={sourceLayers}
 								configPath={'blueprintConfig'}
 							/>
 						</div>
@@ -267,6 +274,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								showStyleVariants={this.props.showStyleVariants}
 								blueprintConfigManifest={this.props.blueprintConfigManifest}
 								showStyleBase={showStyleBase}
+								layerMappings={layerMappings}
+								sourceLayers={sourceLayers}
 							/>
 						</div>
 					</div>
@@ -309,7 +318,7 @@ const SourceLayerSettings = withTranslation()(
 		}
 
 		finishEditItem = (item: ISourceLayer) => {
-			let index = this.state.editedSources.indexOf(item._id)
+			const index = this.state.editedSources.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedSources.splice(index, 1)
 				this.setState({
@@ -340,8 +349,8 @@ const SourceLayerSettings = withTranslation()(
 					return t('Live Speak')
 				case SourceLayerType.LOWER_THIRD:
 					return t('Lower Third')
-				case SourceLayerType.MIC:
-					return t('Studio Microphone')
+				// case SourceLayerType.MIC:
+				// 	return t('Studio Microphone')
 				case SourceLayerType.REMOTE:
 					return t('Remote Source')
 				case SourceLayerType.SCRIPT:
@@ -350,21 +359,22 @@ const SourceLayerSettings = withTranslation()(
 					return t('Split Screen')
 				case SourceLayerType.VT:
 					return t('Clips')
-				case SourceLayerType.METADATA:
-					return t('Metadata')
-				case SourceLayerType.CAMERA_MOVEMENT:
-					return t('Camera Movement')
+				// case SourceLayerType.METADATA:
+				// 	return t('Metadata')
+				// case SourceLayerType.CAMERA_MOVEMENT:
+				// 	return t('Camera Movement')
 				case SourceLayerType.UNKNOWN:
 					return t('Unknown Layer')
 				case SourceLayerType.AUDIO:
 					return t('Audio Mixing')
 				case SourceLayerType.TRANSITION:
 					return t('Transition')
-				case SourceLayerType.LIGHTS:
-					return t('Lights')
+				// case SourceLayerType.LIGHTS:
+				// 	return t('Lights')
 				case SourceLayerType.LOCAL:
 					return t('Local')
 				default:
+					assertNever(type)
 					return SourceLayerType[type]
 			}
 		}
@@ -421,7 +431,7 @@ const SourceLayerSettings = withTranslation()(
 			const { t } = this.props
 
 			return _.map(this.props.showStyleBase.sourceLayers, (item, index) => {
-				let newItem = _.clone(item) as ISourceLayer & { index: number }
+				const newItem = _.clone(item) as ISourceLayer & { index: number }
 				newItem.index = index
 				return newItem
 			})
@@ -434,7 +444,8 @@ const SourceLayerSettings = withTranslation()(
 							<tr
 								className={ClassNames({
 									hl: this.isItemEdited(item),
-								})}>
+								})}
+							>
 								<th className="settings-studio-source-table__name c2">{item.name}</th>
 								<td className="settings-studio-source-table__id c4">{item._id}</td>
 								<td className="settings-studio-source-table__type c3">
@@ -462,7 +473,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -474,7 +486,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -486,7 +499,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -501,7 +515,8 @@ const SourceLayerSettings = withTranslation()(
 															options={SourceLayerType}
 															optionsAreNumbers
 															collection={ShowStyleBases}
-															className="focusable-main input-l"></EditAttribute>
+															className="focusable-main input-l"
+														></EditAttribute>
 													</div>
 												</label>
 											</div>
@@ -513,7 +528,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
-														className=""></EditAttribute>
+														className=""
+													></EditAttribute>
 													{t('Is a Live Remote Input')}
 												</label>
 											</div>
@@ -525,7 +541,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
-														className=""></EditAttribute>
+														className=""
+													></EditAttribute>
 													{t('Is a Guest Input')}
 												</label>
 											</div>
@@ -537,7 +554,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
-														className=""></EditAttribute>
+														className=""
+													></EditAttribute>
 													{t('Is hidden')}
 												</label>
 											</div>
@@ -550,7 +568,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="int"
 														collection={ShowStyleBases}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -561,7 +580,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
-														className=""></EditAttribute>
+														className=""
+													></EditAttribute>
 													{t("Display on Presenter's Screen")}
 												</label>
 											</div>
@@ -574,7 +594,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -586,7 +607,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -597,7 +619,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
-														className=""></EditAttribute>
+														className=""
+													></EditAttribute>
 													{t('Assign Hotkeys to Global AdLibs')}
 												</label>
 											</div>
@@ -609,7 +632,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
-														className=""></EditAttribute>
+														className=""
+													></EditAttribute>
 													{t('Pieces on this layer are sticky')}
 												</label>
 											</div>
@@ -621,7 +645,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
-														className=""></EditAttribute>
+														className=""
+													></EditAttribute>
 													{t('Only Pieces present in rundown are sticky')}
 												</label>
 											</div>
@@ -634,7 +659,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 											<div className="mod mvs mhs">
@@ -658,7 +684,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
-														className=""></EditAttribute>
+														className=""
+													></EditAttribute>
 													{t('AdLibs on this layer can be queued')}
 												</label>
 											</div>
@@ -671,7 +698,8 @@ const SourceLayerSettings = withTranslation()(
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
-														className="input text-input input-l"></EditAttribute>
+														className="input text-input input-l"
+													></EditAttribute>
 												</label>
 											</div>
 										</div>
@@ -696,7 +724,8 @@ const SourceLayerSettings = withTranslation()(
 						<Tooltip
 							overlay={t('Add some source layers (e.g. Graphics) for your data to appear in rundowns')}
 							visible={getHelpMode() && !this.props.showStyleBase.sourceLayers.length}
-							placement="bottom">
+							placement="bottom"
+						>
 							<span>{t('Source Layers')}</span>
 						</Tooltip>
 					</h2>
@@ -748,7 +777,7 @@ const OutputSettings = withTranslation()(
 		}
 
 		finishEditItem = (item: IOutputLayer) => {
-			let index = this.state.editedOutputs.indexOf(item._id)
+			const index = this.state.editedOutputs.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedOutputs.splice(index, 1)
 				this.setState({
@@ -819,7 +848,7 @@ const OutputSettings = withTranslation()(
 		renderOutputs() {
 			const { t } = this.props
 			return _.map(this.props.showStyleBase.outputLayers, (item, index) => {
-				let newItem = _.clone(item) as IOutputLayer & { index: number }
+				const newItem = _.clone(item) as IOutputLayer & { index: number }
 				newItem.index = index
 				return newItem
 			})
@@ -832,14 +861,16 @@ const OutputSettings = withTranslation()(
 							key={item._id}
 							className={ClassNames({
 								hl: this.isItemEdited(item),
-							})}>
+							})}
+						>
 							<th className="settings-studio-output-table__name c2">{item.name}</th>
 							<td className="settings-studio-output-table__id c4">{item._id}</td>
 							<td className="settings-studio-output-table__isPGM c3">
 								<div
 									className={ClassNames('switch', 'switch-tight', {
 										'switch-active': item.isPGM,
-									})}>
+									})}
+								>
 									PGM
 								</div>
 							</td>
@@ -865,7 +896,8 @@ const OutputSettings = withTranslation()(
 													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -877,7 +909,8 @@ const OutputSettings = withTranslation()(
 													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -888,7 +921,8 @@ const OutputSettings = withTranslation()(
 													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
-													className=""></EditAttribute>
+													className=""
+												></EditAttribute>
 												{t('Is PGM Output')}
 											</label>
 										</div>
@@ -901,7 +935,8 @@ const OutputSettings = withTranslation()(
 													obj={this.props.showStyleBase}
 													type="int"
 													collection={ShowStyleBases}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -912,7 +947,8 @@ const OutputSettings = withTranslation()(
 													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
-													className=""></EditAttribute>
+													className=""
+												></EditAttribute>
 												{t('Is collapsed by default')}
 											</label>
 										</div>
@@ -924,7 +960,8 @@ const OutputSettings = withTranslation()(
 													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
-													className=""></EditAttribute>
+													className=""
+												></EditAttribute>
 												{t('Is flattened')}
 											</label>
 										</div>
@@ -949,7 +986,8 @@ const OutputSettings = withTranslation()(
 						<Tooltip
 							overlay={t('Output channels are required for your studio to work')}
 							visible={getHelpMode() && !this.props.showStyleBase.outputLayers.length}
-							placement="top">
+							placement="top"
+						>
 							<span>{t('Output channels')}</span>
 						</Tooltip>
 					</h2>
@@ -1005,7 +1043,7 @@ const HotkeyLegendSettings = withTranslation()(
 			return this.state.editedItems.indexOf(item._id) >= 0
 		}
 		finishEditItem = (item: HotkeyDefinition) => {
-			let index = this.state.editedItems.indexOf(item._id)
+			const index = this.state.editedItems.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedItems.splice(index, 1)
 				this.setState({
@@ -1170,8 +1208,11 @@ const HotkeyLegendSettings = withTranslation()(
 						<tr
 							className={ClassNames({
 								hl: this.isItemEdited(item),
-							})}>
-							<th className="settings-studio-custom-config-table__name c2">{item.key}</th>
+							})}
+						>
+							<th className="settings-studio-custom-config-table__name c2">
+								{mousetrapHelper.shortcutLabel(item.key)}
+							</th>
 							<td className="settings-studio-custom-config-table__value c3">{item.label}</td>
 							<td className="settings-studio-custom-config-table__value c2">{item.platformKey || ''}</td>
 							<td className="settings-studio-custom-config-table__value c2">
@@ -1183,7 +1224,8 @@ const HotkeyLegendSettings = withTranslation()(
 								</button>
 								<button
 									className="action-btn"
-									onClick={() => this.onDeleteHotkeyLegend && this.onDeleteHotkeyLegend(item)}>
+									onClick={() => this.onDeleteHotkeyLegend && this.onDeleteHotkeyLegend(item)}
+								>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>
@@ -1201,7 +1243,8 @@ const HotkeyLegendSettings = withTranslation()(
 													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -1213,7 +1256,8 @@ const HotkeyLegendSettings = withTranslation()(
 													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -1307,6 +1351,9 @@ interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
 	blueprintConfigManifest: ConfigManifestEntry[]
+
+	layerMappings?: { [key: string]: MappingsExt }
+	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
 }
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
@@ -1327,7 +1374,7 @@ const ShowStyleVariantsSettings = withTranslation()(
 			return this.state.editedMappings.indexOf(layerId) >= 0
 		}
 		finishEditItem = (layerId: ProtectedString<any>) => {
-			let index = this.state.editedMappings.indexOf(layerId)
+			const index = this.state.editedMappings.indexOf(layerId)
 			if (index >= 0) {
 				this.state.editedMappings.splice(index, 1)
 				this.setState({
@@ -1378,7 +1425,8 @@ const ShowStyleVariantsSettings = withTranslation()(
 						<tr
 							className={ClassNames({
 								hl: this.isItemEdited(showStyleVariant._id),
-							})}>
+							})}
+						>
 							<th className="settings-studio-showStyleVariant__name c3">
 								{showStyleVariant.name || t('Unnamed variant')}
 							</th>
@@ -1404,7 +1452,8 @@ const ShowStyleVariantsSettings = withTranslation()(
 													obj={showStyleVariant}
 													type="text"
 													collection={ShowStyleVariants}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 									</div>
@@ -1418,6 +1467,8 @@ const ShowStyleVariantsSettings = withTranslation()(
 												collection={ShowStyleVariants}
 												configPath={'blueprintConfig'}
 												object={showStyleVariant}
+												layerMappings={this.props.layerMappings}
+												sourceLayers={this.props.sourceLayers}
 												subPanel={true}
 											/>
 										</div>

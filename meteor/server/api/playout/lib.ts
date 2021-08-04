@@ -2,155 +2,66 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
-import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
-import { getCurrentTime, Time, clone, literal, waitForPromise, protectString, applyToArray } from '../../../lib/lib'
+import { DBRundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
+import { Part, DBPart, isPartPlayable } from '../../../lib/collections/Parts'
+import {
+	getCurrentTime,
+	Time,
+	clone,
+	literal,
+	protectString,
+	applyToArray,
+	getRandomId,
+	unprotectString,
+} from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { Segments, Segment } from '../../../lib/collections/Segments'
+import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
-import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
-import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
-import { saveIntoCache } from '../../DatabaseCache'
-import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { MongoQuery } from '../../../lib/typings/meteor'
-import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { Pieces } from '../../../lib/collections/Pieces'
-import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
+import { ReadonlyDeep } from 'type-fest'
+import { DbCacheReadCollection } from '../../cache/CacheCollection'
+import {
+	CacheForPlayout,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
+	getRundownIDsFromCache,
+	getSelectedPartInstancesFromCache,
+} from './cache'
+import { Settings } from '../../../lib/Settings'
+import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
 
-/**
- * Reset the rundown:
- * Remove all dynamically inserted/updated pieces, parts, timings etc..
- */
-export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
-	logger.info('resetRundown ' + rundown._id)
-	// Remove all dunamically inserted pieces (adlibs etc)
-
-	// Note: After the RundownPlaylist (R19) update, the playhead is no longer affected in this operation,
-	// since that isn't tied to the rundown anymore.
-
-	cache.Parts.remove({
-		rundownId: rundown._id,
-		dynamicallyInsertedAfterPartId: { $exists: true },
-	})
-
-	// Mask all instances as reset
-	cache.PartInstances.update(
-		{
-			rundownId: rundown._id,
-		},
-		{
-			$set: {
-				reset: true,
-			},
-		}
-	)
-	const partInstanceIds = cache.PartInstances.findFetch({ rundownId: rundown._id }).map((r) => r._id)
-	cache.deferAfterSave(() => {
-		PieceInstances.update(
-			{
-				rundownId: rundown._id,
-				partInstanceId: { $in: partInstanceIds },
-			},
-			{
-				$set: {
-					reset: true,
-				},
-			},
-			{
-				multi: true,
-			}
-		)
-	})
-}
+export const LOW_PRIO_DEFER_TIME = 40 // ms
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
  * Remove all dynamically inserted/updated pieces, parts, timings etc..
  */
-export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist) {
-	logger.info('resetRundownPlaylist ' + rundownPlaylist._id)
+export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void> {
+	logger.info('resetRundownPlaylist ' + cache.Playlist.doc._id)
 	// Remove all dunamically inserted pieces (adlibs etc)
-	const rundowns = getRundownsFromCache(cache, rundownPlaylist)
-	const rundownIDs = rundowns.map((i) => i._id)
-	// const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
+	// const rundownIds = new Set(getRundownIDsFromCache(cache))
 
-	const partInstanceIdsToRemove = cache.PartInstances.findFetch({
-		rundownId: { $in: rundownIDs },
-		rehearsal: true,
-	}).map((pi) => pi._id)
+	const partInstancesToRemove = new Set(cache.PartInstances.remove((p) => p.rehearsal))
+	cache.PieceInstances.remove((p) => partInstancesToRemove.has(p.partInstanceId))
 
-	cache.PartInstances.remove({
-		_id: { $in: partInstanceIdsToRemove },
-	})
-	cache.deferAfterSave(() => {
-		PieceInstances.remove({
-			partInstanceId: { $in: partInstanceIdsToRemove },
-		})
-	})
-
-	cache.PartInstances.update(
-		{
-			rundownId: {
-				$in: rundownIDs,
-			},
+	cache.PartInstances.update((p) => !p.reset, {
+		$set: {
+			reset: true,
 		},
-		{
-			$set: {
-				reset: true,
-			},
-		}
-	)
-	const partInstanceIds = cache.PartInstances.findFetch({ rundownId: { $in: rundownIDs } }).map((r) => r._id)
-	cache.deferAfterSave(() => {
-		PieceInstances.update(
-			{
-				rundownId: {
-					$in: rundownIDs,
-				},
-				partInstanceId: {
-					$in: partInstanceIds,
-				},
-			},
-			{
-				$set: {
-					reset: true,
-				},
-			},
-			{
-				multi: true,
-			}
-		)
 	})
-
-	cache.Parts.remove({
-		rundownId: {
-			$in: rundownIDs,
+	cache.PieceInstances.update((p) => !p.reset, {
+		$set: {
+			reset: true,
 		},
-		dynamicallyInsertedAfterPartId: { $exists: true },
 	})
 
-	resetRundownPlaylistPlayhead(cache, rundownPlaylist)
-}
-function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist) {
-	logger.info('resetRundownPlayhead ' + rundownPlaylist._id)
-	const rundowns = getRundownsFromCache(cache, rundownPlaylist)
-	const rundown = _.first(rundowns)
-	if (!rundown) throw new Meteor.Error(406, `The rundown playlist was empty, could not find a suitable part.`)
-
-	cache.RundownPlaylists.update(rundownPlaylist._id, {
+	cache.Playlist.update({
 		$set: {
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
@@ -158,174 +69,219 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 		},
 		$unset: {
 			startedPlayback: 1,
+			rundownsStartedPlayback: 1,
 			previousPersistentState: 1,
 			trackedAbSessions: 1,
 		},
 	})
 
-	cache.Rundowns.update(
-		{
-			playlistId: rundownPlaylist._id,
-		},
-		{
-			$unset: {
-				startedPlayback: 1,
+	if (cache.Playlist.doc.activationId) {
+		// generate a new activationId
+		cache.Playlist.update({
+			$set: {
+				activationId: getRandomId(),
 			},
-		}
-	)
+		})
 
-	if (rundownPlaylist.active) {
 		// put the first on queue:
-		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
-		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
+		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
+		await setNextPart(cache, firstPart)
 	} else {
-		setNextPart(cache, rundownPlaylist, null)
+		await setNextPart(cache, null)
 	}
 }
 
 export interface SelectNextPartResult {
-	part: Part
+	part: DBPart
 	index: number
 	consumesNextSegmentId?: boolean
+}
+export interface PartsAndSegments {
+	segments: DBSegment[]
+	parts: DBPart[]
 }
 
 export function selectNextPart(
 	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: PartInstance | null,
-	parts: Part[]
-): SelectNextPartResult | undefined {
+	{ parts, segments }: PartsAndSegments,
+	ignoreUnplayabale = true
+): SelectNextPartResult | null {
 	const span = profiler.startSpan('selectNextPart')
+	/**
+	 * Iterates over all the parts and searches for the first one to be playable
+	 * @param offset the index from where to start the search
+	 * @param condition whether the part will be returned
+	 * @param length the maximum index or where to stop the search
+	 */
 	const findFirstPlayablePart = (
 		offset: number,
-		condition?: (part: Part) => boolean
+		condition?: (part: DBPart) => boolean,
+		length?: number
 	): SelectNextPartResult | undefined => {
 		// Filter to after and find the first playabale
-		for (let index = offset; index < parts.length; index++) {
+		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
-			if (part.isPlayable() && (!condition || condition(part))) {
+			if ((!ignoreUnplayabale || isPartPlayable(part)) && (!condition || condition(part))) {
 				return { part, index }
 			}
 		}
 		return undefined
 	}
 
-	let offset = 0
+	let searchFromIndex = 0
 	if (previousPartInstance) {
 		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
-		// TODO - choose something better for next?
 		if (currentIndex !== -1) {
-			offset = currentIndex + 1
+			// Start looking at the next part
+			searchFromIndex = currentIndex + 1
+		} else {
+			const segmentStarts = new Map<SegmentId, number>()
+			parts.forEach((p, i) => {
+				if (!segmentStarts.has(p.segmentId)) {
+					segmentStarts.set(p.segmentId, i)
+				}
+			})
+
+			// Look for other parts in the segment to reference
+			const segmentStartIndex = segmentStarts.get(previousPartInstance.segmentId)
+			if (segmentStartIndex !== undefined) {
+				let nextInSegmentIndex: number | undefined
+				for (let i = segmentStartIndex; i < parts.length; i++) {
+					const part = parts[i]
+					if (part.segmentId !== previousPartInstance.segmentId) break
+					if (part._rank <= previousPartInstance.part._rank) {
+						nextInSegmentIndex = i + 1
+					}
+				}
+
+				searchFromIndex = nextInSegmentIndex ?? segmentStartIndex
+			} else {
+				// If we didn't find the segment in the list of parts, then look for segments after this one.
+				const segmentIndex = segments.findIndex((s) => s._id === previousPartInstance.segmentId)
+				let followingSegmentStart: number | undefined
+				if (segmentIndex !== -1) {
+					// Find the first segment with parts that lies after this
+					for (let i = segmentIndex + 1; i < segments.length; i++) {
+						const segmentStart = segmentStarts.get(segments[i]._id)
+						if (segmentStart !== undefined) {
+							followingSegmentStart = segmentStart
+							break
+						}
+					}
+
+					// Either there is a segment after, or we are at the end of the rundown
+					searchFromIndex = followingSegmentStart ?? parts.length + 1
+				} else {
+					// Somehow we cannot place the segment, so the start of the playlist is better than nothing
+				}
+			}
 		}
 	}
 
-	let nextPart = findFirstPlayablePart(offset)
+	// Filter to after and find the first playabale
+	let nextPart = findFirstPlayablePart(searchFromIndex)
 
 	if (rundownPlaylist.nextSegmentId) {
 		// No previous part, or segment has changed
 		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
 			// Find first in segment
-			const nextPart2 = findFirstPlayablePart(
-				0,
-				(part) => part.segmentId === rundownPlaylist.nextSegmentId && !part.dynamicallyInsertedAfterPartId
-			)
-			if (nextPart2) {
+			const newSegmentPart = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
+			if (newSegmentPart) {
 				// If matched matched, otherwise leave on auto
 				nextPart = {
-					...nextPart2,
+					...newSegmentPart,
 					consumesNextSegmentId: true,
 				}
 			}
 		}
 	}
 
-	// TODO - rundownPlaylist.loop
+	// if playlist should loop, check from 0 to currentPart
+	if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
+		// Search up until the current part
+		nextPart = findFirstPlayablePart(0, undefined, searchFromIndex - 1)
+	}
 
-	// Filter to after and find the first playabale
-	const res = nextPart || findFirstPlayablePart(offset)
 	if (span) span.end()
-	return res
+	return nextPart ?? null
 }
-export function setNextPart(
-	cache: CacheForRundownPlaylist,
-	rundownPlaylist: RundownPlaylist,
-	rawNextPart: Part | DBPartInstance | null,
+export async function setNextPart(
+	cache: CacheForPlayout,
+	rawNextPart: Omit<SelectNextPartResult, 'index'> | DBPartInstance | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
-) {
+): Promise<void> {
 	const span = profiler.startSpan('setNextPart')
-	const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
-		cache,
-		rundownPlaylist,
-		rundownIds
-	)
 
-	const movingToNewSegment =
-		!currentPartInstance || !rawNextPart || rawNextPart.segmentId !== currentPartInstance.segmentId
+	const rundownIds = getRundownIDsFromCache(cache)
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-	const newNextPartInstance = rawNextPart && 'part' in rawNextPart ? rawNextPart : null
-	let newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
-
-	const nonTakenPartInstances = cache.PartInstances.findFetch({
-		rundownId: { $in: rundownIds },
-		isTaken: { $ne: true },
-	})
+	const newNextPartInstance = rawNextPart && 'playlistActivationId' in rawNextPart ? rawNextPart : null
+	const newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
 
 	if (newNextPart || newNextPartInstance) {
-		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
+		if (!cache.Playlist.doc.activationId)
+			throw new Meteor.Error(500, `RundownPlaylist "${cache.Playlist.doc._id}" is not active`)
+
+		if ((newNextPart && newNextPart.part.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
-		if (newNextPart && !rundownIds.includes(newNextPart.rundownId)) {
+		if (newNextPart && !rundownIds.includes(newNextPart.part.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`Part "${newNextPart._id}" of rundown "${newNextPart.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
+				`Part "${newNextPart.part._id}" of rundown "${newNextPart.part.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
 			)
 		} else if (newNextPartInstance && !rundownIds.includes(newNextPartInstance.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`PartInstance "${newNextPartInstance._id}" of rundown "${newNextPartInstance.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
+				`PartInstance "${newNextPartInstance._id}" of rundown "${newNextPartInstance.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
 			)
 		}
 
-		if (newNextPart) {
-			// TODO-PartInstances - pending new data flow
-			removeFollowingDynamicallyInsertedParts(cache, newNextPart)
-			const partId = newNextPart._id
-			newNextPart = cache.Parts.findOne(partId) as Part
-			if (!newNextPart) {
-				throw new Meteor.Error(409, `Part "${partId}" is missing after the reset`)
-			}
-		}
-
-		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!
+		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!.part
 
 		// create new instance
 		let newInstanceId: PartInstanceId
 		if (newNextPartInstance) {
 			newInstanceId = newNextPartInstance._id
-			syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
+			await syncPlayheadInfinitesForNextPartInstance(cache)
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
-			syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
+			await syncPlayheadInfinitesForNextPartInstance(cache)
 		} else {
 			// Create new isntance
 			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${Random.id()}`)
 			const newTakeCount = currentPartInstance ? currentPartInstance.takeCount + 1 : 0 // Increment
+			const segmentPlayoutId: SegmentPlayoutId =
+				nextPart.segmentId === currentPartInstance?.segmentId
+					? currentPartInstance.segmentPlayoutId
+					: getRandomId()
+
 			cache.PartInstances.insert({
 				_id: newInstanceId,
 				takeCount: newTakeCount,
+				playlistActivationId: cache.Playlist.doc.activationId,
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
+				segmentPlayoutId,
 				part: nextPart,
-				rehearsal: !!rundownPlaylist.rehearsal,
+				rehearsal: !!cache.Playlist.doc.rehearsal,
+				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
 			})
 
-			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, nextPart))
+			const rundown = cache.Rundowns.findOne(nextPart.rundownId)
+
+			if (!rundown) {
+				throw new Meteor.Error(400, `Could not find rundown ${nextPart.rundownId}`)
+			}
+
+			const possiblePieces = await fetchPiecesThatMayBeActiveForPart(cache, undefined, nextPart)
 			const newPieceInstances = getPieceInstancesForPart(
 				cache,
-				rundownPlaylist,
 				currentPartInstance,
+				rundown,
 				nextPart,
 				possiblePieces,
 				newInstanceId,
@@ -338,8 +294,8 @@ export function setNextPart(
 
 		const selectedPartInstanceIds = _.compact([
 			newInstanceId,
-			rundownPlaylist.currentPartInstanceId,
-			rundownPlaylist.previousPartInstanceId,
+			cache.Playlist.doc.currentPartInstanceId,
+			cache.Playlist.doc.previousPartInstanceId,
 		])
 		// reset any previous instances of this part
 		const partInstanceIdsToReset = cache.PartInstances.findFetch({
@@ -358,10 +314,16 @@ export function setNextPart(
 				},
 			}
 		)
-		cache.deferAfterSave(() => {
-			PieceInstances.update(
-				{
-					partInstanceId: { $in: partInstanceIdsToReset },
+		cache.PieceInstances.update(
+			{
+				partInstanceId: { $nin: selectedPartInstanceIds },
+				rundownId: nextPart.rundownId,
+				'piece.startPartId': nextPart._id,
+				reset: { $ne: true },
+			},
+			{
+				$set: {
+					reset: true,
 				},
 				{
 					$set: {
@@ -374,18 +336,17 @@ export function setNextPart(
 			)
 		})
 
-		cache.RundownPlaylists.update(rundownPlaylist._id, {
+		cache.Playlist.update({
 			$set: literal<Partial<RundownPlaylist>>({
 				nextPartInstanceId: newInstanceId,
-				nextPartManual: !!setManually,
+				nextPartManual: !!(setManually || newNextPartInstance?.orphaned),
 				nextTimeOffset: nextTimeOffset || null,
 			}),
 		})
-		rundownPlaylist.nextPartInstanceId = newInstanceId
 	} else {
 		// Set to null
 
-		cache.RundownPlaylists.update(rundownPlaylist._id, {
+		cache.Playlist.update({
 			$set: literal<Partial<RundownPlaylist>>({
 				nextPartInstanceId: null,
 				nextPartManual: !!setManually,
@@ -395,74 +356,94 @@ export function setNextPart(
 	}
 
 	// Remove any instances which havent been taken
-	const instancesIdsToRemove = nonTakenPartInstances
-		.map((p) => p._id)
-		.filter((id) => id !== rundownPlaylist.nextPartInstanceId && id !== rundownPlaylist.currentPartInstanceId)
-	cache.PartInstances.remove({
-		rundownId: { $in: rundownIds },
-		_id: { $in: instancesIdsToRemove },
-	})
-	cache.PieceInstances.remove({
-		rundownId: { $in: rundownIds },
-		partInstanceId: { $in: instancesIdsToRemove },
-	})
+	const instancesIdsToRemove = cache.PartInstances.remove(
+		(p) =>
+			!p.isTaken &&
+			p._id !== cache.Playlist.doc.nextPartInstanceId &&
+			p._id !== cache.Playlist.doc.currentPartInstanceId
+	)
+	cache.PieceInstances.remove((p) => instancesIdsToRemove.includes(p.partInstanceId))
 
-	const dynamicallyInsertedPartsToRemove = nonTakenPartInstances
-		.filter(
-			(p) =>
-				p.part.dynamicallyInsertedAfterPartId &&
-				p._id !== rundownPlaylist.nextPartInstanceId &&
-				p._id !== rundownPlaylist.currentPartInstanceId
-		)
-		.map((p) => p.part._id)
-	if (dynamicallyInsertedPartsToRemove.length > 0) {
-		// TODO-PartInstances - pending new data flow
-		cache.Parts.remove({
-			rundownId: { $in: rundownIds },
-			_id: { $in: dynamicallyInsertedPartsToRemove },
-		})
+	{
+		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+		// When entering a segment, or moving backwards in a segment, reset any partInstances in that window
+		// In theory the new segment should already be reset, as we do that upon leaving, but it wont be if jumping to earlier in the same segment or maybe if the rundown wasnt reset
+		if (nextPartInstance) {
+			const resetPartInstanceIds = new Set<PartInstanceId>()
+			if (currentPartInstance) {
+				// Always clean the current segment, anything after the current part (except the next part)
+				const trailingInOldSegment = cache.PartInstances.findFetch(
+					(p) =>
+						!p.reset &&
+						p._id !== currentPartInstance._id &&
+						p._id !== nextPartInstance._id &&
+						p.segmentId === currentPartInstance.segmentId &&
+						p.part._rank > currentPartInstance.part._rank
+				)
+
+				for (const part of trailingInOldSegment) {
+					resetPartInstanceIds.add(part._id)
+				}
+			}
+
+			if (
+				!currentPartInstance ||
+				nextPartInstance.segmentId !== currentPartInstance.segmentId ||
+				(nextPartInstance.segmentId === currentPartInstance.segmentId &&
+					nextPartInstance.part._rank < currentPartInstance.part._rank)
+			) {
+				// clean the whole segment if new, or jumping backwards
+				const newSegmentParts = cache.PartInstances.findFetch(
+					(p) =>
+						!p.reset &&
+						p._id !== nextPartInstance._id &&
+						p._id !== currentPartInstance?._id &&
+						p.segmentId === nextPartInstance.segmentId
+				)
+				for (const part of newSegmentParts) {
+					resetPartInstanceIds.add(part._id)
+				}
+			}
+
+			if (resetPartInstanceIds.size > 0) {
+				cache.PartInstances.update(
+					(p) => resetPartInstanceIds.has(p._id),
+					(p) => {
+						p.reset = true
+						return p
+					}
+				)
+				cache.PieceInstances.update(
+					(p) => resetPartInstanceIds.has(p.partInstanceId),
+					(p) => {
+						p.reset = true
+						return p
+					}
+				)
+			}
+		}
 	}
 
-	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
-		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
-		cache.RundownPlaylists.update(rundownPlaylist._id, {
-			$unset: {
-				nextSegmentId: 1,
-			},
-		})
-		// delete rundownPlaylist.nextSegmentId
-	}
+	cleanupOrphanedItems(cache)
 
 	if (span) span.end()
 }
-export function setNextSegment(
-	cache: CacheForRundownPlaylist,
-	rundownPlaylist: RundownPlaylist,
-	nextSegment: Segment | null
-) {
+export function setNextSegment(cache: CacheForPlayout, nextSegment: Segment | null) {
 	const span = profiler.startSpan('setNextSegment')
-	const acceptableRundowns = getRundownIDsFromCache(cache, rundownPlaylist)
 	if (nextSegment) {
-		if (acceptableRundowns.indexOf(nextSegment.rundownId) === -1) {
-			throw new Meteor.Error(
-				409,
-				`Segment "${nextSegment._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`
-			)
-		}
-
 		// Just run so that errors will be thrown if something wrong:
 		const partsInSegment = cache.Parts.findFetch({ segmentId: nextSegment._id })
 		if (!partsInSegment.find((p) => p.isPlayable())) {
 			throw new Meteor.Error(400, 'Segment contains no valid parts')
 		}
 
-		cache.RundownPlaylists.update(rundownPlaylist._id, {
+		cache.Playlist.update({
 			$set: {
 				nextSegmentId: nextSegment._id,
 			},
 		})
 	} else {
-		cache.RundownPlaylists.update(rundownPlaylist._id, {
+		cache.Playlist.update({
 			$unset: {
 				nextSegmentId: 1,
 			},
@@ -471,29 +452,104 @@ export function setNextSegment(
 	if (span) span.end()
 }
 
-function removeFollowingDynamicallyInsertedParts(cache: CacheForRundownPlaylist, part: DBPart): void {
-	// remove parts that have been dynamically queued for after this part (queued adLibs)
-	saveIntoCache(
-		cache.Parts,
-		{
-			rundownId: part.rundownId,
-			dynamicallyInsertedAfterPartId: part._id,
-		},
-		[],
-		{
-			afterRemoveAll(removedParts) {
-				for (const removedPart of removedParts) {
-					removeFollowingDynamicallyInsertedParts(cache, removedPart)
-				}
-			},
-		}
+/**
+ * Cleanup any orphaned (deleted) segments and partinstances once they are no longer being played
+ * @param cache
+ */
+function cleanupOrphanedItems(cache: CacheForPlayout) {
+	const playlist = cache.Playlist.doc
+	const selectedPartInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
+
+	const removePartInstanceIds: PartInstanceId[] = []
+
+	// Cleanup any orphaned segments once they are no longer being played. This also cleans up any adlib-parts, that have been marked as deleted as a deferred cleanup operation
+	const segments = cache.Segments.findFetch((s) => s.orphaned === 'deleted')
+	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
+	const groupedPartInstances = _.groupBy(
+		cache.PartInstances.findFetch((p) => orphanedSegmentIds.has(p.segmentId)),
+		(p) => p.segmentId
 	)
+	const removeSegmentsFromRundowns = new Map<RundownId, SegmentId[]>()
+	for (const segment of segments) {
+		const partInstances = groupedPartInstances[unprotectString(segment._id)] || []
+		const partInstanceIds = new Set(partInstances.map((p) => p._id))
+
+		// Not in current or next. Previous can be reset as it will still be in the db, but not shown in the ui
+		if (
+			(!playlist.currentPartInstanceId || !partInstanceIds.has(playlist.currentPartInstanceId)) &&
+			(!playlist.nextPartInstanceId || !partInstanceIds.has(playlist.nextPartInstanceId))
+		) {
+			// The segment is finished with. Queue it for attempted removal
+			const existing = removeSegmentsFromRundowns.get(segment.rundownId)
+			if (existing) {
+				existing.push(segment._id)
+			} else {
+				removeSegmentsFromRundowns.set(segment.rundownId, [segment._id])
+			}
+		}
+	}
+
+	// We need to run this outside of the current lock, and within an ingest lock, so defer to the work queue
+	for (const [rundownId, candidateSegmentIds] of removeSegmentsFromRundowns) {
+		const rundown = cache.Rundowns.findOne(rundownId)
+		if (rundown?.restoredFromSnapshotId) {
+			// This is not valid as the rundownId won't match the externalId, so ingest will fail
+			// For now do nothing
+		} else if (rundown) {
+			Meteor.defer(async () => {
+				try {
+					await runIngestOperationWithCache(
+						'cleanupOrphanedItems:defer',
+						rundown.studioId,
+						rundown.externalId,
+						(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
+						async (ingestCache) => {
+							// Find the segments that are still orphaned (in case they have resynced before this executes)
+							// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
+							const stillOrphanedSegments = ingestCache.Segments.findFetch(
+								(s) => s.orphaned === 'deleted' && candidateSegmentIds.includes(s._id)
+							)
+
+							return {
+								changedSegmentIds: [],
+								removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
+								renamedSegments: new Map(),
+
+								removeRundown: false,
+
+								showStyle: undefined,
+								blueprint: undefined,
+							}
+						}
+					)
+				} catch (e) {
+					logger.error('cleanupOrphanedItems:defer error', e)
+				}
+			})
+		}
+	}
+
+	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
+	const orphanedInstances = cache.PartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
+	for (const partInstance of orphanedInstances) {
+		if (Settings.preserveUnsyncedPlayingSegmentContents && orphanedSegmentIds.has(partInstance.segmentId)) {
+			// If the segment is also orphaned, then don't delete it until it is clear
+			continue
+		}
+
+		if (!selectedPartInstanceIds.includes(partInstance._id)) {
+			removePartInstanceIds.push(partInstance._id)
+		}
+	}
+
+	// Cleanup any instances from above
+	if (removePartInstanceIds.length > 0) {
+		cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+		cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+	}
 }
-export function onPartHasStoppedPlaying(
-	cache: CacheForRundownPlaylist,
-	partInstance: PartInstance,
-	stoppedPlayingTime: Time
-) {
+
+export function onPartHasStoppedPlaying(cache: CacheForPlayout, partInstance: PartInstance, stoppedPlayingTime: Time) {
 	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
@@ -568,7 +624,7 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 const AUTOTAKE_UPDATE_DEBOUNCE = 5000
 const AUTOTAKE_TAKE_DEBOUNCE = 1000
 
-export function isTooCloseToAutonext(currentPartInstance: PartInstance | undefined, isTake?: boolean) {
+export function isTooCloseToAutonext(currentPartInstance: ReadonlyDeep<PartInstance> | undefined, isTake?: boolean) {
 	if (!currentPartInstance || !currentPartInstance.part.autoNext) return false
 
 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
@@ -588,204 +644,14 @@ export function isTooCloseToAutonext(currentPartInstance: PartInstance | undefin
 	return false
 }
 
-export function getSegmentsAndPartsFromCache(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist
-): {
-	segments: Segment[]
-	parts: Part[]
-} {
-	const rundowns = getRundownsFromCache(cache, playlist)
-	return getRundownsSegmentsAndPartsFromCache(cache, rundowns)
-}
-export function getAllOrderedPartsFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist): Part[] {
-	const { parts } = getSegmentsAndPartsFromCache(cache, playlist)
-	return parts
-}
-/** Get all rundowns in a playlist */
-export function getRundownsFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	return cache.Rundowns.findFetch(
-		{
-			playlistId: playlist._id,
-		},
-		{
-			sort: {
-				_rank: 1,
-				_id: 1,
-			},
-		}
-	)
-}
-export function getRundownIDsFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	const span = profiler.startSpan('playout.getRundownIDsFromCache')
-
-	const ids = getRundownsFromCache(cache, playlist).map((r) => r._id)
-
-	span?.end()
-	return ids
-}
-/** Get all pieces in a part */
-export function getAllPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
-	return cache.Pieces.findFetch({
-		startRundownId: part.rundownId,
-		startPartId: part._id,
-	})
-}
-/** Get all adlib pieces in a part */
-export function getAllAdLibPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
-	return cache.AdLibPieces.findFetch(
-		{
-			rundownId: part.rundownId,
-			partId: part._id,
-		},
-		{
-			sort: {
-				_rank: 1,
-				name: 1,
-			},
-		}
-	)
-}
-/** Get all adlib actions in a part */
-export function getAllAdLibActionsFromCache(cache: CacheForRundownPlaylist, part: Part) {
-	return cache.AdLibActions.findFetch({
-		rundownId: part.rundownId,
-		partId: part._id,
-	})
-}
-
-export function getStudioFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-	let studio = cache.activationCache.getStudio()
-	if (studio) {
-		return studio
-	} else {
-		throw new Meteor.Error(404, 'Studio "' + playlist.studioId + '" not found!')
-	}
-}
-export function getSelectedPartInstancesFromCache(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	rundownIds?: RundownId[]
-): {
-	currentPartInstance: PartInstance | undefined
-	nextPartInstance: PartInstance | undefined
-	previousPartInstance: PartInstance | undefined
-} {
-	const span = profiler.startSpan('playout.getSelectedPartInstancesFromCache')
-
-	if (!rundownIds) {
-		rundownIds = getRundownIDsFromCache(cache, playlist)
-	}
-
-	const selector: MongoQuery<DBPartInstance> = {
-		rundownId: { $in: rundownIds },
-	}
-
-	const currentPartInstance = playlist.currentPartInstanceId
-		? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
-		: undefined
-	const nextPartInstance = playlist.nextPartInstanceId
-		? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
-		: undefined
-	const previousPartInstance = playlist.previousPartInstanceId
-		? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
-		: undefined
-
-	span?.end()
-	return {
-		currentPartInstance,
-		nextPartInstance,
-		previousPartInstance,
-	}
-}
-
-export function removeRundownPlaylistFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	const allRundowns = cache.Rundowns.findFetch({ playlistId: playlist._id })
-	allRundowns.forEach((rundown) => removeRundownFromCache(cache, rundown))
-
-	cache.RundownPlaylists.remove(playlist._id)
-}
-export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
-	cache.Rundowns.remove(rundown._id)
-	if (rundown.playlistId) {
-		// Check if any other members of the playlist are left
-		if (
-			cache.Rundowns.findFetch({
-				playlistId: rundown.playlistId,
-			}).length === 0
-		) {
-			cache.RundownPlaylists.remove(rundown.playlistId)
-		}
-	}
-	cache.Segments.remove({ rundownId: rundown._id })
-	cache.Parts.remove({ rundownId: rundown._id })
-	cache.PartInstances.remove({ rundownId: rundown._id })
-	cache.Pieces.remove({ startRundownId: rundown._id })
-	cache.PieceInstances.remove({ rundownId: rundown._id })
-	cache.RundownBaselineObjs.remove({ rundownId: rundown._id })
-
-	cache.defer(() => {
-		// These are not present in the cache because they do not directly affect output.
-		AdLibActions.remove({ rundownId: rundown._id })
-		AdLibPieces.remove({ rundownId: rundown._id })
-		ExpectedMediaItems.remove({ rundownId: rundown._id })
-		ExpectedPlayoutItems.remove({ rundownId: rundown._id })
-		IngestDataCache.remove({ rundownId: rundown._id })
-		RundownBaselineAdLibPieces.remove({ rundownId: rundown._id })
-
-		// These might only partly be present in the cache, this should make sure they are properly removed:
-		Segments.remove({ rundownId: rundown._id })
-		Parts.remove({ rundownId: rundown._id })
-		PartInstances.remove({ rundownId: rundown._id })
-		Pieces.remove({ startRundownId: rundown._id })
-		PieceInstances.remove({ rundownId: rundown._id })
-		RundownBaselineAdLibActions.remove({ rundownId: rundown._id })
-		RundownBaselineObjs.remove({ rundownId: rundown._id })
-	})
-}
-
-/** Get all piece instances in a part instance */
-export function getAllPieceInstancesFromCache(
-	cache: CacheForRundownPlaylist,
-	partInstance: PartInstance
-): PieceInstance[] {
-	return cache.PieceInstances.findFetch({
-		rundownId: partInstance.rundownId,
-		partInstanceId: partInstance._id,
-	})
-}
-
-// export function touchRundownPlaylistsInCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-// 	if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-// 	if (getCurrentTime() - playlist.modified > 3600 * 1000) {
-// 		const m = getCurrentTime()
-// 		playlist.modified = m
-// 		cache.RundownPlaylists.update(playlist._id, { $set: { modified: m } })
-// 	}
-// }
-
-// export function getRundownPlaylistFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
-// 	if (!rundown.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
-// 	let pls = cache.RundownPlaylists.findOne(rundown.playlistId)
-// 	if (pls) {
-// 		return pls
-// 	} else throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
-// }
-
 export function getRundownsSegmentsAndPartsFromCache(
-	cache: CacheForRundownPlaylist,
-	rundowns: Rundown[]
+	partsCache: DbCacheReadCollection<Part, DBPart>,
+	segmentsCache: DbCacheReadCollection<Segment, DBSegment>,
+	rundowns: Array<ReadonlyDeep<DBRundown>>
 ): { segments: Segment[]; parts: Part[] } {
-	const rundownIds = rundowns.map((i) => i._id)
-
 	const segments = RundownPlaylist._sortSegments(
-		cache.Segments.findFetch(
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-			},
+		segmentsCache.findFetch(
+			{},
 			{
 				sort: {
 					rundownId: 1,
@@ -797,12 +663,8 @@ export function getRundownsSegmentsAndPartsFromCache(
 	)
 
 	const parts = RundownPlaylist._sortPartsInner(
-		cache.Parts.findFetch(
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-			},
+		partsCache.findFetch(
+			{},
 			{
 				sort: {
 					rundownId: 1,

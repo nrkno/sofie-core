@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
@@ -7,7 +6,7 @@ import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 
-meteorPublish(PubSub.rundownPlaylists, function(selector0, token) {
+meteorPublish(PubSub.rundownPlaylists, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
 	const modifier = {
 		fields: {},

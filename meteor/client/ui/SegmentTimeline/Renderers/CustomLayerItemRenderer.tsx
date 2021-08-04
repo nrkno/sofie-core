@@ -15,7 +15,10 @@ export interface ICustomLayerItemProps {
 	outputLayer: IOutputLayerUi
 	outputGroupCollapsed: boolean
 	part: PartUi
+	isLiveLine: boolean
+	partStartsAt: number
 	partDuration: number // 0 if unknown
+	partExpectedDuration: number
 	piece: PieceUi
 	timeScale: number
 	onFollowLiveLine?: (state: boolean, event: any) => void
@@ -29,6 +32,8 @@ export interface ICustomLayerItemProps {
 	cursorPosition: OffsetPosition
 	cursorTimePosition: number
 	layerIndex: number
+	isTooSmallForText: boolean
+	isPreview: boolean
 	getItemLabelOffsetLeft?: () => React.CSSProperties
 	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: (returnInfinite?: boolean) => number
@@ -127,6 +132,7 @@ export class CustomLayerItemRenderer<
 		if (
 			vtContent &&
 			vtContent.sourceDuration !== undefined &&
+			vtContent.sourceDuration !== 0 &&
 			(this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration - seek) < (this.props.partDuration || 0)
 		) {
 			return (
@@ -135,8 +141,9 @@ export class CustomLayerItemRenderer<
 					style={{
 						left: this.props.relative
 							? (((vtContent.sourceDuration - seek) / (this.getItemDuration() || 1)) * 100).toString() + '%'
-							: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
-					}}></div>
+							: Math.round((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
+					}}
+				></div>
 			)
 		}
 		return null
@@ -146,7 +153,8 @@ export class CustomLayerItemRenderer<
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
-		return innerPiece.lifespan === PieceLifespan.OutOnRundownEnd &&
+		return (innerPiece.lifespan === PieceLifespan.OutOnRundownEnd ||
+			innerPiece.lifespan === PieceLifespan.OutOnShowStyleEnd) &&
 			!uiPiece.instance.userDuration &&
 			uiPiece.renderedDuration === null ? (
 			<div className="segment-timeline__piece__label label-icon label-infinite-icon">
@@ -163,7 +171,6 @@ export class CustomLayerItemRenderer<
 	renderContentTrimmed() {
 		const innerPiece = this.props.piece.instance.piece
 		const vtContent = innerPiece.content as VTContent | undefined
-		const duration = this.props.partDuration
 
 		return vtContent &&
 			vtContent.editable &&

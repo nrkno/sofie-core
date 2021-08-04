@@ -1,12 +1,19 @@
-import { PartId } from '../../../../lib/collections/Parts'
-import { unprotectString } from '../../../../lib/lib'
-import { Settings } from '../../../../lib/Settings'
+import { RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
+import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
+import { SegmentTimelinePartClass } from '../../SegmentTimeline/SegmentTimelinePart'
 
 export interface TimeEventArgs {
 	currentTime: number
 }
 
 export type TimingEvent = CustomEvent<TimeEventArgs>
+
+declare global {
+	interface WindowEventMap {
+		[RundownTiming.Events.timeupdate]: TimingEvent
+		[RundownTiming.Events.timeupdateHR]: TimingEvent
+	}
+}
 
 export namespace RundownTiming {
 	/**
@@ -103,6 +110,11 @@ export namespace RundownTiming {
 	}
 }
 
+export function computeSegmentDisplayDuration(timingDurations: RundownTimingContext, parts: PartUi[]): number {
+	return parts.reduce(
+		(memo, part) => memo + SegmentTimelinePartClass.getPartDisplayDuration(part, timingDurations),
+		0
+	)
 /**
  * Computes the actual (as-played fallbacking to expected) duration of a segment, consisting of given parts
  * @export

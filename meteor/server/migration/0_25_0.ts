@@ -1,11 +1,10 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
-import { renamePropertiesInCollection, setExpectedVersion } from './lib'
+import { renamePropertiesInCollection } from './lib'
 import * as semver from 'semver'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
-import { asyncCollectionInsertIgnore, waitForPromiseAll } from '../../lib/lib'
-import { AsRunLog } from '../../lib/collections/AsRunLog'
+import { waitForPromiseAll } from '../../lib/lib'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
@@ -34,7 +33,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 		id: 'migrateDatabaseCollections',
 		canBeRunAutomatically: true,
 		validate: () => {
-			let databaseSystem = getCoreSystem()
+			const databaseSystem = getCoreSystem()
 
 			// Only run this if version is under 0.25.0, in order to not create the deprecated databases
 			if (databaseSystem && semver.satisfies(databaseSystem.version, '<0.25.0')) {
@@ -61,22 +60,22 @@ export const addSteps = addMigrationSteps('0.25.0', [
 				const ps: Promise<unknown>[] = []
 
 				dbs.SegmentLines.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(Parts, doc))
+					ps.push(Parts.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLines.remove({})
 
 				dbs.SegmentLineItems.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(Pieces, doc))
+					ps.push(Pieces.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLineItems.remove({})
 
 				dbs.SegmentLineAdLibItems.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(AdLibPieces, doc))
+					ps.push(AdLibPieces.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLineAdLibItems.remove({})
 
 				dbs.RunningOrderBaselineItems.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(RundownBaselineObjs, doc))
+					ps.push(RundownBaselineObjs.insertIgnoreAsync(doc))
 				})
 				dbs.RunningOrderBaselineItems.remove({})
 
@@ -84,7 +83,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 				// dbs.RunningOrderBaselineAdLibItems.remove({})
 
 				dbs.StudioInstallations.find().forEach((doc) => {
-					ps.push(asyncCollectionInsertIgnore(Studios, doc))
+					ps.push(Studios.insertIgnoreAsync(doc))
 				})
 				dbs.StudioInstallations.remove({})
 
@@ -97,18 +96,18 @@ export const addSteps = addMigrationSteps('0.25.0', [
 		},
 	},
 
-	renamePropertiesInCollection(
-		'asRunLog',
-		AsRunLog,
-		'AsRunLog',
-		{
-			rundownId: 'runningOrderId',
-			// segmentId:	'segmentId',
-			partInstanceId: 'segmentLineId',
-			pieceInstanceId: 'segmentLineItemId',
-		},
-		'migrateDatabaseCollections'
-	),
+	// renamePropertiesInCollection(
+	// 	'asRunLog',
+	// 	AsRunLog,
+	// 	'AsRunLog',
+	// 	{
+	// 		rundownId: 'runningOrderId',
+	// 		// segmentId:	'segmentId',
+	// 		partInstanceId: 'segmentLineId',
+	// 		pieceInstanceId: 'segmentLineItemId',
+	// 	},
+	// 	'migrateDatabaseCollections'
+	// ),
 	renamePropertiesInCollection(
 		'Evaluations',
 		Evaluations,
@@ -209,7 +208,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 	),
 	renamePropertiesInCollection(
 		'Timeline',
-		(Timeline120 as unknown) as TransformedCollection<TimelineObjGeneric_1_11_0, TimelineObjGeneric_1_11_0>,
+		Timeline120 as unknown as TransformedCollection<TimelineObjGeneric_1_11_0, TimelineObjGeneric_1_11_0>,
 		'Timeline',
 		{
 			studioId: 'siId',
@@ -291,7 +290,6 @@ export const addSteps = addMigrationSteps('0.25.0', [
 			segmentId: 'string',
 			rundownId: 'runningOrderId',
 			title: 'slug',
-			dynamicallyInsertedAfterPartId: 'afterSegmentLine',
 		},
 		'migrateDatabaseCollections'
 	),
@@ -333,7 +331,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 						OTHER = 2, // i.e. sub-devices
 						MEDIA_MANAGER = 3,
 					}
-					const oldDeviceType = (device.type as any) as OLDDeviceType
+					const oldDeviceType = device.type as any as OLDDeviceType
 
 					if (oldDeviceType === OLDDeviceType.MOSDEVICE) {
 						m.category = PeripheralDeviceAPI.DeviceCategory.INGEST
@@ -383,12 +381,4 @@ export const addSteps = addMigrationSteps('0.25.0', [
 			})
 		},
 	},
-	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^0.20.0'),
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^0.8.0'),
-	setExpectedVersion(
-		'expectedVersion.mediaManager',
-		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-		'_process',
-		'^0.2.0'
-	),
 ])

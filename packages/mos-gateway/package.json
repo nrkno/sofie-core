@@ -1,0 +1,81 @@
+{
+	"name": "mos-gateway",
+	"version": "1.37.0-in-development",
+	"private": true,
+	"description": "MOS-Gateway for the Sofie project",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"directory": "packages/mos-gateway"
+	},
+	"bugs": {
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+	},
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/mos-gateway#readme",
+	"author": {
+		"name": "Johan Nyman",
+		"email": "johan@superfly.tv",
+		"url": "http://superfly.tv"
+	},
+	"contributors": [
+		{
+			"name": "Jesper Stærkær",
+			"email": "jesper@superfly.tv",
+			"url": "http://superfly.tv"
+		}
+	],
+	"scripts": {
+		"build": "rimraf dist && yarn build:main",
+		"buildstart": "yarn build && yarn start",
+		"buildinspect": "yarn build && yarn inspect",
+		"build:main": "tsc -p tsconfig.build.json",
+		"lint": "tslint --project tsconfig.json --config tslint.json",
+		"unit": "jest",
+		"test": "yarn lint && yarn unit",
+		"test:integration": "yarn lint && jest --config=jest-integration.config.js",
+		"watch": "jest --watch",
+		"cov": "jest; open-cli coverage/lcov-report/index.html",
+		"cov-open": "open-cli coverage/lcov-report/index.html",
+		"send-coverage": "codecov -p ../..",
+		"inspect": "node --inspect dist/index.js",
+		"ci": "yarn test",
+		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
+		"validate:dev-dependencies": "yarn audit --groups devDependencies",
+		"license-validate": "node-license-validator -p -d --allow-licenses MIT 0BSD BSD BSD-2-Clause BSD-3-Clause ISC Apache Apache-2.0 Unlicense WTFPL --allow-packages cycle",
+		"start": "node dist/index.js",
+		"precommit": "lint-staged"
+	},
+	"engines": {
+		"node": ">=12.20"
+	},
+	"keywords": [
+		"mos",
+		"broadcast",
+		"socket",
+		"typescript",
+		"javascript",
+		"open",
+		"source",
+		"automation",
+		"ncs",
+		"nrcs",
+		"rundown",
+		"production"
+	],
+	"dependencies": {
+		"@sofie-automation/server-core-integration": "1.37.0-in-development",
+		"mos-connection": "^1.0.2",
+		"tslib": "^2.1.0",
+		"underscore": "^1.12.1",
+		"winston": "^2.4.2"
+	},
+	"lint-staged": {
+		"*.{js,css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"yarn lint --fix"
+		]
+	}
+}

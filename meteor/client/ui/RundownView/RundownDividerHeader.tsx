@@ -6,6 +6,7 @@ import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
 import { withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IProps {
 	rundown: Rundown
@@ -15,30 +16,30 @@ interface IProps {
 const QUATER_DAY = 6 * 60 * 60 * 1000
 
 /**
- * This is a countdown to the rundown's _Expected Start_ time. It shows nothing if the expectedStart is undefined
- * or the time to _Expected Start_ from now is larger than 6 hours.
+ * This is a countdown to the rundown's Expected Start or Expected End time. It shows nothing if the expectedStart is undefined
+ * or the time to Expected Start/End from now is larger than 6 hours.
  */
-const RundownCountdown = withTranslation()(
+const MarkerCountdownText = withTranslation()(
 	withTiming<
 		Translated<{
-			expectedStart: number | undefined
+			markerTimestamp: number | undefined
 			className?: string | undefined
 		}>,
 		{}
 	>({
 		filter: 'currentTime',
-	})(function RundownCountdown(
+	})(function MarkerCountdown(
 		props: Translated<
 			WithTiming<{
-				expectedStart: number | undefined
+				markerTimestamp: number | undefined
 				className?: string | undefined
 			}>
 		>
 	) {
 		const { t } = props
-		if (props.expectedStart === undefined) return null
+		if (props.markerTimestamp === undefined) return null
 
-		const time = props.expectedStart - (props.timingDurations.currentTime || 0)
+		const time = props.markerTimestamp - (props.timingDurations.currentTime || 0)
 
 		if (time < QUATER_DAY) {
 			return (
@@ -65,39 +66,57 @@ const RundownCountdown = withTranslation()(
  *
  * The component should be minimally reactive.
  */
-export const RundownDividerHeader = withTranslation()(
-	class RundownDividerHeader extends React.Component<Translated<IProps>> {
-		render() {
-			const { t, rundown, playlist } = this.props
-			return (
-				<div className="rundown-divider-timeline">
-					<h2 className="rundown-divider-timeline__title">{rundown.name}</h2>
-					<h3 className="rundown-divider-timeline__playlist-name">{playlist.name}</h3>
-					{rundown.expectedStart ? (
-						<div className="rundown-divider-timeline__expected-start">
-							<span>{t('Planned Start')}</span>&nbsp;
-							<Moment
-								interval={1000}
-								calendar={{
-									sameElse: 'lll',
-								}}>
-								{rundown.expectedStart}
-							</Moment>
-							&nbsp;
-							<RundownCountdown
-								className="rundown-divider-timeline__expected-start__countdown"
-								expectedStart={rundown.expectedStart}
-							/>
-						</div>
-					) : null}
-					{rundown.expectedDuration ? (
-						<div className="rundown-divider-timeline__expected-duration">
-							<span>{t('Planned Duration')}</span>&nbsp;
-							<Moment interval={0} format="HH:mm:ss" date={rundown.expectedDuration} />
-						</div>
-					) : null}
+export const RundownDividerHeader = withTranslation()(function RundownDividerHeader(props: Translated<IProps>) {
+	const { t, rundown, playlist } = props
+	const expectedStart = PlaylistTiming.getExpectedStart(rundown.timing)
+	const expectedDuration = PlaylistTiming.getExpectedDuration(rundown.timing)
+	const expectedEnd = PlaylistTiming.getExpectedEnd(rundown.timing)
+	return (
+		<div className="rundown-divider-timeline">
+			<h2 className="rundown-divider-timeline__title">{rundown.name}</h2>
+			{rundown.name !== playlist.name && <h3 className="rundown-divider-timeline__playlist-name">{playlist.name}</h3>}
+			{expectedStart ? (
+				<div className="rundown-divider-timeline__expected-start">
+					<span>{t('Planned Start')}</span>&nbsp;
+					<Moment
+						interval={1000}
+						calendar={{
+							sameElse: 'lll',
+						}}
+					>
+						{expectedStart}
+					</Moment>
+					&nbsp;
+					<MarkerCountdownText
+						className="rundown-divider-timeline__expected-start__countdown"
+						markerTimestamp={expectedStart}
+					/>
 				</div>
-			)
-		}
-	}
-)
+			) : null}
+			{expectedDuration ? (
+				<div className="rundown-divider-timeline__expected-duration">
+					<span>{t('Planned Duration')}</span>&nbsp;
+					{RundownUtils.formatDiffToTimecode(expectedDuration, false, true, true, false, true)}
+				</div>
+			) : null}
+			{expectedEnd ? (
+				<div className="rundown-divider-timeline__expected-end">
+					<span>{t('Planned End')}</span>&nbsp;
+					<Moment
+						interval={1000}
+						calendar={{
+							sameElse: 'lll',
+						}}
+					>
+						{expectedEnd}
+					</Moment>
+					&nbsp;
+					<MarkerCountdownText
+						className="rundown-divider-timeline__expected-end__countdown"
+						markerTimestamp={expectedEnd}
+					/>
+				</div>
+			) : null}
+		</div>
+	)
+})

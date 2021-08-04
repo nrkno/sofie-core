@@ -5,7 +5,10 @@ import { SourceLayerType } from './content'
 export enum ConfigManifestEntryType {
 	STRING = 'string',
 	MULTILINE_STRING = 'multiline_string',
+	/** @deprecated use INT/FLOAT instead */
 	NUMBER = 'number',
+	INT = 'int',
+	FLOAT = 'float',
 	BOOLEAN = 'boolean',
 	ENUM = 'enum',
 	TABLE = 'table',
@@ -19,6 +22,8 @@ export type BasicConfigManifestEntry =
 	| ConfigManifestEntryString
 	| ConfigManifestEntryMultilineString
 	| ConfigManifestEntryNumber
+	| ConfigManifestEntryInt
+	| ConfigManifestEntryFloat
 	| ConfigManifestEntryBoolean
 	| ConfigManifestEntryEnum
 	| ConfigManifestEntrySelectFromOptions<true>
@@ -38,6 +43,7 @@ export interface ConfigManifestEntryBase {
 	type: ConfigManifestEntryType
 	required: boolean
 	defaultVal: ConfigItemValue
+	hint?: string
 }
 export interface ConfigManifestEntryString extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.STRING
@@ -49,6 +55,7 @@ export interface ConfigManifestEntryMultilineString extends ConfigManifestEntryB
 	type: ConfigManifestEntryType.MULTILINE_STRING
 	defaultVal: string[]
 }
+/** @deprecated use INT/FLOAT instead */
 export interface ConfigManifestEntryNumber extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.NUMBER
 	defaultVal: number
@@ -56,6 +63,18 @@ export interface ConfigManifestEntryNumber extends ConfigManifestEntryBase {
 	 * 	when rendered in settings pages they will appear as value + 1
 	 */
 	zeroBased?: boolean
+}
+export interface ConfigManifestEntryInt extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.INT
+	defaultVal: number
+	/** Zero-based values will be stored in the database (and reported to blueprints) as values starting from 0, however,
+	 * 	when rendered in settings pages they will appear as value + 1
+	 */
+	zeroBased?: boolean
+}
+export interface ConfigManifestEntryFloat extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.FLOAT
+	defaultVal: number
 }
 export interface ConfigManifestEntryBoolean extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.BOOLEAN

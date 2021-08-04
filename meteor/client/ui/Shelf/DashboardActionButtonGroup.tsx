@@ -1,8 +1,5 @@
 import * as React from 'react'
-import ClassNames from 'classnames'
-import { RundownAPI } from '../../../lib/api/rundown'
 
-import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceButton'
 import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
 import { DashboardActionButton } from './DashboardActionButton'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -42,7 +39,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 
 		hold = (e: any) => {
 			const { t } = this.props
-			if (this.props.studioMode && this.props.playlist.active) {
+			if (this.props.studioMode && this.props.playlist.activationId) {
 				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
 					MeteorCall.userAction.activateHold(
 						e,
@@ -114,7 +111,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 		}
 
 		render() {
-			return this.props.buttons.map((button: DashboardLayoutActionButton, index) => (
+			return this.props.buttons.map((button: DashboardLayoutActionButton) => (
 				<DashboardActionButton
 					key={button._id}
 					playlist={this.props.playlist}

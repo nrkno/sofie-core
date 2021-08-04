@@ -1,18 +1,23 @@
+import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { DBSegment, SegmentId } from './collections/Segments'
+import { DBSegment, Segment, SegmentId } from './collections/Segments'
 import { PartId, DBPart } from './collections/Parts'
-import { PartInstance } from './collections/PartInstances'
+import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
 import { PieceInstance, PieceInstances } from './collections/PieceInstances'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
+	PieceInstanceWithTimings,
 } from './rundown/infinites'
 import { FindOptions } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
-import { getCurrentTime } from './lib'
+import { getCurrentTime, protectString, unprotectString } from './lib'
+import { RundownPlaylist, RundownPlaylistActivationId } from './collections/RundownPlaylists'
+import { Rundown, RundownId } from './collections/Rundowns'
+import { ShowStyleBaseId } from './collections/ShowStyleBases'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -48,9 +53,8 @@ export interface ISourceLayerExtended extends ISourceLayer {
 	pieces: Array<PieceExtended>
 	followingItems: Array<PieceExtended>
 }
-
 export interface PieceExtended {
-	instance: PieceInstance
+	instance: PieceInstanceWithTimings
 
 	/** Source layer that this piece belongs to */
 	sourceLayer?: ISourceLayerExtended
@@ -73,16 +77,21 @@ export interface PieceExtended {
 export function fetchPiecesThatMayBeActiveForPart(
 	part: DBPart,
 	partsBeforeThisInSegmentSet: Set<PartId>,
-	segmentsBeforeThisInRundownSet: Set<SegmentId>
+	segmentsBeforeThisInRundownSet: Set<SegmentId>,
+	rundownsBeforeThisInPlaylist: RundownId[]
 ): Piece[] {
 	const piecesStartingInPart = Pieces.find(buildPiecesStartingInThisPartQuery(part)).fetch()
 
 	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
 	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
 
-	const infinitePieces = Pieces.find(
-		buildPastInfinitePiecesForThisPartQuery(part, partsBeforeThisInSegment, segmentsBeforeThisInRundown)
-	).fetch()
+	const infinitePieceQuery = buildPastInfinitePiecesForThisPartQuery(
+		part,
+		partsBeforeThisInSegment,
+		segmentsBeforeThisInRundown,
+		rundownsBeforeThisInPlaylist
+	)
+	const infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
 
 	return [...piecesStartingInPart, ...infinitePieces]
 }
@@ -108,9 +117,13 @@ const SIMULATION_INVALIDATION = 3000
  * @return {*}
  */
 export function getPieceInstancesForPartInstance(
+	playlistActivationId: RundownPlaylistActivationId | undefined,
+	rundown: Rundown,
 	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
+	rundownsBeforeThisInPlaylist: RundownId[],
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	orderedAllParts: PartId[],
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
@@ -120,15 +133,20 @@ export function getPieceInstancesForPartInstance(
 ) {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
+			playlistActivationId || protectString(''),
 			currentPartInstance,
 			currentPartInstancePieceInstances,
+			rundown,
 			partInstance.part,
 			partsBeforeThisInSegmentSet,
 			segmentsBeforeThisInRundownSet,
+			rundownsBeforeThisInPlaylist,
+			rundownsToShowstyles,
 			fetchPiecesThatMayBeActiveForPart(
 				partInstance.part,
 				partsBeforeThisInSegmentSet,
-				segmentsBeforeThisInRundownSet
+				segmentsBeforeThisInRundownSet,
+				rundownsBeforeThisInPlaylist
 			),
 			orderedAllParts,
 			partInstance._id,
@@ -158,15 +176,20 @@ export function getPieceInstancesForPartInstance(
 			// make sure to invalidate the current computation after SIMULATION_INVALIDATION has passed
 			invalidateAfter(SIMULATION_INVALIDATION)
 			return getPieceInstancesForPart(
+				playlistActivationId || protectString(''),
 				currentPartInstance,
 				currentPartInstancePieceInstances,
+				rundown,
 				partInstance.part,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
+				rundownsBeforeThisInPlaylist,
+				rundownsToShowstyles,
 				fetchPiecesThatMayBeActiveForPart(
 					partInstance.part,
 					partsBeforeThisInSegmentSet,
-					segmentsBeforeThisInRundownSet
+					segmentsBeforeThisInRundownSet,
+					rundownsBeforeThisInPlaylist
 				),
 				orderedAllParts,
 				partInstance._id,
@@ -178,6 +201,77 @@ export function getPieceInstancesForPartInstance(
 			return results
 		}
 	}
+}
+
+/**
+ * Get all PartInstances (or temporary PartInstances) all segments in all rundowns in a playlist, using given queries
+ * to limit the data, in correct order.
+ *
+ * @export
+ * @param {RundownPlaylist} playlist
+ * @param {(Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>)} [segmentsQuery]
+ * @param {(Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>)} [partsQuery]
+ * @param {Mongo.Query<PartInstance>} [partInstancesQuery]
+ * @param {FindOptions<DBSegment>} [segmentsOptions]
+ * @param {FindOptions<DBPart>} [partsOptions]
+ * @param {FindOptions<PartInstance>} [partInstancesOptions]
+ * @return {*}  {Array<{ segment: Segment; partInstances: PartInstance[] }>}
+ */
+export function getSegmentsWithPartInstances(
+	playlist: RundownPlaylist,
+	segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
+	partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
+	partInstancesQuery?: Mongo.Query<PartInstance>,
+	segmentsOptions?: FindOptions<DBSegment>,
+	partsOptions?: FindOptions<DBPart>,
+	partInstancesOptions?: FindOptions<PartInstance>
+): Array<{ segment: Segment; partInstances: PartInstance[] }> {
+	const { segments, parts: rawParts } = playlist.getSegmentsAndPartsSync(
+		segmentsQuery,
+		partsQuery,
+		segmentsOptions,
+		partsOptions
+	)
+	const rawPartInstances = playlist.getActivePartInstances(partInstancesQuery, partInstancesOptions)
+	const playlistActivationId = playlist.activationId ?? protectString('')
+
+	const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)
+	const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => p.segmentId)
+
+	return segments.map((segment) => {
+		const segmentParts = partsBySegment[unprotectString(segment._id)] || []
+		const segmentPartInstances = partInstancesBySegment[unprotectString(segment._id)] || []
+
+		if (segmentPartInstances.length === 0) {
+			return {
+				segment,
+				partInstances: segmentParts.map((p) => wrapPartToTemporaryInstance(playlistActivationId, p)),
+			}
+		} else if (segmentParts.length === 0) {
+			return {
+				segment,
+				partInstances: _.sortBy(segmentPartInstances, (p) => p.part._rank),
+			}
+		} else {
+			const partInstanceMap = new Map<PartId, PartInstance>()
+			for (const part of segmentParts)
+				partInstanceMap.set(part._id, wrapPartToTemporaryInstance(playlistActivationId, part))
+			for (const partInstance of segmentPartInstances) {
+				// Check what we already have in the map for this PartId. If the map returns the currentPartInstance then we keep that, otherwise replace with this partInstance
+				const currentValue = partInstanceMap.get(partInstance.part._id)
+				if (!currentValue || currentValue._id !== playlist.currentPartInstanceId) {
+					partInstanceMap.set(partInstance.part._id, partInstance)
+				}
+			}
+
+			const allPartInstances = _.sortBy(Array.from(partInstanceMap.values()), (p) => p.part._rank)
+
+			return {
+				segment,
+				partInstances: allPartInstances,
+			}
+		}
+	})
 }
 
 // 1 reactivelly listen to data changes

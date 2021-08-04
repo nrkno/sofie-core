@@ -130,7 +130,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 			<Escape to="viewport">
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
-					runOnMount={true}>
+					runOnMount={true}
+				>
 					<div className="glass-pane">
 						<div className="glass-pane-content">
 							<VelocityReact.VelocityTransitionGroup
@@ -142,12 +143,12 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 									easing: 'spring',
 									duration: 250,
 								}}
-								runOnMount={true}>
+								runOnMount={true}
+							>
 								<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''}>
 									<div
-										className={
-											'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'
-										}>
+										className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}
+									>
 										<div className="flex-col c12">
 											<h2>{this.props.title}</h2>
 										</div>
@@ -184,7 +185,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 									<div
 										className={ClassNames('mod', {
 											alright: !this.props.secondaryText,
-										})}>
+										})}
+									>
 										{this.props.secondaryText && (
 											<button className="btn btn-secondary" onClick={this.handleSecondary}>
 												{this.props.secondaryText}
@@ -203,7 +205,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 																},
 																action.classNames
 															)}
-															onClick={(e) => this.handleAction(e, action.on)}>
+															onClick={(e) => this.handleAction(e, action.on)}
+														>
 															{action.label}
 														</button>
 													)
@@ -216,7 +219,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 												right: this.props.secondaryText !== undefined,
 												'btn-warn': this.props.warning,
 											})}
-											onClick={this.handleAccept}>
+											onClick={this.handleAccept}
+										>
 											{this.props.acceptText}
 										</button>
 									</div>
@@ -278,7 +282,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		}
 	}
 	public addQueue(q: ModalDialogQueueItem) {
-		let queue = this.state.queue
+		const queue = this.state.queue
 		queue.push(q)
 		this.setState({
 			queue,
@@ -288,16 +292,16 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		return this.state.queue.length > 0
 	}
 	onAccept = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			onQueue.onAccept(e, inputResult)
 		}
 	}
 	onDiscard = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			if (onQueue.onDiscard) {
@@ -306,8 +310,8 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		}
 	}
 	onSecondary = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			if (onQueue.onSecondary) {
@@ -316,26 +320,26 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		}
 	}
 	onAction = (e: SomeEvent, inputResult: ModalInputResult, on: OnAction) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			on(e, inputResult)
 		}
 	}
 	renderString = (str: string) => {
-		let lines = (str || '').split('\n')
+		const lines = (str || '').split('\n')
 
-		return _.map(lines, (str: string, i) => {
-			return <p key={i}>{str.trim()}</p>
+		return _.map(lines, (line: string, i) => {
+			return <p key={i}>{line.trim()}</p>
 		})
 	}
 	render() {
 		const { t } = this.props
-		let onQueue = _.first(this.state.queue)
+		const onQueue = _.first(this.state.queue)
 
 		if (onQueue) {
-			let actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
+			const actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
 				return {
 					...action,
 					on: (e, inputResult) => this.onAction(e, inputResult, action.on),
@@ -353,7 +357,8 @@ class ModalDialogGlobalContainer0 extends React.Component<
 					inputs={onQueue.inputs}
 					actions={actions}
 					show={true}
-					warning={onQueue.warning}>
+					warning={onQueue.warning}
+				>
 					{_.isString(onQueue.message) ? this.renderString(onQueue.message) : onQueue.message}
 				</ModalDialog>
 			)

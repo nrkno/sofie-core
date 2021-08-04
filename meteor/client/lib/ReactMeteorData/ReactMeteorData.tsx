@@ -1,4 +1,3 @@
-/* global Package */
 /* eslint-disable react/prefer-stateless-function */
 
 import React, { useState, useEffect } from 'react'
@@ -7,8 +6,8 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
-import * as _ from 'underscore'
-import { auto } from '@popperjs/core'
+import { PubSub } from '../../../lib/api/pubsub'
+import { stringifyObjects } from '../../../lib/lib'
 
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined
@@ -43,7 +42,7 @@ class MeteorDataManager {
 		clearTimeout(globalTrackerTimeout)
 		globalTrackerTimeout = undefined
 		globalTrackerTimestamp = undefined
-		globalTrackerQueue.map((func) => func())
+		globalTrackerQueue.forEach((func) => func())
 		globalTrackerQueue.length = 0
 	}
 
@@ -157,7 +156,7 @@ class MeteorDataManager {
 			throw new Error('Expected object returned from getMeteorData')
 		}
 		// update componentData in place based on newData
-		for (let key in newData) {
+		for (const key in newData) {
 			component.data[key] = newData[key]
 		}
 		// if there is oldData (which is every time this method is called
@@ -166,7 +165,7 @@ class MeteorDataManager {
 		// co-existing with something else that writes to a component's
 		// this.data.
 		if (oldData) {
-			for (let key in oldData) {
+			for (const key in oldData) {
 				if (!(key in newData)) {
 					delete component.data[key]
 				}
@@ -230,20 +229,17 @@ export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 }
 // @todo: add withTrackerPure()
 type IWrappedComponent<IProps, IState, TrackedProps> =
-	| (new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>)
+	| React.ComponentClass<IProps & TrackedProps, IState>
+	// | (new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>)
 	| ((props: IProps & TrackedProps) => JSX.Element)
 export function withTracker<IProps, IState, TrackedProps>(
 	autorunFunction: (props: IProps) => TrackedProps,
-	checkUpdate?:
-		| ((data: any, props: IProps, nextProps: IProps) => boolean)
-		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
+	checkUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean,
 	queueTrackerUpdates?: boolean
 ): (
 	WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>
 ) => new (props: IProps) => React.Component<IProps, IState> {
-	let expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps>
-
-	expandedOptions = {
+	const expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps> = {
 		getMeteorData: autorunFunction,
 		shouldComponentUpdate: checkUpdate,
 		queueTrackerUpdates,
@@ -267,28 +263,28 @@ export function withTracker<IProps, IState, TrackedProps>(
 				return true
 			}
 			render() {
-				let content = <WrappedComponent {...this.props} {...this.data} />
+				const content = <WrappedComponent {...this.props} {...this.data} />
 				// this._renderedContent = content
 				return content
 			}
 		}
-		HOC['displayName'] = `ReactMeteorComponentWrapper(${WrappedComponent['displayName'] ||
-			WrappedComponent.name ||
-			'Unnamed component'})`
+		HOC['displayName'] = `ReactMeteorComponentWrapper(${
+			WrappedComponent['displayName'] || WrappedComponent.name || 'Unnamed component'
+		})`
 		return HOC
 	}
 }
 export function translateWithTracker<IProps, IState, TrackedProps>(
-	autorunFunction: (props: IProps, state?: IState) => TrackedProps,
-	checkUpdate?:
-		| ((data: any, props: IProps, nextProps: IProps) => boolean)
-		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
+	autorunFunction: (props: Translated<IProps>, state?: IState) => TrackedProps,
+	checkUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean,
 	queueTrackerUpdates?: boolean
 ) {
 	return (WrappedComponent: IWrappedComponent<Translated<IProps>, IState, TrackedProps>) => {
-		const inner = withTracker(autorunFunction, checkUpdate, queueTrackerUpdates)(WrappedComponent) as new (
-			props: IProps & WithTranslation
-		) => React.Component<IProps & WithTranslation, IState, any>
+		const inner = withTracker<Translated<IProps>, IState, TrackedProps>(
+			autorunFunction,
+			checkUpdate,
+			queueTrackerUpdates
+		)(WrappedComponent)
 		return withTranslation()(inner)
 	}
 }
@@ -304,19 +300,44 @@ export type Translated<T> = T & WithTranslation
 // 		) => React.Component<TrackedProps, IState, never>
 // 	) => any
 
+/**
+ * A Meteor Tracker hook that allows using React Functional Components and the Hooks API with Meteor Tracker
+ *
+ * @export
+ * @template T
+ * @param {() => T} autorun The autorun function to be run.
+ * @param {(React.DependencyList | undefined)} [deps] An optional list of dependenices to limit the tracker re-running
+ * 		for each render. Optional, but highly recommended, due to the heavy nature of Meteor.Trackers and high frequency
+ * 		of React renders.
+ * @return {*}  {(T | undefined)}
+ */
 export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | undefined): T | undefined {
 	const [meteorData, setMeteorData] = useState<T | undefined>(undefined)
 
 	useEffect(() => {
-		const computation = Tracker.nonreactive(() =>
-			Tracker.autorun(() => {
-				setMeteorData(autorun())
-			})
-		)
-		return () => {
-			computation.stop()
-		}
+		const computation = Tracker.nonreactive(() => Tracker.autorun(() => setMeteorData(autorun())))
+		return () => computation.stop()
 	}, deps)
 
 	return meteorData
+}
+
+/**
+ * A Meteor Subscription hook that allows using React Functional Components and the Hooks API with Meteor subscriptions.
+ * Subscriptions will be torn down 100ms after unmounting the component.
+ *
+ * @export
+ * @param {PubSub} sub The subscription to be subscribed to
+ * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
+ * 		renders so that it isn't torn down and created for every render.
+ */
+export function useSubscription(sub: PubSub, ...args: any[]) {
+	useEffect(() => {
+		const subscription = Meteor.subscribe(sub, ...args)
+		return () => {
+			setTimeout(() => {
+				subscription.stop()
+			}, 100)
+		}
+	}, [stringifyObjects(args)])
 }

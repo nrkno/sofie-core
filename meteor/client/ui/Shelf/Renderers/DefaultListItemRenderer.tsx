@@ -20,7 +20,8 @@ export const DefaultListItemRenderer: React.FunctionComponent<ILayerItemRenderer
 					'source-broken': props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 					'unknown-state': props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 				}
-			)}>
+			)}
+		>
 			{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
 		</td>
 		<td className="adlib-panel__list-view__list__table__cell--shortcut">

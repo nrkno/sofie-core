@@ -3,7 +3,6 @@ import { check } from '../../lib/check'
 import { allowAccessToStudio } from './lib/security'
 import { StudioId, Studios, Studio } from '../../lib/collections/Studios'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
-import * as _ from 'underscore'
 import { logNotAllowed } from './lib/lib'
 import {
 	ExternalMessageQueue,
@@ -37,6 +36,23 @@ export namespace StudioReadAccess {
 		return true
 	}
 }
+
+/**
+ * This is returned from a check of access to a studio.
+ * Fields will be populated about the user, and the studio if they have permission
+ */
+export interface StudioContentAccess {
+	userId: UserId | null
+	organizationId: OrganizationId | null
+	studioId: StudioId | null
+	studio: Studio | null
+	cred: ResolvedCredentials | Credentials
+}
+
+export interface ExternalMessageContentAccess extends StudioContentAccess {
+	message: ExternalMessageQueueObj
+}
+
 export namespace StudioContentWriteAccess {
 	// These functions throws if access is not allowed.
 
@@ -65,30 +81,21 @@ export namespace StudioContentWriteAccess {
 	export function bucket(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
-	export function externalMessage(
+	export async function externalMessage(
 		cred0: Credentials,
 		existingMessage: ExternalMessageQueueObj | ExternalMessageQueueObjId
-	) {
+	): Promise<ExternalMessageContentAccess> {
 		triggerWriteAccess()
 		if (existingMessage && isProtectedString(existingMessage)) {
 			const messageId = existingMessage
-			const m = ExternalMessageQueue.findOne(messageId)
+			const m = await ExternalMessageQueue.findOneAsync(messageId)
 			if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 			existingMessage = m
 		}
 		return { ...anyContent(cred0, existingMessage.studioId), message: existingMessage }
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent(
-		cred0: Credentials,
-		studioId: StudioId
-	): {
-		userId: UserId | null
-		organizationId: OrganizationId | null
-		studioId: StudioId | null
-		studio: Studio | null
-		cred: ResolvedCredentials | Credentials
-	} {
+	export function anyContent(cred0: Credentials, studioId: StudioId): StudioContentAccess {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
 			return {

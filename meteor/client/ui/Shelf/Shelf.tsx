@@ -2,8 +2,8 @@ import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import * as _ from 'underscore'
 import * as mousetrap from 'mousetrap'
+import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -29,7 +29,11 @@ import { Settings } from '../../../lib/Settings'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 import { Studio } from '../../../lib/collections/Studios'
-import RundownViewEventBus, { RundownViewEvents, SelectPieceEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	SelectPieceEvent,
+	SwitchToShelfTabEvent,
+} from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
 import { isModalShowing } from '../../lib/ModalDialog'
@@ -90,6 +94,7 @@ const MAX_HEIGHT = 95
 export const DEFAULT_TAB = ShelfTabs.ADLIB
 
 export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> {
+	private element: HTMLDivElement | null = null
 	private _mouseStart: {
 		x: number
 		y: number
@@ -170,7 +175,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	componentDidMount() {
-		let preventDefault = (e) => {
+		const preventDefault = (e) => {
 			e.preventDefault()
 		}
 		this.bindKeys.forEach((k) => {
@@ -212,6 +217,10 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
+
+		document.body.addEventListener('wheel', this.preventWheelPropagation, {
+			passive: false,
+		})
 	}
 
 	componentWillUnmount() {
@@ -227,6 +236,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
+
+		document.body.removeEventListener('wheel', this.preventWheelPropagation)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -262,9 +273,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	getTop(newState?: boolean): string | undefined {
 		return this.state.overrideHeight
 			? (this.state.overrideHeight / window.innerHeight) * 100 + 'vh'
-			: (newState !== undefined
-				? newState
-				: this.props.isExpanded)
+			: (newState !== undefined ? newState : this.props.isExpanded)
 			? this.state.shelfHeight
 			: undefined
 	}
@@ -420,11 +429,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 	}
 
-	onSwitchShelfTab = (e: any) => {
-		const tab = e.detail && e.detail.tab
-
-		if (tab) {
-			this.switchTab(tab)
+	onSwitchShelfTab = (e: SwitchToShelfTabEvent) => {
+		if (e.tab) {
+			this.switchTab(e.tab)
 		}
 	}
 
@@ -440,34 +447,60 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.selectPiece(e.piece)
 	}
 
+	private setRef = (element: HTMLDivElement | null) => {
+		this.element = element
+	}
+
 	selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
 		})
 	}
 
-	changeQueueAdLib = (shouldQueue: boolean, e: any) => {
+	changeQueueAdLib = (shouldQueue: boolean) => {
 		this.setState({
 			shouldQueue,
 		})
 	}
 
+	private preventWheelPropagation = (e: WheelEvent) => {
+		const composedPath = e.composedPath()
+		if (this.element && composedPath.includes(this.element)) {
+			const scrollSink = composedPath.find(
+				(element) => element instanceof HTMLElement && element.classList.contains('scroll-sink')
+			)
+			if (scrollSink instanceof HTMLElement) {
+				if (e.deltaY < 0 && scrollSink.scrollTop <= 0) {
+					e.preventDefault()
+				} else if (
+					e.deltaY > 0 &&
+					Math.round(scrollSink.scrollTop) >= scrollSink.scrollHeight - scrollSink.clientHeight
+				) {
+					e.preventDefault()
+				}
+			}
+		}
+	}
+
 	render() {
-		const { t, fullViewport } = this.props
+		const { fullViewport } = this.props
 		return (
 			<div
-				className={ClassNames('rundown-view__shelf dark', {
+				className={ClassNames('rundown-view__shelf dark scroll-sink', {
 					'full-viewport': fullViewport,
 					moving: this.state.moving,
 				})}
-				style={fullViewport ? undefined : this.getStyle()}>
+				style={fullViewport ? undefined : this.getStyle()}
+				ref={this.setRef}
+			>
 				{!this.props.rundownLayout?.disableContextMenu && <ShelfContextMenu />}
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"
 						tabIndex={0}
 						onMouseDown={this.grabHandle}
-						onTouchStart={this.touchOnHandle}>
+						onTouchStart={this.touchOnHandle}
+					>
 						<FontAwesomeIcon icon={faBars} />
 					</div>
 				)}
@@ -478,7 +511,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							attributes={{
 								className: 'rundown-view__shelf__contents__pane fill',
 							}}
-							holdToDisplay={contextMenuHoldToDisplayTime()}>
+							holdToDisplay={contextMenuHoldToDisplayTime()}
+						>
 							<ErrorBoundary>
 								{this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout) ? (
 									<ShelfRundownLayout
@@ -497,10 +531,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									<ShelfDashboardLayout
 										playlist={this.props.playlist}
 										showStyleBase={this.props.showStyleBase}
-										buckets={this.props.buckets}
+										// buckets={this.props.buckets}
 										studioMode={this.props.studioMode}
 										rundownLayout={this.props.rundownLayout}
 										shouldQueue={this.state.shouldQueue}
+										selectedPiece={this.state.selectedPiece}
+										onSelectPiece={this.selectPiece}
 										onChangeQueueAdLib={this.changeQueueAdLib}
 										studio={this.props.studio}
 									/>

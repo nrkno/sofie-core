@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, Time, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
@@ -9,9 +8,12 @@ import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
 import { AdLibActionId } from './AdLibActions'
 
-/** A string, identifying a ExpectedMediaItem */
+/** A string, identifying a ExpectedMediaItem
+ * @deprecated
+ */
 export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
 
+/** @deprecated */
 export interface ExpectedMediaItemBase {
 	_id: ExpectedMediaItemId
 
@@ -42,7 +44,7 @@ export interface ExpectedMediaItemBase {
 	/** Frame that media manager should grab for thumbnail preview */
 	previewFrame?: number
 }
-
+/** @deprecated */
 export interface ExpectedMediaItemRundown extends ExpectedMediaItemBase {
 	/** The rundown id that is the source of this MediaItem */
 	rundownId: RundownId
@@ -50,7 +52,7 @@ export interface ExpectedMediaItemRundown extends ExpectedMediaItemBase {
 	/** The part id that is the source of this Media Item */
 	partId: PartId | undefined
 }
-
+/** @deprecated */
 export interface ExpectedMediaItemBucketPiece extends ExpectedMediaItemBase {
 	/** The bucket id that is the source of this Media Item */
 	bucketId: BucketId
@@ -58,6 +60,7 @@ export interface ExpectedMediaItemBucketPiece extends ExpectedMediaItemBase {
 	/** The bucked adLib piece that is the source of this Media Item */
 	bucketAdLibPieceId: PieceId
 }
+/** @deprecated */
 export interface ExpectedMediaItemBucketAction extends ExpectedMediaItemBase {
 	/** The bucket id that is the source of this Media Item */
 	bucketId: BucketId
@@ -65,12 +68,10 @@ export interface ExpectedMediaItemBucketAction extends ExpectedMediaItemBase {
 	/** The bucked adLib piece that is the source of this Media Item */
 	bucketAdLibActionId: AdLibActionId
 }
-
+/** @deprecated */
 export type ExpectedMediaItem = ExpectedMediaItemRundown | ExpectedMediaItemBucketPiece | ExpectedMediaItemBucketAction
-
-export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem> = createMongoCollection<
-	ExpectedMediaItem
->('expectedMediaItems')
+/** @deprecated */
+export const ExpectedMediaItems = createMongoCollection<ExpectedMediaItem, ExpectedMediaItem>('expectedMediaItems')
 registerCollection('ExpectedMediaItems', ExpectedMediaItems)
 
 registerIndex(ExpectedMediaItems, {

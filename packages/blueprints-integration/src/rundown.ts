@@ -1,20 +1,70 @@
-import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContentVizMSE } from 'timeline-state-resolver-types'
+import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { SomeContent } from './content'
+import { ExpectedPackage } from './package'
+import { SomeTimelineContent } from './content'
+import { ITranslatableMessage } from './translations'
+import { PartEndState } from './api'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
 	name: string
 
-	/** Expected start should be set to the expected time this rundown playlist should run on air */
-	expectedStart?: Time
-	/** Expected duration of the rundown playlist */
-	expectedDuration?: number
+	/** Playlist timing information */
+	timing: RundownPlaylistTiming
 	/** Should the rundown playlist use out-of-order timing mode (unplayed content will be played eventually) as opposed to normal timing mode (unplayed content behind the OnAir line has been skipped) */
 	outOfOrderTiming?: boolean
 	/** Should the rundown playlist loop at the end */
 	loop?: boolean
+	/** Should time-of-day clocks be used instead of countdowns by default */
+	timeOfDayCountdowns?: boolean
 }
+
+export enum PlaylistTimingType {
+	None = 'none',
+	ForwardTime = 'forward-time',
+	BackTime = 'back-time',
+}
+
+export interface PlaylistTimingBase {
+	type: PlaylistTimingType
+}
+
+export interface PlaylistTimingNone {
+	type: PlaylistTimingType.None
+}
+
+export interface PlaylistTimingForwardTime extends PlaylistTimingBase {
+	type: PlaylistTimingType.ForwardTime
+	/** Expected start should be set to the expected time this rundown playlist should run on air */
+	expectedStart: Time
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
+	/** Expected end time of the rundown playlist
+	 *  In this timing mode this is only for display before the show starts as an "expected" end time,
+	 *  during the show this display value will be calculated from expected start + remaining playlist duration.
+	 *  If this is not set, `expectedDuration` will be used (if set) in addition to expectedStart.
+	 */
+	expectedEnd?: Time
+}
+
+export interface PlaylistTimingBackTime extends PlaylistTimingBase {
+	type: PlaylistTimingType.BackTime
+	/** Expected start should be set to the expected time this rundown playlist should run on air
+	 *  In this timing mode this is only for display before the show starts as an "expected" start time,
+	 *  during the show this display will be set to when the show actually started.
+	 */
+	expectedStart?: Time
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
+	/** Expected end time of the rundown playlist */
+	expectedEnd: Time
+}
+
+export type RundownPlaylistTiming = PlaylistTimingNone | PlaylistTimingForwardTime | PlaylistTimingBackTime
 
 /** The Rundown generated from Blueprint */
 export interface IBlueprintRundown<TMetadata = unknown> {
@@ -25,17 +75,22 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 	/** Rundown description: Longer user-presentable description of the rundown */
 	description?: string
 
-	/** Expected start should be set to the expected time this rundown should run on air */
-	expectedStart?: Time
-	/** Expected duration of the rundown */
-	expectedDuration?: number
+	/** Rundown timing information */
+	timing: RundownPlaylistTiming
 
 	/** Arbitrary data storage for plugins */
 	metaData?: TMetadata
 
 	/** A hint to the Core that the Rundown should be a part of a playlist */
 	playlistExternalId?: string
+
+	/**
+	 * Whether the end of the rundown marks a break in the show.
+	 * Allows the Next Break timer in the Rundown Header to time to the end of this rundown when looking for the next break.
+	 */
+	endOfRundownIsShowBreak?: boolean
 }
+
 /** The Rundown sent from Core */
 export interface IBlueprintRundownDB<TMetadata = unknown>
 	extends IBlueprintRundown<TMetadata>,
@@ -91,7 +146,7 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	transitionPrerollDuration?: number | null
 	/** How long to keep the old part alive during the transition */
 	transitionKeepaliveDuration?: number | null
-	/** How long the transition is active for */
+	/** How long the transition is active for (used to block another take from happening) */
 	transitionDuration?: number | null
 	/** Should we block a transition at the out of this Part */
 	disableOutTransition?: boolean
@@ -150,23 +205,35 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 * * Infinites still works as normal
 	 */
 	invalid?: boolean
+
 	/**
-	 * Provide additional information about the reason a part is invalid. The title should be a single, short sentence describing the reason. Additional
-	 * information can be provided in the description property. The blueprints can also provide a color hint that the UI can use when displaying the part.
+	 * Provide additional information about the reason a part is invalid. The `key` is the string key from blueprints
+	 * translations. Args will be used to replace placeholders within the translated file. If `key` is not found in the
+	 * translation, it will be interpollated using the `args` and used as the string to be displayed.
+	 * The blueprints can also provide a color hint that the UI can use when displaying the part.
 	 * Color needs to be in #xxxxxx RGB hexadecimal format.
 	 *
 	 * @type {{
-	 * 		title: string,
-	 * 		description?: string
+	 * 		message: ITranslatableMessage,
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
-		title: string
-		description?: string
+		message: ITranslatableMessage
 		color?: string
 	}
+
+	/**
+	 * Take a part out of timing considerations for a Rundown & Rundown Playlist. This part can be TAKEN but will not
+	 * update playlist's startedPlayback and will not count time in the GUI.
+	 *
+	 * Some parts shouldn't count towards the various timing information in Sofie. Specifically, it may be useful to
+	 * have some Parts execute Timelines outside of the regular flow of time, such as when doing an ad break or
+	 * performing some additional actions before a show actually begins (such as when there's a bit of a buffer before
+	 * the On Air time of a Show and when the MCR cuts to the PGM, because the previous show ended quicker).
+	 */
+	untimed?: boolean
 
 	/** When the NRCS informs us that the producer marked the part as floated, we can prevent the user from TAKE'ing and NEXT'ing it, but still have it visible and allow manipulation */
 	floated?: boolean
@@ -179,9 +246,6 @@ export interface IBlueprintPartDB<TMetadata = unknown> extends IBlueprintPart<TM
 	_id: string
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
-
-	/** if the part was dunamically inserted (adlib) */
-	dynamicallyInsertedAfterPartId?: string
 }
 /** The Part instance sent from Core */
 export interface IBlueprintPartInstance<TMetadata = unknown> {
@@ -189,7 +253,18 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 	/** The segment ("Title") this line belongs to */
 	segmentId: string
 
-	part: IBlueprintPartDB<TMetadata> // TODO - omit some duplicated fields?
+	part: IBlueprintPartDB<TMetadata>
+
+	/** If the playlist was in rehearsal mode when the PartInstance was created */
+	rehearsal: boolean
+	/** Playout timings, in here we log times when playout happens */
+	timings?: IBlueprintPartInstanceTimings
+
+	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
+	previousPartEndState?: PartEndState
+
+	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
+	orphaned?: 'adlib-part' | 'deleted'
 }
 
 export interface IBlueprintPartInstanceTimings {
@@ -238,7 +313,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content?: SomeContent
+	content: SomeTimelineContent
 
 	/** The transition used by this piece to transition to and from the piece */
 	transitions?: {
@@ -252,7 +327,9 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibPreroll?: number
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
-	/** Array of items expected to be played out. This is used by playout-devices to preload stuff. */
+	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
+	 * @deprecated replaced by .expectedPackages
+	 */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	/** When queued, should the adlib autonext */
 	adlibAutoNext?: boolean
@@ -264,8 +341,18 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibTransitionKeepAlive?: number
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
+
+	/**
+	 * An array of which Packages this Piece uses. This is used by a Package Manager to ensure that the Package is in place for playout.
+	 * @todo
+	 */
+	expectedPackages?: ExpectedPackage.Any[]
+
+	/** HACK: Some pieces have side effects on other pieces, and pruning them when they have finished playback will cause playout glitches. This will tell core to not always preserve it */
+	hasSideEffects?: boolean
 }
 
+/** @deprecated */
 export interface ExpectedPlayoutItemGeneric {
 	/** What type of playout device this item should be handled by */
 	deviceSubType: TSR_DeviceType // subset of PeripheralDeviceAPI.DeviceSubType
@@ -274,7 +361,7 @@ export interface ExpectedPlayoutItemGeneric {
 	/** Content of the expectedPlayoutItem */
 	content: ExpectedPlayoutItemContent
 }
-export type ExpectedPlayoutItemContent = ExpectedPlayoutItemContentVizMSE
+export { ExpectedPlayoutItemContent }
 
 /** A Single item in a "line": script, VT, cameras. Generated by Blueprint */
 export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGeneric<TMetadata> {
@@ -296,6 +383,8 @@ export interface IBlueprintPieceDB<TMetadata = unknown> extends IBlueprintPiece<
 }
 export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	_id: string
+	/** The part instace this piece belongs to */
+	partInstanceId: string
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: string
@@ -303,6 +392,13 @@ export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	dynamicallyInserted?: Time
 
 	piece: IBlueprintPieceDB<TMetadata>
+
+	/** The time the system started playback of this part, undefined if not yet played back (milliseconds since epoch) */
+	startedPlayback?: Time
+	/** Whether the piece has stopped playback (the most recent time it was played), undefined if not yet played back or is currently playing.
+	 * This is set from a callback from the playout gateway (milliseconds since epoch)
+	 */
+	stoppedPlayback?: Time
 
 	infinite?: {
 		infinitePieceId: string
@@ -333,7 +429,7 @@ export interface IBlueprintAdLibPiece<TMetadata = unknown> extends IBlueprintPie
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
-	/** Can be used by the UI to filter out identical AdLib Actions repeated across multiple segments */
+	/** String that can be used to identify adlibs that are equivalent to each other */
 	uniquenessId?: string
 	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
 	invertOnAirState?: boolean
@@ -351,4 +447,5 @@ export enum PieceLifespan {
 	OutOnSegmentEnd = 'segment-end',
 	OutOnRundownChange = 'rundown-change',
 	OutOnRundownEnd = 'rundown-end',
+	OutOnShowStyleEnd = 'showstyle-end',
 }

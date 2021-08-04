@@ -1,5 +1,4 @@
 import { PieceId } from './Pieces'
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
 import { IBlueprintAdLibPiece } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
@@ -9,8 +8,9 @@ import { ShowStyleVariantId } from './ShowStyleVariants'
 import { BucketId } from './Buckets'
 import { registerIndex } from '../database'
 
+export type BucketAdLibId = PieceId
 export interface BucketAdLib extends IBlueprintAdLibPiece {
-	_id: PieceId
+	_id: BucketAdLibId
 	bucketId: BucketId
 
 	/**
@@ -22,9 +22,7 @@ export interface BucketAdLib extends IBlueprintAdLibPiece {
 	importVersions: RundownImportVersions // TODO - is this good?
 }
 
-export const BucketAdLibs: TransformedCollection<BucketAdLib, BucketAdLib> = createMongoCollection<BucketAdLib>(
-	'bucketAdlibs'
-)
+export const BucketAdLibs = createMongoCollection<BucketAdLib, BucketAdLib>('bucketAdlibs')
 registerCollection('BucketAdLibs', BucketAdLibs)
 
 registerIndex(BucketAdLibs, {

@@ -3,18 +3,19 @@ $segment-timeline-background-color: #1f1f1f;
 $segment-layer-background-unknown: #4b4b4b;
 $segment-layer-background-camera: #18791c;
 $segment-layer-background-camera--second: darken($segment-layer-background-camera, 10%);
-$segment-layer-background-lower-third: #ff6f00;
+$segment-layer-background-lower-third: #ed7200;
 $segment-layer-background-lower-third--second: darken($segment-layer-background-lower-third, 10%);
-$segment-layer-background-graphics: #ef6800;
+$segment-layer-background-graphics: #dc5c00;
 $segment-layer-background-graphics--second: darken($segment-layer-background-graphics, 10%);
-$segment-layer-background-live-speak: #00c800;
+$segment-layer-background-live-speak: #0085ff;
+$segment-layer-background-live-speak--second: darken($segment-layer-background-live-speak, 10%);
 $segment-layer-background-remote: #e80064;
 $segment-layer-background-remote--second: darken($segment-layer-background-remote, 10%);
-$segment-layer-background-vt: #1769ff;
+$segment-layer-background-vt: #0a20ed;
 $segment-layer-background-vt--second: darken($segment-layer-background-vt, 10%);
 $segment-layer-background-local: #8d1010;
 $segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
-$segment-layer-background-script: #005a25;
+$segment-layer-background-script: #003600;
 $segment-layer-background-mic: #1e6820;
 $segment-layer-background-guest: #008a92;
 
@@ -77,9 +78,20 @@ $segment-layer-background-guest: #008a92;
 
 	&.live-speak {
 		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-vt), -1px 1px 1px var(--segment-layer-background-vt),
-				-1px -1px 1px var(--segment-layer-background-vt), 1px 1px 1px var(--segment-layer-background-vt),
+			text-shadow: 1px -1px 1px var(--segment-layer-background-live-speak),
+				-1px 1px 1px var(--segment-layer-background-live-speak),
+				-1px -1px 1px var(--segment-layer-background-live-speak), 1px 1px 1px var(--segment-layer-background-live-speak),
 				1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+
+		&.second {
+			#{$selectors} {
+				text-shadow: 1px -1px 1px var(--segment-layer-background-live-speak--second),
+					-1px 1px 1px var(--segment-layer-background-live-speak--second),
+					-1px -1px 1px var(--segment-layer-background-live-speak--second),
+					1px 1px 1px var(--segment-layer-background-live-speak--second), 1px 1px 3px rgba(0, 0, 0, 1),
+					1px 1px 8px rgba(0, 0, 0, 1);
+			}
 		}
 	}
 
@@ -152,6 +164,14 @@ $segment-layer-background-guest: #008a92;
 				1px 1px 1px var(--segment-layer-background-guest), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
 		}
 	}
+
+	&.unknown {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-unknown),
+				-1px 1px 1px var(--segment-layer-background-unknown), -1px -1px 1px var(--segment-layer-background-unknown),
+				1px 1px 1px var(--segment-layer-background-unknown), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+	}
 }
 
 @mixin item-type-colors {
@@ -180,11 +200,11 @@ $segment-layer-background-guest: #008a92;
 	}
 
 	&.live-speak {
-		background: linear-gradient(
-			to bottom,
-			var(--segment-layer-background-vt) 50%,
-			var(--segment-layer-background-camera) 50.0001%
-		);
+		background: var(--segment-layer-background-live-speak);
+
+		&.second {
+			background: var(--segment-layer-background-live-speak--second);
+		}
 	}
 
 	&.vt {
@@ -220,6 +240,10 @@ $segment-layer-background-guest: #008a92;
 	}
 
 	&.transition {
+		background: var(--segment-layer-background-unknown);
+	}
+
+	&.unknown {
 		background: var(--segment-layer-background-unknown);
 	}
 }
@@ -264,6 +288,10 @@ $segment-layer-background-guest: #008a92;
 	&.transition {
 		border-color: var(--segment-layer-background-unknown);
 	}
+
+	&.unknown {
+		border-color: var(--segment-layer-background-unknown);
+	}
 }
 
 @mixin item-type-before-background {
@@ -300,6 +328,10 @@ $segment-layer-background-guest: #008a92;
 	}
 
 	&.transition::before {
+		background: var(--segment-layer-background-unknown);
+	}
+
+	&.unknown::before {
 		background: var(--segment-layer-background-unknown);
 	}
 }
@@ -364,6 +396,10 @@ $segment-layer-background-guest: #008a92;
 	&.mic {
 		fill: var(--segment-layer-background-mic);
 	}
+
+	&.unknown {
+		fill: var(--segment-layer-background-unknown);
+	}
 }
 
 @mixin invalid-overlay {
@@ -414,7 +450,7 @@ $segment-layer-background-guest: #008a92;
 			right: 0;
 			bottom: 0;
 			z-index: 1;
-			mix-blend-mode: overlay;
+			mix-blend-mode: normal;
 			background-image: repeating-linear-gradient(
 				45deg,
 				transparent,
@@ -423,6 +459,14 @@ $segment-layer-background-guest: #008a92;
 				black 15px,
 				transparent 16px
 			);
+			opacity: 0.4;
+		}
+	}
+
+	&.vt.source-broken,
+	&.vt.source-missing {
+		&::after {
+			opacity: 0.6;
 		}
 	}
 

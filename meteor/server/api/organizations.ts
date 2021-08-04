@@ -1,12 +1,11 @@
-import * as _ from 'underscore'
-import { literal, getRandomId, makePromise, getCurrentTime } from '../../lib/lib'
+import { literal, getRandomId, makePromise, getCurrentTime, waitForPromise } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'
 import { registerClassToMeteorMethods } from '../methods'
 import { Organizations, OrganizationId, DBOrganization, DBOrganizationBase } from '../../lib/collections/Organization'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { insertStudioInner } from './studios'
+import { insertStudioInner } from './studio/api'
 import { insertShowStyleBaseInner } from './showStyles'
 import { Studios } from '../../lib/collections/Studios'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
@@ -20,7 +19,7 @@ function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
 	let studioBlueprintId: BlueprintId | undefined
 	let showStyleBlueprintId: BlueprintId | undefined
 	const studioId = insertStudioInner(orgId)
-	const showStyleId = insertShowStyleBaseInner(orgId)
+	const showStyleId = waitForPromise(insertShowStyleBaseInner(orgId))
 
 	const core = CoreSystem.findOne()
 	Blueprints.find()
@@ -74,11 +73,11 @@ export function removeOrganization(context: MethodContext, organizationId: Organ
 	users.forEach((user) => {
 		resetCredentials({ userId: user._id })
 	})
-	Organizations.remove({ organizationId })
+	Organizations.remove(organizationId)
 }
 
 class ServerOrganizationAPI extends MethodContextAPI implements NewOrganizationAPI {
-	removeOrganization(organizationId: OrganizationId) {
+	async removeOrganization(organizationId: OrganizationId) {
 		return makePromise(() => removeOrganization(this, organizationId))
 	}
 }

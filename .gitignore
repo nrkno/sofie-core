@@ -1,4 +1,5 @@
 _gsdata_/
 settings.json
 meteor/.coverage/
+node_modules
 tv-automation-server-core

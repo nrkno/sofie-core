@@ -1,13 +1,11 @@
-import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import * as mousetrap from 'mousetrap'
-import { ClientAPI } from '../../lib/api/client'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'
 import { ExtendedKeyboardEvent } from 'mousetrap'
 
-export function callPeripheralDeviceFunction(
+export async function callPeripheralDeviceFunction(
 	e: any,
 	deviceId: PeripheralDeviceId,
 	timeoutTime: number | undefined,
@@ -24,11 +22,17 @@ export function callPeripheralDeviceFunction(
 }
 
 export namespace PeripheralDevicesAPI {
-	export function restartDevice(
+	export async function restartDevice(
 		dev: Pick<PeripheralDevice, '_id'>,
 		e: Event | React.SyntheticEvent<object>
 	): Promise<any> {
 		return callPeripheralDeviceFunction(e, dev._id, undefined, 'killProcess', 1)
+	}
+	export async function troubleshootDevice(
+		dev: Pick<PeripheralDevice, '_id'>,
+		e: Event | React.SyntheticEvent<object>
+	): Promise<any> {
+		return callPeripheralDeviceFunction(e, dev._id, undefined, 'troubleshoot', 1)
 	}
 }
 

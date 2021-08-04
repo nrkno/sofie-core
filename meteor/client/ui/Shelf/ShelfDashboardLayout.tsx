@@ -7,9 +7,6 @@ import { ExternalFramePanel } from './ExternalFramePanel'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { Bucket } from '../../../lib/collections/Buckets'
-import { unprotectString } from '../../../lib/lib'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
 import { Studio } from '../../../lib/collections/Studios'
@@ -19,16 +16,19 @@ import { NextInfoPanel } from './NextInfoPanel'
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
 	playlist: RundownPlaylist
-	buckets: Bucket[] | undefined
+	// buckets: Bucket[] | undefined
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	shouldQueue: boolean
 	studio: Studio
 	onChangeQueueAdLib: (isQueue: boolean, e: any) => void
+
+	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
+	onSelectPiece: (piece: AdLibPieceUi | PieceUi) => void
 }
 
 export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
-	const { rundownLayout, buckets } = props
+	const { rundownLayout } = props
 	return (
 		<div className="dashboard">
 			{rundownLayout.filters
@@ -48,7 +48,8 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								studioMode={props.studioMode}
 								shouldQueue={props.shouldQueue}
 								studio={props.studio}
-								selectedPiece={undefined}
+								selectedPiece={props.selectedPiece}
+								onSelectPiece={props.onSelectPiece}
 							/>
 						) : (
 							<DashboardPanel
@@ -63,7 +64,8 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								studioMode={props.studioMode}
 								shouldQueue={props.shouldQueue}
 								studio={props.studio}
-								selectedPiece={undefined}
+								selectedPiece={props.selectedPiece}
+								onSelectPiece={props.onSelectPiece}
 							/>
 						)
 					) : RundownLayoutsAPI.isExternalFrame(panel) ? (
@@ -86,7 +88,8 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							playlist={props.playlist}
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
-							selectedPiece={undefined}
+							selectedPiece={props.selectedPiece}
+							onSelectPiece={props.onSelectPiece}
 							studio={props.studio}
 							hotkeyGroup={panel.name.replace(/\W/, '_')}
 						/>

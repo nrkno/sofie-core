@@ -1,10 +1,9 @@
-import { mousetrapHelper } from './mousetrapHelper'
 import Mousetrap from 'mousetrap'
-;(function(Mousetrap) {
+;(function (Mousetrap) {
 	var _globalCallbacks = {}
 	var _originalStopCallback = Mousetrap.prototype.stopCallback
 
-	Mousetrap.prototype.stopCallback = function(e, element, combo, sequence) {
+	Mousetrap.prototype.stopCallback = function (e, element, combo, sequence) {
 		var self = this
 
 		if (self.paused) {
@@ -18,7 +17,7 @@ import Mousetrap from 'mousetrap'
 		return _originalStopCallback.call(self, e, element, combo)
 	}
 
-	Mousetrap.prototype.bindGlobal = function(keys, callback, action) {
+	Mousetrap.prototype.bindGlobal = function (keys, callback, action) {
 		var self = this
 		self.bind(keys, callback, action)
 
@@ -101,7 +100,7 @@ import Mousetrap from 'mousetrap'
 // })(Mousetrap);
 
 // Disable default browser action for alt keys - focus window menu
-;(function() {
+;(function (Mousetrap) {
 	Mousetrap.init()
 
 	function preventDefault(e) {

@@ -1,7 +1,7 @@
-import { Time, literal, protectString } from '../../../lib/lib'
+import { Time, literal, protectString, getRandomId } from '../../../lib/lib'
 import { RundownImportVersions, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
 import { RundownNote } from '../../../lib/api/notes'
-import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
+import { PlaylistTimingType, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
@@ -14,6 +14,7 @@ export interface Rundown {
 	name: string
 	expectedStart?: Time
 	expectedDuration?: number
+	expectedEnd?: Time
 	metaData?: {
 		[key: string]: any
 	}
@@ -49,23 +50,26 @@ export function makePlaylistFromRundown_1_0_0(
 	rundown0: DBRundown,
 	newPlaylistId?: RundownPlaylistId
 ): DBRundownPlaylist {
-	const rundown = (rundown0 as any) as Rundown
+	const rundown = rundown0 as any as Rundown
 	if (!newPlaylistId) newPlaylistId = protectString('pl_' + rundown._id)
 	const playlist = literal<DBRundownPlaylist>({
 		_id: newPlaylistId,
 		externalId: rundown.externalId,
-		active: rundown['active'],
+		activationId: rundown['active'] ? getRandomId() : undefined,
 		rehearsal: rundown['rehearsal'],
 		created: rundown.created,
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
-		expectedDuration: rundown.expectedDuration,
-		expectedStart: rundown.expectedStart,
+		timing: {
+			type: PlaylistTimingType.ForwardTime,
+			expectedDuration: rundown.expectedDuration,
+			expectedStart: rundown.expectedStart || 0,
+			expectedEnd: rundown.expectedEnd,
+		},
 		holdState: rundown.holdState,
 		name: rundown.name,
 		nextPartManual: rundown.nextPartManual,
 		nextTimeOffset: rundown.nextTimeOffset,
-		peripheralDeviceId: rundown.peripheralDeviceId,
 		previousPartInstanceId: null,
 		startedPlayback: rundown.startedPlayback,
 		studioId: rundown.studioId,

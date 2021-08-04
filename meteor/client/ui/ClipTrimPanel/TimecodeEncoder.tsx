@@ -81,13 +81,13 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		})
 	}
 
-	handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+	handleFocus = (_e: React.FocusEvent<HTMLInputElement>) => {
 		this.setState({
 			isEdited: true,
 		})
 	}
 
-	handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+	handleBlur = (_e: React.FocusEvent<HTMLInputElement>) => {
 		const input = this.validate()
 		if (input !== null) {
 			const valid = Timecode.init({
@@ -152,7 +152,8 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 			<div
 				className={ClassNames('timecode-encoder', {
 					error: this.state.hasError || this.props.invalid,
-				})}>
+				})}
+			>
 				<div className="timecode-encoder__top-buttons">
 					<button onClick={() => this.add('01:00:00:00')}>
 						<FontAwesomeIcon icon={faCaretUp} />

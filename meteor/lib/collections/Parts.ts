@@ -1,31 +1,17 @@
-import * as _ from 'underscore'
-import { TransformedCollection, FindOptions, MongoQuery } from '../typings/meteor'
-import { Rundowns, RundownId } from './Rundowns'
-import { Piece, Pieces } from './Pieces'
-import { AdLibPieces, AdLibPiece } from './AdLibPieces'
-import { Segments, SegmentId } from './Segments'
-import {
-	applyClassToDocument,
-	registerCollection,
-	normalizeArray,
-	ProtectedString,
-	ProtectedStringProperties,
-} from '../lib'
-import { RundownAPI } from '../api/rundown'
-import { checkPieceContentStatus, getNoteTypeForPieceStatus } from '../mediaObjects'
+import { RundownId } from './Rundowns'
+import { SegmentId } from './Segments'
+import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { IBlueprintPartDB, PartHoldMode } from '@sofie-automation/blueprints-integration'
-import { PartNote, NoteType } from '../api/notes'
+import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
-import { Studio } from './Studios'
-import { ShowStyleBase } from './ShowStyleBases'
 import { registerIndex } from '../database'
+import { ITranslatableMessage } from '../api/TranslatableMessage'
 
 /** A string, identifying a Part */
 export type PartId = ProtectedString<'PartId'>
 
 /** A "Line" in NRK Lingo. */
-export interface DBPart
-	extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'> {
+export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number
@@ -38,8 +24,12 @@ export interface DBPart
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
-	/** if the part is inserted after another (for adlibbing) */
-	dynamicallyInsertedAfterPartId?: PartId
+
+	/** Holds the user-facing explanation for why the part is invalid */
+	invalidReason?: {
+		message: ITranslatableMessage
+		color?: string
+	}
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
@@ -69,10 +59,10 @@ export class Part implements DBPart {
 	public displayDuration?: number
 	public invalid?: boolean
 	public invalidReason?: {
-		title: string
-		description?: string
+		message: ITranslatableMessage
 		color?: string
 	}
+	public untimed?: boolean
 	public floated?: boolean
 	public gap?: boolean
 	// From IBlueprintPartDB:
@@ -83,98 +73,14 @@ export class Part implements DBPart {
 	public rundownId: RundownId
 	public status?: string
 	public notes?: Array<PartNote>
-	public dynamicallyInsertedAfterPartId?: PartId
 	public identifier?: string
 
 	constructor(document: DBPart) {
-		for (let [key, value] of Object.entries(document)) {
+		for (const [key, value] of Object.entries(document)) {
 			this[key] = value
 		}
 	}
-	getRundown() {
-		return Rundowns.findOne(this.rundownId)
-	}
-	getSegment() {
-		return Segments.findOne(this.segmentId)
-	}
-	getPieces(selector?: MongoQuery<Piece>, options?: FindOptions<Piece>) {
-		selector = selector || {}
-		options = options || {}
-		return Pieces.find(
-			{
-				startRundownId: this.rundownId,
-				startPartId: this._id,
-				...selector,
-			},
-			{
-				...options,
-			}
-		).fetch()
-	}
-	getAllPieces() {
-		return this.getPieces()
-	}
 
-	getAdLibPieces(selector?: MongoQuery<AdLibPiece>, options?: FindOptions<AdLibPiece>) {
-		selector = selector || {}
-		options = options || {}
-		return AdLibPieces.find(
-			{
-				rundownId: this.rundownId,
-				partId: this._id,
-				...selector,
-			},
-			{
-				...options,
-				sort: { _rank: 1, name: 1, ...options?.sort },
-			}
-		).fetch()
-	}
-	getAllAdLibPieces() {
-		return this.getAdLibPieces()
-	}
-	getInvalidReasonNotes(): Array<PartNote> {
-		return this.invalidReason
-			? [
-					{
-						type: NoteType.ERROR,
-						message:
-							this.invalidReason.title +
-							(this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
-						origin: {
-							name: this.title,
-						},
-					},
-			  ]
-			: []
-	}
-	getMinimumReactiveNotes(studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
-		let notes: Array<PartNote> = []
-		notes = notes.concat(this.notes || [])
-
-		const pieces = this.getPieces()
-		const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
-		for (let i = 0; i < pieces.length; i++) {
-			const piece = pieces[i]
-			// TODO: check statuses (like media availability) here
-
-			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
-				const part = partLookup[piece.sourceLayerId]
-				const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
-				if (st.status !== RundownAPI.PieceStatusCode.OK && st.status !== RundownAPI.PieceStatusCode.UNKNOWN) {
-					notes.push({
-						type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,
-						origin: {
-							name: 'Media Check',
-							pieceId: piece._id,
-						},
-						message: st.message || '',
-					})
-				}
-			}
-		}
-		return notes
-	}
 	isPlayable() {
 		return isPartPlayable(this)
 	}
@@ -184,7 +90,7 @@ export function isPartPlayable(part: DBPart) {
 	return !part.invalid && !part.floated
 }
 
-export const Parts: TransformedCollection<Part, DBPart> = createMongoCollection<Part>('parts', {
+export const Parts = createMongoCollection<Part, DBPart>('parts', {
 	transform: (doc) => applyClassToDocument(Part, doc),
 })
 registerCollection('Parts', Parts)

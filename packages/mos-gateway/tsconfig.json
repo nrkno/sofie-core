@@ -1,0 +1,6 @@
+{
+  "extends": "./config/tsconfig.base",
+  "exclude": [
+    "node_modules/**"
+  ]
+}

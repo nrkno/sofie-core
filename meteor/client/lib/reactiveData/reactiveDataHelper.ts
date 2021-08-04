@@ -3,7 +3,6 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import { Tracker } from 'meteor/tracker'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
-import { getHash } from '../../../lib/lib'
 
 export namespace ReactiveDataHelper {
 	const rVarCache: _.Dictionary<ReactiveVar<any>> = {}
@@ -35,7 +34,7 @@ export namespace ReactiveDataHelper {
 		computation: (...params) => ReactiveVar<T>,
 		...labels
 	): (...params) => ReactiveVar<T> {
-		return function(...params): ReactiveVar<T> {
+		return function (...params): ReactiveVar<T> {
 			const cId = cacheId(computation.name, ...labels, ...params)
 			if (rVarCache[cId]) {
 				return rVarCache[cId]
@@ -66,7 +65,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 
 	let result: ReturnType<T>
 	const fId = hashFncAndParams(functionName, params)
-	const parentComputation = Tracker.currentComputation
+	const _parentComputation = Tracker.currentComputation
 	if (isolatedAutorunsMem[fId] === undefined) {
 		const dep = new Tracker.Dependency()
 		dep.depend()
@@ -92,7 +91,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 			})
 			return computation
 		})
-		let gc = Meteor.setInterval(() => {
+		const gc = Meteor.setInterval(() => {
 			if (!dep.hasDependents()) {
 				Meteor.clearInterval(gc)
 				computation.stop()
@@ -170,11 +169,11 @@ export abstract class WithManagedTracker {
 		func: (comp: Tracker.Computation) => void,
 		options?: { onError: Function | undefined } | undefined
 	): Tracker.Computation {
-		return (Tracker.nonreactive(() => {
+		return Tracker.nonreactive(() => {
 			const comp = Tracker.autorun(func, options)
 			this._autoruns.push(comp)
 			return comp
-		}) as any) as Tracker.Computation
+		}) as any as Tracker.Computation
 	}
 }
 

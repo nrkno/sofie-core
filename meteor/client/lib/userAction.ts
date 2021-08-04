@@ -24,7 +24,6 @@ export enum UserAction {
 	PREPARE_FOR_BROADCAST,
 	RESET_RUNDOWN_PLAYLIST,
 	RELOAD_RUNDOWN_PLAYLIST_DATA,
-	TOGGLE_PART_ARGUMENT,
 	SET_NEXT,
 	SET_NEXT_SEGMENT,
 	TAKE_PIECE,
@@ -39,6 +38,7 @@ export enum UserAction {
 	ABORT_MEDIA_WORKFLOW,
 	PRIORITIZE_MEDIA_WORKFLOW,
 	ABORT_ALL_MEDIA_WORKFLOWS,
+	PACKAGE_MANAGER_RESTART_WORK,
 	GENERATE_RESTART_TOKEN,
 	RESTART_CORE,
 	USER_LOG_PLAYER_METHOD,
@@ -52,6 +52,8 @@ export enum UserAction {
 	MODIFY_BUCKET_ADLIB,
 	SWITCH_ROUTE_SET,
 	SAVE_TO_BUCKET,
+	RUNDOWN_ORDER_MOVE,
+	RUNDOWN_ORDER_RESET,
 }
 
 function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
@@ -90,8 +92,6 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Resetting Rundown Playlist')
 		case UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA:
 			return t('Reloading Rundown Playlist Data')
-		case UserAction.TOGGLE_PART_ARGUMENT:
-			return t('Toggling Part Argument')
 		case UserAction.SET_NEXT:
 			return t('Setting Next')
 		case UserAction.SET_NEXT_SEGMENT:
@@ -120,6 +120,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Prioritizing Media Workflow')
 		case UserAction.ABORT_ALL_MEDIA_WORKFLOWS:
 			return t('Aborting all Media Workflows')
+		case UserAction.PACKAGE_MANAGER_RESTART_WORK:
+			return t('Package Manager: Restart work')
 		case UserAction.GENERATE_RESTART_TOKEN:
 			return t('Generating restart token')
 		case UserAction.RESTART_CORE:
@@ -148,6 +150,10 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Saving AdLib to Bucket')
 		case UserAction.UNKNOWN_ACTION:
 			return t('Unknown action')
+		case UserAction.RUNDOWN_ORDER_MOVE:
+			return t('Reording Rundowns in Playlist')
+		case UserAction.RUNDOWN_ORDER_RESET:
+			return t('Resetting Playlist to default order')
 		default:
 			assertNever(userAction)
 	}
@@ -185,7 +191,7 @@ export function doUserAction<Result>(
 
 	// Display a progress message, if the method takes a long time to execute:
 	let timeoutMessage: Notification | null = null
-	let timeout = Meteor.setTimeout(() => {
+	const timeout = Meteor.setTimeout(() => {
 		timeoutMessage = new Notification(
 			undefined,
 			NoticeLevel.NOTIFICATION,
@@ -209,7 +215,7 @@ export function doUserAction<Result>(
 	}
 
 	fcn(eventContextForLog(userEvent))
-		.then((res: ClientAPI.ClientResponseSuccess<Result>) => {
+		.then((res: ClientAPI.ClientResponse<Result>) => {
 			clearMethodTimeout()
 
 			if (ClientAPI.isClientResponseError(res)) {

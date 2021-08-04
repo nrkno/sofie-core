@@ -81,19 +81,20 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 					// Check item status
 					if (piece && (piece.sourceLayer || layer) && studio) {
-						const { metadata, status, contentDuration, message } = checkPieceContentStatus(
+						const { metadata, packageInfos, status, contentDuration, message } = checkPieceContentStatus(
 							WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece!),
 							piece.sourceLayer || layer,
-							studio.settings
+							studio
 						)
 						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece!)) {
-							if (status !== piece.status || metadata) {
+							if (status !== piece.status || metadata || packageInfos) {
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || this.props.piece) as AdLibPieceUi
 								const pieceCopy: AdLibPieceUi = {
 									...(origPiece as AdLibPieceUi),
 									status: status,
 									contentMetaData: metadata,
+									contentPackageInfos: packageInfos,
 									message,
 								}
 
@@ -110,7 +111,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								}
 							}
 						} else {
-							if (status !== piece.instance.piece.status || metadata) {
+							if (status !== piece.instance.piece.status || metadata || packageInfos) {
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || piece) as PieceUi
 								const pieceCopy: PieceUi = {
@@ -123,6 +124,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 										},
 									},
 									contentMetaData: metadata,
+									contentPackageInfos: packageInfos,
 									message,
 								}
 
@@ -139,8 +141,6 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								}
 							}
 						}
-					} else if (piece && !(piece.sourceLayer || layer)) {
-						console.error(`Piece has no sourceLayer:`, piece)
 					}
 
 					this.forceUpdate()

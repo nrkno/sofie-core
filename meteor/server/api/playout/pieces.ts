@@ -1,7 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import * as _ from 'underscore'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { Piece } from '../../../lib/collections/Pieces'
 import {
 	literal,
@@ -27,17 +27,17 @@ import { TimelineObjectCoreExt, TSR, PieceLifespan } from '@sofie-automation/blu
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
-import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { prefixAllObjectIds } from './lib'
+import { RundownPlaylistActivationId, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { getPieceFirstObjectId } from '../../../lib/rundown/timeline'
+import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
@@ -75,7 +75,7 @@ export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[
 
 export function createPieceGroupFirstObject(
 	playlistId: RundownPlaylistId,
-	pieceInstance: DeepReadonly<PieceInstance>,
+	pieceInstance: ReadonlyDeep<PieceInstance>,
 	pieceGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract & OnGenerateTimelineObjExt {
@@ -113,9 +113,9 @@ function resolvePieceTimeline(
 	const tlResolved = Resolver.resolveTimeline(objs, { time: baseTime })
 	const resolvedPieces: Array<ResolvedPieceInstance> = []
 
-	let unresolvedIds: string[] = []
+	const unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
-		const obj = (obj0 as any) as TimelineObjRundown
+		const obj = obj0 as any as TimelineObjRundown
 		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
 
 		if (!id) return
@@ -192,8 +192,8 @@ function resolvePieceTimeline(
 }
 
 export function getResolvedPieces(
-	cache: CacheForRundownPlaylist,
-	showStyleBase: ShowStyleBase,
+	cache: CacheForPlayout,
+	showStyleBase: ReadonlyDeep<ShowStyleBase>,
 	partInstance: PartInstance
 ): ResolvedPieceInstance[] {
 	const span = profiler.startSpan('getResolvedPieces')
@@ -205,7 +205,11 @@ export function getResolvedPieces(
 	const partStarted = partInstance.timings?.startedPlayback
 	const nowInPart = now - (partStarted ?? 0)
 
-	const preprocessedPieces = processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)
+	const preprocessedPieces: ReadonlyDeep<PieceInstanceWithTimings[]> = processAndPrunePieceInstanceTimings(
+		showStyleBase,
+		pieceInstances,
+		nowInPart
+	)
 
 	const objs = flatten(
 		preprocessedPieces.map((piece) => {
@@ -235,8 +239,7 @@ export function getResolvedPieces(
 	return resolvedPieces
 }
 export function getResolvedPiecesFromFullTimeline(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
+	cache: CacheForPlayout,
 	allObjs: TimelineObjGeneric[]
 ): { pieces: ResolvedPieceInstance[]; time: number } {
 	const span = profiler.startSpan('getResolvedPiecesFromFullTimeline')
@@ -246,12 +249,11 @@ export function getResolvedPiecesFromFullTimeline(
 
 	const now = getCurrentTime()
 
-	const partInstanceIds = _.compact([playlist.previousPartInstanceId, playlist.currentPartInstanceId])
-	const pieceInstances: PieceInstance[] = cache.PieceInstances.findFetch(
-		(p) => partInstanceIds.indexOf(p.partInstanceId) !== -1
-	)
+	const playlist = cache.Playlist.doc
+	const partInstanceIds = new Set(_.compact([playlist.previousPartInstanceId, playlist.currentPartInstanceId]))
+	const pieceInstances: PieceInstance[] = cache.PieceInstances.findFetch((p) => partInstanceIds.has(p.partInstanceId))
 
-	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist) // todo: should these be passed as a parameter from getTimelineRundown?
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache) // todo: should these be passed as a parameter from getTimelineRundown?
 
 	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
 		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))
@@ -304,7 +306,7 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 	})
 
 	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {
-		let contentObjects = newAdLibPiece.content.timelineObjects
+		const contentObjects = newAdLibPiece.content.timelineObjects
 		const objs = prefixAllObjectIds(
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
@@ -323,6 +325,7 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 }
 
 export function convertAdLibToPieceInstance(
+	playlistActivationId: RundownPlaylistActivationId,
 	adLibPiece: AdLibPiece | Piece | BucketAdLib | PieceInstancePiece,
 	partInstance: PartInstance,
 	queue: boolean
@@ -340,6 +343,7 @@ export function convertAdLibToPieceInstance(
 		_id: protectString(`${partInstance._id}_${newPieceId}`),
 		rundownId: partInstance.rundownId,
 		partInstanceId: partInstance._id,
+		playlistActivationId,
 		adLibSourceId: adLibPiece._id,
 		dynamicallyInserted: queue ? undefined : getCurrentTime(),
 		piece: literal<PieceInstancePiece>({
@@ -356,7 +360,7 @@ export function convertAdLibToPieceInstance(
 	setupPieceInstanceInfiniteProperties(newPieceInstance)
 
 	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-		let contentObjects = newPieceInstance.piece.content.timelineObjects
+		const contentObjects = newPieceInstance.piece.content.timelineObjects
 		const objs = prefixAllObjectIds(
 			_.compact(
 				_.map(contentObjects, (obj) => {

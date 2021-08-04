@@ -58,7 +58,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 	refreshChecked() {
 		if (this.props.value && _.isArray(this.props.value)) {
 			const checkedValues: _.Dictionary<boolean> = {}
-			_.forEach(this.props.value, (value, index) => {
+			_.forEach(this.props.value, (value) => {
 				checkedValues[value] = true
 			})
 
@@ -189,13 +189,15 @@ export class MultiSelect extends React.Component<IProps, IState> {
 								this.props.className
 							)}
 							tabIndex={-1}
-							onBlur={this.onBlur}>
+							onBlur={this.onBlur}
+						>
 							<div
 								className={ClassNames('expco-title', {
 									placeholder: !summary,
 								})}
 								onClick={this.toggleExpco}
-								title={summary || this.props.placeholder || ''}>
+								title={summary || this.props.placeholder || ''}
+							>
 								{summary || this.props.placeholder || ''}
 							</div>
 							<a className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
@@ -217,7 +219,8 @@ export class MultiSelect extends React.Component<IProps, IState> {
 								resize: this.state.expanded,
 							},
 						},
-					]}>
+					]}
+				>
 					{({ ref, style, placement, update }) => {
 						this.setUpdate(update)
 						return (
@@ -233,7 +236,8 @@ export class MultiSelect extends React.Component<IProps, IState> {
 									this.props.className
 								)}
 								tabIndex={-1}
-								onBlur={this.onBlur}>
+								onBlur={this.onBlur}
+							>
 								{this.state.expanded && (
 									<div className="expco-body bd">
 										{_.values(

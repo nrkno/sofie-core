@@ -1,13 +1,11 @@
-import { clone } from 'underscore'
-import { RundownContext, NotesContext } from './context'
-import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { ContextInfo, RundownContext } from './context'
 import {
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
-	SyncIngestUpdateToPartInstanceContext as ISyncIngestUpdateToPartInstanceContext,
+	ISyncIngestUpdateToPartInstanceContext,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
@@ -24,42 +22,84 @@ import {
 	protectString,
 	protectStringArray,
 	unprotectStringArray,
-	normalizeArray,
 	normalizeArrayToMap,
+	clone,
 } from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { DbCacheWriteCollection } from '../../../DatabaseCache'
+import { DbCacheWriteCollection } from '../../../cache/CacheCollection'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
+import { INoteBase, NoteType } from '../../../../lib/api/notes'
+import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
+import { ReadonlyDeep } from 'type-fest'
+import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../../lib/collections/Studios'
+import { CacheForPlayout } from '../../playout/cache'
 
-export class SyncIngestUpdateToPartInstanceContext extends RundownContext
-	implements ISyncIngestUpdateToPartInstanceContext {
+export class SyncIngestUpdateToPartInstanceContext
+	extends RundownContext
+	implements ISyncIngestUpdateToPartInstanceContext
+{
 	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
+	public readonly notes: INoteBase[] = []
+	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(
-		rundown: Rundown,
-		cache: ReadOnlyCacheForRundownPlaylist,
-		notesContext: NotesContext,
+		contextInfo: ContextInfo,
+		private readonly playlistActivationId: RundownPlaylistActivationId,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>,
 		private partInstance: PartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'current' | 'next'
 	) {
-		super(rundown, cache, notesContext)
+		super(contextInfo, studio, showStyleCompound, rundown)
 
 		// Create temporary cache databases
-		this._pieceInstanceCache = new DbCacheWriteCollection(PieceInstances)
-		this._pieceInstanceCache.fillWithDataFromArray(pieceInstances)
-
-		this._partInstanceCache = new DbCacheWriteCollection(PartInstances)
-		this._partInstanceCache.fillWithDataFromArray([partInstance])
+		this._pieceInstanceCache = DbCacheWriteCollection.createFromArray(PieceInstances, pieceInstances)
+		this._partInstanceCache = DbCacheWriteCollection.createFromArray(PartInstances, [partInstance])
 
 		this._proposedPieceInstances = normalizeArrayToMap(proposedPieceInstances, '_id')
 	}
 
-	applyChangesToCache(cache: CacheForRundownPlaylist) {
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+
+	applyChangesToCache(cache: CacheForPlayout) {
+		if (this._partInstanceCache.isModified() || this._pieceInstanceCache.isModified()) {
+			this.logInfo(`Found ingest changes to apply to PartInstance`)
+		} else {
+			this.logInfo(`No ingest changes to apply to PartInstance`)
+		}
+
 		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
 		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
 	}
@@ -84,7 +124,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 							lifespan: proposedPieceInstance.piece.lifespan,
 						},
 					],
-					this.getShowStyleBase().blueprintId,
+					this.showStyleCompound.blueprintId,
 					this.partInstance.rundownId,
 					this.partInstance.segmentId,
 					this.partInstance.part._id,
@@ -109,14 +149,14 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		const piece = postProcessPieces(
 			this,
 			[trimmedPiece],
-			this.getShowStyleBase().blueprintId,
+			this.showStyleCompound.blueprintId,
 			this.partInstance.rundownId,
 			this.partInstance.segmentId,
 			this.partInstance.part._id,
 			this.playStatus === 'current',
 			true
 		)[0]
-		const newPieceInstance = wrapPieceToInstance(piece, this.partInstance._id)
+		const newPieceInstance = wrapPieceToInstance(piece, this.playlistActivationId, this.partInstance._id)
 
 		// Ensure the infinite-ness is setup correctly. We assume any piece inserted starts in the current part
 		setupPieceInstanceInfiniteProperties(newPieceInstance)
@@ -150,7 +190,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 			updatedPiece.content.timelineObjects = postProcessTimelineObjects(
 				this,
 				pieceInstance.piece._id,
-				this.getShowStyleBase().blueprintId,
+				this.showStyleCompound.blueprintId,
 				updatedPiece.content.timelineObjects,
 				false
 			)

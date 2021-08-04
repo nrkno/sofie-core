@@ -2,7 +2,6 @@ import * as React from 'react'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint, Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -73,8 +72,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					uploadFileKey: Date.now(),
 				})
 
-				let uploadFileContents = (e2.target as any).result
-				let blueprint = this.props.blueprint
+				const uploadFileContents = (e2.target as any).result
+				const blueprint = this.props.blueprint
 
 				// First attempt
 				doModalDialog({
@@ -242,7 +241,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<p className="mod mhn mvs">
 								<button
 									className="btn btn-primary"
-									onClick={() => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
+									onClick={() => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}
+								>
 									{this.props.assignedSystem ? t('Unassign') : t('Assign')}
 								</button>
 							</p>
@@ -276,7 +276,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									obj={blueprint}
 									type="text"
 									collection={Blueprints}
-									className="mdinput"></EditAttribute>
+									className="mdinput"
+								></EditAttribute>
 								<span className="mdfx"></span>
 							</div>
 						</label>
@@ -308,13 +309,27 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								</p>
 							</div>
 						) : null}
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								{t('Disable version check')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="disableVersionChecks"
+									obj={blueprint}
+									type="checkbox"
+									collection={Blueprints}
+									className="input"
+								/>
+							</label>
+						</div>
 
 						<div className="mod mvs mhn">
 							<UploadButton
 								className="btn btn-primary"
 								accept="text/javascript,.js"
 								onChange={(e) => this.onUploadFile(e)}
-								key={this.state.uploadFileKey}>
+								key={this.state.uploadFileKey}
+							>
 								<FontAwesomeIcon icon={faUpload} />
 								<span>{t('Upload Blueprints')}</span>
 							</UploadButton>

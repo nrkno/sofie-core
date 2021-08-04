@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
@@ -22,6 +21,13 @@ export enum RundownLayoutType {
 	DASHBOARD_LAYOUT = 'dashboard_layout',
 	RUNDOWN_HEADER_LAYOUT = 'rundown_header_layout',
 	MINI_SHELF_LAYOUT = 'mini_shelf_layout',
+}
+
+export enum CustomizableRegions {
+	RundownView = 'rundown_view_layouts',
+	Shelf = 'shelf_layouts',
+	MiniShelf = 'mini_shelf_layouts',
+	RundownHeader = 'rundown_header_layouts',
 }
 
 /**
@@ -174,6 +180,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	hide?: boolean
 	displayTakeButtons?: boolean
 	queueAllAdlibs?: boolean
+	toggleOnSingleClick?: boolean
 	/**
 	 * character or sequence that will be replaced with line break in buttons
 	 */
@@ -204,27 +211,34 @@ export interface RundownLayoutBase {
 	userId?: UserId
 	name: string
 	type: RundownLayoutType
-	filters: RundownLayoutElementBase[]
 	icon: string
 	iconColor: string
+	/* Customizable region that the layout modifies. */
+	regionId: CustomizableRegions
+}
+
+export interface RundownLayoutWithFilters extends RundownLayoutBase {
+	filters: RundownLayoutElementBase[]
+}
+
+export interface RundownViewLayout extends RundownLayoutBase {
+	type: RundownLayoutType.RUNDOWN_VIEW_LAYOUT
+	expectedEndText: string
+	/** Expose as a layout that can be selected by the user in the lobby view */
+	exposeAsSelectableLayout: boolean
+	shelfLayout: RundownLayoutId
+	miniShelfLayout: RundownLayoutId
+	rundownHeaderLayout: RundownLayoutId
+}
+
+export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
+	exposeAsStandalone: boolean
 	openByDefault: boolean
 	startingHeight?: number
 	showBuckets: boolean
 	disableContextMenu: boolean
 	/* Customizable region that the layout modifies. */
 	regionId: string
-}
-
-export interface RundownViewLayout extends RundownLayoutBase {
-	type: RundownLayoutType.RUNDOWN_VIEW_LAYOUT
-	expectedEndText: string
-}
-
-export interface RundownLayoutShelfBase extends RundownLayoutBase {
-	exposeAsStandalone: boolean
-	exposeAsShelf: boolean
-	openByDefault: boolean
-	startingHeight?: number
 }
 
 export interface RundownLayout extends RundownLayoutShelfBase {
@@ -235,6 +249,12 @@ export interface RundownLayoutRundownHeader extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_HEADER_LAYOUT
 	expectedEndText: string
 	nextBreakText: string
+	/** When true, hide the Planned End timer when there is a rundown marked as a break in the future */
+	hideExpectedEndBeforeBreak: boolean
+	/** When a rundown is marked as a break, show the Next Break timing */
+	showNextBreakTiming: boolean
+	/** If true, don't treat the last rundown as a break even if it's marked as one */
+	lastRundownIsNotBreak: boolean
 }
 
 export enum ActionButtonType {
@@ -266,13 +286,10 @@ export interface DashboardLayoutActionButton {
 
 export interface DashboardLayout extends RundownLayoutShelfBase {
 	type: RundownLayoutType.DASHBOARD_LAYOUT
-	filters: RundownLayoutElementBase[]
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase> = createMongoCollection<
-	RundownLayoutBase
->('rundownLayouts')
+export const RundownLayouts = createMongoCollection<RundownLayoutBase, RundownLayoutBase>('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
 
 // addIndex(RundownLayouts, {

@@ -10,16 +10,17 @@ import {
 	RundownLayoutExternalFrame,
 	RundownLayoutAdLibRegion,
 	PieceDisplayStyle,
-	RundownLayoutKeyboardPreview,
 	RundownLayoutPieceCountdown,
-	RundownLayoutNextInfo,
 	RundownViewLayout,
 	RundownLayoutRundownHeader,
 	RundownLayoutShelfBase,
+	CustomizableRegions,
+	RundownLayoutWithFilters,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
 import { literal } from '../lib'
+import { TFunction } from 'i18next'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout(
@@ -36,8 +37,8 @@ export enum RundownLayoutsAPIMethods {
 	'createRundownLayout' = 'rundownLayout.createRundownLayout',
 }
 
-export interface LayoutDescriptor<T extends RundownLayoutBase> {
-	supportedElements: RundownLayoutElementType[]
+export interface LayoutDescriptor {
+	supportedFilters: RundownLayoutElementType[]
 	filtersTitle?: string // e.g. tabs/panels
 }
 
@@ -51,96 +52,80 @@ export interface CustomizableRegionLayout {
 	_id: string
 	type: RundownLayoutType
 	filtersTitle?: string
-	supportedElements: RundownLayoutElementType[]
+	supportedFilters: RundownLayoutElementType[]
 }
 
 class RundownLayoutsRegistry {
-	private shelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutShelfBase>> = new Map()
-	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownViewLayout>> = new Map()
-	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutShelfBase>> = new Map()
-	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor<RundownLayoutRundownHeader>> = new Map()
+	private shelfLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private rundownViewLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private miniShelfLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
+	private rundownHeaderLayouts: Map<RundownLayoutType, LayoutDescriptor> = new Map()
 
-	public RegisterShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutShelfBase>) {
+	public registerShelfLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.shelfLayouts.set(id, description)
 	}
 
-	public RegisterRundownViewLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public registerRundownViewLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.rundownViewLayouts.set(id, description)
 	}
 
-	public RegisterMiniShelfLayout(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public registerMiniShelfLayout(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.miniShelfLayouts.set(id, description)
 	}
 
-	public RegisterRundownHeaderLayouts(id: RundownLayoutType, description: LayoutDescriptor<RundownLayoutBase>) {
+	public registerRundownHeaderLayouts(id: RundownLayoutType, description: LayoutDescriptor) {
 		this.rundownHeaderLayouts.set(id, description)
 	}
 
-	public IsShelfLayout(id: RundownLayoutType) {
-		return this.shelfLayouts.has(id)
+	public isShelfLayout(regionId: CustomizableRegions) {
+		return regionId === CustomizableRegions.Shelf
 	}
 
-	public IsRudownViewLayout(id: RundownLayoutType) {
-		return this.rundownViewLayouts.has(id)
+	public isRudownViewLayout(regionId: CustomizableRegions) {
+		return regionId === CustomizableRegions.RundownView
 	}
 
-	public IsMiniShelfLayout(id: RundownLayoutType) {
-		return this.miniShelfLayouts.has(id)
+	public isMiniShelfLayout(regionId: CustomizableRegions) {
+		return regionId === CustomizableRegions.MiniShelf
 	}
 
-	public IsRundownHeaderLayout(id: RundownLayoutType) {
-		return this.rundownHeaderLayouts.has(id)
+	public isRundownHeaderLayout(regionId: CustomizableRegions) {
+		return regionId === CustomizableRegions.RundownHeader
 	}
 
-	public GetSettingsManifest(): CustomizableRegionSettingsManifest[] {
+	private wrapToCustomizableRegionLayout(
+		layouts: Map<RundownLayoutType, LayoutDescriptor>
+	): CustomizableRegionLayout[] {
+		return Array.from(layouts.entries()).map(([layoutType, descriptor]) => {
+			return literal<CustomizableRegionLayout>({
+				_id: layoutType,
+				type: layoutType,
+				...descriptor,
+			})
+		})
+	}
+
+	public GetSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
 		return [
 			{
-				_id: 'shelf_layouts',
-				title: 'Shelf Layouts',
-				layouts: Array.from(this.shelfLayouts.entries()).map(([layoutType, descriptor]) => {
-					return literal<CustomizableRegionLayout>({
-						_id: layoutType,
-						type: layoutType,
-						filtersTitle: descriptor.filtersTitle,
-						supportedElements: descriptor.supportedElements,
-					})
-				}),
+				_id: CustomizableRegions.RundownView,
+				title: t('Rundown View Layouts'),
+				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts),
 			},
 			{
-				_id: 'rundown_view_layouts',
-				title: 'Rundown View Layouts',
-				layouts: Array.from(this.rundownViewLayouts.entries()).map(([layoutType, descriptor]) => {
-					return literal<CustomizableRegionLayout>({
-						_id: layoutType,
-						type: layoutType,
-						filtersTitle: descriptor.filtersTitle,
-						supportedElements: descriptor.supportedElements,
-					})
-				}),
+				_id: CustomizableRegions.Shelf,
+				title: t('Shelf Layouts'),
+				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts),
 			},
 			{
-				_id: 'mini_shelf_layouts',
-				title: 'Mini Shelf Layouts',
-				layouts: Array.from(this.miniShelfLayouts.entries()).map(([layoutType, descriptor]) => {
-					return literal<CustomizableRegionLayout>({
-						_id: layoutType,
-						type: layoutType,
-						filtersTitle: descriptor.filtersTitle,
-						supportedElements: descriptor.supportedElements,
-					})
-				}),
+				_id: CustomizableRegions.MiniShelf,
+				title: t('Mini Shelf Layouts'),
+				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts),
 			},
 			{
-				_id: 'rundown_header_layouts',
-				title: 'Rundown Header Layouts',
-				layouts: Array.from(this.rundownHeaderLayouts.entries()).map(([layoutType, descriptor]) => {
-					return literal<CustomizableRegionLayout>({
-						_id: layoutType,
-						type: layoutType,
-						filtersTitle: descriptor.filtersTitle,
-						supportedElements: descriptor.supportedElements,
-					})
-				}),
+				_id: CustomizableRegions.RundownHeader,
+				title: t('Rundown Header Layouts'),
+				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts),
 			},
 		]
 	}
@@ -148,52 +133,59 @@ class RundownLayoutsRegistry {
 
 export namespace RundownLayoutsAPI {
 	const registry = new RundownLayoutsRegistry()
-	registry.RegisterShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
+	registry.registerShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
 		filtersTitle: 'Panels',
-		supportedElements: [
+		supportedFilters: [
 			RundownLayoutElementType.ADLIB_REGION,
 			RundownLayoutElementType.EXTERNAL_FRAME,
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 		],
 	})
-	registry.RegisterShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
+	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
 		filtersTitle: 'Tabs',
-		supportedElements: [
+		supportedFilters: [
 			RundownLayoutElementType.ADLIB_REGION,
 			RundownLayoutElementType.EXTERNAL_FRAME,
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 		],
 	})
-	registry.RegisterMiniShelfLayout(RundownLayoutType.MINI_SHELF_LAYOUT, {
-		supportedElements: [RundownLayoutElementType.FILTER],
+	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
+		supportedFilters: [],
 	})
-	registry.RegisterRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
-		supportedElements: [],
+	registry.registerMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
+		supportedFilters: [],
 	})
-	registry.RegisterRundownHeaderLayouts(RundownLayoutType.RUNDOWN_HEADER_LAYOUT, {
-		supportedElements: [],
+	registry.registerRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
+		supportedFilters: [],
+	})
+	registry.registerRundownHeaderLayouts(RundownLayoutType.RUNDOWN_HEADER_LAYOUT, {
+		supportedFilters: [],
 	})
 
-	export function GetSettingsManifest(): CustomizableRegionSettingsManifest[] {
-		return registry.GetSettingsManifest()
+	export function getSettingsManifest(t: TFunction): CustomizableRegionSettingsManifest[] {
+		return registry.GetSettingsManifest(t)
 	}
 
-	export function IsLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
-		return registry.IsShelfLayout(layout.type)
+	export function isLayoutWithFilters(layout: RundownLayoutBase): layout is RundownLayoutWithFilters {
+		return Object.keys(layout).includes('filters')
 	}
 
-	export function IsLayoutForRundownView(layout: RundownLayoutBase): layout is RundownLayoutBase {
-		return registry.IsRudownViewLayout(layout.type)
+	export function isLayoutForShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
+		return registry.isShelfLayout(layout.regionId)
 	}
 
-	export function IsLayoutForMiniShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
-		return registry.IsMiniShelfLayout(layout.type)
+	export function isLayoutForRundownView(layout: RundownLayoutBase): layout is RundownViewLayout {
+		return registry.isRudownViewLayout(layout.regionId)
 	}
 
-	export function IsLayoutForRundownHeader(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
-		return registry.IsRundownHeaderLayout(layout.type)
+	export function isLayoutForMiniShelf(layout: RundownLayoutBase): layout is RundownLayoutShelfBase {
+		return registry.isMiniShelfLayout(layout.regionId)
+	}
+
+	export function isLayoutForRundownHeader(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
+		return registry.isRundownHeaderLayout(layout.regionId)
 	}
 
 	export function isRundownViewLayout(layout: RundownLayoutBase): layout is RundownViewLayout {
@@ -212,10 +204,6 @@ export namespace RundownLayoutsAPI {
 		return layout.type === RundownLayoutType.RUNDOWN_HEADER_LAYOUT
 	}
 
-	export function isMiniShelfLayout(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
-		return layout.type === RundownLayoutType.MINI_SHELF_LAYOUT
-	}
-
 	export function isFilter(element: RundownLayoutElementBase): element is RundownLayoutFilterBase {
 		return element.type === undefined || element.type === RundownLayoutElementType.FILTER
 	}
@@ -228,16 +216,8 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.ADLIB_REGION
 	}
 
-	export function isKeyboardMap(element: RundownLayoutElementBase): element is RundownLayoutKeyboardPreview {
-		return element.type === RundownLayoutElementType.KEYBOARD_PREVIEW
-	}
-
 	export function isPieceCountdown(element: RundownLayoutElementBase): element is RundownLayoutPieceCountdown {
 		return element.type === RundownLayoutElementType.PIECE_COUNTDOWN
-	}
-
-	export function isNextInfo(element: RundownLayoutElementBase): element is RundownLayoutNextInfo {
-		return element.type === RundownLayoutElementType.NEXT_INFO
 	}
 
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {
@@ -252,9 +232,9 @@ export namespace RundownLayoutsAPI {
 			displayStyle: PieceDisplayStyle.BUTTONS,
 			currentSegment: false,
 			showThumbnailsInList: false,
-			hideDuplicates: false,
 			nextInCurrentPart: false,
 			oneNextPerSourceLayer: false,
+			hideDuplicates: false,
 		}
 	}
 }

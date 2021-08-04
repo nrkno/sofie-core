@@ -61,7 +61,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 			}
 		}
 		deviceTypeString() {
-			let t = this.props.t
+			const t = this.props.t
 
 			switch (this.props.device.type) {
 				case PeripheralDeviceAPI.DeviceType.MOS:
@@ -75,7 +75,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 			}
 		}
 		deviceVersions() {
-			let versions = this.props.device.versions
+			const versions = this.props.device.versions
 			if (versions) {
 				return _.map(versions, (version, packageName) => {
 					return packageName + ': ' + version
@@ -216,7 +216,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 								!this.props.hasChildren &&
 								this.props.hasChildren !== undefined
 							}
-							placement="right">
+							placement="right"
+						>
 							{getAllowConfigure() ? (
 								<div className="value">
 									<Link to={'/settings/peripheralDevice/' + this.props.device._id}>{this.props.device.name}</Link>
@@ -249,7 +250,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 											e.preventDefault()
 											e.stopPropagation()
 											this.onRestartCasparCG(this.props.device)
-										}}>
+										}}
+									>
 										{t('Restart')}
 										{/** IDK what this does, but it doesn't seem to make a lot of sense: JSON.stringify(this.props.device.settings) */}
 									</button>
@@ -265,7 +267,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 											e.preventDefault()
 											e.stopPropagation()
 											this.onFormatHyperdeck(this.props.device)
-										}}>
+										}}
+									>
 										{t('Format disks')}
 									</button>
 								</React.Fragment>
@@ -280,7 +283,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 											e.preventDefault()
 											e.stopPropagation()
 											this.onRestartQuantel(this.props.device)
-										}}>
+										}}
+									>
 										{t('Restart Quantel Gateway')}
 									</button>
 								</React.Fragment>
@@ -295,7 +299,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 										e.preventDefault()
 										e.stopPropagation()
 										this.onToggleIgnore(this.props.device)
-									}}>
+									}}
+								>
 									<FontAwesomeIcon icon={faEye} />
 								</button>
 							) : null}
@@ -320,7 +325,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 												MeteorCall.peripheralDevice.removePeripheralDevice(this.props.device._id).catch(console.error)
 											},
 										})
-									}}>
+									}}
+								>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							) : null}
@@ -365,7 +371,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 														})
 												},
 											})
-										}}>
+										}}
+									>
 										{t('Restart')}
 									</button>
 								</React.Fragment>
@@ -412,7 +419,8 @@ export const CoreItem = reacti18next.withTranslation()(
 										'device-status--warning': this.props.systemStatus.status === 'WARNING',
 										'device-status--fatal': this.props.systemStatus.status === 'FAIL',
 									}
-							)}>
+							)}
+						>
 							<div className="value">
 								<span className="pill device-status__label">
 									<a
@@ -421,7 +429,8 @@ export const CoreItem = reacti18next.withTranslation()(
 											this.props.systemStatus && this.props.systemStatus._internal.messages
 												? this.props.systemStatus._internal.messages.join('\n')
 												: undefined
-										}>
+										}
+									>
 										{this.props.systemStatus && this.props.systemStatus.status}
 									</a>
 								</span>
@@ -513,7 +522,8 @@ export const CoreItem = reacti18next.withTranslation()(
 												)
 											},
 										})
-									}}>
+									}}
+								>
 									{t('Restart')}
 								</button>
 							</div>
@@ -602,12 +612,12 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		}
 
 		renderPeripheralDevices() {
-			let devices: Array<DeviceInHierarchy> = []
-			let refs = {}
-			let devicesToAdd = {}
+			const devices: Array<DeviceInHierarchy> = []
+			const refs = {}
+			const devicesToAdd = {}
 			// First, add all as references:
 			_.each(this.props.devices, (device) => {
-				let d: DeviceInHierarchy = {
+				const d: DeviceInHierarchy = {
 					device: device,
 					children: [],
 				}
@@ -617,7 +627,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			// Then, map and add devices:
 			_.each(devicesToAdd, (d: DeviceInHierarchy) => {
 				if (d.device.parentDeviceId) {
-					let parent: DeviceInHierarchy = refs[unprotectString(d.device.parentDeviceId)]
+					const parent: DeviceInHierarchy = refs[unprotectString(d.device.parentDeviceId)]
 					if (parent) {
 						parent.children.push(d)
 					} else {
@@ -630,7 +640,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			})
 
 			const getDeviceContent = (d: DeviceInHierarchy, toplevel: boolean): JSX.Element => {
-				let content: JSX.Element[] = [
+				const content: JSX.Element[] = [
 					<DeviceItem
 						key={'device' + d.device._id}
 						device={d.device}
@@ -639,7 +649,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 					/>,
 				]
 				if (d.children.length) {
-					let children: JSX.Element[] = []
+					const children: JSX.Element[] = []
 					_.each(d.children, (child: DeviceInHierarchy) =>
 						children.push(
 							<li key={'childdevice' + child.device._id} className="child-device-li">
@@ -705,7 +715,7 @@ export const PeripheralDeviceStatus = reacti18next.withTranslation()(
 				: t('Not Connected')
 		}
 		statusMessages() {
-			let messages = ((this.props.device || {}).status || {}).messages || []
+			const messages = ((this.props.device || {}).status || {}).messages || []
 			return messages.length ? '"' + messages.join(', ') + '"' : ''
 		}
 		render() {

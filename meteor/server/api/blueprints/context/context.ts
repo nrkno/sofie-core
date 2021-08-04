@@ -1,6 +1,3 @@
-import * as _ from 'underscore'
-import * as objectPath from 'object-path'
-import { Meteor } from 'meteor/meteor'
 import {
 	getHash,
 	formatDateAsTimecode,
@@ -10,39 +7,37 @@ import {
 	unprotectObjectArray,
 	protectString,
 	getCurrentTime,
-	waitForPromise,
 	clone,
 	omit,
-	getRandomId,
 	unpartialString,
-	unprotectStringArray,
+	protectStringArray,
+	unDeepString,
+	waitForPromise,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
-import { check, Match } from '../../../../lib/check'
+import { check } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
-	NotesContext as INotesContext,
-	ShowStyleContext as IShowStyleContext,
-	RundownContext as IRundownContext,
-	SegmentContext as ISegmentContext,
-	EventContext as IEventContext,
-	AsRunEventContext as IAsRunEventContext,
-	PartEventContext as IPartEventContext,
-	TimelineEventContext as ITimelineEventContext,
-	IStudioConfigContext,
 	IStudioContext,
+	IStudioUserContext,
 	BlueprintMappings,
 	IBlueprintSegmentDB,
-	IngestPart,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
-	IBlueprintPartDB,
 	IBlueprintRundownDB,
-	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
-	ExtendedIngestRundown,
-	OnGenerateTimelineObj,
+	IShowStyleContext,
+	IRundownContext,
+	IEventContext,
+	ISegmentUserContext,
+	IPartEventContext,
+	ITimelineEventContext,
+	IRundownDataChangedEventContext,
+	IRundownTimingEventContext,
+	PackageInfo,
+	IStudioBaselineContext,
+	IShowStyleUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId, Studios } from '../../../../lib/collections/Studios'
 import {
@@ -53,35 +48,51 @@ import {
 	resetShowStyleBlueprintConfig,
 } from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
-import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
+import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { NoteType, INoteBase } from '../../../../lib/api/notes'
-import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
-import { RundownPlaylistId, ABSessionInfo } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, ABSessionInfo, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	PieceInstances,
-	unprotectPieceInstance,
 	protectPieceInstance,
+	unprotectPieceInstanceArray,
 } from '../../../../lib/collections/PieceInstances'
-import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
+import {
+	unprotectPartInstance,
+	PartInstance,
+	PartInstances,
+	protectPartInstance,
+	unprotectPartInstanceArray,
+} from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
-import { extendIngestRundownCore } from '../../ingest/lib'
-import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { DeepReadonly } from 'utility-types'
+import { ReadonlyDeep } from 'type-fest'
 import { Random } from 'meteor/random'
 import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
-import { MediaObjects } from '../../../../lib/collections/MediaObjects'
+import _ from 'underscore'
+import { Segments } from '../../../../lib/collections/Segments'
+import { Meteor } from 'meteor/meteor'
+import { WatchedPackagesHelper } from './watchedPackages'
+export interface ContextInfo {
+	/** Short name for the context (eg the blueprint function being called) */
+	name: string
+	/** Full identifier info for the context. Should be able to identify the rundown/studio/blueprint etc being executed */
+	identifier: string
+}
+export interface UserContextInfo extends ContextInfo {
+	tempSendUserNotesIntoBlackHole?: boolean // TODO-CONTEXT remove this
+}
 
 /** Common */
 
 export class CommonContext implements ICommonContext {
-	private _idPrefix: string = ''
+	private readonly _contextIdentifier: string
+	private readonly _contextName: string
+
 	private hashI = 0
 	private hashed: { [hash: string]: string } = {}
 
-	constructor(idPrefix: string) {
-		this._idPrefix = idPrefix
+	constructor(info: ContextInfo) {
+		this._contextIdentifier = info.identifier
+		this._contextName = info.name
 	}
 	getHashId(str: string, isNotUnique?: boolean) {
 		if (!str) str = 'hash' + this.hashI++
@@ -90,211 +101,218 @@ export class CommonContext implements ICommonContext {
 			str = str + '_' + this.hashI++
 		}
 
-		const id = getHash(this._idPrefix + '_' + str.toString())
+		const id = getHash(this._contextIdentifier + '_' + str.toString())
 		this.hashed[id] = str
 		return id
 	}
 	unhashId(hash: string): string {
 		return this.hashed[hash] || hash
 	}
-}
 
-export interface RawNote extends INoteBase {
-	trackingId: string | undefined
-}
-
-export class NotesContext extends CommonContext implements INotesContext {
-	private readonly _contextName: string
-	private readonly _contextIdentifier: string
-	private _handleNotesExternally: boolean
-
-	private readonly savedNotes: Array<RawNote> = []
-
-	constructor(contextName: string, contextIdentifier: string, handleNotesExternally: boolean) {
-		super(contextIdentifier)
-		this._contextName = contextName
-		this._contextIdentifier = contextIdentifier
-		/** If the notes will be handled externally (using .getNotes()), set this to true */
-		this._handleNotesExternally = handleNotesExternally
+	logDebug(message: string): void {
+		logger.debug(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
-	/** Throw Error and display message to the user in the GUI */
-	error(message: string, trackingId?: string) {
-		check(message, String)
-		logger.error('Error from blueprint: ' + message)
-		this._pushNote(NoteType.ERROR, message, trackingId)
-		throw new Meteor.Error(500, message)
+	logInfo(message: string): void {
+		logger.info(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
-	/** Save note, which will be displayed to the user in the GUI */
-	warning(message: string, trackingId?: string) {
-		check(message, String)
-		this._pushNote(NoteType.WARNING, message, trackingId)
+	logWarning(message: string): void {
+		logger.warn(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
-	getNotes(): RawNote[] {
-		return this.savedNotes
-	}
-	get handleNotesExternally(): boolean {
-		return this._handleNotesExternally
-	}
-	set handleNotesExternally(value: boolean) {
-		this._handleNotesExternally = value
-	}
-	protected _pushNote(type: NoteType, message: string, trackingId: string | undefined) {
-		if (this._handleNotesExternally) {
-			this.savedNotes.push({
-				type: type,
-				message: message,
-				trackingId: trackingId,
-			})
-		} else {
-			if (type === NoteType.WARNING) {
-				logger.warn(
-					`Warning from "${this._contextName}"${trackingId ? `(${trackingId})` : ''}: "${message}"\n(${
-						this._contextIdentifier
-					})`
-				)
-			} else {
-				logger.error(
-					`Error from "${this._contextName}"${trackingId ? `(${trackingId})` : ''}: "${message}"\n(${
-						this._contextIdentifier
-					})`
-				)
-			}
-		}
+	logError(message: string): void {
+		logger.error(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
 }
 
 /** Studio */
 
-export class StudioConfigContext implements IStudioConfigContext {
-	protected studio: Studio
-	constructor(studio: Studio) {
+export class StudioContext extends CommonContext implements IStudioContext {
+	public readonly studio: ReadonlyDeep<Studio>
+	constructor(contextInfo: ContextInfo, studio: ReadonlyDeep<Studio>) {
+		super(contextInfo)
 		this.studio = studio
 	}
 
-	public get studioId(): StudioId {
+	public get studioId(): string {
+		return unprotectString(this.studio._id)
+	}
+
+	public get studioIdProtected(): StudioId {
 		return this.studio._id
 	}
 
-	getStudio(forceReloadFromDB?: boolean): Readonly<Studio> {
-		if (!forceReloadFromDB) {
-			return this.studio
-		} else {
-			const studio = Studios.findOne(this.studioId)
-			if (!studio) throw new Meteor.Error(404, `Studio "${this.studioId}" not found!`)
-			this.studio = studio
-			return studio
-		}
-	}
 	getStudioConfig(): unknown {
-		return getStudioBlueprintConfig(this.studio)
+		return waitForPromise(getStudioBlueprintConfig(this.studio))
 	}
-	protected wipeCache() {
-		resetStudioBlueprintConfig(this.studio)
+	protected async wipeCache(): Promise<void> {
+		await resetStudioBlueprintConfig(this.studio)
 		getStudioBlueprintConfig(this.getStudio(true))
 	}
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
 	}
-}
-
-export class StudioContext extends StudioConfigContext implements IStudioContext {
 	getStudioMappings(): Readonly<BlueprintMappings> {
+		// @ts-ignore ProtectedString deviceId not compatible with string
 		return this.studio.mappings
 	}
 }
 
-/** Show Style Variant */
-
-export class ShowStyleContext extends StudioContext implements IShowStyleContext {
-	readonly notesContext: NotesContext
-
+export class StudioBaselineContext extends StudioContext implements IStudioBaselineContext {
 	constructor(
-		studio: Studio,
-		private readonly cache: ReadOnlyCacheForRundownPlaylist | undefined,
-		readonly _rundown: Rundown | undefined,
-		readonly showStyleBaseId: ShowStyleBaseId,
-		readonly showStyleVariantId: ShowStyleVariantId,
-		notesContext: NotesContext
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(studio)
-
-		this.notesContext = notesContext
+		super(contextInfo, studio)
 	}
 
-	getShowStyleBase(forceReloadFromDB?: boolean): ShowStyleBase {
-		if (this.cache && this._rundown && !forceReloadFromDB) {
-			return waitForPromise(this.cache.activationCache.getShowStyleBase(this._rundown))
+	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
+		return this.watchedPackages.getPackageInfo(packageId)
+	}
+}
+
+export class StudioUserContext extends StudioContext implements IStudioUserContext {
+	public readonly notes: INoteBase[] = []
+	private readonly tempSendNotesIntoBlackHole: boolean
+
+	constructor(contextInfo: UserContextInfo, studio: ReadonlyDeep<Studio>) {
+		super(contextInfo, studio)
+		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
+	}
+
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
-			const showstyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
-			if (!showstyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
-			return showstyleBase
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
 		}
 	}
-	getShowStyleVariant(forceReloadFromDB?: boolean): ShowStyleVariant {
-		if (this.cache && this._rundown && !forceReloadFromDB) {
-			return waitForPromise(this.cache.activationCache.getShowStyleVariant(this._rundown))
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
-			const showstyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
-			if (!showstyleVariant)
-				throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
-			return showstyleVariant
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
 		}
 	}
+}
+
+/** Show Style Variant */
+export class ShowStyleContext extends StudioContext implements IShowStyleContext {
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		public readonly showStyleCompound: ReadonlyDeep<ShowStyleCompound>
+	) {
+		super(contextInfo, studio)
+	}
+
 	getShowStyleConfig(): unknown {
-		return getShowStyleBlueprintConfig(this.getShowStyleBase(), this.getShowStyleVariant())
+		return waitForPromise(getShowStyleBlueprintConfig(this.showStyleCompound))
 	}
-	wipeCache() {
-		super.wipeCache()
-		resetShowStyleBlueprintConfig(this.getShowStyleBase(), this.getShowStyleVariant())
+	async wipeCache(): Promise<void> {
+		await super.wipeCache()
+		await resetShowStyleBlueprintConfig(this.showStyleCompound)
 		getShowStyleBlueprintConfig(this.getShowStyleBase(true), this.getShowStyleVariant(true))
 	}
 	getShowStyleConfigRef(configKey: string): string {
-		return ConfigRef.getShowStyleConfigRef(this.showStyleVariantId, configKey)
+		return ConfigRef.getShowStyleConfigRef(this.showStyleCompound.showStyleVariantId, configKey)
+	}
+}
+
+export class ShowStyleUserContext extends ShowStyleContext implements IShowStyleUserContext {
+	public readonly notes: INoteBase[] = []
+	private readonly tempSendNotesIntoBlackHole: boolean
+
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		private readonly watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, studio, showStyleCompound)
 	}
 
-	/** NotesContext */
-	error(message: string, trackingId?: string) {
-		this.notesContext.error(message, trackingId)
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
 	}
-	warning(message: string, trackingId?: string) {
-		this.notesContext.warning(message, trackingId)
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
 	}
-	getHashId(str: string, isNotUnique?: boolean) {
-		return this.notesContext.getHashId(str, isNotUnique)
-	}
-	unhashId(hash: string) {
-		return this.notesContext.unhashId(hash)
-	}
-	get handleNotesExternally(): boolean {
-		return this.notesContext.handleNotesExternally
-	}
-	set handleNotesExternally(value: boolean) {
-		this.notesContext.handleNotesExternally = value
+
+	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 }
 
 /** Rundown */
 
-export class RundownContext extends ShowStyleContext implements IRundownContext, IEventContext {
+export class RundownContext extends ShowStyleContext implements IRundownContext {
 	readonly rundownId: string
 	readonly rundown: Readonly<IBlueprintRundownDB>
-	readonly _rundown: Rundown
+	readonly _rundown: ReadonlyDeep<Rundown>
 	readonly playlistId: RundownPlaylistId
 
-	constructor(rundown: Rundown, cache: ReadOnlyCacheForRundownPlaylist, notesContext: NotesContext | undefined) {
-		super(
-			cache.activationCache.getStudio(),
-			cache,
-			rundown,
-			rundown.showStyleBaseId,
-			rundown.showStyleVariantId,
-			notesContext || new NotesContext(rundown.name, `rundownId=${rundown._id}`, false)
-		)
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>
+	) {
+		super(contextInfo, studio, showStyleCompound)
 
 		this.rundownId = unprotectString(rundown._id)
 		this.rundown = unprotectObject(rundown)
 		this._rundown = rundown
 		this.playlistId = rundown.playlistId
+	}
+}
+
+export class RundownEventContext extends RundownContext implements IEventContext {
+	constructor(
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>
+	) {
+		super(
+			{
+				name: rundown.name,
+				identifier: `rundownId=${rundown._id},blueprintId=${showStyleCompound.blueprintId}`,
+			},
+			studio,
+			showStyleCompound,
+			rundown
+		)
 	}
 
 	getCurrentTime(): number {
@@ -302,9 +320,46 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 	}
 }
 
-export class SegmentContext extends RundownContext implements ISegmentContext {
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext) {
-		super(rundown, cache, notesContext)
+export interface RawPartNote extends INoteBase {
+	partExternalId: string | undefined
+}
+
+export class SegmentUserContext extends RundownContext implements ISegmentUserContext {
+	public readonly notes: RawPartNote[] = []
+
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>,
+		private readonly watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, studio, showStyleCompound, rundown)
+	}
+
+	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
+		this.notes.push({
+			type: NoteType.ERROR,
+			message: {
+				key: message,
+				args: params,
+			},
+			partExternalId: partExternalId,
+		})
+	}
+	notifyUserWarning(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
+		this.notes.push({
+			type: NoteType.WARNING,
+			message: {
+				key: message,
+				args: params,
+			},
+			partExternalId: partExternalId,
+		})
+	}
+
+	getPackageInfo(packageId): Readonly<Array<PackageInfo.Any>> {
+		return this.watchedPackages.getPackageInfo(packageId)
 	}
 
 	hackGetMediaObjectDuration(mediaId: string): number | undefined {
@@ -326,11 +381,21 @@ export class EventContext extends CommonContext implements IEventContext {
 export class PartEventContext extends RundownContext implements IPartEventContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, partInstance: PartInstance) {
+	constructor(
+		eventName: string,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>,
+		partInstance: PartInstance
+	) {
 		super(
-			rundown,
-			cache,
-			new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false)
+			{
+				name: `Event: ${eventName}`,
+				identifier: `rundownId=${rundown._id},blueprintId=${showStyleCompound.blueprintId}`,
+			},
+			studio,
+			showStyleCompound,
+			rundown
 		)
 
 		this.part = unprotectPartInstance(partInstance)
@@ -347,7 +412,7 @@ interface ABSessionInfoExt extends ABSessionInfo {
 }
 
 export class TimelineEventContext extends RundownContext implements ITimelineEventContext {
-	private readonly partInstances: DeepReadonly<Array<PartInstance>>
+	private readonly partInstances: ReadonlyDeep<Array<PartInstance>>
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
@@ -358,20 +423,22 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	}
 
 	constructor(
-		rundown: Rundown,
-		cache: CacheForRundownPlaylist,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		playlist: ReadonlyDeep<RundownPlaylist>,
+		rundown: ReadonlyDeep<Rundown>,
 		previousPartInstance: PartInstance | undefined,
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined
 	) {
 		super(
-			rundown,
-			cache,
-			new NotesContext(
-				rundown.name,
-				`rundownId=${rundown._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
-				false
-			)
+			{
+				name: rundown.name,
+				identifier: `rundownId=${rundown._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
+			},
+			studio,
+			showStyleCompound,
+			rundown
 		)
 
 		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
@@ -379,8 +446,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 
 		this.partInstances = _.compact([previousPartInstance, currentPartInstance, nextPartInstance])
 
-		this._knownSessions =
-			clone(cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)?.trackedAbSessions) ?? []
+		this._knownSessions = clone<ABSessionInfo[]>(playlist.trackedAbSessions ?? [])
 	}
 
 	getCurrentTime(): number {
@@ -525,35 +591,22 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	}
 }
 
-export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
-	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
-
-	constructor(rundown: Rundown, cache: ReadOnlyCacheForRundownPlaylist, asRunEvent: AsRunLogEvent) {
-		super(
-			rundown,
-			cache,
-			new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false)
-		)
-		this.asRunEvent = unprotectObject(asRunEvent)
+export class RundownDataChangedEventContext extends RundownContext implements IRundownDataChangedEventContext {
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>
+	) {
+		super(contextInfo, studio, showStyleCompound, rundown)
 	}
 
-	/** Get all asRunEvents in the rundown */
-	getAllAsRunEvents(): Array<IBlueprintAsRunLogEvent> {
-		return unprotectObjectArray(
-			AsRunLog.find(
-				{
-					rundownId: this._rundown._id,
-				},
-				{
-					sort: {
-						timestamp: 1,
-					},
-				}
-			).fetch()
-		)
+	getCurrentTime(): number {
+		return getCurrentTime()
 	}
+
 	/** Get all unsent and queued messages in the rundown */
-	getAllQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]> {
+	getAllUnsentQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]> {
 		return unprotectObjectArray(
 			ExternalMessageQueue.find(
 				{
@@ -568,101 +621,6 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 			).fetch()
 		)
 	}
-	/** Get all segments in this rundown */
-	getSegments(): Array<IBlueprintSegmentDB> {
-		return unprotectObjectArray(this._rundown.getSegments())
-	}
-	/**
-	 * Returns a segment
-	 * @param segmentId Id of segment to fetch. If is omitted, return the segment related to this AsRunEvent
-	 */
-	getSegment(segmentId?: string): IBlueprintSegmentDB | undefined {
-		segmentId = segmentId || this.asRunEvent.segmentId
-		check(segmentId, String)
-		if (segmentId) {
-			return unprotectObject(
-				this._rundown.getSegments({
-					_id: protectString(segmentId),
-				})[0]
-			)
-		}
-	}
-	/** Get all parts in this rundown */
-	getParts(): Array<IBlueprintPartDB> {
-		return unprotectObjectArray(this._rundown.getParts())
-	}
-	/** Get the part related to this AsRunEvent */
-	getPartInstance(partInstanceId?: string): IBlueprintPartInstance | undefined {
-		partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
-		check(partInstanceId, String)
-		if (partInstanceId) {
-			return unprotectPartInstance(
-				this._rundown.getAllPartInstances({
-					_id: protectString(partInstanceId),
-				})[0]
-			)
-		}
-	}
-	/** Get the mos story related to a part */
-	getIngestDataForPart(part: IBlueprintPartDB): IngestPart | undefined {
-		check(part._id, String)
-
-		try {
-			return loadIngestDataCachePart(
-				this._rundown._id,
-				this.rundown.externalId,
-				protectString<PartId>(part._id),
-				part.externalId
-			).data
-		} catch (e) {
-			return undefined
-		}
-	}
-	getIngestDataForPartInstance(partInstance: IBlueprintPartInstance): IngestPart | undefined {
-		return this.getIngestDataForPart(partInstance.part)
-	}
-	/** Get the mos story related to the rundown */
-	getIngestDataForRundown(): ExtendedIngestRundown | undefined {
-		try {
-			const ingestRundown = loadCachedRundownData(this._rundown._id, this.rundown.externalId)
-			return extendIngestRundownCore(ingestRundown, this._rundown)
-		} catch (e) {
-			return undefined
-		}
-	}
-
-	/**
-	 * Returns a piece.
-	 * @param id Id of piece to fetch. If omitted, return the piece related to this AsRunEvent
-	 */
-	getPieceInstance(pieceInstanceId?: string): IBlueprintPieceInstance | undefined {
-		check(pieceInstanceId, Match.Optional(String))
-		pieceInstanceId = pieceInstanceId || this.asRunEvent.pieceInstanceId
-		if (pieceInstanceId) {
-			return unprotectPieceInstance(
-				PieceInstances.findOne({
-					rundownId: this._rundown._id,
-					_id: protectString(pieceInstanceId),
-				})
-			)
-		}
-	}
-	/**
-	 * Returns pieces in a part
-	 * @param id Id of part to fetch pieces in
-	 */
-	getPieceInstances(partInstanceId: string): Array<IBlueprintPieceInstance> {
-		check(partInstanceId, String)
-		if (partInstanceId) {
-			return unprotectObjectArray(
-				PieceInstances.find({
-					rundownId: this._rundown._id,
-					partInstanceId: protectString(partInstanceId),
-				}).fetch()
-			) as any // pieceinstande.piece is the issue
-		}
-		return []
-	}
 
 	formatDateAsTimecode(time: number): string {
 		check(time, Number)
@@ -672,14 +630,99 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		check(time, Number)
 		return formatDurationAsTimecode(time)
 	}
-	protected getLoggerIdentifier(): string {
-		// override NotesContext.getLoggerIdentifier
-		let ids: string[] = []
-		if (this.rundownId) ids.push('rundownId: ' + this.rundownId)
-		if (this.asRunEvent.segmentId) ids.push('segmentId: ' + this.asRunEvent.segmentId)
-		if (this.asRunEvent.partInstanceId) ids.push('partInstanceId: ' + this.asRunEvent.partInstanceId)
-		if (this.asRunEvent.pieceInstanceId) ids.push('pieceInstanceId: ' + this.asRunEvent.pieceInstanceId)
-		if (this.asRunEvent.timelineObjectId) ids.push('timelineObjectId: ' + this.asRunEvent.timelineObjectId)
-		return ids.join(',')
+}
+
+export class RundownTimingEventContext extends RundownDataChangedEventContext implements IRundownTimingEventContext {
+	readonly previousPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
+	private readonly _currentPart: PartInstance
+	readonly nextPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
+
+	public get currentPart(): Readonly<IBlueprintPartInstance<unknown>> {
+		return unprotectPartInstance(this._currentPart)
+	}
+
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<Studio>,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		rundown: ReadonlyDeep<Rundown>,
+		previousPartInstance: PartInstance | undefined,
+		partInstance: PartInstance,
+		nextPartInstance: PartInstance | undefined
+	) {
+		super(contextInfo, studio, showStyleCompound, rundown)
+
+		this.previousPart = unprotectPartInstance(previousPartInstance)
+		this._currentPart = partInstance
+		this.nextPart = unprotectPartInstance(nextPartInstance)
+	}
+
+	getFirstPartInstanceInRundown(): Readonly<IBlueprintPartInstance<unknown>> {
+		const partInstance = PartInstances.findOne(
+			{
+				rundownId: this._rundown._id,
+				playlistActivationId: this._currentPart.playlistActivationId,
+			},
+			{
+				sort: {
+					takeCount: 1,
+				},
+			}
+		)
+
+		// If this doesn't find anything, then where did our reference PartInstance come from?
+		if (!partInstance)
+			throw new Meteor.Error(
+				500,
+				`No PartInstances found for Rundown "${this._rundown._id}" (PlaylistActivationId "${this._currentPart.playlistActivationId}")`
+			)
+
+		return unprotectPartInstance(partInstance)
+	}
+
+	getPartInstancesInSegmentPlayoutId(
+		refPartInstance: Readonly<IBlueprintPartInstance<unknown>>
+	): readonly IBlueprintPartInstance<unknown>[] {
+		const refPartInstance2 = protectPartInstance(refPartInstance)
+		if (!refPartInstance2 || !refPartInstance2.segmentId || !refPartInstance2.segmentPlayoutId)
+			throw new Meteor.Error(500, '')
+
+		const partInstances = PartInstances.find(
+			{
+				rundownId: this._rundown._id,
+				playlistActivationId: this._currentPart.playlistActivationId,
+				segmentId: unDeepString(refPartInstance2.segmentId),
+				segmentPlayoutId: unDeepString(refPartInstance2.segmentPlayoutId),
+			},
+			{
+				sort: {
+					takeCount: 1,
+				},
+			}
+		).fetch()
+
+		return unprotectPartInstanceArray(partInstances)
+	}
+
+	getPieceInstances(...partInstanceIds: string[]): readonly IBlueprintPieceInstance<unknown>[] {
+		if (partInstanceIds.length === 0) return []
+
+		const pieceInstances = PieceInstances.find({
+			rundownId: this._rundown._id,
+			playlistActivationId: this._currentPart.playlistActivationId,
+			partInstanceId: { $in: protectStringArray(partInstanceIds) },
+		}).fetch()
+
+		return unprotectPieceInstanceArray(pieceInstances)
+	}
+
+	getSegment(segmentId: string): Readonly<IBlueprintSegmentDB<unknown>> | undefined {
+		check(segmentId, String)
+		return unprotectObject(
+			Segments.findOne({
+				_id: protectString(segmentId),
+				rundownId: this._rundown._id,
+			})
+		)
 	}
 }

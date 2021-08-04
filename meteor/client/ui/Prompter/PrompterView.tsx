@@ -3,8 +3,6 @@ import * as _ from 'underscore'
 import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
-import { Tracker } from 'meteor/tracker'
-import { Random } from 'meteor/random'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -31,18 +29,26 @@ interface PrompterConfig {
 	followTake?: boolean
 	fontSize?: number
 	margin?: number
-	speedMap?: number[]
-	reverseSpeedMap?: number[]
-	rangeRevMin?: number
-	rangeNeutralMin?: number
-	rangeNeutralMax?: number
-	rangeFwdMax?: number
-
+	joycon_invertJoystick: boolean
+	joycon_speedMap?: number[]
+	joycon_reverseSpeedMap?: number[]
+	joycon_rangeRevMin?: number
+	joycon_rangeNeutralMin?: number
+	joycon_rangeNeutralMax?: number
+	joycon_rangeFwdMax?: number
+	pedal_speedMap?: number[]
+	pedal_reverseSpeedMap?: number[]
+	pedal_rangeRevMin?: number
+	pedal_rangeNeutralMin?: number
+	pedal_rangeNeutralMax?: number
+	pedal_rangeFwdMax?: number
+	shuttle_speedMap?: number[]
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
 	showScroll: boolean
 	debug: boolean
 	showOverUnder: boolean
+	addBlankLine: boolean
 }
 
 export enum PrompterConfigMode {
@@ -78,6 +84,16 @@ interface IState {
 	subsReady: boolean
 }
 
+function asArray<T>(value: T | T[] | null): T[] {
+	if (Array.isArray(value)) {
+		return value
+	} else if (value) {
+		return [value]
+	} else {
+		return []
+	}
+}
+
 export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
@@ -106,28 +122,43 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.configOptions = {
 			mirror: firstIfArray(queryParams['mirror']) === '1',
 			mirrorv: firstIfArray(queryParams['mirrorv']) === '1',
-			mode: new Array().concat(queryParams['mode']),
+			mode: asArray(queryParams['mode']),
 			controlMode: firstIfArray(queryParams['controlmode']) || undefined,
 			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
 			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
 			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
-			speedMap:
-				queryParams['speedMap'] === undefined
+			joycon_invertJoystick:
+				queryParams['joycon_invertJoystick'] === undefined ? true : queryParams['joycon_invertJoystick'] === '1',
+			joycon_speedMap:
+				queryParams['joycon_speedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['speedMap']).map((value) => parseInt(value, 10)),
-			reverseSpeedMap:
-				queryParams['reverseSpeedMap'] === undefined
+					: asArray(queryParams['joycon_speedMap']).map((value) => parseInt(value, 10)),
+			joycon_reverseSpeedMap:
+				queryParams['joycon_reverseSpeedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['reverseSpeedMap']).map((value) => parseInt(value, 10)),
-			rangeRevMin: parseInt(firstIfArray(queryParams['rangeRevMin']) as string, 10) || undefined,
-			rangeNeutralMin: parseInt(firstIfArray(queryParams['rangeNeutralMin']) as string, 10) || undefined,
-			rangeNeutralMax: parseInt(firstIfArray(queryParams['rangeNeutralMax']) as string, 10) || undefined,
-			rangeFwdMax: parseInt(firstIfArray(queryParams['rangeFwdMax']) as string, 10) || undefined,
+					: asArray(queryParams['joycon_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			joycon_rangeRevMin: parseInt(firstIfArray(queryParams['joycon_rangeRevMin']) as string, 10) || undefined,
+			joycon_rangeNeutralMin: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMin']) as string, 10) || undefined,
+			joycon_rangeNeutralMax: parseInt(firstIfArray(queryParams['joycon_rangeNeutralMax']) as string, 10) || undefined,
+			joycon_rangeFwdMax: parseInt(firstIfArray(queryParams['joycon_rangeFwdMax']) as string, 10) || undefined,
+			pedal_speedMap:
+				queryParams['pedal_speedMap'] === undefined
+					? undefined
+					: asArray(queryParams['pedal_speedMap']).map((value) => parseInt(value, 10)),
+			pedal_reverseSpeedMap:
+				queryParams['pedal_reverseSpeedMap'] === undefined
+					? undefined
+					: asArray(queryParams['pedal_reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			pedal_rangeRevMin: parseInt(firstIfArray(queryParams['pedal_rangeRevMin']) as string, 10) || undefined,
+			pedal_rangeNeutralMin: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMin']) as string, 10) || undefined,
+			pedal_rangeNeutralMax: parseInt(firstIfArray(queryParams['pedal_rangeNeutralMax']) as string, 10) || undefined,
+			pedal_rangeFwdMax: parseInt(firstIfArray(queryParams['pedal_rangeFwdMax']) as string, 10) || undefined,
 			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
 			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
 			debug: queryParams['debug'] === undefined ? false : queryParams['debug'] === '1',
 			showOverUnder: queryParams['showoverunder'] === undefined ? true : queryParams['showoverunder'] === '1',
+			addBlankLine: queryParams['addblanklinke'] === undefined ? true : queryParams['adblankline'] === '1',
 		}
 
 		this._controller = new PrompterControlManager(this)
@@ -173,16 +204,16 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			})
 
 			this.subscribe(PubSub.rundownPlaylists, {
-				active: true,
+				activationId: { $exists: true },
 				studioId: this.props.studioId,
 			})
 		}
 
 		this.autorun(() => {
-			let playlist = RundownPlaylists.findOne(
+			const playlist = RundownPlaylists.findOne(
 				{
 					studioId: this.props.studioId,
-					active: true,
+					activationId: { $exists: true },
 				},
 				{
 					fields: {
@@ -198,7 +229,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		})
 
 		this.autorun(() => {
-			let subsReady = this.subscriptionsReady()
+			const subsReady = this.subscriptionsReady()
 			if (subsReady !== this.state.subsReady) {
 				this.setState({
 					subsReady: subsReady,
@@ -257,9 +288,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 
 	checkScrollToCurrent() {
-		let playlistId: RundownPlaylistId =
+		const playlistId: RundownPlaylistId =
 			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
-		let playlist = RundownPlaylists.findOne(playlistId)
+		const playlist = RundownPlaylists.findOne(playlistId)
 
 		if (this.configOptions.followTake) {
 			if (playlist) {
@@ -288,7 +319,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		return pixelMargin
 	}
 	calculateMarginPosition() {
-		let pixelMargin = ((this.configOptions.margin || 0) * window.innerHeight) / 100
+		const pixelMargin = ((this.configOptions.margin || 0) * window.innerHeight) / 100
 		return pixelMargin
 	}
 	scrollToLive() {
@@ -311,7 +342,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToPrevious() {
 		const scrollMargin = this.calculateScrollPosition()
-		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(-1, 10 + scrollMargin)
 
 		const target = anchors[anchors.length - 2] || anchors[0]
@@ -326,7 +356,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	}
 	scrollToFollowing() {
 		const scrollMargin = this.calculateScrollPosition()
-		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(40 + scrollMargin, -1)
 
 		const target = anchors[0]
@@ -448,7 +477,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 									className="btn btn-primary"
 									onClick={() => {
 										history.push('/rundowns')
-									}}>
+									}}
+								>
 									{t('Return to list')}
 								</button>
 							)}
@@ -467,6 +497,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			marginBottom: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
 			marginRight: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
 			marginLeft: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
+			fontSize: (this.configOptions.fontSize ?? 0) > 12 ? `12vmin` : undefined,
 		}
 
 		return (
@@ -492,7 +523,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 									marginBottom: this.configOptions.margin ? this.configOptions.margin + 'vh' : undefined,
 									marginLeft: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
 									marginRight: this.configOptions.margin ? this.configOptions.margin + 'vw' : undefined,
-								}}></div>
+								}}
+							></div>
 						) : null}
 					</>
 				) : this.props.studio ? (
@@ -511,7 +543,7 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	const studio = studioId ? Studios.findOne(studioId) : undefined
 
 	const rundownPlaylist = RundownPlaylists.findOne({
-		active: true,
+		activationId: { $exists: true },
 		studioId: studioId,
 	})
 
@@ -560,7 +592,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		componentDidMount() {
 			this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
 
-			// TODO-PartInstance the prompter should probably consider instances
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId)
 				if (playlist) {
@@ -577,6 +608,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					})
 					this.subscribe(PubSub.pieces, {
 						startRundownId: { $in: rundownIDs },
+					})
+					this.subscribe(PubSub.pieceInstancesSimple, {
+						rundownId: { $in: rundownIDs },
+						reset: { $ne: true },
 					})
 				}
 			})
@@ -626,7 +661,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			}
 		}
 
-		shouldComponentUpdate(nextProps, nextState): boolean {
+		shouldComponentUpdate(_nextProps, _nextState): boolean {
 			clearTimeout(this._debounceUpdate)
 			this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
 			return false
@@ -642,16 +677,16 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 		renderPrompterData(prompterData: PrompterData) {
 			const getPartStatus = (part: PrompterDataPart) => {
-				if (prompterData.currentPartId === part.id) {
+				if (prompterData.currentPartInstanceId === part.id) {
 					return 'live'
-				} else if (prompterData.nextPartId === part.id) {
+				} else if (prompterData.nextPartInstanceId === part.id) {
 					return 'next'
 				} else {
 					return null
 				}
 			}
 
-			let lines: React.ReactNode[] = []
+			const lines: React.ReactNode[] = []
 
 			prompterData.segments.forEach((segment) => {
 				if (segment.parts.length === 0) {
@@ -670,7 +705,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 							'segment-' + segment.id,
 							'part-' + firstPart.id,
 							firstPartStatus
-						)}>
+						)}
+					>
 						{segment.title || 'N/A'}
 					</div>
 				)
@@ -679,7 +715,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					lines.push(
 						<div
 							key={'part_' + part.id}
-							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}>
+							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}
+						>
 							{part.title || 'N/A'}
 						</div>
 					)
@@ -688,7 +725,12 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						lines.push(
 							<div
 								key={'line_' + part.id + '_' + segment.id + '_' + line.id}
-								className={ClassNames('prompter-line', !line.text ? 'empty' : undefined)}>
+								className={ClassNames(
+									'prompter-line',
+									this.props.config.addBlankLine ? 'add-blank' : undefined,
+									!line.text ? 'empty' : undefined
+								)}
+							>
 								{line.text || ''}
 							</div>
 						)
@@ -711,14 +753,16 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						)}
 						style={{
 							fontSize: this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined,
-						}}>
+						}}
+					>
 						{this.props.children}
 
 						<div className="overlay-fix">
 							<div
 								className={
 									'read-marker ' + (!this.props.config.showMarker ? 'hide' : this.props.config.marker || 'hide')
-								}></div>
+								}
+							></div>
 
 							<div
 								className="indicators"
@@ -726,7 +770,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 									marginTop: this.props.config.margin ? `${this.props.config.margin}vh` : undefined,
 									marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
 									marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
-								}}>
+									fontSize: (this.props.config.fontSize ?? 0) > 12 ? `12vmin` : undefined,
+								}}
+							>
 								<div className="take-indicator hidden"></div>
 								<div className="next-indicator hidden"></div>
 							</div>
@@ -753,7 +799,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 										: this.props.config.margin
 										? this.props.config.margin + 'vh'
 										: undefined,
-							}}>
+							}}
+						>
 							<div className="prompter-break begin">{this.props.prompterData.title}</div>
 
 							{this.renderPrompterData(this.props.prompterData)}

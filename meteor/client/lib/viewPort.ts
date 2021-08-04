@@ -1,16 +1,9 @@
-import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
-
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { SegmentId } from '../../lib/collections/Segments'
 import { isProtectedString } from '../../lib/lib'
-import RundownViewEventBus, {
-	RundownViewEvents,
-	GoToPartEvent,
-	GoToPartInstanceEvent,
-} from '../ui/RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents } from '../ui/RundownView/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
 
 let focusInterval: NodeJS.Timer | undefined
@@ -22,7 +15,7 @@ export function maintainFocusOnPartInstance(
 	forceScroll?: boolean,
 	noAnimation?: boolean
 ) {
-	let startTime = Date.now()
+	const startTime = Date.now()
 	const focus = () => {
 		if (Date.now() - startTime < timeWindow) {
 			_dontClearInterval = true
@@ -52,7 +45,7 @@ function quitFocusOnPart() {
 	}
 }
 
-export function scrollToPartInstance(
+export async function scrollToPartInstance(
 	partInstanceId: PartInstanceId,
 	forceScroll?: boolean,
 	noAnimation?: boolean
@@ -69,15 +62,21 @@ export function scrollToPartInstance(
 	return Promise.reject('Could not find PartInstance')
 }
 
-export async function scrollToPart(partId: PartId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+export async function scrollToPart(
+	partId: PartId,
+	forceScroll?: boolean,
+	noAnimation?: boolean,
+	zoomInToFit?: boolean
+): Promise<boolean> {
 	quitFocusOnPart()
-	let part = Parts.findOne(partId)
+	const part = Parts.findOne(partId)
 	if (part) {
 		await scrollToSegment(part.segmentId, forceScroll, noAnimation)
 
 		RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART, {
 			segmentId: part.segmentId,
 			partId: partId,
+			zoomInToFit,
 		})
 
 		return true // rather meaningless as we don't know what happened
@@ -104,7 +103,7 @@ export function getHeaderHeight(): number {
 let pendingSecondStageScroll: number | undefined
 let currentScrollingElement: HTMLElement | undefined
 
-export function scrollToSegment(
+export async function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
 	forceScroll?: boolean,
 	noAnimation?: boolean
@@ -137,8 +136,8 @@ export function scrollToSegment(
 		return elementToScrollToOrSegmentId
 	}
 
-	let elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
-	let historyTarget: HTMLElement | null = getElementToScrollTo(true)
+	const elementToScrollTo: HTMLElement | null = getElementToScrollTo(false)
+	const historyTarget: HTMLElement | null = getElementToScrollTo(true)
 
 	// historyTarget will be === to elementToScrollTo if history is not used / not found
 	if (!elementToScrollTo || !historyTarget) {
@@ -152,7 +151,7 @@ export function scrollToSegment(
 	)
 }
 
-function innerScrollToSegment(
+async function innerScrollToSegment(
 	elementToScrollTo: HTMLElement,
 	forceScroll?: boolean,
 	noAnimation?: boolean,
@@ -175,7 +174,7 @@ function innerScrollToSegment(
 		if (pendingSecondStageScroll) window.cancelIdleCallback(pendingSecondStageScroll)
 
 		return scrollToPosition(top + window.scrollY, noAnimation).then(
-			() => {
+			async () => {
 				// retry scroll in case we have to load some data
 				if (pendingSecondStageScroll) window.cancelIdleCallback(pendingSecondStageScroll)
 				return new Promise<boolean>((resolve, reject) => {
@@ -216,7 +215,7 @@ function innerScrollToSegment(
 }
 
 function regionInViewport(topElement: HTMLElement, bottomElement: HTMLElement) {
-	let { top, bottom } = getRegionPosition(topElement, bottomElement)
+	const { top, bottom } = getRegionPosition(topElement, bottomElement)
 
 	const headerHeight = Math.floor(getHeaderHeight())
 
@@ -235,15 +234,13 @@ function getRegionPosition(topElement: HTMLElement, bottomElement: HTMLElement):
 let scrollToPositionRequest: number | undefined
 let scrollToPositionRequestReject: ((reason?: any) => void) | undefined
 
-export function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
+export async function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
 	if (noAnimation) {
-		return new Promise((resolve, reject) => {
-			window.scroll({
-				top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
-				left: 0,
-			})
-			resolve()
+		window.scroll({
+			top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
+			left: 0,
 		})
+		return Promise.resolve()
 	} else {
 		return new Promise((resolve, reject) => {
 			if (scrollToPositionRequest !== undefined) window.cancelIdleCallback(scrollToPositionRequest)
@@ -275,7 +272,7 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 let pointerLockTurnstile = 0
 let pointerHandlerAttached = false
 
-function pointerLockChange(e: Event): void {
+function pointerLockChange(_e: Event): void {
 	if (!document.pointerLockElement) {
 		// noOp, if the pointer is unlocked, good. That's a safe position
 	} else {

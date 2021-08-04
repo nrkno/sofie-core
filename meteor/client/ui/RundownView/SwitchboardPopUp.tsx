@@ -29,7 +29,7 @@ export const SwitchboardPopUp = withTranslation()(
 			const exclusivityGroups: {
 				[id: string]: Array<[string, StudioRouteSet]>
 			} = {}
-			for (let [id, routeSet] of this.props.availableRouteSets) {
+			for (const [id, routeSet] of this.props.availableRouteSets) {
 				const group = routeSet.exclusivityGroup || '__noGroup'
 				if (exclusivityGroups[group] === undefined) exclusivityGroups[group] = []
 				exclusivityGroups[group].push([id, routeSet])
@@ -52,7 +52,8 @@ export const SwitchboardPopUp = withTranslation()(
 											className={classNames({
 												'switchboard-pop-up-panel__group__controls__active': routeSets[0][1].active,
 												'switchboard-pop-up-panel__group__controls__inactive': !routeSets[0][1].active,
-											})}>
+											})}
+										>
 											{routeSets[0][1].name}
 										</span>
 										<a
@@ -69,7 +70,8 @@ export const SwitchboardPopUp = withTranslation()(
 													true
 												)
 											}
-											tabIndex={0}>
+											tabIndex={0}
+										>
 											<div className="sb-content">
 												<div className="sb-label">
 													<span className="mls">&nbsp;</span>
@@ -82,7 +84,8 @@ export const SwitchboardPopUp = withTranslation()(
 											className={classNames({
 												'switchboard-pop-up-panel__group__controls__active': routeSets[1][1].active,
 												'switchboard-pop-up-panel__group__controls__inactive': !routeSets[1][1].active,
-											})}>
+											})}
+										>
 											{routeSets[1][1].name}
 										</span>
 										{((routeSets[0][1].defaultActive !== undefined &&
@@ -105,7 +108,8 @@ export const SwitchboardPopUp = withTranslation()(
 												className={classNames({
 													'switchboard-pop-up-panel__group__controls__active': !routeSet.active,
 													'switchboard-pop-up-panel__group__controls__inactive': routeSet.active,
-												})}>
+												})}
+											>
 												{t('Off')}
 											</span>
 											<a
@@ -118,7 +122,8 @@ export const SwitchboardPopUp = withTranslation()(
 													this.props.onStudioRouteSetSwitch &&
 													this.props.onStudioRouteSetSwitch(e, id, routeSet, !routeSet.active)
 												}
-												tabIndex={0}>
+												tabIndex={0}
+											>
 												<div className="sb-content">
 													<div className="sb-label">
 														<span className="mls">&nbsp;</span>
@@ -131,7 +136,8 @@ export const SwitchboardPopUp = withTranslation()(
 												className={classNames({
 													'switchboard-pop-up-panel__group__controls__active': routeSet.active,
 													'switchboard-pop-up-panel__group__controls__inactive': !routeSet.active,
-												})}>
+												})}
+											>
 												{routeSet.name}
 											</span>
 											{routeSet.defaultActive !== undefined && routeSet.active !== routeSet.defaultActive && (

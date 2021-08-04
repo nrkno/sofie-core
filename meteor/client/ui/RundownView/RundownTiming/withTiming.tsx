@@ -2,9 +2,9 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { RundownTiming } from './RundownTiming'
-import { JsxEmit } from 'typescript'
+import { RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
 
-export type TimingFilterFunction = (durations: RundownTiming.RundownTimingContext) => any
+export type TimingFilterFunction = (durations: RundownTimingContext) => any
 
 export interface WithTimingOptions {
 	isHighResolution?: boolean
@@ -93,7 +93,7 @@ export function withTiming<IProps, IState>(
 			}
 
 			render() {
-				const durations: RundownTiming.RundownTimingContext = this.context.durations
+				const durations: RundownTimingContext = this.context.durations
 
 				// If the timing HOC is supposed to be low resolution and we are rendering
 				// during a high resolution tick, the WrappedComponent will render using
@@ -102,7 +102,7 @@ export function withTiming<IProps, IState>(
 				// To bring it back to sync, we mark the component as dirty, which will
 				// force an update on the next low resoluton tick, regardless of what
 				// the filter says.
-				if (this.filterGetter && durations.isLowResolution !== !expandedOptions.isHighResolution) {
+				if (!!this.filterGetter && durations.isLowResolution !== !expandedOptions.isHighResolution) {
 					this.isDirty = true
 				}
 

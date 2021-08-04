@@ -4,7 +4,6 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import {
 	IAdLibPanelProps,
@@ -15,7 +14,6 @@ import {
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
 import {
 	DashboardPanelInner,
 	dashboardElementPosition,
@@ -23,20 +21,11 @@ import {
 	IDashboardPanelProps,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
-import { getUnfinishedPieceInstancesGrouped, getNextPieceInstancesGrouped, AdLibPieceUi } from '../../lib/shelf'
-interface IState {
-	outputLayers: {
-		[key: string]: IOutputLayer
-	}
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	}
-	searchFilter: string | undefined
-}
+import { RundownUtils } from '../../lib/rundown'
 
 export const TimelineDashboardPanel = translateWithTracker<
-	IAdLibPanelProps & IDashboardPanelProps,
-	IState,
+	Translated<IAdLibPanelProps & IDashboardPanelProps>,
+	DashboardPanelInner['state'],
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
@@ -65,10 +54,11 @@ export const TimelineDashboardPanel = translateWithTracker<
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
 		setRef = (el: HTMLDivElement) => {
 			this.liveLine = el
+			super.setRef(el)
 			this.ensureLiveLineVisible()
 		}
-		componentDidUpdate(prevProps) {
-			super.componentDidUpdate(prevProps)
+		componentDidUpdate(prevProps, prevState) {
+			super.componentDidUpdate(prevProps, prevState)
 			this.ensureLiveLineVisible()
 		}
 		componentDidMount() {
@@ -106,11 +96,14 @@ export const TimelineDashboardPanel = translateWithTracker<
 					return (
 						<div className="dashboard-panel dashboard-panel--timeline-style" style={dashboardElementPosition(filter)}>
 							<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
-							{filter.enableSearch && <AdLibPanelToolbar onFilterChange={this.onFilterChange} />}
+							{filter.enableSearch && (
+								<AdLibPanelToolbar onFilterChange={this.onFilterChange} searchFilter={this.state.searchFilter} />
+							)}
 							<div
 								className={ClassNames('dashboard-panel__panel', {
 									'dashboard-panel__panel--horizontal': filter.overflowHorizontally,
-								})}>
+								})}
+							>
 								{filteredRudownBaselineAdLibs.length > 0 && (
 									<div className="dashboard-panel__panel__group">
 										{filteredRudownBaselineAdLibs.map((adLibListItem: AdLibPieceUi) => {
@@ -121,7 +114,14 @@ export const TimelineDashboardPanel = translateWithTracker<
 													studio={this.props.studio}
 													layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 													outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
-													onToggleAdLib={this.onToggleAdLib}
+													onToggleAdLib={this.onToggleOrSelectAdLib}
+													onSelectAdLib={this.onSelectAdLib}
+													isSelected={
+														(this.props.selectedPiece &&
+															RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+															this.props.selectedPiece._id === adLibListItem._id) ||
+														false
+													}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir(adLibListItem)}
 													mediaPreviewUrl={
@@ -131,9 +131,10 @@ export const TimelineDashboardPanel = translateWithTracker<
 													}
 													widthScale={filter.buttonWidthScale}
 													heightScale={filter.buttonHeightScale}
-													displayStyle={filter.displayStyle}
-													canOverflowHorizontally={filter.overflowHorizontally}
-													showThumbnailsInList={filter.showThumbnailsInList}>
+													displayStyle={PieceDisplayStyle.BUTTONS}
+													showThumbnailsInList={filter.showThumbnailsInList}
+													toggleOnSingleClick={this.state.singleClickMode}
+												>
 													{adLibListItem.name}
 												</DashboardPieceButton>
 											)
@@ -162,7 +163,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 											className={ClassNames('dashboard-panel__panel__group', {
 												live: seg.isLive,
 												next: seg.isNext && !this.props.playlist.currentPartInstanceId,
-											})}>
+											})}
+										>
 											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId)) && (
 												<div className="dashboard-panel__panel__group__liveline" ref={this.setRef}></div>
 											)}
@@ -173,7 +175,14 @@ export const TimelineDashboardPanel = translateWithTracker<
 														piece={adLibListItem}
 														layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 														outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
-														onToggleAdLib={this.onToggleAdLib}
+														onToggleAdLib={this.onToggleOrSelectAdLib}
+														onSelectAdLib={this.onSelectAdLib}
+														isSelected={
+															(this.props.selectedPiece &&
+																RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+																this.props.selectedPiece._id === adLibListItem._id) ||
+															false
+														}
 														playlist={this.props.playlist}
 														studio={this.props.studio}
 														isOnAir={this.isAdLibOnAir(adLibListItem)}
@@ -187,14 +196,13 @@ export const TimelineDashboardPanel = translateWithTracker<
 														showThumbnailsInList={filter.showThumbnailsInList}
 														canOverflowHorizontally={filter.overflowHorizontally}
 														displayStyle={filter.displayStyle}>
+													>
 														{adLibListItem.name}
 													</DashboardPieceButton>
 												)
 											})}
 										</div>
-									) : (
-										undefined
-									)
+									) : undefined
 								})}
 							</div>
 						</div>

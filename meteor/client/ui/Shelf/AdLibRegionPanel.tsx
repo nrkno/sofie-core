@@ -69,7 +69,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
@@ -101,7 +101,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 			if (piece.isAction && piece.adlibAction) {
 				const action = piece.adlibAction
 				doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-					MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+					MeteorCall.userAction.executeAction(e, this.props.playlist._id, action._id, action.actionId, action.userData)
 				)
 			} else if (!piece.isGlobal && !piece.isAction) {
 				doUserAction(t, e, UserAction.START_ADLIB, (e) =>
@@ -192,7 +192,8 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 					{
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
-				)}>
+				)}
+			>
 				<div
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
@@ -205,7 +206,8 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 							<span
 								className={ClassNames('adlib-region-panel__label', {
 									'adlib-region-panel__label--large': this.props.panel.labelBelowPanel,
-								})}>
+								})}
+							>
 								{this.props.panel.name}
 							</span>
 						}

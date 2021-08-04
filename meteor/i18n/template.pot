@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-01-07T09:15:46.298Z\n"
-"PO-Revision-Date: 2021-01-07T09:15:46.298Z\n"
+"POT-Creation-Date: 2021-04-26T13:33:57.514Z\n"
+"PO-Revision-Date: 2021-04-26T13:33:57.514Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -148,6 +148,9 @@ msgstr ""
 msgid "Something went wrong, and it affected the output"
 msgstr ""
 
+msgid "Are you sure?"
+msgstr ""
+
 msgid ""
 "Trimming this clip has timed out. It's possible that the story is currently "
 "locked for writing in {{nrcsName}} and will eventually be updated. Make "
@@ -190,6 +193,9 @@ msgid "Remove out-trimming"
 msgstr ""
 
 msgid "Out"
+msgstr ""
+
+msgid "Next"
 msgstr ""
 
 msgid "Could not get system status. Please consult system administrator."
@@ -276,13 +282,16 @@ msgstr ""
 msgid "Problems"
 msgstr ""
 
-msgid "Show style"
+msgid "Show Style"
 msgstr ""
 
 msgid "On Air Start Time"
 msgstr ""
 
-msgid "Last updated"
+msgid "Last Updated"
+msgstr ""
+
+msgid "Shelf Layout"
 msgstr ""
 
 msgid "Getting Started"
@@ -368,10 +377,25 @@ msgstr ""
 msgid "Not set"
 msgstr ""
 
+msgid "This rundown will loop indefinitely"
+msgstr ""
+
+msgid "({{timecode}})"
+msgstr ""
+
 msgid "Re-sync rundown data with {{nrcsName}}"
 msgstr ""
 
 msgid "Delete"
+msgstr ""
+
+msgid "Standalone Shelf"
+msgstr ""
+
+msgid "Rundown & Shelf"
+msgstr ""
+
+msgid "Default"
 msgstr ""
 
 msgid "Delete rundown?"
@@ -403,7 +427,16 @@ msgstr ""
 
 msgid ""
 "You are in rehearsal mode, the broadcast starts in less than 1 minute. Do "
-"you want to reset the rundown and go into playout mode?"
+"you want to reset the rundown and go into On-Air mode?"
+msgstr ""
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}} (Looping)"
+msgstr ""
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}}"
+msgstr ""
+
+msgid "{{rundownPlaylistName}} (Looping)"
 msgstr ""
 
 msgid "Started"
@@ -430,7 +463,7 @@ msgstr ""
 msgid "Undo Hold"
 msgstr ""
 
-msgid "Activate"
+msgid "Activate (On-Air)"
 msgstr ""
 
 msgid "Deactivate"
@@ -466,6 +499,14 @@ msgstr ""
 msgid "Could not find a Piece that can be disabled."
 msgstr ""
 
+msgid "Failed to execute take"
+msgstr ""
+
+msgid ""
+"The rundown you are trying to execute a take on is inactive, would you like "
+"to activate this rundown?"
+msgstr ""
+
 msgid "Failed to activate"
 msgstr ""
 
@@ -484,10 +525,10 @@ msgid ""
 "Are you sure you want to activate this one anyway?"
 msgstr ""
 
-msgid "Activate Anyway"
+msgid "Activate Anyway (Rehearsal)"
 msgstr ""
 
-msgid "Activate Anyway (GO ON AIR)"
+msgid "Activate Anyway (On-Air)"
 msgstr ""
 
 msgid "Do you want to activate this Rundown?"
@@ -611,13 +652,20 @@ msgstr ""
 
 msgid ""
 "Rundown {{rundownName}} in Playlist {{playlistName}} is missing in the data "
-"from {{nrcsName}}, what do you want to do?"
+"from {{nrcsName}}. You can either leave it in Sofie and mark it as Unsynced "
+"or remove the rundown from Sofie. What do you want to do?"
 msgstr ""
 
-msgid "Leave it in Sofie (mark the rundown as unsynced)"
+msgid "(Unknown rundown)"
 msgstr ""
 
-msgid "Remove just the rundown from Sofie"
+msgid "(Unknown playlist)"
+msgstr ""
+
+msgid "Leave Unsynced"
+msgstr ""
+
+msgid "Remove"
 msgstr ""
 
 msgid "Remove rundown"
@@ -626,6 +674,12 @@ msgstr ""
 msgid ""
 "Do you really want to remove just the rundown \"{{rundownName}}\" in the "
 "playlist {{playlistName}} from Sofie? This cannot be undone!"
+msgstr ""
+
+msgid "Loop Start"
+msgstr ""
+
+msgid "Loop End"
 msgstr ""
 
 msgid "(in: {{time}})"
@@ -638,8 +692,8 @@ msgid "Planned Duration"
 msgstr ""
 
 msgid ""
-"The Rundown \"{{rundownName}}\" has been UNSYNCED from {{nrcsName}}! No "
-"data updates will currently come through."
+"The rundown \"{{rundownName}}\" is not published or activated in "
+"{{nrcsName}}! No data updates will currently come through."
 msgstr ""
 
 msgid "Re-sync"
@@ -784,6 +838,9 @@ msgstr ""
 msgid "On Air"
 msgstr ""
 
+msgid "On Air In"
+msgstr ""
+
 msgid "Unsynced"
 msgstr ""
 
@@ -793,10 +850,10 @@ msgstr ""
 msgid "Auto"
 msgstr ""
 
-msgid "Next"
+msgid "Show End"
 msgstr ""
 
-msgid "Show End"
+msgid "Loops to top"
 msgstr ""
 
 msgid "Unknown"
@@ -1012,9 +1069,6 @@ msgid "Device Type"
 msgstr ""
 
 msgid "Remove this item?"
-msgstr ""
-
-msgid "Remove"
 msgstr ""
 
 msgid "Are you sure you want to remove {{type}} \"{{deviceId}}\"?"
@@ -1273,6 +1327,17 @@ msgstr ""
 msgid "Queue all adlibs"
 msgstr ""
 
+msgid "Toggle AdLibs on single mouse click"
+msgstr ""
+
+msgid "Hide duplicated AdLibs"
+msgstr ""
+
+msgid ""
+"Picks the first instance of an adLib per rundown, identified by uniqueness "
+"Id"
+msgstr ""
+
 msgid "URL"
 msgstr ""
 
@@ -1286,6 +1351,9 @@ msgid "Adlib Rank"
 msgstr ""
 
 msgid "Place label below panel"
+msgstr ""
+
+msgid "Disabled"
 msgstr ""
 
 msgid "Expose layout as a standalone page"
@@ -1594,54 +1662,6 @@ msgstr ""
 msgid "Playout gateway not connected"
 msgstr ""
 
-msgid "CasparCG Channel"
-msgstr ""
-
-msgid "The CasparCG channel to use (1 is the first)"
-msgstr ""
-
-msgid "CasparCG Layer"
-msgstr ""
-
-msgid "The layer in a channel to use"
-msgstr ""
-
-msgid "Preview when not on air"
-msgstr ""
-
-msgid "Whether to load to first frame"
-msgstr ""
-
-msgid "Mapping type"
-msgstr ""
-
-msgid "Index"
-msgstr ""
-
-msgid "Identifier"
-msgstr ""
-
-msgid "Priority"
-msgstr ""
-
-msgid "Sisyfos Channel"
-msgstr ""
-
-msgid "Quantel Port ID"
-msgstr ""
-
-msgid "The name you'd like the port to have"
-msgstr ""
-
-msgid "Quantel Channel ID"
-msgstr ""
-
-msgid "The channel to use for output (0 is the first one)"
-msgstr ""
-
-msgid "Mode"
-msgstr ""
-
 msgid "Remove this mapping?"
 msgstr ""
 
@@ -1651,34 +1671,16 @@ msgstr ""
 msgid "This layer is now rerouted by an active Route Set: {{routeSets}}"
 msgstr ""
 
-msgid "Preset"
-msgstr ""
-
-msgid "Preset Transition Speed"
-msgstr ""
-
-msgid "Zoom"
-msgstr ""
-
-msgid "Zoom Speed"
-msgstr ""
-
-msgid "Unknown Mapping"
-msgstr ""
-
-msgid "Channel: {{channel}}"
-msgstr ""
-
-msgid "Port: {{port}}, Channel: {{channel}}"
-msgstr ""
-
-msgid "Unknown device type: {{device}}"
-msgstr ""
-
 msgid "Layer ID"
 msgstr ""
 
 msgid "ID of the timeline-layer to map to some output"
+msgstr ""
+
+msgid "Layer Name"
+msgstr ""
+
+msgid "Human-readable name of the layer"
 msgstr ""
 
 msgid "The type of device to use for the output"
@@ -1695,10 +1697,13 @@ msgstr ""
 msgid "Lookahead Target Objects (Default = 1)"
 msgstr ""
 
-msgid "Lookahead Maximum Search Distance (Default = unlimited/-1)"
+msgid "Lookahead Maximum Search Distance (Default = {{limit}})"
 msgstr ""
 
 msgid "Layer Mappings"
+msgstr ""
+
+msgid "Add a playout device to the studio in order to edit the layer mappings"
 msgstr ""
 
 msgid "Remove this Exclusivity Group?"
@@ -1795,12 +1800,165 @@ msgstr ""
 msgid "Route Sets"
 msgstr ""
 
+msgid "Add a playout device to the studio in order to configure the route sets"
+msgstr ""
+
 msgid ""
 "Controls for exposed Route Sets will be displayed to the producer within "
 "the Rundown View in the Switchboard."
 msgstr ""
 
 msgid "Exclusivity Groups"
+msgstr ""
+
+msgid "Remove this Package Container?"
+msgstr ""
+
+msgid "Are you sure you want to remove the Package Container \"{{containerId}}\"?"
+msgstr ""
+
+msgid "There are no Package Containers set up."
+msgstr ""
+
+msgid "Package Container ID"
+msgstr ""
+
+msgid "Display name/label of the Package Container"
+msgstr ""
+
+msgid "Playout devices which uses this package container"
+msgstr ""
+
+msgid "Select playout devices"
+msgstr ""
+
+msgid "Select which playout devices are using this package container"
+msgstr ""
+
+msgid "Accessors"
+msgstr ""
+
+msgid "Remove this Package Container Accessor?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove the Package Container Accessor "
+"\"{{accessorId}}\"?"
+msgstr ""
+
+msgid "There are no Accessors set up."
+msgstr ""
+
+msgid "Accessor ID"
+msgstr ""
+
+msgid "Display name of the Package Container"
+msgstr ""
+
+msgid "Accessor Type"
+msgstr ""
+
+msgid "Folder path"
+msgstr ""
+
+msgid "File path to the folder of the local folder"
+msgstr ""
+
+msgid "Resource Id"
+msgstr ""
+
+msgid ""
+"(Optional) This could be the name of the computer on which the local folder "
+"is on"
+msgstr ""
+
+msgid "Base URL"
+msgstr ""
+
+msgid "Base url to the resource (example: http://myserver/folder)"
+msgstr ""
+
+msgid "Default request method"
+msgstr ""
+
+msgid "get, post etc..."
+msgstr ""
+
+msgid "Defaults request headers"
+msgstr ""
+
+msgid "Defaults request body"
+msgstr ""
+
+msgid "Network Id"
+msgstr ""
+
+msgid ""
+"(Optional) A name/identifier of the local network where the share is "
+"located, leave empty if globally accessible"
+msgstr ""
+
+msgid "Folder path to shared folder"
+msgstr ""
+
+msgid "UserName"
+msgstr ""
+
+msgid "Username for athuentication"
+msgstr ""
+
+msgid "Password for authentication"
+msgstr ""
+
+msgid "(Optional) A name/identifier of the local network where the share is located"
+msgstr ""
+
+msgid "Quantel gateway URL"
+msgstr ""
+
+msgid "URL to the Quantel Gateway"
+msgstr ""
+
+msgid "ISA URLs"
+msgstr ""
+
+msgid "URLs to the ISAs (in order of importance)"
+msgstr ""
+
+msgid "Zone ID"
+msgstr ""
+
+msgid "Zone ID (default value: \"default\")"
+msgstr ""
+
+msgid "Server ID"
+msgstr ""
+
+msgid "Server id (Can be omitted for sources, as clip-searches are zone-wide.)"
+msgstr ""
+
+msgid "Allow Read access"
+msgstr ""
+
+msgid "Allow Write access"
+msgstr ""
+
+msgid "Package Manager"
+msgstr ""
+
+msgid "Studio Settings"
+msgstr ""
+
+msgid "Package Containers to use for previews"
+msgstr ""
+
+msgid "Click to show available Package Containers"
+msgstr ""
+
+msgid "Package Containers to use for thumbnails"
+msgstr ""
+
+msgid "Package Containers"
 msgstr ""
 
 msgid "Studio Baseline needs update: "
@@ -1824,7 +1982,7 @@ msgstr ""
 msgid "Click to show available Show Styles"
 msgstr ""
 
-msgid "Enable Play from Anywhere™"
+msgid "Enable \"Play from Anywhere\""
 msgstr ""
 
 msgid "Media Preview URL"
@@ -1915,6 +2073,12 @@ msgstr ""
 msgid ""
 "Enables internal monitoring of blocked main thread. Logs when there is an "
 "issue, but (unverified) might cause issues in itself."
+msgstr ""
+
+msgid "Cron jobs"
+msgstr ""
+
+msgid "Enable CasparCG restart job"
 msgstr ""
 
 msgid "Cleanup"
@@ -2028,6 +2192,9 @@ msgstr ""
 msgid "Media"
 msgstr ""
 
+msgid "Packages"
+msgstr ""
+
 msgid "Messages"
 msgstr ""
 
@@ -2044,6 +2211,15 @@ msgid "User Name"
 msgstr ""
 
 msgid "Answers"
+msgstr ""
+
+msgid "Abort"
+msgstr ""
+
+msgid "Package Status"
+msgstr ""
+
+msgid "Restart All"
 msgstr ""
 
 msgid "Message Queue"
@@ -2118,9 +2294,6 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
-msgid "Abort"
-msgstr ""
-
 msgid "Prioritize"
 msgstr ""
 
@@ -2128,9 +2301,6 @@ msgid "Media Transfer Status"
 msgstr ""
 
 msgid "Abort All"
-msgstr ""
-
-msgid "Restart All"
 msgstr ""
 
 msgid "Do you want to restart CasparCG Server?"
@@ -2278,19 +2448,29 @@ msgstr ""
 msgid "Stop"
 msgstr ""
 
-msgid "Clip can't be played because the filename is missing"
+msgid ""
+"Clip \"{{fileName}}\" can't be played because it isn't present on the "
+"playout system"
 msgstr ""
 
-msgid "Clip can't be played because it isn't present on the playout system"
+msgid "{{sourceLayer}} is not yet ready on the playout system"
 msgstr ""
 
-msgid "Clip doesn't have audio & video"
+msgid "{{sourceLayer}} is transferring to the the playout system"
 msgstr ""
 
-msgid "Clip format ({{format}}) is not in one of the accepted formats"
+msgid ""
+"{{sourceLayer}} is transferring to the the playout system and cannot be "
+"played yet"
 msgstr ""
 
-msgid "Clip has {{audioStreams}} audio streams"
+msgid "{{sourceLayer}} doesn't have both audio & video"
+msgstr ""
+
+msgid "{{sourceLayer}} has the wrong format: {{format}}"
+msgstr ""
+
+msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
 msgstr ""
 
 msgid "Clip starts with {{frames}} {{type}} frame"
@@ -2305,7 +2485,30 @@ msgstr ""
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr ""
 
-msgid "Clip is being ingested"
+msgid "{{sourceLayer}} is missing a file path"
+msgstr ""
+
+msgid "Clip doesn't have audio & video"
+msgstr ""
+
+msgid "black"
+msgstr ""
+
+msgid "freeze"
+msgstr ""
+
+msgid "{{sourceLayer}} is being ingested"
+msgstr ""
+
+msgid "Segment no longer exists in {{nrcs}}"
+msgstr ""
+
+msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgstr ""
+
+msgid ""
+"The Rundown was attempted to be moved out of the Playlist when it was on "
+"Air. Move it back and try again later."
 msgstr ""
 
 msgctxt "°°°°°°plural"

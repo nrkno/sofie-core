@@ -1,6 +1,6 @@
 import React from 'react'
 import { withTranslation } from 'react-i18next'
-import { RundownLayoutBase, RundownLayouts, RundownLayoutType } from '../../../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
@@ -18,6 +18,45 @@ export default withTranslation()(
 
 			return (
 				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Expose layout as a standalone page')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'exposeAsStandalone'}
+								obj={this.props.item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Open shelf by default')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'openByDefault'}
+								obj={this.props.item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Default shelf height')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`startingHeight`}
+								obj={this.props.item}
+								type="int"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Show Buckets')}
@@ -42,55 +81,6 @@ export default withTranslation()(
 								type="checkbox"
 								collection={RundownLayouts}
 								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Expose layout as a standalone page')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'exposeAsStandalone'}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Expose as a layout for the shelf')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'exposeAsShelf'}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Open shelf by default')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'openByDefault'}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Default shelf height')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`startingHeight`}
-								obj={this.props.item}
-								type="int"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
 						</label>
 					</div>
 				</React.Fragment>

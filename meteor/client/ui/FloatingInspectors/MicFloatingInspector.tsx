@@ -11,6 +11,7 @@ interface IProps {
 	itemElement: HTMLDivElement | null
 	floatingInspectorStyle: React.CSSProperties
 	content: ScriptContent
+	displayOn?: 'document' | 'viewport'
 }
 
 const BREAK_SCRIPT_BREAKPOINT = 620
@@ -40,12 +41,13 @@ export function MicFloatingInspector(props: IProps) {
 	)
 
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined}>
+		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
 			<div
 				className={
 					'segment-timeline__mini-inspector ' + props.typeClass + ' segment-timeline__mini-inspector--pop-down'
 				}
-				style={props.floatingInspectorStyle}>
+				style={props.floatingInspectorStyle}
+			>
 				<div>
 					{props.content && props.content.fullScript ? (
 						breakScript ? (
@@ -56,6 +58,8 @@ export function MicFloatingInspector(props: IProps) {
 						) : (
 							<span className="mini-inspector__full-text">{props.content.fullScript}</span>
 						)
+					) : props.content.lastWords ? (
+						<span className="mini-inspector__full-text">{props.content.lastWords}</span>
 					) : (
 						<span className="mini-inspector__system">{t('Script is empty')}</span>
 					)}

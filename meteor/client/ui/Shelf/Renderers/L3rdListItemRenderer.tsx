@@ -6,7 +6,6 @@ import { RundownUtils } from '../../../lib/rundown'
 import { mousetrapHelper } from '../../../lib/mousetrapHelper'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { NoraContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
@@ -49,6 +48,9 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				break
 			case PieceLifespan.OutOnRundownEnd:
 				sourceDuration = t('Until end of rundown') as string
+				break
+			case PieceLifespan.OutOnShowStyleEnd:
+				sourceDuration = t('Until end of showstyle') as string
 				break
 			default:
 				assertNever(props.adLibListItem.lifespan)
@@ -135,7 +137,8 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				ref={itemIcon}
 				onMouseOver={handleOnMouseOver}
 				onMouseMove={handleOnMouseMove}
-				onMouseLeave={handleOnMouseLeave}>
+				onMouseLeave={handleOnMouseLeave}
+			>
 				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--shortcut">

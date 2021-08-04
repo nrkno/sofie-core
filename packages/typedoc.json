@@ -1,11 +1,17 @@
 {
-  "name": "Sofie Integration Libraries",
-  "mode": "modules",
-  "out": "docs",
-  "theme": "default",
-  "ignoreCompilerErrors": "false",
-  "preserveConstEnums": "true",
-  "exclude": ["*.spec.ts", "node_modules", "docs"],
-  "external-modulemap": ".*packages\/([^\/]+)\/.*",
-  "stripInternal": "false"
+	"name": "Sofie Integration Libraries",
+	"out": "docs",
+	"theme": "default",
+	"readme": "none",
+	"exclude": [
+		"*.spec.ts",
+		"node_modules",
+		"*/node_modules",
+		"docs",
+		"*/dist",
+		"*/src/types",
+		"*/examples",
+		"*-gateway"
+	],
+	"external-modulemap": ".*packages/([^/]+)/.*"
 }

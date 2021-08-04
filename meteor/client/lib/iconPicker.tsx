@@ -108,7 +108,8 @@ export const IconPicker = withTranslation()(
 							'expco-expanded': this.state.expanded,
 						},
 						this.props.className
-					)}>
+					)}
+				>
 					<div className={ClassNames('expco-title focusable-main')} onClick={this.toggleExpco}>
 						{this.state.selectedValue && <FontAwesomeIcon icon={this.state.selectedValue as IconProp} />}
 					</div>
@@ -120,7 +121,8 @@ export const IconPicker = withTranslation()(
 							type="text"
 							className="search-input"
 							placeholder={t('Search...')}
-							onChange={this.handleSearchChange}></input>
+							onChange={this.handleSearchChange}
+						></input>
 						<div className="expco-list">
 							{!this.state.searchText && (
 								<div className="expco-item">

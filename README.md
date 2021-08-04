@@ -14,46 +14,45 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 ### Prerequisites
 
-* Install [Meteor](https://www.meteor.com/install)
-* Install [Node.js](https://nodejs.org)
-* Install [Yarn](https://yarnpkg.com)
-* `npm install --global windows-build-tools`
+- Install [Meteor](https://www.meteor.com/install)
+- Install [Node.js](https://nodejs.org) 12
+- Install [Yarn](https://yarnpkg.com)
+- If on windows `npm install --global windows-build-tools`
 
 ### Quick-start:
 
 ```
 git clone -b master https://github.com/nrkno/tv-automation-server-core.git
-cd tv-automation-server-core/meteor
-npm start
+cd tv-automation-server-core
+yarn start
 ```
 
 ### Slightly more detailed start:
 
 1. Clone the repository (for development, it is recommended to base your work on the latest unstable release branch)
 
-    `git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git`
+   `git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git`
 
-2. Go into the meteor directory
+2. Go into the cloned directory
 
-    `cd tv-automation-server-core/meteor`
+   `cd tv-automation-server-core`
 
-3. Trigger Meteor to install the right version
+3. Setup meteor and dependencies. (Before this, make sure your NODE_ENV environment variable is NOT set to "production"!)
 
-    `meteor --version`
+   `yarn install`
 
-4. Install the right dependencies. (Before this, make sure your NODE_ENV environment variable is NOT set to "production"!)
+4. Start development mode
 
-    `meteor npm install`
+   `yarn dev`
 
-5. Start Meteor in development mode
+5. In another window, start the playout-gateway. You will need to manually restart this upon making changes
 
-    `meteor npm run dev`
+   `cd tv-automation-server-core/packages/playout-gateway`  
+   `yarn buildstart`
 
-If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.
-```
-cd packages
-yarn build # or yarn watch to watch for changes
-```
+If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.  
+ `cd tv-automation-server-core/packages`  
+ `yarn watch` # or yarn build to build just once
 
 If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For example, for `tv-automation-mos-connection` library:
 
@@ -94,11 +93,20 @@ The resulting JSON file will be placed in `meteor/public/locales/xx`, where it w
 
 Then submit this as a PR.
 
+## Version numbering scheme
+
+This project does not follow semver. We believe that semver does not make sense for this system as there are so many moving parts that a majority of releases could be considered breaking in some way.
+
+Instead of semver, the Major number gets incremented whenever we feel like Sofie has evolved enough to warrant the change. The minor number gets incremented for each iteration of the development cycle, with the digit matching the cycle number. The patch number gets incremented for patch releases as expected.
+
+The version numbers of the blueprints-integration and server-core-integration libraries are tied to this, and as such they also do not follow semver currently. In future these may be decoupled.  
+The api of server-core-integration is pretty stable and rarely undergoes any breaking changes, so is ok to be mismatched.
+The api of blueprints-integration is rather volatile, and often has breaking changes. Because of this, we recommend matching the minor version of blueprints-integration with Sofie core. Sofie will warn if these do not match. We expect this to settle down in the future, and will review this decision when we feel it is worthwhile.
+
 ## Additional information
 
 Background image used for previewing graphical elements is based on "Sunset over dark forest" by Aliis Sinisalu: https://unsplash.com/photos/8NiAH5YRZPs used under the [Unsplash License](https://unsplash.com/license).
 
 ---
 
-*The NRK logo is a registered trademark of Norsk rikskringkasting AS. The license does not grant any right to use, in any way, any trademarks, service marks or logos of Norsk rikskringkasting AS.*
-
+_The NRK logo is a registered trademark of Norsk rikskringkasting AS. The license does not grant any right to use, in any way, any trademarks, service marks or logos of Norsk rikskringkasting AS._

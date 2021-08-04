@@ -1,12 +1,7 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
 
-import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceButton'
-import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { rundownBaselineAdLibPieceStart } from '../../../server/api/userActions'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { CriticalIcon, WarningIcon } from '../../lib/ui/icons/notifications'
+import { DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
 
 export interface IDashboardButtonProps {
 	button: DashboardLayoutActionButton
@@ -93,7 +88,8 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 							: button.height < 0
 							? `calc(${-1 * button.height - 1} * var(--dashboard-button-grid-height))`
 							: undefined,
-				}}>
+				}}
+			>
 				<div className="dashboard-panel__panel">
 					<div
 						className={ClassNames(

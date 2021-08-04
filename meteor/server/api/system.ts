@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { makePromise, ProtectedString, getCurrentTime, waitTime } from '../../lib/lib'
+import { makePromise, ProtectedString, getCurrentTime, waitTime, waitForPromise, MeteorWrapAsync } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -14,12 +14,11 @@ import { Meteor } from 'meteor/meteor'
 import { IndexSpecification } from 'mongodb'
 import { TransformedCollection, MongoQuery } from '../../lib/typings/meteor'
 import { logger } from '../logging'
-import { MeteorWrapAsync, isAnySyncFunctionsRunning } from '../codeControl'
+import { isAnyQueuedWorkRunning } from '../codeControl'
 import { SystemWriteAccess } from '../security/system'
 import { check } from '../../lib/check'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
@@ -36,7 +35,7 @@ import { Organizations, OrganizationId } from '../../lib/collections/Organizatio
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { Parts } from '../../lib/collections/Parts'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Pieces } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
@@ -51,11 +50,13 @@ import { Snapshots } from '../../lib/collections/Snapshots'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { getActiveRundownPlaylistsInStudio } from './playout/studio'
+import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { createMongoCollection } from '../../lib/collections/lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { nightlyCronjobInner } from '../cronjobs'
+import { getBundle as getTranslationBundleInner } from './translationsBundles'
+import { TranslationsBundle, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
+import { OrganizationContentWriteAccess } from '../security/organization'
+import { ClientAPI } from '../../lib/api/client'
 
 function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -73,7 +74,7 @@ function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 			if (!existingIndex.name) return // ?
 
 			// Check if the existing index should be kept:
-			let found = _.find([...i.indexes, { _id: 1 }], (newIndex) => {
+			const found = _.find([...i.indexes, { _id: 1 }], (newIndex) => {
 				return _.isEqual(newIndex, existingIndex.key)
 			})
 
@@ -82,7 +83,12 @@ function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 				// The existing index does not exist in our specified list of indexes, and should be removed.
 				if (removeOldIndexes) {
 					logger.info(`Removing index: ${JSON.stringify(existingIndex.key)}`)
-					i.collection.rawCollection().dropIndex(existingIndex.name)
+					i.collection
+						.rawCollection()
+						.dropIndex(existingIndex.name)
+						.catch((e) => {
+							logger.warn(`Failed to drop index: ${JSON.stringify(existingIndex.key)}: ${e}`)
+						})
 				}
 			}
 		})
@@ -186,6 +192,25 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 			studioId: { $nin: studioIds },
 		})
 	}
+	const ownedByRundownIdOrStudioId = <
+		Class extends DBInterface,
+		DBInterface extends { _id: ProtectedString<any>; rundownId?: RundownId; studioId: StudioId }
+	>(
+		collectionName,
+		collection: TransformedCollection<Class, DBInterface>
+	): CollectionCleanupResult => {
+		return removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+			$or: [
+				{
+					rundownId: { $exists: true, $nin: rundownIds },
+				},
+				{
+					rundownId: { $exists: false },
+					studioId: { $nin: studioIds },
+				},
+			],
+		})
+	}
 	const ownedByOrganizationId = <
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; organizationId: OrganizationId | null | undefined }
@@ -227,14 +252,6 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	// AdLibPieces
 	{
 		results.push(ownedByRundownId('AdLibPieces', AdLibPieces))
-	}
-	// AsRunLog
-	{
-		results.push(
-			removeByQuery('AsRunLog', AsRunLog, {
-				timestamp: { $lt: getCurrentTime() - MAXIMUM_AGE },
-			})
-		)
 	}
 	// Blueprints
 	{
@@ -306,7 +323,7 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	}
 	// ExpectedPlayoutItems
 	{
-		results.push(ownedByRundownId('ExpectedPlayoutItems', ExpectedPlayoutItems))
+		results.push(ownedByRundownIdOrStudioId('ExpectedPlayoutItems', ExpectedPlayoutItems))
 	}
 	// ExternalMessageQueue
 	{
@@ -450,11 +467,13 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 }
 
 function isAllowedToRunCleanup(): string | void {
-	if (isAnySyncFunctionsRunning()) return `Another sync-function is running, try again later`
+	if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
 
 	const studios = Studios.find().fetch()
 	for (const studio of studios) {
-		const activePlaylist: RundownPlaylist | undefined = getActiveRundownPlaylistsInStudio(null, studio._id)[0]
+		const activePlaylist: RundownPlaylist | undefined = waitForPromise(
+			getActiveRundownPlaylistsInStudioFromDb(studio._id)
+		)[0]
 		if (activePlaylist) {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`
 		}
@@ -496,7 +515,7 @@ let mongoTest: TransformedCollection<any, any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
-		mongoTest = createMongoCollection<any>('benchmark-test')
+		mongoTest = createMongoCollection<any, any>('benchmark-test')
 		mongoTest._ensureIndex({
 			indexedProp: 1,
 		})
@@ -521,7 +540,7 @@ async function doSystemBenchmarkInner() {
 		waitTime(10)
 		{
 			// MongoDB test: Do a number of small writes:
-			let startTime = Date.now()
+			const startTime = Date.now()
 			const insertedIds: string[] = []
 			for (let i = 0; i < 100; i++) {
 				const objectToInsert = {
@@ -546,7 +565,7 @@ async function doSystemBenchmarkInner() {
 		waitTime(10)
 		{
 			// MongoDB test: Do a number of large writes:
-			let startTime = Date.now()
+			const startTime = Date.now()
 			const insertedIds: string[] = []
 			for (let i = 0; i < 10; i++) {
 				const objectToInsert = {
@@ -561,8 +580,7 @@ async function doSystemBenchmarkInner() {
 							data4: 'wvklwjnserolvjwn3erlkvjwnerlkvn',
 							data5: '3oig23oi45ugnf2o3iu4nf2o3iu4nf',
 							data6: '5g2987543hg9285hg3',
-							data7:
-								'20359gj2834hf2390874fh203874hf02387h4f02837h4f0238h028h428734f0273h4f08723h4tpo2n,mnbsdfljbvslfkvnkjgv',
+							data7: '20359gj2834hf2390874fh203874hf02387h4f02837h4f0238h028h428734f0273h4f08723h4tpo2n,mnbsdfljbvslfkvnkjgv',
 						}
 					}),
 					prop0: 'asdf',
@@ -590,8 +608,7 @@ async function doSystemBenchmarkInner() {
 					objs: _.range(0, 100).map((j) => {
 						return {
 							id: 'innerObj' + j,
-							data0:
-								'asdfkawhbeckjawhefkjashvdfckasdf9q37246fg2w9375fhg209485hf0238757h834h08273h50235h4gf+0237h5u7hg2475hg082475hgt',
+							data0: 'asdfkawhbeckjawhefkjashvdfckasdf9q37246fg2w9375fhg209485hf0238757h834h08273h50235h4gf+0237h5u7hg2475hg082475hgt',
 						}
 					}),
 					prop0: i,
@@ -628,7 +645,7 @@ async function doSystemBenchmarkInner() {
 		waitTime(10)
 		// CPU test: arithmetic calculations:
 		{
-			let startTime = Date.now()
+			const startTime = Date.now()
 			const map: any = {}
 			let number = 0
 			for (let i = 0; i < 6e4; i++) {
@@ -655,10 +672,10 @@ async function doSystemBenchmarkInner() {
 					},
 				}
 			})
-			let startTime = Date.now()
+			const startTime = Date.now()
 
 			const strings: string[] = objectsToStringify.map((o) => JSON.stringify(o))
-			const newObjects = strings.map((str) => JSON.parse(str))
+			const _newObjects = strings.map((str) => JSON.parse(str))
 
 			result.cpuStringifying = Date.now() - startTime
 		}
@@ -678,7 +695,7 @@ async function doSystemBenchmark(context: MethodContext, runCount: number = 1): 
 	if (runCount < 1) throw new Error(`runCount must be >= 1`)
 
 	const results: BenchmarkResult[] = []
-	for (let i of _.range(0, runCount)) {
+	for (const _i of _.range(0, runCount)) {
 		results.push(await doSystemBenchmarkInner())
 		waitTime(50)
 	}
@@ -741,11 +758,18 @@ CPU JSON stringifying:       ${avg.cpuStringifying} ms (${comparison.cpuStringif
 	}
 }
 
+function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
+	check(bundleId, String)
+
+	OrganizationContentWriteAccess.anyContent(context)
+	return ClientAPI.responseSuccess(getTranslationBundleInner(bundleId))
+}
+
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
-	cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
+	async cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
 		return makePromise(() => cleanupIndexes(this, actuallyRemoveOldIndexes))
 	}
-	cleanupOldData(actuallyRemoveOldData: boolean) {
+	async cleanupOldData(actuallyRemoveOldData: boolean) {
 		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
 	}
 	runCronjob() {
@@ -753,6 +777,9 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	}
 	async doSystemBenchmark(runCount: number = 1) {
 		return doSystemBenchmark(this, runCount)
+	}
+	async getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
+		return makePromise(() => getTranslationBundle(this, bundleId))
 	}
 }
 registerClassToMeteorMethods(SystemAPIMethods, SystemAPIClass, false)

@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { Time } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime } from '../../lib/lib'
-import { ClientAPI } from '../../lib/api/client'
 import { MeteorCall } from '../../lib/api/methods'
 
 interface LoggedError {

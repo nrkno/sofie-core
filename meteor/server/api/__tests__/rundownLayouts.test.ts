@@ -1,17 +1,17 @@
-import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import '../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { protectString, literal, unprotectString } from '../../../lib/lib'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
-import { RundownLayoutType, RundownLayouts, RundownLayout } from '../../../lib/collections/RundownLayouts'
+import {
+	RundownLayoutType,
+	RundownLayouts,
+	RundownLayout,
+	CustomizableRegions,
+} from '../../../lib/collections/RundownLayouts'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundownLayouts') // include in order to create the Meteor methods needed
@@ -23,8 +23,8 @@ enum RundownLayoutsAPIMethods { // Using our own method definition, to catch ext
 
 describe('Rundown Layouts', () => {
 	let env: DefaultEnvironment
-	beforeAll(() => {
-		env = setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		env = await setupDefaultStudioEnvironment()
 	})
 	let rundownLayoutId: string
 	testInFiber('Create rundown layout', () => {
@@ -48,7 +48,7 @@ describe('Rundown Layouts', () => {
 			_id: rundownLayoutId,
 		})
 
-		const res = Meteor.call(RundownLayoutsAPIMethods.removeRundownLayout, rundownLayoutId)
+		Meteor.call(RundownLayoutsAPIMethods.removeRundownLayout, rundownLayoutId)
 
 		const item1 = RundownLayouts.findOne(protectString(rundownLayoutId))
 		expect(item1).toBeUndefined()
@@ -63,14 +63,13 @@ describe('Rundown Layouts', () => {
 				filters: [],
 				showStyleBaseId: env.showStyleBaseId,
 				type: RundownLayoutType.RUNDOWN_LAYOUT,
-				exposeAsShelf: false,
 				exposeAsStandalone: false,
 				icon: '',
 				iconColor: '',
 				showBuckets: true,
 				openByDefault: false,
 				disableContextMenu: true,
-				regionId: 'shelf_layouts',
+				regionId: CustomizableRegions.Shelf,
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}
@@ -131,7 +130,7 @@ describe('Rundown Layouts', () => {
 		})
 
 		testInFiber('upload shelf layout', () => {
-			const { rundownLayout: mockLayout, rundownLayoutId } = makeMockLayout(env)
+			const { rundownLayout: mockLayout } = makeMockLayout(env)
 			const routeName = '/shelfLayouts/upload/:showStyleBaseId'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()

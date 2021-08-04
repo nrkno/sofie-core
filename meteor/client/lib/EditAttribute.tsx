@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 import { withTracker } from './ReactMeteorData/react-meteor-data'
 import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { TransformedCollection } from '../../lib/typings/meteor'
@@ -11,6 +10,7 @@ import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { Random } from 'meteor/random'
+import { assertNever } from '../../lib/lib'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -28,6 +28,7 @@ export type EditAttributeType =
 	| 'json'
 	| 'colorpicker'
 	| 'iconpicker'
+	| 'array'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render() {
 		if (this.props.type === 'text') {
@@ -54,6 +55,10 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeColorPicker {...this.props} />
 		} else if (this.props.type === 'iconpicker') {
 			return <EditAttributeIconPicker {...this.props} />
+		} else if (this.props.type === 'array') {
+			return <EditAttributeArray {...this.props} />
+		} else {
+			assertNever(this.props.type)
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>
@@ -77,6 +82,9 @@ interface IEditAttributeBaseProps {
 	mutateDisplayValue?: (v: any) => any
 	mutateUpdateValue?: (v: any) => any
 	disabled?: boolean
+	storeJsonAsObject?: boolean
+	/** Defaults to string */
+	arrayType?: 'boolean' | 'int' | 'float' | 'string'
 }
 interface IEditAttributeBaseState {
 	value: any
@@ -99,18 +107,18 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		this.handleUpdate = this.handleUpdate.bind(this)
 		this.handleDiscard = this.handleDiscard.bind(this)
 	}
-	handleEdit(newValue) {
+	handleEdit(inputValue: any, storeValue?: any) {
 		this.setState({
-			value: newValue,
+			value: inputValue,
 			editing: true,
 		})
 		if (this.props.updateOnKey) {
-			this.updateValue(newValue)
+			this.updateValue(storeValue ?? inputValue)
 		}
 	}
-	handleUpdate(newValue) {
-		this.handleUpdateButDontSave(newValue)
-		this.updateValue(newValue)
+	handleUpdate(inputValue: any, storeValue?: any) {
+		this.handleUpdateButDontSave(inputValue)
+		this.updateValue(storeValue ?? inputValue)
 	}
 	handleUpdateEditing(newValue) {
 		this.handleUpdateButDontSave(newValue, true)
@@ -128,17 +136,17 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 			editing: false,
 		})
 	}
-	deepAttribute(obj, attr): any {
+	deepAttribute(obj0: any, attr0: string | undefined): any {
 		// Returns a value deep inside an object
 		// Example: deepAttribute(company,"ceo.address.street");
 
-		const f = (obj, attr) => {
+		const f = (obj: any, attr: string) => {
 			if (obj) {
-				let attributes = attr.split('.')
+				const attributes = attr.split('.')
 
 				if (attributes.length > 1) {
-					let outerAttr = attributes.shift()
-					let innerAttrs = attributes.join('.')
+					const outerAttr = attributes.shift() as string
+					const innerAttrs = attributes.join('.')
 
 					return f(obj[outerAttr], innerAttrs)
 				} else {
@@ -148,7 +156,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 				return obj
 			}
 		}
-		return f(obj, attr || '')
+		return f(obj0, attr0 || '')
 	}
 	getAttribute() {
 		let v = null
@@ -187,11 +195,11 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		} else {
 			if (this.props.collection && this.props.attribute) {
 				if (newValue === undefined) {
-					let m = {}
+					const m = {}
 					m[this.props.attribute] = 1
 					this.props.collection.update(this.props.obj._id, { $unset: m }, undefined, () => this.updated())
 				} else {
-					let m = {}
+					const m = {}
 					m[this.props.attribute] = newValue
 					this.props.collection.update(this.props.obj._id, { $set: m }, undefined, () => this.updated())
 				}
@@ -230,7 +238,7 @@ const EditAttributeText = wrapEditAttribute(
 			this.handleUpdate(event.target.value)
 		}
 		handleEscape(event) {
-			let e = event as KeyboardEvent
+			const e = event as KeyboardEvent
 			if (e.key === 'Escape') {
 				this.handleDiscard()
 			}
@@ -274,13 +282,13 @@ const EditAttributeMultilineText = wrapEditAttribute(
 			this.handleUpdate(event.target.value)
 		}
 		handleEscape(event) {
-			let e = event as KeyboardEvent
+			const e = event as KeyboardEvent
 			if (e.key === 'Escape') {
 				this.handleDiscard()
 			}
 		}
 		handleEnterKey(event) {
-			let e = event as KeyboardEvent
+			const e = event as KeyboardEvent
 			if (e.key === 'Enter') {
 				e.stopPropagation()
 			}
@@ -321,11 +329,11 @@ const EditAttributeInt = wrapEditAttribute(
 		}
 		handleChange(event) {
 			// this.handleEdit(this.getValue(event))
-			let v = this.getValue(event)
+			const v = this.getValue(event)
 			_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
 		}
 		handleBlur(event) {
-			let v = this.getValue(event)
+			const v = this.getValue(event)
 			_.isNaN(v) ? this.handleDiscard() : this.handleUpdate(v)
 		}
 		getEditAttributeNumber() {
@@ -368,11 +376,11 @@ const EditAttributeFloat = wrapEditAttribute(
 		}
 		handleChange(event) {
 			// this.handleEdit(this.getValue(event))
-			let v = this.getValue(event)
+			const v = this.getValue(event)
 			_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
 		}
 		handleBlur(event) {
-			let v = this.getValue(event)
+			const v = this.getValue(event)
 			_.isNaN(v) ? this.handleDiscard() : this.handleUpdate(v)
 		}
 		getEditAttributeNumber() {
@@ -412,7 +420,7 @@ const EditAttributeCheckbox = wrapEditAttribute(
 		isChecked() {
 			return !!this.getEditAttribute()
 		}
-		handleChange(event) {
+		handleChange() {
 			this.handleUpdate(!this.state.value)
 		}
 		render() {
@@ -425,7 +433,8 @@ const EditAttributeCheckbox = wrapEditAttribute(
 							(this.props.className || '') +
 							' ' +
 							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}>
+						}
+					>
 						<input
 							type="checkbox"
 							className="form-control"
@@ -454,11 +463,11 @@ const EditAttributeSwitch = wrapEditAttribute(
 		isChecked() {
 			return !!this.getEditAttribute()
 		}
-		handleChange = (event) => {
+		handleChange = () => {
 			this.handleUpdate(!this.state.value)
 		}
-		handleClick = (event) => {
-			this.handleChange(event)
+		handleClick = () => {
+			this.handleChange()
 		}
 		render() {
 			return (
@@ -474,7 +483,8 @@ const EditAttributeSwitch = wrapEditAttribute(
 						' ' +
 						(this.props.disabled ? 'disabled' : '')
 					}
-					onClick={this.handleClick}>
+					onClick={this.handleClick}
+				>
 					{this.props.label}
 				</div>
 			)
@@ -490,21 +500,21 @@ const EditAttributeDropdown = wrapEditAttribute(
 		}
 		handleChange(event) {
 			// because event.target.value is always a string, use the original value instead
-			let option = _.find(this.getOptions(), (o) => {
+			const option = _.find(this.getOptions(), (o) => {
 				return o.value + '' === event.target.value + ''
 			})
 
-			let value = option ? option.value : event.target.value
+			const value = option ? option.value : event.target.value
 
 			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 		}
 		getOptions(addOptionForCurrentValue?: boolean) {
-			let options: Array<{ value: any; name: string; i?: number }> = []
+			const options: Array<{ value: any; name: string; i?: number }> = []
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (let key in this.props.options) {
-					let val = this.props.options[key]
+				for (const key in this.props.options) {
+					const val = this.props.options[key]
 					if (typeof val === 'object') {
 						options.push({
 							name: val.name,
@@ -519,15 +529,15 @@ const EditAttributeDropdown = wrapEditAttribute(
 				}
 			} else if (typeof this.props.options === 'object') {
 				// Is options an enum?
-				let keys = Object.keys(this.props.options)
-				let first = this.props.options[keys[0]]
+				const keys = Object.keys(this.props.options)
+				const first = this.props.options[keys[0]]
 				if (this.props.options[first] + '' === keys[0] + '') {
 					// is an enum, only pick
-					for (let key in this.props.options) {
+					for (const key in this.props.options) {
 						if (!_.isNaN(parseInt(key, 10))) {
 							// key is a number (the key)
-							let enumValue = this.props.options[key]
-							let enumKey = this.props.options[enumValue]
+							const enumValue = this.props.options[key]
+							const enumKey = this.props.options[enumValue]
 							options.push({
 								name: enumValue,
 								value: enumKey,
@@ -535,8 +545,8 @@ const EditAttributeDropdown = wrapEditAttribute(
 						}
 					}
 				} else {
-					for (let key in this.props.options) {
-						let val = this.props.options[key]
+					for (const key in this.props.options) {
+						const val = this.props.options[key]
 						if (Array.isArray(val)) {
 							options.push({
 								name: key,
@@ -553,8 +563,8 @@ const EditAttributeDropdown = wrapEditAttribute(
 			}
 
 			if (addOptionForCurrentValue) {
-				let currentValue = this.getAttribute()
-				let currentOption = _.find(options, (o) => {
+				const currentValue = this.getAttribute()
+				const currentOption = _.find(options, (o) => {
 					if (Array.isArray(o.value)) {
 						return _.contains(o.value, currentValue)
 					}
@@ -587,7 +597,8 @@ const EditAttributeDropdown = wrapEditAttribute(
 					}
 					value={this.getAttributeText()}
 					onChange={this.handleChange}
-					disabled={this.props.disabled}>
+					disabled={this.props.disabled}
+				>
 					{this.getOptions(true).map((o, j) =>
 						Array.isArray(o.value) ? (
 							<optgroup key={j} label={o.name}>
@@ -624,11 +635,11 @@ const EditAttributeDropdownText = wrapEditAttribute(
 		}
 		handleChangeDropdown(event) {
 			// because event.target.value is always a string, use the original value instead
-			let option = _.find(this.getOptions(), (o) => {
+			const option = _.find(this.getOptions(), (o) => {
 				return o.value + '' === event.target.value + ''
 			})
 
-			let value = option ? option.value : event.target.value
+			const value = option ? option.value : event.target.value
 
 			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 		}
@@ -639,18 +650,18 @@ const EditAttributeDropdownText = wrapEditAttribute(
 			this.handleUpdate(event.target.value)
 		}
 		handleEscape(event) {
-			let e = event as KeyboardEvent
+			const e = event as KeyboardEvent
 			if (e.key === 'Escape') {
 				this.handleDiscard()
 			}
 		}
 		getOptions(addOptionForCurrentValue?: boolean) {
-			let options: Array<{ value: any; name: string; i?: number }> = []
+			const options: Array<{ value: any; name: string; i?: number }> = []
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (let key in this.props.options) {
-					let val = this.props.options[key]
+				for (const key in this.props.options) {
+					const val = this.props.options[key]
 					if (typeof val === 'object') {
 						options.push({
 							name: val.name,
@@ -665,15 +676,15 @@ const EditAttributeDropdownText = wrapEditAttribute(
 				}
 			} else if (typeof this.props.options === 'object') {
 				// Is options an enum?
-				let keys = Object.keys(this.props.options)
-				let first = this.props.options[keys[0]]
+				const keys = Object.keys(this.props.options)
+				const first = this.props.options[keys[0]]
 				if (this.props.options[first] + '' === keys[0] + '') {
 					// is an enum, only pick
-					for (let key in this.props.options) {
+					for (const key in this.props.options) {
 						if (!_.isNaN(parseInt(key, 10))) {
 							// key is a number (the key)
-							let enumValue = this.props.options[key]
-							let enumKey = this.props.options[enumValue]
+							const enumValue = this.props.options[key]
+							const enumKey = this.props.options[enumValue]
 							options.push({
 								name: enumValue,
 								value: enumKey,
@@ -681,8 +692,8 @@ const EditAttributeDropdownText = wrapEditAttribute(
 						}
 					}
 				} else {
-					for (let key in this.props.options) {
-						let val = this.props.options[key]
+					for (const key in this.props.options) {
+						const val = this.props.options[key]
 						if (Array.isArray(val)) {
 							options.push({
 								name: key,
@@ -699,8 +710,8 @@ const EditAttributeDropdownText = wrapEditAttribute(
 			}
 
 			if (addOptionForCurrentValue) {
-				let currentValue = this.getAttribute()
-				let currentOption = _.find(options, (o) => {
+				const currentValue = this.getAttribute()
+				const currentOption = _.find(options, (o) => {
 					if (Array.isArray(o.value)) {
 						return _.contains(o.value, currentValue)
 					}
@@ -777,12 +788,12 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 			this.handleUpdate(event.selectedValues)
 		}
 		getOptions() {
-			let options: _.Dictionary<string | string[]> = {}
+			const options: _.Dictionary<string | string[]> = {}
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (let key in this.props.options) {
-					let val = this.props.options[key]
+				for (const key in this.props.options) {
+					const val = this.props.options[key]
 					if (typeof val === 'object') {
 						options[val.value] = val.name
 					} else {
@@ -791,21 +802,21 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 				}
 			} else if (typeof this.props.options === 'object') {
 				// Is options an enum?
-				let keys = Object.keys(this.props.options)
-				let first = this.props.options[keys[0]]
+				const keys = Object.keys(this.props.options)
+				const first = this.props.options[keys[0]]
 				if (this.props.options[first] + '' === keys[0] + '') {
 					// is an enum, only pick
-					for (let key in this.props.options) {
+					for (const key in this.props.options) {
 						if (!_.isNaN(parseInt(key, 10))) {
 							// key is a number (the key)
-							let enumValue = this.props.options[key]
-							let enumKey = this.props.options[enumValue]
+							const enumValue = this.props.options[key]
+							const enumKey = this.props.options[enumValue]
 							options[enumKey] = enumValue
 						}
 					}
 				} else {
-					for (let key in this.props.options) {
-						let val = this.props.options[key]
+					for (const key in this.props.options) {
+						const val = this.props.options[key]
 						if (Array.isArray(val)) {
 							options[key] = val
 						} else {
@@ -824,7 +835,8 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 					availableOptions={this.getOptions()}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
-					onChange={this.handleChange}></MultiSelect>
+					onChange={this.handleChange}
+				></MultiSelect>
 			)
 		}
 	}
@@ -841,16 +853,20 @@ const EditAttributeJson = wrapEditAttribute(
 		}
 		isJson(str: string) {
 			try {
-				JSON.parse(str)
+				const parsed = JSON.parse(str)
+				if (typeof parsed === 'object') return { parsed: parsed }
 			} catch (err) {
-				return false
+				// ignore
 			}
-			return true
+			return false
 		}
 		handleChange(event) {
-			let v = event.target.value
-			if (this.isJson(v)) {
-				this.handleEdit(v)
+			const v = event.target.value
+
+			const jsonObj = this.isJson(v)
+			if (jsonObj) {
+				const storeValue = this.props.storeJsonAsObject ? jsonObj.parsed : v
+				this.handleEdit(v, storeValue)
 				this.setState({
 					valueError: false,
 				})
@@ -863,8 +879,10 @@ const EditAttributeJson = wrapEditAttribute(
 			if (v === '') {
 				v = '{}'
 			}
-			if (this.isJson(v)) {
-				this.handleUpdate(v)
+			const jsonObj = this.isJson(v)
+			if (jsonObj) {
+				const storeValue = this.props.storeJsonAsObject ? jsonObj.parsed : v
+				this.handleUpdate(v, storeValue)
 				this.setState({
 					valueError: false,
 				})
@@ -876,9 +894,122 @@ const EditAttributeJson = wrapEditAttribute(
 			}
 		}
 		handleEscape(event) {
-			let e = event as KeyboardEvent
+			const e = event as KeyboardEvent
 			if (e.key === 'Escape') {
 				this.handleDiscard()
+			}
+		}
+		getAttribute() {
+			const value = super.getAttribute()
+			if (this.props.storeJsonAsObject) {
+				return value ? JSON.stringify(value, null, 2) : value
+			} else return value
+		}
+		render() {
+			return (
+				<input
+					type="text"
+					className={ClassNames(
+						'form-control',
+						this.props.className,
+						this.state.valueError && this.props.invalidClassName
+							? this.props.invalidClassName
+							: this.state.editing
+							? this.props.modifiedClassName || ''
+							: ''
+					)}
+					placeholder={this.props.label}
+					value={this.getEditAttribute() || ''}
+					onChange={this.handleChange}
+					onBlur={this.handleBlur}
+					onKeyUp={this.handleEscape}
+					disabled={this.props.disabled}
+				/>
+			)
+		}
+	}
+)
+const EditAttributeArray = wrapEditAttribute(
+	class EditAttributeArray extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+			this.handleBlur = this.handleBlur.bind(this)
+			this.handleEscape = this.handleEscape.bind(this)
+		}
+		isArray(strOrg: string): { parsed: any[] } | false {
+			if (!(strOrg + '').trim().length) return { parsed: [] }
+
+			const values: any[] = []
+			const strs = (strOrg + '').split(',')
+
+			for (const str of strs) {
+				// Check that the values in the array are of the right type:
+
+				if (this.props.arrayType === 'boolean') {
+					const parsed = JSON.parse(str)
+					if (typeof parsed !== 'boolean') return false // type check failed
+					values.push(parsed)
+				} else if (this.props.arrayType === 'int') {
+					const parsed = parseInt(str, 10)
+
+					if (Number.isNaN(parsed)) return false // type check failed
+					values.push(parsed)
+				} else if (this.props.arrayType === 'float') {
+					const parsed = parseFloat(str)
+					if (Number.isNaN(parsed)) return false // type check failed
+					values.push(parsed)
+				} else {
+					// else this.props.arrayType is 'string'
+					const parsed = str + ''
+					if (typeof parsed !== 'string') return false // type check failed
+					values.push(parsed.trim())
+				}
+			}
+			return { parsed: values }
+		}
+		handleChange(event) {
+			const v = event.target.value
+
+			const arrayObj = this.isArray(v)
+			if (arrayObj) {
+				this.handleEdit(v, arrayObj.parsed)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+			}
+		}
+		handleBlur(event) {
+			const v = event.target.value
+
+			const arrayObj = this.isArray(v)
+			if (arrayObj) {
+				this.handleUpdate(v, arrayObj.parsed)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+				this.setState({
+					valueError: true,
+				})
+			}
+		}
+		handleEscape(event) {
+			const e = event as KeyboardEvent
+			if (e.key === 'Escape') {
+				this.handleDiscard()
+			}
+		}
+		getAttribute() {
+			const value = super.getAttribute()
+			if (Array.isArray(value)) {
+				return value.join(', ')
+			} else {
+				return ''
 			}
 		}
 		render() {
@@ -923,7 +1054,8 @@ const EditAttributeColorPicker = wrapEditAttribute(
 					availableOptions={this.props.options}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
-					onChange={this.handleChange}></ColorPicker>
+					onChange={this.handleChange}
+				></ColorPicker>
 			)
 		}
 	}
@@ -945,7 +1077,8 @@ const EditAttributeIconPicker = wrapEditAttribute(
 					availableOptions={this.props.options}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
-					onChange={this.handleChange}></IconPicker>
+					onChange={this.handleChange}
+				></IconPicker>
 			)
 		}
 	}

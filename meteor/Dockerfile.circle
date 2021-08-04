@@ -1,0 +1,6 @@
+# DEPLOY IMAGE
+FROM node:12.22.1-slim
+COPY meteor/bundle /opt/core
+COPY meteor/docker-entrypoint.sh /opt
+WORKDIR /opt/core/
+CMD ["/opt/docker-entrypoint.sh"]

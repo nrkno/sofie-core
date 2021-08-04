@@ -16,7 +16,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	metaData: {},
 	sourceLayerId: '',
 	outputLayerId: '',
-	content: {},
+	content: { timelineObjects: [] },
 	transitions: {},
 	lifespan: PieceLifespan.WithinPart,
 	adlibPreroll: 0,
@@ -27,6 +27,8 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	adlibDisableOutTransition: false,
 	adlibTransitionKeepAlive: 0,
 	tags: [],
+	expectedPackages: [],
+	hasSideEffects: false,
 }
 // Compile a list of the keys which are allowed to be set
 export const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>

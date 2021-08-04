@@ -1,19 +1,12 @@
 import * as React from 'react'
-import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
-import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Link } from 'react-router-dom'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { StatusResponse } from '../../../lib/api/systemStatus'
 import { getUser, User, Users, getUserRoles, DBUser } from '../../../lib/collections/Users'
 import { Spinner } from '../../lib/Spinner'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { PubSub } from '../../../lib/api/pubsub'
 import { Organizations, DBOrganization, UserRoles } from '../../../lib/collections/Organization'
-import { getAllowStudio, getAllowConfigure, getAllowDeveloper } from '../../lib/localStorage'
 import { unprotectString } from '../../../lib/lib'
-import { throws } from 'assert'
 import { MeteorCall } from '../../../lib/api/methods'
 import { EditAttribute } from '../../lib/EditAttribute'
 
@@ -29,7 +22,7 @@ interface OrganizationState {
 	editUser: string
 }
 
-export const OrganizationPage = translateWithTracker((props: RouteComponentProps) => {
+export const OrganizationPage = translateWithTracker((_props: RouteComponentProps) => {
 	const user = getUser()
 	const organization = user && Organizations.findOne({ _id: user.organizationId })
 
@@ -101,7 +94,7 @@ export const OrganizationPage = translateWithTracker((props: RouteComponentProps
 		render() {
 			const { t } = this.props
 			const org = this.props.organization
-			const { user, roles } = this.getUserAndRoles()
+			// const { user, roles } = this.getUserAndRoles()
 			if (!getUserRoles().admin) {
 				return 'Not Allowed'
 			}

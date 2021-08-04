@@ -141,9 +141,14 @@ $dashboard-button-height: 5.625em;
 				padding: 0 1em;
 				color: #fff;
 
-				&:hover,
-				&:focus {
+				&:hover {
 					background: #3b3b3b;
+					transition: 0.2s background-color;
+				}
+
+				&:focus {
+					background: #fff;
+					color: #000;
 					transition: 0.2s background-color;
 				}
 			}
@@ -158,6 +163,10 @@ $dashboard-button-height: 5.625em;
 				&:hover {
 					opacity: 0.7;
 				}
+			}
+
+			> .adlib-panel__list-view__toolbar__filter__input:focus + .adlib-panel__list-view__toolbar__filter__clear {
+				color: #000;
 			}
 		}
 
@@ -266,10 +275,9 @@ $dashboard-button-height: 5.625em;
 		word-break: break-all;
 		width: $dashboard-button-width;
 		height: $dashboard-button-height;
-		border: none;
 		margin: 4px;
 		vertical-align: top;
-		cursor: pointer;
+		cursor: default;
 
 		@include item-type-colors();
 		@include invalid-overlay();
@@ -331,7 +339,8 @@ $dashboard-button-height: 5.625em;
 			box-shadow: none;
 		}
 
-		&:active {
+		&:active,
+		&.active {
 			&::before {
 				content: ' ';
 				display: block;
