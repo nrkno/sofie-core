@@ -99,6 +99,7 @@
 		"react-router-dom": "^5.2.0",
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.3.5",
+		"simonsson": "file:../../simonsson",
 		"soap": "^0.37.0",
 		"superfly-timeline": "^8.2.1",
 		"timecode": "0.0.4",

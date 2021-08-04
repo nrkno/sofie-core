@@ -43,7 +43,7 @@ export interface IBlueprintHotkeyTrigger extends IBlueprintTrigger {
 	up?: boolean
 }
 
-export type SomeBlueprintTriggeer = IBlueprintHotkeyTrigger
+export type SomeBlueprintTrigger = IBlueprintHotkeyTrigger
 
 export enum PlayoutActions {
 	adlib = 'adlib',
@@ -76,12 +76,17 @@ export interface IBaseFilterLink {
 export type IRundownPlaylistFilterLink =
 	| {
 			object: 'rundownPlaylist'
-			field: 'activeId'
+			field: 'activationId'
 			value: boolean
 	  }
 	| {
 			object: 'rundownPlaylist'
 			field: 'studioId'
+			value: string
+	  }
+	| {
+			object: 'rundownPlaylist'
+			field: 'name'
 			value: string
 	  }
 
@@ -101,19 +106,29 @@ export type IAdLibFilterLink =
 			value: number
 	  }
 	| {
-			object: 'adlib'
+			object: 'adLib'
 			field: 'global' // | 'focused' // as above stated, eventually allowing to select the "focused" adlib
 			value: boolean
 	  }
 	| {
-			object: 'adlib'
+			object: 'adLib'
+			field: 'segment'
+			value: 'current' | 'next'
+	  }
+	| {
+			object: 'adLib'
+			field: 'part'
+			value: 'current' | 'next'
+	  }
+	| {
+			object: 'adLib'
 			field: 'sourceLayerType'
 			value: SourceLayerType[]
 	  }
 	| {
-			object: 'adlib'
+			object: 'adLib'
 			field: 'type'
-			value: 'adlib' | 'adlibAction' | 'clear'
+			value: 'adLib' | 'adLibAction' | 'clear' | 'sticky'
 	  }
 
 export interface IAdlibPlayoutAction extends ITriggeredActionBase {
@@ -206,7 +221,7 @@ export interface IBlueprintTriggeredActions {
 	/** Optional label to specify what this triggered action is supposed to do, a comment basically */
 	name?: string
 	/** A list of triggers that will make the list of actions in `.actions` happen */
-	triggers: SomeBlueprintTriggeer[]
+	triggers: SomeBlueprintTrigger[]
 	/** A list of actions to execute */
 	actions: SomeAction[]
 }

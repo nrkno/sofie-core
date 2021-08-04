@@ -18,6 +18,7 @@ export enum RundownViewEvents {
 	SEGMENT_ZOOM_OFF = 'segmentZoomOff',
 	REVEAL_IN_SHELF = 'revealInShelf',
 	SWITCH_SHELF_TAB = 'switchShelfTab',
+	SHELF_STATE = 'shelfState',
 	GO_TO_PART = 'goToPart',
 	GO_TO_PART_INSTANCE = 'goToPartInstance',
 	SELECT_PIECE = 'selectPiece',
@@ -42,6 +43,10 @@ export interface RevealInShelfEvent extends IEventContext {
 
 export interface SwitchToShelfTabEvent extends IEventContext {
 	tab: ShelfTabs | string
+}
+
+export interface ShelfStateEvent extends IEventContext {
+	state: boolean | 'toggle'
 }
 
 export interface GoToPartEvent extends IEventContext {
@@ -82,6 +87,7 @@ class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.GO_TO_TOP): boolean
 	emit(event: RundownViewEvents.SEGMENT_ZOOM_ON): boolean
 	emit(event: RundownViewEvents.SEGMENT_ZOOM_OFF): boolean
+	emit(event: RundownViewEvents.SHELF_STATE, e: ShelfStateEvent): boolean
 	emit(event: RundownViewEvents.REVEAL_IN_SHELF, e: RevealInShelfEvent): boolean
 	emit(event: RundownViewEvents.SWITCH_SHELF_TAB, e: SwitchToShelfTabEvent): boolean
 	emit(event: RundownViewEvents.GO_TO_PART, e: GoToPartEvent): boolean

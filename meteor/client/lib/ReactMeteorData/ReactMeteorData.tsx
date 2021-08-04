@@ -6,7 +6,7 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
-import { PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
 
 const globalTrackerQueue: Array<Function> = []
@@ -332,12 +332,18 @@ export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | un
  * 		renders so that it isn't torn down and created for every render.
  */
 export function useSubscription(sub: PubSub, ...args: any[]) {
+	const [ready, setReady] = useState<boolean>(false)
+
 	useEffect(() => {
-		const subscription = Meteor.subscribe(sub, ...args)
+		const subscription = meteorSubscribe(sub, ...args)
+		const isReadyComp = Tracker.nonreactive(() => Tracker.autorun(() => setReady(subscription.ready())))
 		return () => {
+			isReadyComp.stop()
 			setTimeout(() => {
 				subscription.stop()
 			}, 100)
 		}
 	}, [stringifyObjects(args)])
+
+	return ready
 }
