@@ -277,7 +277,7 @@ const AdLibListView = withTranslation()(
 									matchFilter(
 										item,
 										this.props.showStyleBase,
-										this.props.uiSegments,
+										this.state.liveSegment,
 										this.props.filter,
 										this.props.searchFilter,
 										uniquenessIds
@@ -460,6 +460,8 @@ export interface AdLibPieceUi extends AdLibPiece {
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
 	message?: string | null
+	uniquenessId?: string
+	segmentId?: SegmentId
 }
 
 export interface AdlibSegmentUi extends DBSegment {
@@ -470,11 +472,15 @@ export interface AdlibSegmentUi extends DBSegment {
 	isNext: boolean
 }
 
-export interface IAdLibPanelProps extends IAdLibFetchAndFilterParams {
+export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
+	playlist: RundownPlaylist
 	studio: Studio
+	showStyleBase: ShowStyleBase
 	studioMode: boolean
+	filter?: RundownLayoutFilterBase
+	includeGlobalAdLibs?: boolean
 	registerHotkeys?: boolean
 	hotkeyGroup: string
 	selectedPiece: BucketAdLibUi | BucketAdLibActionUi | IAdLibListItem | PieceUi | undefined
@@ -489,6 +495,14 @@ interface IState {
 }
 
 export type SourceLayerLookup = { [id: string]: ISourceLayer }
+
+export interface AdLibFetchAndFilterProps {
+	uiSegments: Array<AdlibSegmentUi>
+	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
+	liveSegment: AdlibSegmentUi | undefined
+	sourceLayerLookup: SourceLayerLookup
+	rundownBaselineAdLibs: Array<AdLibPieceUi>
+}
 
 interface IAdLibPanelTrackedProps extends AdLibFetchAndFilterProps {
 	studio: Studio
@@ -532,7 +546,6 @@ export function actionToAdLibPieceUi(
 		nextPieceTags: action.display.nextPieceTags,
 		uniquenessId: action.display.uniquenessId,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
-		uniquenessId: action.display.uniquenessId,
 		noHotKey: action.display.noHotKey,
 	})
 }
@@ -725,7 +738,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 						...piece,
 						hotkey: keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0],
 					}
-					item.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
 					// add one to the usage hash table
 					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
 				}

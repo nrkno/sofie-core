@@ -11,6 +11,7 @@ import {
 	fetchAndFilter,
 	matchFilter,
 	AdLibPanelToolbar,
+	AdLibPieceUi,
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
@@ -19,6 +20,8 @@ import {
 	dashboardElementPosition,
 	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
+	getUnfinishedPieceInstancesGrouped,
+	getNextPieceInstancesGrouped,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
@@ -195,7 +198,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 														heightScale={filter.buttonHeightScale}
 														showThumbnailsInList={filter.showThumbnailsInList}
 														canOverflowHorizontally={filter.overflowHorizontally}
-														displayStyle={filter.displayStyle}>
+														displayStyle={filter.displayStyle}
 													>
 														{adLibListItem.name}
 													</DashboardPieceButton>

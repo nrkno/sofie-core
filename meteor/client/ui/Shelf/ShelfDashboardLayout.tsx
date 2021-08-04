@@ -12,6 +12,10 @@ import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceCountdownPanel } from './PieceCountdownPanel'
 import { NextInfoPanel } from './NextInfoPanel'
+import { BucketAdLibItem } from './RundownViewBuckets'
+import { IAdLibListItem } from './AdLibListItem'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { AdLibPieceUi } from './AdLibPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -117,9 +121,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							playlist={props.playlist}
 							visible={true}
 						/>
-					) : (
-						undefined
-					)
+					) : undefined
 				)}
 			{rundownLayout.actionButtons && (
 				<DashboardActionButtonGroup

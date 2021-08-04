@@ -238,7 +238,7 @@ export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
 	showBuckets: boolean
 	disableContextMenu: boolean
 	/* Customizable region that the layout modifies. */
-	regionId: string
+	regionId: CustomizableRegions
 }
 
 export interface RundownLayout extends RundownLayoutShelfBase {

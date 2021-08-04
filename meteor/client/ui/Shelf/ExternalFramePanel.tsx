@@ -521,7 +521,8 @@ export const ExternalFramePanel = withTranslation()(
 						className="external-frame-panel__iframe"
 						src={this.props.panel.url}
 						sandbox="allow-forms allow-popups allow-scripts allow-same-origin"
-						style={frameStyle}></iframe>
+						style={frameStyle}
+					></iframe>
 					{this.props.panel.disableFocus && <div className="external-frame-panel__overlay" style={frameStyle}></div>}
 				</div>
 			)
