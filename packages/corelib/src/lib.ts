@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { ITranslatableMessage as IBlueprintTranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
 import fastClone = require('fast-clone')
 import { Random } from './random'
@@ -18,12 +17,22 @@ export function getHash(str: string): string {
 	return hash.update(str).digest('base64').replace(/[+/=]/g, '_') // remove +/= from strings, because they cause troubles
 }
 
-/**
- * @enum - A translatable message (i18next)
- */
-export interface ITranslatableMessage extends IBlueprintTranslatableMessage {
-	/** namespace used */
-	namespaces?: Array<string>
+/** Creates a hash based on the object properties (excluding ordering of properties) */
+export function hashObj(obj: any): string {
+	if (typeof obj === 'object') {
+		const keys = Object.keys(obj).sort((a, b) => {
+			if (a > b) return 1
+			if (a < b) return -1
+			return 0
+		})
+
+		const strs: string[] = []
+		for (const key of keys) {
+			strs.push(hashObj(obj[key]))
+		}
+		return getHash(strs.join('|'))
+	}
+	return obj + ''
 }
 
 export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {

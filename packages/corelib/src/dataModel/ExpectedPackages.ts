@@ -1,4 +1,5 @@
 import { ExpectedPackage, Time } from '@sofie-automation/blueprints-integration'
+import { hashObj } from '../lib'
 import {
 	AdLibActionId,
 	BucketAdLibActionId,
@@ -115,4 +116,12 @@ export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageD
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
+}
+
+export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any, '_id'>): string {
+	return hashObj({
+		content: expectedPackage.content,
+		version: expectedPackage.version,
+		// todo: should expectedPackage.sources.containerId be here as well?
+	})
 }

@@ -6,6 +6,7 @@ import { JobContext } from '../jobs'
 import { regenerateSegmentsFromIngestData } from './generation'
 import { runAsIngestJob, runAsRundownLock } from './lock'
 import { CacheForIngest } from './cache'
+import { updateExpectedPackagesOnRundown } from './expectedPackages'
 
 export async function handleExpectedPackagesRegenerate(
 	context: JobContext,

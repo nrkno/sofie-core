@@ -43,6 +43,7 @@ import { CommitIngestData } from './lock'
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import { selectShowStyleVariant } from './rundown'
 import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -250,7 +251,6 @@ export async function calculateSegmentsFromIngestData(
 				)
 				res.adlibActions.push(
 					...postProcessAdLibActions(
-						context,
 						context2,
 						blueprint.blueprintId,
 						rundown._id,
@@ -590,7 +590,6 @@ export async function updateRundownFromIngestData(
 			baselineAdlibActions,
 			{},
 			postProcessGlobalAdLibActions(
-				context,
 				blueprintRundownContext,
 				showStyle.base.blueprintId,
 				dbRundown._id,

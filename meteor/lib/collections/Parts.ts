@@ -1,10 +1,9 @@
-import * as _ from 'underscore'
 import { applyClassToDocument } from '../lib'
 import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { ITranslatableMessage } from '../api/TranslatableMessage'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { PartId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'

@@ -1,11 +1,20 @@
+import {
+	IBlueprintActionManifest,
+	ITranslatableMessage as IBlueprintTranslatableMessage,
+} from '@sofie-automation/blueprints-integration'
 import { TFunction } from 'i18next'
-import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
-import { ArrayElement, unprotectString } from '../lib'
-import { BlueprintId } from '../collections/Blueprints'
-import { BucketAdLibAction } from '../collections/BucketAdlibActions'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/lib'
+import { BucketAdLibAction } from './dataModel/BucketAdLibAction'
+import { BlueprintId } from './dataModel/Ids'
+import { ArrayElement } from './lib'
+import { unprotectString } from './protectedString'
 
-export { ITranslatableMessage }
+/**
+ * @enum - A translatable message (i18next)
+ */
+export interface ITranslatableMessage extends IBlueprintTranslatableMessage {
+	/** namespace used */
+	namespaces?: Array<string>
+}
 
 /**
  * Convenience function to translate a message using a supplied translation function.
@@ -54,7 +63,7 @@ export function interpollateTranslation(key: unknown, ...args: any): string {
 	}
 
 	let interpolated = String(key)
-	for (const placeholder of key.match(/[^{\}]+(?=})/g) || []) {
+	for (const placeholder of key.match(/[^{}]+(?=})/g) || []) {
 		const value = options[placeholder] || placeholder
 		interpolated = interpolated.replace(`{{${placeholder}}}`, value)
 	}
@@ -84,7 +93,7 @@ export function isTranslatableMessage(obj: any): obj is ITranslatableMessage {
 		return false
 	}
 
-	if (namespaces && !Array.isArray(namespaces) && namespaces.find((ns) => typeof ns !== 'string')) {
+	if (namespaces && !Array.isArray(namespaces) && namespaces.find((ns: any) => typeof ns !== 'string')) {
 		return false
 	}
 

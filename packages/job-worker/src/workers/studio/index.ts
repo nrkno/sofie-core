@@ -9,6 +9,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import { setupApmAgent, startTransaction } from '../../profiler'
 import { ISettings, DEFAULT_SETTINGS } from '@sofie-automation/corelib/dist/settings'
+import PLazy = require('p-lazy')
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -53,6 +54,15 @@ const studioMethods = {
 		}
 
 		try {
+			const studioCollection = staticData.collections.Studios
+			const studioId = staticData.studioId
+
+			const pStudio = PLazy.from(async () => {
+				const studio = await studioCollection.findOne(studioId)
+				if (!studio) throw new Error(`Studio "${studioId}" not found!`)
+				return studio
+			})
+
 			const context = Object.seal<JobContext>({
 				directCollections: staticData.collections,
 
@@ -72,6 +82,8 @@ const studioMethods = {
 				queueIngestJob: () => {
 					throw new Error('Not implemented')
 				},
+
+				getStudio: () => pStudio,
 			})
 
 			// Execute function, or fail if no handler

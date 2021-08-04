@@ -65,7 +65,7 @@ import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
-import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 
 const bucketSource = {

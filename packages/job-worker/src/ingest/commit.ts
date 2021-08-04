@@ -2,7 +2,7 @@ import { SegmentId, PartId, RundownPlaylistId, RundownId } from '@sofie-automati
 import { RundownNote, NoteType } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { loadShowStyleBlueprint, loadStudioBlueprint } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { logger } from '../logging'
 import { CacheForPlayout } from '../playout/cache'
@@ -28,6 +28,7 @@ import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { ensureNextPartIsValid } from './updateNext'
 import { getShowStyleCompoundForRundown } from '../showStyles'
+import { updateExpectedPackagesOnRundown } from './expectedPackages'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -134,13 +135,19 @@ export async function CommitIngestOperation(
 					if (oldPlaylist) {
 						// Ensure playlist is regenerated
 						const updatedOldPlaylist = await regeneratePlaylistAndRundownOrder(
+							context,
 							ingestCache.Studio.doc,
 							oldPlaylist
 						)
 
 						if (updatedOldPlaylist) {
 							// ensure the 'old' playout is updated to remove any references to the rundown
-							await updatePlayoutAfterChangingRundownInPlaylist(updatedOldPlaylist, oldPlaylistLock, null)
+							await updatePlayoutAfterChangingRundownInPlaylist(
+								context,
+								updatedOldPlaylist,
+								oldPlaylistLock,
+								null
+							)
 						}
 					}
 				}
@@ -218,7 +225,7 @@ export async function CommitIngestOperation(
 			}
 
 			// Regenerate the full list of expected*Items / packages
-			updateExpectedPackagesOnRundown(ingestCache)
+			await updateExpectedPackagesOnRundown(context, ingestCache)
 
 			// Save the rundowns and regenerated playlist
 			// This will reorder the rundowns a little before the playlist and the contents, but that is ok
@@ -291,6 +298,7 @@ async function generatePlaylistAndRundownsCollection(
 	const finalRundown = getRundown(ingestCache)
 
 	const result = await generatePlaylistAndRundownsCollectionInner(
+		context,
 		ingestCache.Studio.doc,
 		finalRundown,
 		newPlaylistId,

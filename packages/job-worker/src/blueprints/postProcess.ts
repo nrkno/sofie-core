@@ -30,10 +30,11 @@ import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { ArrayElement, ITranslatableMessage, literal, omit } from '@sofie-automation/corelib/dist/lib'
+import { literal, omit } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
+import { processAdLibActionITranslatableMessages } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 /**
  *
@@ -204,7 +205,6 @@ export function postProcessAdLibPieces(
 }
 
 export function postProcessGlobalAdLibActions(
-	context: JobContext,
 	innerContext: ICommonContext,
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
@@ -223,7 +223,6 @@ export function postProcessGlobalAdLibActions(
 }
 
 export function postProcessAdLibActions(
-	context: JobContext,
 	innerContext: ICommonContext,
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
@@ -240,71 +239,6 @@ export function postProcessAdLibActions(
 			...processAdLibActionITranslatableMessages(action, blueprintId),
 		})
 	)
-}
-
-/**
- * A utility function to add namespaces to ITranslatableMessages found in AdLib Actions
- *
- * @export
- * @template K
- * @template T
- * @param {T} itemOrig
- * @param {BlueprintId} blueprintId
- * @param {number} [rank]
- * @return {*}  {(Pick<K, 'display' | 'triggerModes'>)}
- */
-function processAdLibActionITranslatableMessages<
-	K extends {
-		display: IBlueprintActionManifest['display'] & {
-			label: ITranslatableMessage
-			triggerLabel?: ITranslatableMessage
-			description?: ITranslatableMessage
-		}
-		triggerModes?: (ArrayElement<IBlueprintActionManifest['triggerModes']> & {
-			display: ArrayElement<IBlueprintActionManifest['triggerModes']>['display'] & {
-				label: ITranslatableMessage
-				description?: ITranslatableMessage
-			}
-		})[]
-	},
-	T extends IBlueprintActionManifest
->(itemOrig: T, blueprintId: BlueprintId, rank?: number): Pick<K, 'display' | 'triggerModes'> {
-	return {
-		display: {
-			...itemOrig.display,
-			_rank: rank ?? itemOrig.display._rank,
-			label: {
-				...itemOrig.display.label,
-				namespaces: [unprotectString(blueprintId)],
-			},
-			triggerLabel: itemOrig.display.triggerLabel && {
-				...itemOrig.display.triggerLabel,
-				namespaces: [unprotectString(blueprintId)],
-			},
-			description: itemOrig.display.description && {
-				...itemOrig.display.description,
-				namespaces: [unprotectString(blueprintId)],
-			},
-		},
-		triggerModes:
-			itemOrig.triggerModes &&
-			itemOrig.triggerModes.map(
-				(triggerMode): ArrayElement<AdLibAction['triggerModes']> => ({
-					...triggerMode,
-					display: {
-						...triggerMode.display,
-						label: {
-							...triggerMode.display.label,
-							namespaces: [unprotectString(blueprintId)],
-						},
-						description: triggerMode.display.description && {
-							...triggerMode.display.description,
-							namespaces: [unprotectString(blueprintId)],
-						},
-					},
-				})
-			),
-	}
 }
 
 export function postProcessStudioBaselineObjects(

@@ -7,7 +7,7 @@ import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
 import { RundownPlaylist } from './collections/RundownPlaylists'
-import { ITranslatableMessage } from './api/TranslatableMessage'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 	const rundowns = Rundowns.find(

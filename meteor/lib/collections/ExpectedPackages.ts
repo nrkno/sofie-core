@@ -1,5 +1,5 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { hashObj, assertNever } from '../lib'
+import { assertNever } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 
@@ -26,13 +26,6 @@ registerIndex(ExpectedPackages, {
 	rundownId: 1,
 	pieceId: 1,
 })
-export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any, '_id'>): string {
-	return hashObj({
-		content: expectedPackage.content,
-		version: expectedPackage.version,
-		// todo: should expectedPackage.sources.containerId be here as well?
-	})
-}
 export function getPreviewPackageSettings(
 	expectedPackage: ExpectedPackage.Any
 ): ExpectedPackage.SideEffectPreviewSettings | undefined {

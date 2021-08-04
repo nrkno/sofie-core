@@ -30,6 +30,7 @@ import { logger } from '../logging'
 import { saveIntoDb } from '../db/changes'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
+import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export enum PieceType {
 	PIECE = 'piece',

@@ -62,7 +62,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
-import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 

@@ -6,7 +6,7 @@ import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
 import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { RundownId } from '../../../lib/collections/Rundowns'
 

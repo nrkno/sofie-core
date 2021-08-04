@@ -20,7 +20,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { saveIntoDb } from '../../lib/database'
-import { interpollateTranslation, translateMessage } from '../../../lib/api/TranslatableMessage'
+import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export enum PieceType {
 	PIECE = 'piece',

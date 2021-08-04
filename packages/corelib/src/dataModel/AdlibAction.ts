@@ -1,5 +1,6 @@
 import { IBlueprintActionManifest } from '@sofie-automation/blueprints-integration'
-import { ITranslatableMessage, ArrayElement } from '../lib'
+import { ArrayElement } from '../lib'
+import { ITranslatableMessage } from '../TranslatableMessage'
 import { ProtectedStringProperties } from '../protectedString'
 import { RundownId, AdLibActionId, PartId } from './Ids'
 

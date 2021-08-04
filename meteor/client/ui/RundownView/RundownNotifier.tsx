@@ -39,7 +39,7 @@ import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/Ru
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue } from '../../../lib/api/rundownNotifications'
-import { isTranslatableMessage, translateMessage } from '../../../lib/api/TranslatableMessage'
+import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { getAllowStudio } from '../../lib/localStorage'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)

@@ -14,6 +14,7 @@ import {
 	ExpectedPackageDBBase,
 	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageDBFromStudioBaselineObjects,
+	getContentVersionHash,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PartId, SegmentId, RundownId, AdLibActionId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'

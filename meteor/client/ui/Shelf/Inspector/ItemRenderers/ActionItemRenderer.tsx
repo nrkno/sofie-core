@@ -29,7 +29,7 @@ import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists
 import { actionToAdLibPieceUi } from '../../BucketPanel'
 import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from '../../AdLibListItem'
-import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export { isActionItem }
 

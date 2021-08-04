@@ -1,4 +1,4 @@
-import { ITranslatableMessage } from '../lib'
+import { ITranslatableMessage } from '../TranslatableMessage'
 import { RundownId, SegmentId, PartId, PieceId } from './Ids'
 
 export enum NoteType {

@@ -1,5 +1,5 @@
 import { IBlueprintPartDB } from '@sofie-automation/blueprints-integration'
-import { ITranslatableMessage } from '../lib'
+import { ITranslatableMessage } from '../TranslatableMessage'
 import { ProtectedStringProperties } from '../protectedString'
 import { PartId, RundownId, SegmentId } from './Ids'
 import { PartNote } from './Notes'
