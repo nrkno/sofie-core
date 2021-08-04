@@ -1,4 +1,5 @@
 import { Time, TSR } from '@sofie-automation/blueprints-integration'
+import { assertNever } from '../lib'
 import { DeviceConfigManifest } from '../deviceConfig'
 import { PeripheralDeviceId, OrganizationId, StudioId } from './Ids'
 import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
@@ -104,3 +105,31 @@ export type PERIPHERAL_SUBTYPE_PROCESS = '_process'
 export const PERIPHERAL_SUBTYPE_PROCESS: PERIPHERAL_SUBTYPE_PROCESS = '_process'
 export type MOS_DeviceType = 'mos_connection'
 export type Spreadsheet_DeviceType = 'spreadsheet_connection'
+
+export function getExternalNRCSName(device: PeripheralDevice | undefined): string {
+	if (device) {
+		if (device.category === PeripheralDeviceCategory.INGEST) {
+			if (device.type === PeripheralDeviceType.MOS) {
+				// This is a hack, to be replaced with something better later:
+				return 'ENPS'
+			} else if (device.type === PeripheralDeviceType.INEWS) {
+				return 'iNews'
+			} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
+				return 'Google Sheet'
+			} else if (
+				device.type === PeripheralDeviceType.PLAYOUT ||
+				device.type === PeripheralDeviceType.MEDIA_MANAGER ||
+				device.type === PeripheralDeviceType.PACKAGE_MANAGER
+			) {
+				// These aren't ingest gateways
+			} else {
+				assertNever(device.type)
+			}
+		}
+		// The device type is unknown to us:
+		return `Unknown NRCS: "${device.type}"`
+	} else {
+		// undefined NRCS:
+		return 'NRCS'
+	}
+}

@@ -40,6 +40,9 @@ import {
 } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
+import { getShowStyleCompoundForRundown } from '../showStyles'
+import { selectShowStyleVariant } from './rundown'
+import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -97,7 +100,7 @@ export async function calculateSegmentsFromIngestData(
 	}
 
 	if (ingestSegments.length > 0) {
-		const pShowStyle = getShowStyleCompoundForRundown(rundown)
+		const pShowStyle = getShowStyleCompoundForRundown(context, rundown)
 		const pAllRundownWatchedPackages = getWatchedPackagesHelper(
 			context,
 			allRundownWatchedPackages0,
@@ -439,6 +442,10 @@ export async function updateRundownFromIngestData(
 
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
 
+	const pPeripheralDevice = peripheralDeviceId
+		? context.directCollections.PeripheralDevices.findOne(peripheralDeviceId)
+		: undefined
+
 	const selectShowStyleContext = new StudioUserContext(
 		{
 			name: 'selectShowStyleVariant',
@@ -449,7 +456,7 @@ export async function updateRundownFromIngestData(
 		context.studioBlueprint
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	const showStyle = await selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
+	const showStyle = await selectShowStyleVariant(context, selectShowStyleContext, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Error('Blueprint rejected the rundown')
@@ -506,6 +513,7 @@ export async function updateRundownFromIngestData(
 		showStyle.base
 	)
 
+	const peripheralDevice = await pPeripheralDevice
 	const dbRundownData = literal<DBRundown>({
 		...rundownRes.rundown,
 		notes: rundownNotes,
@@ -528,7 +536,7 @@ export async function updateRundownFromIngestData(
 		created: cache.Rundown.doc?.created ?? getCurrentTime(),
 		modified: getCurrentTime(),
 
-		peripheralDeviceId: peripheralDeviceId ?? undefined,
+		peripheralDeviceId: peripheralDevice?._id,
 		externalNRCSName: getExternalNRCSName(peripheralDevice),
 
 		// validated later

@@ -23,6 +23,7 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { ensureNextPartIsValid } from './updateNext'
+import { getShowStyleCompoundForRundown } from '../showStyles'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -49,7 +50,7 @@ export async function CommitIngestOperation(
 		return
 	}
 
-	const showStyle = data.showStyle ?? (await getShowStyleCompoundForRundown(rundown))
+	const showStyle = data.showStyle ?? (await getShowStyleCompoundForRundown(context, rundown))
 	const blueprint =
 		(data.showStyle ? data.blueprint : undefined) ??
 		(await loadShowStyleBlueprint(context.directCollections, showStyle))
@@ -250,14 +251,7 @@ export async function CommitIngestOperation(
 				updatePartInstanceRanks(playoutCache, changedSegmentsInfo)
 
 				// sync changes to the 'selected' partInstances
-				await syncChangesToPartInstances(
-					context,
-					playoutCache,
-					ingestCache,
-					showStyle,
-					blueprint.blueprint,
-					newRundown
-				)
+				await syncChangesToPartInstances(context, playoutCache, ingestCache, showStyle, blueprint, newRundown)
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this

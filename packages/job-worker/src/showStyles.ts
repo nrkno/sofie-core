@@ -1,29 +1,10 @@
-// import { check } from '../../lib/check'
-// import { registerClassToMeteorMethods } from '../methods'
-// import { NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
-// import { Meteor } from 'meteor/meteor'
-// import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-// import {
-// 	ShowStyleVariants,
-// 	ShowStyleVariantId,
-// 	ShowStyleCompound,
-// 	ShowStyleVariant,
-// } from '../../lib/collections/ShowStyleVariants'
-// import { protectString, getRandomId } from '../../lib/lib'
-// import { RundownLayouts } from '../../lib/collections/RundownLayouts'
-// import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-// import { OrganizationContentWriteAccess } from '../security/organization'
-// import { ShowStyleContentWriteAccess } from '../security/showStyle'
-// import { Credentials } from '../security/lib/credentials'
-// import { OrganizationId } from '../../lib/collections/Organization'
-// import { ReadonlyDeep } from 'type-fest'
-// import { DBRundown } from '../../lib/collections/Rundowns'
-
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { JobContext } from './jobs'
 import * as deepmerge from 'deepmerge'
+import { ReadonlyDeep } from 'type-fest'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 export async function getShowStyleCompound(
 	context: JobContext,
@@ -36,30 +17,27 @@ export async function getShowStyleCompound(
 
 	return createShowStyleCompound(showStyleBase, showStyleVariant)
 }
-// export async function getShowStyleCompoundForRundown(
-// 	rundown: Pick<ReadonlyDeep<DBRundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
-// ): Promise<ShowStyleCompound> {
-// 	const [showStyleBase, showStyleVariant] = await Promise.all([
-// 		ShowStyleBases.findOneAsync({ _id: rundown.showStyleBaseId }),
-// 		ShowStyleVariants.findOneAsync({ _id: rundown.showStyleVariantId }),
-// 	])
-// 	if (!showStyleBase)
-// 		throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" for Rundown "${rundown._id}" not found`)
-// 	if (!showStyleVariant)
-// 		throw new Meteor.Error(
-// 			404,
-// 			`ShowStyleVariant "${rundown.showStyleVariantId}" for Rundown "${rundown._id}" not found`
-// 		)
+export async function getShowStyleCompoundForRundown(
+	context: JobContext,
+	rundown: Pick<ReadonlyDeep<DBRundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
+): Promise<ShowStyleCompound> {
+	const [showStyleBase, showStyleVariant] = await Promise.all([
+		context.directCollections.ShowStyleBases.findOne({ _id: rundown.showStyleBaseId }),
+		context.directCollections.ShowStyleVariants.findOne({ _id: rundown.showStyleVariantId }),
+	])
+	if (!showStyleBase)
+		throw new Error(`ShowStyleBase "${rundown.showStyleBaseId}" for Rundown "${rundown._id}" not found`)
+	if (!showStyleVariant)
+		throw new Error(`ShowStyleVariant "${rundown.showStyleVariantId}" for Rundown "${rundown._id}" not found`)
 
-// 	const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
-// 	if (!compound)
-// 		throw new Meteor.Error(
-// 			404,
-// 			`Failed to compile ShowStyleCompound for base "${rundown.showStyleBaseId}" and variant  "${rundown.showStyleVariantId}"`
-// 		)
+	const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
+	if (!compound)
+		throw new Error(
+			`Failed to compile ShowStyleCompound for base "${rundown.showStyleBaseId}" and variant  "${rundown.showStyleVariantId}"`
+		)
 
-// 	return compound
-// }
+	return compound
+}
 
 export function createShowStyleCompound(
 	showStyleBase: DBShowStyleBase,
@@ -80,92 +58,3 @@ export function createShowStyleCompound(
 		_rundownVersionHashVariant: showStyleVariant._rundownVersionHash,
 	}
 }
-
-// export async function insertShowStyleBase(context: MethodContext | Credentials): Promise<ShowStyleBaseId> {
-// 	const access = OrganizationContentWriteAccess.studio(context)
-// 	return insertShowStyleBaseInner(access.organizationId)
-// }
-// export async function insertShowStyleBaseInner(organizationId: OrganizationId | null): Promise<ShowStyleBaseId> {
-// 	const showStyleBase: ShowStyleBase = {
-// 		_id: getRandomId(),
-// 		name: 'New show style',
-// 		organizationId: organizationId,
-// 		blueprintId: protectString(''),
-// 		outputLayers: [],
-// 		sourceLayers: [],
-// 		blueprintConfig: {},
-// 		_rundownVersionHash: '',
-// 	}
-// 	ShowStyleBases.insert(showStyleBase)
-// 	await insertShowStyleVariantInner(showStyleBase, 'Default')
-// 	return showStyleBase._id
-// }
-// export async function insertShowStyleVariant(
-// 	context: MethodContext | Credentials,
-// 	showStyleBaseId: ShowStyleBaseId,
-// 	name?: string
-// ): Promise<ShowStyleVariantId> {
-// 	check(showStyleBaseId, String)
-
-// 	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
-// 	const showStyleBase = access.showStyleBase
-// 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
-
-// 	return insertShowStyleVariantInner(showStyleBase, name)
-// }
-// export async function insertShowStyleVariantInner(
-// 	showStyleBase: ShowStyleBase,
-// 	name?: string
-// ): Promise<ShowStyleVariantId> {
-// 	return ShowStyleVariants.insertAsync({
-// 		_id: getRandomId(),
-// 		showStyleBaseId: showStyleBase._id,
-// 		name: name || 'Variant',
-// 		blueprintConfig: {},
-// 		_rundownVersionHash: '',
-// 	})
-// }
-// export async function removeShowStyleBase(context: MethodContext, showStyleBaseId: ShowStyleBaseId): Promise<void> {
-// 	check(showStyleBaseId, String)
-// 	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
-// 	const showStyleBase = access.showStyleBase
-// 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
-
-// 	await Promise.allSettled([
-// 		ShowStyleBases.removeAsync(showStyleBase._id),
-// 		ShowStyleVariants.removeAsync({
-// 			showStyleBaseId: showStyleBase._id,
-// 		}),
-// 		RundownLayouts.removeAsync({
-// 			showStyleBaseId: showStyleBase._id,
-// 		}),
-// 	])
-// }
-// export async function removeShowStyleVariant(
-// 	context: MethodContext,
-// 	showStyleVariantId: ShowStyleVariantId
-// ): Promise<void> {
-// 	check(showStyleVariantId, String)
-
-// 	const access = ShowStyleContentWriteAccess.showStyleVariant(context, showStyleVariantId)
-// 	const showStyleVariant = access.showStyleVariant
-// 	if (!showStyleVariant) throw new Meteor.Error(404, `showStyleVariant "${showStyleVariantId}" not found`)
-
-// 	await ShowStyleVariants.removeAsync(showStyleVariant._id)
-// }
-
-// class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
-// 	async insertShowStyleBase() {
-// 		return insertShowStyleBase(this)
-// 	}
-// 	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
-// 		return insertShowStyleVariant(this, showStyleBaseId)
-// 	}
-// 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
-// 		return removeShowStyleBase(this, showStyleBaseId)
-// 	}
-// 	async removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId) {
-// 		return removeShowStyleVariant(this, showStyleVariantId)
-// 	}
-// }
-// registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)
