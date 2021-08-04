@@ -30,6 +30,7 @@ export enum StudioJobs {
 	TakeNextPart = 'takeNextPart',
 	DisableNextPiece = 'disableNextPiece',
 	RemovePlaylist = 'removePlaylist',
+	RegeneratePlaylist = 'regeneratePlaylist',
 
 	OnPiecePlaybackStarted = 'onPiecePlaybackStarted',
 	OnPiecePlaybackStopped = 'onPiecePlaybackStopped',
@@ -98,6 +99,9 @@ export interface DisableNextPieceProps extends RundownPlayoutPropsBase {
 	undo: boolean
 }
 export type RemovePlaylistProps = RundownPlayoutPropsBase
+export interface RegeneratePlaylistProps extends RundownPlayoutPropsBase {
+	purgeExisting: boolean
+}
 
 export interface OnPiecePlaybackStartedProps extends RundownPlayoutPropsBase {
 	pieceInstanceId: PieceInstanceId
@@ -145,6 +149,7 @@ export type StudioJobFunc = {
 	[StudioJobs.TakeNextPart]: (data: TakeNextPartProps) => void
 	[StudioJobs.DisableNextPiece]: (data: DisableNextPieceProps) => void
 	[StudioJobs.RemovePlaylist]: (data: RemovePlaylistProps) => void
+	[StudioJobs.RegeneratePlaylist]: (data: RegeneratePlaylistProps) => void
 
 	[StudioJobs.OnPiecePlaybackStarted]: (data: OnPiecePlaybackStartedProps) => void
 	[StudioJobs.OnPiecePlaybackStopped]: (data: OnPiecePlaybackStoppedProps) => void

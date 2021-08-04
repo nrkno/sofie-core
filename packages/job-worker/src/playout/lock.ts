@@ -1,6 +1,7 @@
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownPlayoutPropsBase } from '@sofie-automation/corelib/dist/worker/studio'
+import { ReadonlyDeep } from 'type-fest'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { JobContext } from '../jobs'
 import { PlaylistLock, lockPlaylist } from '../jobs/lock'
@@ -26,19 +27,7 @@ export async function runAsPlayoutJob<TRes>(
 	}
 
 	return runInPlaylistLock(context, playlist._id, async (playlistLock) => {
-		const initCache = await CacheForPlayoutPreInit.createPreInit(context, playlistLock, playlist, false)
-
-		if (preInitFcn) {
-			await preInitFcn(initCache)
-		}
-
-		const fullCache = await CacheForPlayout.fromInit(context, initCache)
-
-		const res = await fcn(fullCache)
-
-		await fullCache.saveAllToDatabase()
-
-		return res
+		return runWithPlaylistCache(context, playlist, playlistLock, preInitFcn, fcn)
 	})
 }
 
@@ -77,4 +66,26 @@ export async function runInPlaylistLock<TRes>(
 	} finally {
 		await playlistLock.release()
 	}
+}
+
+export async function runWithPlaylistCache<TRes>(
+	context: JobContext,
+	playlist: ReadonlyDeep<DBRundownPlaylist>,
+	lock: PlaylistLock,
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
+	fcn: (cache: CacheForPlayout) => Promise<TRes>
+): Promise<TRes> {
+	const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
+
+	if (preInitFcn) {
+		await preInitFcn(initCache)
+	}
+
+	const fullCache = await CacheForPlayout.fromInit(context, initCache)
+
+	const res = await fcn(fullCache)
+
+	await fullCache.saveAllToDatabase()
+
+	return res
 }

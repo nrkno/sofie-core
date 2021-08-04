@@ -18,7 +18,6 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { IngestActions } from './ingest/actions'
 import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstanceId } from '../../lib/collections/PieceInstances'
@@ -596,7 +595,10 @@ export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylis
 		return ClientAPI.responseError(`Rundown Playlist is active, please deactivate it before regenerating it.`)
 	}
 
-	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(access, rundownPlaylistId))
+	return runUserAction(playlist.studioId, StudioJobs.RegeneratePlaylist, {
+		playlistId: playlist._id,
+		purgeExisting: false,
+	})
 }
 
 export async function bucketAdlibImport(

@@ -1,11 +1,16 @@
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getHash } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { RemovePlaylistProps } from '@sofie-automation/corelib/dist/worker/studio'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { RegeneratePlaylistProps, RemovePlaylistProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from './jobs'
-import { runAsPlayoutLock } from './playout/lock'
+import { logger } from './logging'
+import { resetRundownPlaylist } from './playout/lib'
+import { runAsPlayoutLock, runWithPlaylistCache } from './playout/lock'
+import { updateTimeline } from './playout/timeline'
 
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
 	// TODO - should this lock each rundown for removal? Perhaps by putting work onto the ingest queue?
@@ -14,6 +19,65 @@ export async function handleRemoveRundownPlaylist(context: JobContext, data: Rem
 			await removeRundownPlaylistFromDb(context, playlist)
 		}
 	})
+}
+
+/**
+ * Run the cached data through blueprints in order to re-generate the Rundown
+ */
+export async function handleRegenerateRundownPlaylist(
+	context: JobContext,
+	data: RegeneratePlaylistProps
+): Promise<void> {
+	const ingestData = await runAsPlayoutLock(context, data, async (playlist, playlistLock) => {
+		if (!playlist) throw new Error(`Rundown Playlist "${data.playlistId}" not found`)
+
+		logger.info(`Regenerating rundown playlist ${playlist.name} (${playlist._id})`)
+
+		const rundowns: Array<Pick<DBRundown, '_id' | 'externalId'>> =
+			await context.directCollections.Rundowns.findFetch(
+				{ playlistId: playlist },
+				{ projection: { _id: 1, externalId: 1 } }
+			)
+		if (rundowns.length === 0) return []
+
+		// Cleanup old state
+		if (data.purgeExisting) {
+			await removeRundownsFromDb(
+				context,
+				rundowns.map((r) => r._id)
+			)
+		} else {
+			await runWithPlaylistCache(context, playlist, playlistLock, null, async (cache) => {
+				await resetRundownPlaylist(context, cache)
+
+				if (cache.Playlist.doc.activationId) {
+					await updateTimeline(context, cache)
+				}
+			})
+		}
+
+		// exit the sync function, so the cache is written back
+		return rundowns.map((rundown) => ({
+			rundownExternalId: rundown.externalId,
+		}))
+	})
+
+	// Fire off all the updates in parallel, in their own low-priority tasks
+	await Promise.all(
+		ingestData.map(async ({ rundownExternalId }) => {
+			const job = await context.queueIngestJob(IngestJobs.RegenerateRundown, {
+				rundownExternalId: rundownExternalId,
+				peripheralDeviceId: null,
+			})
+
+			// Attach a catch, to 'handle' the rejection in the background
+			job.complete.catch((e: any) => {
+				logger.error(
+					`Regenerate of Rundown "${rundownExternalId}" for RundownPlaylist "${data.playlistId}" failed: ${e}`
+				)
+			})
+		})
+	)
 }
 
 /**

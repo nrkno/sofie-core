@@ -1,25 +1,17 @@
-import { getPeripheralDeviceFromRundown, runIngestOperation } from './lib'
+import { getPeripheralDeviceFromRundown } from './lib'
 import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { Part } from '../../../lib/collections/Parts'
-import { check } from '../../../lib/check'
 import { logger } from '../../logging'
-import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
-import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
-import { runPlayoutOperationWithLock, PlayoutLockFunctionPriority } from '../playout/lockFunction'
-import { removeRundownsFromDb } from '../rundownPlaylist'
-import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { QueueStudioJob } from '../../worker/worker'
-import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -100,68 +92,5 @@ export namespace IngestActions {
 				currentPlayingPartExternalId
 			)
 		}
-	}
-	/**
-	 * Run the cached data through blueprints in order to re-generate the Rundown
-	 */
-	export function regenerateRundownPlaylist(
-		access: VerifiedRundownPlaylistContentAccess | null,
-		rundownPlaylistId: RundownPlaylistId,
-		purgeExisting?: boolean
-	) {
-		check(rundownPlaylistId, String)
-
-		const ingestData = waitForPromise(
-			runPlayoutOperationWithLock(
-				access,
-				'regenerateRundownPlaylist',
-				rundownPlaylistId,
-				PlayoutLockFunctionPriority.MISC,
-				async () => {
-					const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
-					if (!rundownPlaylist)
-						throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
-
-					const studio = rundownPlaylist.getStudio()
-					if (!studio) {
-						throw new Meteor.Error(
-							404,
-							`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`
-						)
-					}
-
-					logger.info(`Regenerating rundown playlist ${rundownPlaylist.name} (${rundownPlaylist._id})`)
-
-					const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
-					if (rundowns.length === 0) return []
-
-					// Cleanup old state
-					if (purgeExisting) {
-						await removeRundownsFromDb(rundowns.map((r) => r._id))
-					} else {
-						const job = await QueueStudioJob(StudioJobs.ResetRundownPlaylist, rundownPlaylist.studioId, {
-							playlistId: rundownPlaylist._id,
-						})
-						await job.complete
-					}
-
-					// exit the sync function, so the cache is written back
-					return rundowns.map((rundown) => ({
-						rundownExternalId: rundown.externalId,
-						studio,
-					}))
-				}
-			)
-		)
-
-		// Fire off all the updates in parallel, in their own low-priority tasks
-		waitForPromiseAll(
-			ingestData.map(async ({ rundownExternalId, studio }) =>
-				runIngestOperation(studio._id, IngestJobs.RegenerateRundown, {
-					rundownExternalId: rundownExternalId,
-					peripheralDeviceId: null,
-				})
-			)
-		)
 	}
 }

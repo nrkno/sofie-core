@@ -12,7 +12,7 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
 	async updateStudioBaseline(studioId: StudioId): Promise<string | false> {
-		const res = await QueueStudioJob(StudioJobs.UpdateStudioBaseline, studioId, {})
+		const res = await QueueStudioJob(StudioJobs.UpdateStudioBaseline, studioId, undefined)
 		return res.complete
 	}
 	async shouldUpdateStudioBaseline(studioId: StudioId) {

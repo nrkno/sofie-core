@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
-import { IngestActions } from './actions'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Settings } from '../../../lib/Settings'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Rundowns } from '../../../lib/collections/Rundowns'
@@ -9,6 +8,8 @@ import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { QueueStudioJob } from '../../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
@@ -18,7 +19,17 @@ if (!Settings.enableUserAccounts) {
 		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
 			try {
 				check(rundownPlaylistId, String)
-				IngestActions.regenerateRundownPlaylist(null, rundownPlaylistId, purgeExisting)
+
+				const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+				if (!playlist) throw new Error('Playlist not found')
+
+				const job = waitForPromise(
+					QueueStudioJob(StudioJobs.RegeneratePlaylist, playlist.studioId, {
+						playlistId: playlist._id,
+						purgeExisting: !!purgeExisting,
+					})
+				)
+				waitForPromise(job.complete)
 			} catch (e) {
 				logger.error(e)
 				throw e
