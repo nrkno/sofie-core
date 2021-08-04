@@ -1,11 +1,13 @@
 import { IDirectCollections } from '../db'
 import { ReadonlyDeep } from 'type-fest'
-import { WrappedStudioBlueprint } from '../blueprints/cache'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ISettings } from '@sofie-automation/corelib/dist/settings'
 import { ApmSpan } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
 export { ApmSpan }
 
@@ -22,7 +24,6 @@ export interface JobContext {
 	readonly studioId: StudioId
 	readonly studio: ReadonlyDeep<DBStudio>
 
-	// TODO - should this be here?
 	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 
 	startSpan(name: string): ApmSpan
@@ -31,4 +32,10 @@ export interface JobContext {
 		name: T,
 		data: Parameters<IngestJobFunc[T]>[0]
 	): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> // TODO - this return type isnt the best..
+
+	getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBase>
+	getShowStyleVariant(id: ShowStyleVariantId): Promise<DBShowStyleVariant>
+	getShowStyleCompound(variantId: ShowStyleVariantId, baseId?: ShowStyleBaseId): Promise<ShowStyleCompound>
+
+	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<WrappedShowStyleBlueprint>
 }

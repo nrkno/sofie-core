@@ -1,12 +1,23 @@
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { loadStudioBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { loadStudioBlueprint, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { IDirectCollections } from '../db'
-import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	BlueprintId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
 export interface WorkerDataCache {
 	studio: DBStudio
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+
+	showStyleBases: Map<ShowStyleBaseId, DBShowStyleBase | null> // null when not found
+	showStyleVariants: Map<ShowStyleVariantId, DBShowStyleVariant | null> // null when not found
+	showStyleBlueprints: Map<BlueprintId, WrappedShowStyleBlueprint | null> // null when not found
 }
 
 export interface InvalidateWorkerDataCache {
@@ -27,6 +38,10 @@ export async function loadWorkerDataCache(
 	return {
 		studio,
 		studioBlueprint,
+
+		showStyleBases: new Map(),
+		showStyleVariants: new Map(),
+		showStyleBlueprints: new Map(),
 	}
 }
 
@@ -63,4 +78,28 @@ export async function invalidateWorkerDataCache(
 	if (updateStudioBlueprint || cache.studio) {
 		// TODO - invalidate studioBluepint config
 	}
+
+	if (data.studio) {
+		// Ensure showStyleBases & showStyleVariants are all still valid for the studio
+		const allowedBases = new Set(cache.studio.supportedShowStyleBase)
+
+		for (const id of Array.from(cache.showStyleBases.keys())) {
+			if (!allowedBases.has(id)) {
+				cache.showStyleBases.delete(id)
+			}
+		}
+
+		for (const [id, v] of Array.from(cache.showStyleVariants.entries())) {
+			if (v === null || !allowedBases.has(v.showStyleBaseId)) {
+				cache.showStyleVariants.delete(id)
+			}
+		}
+
+		// TODO - can we delete any blueprints
+	}
+	// TODO - handle showStyleBases & showStyleVariants changes
+
+	// TODO - showStyleBlueprints on change
+
+	// TODO - showStyleBlueprints inactivity timeout?
 }
