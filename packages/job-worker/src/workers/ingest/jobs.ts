@@ -23,6 +23,12 @@ import {
 	handleUserUnsyncRundown,
 } from '../../ingest/rundownInput'
 import { handleExpectedPackagesRegenerate, handleUpdatedPackageInfoForRundown } from '../../ingest/packageInfo'
+import {
+	handleBucketEmpty,
+	handleBucketItemImport,
+	handleBucketRemoveAdlibAction,
+	handleBucketRemoveAdlibPiece,
+} from '../../ingest/bucketAdlibs'
 
 type ExecutableFunction<T extends keyof IngestJobFunc> = (
 	context: JobContext,
@@ -57,4 +63,9 @@ export const ingestJobHandlers: IngestJobHandlers = {
 
 	[IngestJobs.UserRemoveRundown]: handleUserRemoveRundown,
 	[IngestJobs.UserUnsyncRundown]: handleUserUnsyncRundown,
+
+	[IngestJobs.BucketItemImport]: handleBucketItemImport,
+	[IngestJobs.BucketRemoveAdlibPiece]: handleBucketRemoveAdlibPiece,
+	[IngestJobs.BucketRemoveAdlibAction]: handleBucketRemoveAdlibAction,
+	[IngestJobs.BucketEmpty]: handleBucketEmpty,
 }
