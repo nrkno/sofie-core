@@ -8,6 +8,7 @@ import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
+import { ProcessedStudioConfig } from '../blueprints/config'
 
 export { ApmSpan }
 
@@ -32,6 +33,8 @@ export interface JobContext {
 		name: T,
 		data: Parameters<IngestJobFunc[T]>[0]
 	): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> // TODO - this return type isnt the best..
+
+	getStudioBlueprintConfig(): ProcessedStudioConfig
 
 	getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBase>
 	getShowStyleVariant(id: ShowStyleVariantId): Promise<DBShowStyleVariant>

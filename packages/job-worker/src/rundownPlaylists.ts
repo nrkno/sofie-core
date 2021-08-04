@@ -167,7 +167,7 @@ export function produceRundownPlaylistInfoFromRundown(
 						tempSendUserNotesIntoBlackHole: true,
 					},
 					studio,
-					context.studioBlueprint
+					context.getStudioBlueprintConfig()
 				),
 				unprotectObjectArray(clone<Array<DBRundown>>(rundowns))
 		  )

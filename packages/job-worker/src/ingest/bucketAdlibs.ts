@@ -87,7 +87,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
 		},
 		studio,
-		context.studioBlueprint,
+		context.getStudioBlueprintConfig(),
 		showStyle,
 		blueprint,
 		watchedPackages

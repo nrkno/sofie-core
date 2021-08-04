@@ -14,6 +14,7 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
+import { preprocessStudioConfig, ProcessedStudioConfig } from '../blueprints/config'
 
 export class JobContextBase implements JobContext {
 	constructor(
@@ -46,6 +47,17 @@ export class JobContextBase implements JobContext {
 		_data: Parameters<IngestJobFunc[T]>[0]
 	): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> {
 		throw new Error('Method not implemented.')
+	}
+
+	getStudioBlueprintConfig(): ProcessedStudioConfig {
+		if (!this.cacheData.studioBlueprintConfig) {
+			this.cacheData.studioBlueprintConfig = preprocessStudioConfig(
+				this.cacheData.studio,
+				this.cacheData.studioBlueprint.blueprint
+			)
+		}
+
+		return clone(this.cacheData.studioBlueprintConfig)
 	}
 
 	async getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBase> {

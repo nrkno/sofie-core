@@ -37,12 +37,10 @@ import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/Show
 import {
 	getShowStyleBlueprintConfig,
 	getShowStyleConfigRef,
-	getStudioBlueprintConfig,
 	getStudioConfigRef,
-	resetShowStyleBlueprintConfig,
-	resetStudioBlueprintConfig,
+	ProcessedStudioConfig,
 } from '../config'
-import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../cache'
+import { WrappedShowStyleBlueprint } from '../cache'
 import _ = require('underscore')
 import { WatchedPackagesHelper } from './watchedPackages'
 import { INoteBase, NoteType } from '@sofie-automation/corelib/dist/dataModel/Notes'
@@ -105,7 +103,7 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	constructor(
 		contextInfo: ContextInfo,
 		public readonly studio: ReadonlyDeep<DBStudio>,
-		public readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+		public readonly studioBlueprintConfig: ProcessedStudioConfig
 	) {
 		super(contextInfo)
 	}
@@ -119,10 +117,7 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	}
 
 	getStudioConfig(): unknown {
-		return getStudioBlueprintConfig(this.studioBlueprint, this.studio)
-	}
-	protected async wipeCache(): Promise<void> {
-		resetStudioBlueprintConfig(this.studioBlueprint, this.studio)
+		return this.studioBlueprintConfig
 	}
 	getStudioConfigRef(configKey: string): string {
 		return getStudioConfigRef(this.studio._id, configKey)
@@ -137,10 +132,10 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 	constructor(
 		contextInfo: UserContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		studioBlueprintConfig: ProcessedStudioConfig,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, studioBlueprint)
+		super(contextInfo, studio, studioBlueprintConfig)
 	}
 
 	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
@@ -155,9 +150,9 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 	constructor(
 		contextInfo: UserContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+		studioBlueprintConfig: ProcessedStudioConfig
 	) {
-		super(contextInfo, studio, studioBlueprint)
+		super(contextInfo, studio, studioBlueprintConfig)
 		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
 	}
 
@@ -194,19 +189,15 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	constructor(
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		studioBlueprintConfig: ProcessedStudioConfig,
 		public readonly showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		public readonly showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>
 	) {
-		super(contextInfo, studio, studioBlueprint)
+		super(contextInfo, studio, studioBlueprintConfig)
 	}
 
 	getShowStyleConfig(): unknown {
 		return getShowStyleBlueprintConfig(this.showStyleBlueprint, this.showStyleCompound)
-	}
-	async wipeCache(): Promise<void> {
-		await super.wipeCache()
-		resetShowStyleBlueprintConfig(this.showStyleBlueprint, this.showStyleCompound)
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return getShowStyleConfigRef(this.showStyleCompound.showStyleVariantId, configKey)
@@ -220,12 +211,12 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 	constructor(
 		contextInfo: UserContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, studioBlueprint, showStyleCompound, showStyleBlueprint)
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprint)
 		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
 	}
 
@@ -272,12 +263,12 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 	constructor(
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
-		super(contextInfo, studio, studioBlueprint, showStyleCompound, showStyleBlueprint)
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprint)
 
 		this.rundownId = unprotectString(rundown._id)
 		this.rundown = unprotectObject(rundown)
@@ -289,7 +280,7 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 export class RundownEventContext extends RundownContext implements IEventContext {
 	constructor(
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 		rundown: ReadonlyDeep<DBRundown>
@@ -300,7 +291,7 @@ export class RundownEventContext extends RundownContext implements IEventContext
 				identifier: `rundownId=${rundown._id},blueprintId=${showStyleCompound.blueprintId}`,
 			},
 			studio,
-			studioBlueprint,
+			studioBlueprintConfig,
 			showStyleCompound,
 			showStyleBlueprint,
 			rundown
@@ -322,13 +313,13 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 	constructor(
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 		rundown: ReadonlyDeep<DBRundown>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, studioBlueprint, showStyleCompound, showStyleBlueprint, rundown)
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprint, rundown)
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
@@ -373,7 +364,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 	constructor(
 		eventName: string,
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 		rundown: ReadonlyDeep<DBRundown>,
@@ -385,7 +376,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 				identifier: `rundownId=${rundown._id},blueprintId=${showStyleCompound.blueprintId}`,
 			},
 			studio,
-			studioBlueprint,
+			studioBlueprintConfig,
 			showStyleCompound,
 			showStyleBlueprint,
 			rundown
@@ -417,7 +408,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 
 	constructor(
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>,
+		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 		playlist: ReadonlyDeep<DBRundownPlaylist>,
@@ -432,7 +423,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 				identifier: `rundownId=${rundown._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
 			},
 			studio,
-			studioBlueprint,
+			studioBlueprintConfig,
 			showStyleCompound,
 			showStyleBlueprint,
 			rundown

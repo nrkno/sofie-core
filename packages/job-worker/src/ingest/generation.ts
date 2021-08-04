@@ -131,7 +131,7 @@ export async function calculateSegmentsFromIngestData(
 					identifier: `rundownId=${rundown._id},segmentId=${segmentId}`,
 				},
 				cache.Studio.doc,
-				context.studioBlueprint,
+				context.getStudioBlueprintConfig(),
 				showStyle,
 				blueprint,
 				rundown,
@@ -451,7 +451,7 @@ export async function updateRundownFromIngestData(
 			tempSendUserNotesIntoBlackHole: true,
 		},
 		cache.Studio.doc,
-		context.studioBlueprint
+		context.getStudioBlueprintConfig()
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
 	const showStyle = await selectShowStyleVariant(context, selectShowStyleContext, extendedIngestRundown)
@@ -478,7 +478,7 @@ export async function updateRundownFromIngestData(
 			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
 		},
 		cache.Studio.doc,
-		context.studioBlueprint,
+		context.getStudioBlueprintConfig(),
 		showStyle.compound,
 		showStyleBlueprint,
 		rundownBaselinePackages

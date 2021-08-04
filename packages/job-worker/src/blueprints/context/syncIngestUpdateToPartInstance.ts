@@ -53,7 +53,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'current' | 'next'
 	) {
-		super(contextInfo, studio, _context.studioBlueprint, showStyleCompound, showStyleBlueprint, rundown)
+		super(contextInfo, studio, _context.getStudioBlueprintConfig(), showStyleCompound, showStyleBlueprint, rundown)
 
 		// Create temporary cache databases
 		this._pieceInstanceCache = DbCacheWriteCollection.createFromArray(

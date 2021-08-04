@@ -77,7 +77,14 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		rundown: DBRundown,
 		watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, cache.Studio.doc, context.studioBlueprint, showStyle, showStyleBlueprint, watchedPackages)
+		super(
+			contextInfo,
+			cache.Studio.doc,
+			context.getStudioBlueprintConfig(),
+			showStyle,
+			showStyleBlueprint,
+			watchedPackages
+		)
 		this._context = context
 		this._cache = cache
 		this.rundown = rundown

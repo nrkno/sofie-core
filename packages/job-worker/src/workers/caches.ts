@@ -11,10 +11,12 @@ import {
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
+import { ProcessedStudioConfig } from '../blueprints/config'
 
 export interface WorkerDataCache {
 	studio: DBStudio
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+	studioBlueprintConfig: ProcessedStudioConfig | undefined
 
 	showStyleBases: Map<ShowStyleBaseId, DBShowStyleBase | null> // null when not found
 	showStyleVariants: Map<ShowStyleVariantId, DBShowStyleVariant | null> // null when not found
@@ -39,6 +41,7 @@ export async function loadWorkerDataCache(
 	return {
 		studio,
 		studioBlueprint,
+		studioBlueprintConfig: undefined,
 
 		showStyleBases: new Map(),
 		showStyleVariants: new Map(),
@@ -61,6 +64,7 @@ export async function invalidateWorkerDataCache(
 		if (newStudio.blueprintId !== cache.studio.blueprintId) updateStudioBlueprint = true
 
 		cache.studio = newStudio
+		cache.studioBlueprintConfig = undefined
 	}
 
 	// Check if studio blueprint was in the changed list
@@ -73,6 +77,7 @@ export async function invalidateWorkerDataCache(
 		const newStudioBlueprint = await loadStudioBlueprint(collections, cache.studio)
 		if (!newStudioBlueprint) throw new Error('Missing studio blueprint') // TODO - this can be allowed
 		cache.studioBlueprint = newStudioBlueprint
+		cache.studioBlueprintConfig = undefined
 	}
 
 	// Check if studioBlueprint config should be re-processed

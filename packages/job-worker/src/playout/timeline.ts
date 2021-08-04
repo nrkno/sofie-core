@@ -119,7 +119,7 @@ export async function updateStudioTimeline(
 			new StudioBaselineContext(
 				{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
 				studio,
-				context.studioBlueprint,
+				context.getStudioBlueprintConfig(),
 				watchedPackages
 			)
 		)
@@ -337,7 +337,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 			if (blueprint.blueprint.onTimelineGenerate) {
 				const context2 = new TimelineEventContext(
 					cache.Studio.doc,
-					context.studioBlueprint,
+					context.getStudioBlueprintConfig(),
 					showStyle,
 					blueprint,
 					cache.Playlist.doc,

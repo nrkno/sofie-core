@@ -104,7 +104,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 					new PartEventContext(
 						'onPreTake',
 						cache.Studio.doc,
-						context.studioBlueprint,
+						context.getStudioBlueprintConfig(),
 						showStyle,
 						blueprint,
 						takeRundown,
@@ -249,7 +249,7 @@ async function afterTakeUpdateTimingsAndEvents(
 						new PartEventContext(
 							'onRundownFirstTake',
 							cache.Studio.doc,
-							context.studioBlueprint,
+							context.getStudioBlueprintConfig(),
 							showStyle,
 							blueprint,
 							takeRundown,
@@ -268,7 +268,7 @@ async function afterTakeUpdateTimingsAndEvents(
 					new PartEventContext(
 						'onPostTake',
 						cache.Studio.doc,
-						context.studioBlueprint,
+						context.getStudioBlueprintConfig(),
 						showStyle,
 						blueprint,
 						takeRundown,
@@ -307,7 +307,7 @@ export function updatePartInstanceOnTake(
 				},execution=${getRandomId()}`,
 			},
 			cache.Studio.doc,
-			context.studioBlueprint,
+			context.getStudioBlueprintConfig(),
 			showStyle,
 			blueprint,
 			takeRundown

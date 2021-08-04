@@ -104,12 +104,11 @@ export async function activateRundownPlaylist(
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 		const context2 = new RundownEventContext(
 			cache.Studio.doc,
-			context.studioBlueprint,
+			context.getStudioBlueprintConfig(),
 			showStyle,
 			blueprint,
 			rundown
 		)
-		await context2.wipeCache()
 		if (blueprint.blueprint.onRundownActivate) {
 			Promise.resolve(blueprint.blueprint.onRundownActivate(context2)).catch(logger.error)
 		}
@@ -127,7 +126,7 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 			if (blueprint.blueprint.onRundownDeActivate) {
 				const context2 = new RundownEventContext(
 					cache.Studio.doc,
-					context.studioBlueprint,
+					context.getStudioBlueprintConfig(),
 					showStyle,
 					blueprint,
 					rundown
