@@ -22,7 +22,6 @@ import { runAsPlayoutLock } from '../playout/lock'
 import { removeSegmentContents } from './cleanup'
 import { CommitIngestData } from './lock'
 import { clone, max } from '@sofie-automation/corelib/dist/lib'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { ensureNextPartIsValid } from './updateNext'
@@ -61,10 +60,7 @@ export async function CommitIngestOperation(
 	const targetPlaylistId: [RundownPlaylistId, string] = (beforeRundown?.playlistIdIsSetInSofie
 		? [beforeRundown.playlistId, beforeRundown.externalId]
 		: undefined) ?? [
-		getPlaylistIdFromExternalId(
-			ingestCache.Studio.doc._id,
-			rundown.playlistExternalId ?? unprotectString(rundown._id)
-		),
+		getPlaylistIdFromExternalId(context.studioId, rundown.playlistExternalId ?? unprotectString(rundown._id)),
 		rundown.playlistExternalId ?? unprotectString(rundown._id),
 	]
 
@@ -132,11 +128,7 @@ export async function CommitIngestOperation(
 
 					if (oldPlaylist) {
 						// Ensure playlist is regenerated
-						const updatedOldPlaylist = await regeneratePlaylistAndRundownOrder(
-							context,
-							ingestCache.Studio.doc,
-							oldPlaylist
-						)
+						const updatedOldPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylist)
 
 						if (updatedOldPlaylist) {
 							// ensure the 'old' playout is updated to remove any references to the rundown
@@ -173,7 +165,7 @@ export async function CommitIngestOperation(
 				},
 			})
 		if (tmpNewPlaylist) {
-			if (tmpNewPlaylist.studioId !== ingestCache.Studio.doc._id)
+			if (tmpNewPlaylist.studioId !== context.studioId)
 				throw new Error(`Rundown Playlist "${newPlaylistId[0]}" exists but belongs to another studio!`)
 		}
 	}
@@ -187,6 +179,7 @@ export async function CommitIngestOperation(
 			ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
 
 			const [newPlaylist, rundownsCollection] = await generatePlaylistAndRundownsCollection(
+				context,
 				ingestCache,
 				newPlaylistId[0],
 				newPlaylistId[1]
@@ -288,6 +281,7 @@ export async function CommitIngestOperation(
 }
 
 async function generatePlaylistAndRundownsCollection(
+	context: JobContext,
 	ingestCache: CacheForIngest,
 	newPlaylistId: RundownPlaylistId,
 	newPlaylistExternalId: string
@@ -297,7 +291,6 @@ async function generatePlaylistAndRundownsCollection(
 
 	const result = await generatePlaylistAndRundownsCollectionInner(
 		context,
-		ingestCache.Studio.doc,
 		finalRundown,
 		newPlaylistId,
 		newPlaylistExternalId
@@ -323,7 +316,6 @@ async function generatePlaylistAndRundownsCollection(
 
 async function generatePlaylistAndRundownsCollectionInner(
 	context: JobContext,
-	studio: ReadonlyDeep<DBStudio>,
 	changedRundown: ReadonlyDeep<DBRundown> | undefined,
 	newPlaylistId: RundownPlaylistId,
 	newPlaylistExternalId: string,
@@ -362,7 +354,6 @@ async function generatePlaylistAndRundownsCollectionInner(
 		// Generate the new playlist, and ranks for the rundowns
 		const { rundownPlaylist: newPlaylist, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
 			context,
-			studio,
 			context.studioBlueprint,
 			existingPlaylist,
 			newPlaylistId,
@@ -450,13 +441,11 @@ function updatePartInstancesBasicProperties(
  */
 export async function regeneratePlaylistAndRundownOrder(
 	context: JobContext,
-	studio: ReadonlyDeep<DBStudio>,
 	oldPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	existingRundownsCollection?: DbCacheWriteCollection<DBRundown>
 ): Promise<DBRundownPlaylist | null> {
 	const result = await generatePlaylistAndRundownsCollectionInner(
 		context,
-		studio,
 		undefined,
 		oldPlaylist._id,
 		oldPlaylist.externalId,

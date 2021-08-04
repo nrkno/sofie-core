@@ -23,7 +23,7 @@ export async function activateRundownPlaylist(
 
 	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
 		context,
-		cache.Studio.doc._id,
+		context.studio._id,
 		cache.Playlist.doc._id
 	)
 	if (anyOtherActiveRundowns.length) {
@@ -98,12 +98,12 @@ export async function activateRundownPlaylist(
 
 	await updateTimeline(context, cache)
 
-	cache.defer(async (cache) => {
+	cache.defer(async () => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleVariantId)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 		const context2 = new RundownEventContext(
-			cache.Studio.doc,
+			context.studio,
 			context.getStudioBlueprintConfig(),
 			showStyle,
 			context.getShowStyleBlueprintConfig(showStyle),
@@ -119,13 +119,13 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 
 	await updateStudioTimeline(context, cache)
 
-	cache.defer(async (cache) => {
+	cache.defer(async () => {
 		if (rundown) {
 			const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 			if (blueprint.blueprint.onRundownDeActivate) {
 				const context2 = new RundownEventContext(
-					cache.Studio.doc,
+					context.studio,
 					context.getStudioBlueprintConfig(),
 					showStyle,
 					context.getShowStyleBlueprintConfig(showStyle),
@@ -199,9 +199,13 @@ export async function deactivateRundownPlaylistInner(
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export async function prepareStudioForBroadcast(cache: CacheForPlayout, _okToDestoryStuff: boolean): Promise<void> {
+export async function prepareStudioForBroadcast(
+	context: JobContext,
+	_cache: CacheForPlayout,
+	_okToDestoryStuff: boolean
+): Promise<void> {
 	// const rundownPlaylistToBeActivated = cache.Playlist.doc
-	logger.info('prepareStudioForBroadcast ' + cache.Studio.doc._id)
+	logger.info('prepareStudioForBroadcast ' + context.studio._id)
 
 	// TODO - need to fire some 'DDP commands'
 
@@ -232,8 +236,12 @@ export async function prepareStudioForBroadcast(cache: CacheForPlayout, _okToDes
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export async function standDownStudio(cache: CacheForPlayout, _okToDestoryStuff: boolean): Promise<void> {
-	logger.info('standDownStudio ' + cache.Studio.doc._id)
+export async function standDownStudio(
+	context: JobContext,
+	_cache: CacheForPlayout,
+	_okToDestoryStuff: boolean
+): Promise<void> {
+	logger.info('standDownStudio ' + context.studio._id)
 
 	// TODO - need to fire some 'DDP commands'
 

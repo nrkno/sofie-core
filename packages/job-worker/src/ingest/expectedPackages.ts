@@ -42,7 +42,7 @@ export async function updateExpectedPackagesOnRundown(context: JobContext, cache
 	updateExpectedMediaItemsOnRundown(context, cache)
 	await updateExpectedPlayoutItemsOnRundown(context, cache)
 
-	const studio = cache.Studio.doc
+	const studio = context.studio
 
 	const pieces = cache.Pieces.findFetch({})
 	const adlibs = cache.AdLibPieces.findFetch({})
@@ -353,7 +353,7 @@ export function updateBaselineExpectedPackagesOnRundown(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnRundown(context, cache, baseline.expectedPlayoutItems)
 
-	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.RundownId, baseline.expectedPackages ?? [])
+	const bases = generateExpectedPackageBases(context.studio, cache.RundownId, baseline.expectedPackages ?? [])
 	saveIntoCache<ExpectedPackageDB>(
 		context,
 		cache.ExpectedPackages,
@@ -385,13 +385,13 @@ export function updateBaselineExpectedPackagesOnStudio(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnStudio(context, cache, baseline.expectedPlayoutItems)
 
-	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.Studio.doc._id, baseline.expectedPackages ?? [])
+	const bases = generateExpectedPackageBases(context.studio, context.studio._id, baseline.expectedPackages ?? [])
 	cache.deferAfterSave(async () => {
 		await saveIntoDb<ExpectedPackageDB>(
 			context,
 			context.directCollections.ExpectedPackages,
 			{
-				studioId: cache.Studio.doc._id,
+				studioId: context.studio._id,
 				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
 			},
 			bases.map((item): ExpectedPackageDBFromStudioBaselineObjects => {

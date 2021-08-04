@@ -1,16 +1,13 @@
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { JobContext } from '../jobs'
 import { CacheBase } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
-import { DbCacheReadObject } from '../cache/CacheObject'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export interface CacheForStudioBase {
-	readonly Studio: DbCacheReadObject<DBStudio>
 	readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
 	readonly Timeline: DbCacheWriteCollection<TimelineComplete>
@@ -22,7 +19,6 @@ export interface CacheForStudioBase {
 export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheForStudioBase {
 	public readonly isStudio = true
 
-	public readonly Studio: DbCacheReadObject<DBStudio>
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
 	public readonly RundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>
@@ -30,14 +26,12 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 
 	private constructor(
 		context: JobContext,
-		studio: DbCacheReadObject<DBStudio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
 		rundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>,
 		timeline: DbCacheWriteCollection<TimelineComplete>
 	) {
 		super(context)
 
-		this.Studio = studio
 		this.PeripheralDevices = peripheralDevices
 
 		this.RundownPlaylists = rundownPlaylists
@@ -48,12 +42,6 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 		const span = context.startSpan('CacheForStudio.create')
 
 		const studioId = context.studioId
-		const studio = DbCacheReadObject.createFromDoc<DBStudio>(
-			context,
-			context.directCollections.Studios,
-			false,
-			context.studio
-		)
 
 		const collections = await Promise.all([
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.PeripheralDevices, {
@@ -63,7 +51,7 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Timelines, { _id: studioId }),
 		])
 
-		const res = new CacheForStudio(context, studio, ...collections)
+		const res = new CacheForStudio(context, ...collections)
 		if (span) span.end()
 		return res
 	}

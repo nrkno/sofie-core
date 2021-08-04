@@ -195,7 +195,7 @@ describe('DatabaseCaches', () => {
 			{
 				const cache = await CacheForStudio.create(studio._id)
 
-				const cachedStudio = cache.Studio.doc
+				const cachedStudio = context.studio
 				expect(cachedStudio).toMatchObject(studio)
 
 				cache.assertNoChanges() // this shouldn't throw

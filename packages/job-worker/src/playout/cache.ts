@@ -1,9 +1,8 @@
 import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DbCacheReadObject, DbCacheWriteObject } from '../cache/CacheObject'
+import { DbCacheWriteObject } from '../cache/CacheObject'
 import { CacheBase, ReadOnlyCache } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
@@ -32,7 +31,6 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 
 	public readonly PlaylistLock: PlaylistLock
 
-	public readonly Studio: DbCacheReadObject<DBStudio>
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
 	public readonly Playlist: DbCacheWriteObject<DBRundownPlaylist>
@@ -42,7 +40,6 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		context: JobContext,
 		playlistLock: PlaylistLock,
 		playlistId: RundownPlaylistId,
-		studio: DbCacheReadObject<DBStudio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
 		playlist: DbCacheWriteObject<DBRundownPlaylist>,
 		rundowns: DbCacheReadCollection<DBRundown>
@@ -52,7 +49,6 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		this.PlaylistId = playlistId
 		this.PlaylistLock = playlistLock
 
-		this.Studio = studio
 		this.PeripheralDevices = peripheralDevices
 		this.Playlist = playlist
 		this.Rundowns = rundowns
@@ -84,19 +80,12 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		existingRundowns: DbCacheReadCollection<DBRundown> | undefined
 	): Promise<
 		[
-			DbCacheReadObject<DBStudio>,
 			DbCacheReadCollection<PeripheralDevice>,
 			DbCacheWriteObject<DBRundownPlaylist>,
 			DbCacheReadCollection<DBRundown>
 		]
 	> {
 		return Promise.all([
-			DbCacheReadObject.createFromDoc<DBStudio>(
-				context,
-				context.directCollections.Studios,
-				false,
-				context.studio
-			),
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.PeripheralDevices, {
 				studioId: tmpPlaylist.studioId,
 			}),
@@ -142,7 +131,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		context: JobContext,
 		playlistLock: PlaylistLock,
 		playlistId: RundownPlaylistId,
-		studio: DbCacheReadObject<DBStudio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
 		playlist: DbCacheWriteObject<DBRundownPlaylist>,
 		rundowns: DbCacheReadCollection<DBRundown>,
@@ -153,7 +141,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		timeline: DbCacheWriteCollection<TimelineComplete>,
 		baselineObjects: DbCacheReadCollection<RundownBaselineObj>
 	) {
-		super(context, playlistLock, playlistId, studio, peripheralDevices, playlist, rundowns)
+		super(context, playlistLock, playlistId, peripheralDevices, playlist, rundowns)
 
 		this.Timeline = timeline
 
@@ -191,7 +179,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			context,
 			initCache.PlaylistLock,
 			initCache.PlaylistId,
-			initCache.Studio,
 			initCache.PeripheralDevices,
 			initCache.Playlist,
 			initCache.Rundowns,

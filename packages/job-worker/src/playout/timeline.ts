@@ -1,7 +1,7 @@
 // // export async function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout): Promise<void> {
 // // 	const span = profiler.startSpan('updateStudioTimeline')
 // // 	logger.debug('updateStudioTimeline running...')
-// // 	const studio = cache.Studio.doc
+// // 	const studio = context.studio
 
 import { PartId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -92,7 +92,7 @@ export async function updateStudioTimeline(
 ): Promise<void> {
 	const span = context.startSpan('updateStudioTimeline')
 	logger.debug('updateStudioTimeline running...')
-	const studio = cache.Studio.doc
+	const studio = context.studio
 	// Ensure there isn't a playlist active, as that should be using a different function call
 	if (isCacheForStudio(cache)) {
 		const activePlaylists = cache.getActiveRundownPlaylists()
@@ -186,7 +186,7 @@ function processAndSaveTimelineObjects(
 	timelineObjs: Array<TimelineObjGeneric>,
 	forceNowToTime: Time | undefined
 ): void {
-	const studio = cache.Studio.doc
+	const studio = context.studio
 	processTimelineObjects(context, timelineObjs)
 
 	/** The timestamp that "now" was set to */
@@ -336,7 +336,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 			if (blueprint.blueprint.onTimelineGenerate) {
 				const context2 = new TimelineEventContext(
-					cache.Studio.doc,
+					context.studio,
 					context.getStudioBlueprintConfig(),
 					showStyle,
 					context.getShowStyleBlueprintConfig(showStyle),

@@ -103,7 +103,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 				blueprint.blueprint.onPreTake(
 					new PartEventContext(
 						'onPreTake',
-						cache.Studio.doc,
+						context.studio,
 						context.getStudioBlueprintConfig(),
 						showStyle,
 						context.getShowStyleBlueprintConfig(showStyle),
@@ -248,7 +248,7 @@ async function afterTakeUpdateTimingsAndEvents(
 					blueprint.blueprint.onRundownFirstTake(
 						new PartEventContext(
 							'onRundownFirstTake',
-							cache.Studio.doc,
+							context.studio,
 							context.getStudioBlueprintConfig(),
 							showStyle,
 							context.getShowStyleBlueprintConfig(showStyle),
@@ -267,7 +267,7 @@ async function afterTakeUpdateTimingsAndEvents(
 				blueprint.blueprint.onPostTake(
 					new PartEventContext(
 						'onPostTake',
-						cache.Studio.doc,
+						context.studio,
 						context.getStudioBlueprintConfig(),
 						showStyle,
 						context.getShowStyleBlueprintConfig(showStyle),
@@ -306,7 +306,7 @@ export function updatePartInstanceOnTake(
 					currentPartInstance._id
 				},execution=${getRandomId()}`,
 			},
-			cache.Studio.doc,
+			context.studio,
 			context.getStudioBlueprintConfig(),
 			showStyle,
 			context.getShowStyleBlueprintConfig(showStyle),

@@ -126,7 +126,7 @@ export async function prepareRundownPlaylistForBroadcast(
 		},
 		async (cache) => {
 			await libResetRundownPlaylist(context, cache)
-			await prepareStudioForBroadcast(cache, true)
+			await prepareStudioForBroadcast(context, cache, true)
 
 			await libActivateRundownPlaylist(context, cache, true) // Activate rundownPlaylist (rehearsal)
 		}
@@ -187,7 +187,7 @@ export async function resetRundownPlaylist(context: JobContext, data: ResetRundo
 
 			if (data.activate) {
 				// Do the activation
-				await prepareStudioForBroadcast(cache, true)
+				await prepareStudioForBroadcast(context, cache, true)
 				await libActivateRundownPlaylist(context, cache, data.activate !== 'active') // Activate rundown
 			} else if (cache.Playlist.doc.activationId) {
 				// Only update the timeline if this is the active playlist
@@ -211,7 +211,7 @@ export async function activateRundownPlaylist(context: JobContext, data: Activat
 			await checkNoOtherPlaylistsActive(context, playlist)
 		},
 		async (cache) => {
-			await prepareStudioForBroadcast(cache, true)
+			await prepareStudioForBroadcast(context, cache, true)
 
 			await libActivateRundownPlaylist(context, cache, data.rehearsal)
 		}
@@ -230,7 +230,7 @@ export async function deactivateRundownPlaylist(
 		data,
 		null,
 		async (cache) => {
-			await standDownStudio(cache, true)
+			await standDownStudio(context, cache, true)
 
 			await libDeactivateRundownPlaylist(context, cache)
 		}
@@ -976,18 +976,19 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 					)
 
 					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
-					timelineTriggerTimeInner(studioCache, data.results, pieceInstanceCache, activePlaylist)
+					timelineTriggerTimeInner(context, studioCache, data.results, pieceInstanceCache, activePlaylist)
 
 					await pieceInstanceCache.updateDatabaseWithData()
 				})
 			} else {
-				timelineTriggerTimeInner(studioCache, data.results, undefined, undefined)
+				timelineTriggerTimeInner(context, studioCache, data.results, undefined, undefined)
 			}
 		})
 	}
 }
 
 function timelineTriggerTimeInner(
+	context: JobContext,
 	cache: CacheForStudio,
 	results: OnTimelineTriggerTimeProps['results'],
 	pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
@@ -996,7 +997,7 @@ function timelineTriggerTimeInner(
 	let lastTakeTime: number | undefined
 
 	// ------------------------------
-	const timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
+	const timelineObjs = cache.Timeline.findOne(context.studio._id)?.timeline || []
 	let tlChanged = false
 
 	_.each(results, (o) => {
@@ -1062,7 +1063,7 @@ function timelineTriggerTimeInner(
 	}
 	if (tlChanged) {
 		cache.Timeline.update(
-			cache.Studio.doc._id,
+			context.studio._id,
 			{
 				$set: {
 					timeline: timelineObjs,
@@ -1128,7 +1129,7 @@ export async function executeActionInner(
 
 			const [showStyle, watchedPackages] = await Promise.all([
 				context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId),
-				WatchedPackagesHelper.create(context, cache.Studio.doc._id, {
+				WatchedPackagesHelper.create(context, context.studio._id, {
 					pieceId: actionDocId,
 					fromPieceType: {
 						$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
@@ -1240,7 +1241,7 @@ export async function updateStudioBaseline(context: JobContext, _data: void): Pr
 }
 
 async function shouldUpdateStudioBaselineInner(context: JobContext, cache: CacheForStudio): Promise<string | false> {
-	const studio = cache.Studio.doc
+	const studio = context.studio
 
 	if (cache.getActiveRundownPlaylists().length > 0) return false
 

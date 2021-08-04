@@ -117,7 +117,7 @@ export async function syncChangesToPartInstances(
 						identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
 					},
 					cache.Playlist.doc.activationId,
-					cache.Studio.doc,
+					context.studio,
 					showStyle,
 					rundown,
 					existingPartInstance,

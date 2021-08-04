@@ -89,8 +89,7 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 export function getRundown(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<DBRundown> {
 	const rundown = cache.Rundown.doc
 	if (!rundown) {
-		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
-		throw new Error(`Rundown "${rundownId}" ("${cache.RundownExternalId}") not found`)
+		throw new Error(`Rundown "${cache.RundownId}" ("${cache.RundownExternalId}") not found`)
 	}
 	return rundown
 }

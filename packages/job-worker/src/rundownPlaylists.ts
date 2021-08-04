@@ -149,7 +149,6 @@ export interface RundownPlaylistAndOrder {
 
 export function produceRundownPlaylistInfoFromRundown(
 	context: JobContext,
-	studio: ReadonlyDeep<DBStudio>,
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint> | undefined,
 	existingPlaylist: ReadonlyDeep<DBRundownPlaylist> | undefined,
 	playlistId: RundownPlaylistId,
@@ -161,12 +160,12 @@ export function produceRundownPlaylistInfoFromRundown(
 				new StudioUserContext(
 					{
 						name: 'produceRundownPlaylistInfoFromRundown',
-						identifier: `studioId=${studio._id},playlistId=${playlistId},rundownIds=${rundowns
+						identifier: `studioId=${context.studioId},playlistId=${playlistId},rundownIds=${rundowns
 							.map((r) => r._id)
 							.join(',')}`,
 						tempSendUserNotesIntoBlackHole: true,
 					},
-					studio,
+					context.studio,
 					context.getStudioBlueprintConfig()
 				),
 				unprotectObjectArray(clone<Array<DBRundown>>(rundowns))
@@ -187,8 +186,8 @@ export function produceRundownPlaylistInfoFromRundown(
 
 			_id: playlistId,
 			externalId: playlistExternalId,
-			organizationId: studio.organizationId,
-			studioId: studio._id,
+			organizationId: context.studio.organizationId,
+			studioId: context.studioId,
 			name: playlistInfo.playlist.name,
 			expectedStart: playlistInfo.playlist.expectedStart,
 			expectedDuration: playlistInfo.playlist.expectedDuration,
@@ -202,7 +201,7 @@ export function produceRundownPlaylistInfoFromRundown(
 		}
 	} else {
 		newPlaylist = {
-			...defaultPlaylistForRundown(rundownsInDefaultOrder[0], studio, existingPlaylist),
+			...defaultPlaylistForRundown(rundownsInDefaultOrder[0], context.studio, existingPlaylist),
 			_id: playlistId,
 			externalId: playlistExternalId,
 		}
@@ -316,7 +315,7 @@ export async function moveRundownIntoPlaylist(
 			})
 
 			// Regenerate the playlist
-			const newPlaylist = await regeneratePlaylistAndRundownOrder(context, studio, oldPlaylist)
+			const newPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylist)
 			if (newPlaylist) {
 				// ensure the 'old' playout is updated to remove any references to the rundown
 				await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, oldPlaylistLock, null)
@@ -393,12 +392,7 @@ export async function moveRundownIntoPlaylist(
 			}
 
 			// Update the playlist and the order of the contents
-			const newPlaylist = await regeneratePlaylistAndRundownOrder(
-				context,
-				studio,
-				intoPlaylist,
-				rundownsCollection
-			)
+			const newPlaylist = await regeneratePlaylistAndRundownOrder(context, intoPlaylist, rundownsCollection)
 			if (!newPlaylist) {
 				throw new Error(`RundownPlaylist must still be valid as it has some Rundowns`)
 			}
@@ -448,7 +442,7 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 			newPlaylist.rundownRanksAreSetInSofie = false
 
 			// Update the _rank of the rundowns
-			const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, context.studio, newPlaylist)
+			const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, newPlaylist)
 
 			if (updatedPlaylist) {
 				// If the playlist is active this could have changed lookahead

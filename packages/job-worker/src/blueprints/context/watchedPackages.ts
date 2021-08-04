@@ -88,7 +88,7 @@ export class WatchedPackagesHelper {
 			context,
 			context.directCollections.PackageInfos,
 			{
-				studioId: cache.Studio.doc._id,
+				studioId: context.studio._id,
 				packageId: { $in: packages.map((p) => p._id) },
 			}
 		)

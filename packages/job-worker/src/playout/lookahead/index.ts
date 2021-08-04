@@ -51,7 +51,7 @@ export async function getLookeaheadObjects(
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = context.startSpan('getLookeaheadObjects')
-	const mappingsToConsider = Object.entries(cache.Studio.doc.mappings ?? {}).filter(
+	const mappingsToConsider = Object.entries(context.studio.mappings ?? {}).filter(
 		([_id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
 	)
 	if (mappingsToConsider.length === 0) {

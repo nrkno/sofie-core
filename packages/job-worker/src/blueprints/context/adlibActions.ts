@@ -79,7 +79,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	) {
 		super(
 			contextInfo,
-			cache.Studio.doc,
+			context.studio,
 			context.getStudioBlueprintConfig(),
 			showStyle,
 			showStyleBlueprintConfig,

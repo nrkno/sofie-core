@@ -130,7 +130,7 @@ export async function calculateSegmentsFromIngestData(
 					name: `getSegment=${ingestSegment.name}`,
 					identifier: `rundownId=${rundown._id},segmentId=${segmentId}`,
 				},
-				cache.Studio.doc,
+				context.studio,
 				context.getStudioBlueprintConfig(),
 				showStyle,
 				context.getShowStyleBlueprintConfig(showStyle),
@@ -447,10 +447,10 @@ export async function updateRundownFromIngestData(
 	const selectShowStyleContext = new StudioUserContext(
 		{
 			name: 'selectShowStyleVariant',
-			identifier: `studioId=${cache.Studio.doc._id},rundownId=${cache.RundownId},ingestRundownId=${cache.RundownExternalId}`,
+			identifier: `studioId=${context.studio._id},rundownId=${cache.RundownId},ingestRundownId=${cache.RundownExternalId}`,
 			tempSendUserNotesIntoBlackHole: true,
 		},
-		cache.Studio.doc,
+		context.studio,
 		context.getStudioBlueprintConfig()
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
@@ -477,7 +477,7 @@ export async function updateRundownFromIngestData(
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
 		},
-		cache.Studio.doc,
+		context.studio,
 		context.getStudioBlueprintConfig(),
 		showStyle.compound,
 		context.getShowStyleBlueprintConfig(showStyle.compound),
@@ -489,8 +489,8 @@ export async function updateRundownFromIngestData(
 	if (showStyleBlueprint.blueprintId) {
 		translationNamespaces.push(unprotectString(showStyleBlueprint.blueprintId))
 	}
-	if (cache.Studio.doc.blueprintId) {
-		translationNamespaces.push(unprotectString(cache.Studio.doc.blueprintId))
+	if (context.studio.blueprintId) {
+		translationNamespaces.push(unprotectString(context.studio.blueprintId))
 	}
 
 	// Ensure the ids in the notes are clean
@@ -517,14 +517,14 @@ export async function updateRundownFromIngestData(
 		notes: rundownNotes,
 		_id: cache.RundownId,
 		externalId: ingestRundown.externalId,
-		organizationId: cache.Studio.doc.organizationId,
-		studioId: cache.Studio.doc._id,
+		organizationId: context.studio.organizationId,
+		studioId: context.studio._id,
 		showStyleVariantId: showStyle.variant._id,
 		showStyleBaseId: showStyle.base._id,
 		orphaned: undefined,
 
 		importVersions: {
-			studio: cache.Studio.doc._rundownVersionHash,
+			studio: context.studio._rundownVersionHash,
 			showStyleBase: showStyle.base._rundownVersionHash,
 			showStyleVariant: showStyle.variant._rundownVersionHash,
 			blueprint: showStyleBlueprint.blueprint.blueprintVersion,

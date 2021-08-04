@@ -47,7 +47,7 @@ function extractExpectedPlayoutItems(
 export async function updateExpectedPlayoutItemsOnRundown(context: JobContext, cache: CacheForIngest): Promise<void> {
 	const expectedPlayoutItems: ExpectedPlayoutItem[] = []
 
-	const studioId = cache.Studio.doc._id
+	const studioId = context.studio._id
 	const rundownId = cache.RundownId
 
 	// It isn't great to have to load these unnecessarily, but expectedPackages will resolve this
@@ -93,7 +93,7 @@ export function updateBaselineExpectedPlayoutItemsOnRundown(
 			return {
 				...item,
 				_id: getRandomId(),
-				studioId: cache.Studio.doc._id,
+				studioId: context.studio._id,
 				rundownId: cache.RundownId,
 				baseline: 'rundown',
 			}
@@ -109,12 +109,12 @@ export function updateBaselineExpectedPlayoutItemsOnStudio(
 		await saveIntoDb(
 			context,
 			context.directCollections.ExpectedPlayoutItems,
-			{ studioId: cache.Studio.doc._id, baseline: 'studio' },
+			{ studioId: context.studio._id, baseline: 'studio' },
 			(items || []).map((item): ExpectedPlayoutItemStudio => {
 				return {
 					...item,
 					_id: getRandomId(),
-					studioId: cache.Studio.doc._id,
+					studioId: context.studio._id,
 					baseline: 'studio',
 				}
 			})

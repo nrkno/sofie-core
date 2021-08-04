@@ -218,6 +218,6 @@ export function updateExpectedMediaItemsOnRundown(context: JobContext, cache: Ca
 	const adlibs = cache.AdLibPieces.findFetch({})
 	const actions = cache.AdLibActions.findFetch({})
 
-	const eMIs = generateExpectedMediaItemsFull(cache.Studio.doc._id, cache.RundownId, pieces, adlibs, actions)
+	const eMIs = generateExpectedMediaItemsFull(context.studio._id, cache.RundownId, pieces, adlibs, actions)
 	saveIntoCache<ExpectedMediaItem>(context, cache.ExpectedMediaItems, {}, eMIs)
 }

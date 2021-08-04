@@ -11,12 +11,11 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext } from '../jobs'
 import { LazyInitialise } from '../lib/lazy'
 import { CacheBase } from '../cache/CacheBase'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
-import { DbCacheReadObject, DbCacheWriteOptionalObject } from '../cache/CacheObject'
+import { DbCacheWriteOptionalObject } from '../cache/CacheObject'
 import { removeRundownsFromDb } from '../rundownPlaylists'
 import { getRundownId } from './lib'
 
@@ -24,7 +23,6 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly isIngest = true
 	private toBeRemoved = false
 
-	public readonly Studio: DbCacheReadObject<DBStudio>
 	public readonly Rundown: DbCacheWriteOptionalObject<DBRundown>
 	public readonly RundownExternalId: string
 
@@ -44,14 +42,13 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly RundownBaselineAdLibActions: LazyInitialise<DbCacheWriteCollection<RundownBaselineAdLibAction>>
 
 	public get RundownId(): RundownId {
-		return this.Rundown.doc?._id ?? getRundownId(this.Studio.doc, this.RundownExternalId)
+		return this.Rundown.doc?._id ?? getRundownId(this.context.studioId, this.RundownExternalId)
 	}
 
 	private constructor(
 		context: JobContext,
 		rundownExternalId: string,
 		rundown: DbCacheWriteOptionalObject<DBRundown>,
-		studio: DbCacheReadObject<DBStudio>,
 		segments: DbCacheWriteCollection<DBSegment>,
 		parts: DbCacheWriteCollection<DBPart>,
 		pieces: DbCacheWriteCollection<Piece>,
@@ -63,7 +60,6 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	) {
 		super(context)
 
-		this.Studio = studio
 		this.Rundown = rundown
 		this.RundownExternalId = rundownExternalId
 
@@ -135,12 +131,6 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 	private static async loadCollections(context: JobContext, rundownId: RundownId) {
 		return Promise.all([
-			DbCacheReadObject.createFromDoc<DBStudio>(
-				context,
-				context.directCollections.Studios,
-				false,
-				context.studio
-			),
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Segments, {
 				rundownId: rundownId,
 			}),
