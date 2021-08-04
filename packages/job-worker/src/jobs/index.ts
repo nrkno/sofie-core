@@ -20,6 +20,7 @@ export interface JobContext {
 	readonly settings: ReadonlyDeep<ISettings>
 
 	readonly studioId: StudioId
+	readonly studio: ReadonlyDeep<DBStudio>
 
 	// TODO - should this be here?
 	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
@@ -30,6 +31,4 @@ export interface JobContext {
 		name: T,
 		data: Parameters<IngestJobFunc[T]>[0]
 	): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> // TODO - this return type isnt the best..
-
-	getStudio(): Promise<DBStudio>
 }

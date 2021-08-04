@@ -76,7 +76,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 	const showStyle = await getShowStyleCompound(context, data.showStyleVariantId)
 	if (!showStyle) throw new Error(`ShowStyleVariant not found: ${data.showStyleVariantId}`)
 
-	const studio = await context.getStudio()
+	const studio = context.studio
 
 	const blueprint = await loadShowStyleBlueprint(context.directCollections, showStyle)
 

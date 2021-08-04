@@ -285,8 +285,7 @@ export async function moveRundownIntoPlaylist(
 	context: JobContext,
 	data: OrderMoveRundownToPlaylistProps
 ): Promise<void> {
-	const studio = await context.directCollections.Studios.findOne(context.studioId)
-	if (!studio) throw new Error(`Studio "${context.studioId}" not found`)
+	const studio = context.studio
 
 	// TODO - this feels dangerously like it will clash with ingest/playout operations due to all the locking. Perhaps it should be done as an 'ingest' operation?
 
@@ -439,10 +438,6 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 ): Promise<void> {
 	await runAsPlayoutLock(context, data, async (playlist, playlistLock) => {
 		if (playlist) {
-			const studio = await context.directCollections.Studios.findOne(playlist.studioId)
-
-			if (!studio) throw new Error(`Studio "${playlist.studioId}" of playlist "${playlist._id}" not found!`)
-
 			// Update the playlist
 			await context.directCollections.RundownPlaylists.update(playlist._id, {
 				$set: {
@@ -453,7 +448,7 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 			newPlaylist.rundownRanksAreSetInSofie = false
 
 			// Update the _rank of the rundowns
-			const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, studio, newPlaylist)
+			const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, context.studio, newPlaylist)
 
 			if (updatedPlaylist) {
 				// If the playlist is active this could have changed lookahead

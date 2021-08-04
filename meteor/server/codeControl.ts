@@ -1,6 +1,6 @@
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { getCurrentTime, getRandomId } from '../lib/lib'
+import { getCurrentTime, getRandomId, createManualPromise } from '../lib/lib'
 import PQueue from 'p-queue/dist/index'
 
 const ACCEPTABLE_WAIT_TIME = 200 // ms
@@ -32,7 +32,7 @@ export async function pushWorkToQueue<T>(
 	timeout?: number
 ): Promise<T> {
 	// Note: this emulates the old syncFunction behaviour of timeouts. should we switch to a more traditional timeout handling of bubbling up the error?
-	const { resolve, reject, promise } = createManualPromise<T>()
+	const promise = createManualPromise<T>()
 	let timedOut = false
 
 	let queueInfo = workQueues.get(queueName)
@@ -71,10 +71,10 @@ export async function pushWorkToQueue<T>(
 			const res = await fcn()
 
 			// defer resolve, to release queue lock
-			Meteor.defer(() => resolve(res))
+			Meteor.defer(() => promise.manualResolve(res))
 		} catch (e) {
 			// defer reject, to release queue lock
-			Meteor.defer(() => reject(e))
+			Meteor.defer(() => promise.manualReject(e))
 		}
 
 		logger.debug(`syncFunction "${jobContext}"("${queueName}") done - ${jobId}`)
@@ -127,15 +127,4 @@ export async function purgeWorkQueues(): Promise<void> {
 		}
 	}
 	await Promise.all(running)
-}
-
-function createManualPromise<T>() {
-	let resolve: (val: T) => void = () => null
-	let reject: (err: Error) => void = () => null
-	const promise = new Promise<T>((resolve0, reject0) => {
-		resolve = resolve0
-		reject = reject0
-	})
-
-	return { resolve, reject, promise }
 }

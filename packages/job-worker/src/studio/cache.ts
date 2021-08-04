@@ -48,11 +48,11 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 		const span = context.startSpan('CacheForStudio.create')
 
 		const studioId = context.studioId
-		const studio = await DbCacheReadObject.createFromDatabase(
+		const studio = DbCacheReadObject.createFromDoc<DBStudio>(
 			context,
 			context.directCollections.Studios,
 			false,
-			studioId
+			context.studio
 		)
 
 		const collections = await Promise.all([

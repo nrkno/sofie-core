@@ -503,10 +503,7 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 		async (playoutCache) => {
 			if (playoutCache.Rundowns.documents.size === 0) {
 				if (playoutCache.Playlist.doc.activationId)
-					throw new Meteor.Error(
-						500,
-						`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`
-					)
+					throw new Error(`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`)
 				// Remove an empty playlist
 				await RundownPlaylists.removeAsync({ _id: playoutCache.PlaylistId })
 				playoutCache.assertNoChanges()

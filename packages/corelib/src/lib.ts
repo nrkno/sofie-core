@@ -191,3 +191,22 @@ export function getRank<T extends { _rank: number }>(
 	}
 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
 }
+
+export interface ManualPromise<T> extends Promise<T> {
+	manualResolve(res: T): void
+	manualReject(e: Error): void
+}
+export function createManualPromise<T>(): ManualPromise<T> {
+	let resolve: (val: T) => void = () => null
+	let reject: (err: Error) => void = () => null
+	const promise = new Promise<T>((resolve0, reject0) => {
+		resolve = resolve0
+		reject = reject0
+	})
+
+	const manualPromise: ManualPromise<T> = promise as any
+	manualPromise.manualReject = reject
+	manualPromise.manualResolve = resolve
+
+	return manualPromise
+}

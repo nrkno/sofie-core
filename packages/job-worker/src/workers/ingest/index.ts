@@ -1,51 +1,56 @@
 import { JobContext } from '../../jobs'
 import { expose } from 'threads/worker'
 import { ingestJobHandlers } from './jobs'
-import { RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoClient } from 'mongodb'
 import { createMongoConnection, getMongoCollections, IDirectCollections } from '../../db'
-import { loadStudioBlueprint, WrappedStudioBlueprint } from '../../blueprints/cache'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ReadonlyDeep } from 'type-fest'
 import { setupApmAgent, startTransaction } from '../../profiler'
 import { DEFAULT_SETTINGS, ISettings } from '@sofie-automation/corelib/dist/settings'
-import PLazy = require('p-lazy')
+import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
+import { clone } from '@sofie-automation/corelib/dist/lib'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
 	readonly collections: IDirectCollections
 
-	readonly studioId: StudioId
-	readonly rundownId: RundownId
+	// readonly rundownId: RundownId
 
-	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+	readonly dataCache: WorkerDataCache
 }
 let staticData: StaticData | undefined
 
 setupApmAgent()
 
 const ingestMethods = {
-	async init(mongoUri: string, mongoDb: string, studioId: StudioId, rundownId: RundownId): Promise<void> {
+	async init(mongoUri: string, mongoDb: string, studioId: StudioId): Promise<void> {
 		if (staticData) throw new Error('Worker already initialised')
 
 		const mongoClient = await createMongoConnection(mongoUri)
 		const collections = getMongoCollections(mongoClient, mongoDb)
 
 		// Load some 'static' data from the db
-		// TODO most of this can be cached, but needs invalidation..
-		const tmpStudio = await collections.Studios.findOne(studioId)
-		if (!tmpStudio) throw new Error('Missing studio')
-		const studioBlueprint = await loadStudioBlueprint(collections, tmpStudio)
-		if (!studioBlueprint) throw new Error('Missing studio blueprint')
+		const dataCache = await loadWorkerDataCache(collections, studioId)
 
 		staticData = {
 			mongoClient,
 			collections,
 
-			studioId,
-			rundownId,
+			dataCache,
+		}
+	},
+	async invalidateCaches(data: InvalidateWorkerDataCache): Promise<void> {
+		if (!staticData) throw new Error('Worker not initialised')
 
-			studioBlueprint,
+		const transaction = startTransaction('invalidateCaches', 'worker-studio')
+		if (transaction) {
+			transaction.setLabel('studioId', unprotectString(staticData.dataCache.studio._id))
+		}
+
+		try {
+			await invalidateWorkerDataCache(staticData.collections, staticData.dataCache, data)
+		} finally {
+			transaction?.end()
 		}
 	},
 	async runJob(jobName: string, data: unknown): Promise<unknown> {
@@ -53,28 +58,23 @@ const ingestMethods = {
 
 		const transaction = startTransaction(jobName, 'worker-ingest')
 		if (transaction) {
-			transaction.setLabel('studioId', unprotectString(staticData.studioId))
-			transaction.setLabel('rundownId', unprotectString(staticData.rundownId))
+			transaction.setLabel('studioId', unprotectString(staticData.dataCache.studio._id))
+			// transaction.setLabel('rundownId', unprotectString(staticData.rundownId))
 		}
 
 		try {
-			const studioCollection = staticData.collections.Studios
-			const studioId = staticData.studioId
+			// Clone and seal to avoid mutations ()
+			const studio = Object.freeze(clone(staticData.dataCache.studio))
 
-			const pStudio = PLazy.from(async () => {
-				const studio = await studioCollection.findOne(studioId)
-				if (!studio) throw new Error(`Studio "${studioId}" not found!`)
-				return studio
-			})
-
-			const context = Object.seal<JobContext>({
+			const context = Object.freeze<JobContext>({
 				directCollections: staticData.collections,
 
-				studioId: staticData.studioId,
+				studioId: studio._id,
+				studio: studio,
 
-				studioBlueprint: staticData.studioBlueprint,
+				studioBlueprint: staticData.dataCache.studioBlueprint,
 
-				settings: Object.seal<ISettings>({
+				settings: Object.freeze<ISettings>({
 					...DEFAULT_SETTINGS,
 				}),
 
@@ -86,8 +86,6 @@ const ingestMethods = {
 				queueIngestJob: () => {
 					throw new Error('Not implemented')
 				},
-
-				getStudio: () => pStudio,
 			})
 
 			// Execute function, or fail if no handler

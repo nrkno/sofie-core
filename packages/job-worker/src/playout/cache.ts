@@ -134,11 +134,11 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		// return [activationCache, studio, peripheralDevices, playlist, rundowns]
 
 		return Promise.all([
-			DbCacheReadObject.createFromDatabase(
+			DbCacheReadObject.createFromDoc<DBStudio>(
 				context,
 				context.directCollections.Studios,
 				false,
-				tmpPlaylist.studioId
+				context.studio
 			),
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.PeripheralDevices, {
 				studioId: tmpPlaylist.studioId,

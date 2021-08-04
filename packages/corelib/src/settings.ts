@@ -37,7 +37,7 @@ export interface ISettings {
 /**
  * Default values for Settings
  */
-export const DEFAULT_SETTINGS = Object.seal<ISettings>({
+export const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	frameRate: 25,
 	autoRewindLeavingSegment: true,
 	disableBlurBorder: false,

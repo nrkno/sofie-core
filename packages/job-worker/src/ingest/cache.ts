@@ -135,7 +135,12 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 	private static async loadCollections(context: JobContext, rundownId: RundownId) {
 		return Promise.all([
-			DbCacheReadObject.createFromDatabase(context, context.directCollections.Studios, false, context.studioId),
+			DbCacheReadObject.createFromDoc<DBStudio>(
+				context,
+				context.directCollections.Studios,
+				false,
+				context.studio
+			),
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Segments, {
 				rundownId: rundownId,
 			}),

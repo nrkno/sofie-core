@@ -4,20 +4,17 @@ import { studioJobHandlers } from './jobs'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoClient } from 'mongodb'
 import { createMongoConnection, getMongoCollections, IDirectCollections } from '../../db'
-import { loadStudioBlueprint, WrappedStudioBlueprint } from '../../blueprints/cache'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ReadonlyDeep } from 'type-fest'
 import { setupApmAgent, startTransaction } from '../../profiler'
 import { ISettings, DEFAULT_SETTINGS } from '@sofie-automation/corelib/dist/settings'
-import PLazy = require('p-lazy')
+import { clone } from '@sofie-automation/corelib/dist/lib'
+import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
-	readonly collections: IDirectCollections
+	readonly collections: Readonly<IDirectCollections>
 
-	readonly studioId: StudioId
-
-	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+	readonly dataCache: WorkerDataCache
 }
 let staticData: StaticData | undefined
 
@@ -31,18 +28,27 @@ const studioMethods = {
 		const collections = getMongoCollections(mongoClient, mongoDb)
 
 		// Load some 'static' data from the db
-		// TODO most of this can be cached, but needs invalidation..
-		const tmpStudio = await collections.Studios.findOne(studioId)
-		if (!tmpStudio) throw new Error('Missing studio')
-		const studioBlueprint = await loadStudioBlueprint(collections, tmpStudio)
-		if (!studioBlueprint) throw new Error('Missing studio blueprint')
+		const dataCache = await loadWorkerDataCache(collections, studioId)
 
 		staticData = {
 			mongoClient,
 			collections,
 
-			studioId,
-			studioBlueprint,
+			dataCache,
+		}
+	},
+	async invalidateCaches(data: InvalidateWorkerDataCache): Promise<void> {
+		if (!staticData) throw new Error('Worker not initialised')
+
+		const transaction = startTransaction('invalidateCaches', 'worker-studio')
+		if (transaction) {
+			transaction.setLabel('studioId', unprotectString(staticData.dataCache.studio._id))
+		}
+
+		try {
+			await invalidateWorkerDataCache(staticData.collections, staticData.dataCache, data)
+		} finally {
+			transaction?.end()
 		}
 	},
 	async runJob(jobName: string, data: unknown): Promise<unknown> {
@@ -50,27 +56,22 @@ const studioMethods = {
 
 		const transaction = startTransaction(jobName, 'worker-studio')
 		if (transaction) {
-			transaction.setLabel('studioId', unprotectString(staticData.studioId))
+			transaction.setLabel('studioId', unprotectString(staticData.dataCache.studio._id))
 		}
 
 		try {
-			const studioCollection = staticData.collections.Studios
-			const studioId = staticData.studioId
+			// Clone and seal to avoid mutations ()
+			const studio = Object.freeze(clone(staticData.dataCache.studio))
 
-			const pStudio = PLazy.from(async () => {
-				const studio = await studioCollection.findOne(studioId)
-				if (!studio) throw new Error(`Studio "${studioId}" not found!`)
-				return studio
-			})
-
-			const context = Object.seal<JobContext>({
+			const context = Object.freeze<JobContext>({
 				directCollections: staticData.collections,
 
-				studioId: staticData.studioId,
+				studioId: studio._id,
+				studio: studio,
 
-				studioBlueprint: staticData.studioBlueprint,
+				studioBlueprint: staticData.dataCache.studioBlueprint,
 
-				settings: Object.seal<ISettings>({
+				settings: Object.freeze<ISettings>({
 					...DEFAULT_SETTINGS,
 				}),
 
@@ -82,8 +83,6 @@ const studioMethods = {
 				queueIngestJob: () => {
 					throw new Error('Not implemented')
 				},
-
-				getStudio: () => pStudio,
 			})
 
 			// Execute function, or fail if no handler

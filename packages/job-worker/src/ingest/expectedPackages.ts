@@ -249,7 +249,7 @@ function generateExpectedPackagesForBaselineAdlibAction(
 	}
 	return packages
 }
-function generateExpectedPackagesForBucketAdlib(studio: DBStudio, adlibs: BucketAdLib[]) {
+function generateExpectedPackagesForBucketAdlib(studio: ReadonlyDeep<DBStudio>, adlibs: BucketAdLib[]) {
 	const packages: ExpectedPackageDBFromBucketAdLib[] = []
 	for (const adlib of adlibs) {
 		if (adlib.expectedPackages) {
@@ -265,7 +265,10 @@ function generateExpectedPackagesForBucketAdlib(studio: DBStudio, adlibs: Bucket
 	}
 	return packages
 }
-function generateExpectedPackagesForBucketAdlibAction(studio: DBStudio, adlibActions: BucketAdLibAction[]) {
+function generateExpectedPackagesForBucketAdlibAction(
+	studio: ReadonlyDeep<DBStudio>,
+	adlibActions: BucketAdLibAction[]
+) {
 	const packages: ExpectedPackageDBFromBucketAdLibAction[] = []
 	for (const action of adlibActions) {
 		if (action.expectedPackages) {
@@ -307,7 +310,7 @@ function generateExpectedPackageBases(
 
 export async function updateExpectedPackagesForBucketAdLib(
 	context: JobContext,
-	studio: DBStudio,
+	studio: ReadonlyDeep<DBStudio>,
 	adlib: BucketAdLib
 ): Promise<void> {
 	const packages = generateExpectedPackagesForBucketAdlib(studio, [adlib])
@@ -317,7 +320,7 @@ export async function updateExpectedPackagesForBucketAdLib(
 
 export async function updateExpectedPackagesForBucketAdLibAction(
 	context: JobContext,
-	studio: DBStudio,
+	studio: ReadonlyDeep<DBStudio>,
 	action: BucketAdLibAction
 ): Promise<void> {
 	const packages = generateExpectedPackagesForBucketAdlibAction(studio, [action])
