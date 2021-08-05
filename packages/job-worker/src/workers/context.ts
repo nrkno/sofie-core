@@ -20,6 +20,7 @@ import {
 	ProcessedShowStyleConfig,
 	ProcessedStudioConfig,
 } from '../blueprints/config'
+import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 
 export class JobContextBase implements JobContext {
 	constructor(
@@ -51,6 +52,12 @@ export class JobContextBase implements JobContext {
 		_name: T,
 		_data: Parameters<IngestJobFunc[T]>[0]
 	): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> {
+		throw new Error('Method not implemented.')
+	}
+	queueStudioJob<T extends keyof StudioJobFunc>(
+		_name: T,
+		_data: Parameters<StudioJobFunc[T]>[0]
+	): Promise<WorkerJob<ReturnType<StudioJobFunc[T]>>> {
 		throw new Error('Method not implemented.')
 	}
 

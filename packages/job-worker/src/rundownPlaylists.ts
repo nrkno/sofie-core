@@ -315,7 +315,7 @@ export async function moveRundownIntoPlaylist(
 			})
 
 			// Regenerate the playlist
-			const newPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylist)
+			const newPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylistLock, oldPlaylist)
 			if (newPlaylist) {
 				// ensure the 'old' playout is updated to remove any references to the rundown
 				await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, oldPlaylistLock, null)
@@ -392,7 +392,12 @@ export async function moveRundownIntoPlaylist(
 			}
 
 			// Update the playlist and the order of the contents
-			const newPlaylist = await regeneratePlaylistAndRundownOrder(context, intoPlaylist, rundownsCollection)
+			const newPlaylist = await regeneratePlaylistAndRundownOrder(
+				context,
+				intoPlaylistLock,
+				intoPlaylist,
+				rundownsCollection
+			)
 			if (!newPlaylist) {
 				throw new Error(`RundownPlaylist must still be valid as it has some Rundowns`)
 			}
@@ -442,7 +447,7 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 			newPlaylist.rundownRanksAreSetInSofie = false
 
 			// Update the _rank of the rundowns
-			const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, newPlaylist)
+			const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, playlistLock, newPlaylist)
 
 			if (updatedPlaylist) {
 				// If the playlist is active this could have changed lookahead

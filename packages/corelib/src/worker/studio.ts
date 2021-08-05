@@ -14,6 +14,8 @@ import {
 
 export enum StudioJobs {
 	UpdateTimeline = 'updateTimeline',
+	UpdateTimelineAfterIngest = 'updateTimelineAfterIngest',
+
 	AdlibPieceStart = 'adLibPieceStart',
 	TakePieceAsAdlibNow = 'takePieceAsAdlibNow',
 	StartStickyPieceOnSourceLayer = 'startStickyPieceOnSourceLayer',
@@ -52,6 +54,8 @@ export enum StudioJobs {
 export interface RundownPlayoutPropsBase {
 	playlistId: RundownPlaylistId
 }
+export type UpdateTimelineAfterIngestProps = RundownPlayoutPropsBase
+
 export interface AdlibPieceStartProps extends RundownPlayoutPropsBase {
 	partInstanceId: PartInstanceId
 	adLibPieceId: PieceId
@@ -146,6 +150,8 @@ export type DebugSyncInfinitesForNextPartInstanceProps = RundownPlayoutPropsBase
  */
 export type StudioJobFunc = {
 	[StudioJobs.UpdateTimeline]: () => void
+	[StudioJobs.UpdateTimelineAfterIngest]: (data: UpdateTimelineAfterIngestProps) => void
+
 	[StudioJobs.AdlibPieceStart]: (data: AdlibPieceStartProps) => void
 	[StudioJobs.TakePieceAsAdlibNow]: (data: TakePieceAsAdlibNowProps) => void
 	[StudioJobs.StartStickyPieceOnSourceLayer]: (data: StartStickyPieceOnSourceLayerProps) => void

@@ -18,7 +18,7 @@ import { getRundown } from './lib'
 import { JobContext } from '../jobs'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { runAsPlayoutLock } from '../playout/lock'
+import { runAsPlayoutLock, runWithPlaylistCache } from '../playout/lock'
 import { removeSegmentContents } from './cleanup'
 import { CommitIngestData } from './lock'
 import { clone, max } from '@sofie-automation/corelib/dist/lib'
@@ -26,6 +26,9 @@ import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { ensureNextPartIsValid } from './updateNext'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { getTranslatedMessage, ServerTranslatedMesssages } from '../notes'
+import _ = require('underscore')
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -128,7 +131,11 @@ export async function CommitIngestOperation(
 
 					if (oldPlaylist) {
 						// Ensure playlist is regenerated
-						const updatedOldPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylist)
+						const updatedOldPlaylist = await regeneratePlaylistAndRundownOrder(
+							context,
+							oldPlaylistLock,
+							oldPlaylist
+						)
 
 						if (updatedOldPlaylist) {
 							// ensure the 'old' playout is updated to remove any references to the rundown
@@ -174,7 +181,7 @@ export async function CommitIngestOperation(
 		context,
 		// 'ingest.commit.saveRundownToPlaylist',
 		{ playlistId: newPlaylistId[0] },
-		async (_, playlistLock) => {
+		async (oldPlaylist, playlistLock) => {
 			// Ensure the rundown has the correct playlistId
 			ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
 
@@ -182,12 +189,17 @@ export async function CommitIngestOperation(
 				context,
 				ingestCache,
 				newPlaylistId[0],
-				newPlaylistId[1]
+				newPlaylistId[1],
+				oldPlaylist
 			)
 
 			// Do the segment removals
 			if (data.removedSegmentIds.length > 0) {
-				const { currentPartInstance, nextPartInstance } = newPlaylist.getSelectedPartInstances()
+				const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
+					context,
+					newPlaylist,
+					rundownsCollection.findFetch({}).map((r) => r._id)
+				)
 
 				const purgeSegmentIds = new Set<SegmentId>()
 				const orphanSegmentIds = new Set<SegmentId>()
@@ -257,11 +269,12 @@ export async function CommitIngestOperation(
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
-					Meteor.setTimeout(() => {
-						reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
-					}, LOW_PRIO_DEFER_TIME)
+					// TODO: HACK
+					// Meteor.setTimeout(() => {
+					// 	reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
+					// }, LOW_PRIO_DEFER_TIME)
 
-					triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
+					triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
 				})
 
 				// wait for the ingest changes to save
@@ -284,23 +297,33 @@ async function generatePlaylistAndRundownsCollection(
 	context: JobContext,
 	ingestCache: CacheForIngest,
 	newPlaylistId: RundownPlaylistId,
-	newPlaylistExternalId: string
+	newPlaylistExternalId: string,
+	existingPlaylist: ReadonlyDeep<DBRundownPlaylist> | undefined
 ): Promise<[DBRundownPlaylist, DbCacheWriteCollection<DBRundown>]> {
 	// Load existing playout data
 	const finalRundown = getRundown(ingestCache)
 
-	const result = await generatePlaylistAndRundownsCollectionInner(
+	// Load existing playout data
+	const rundownsCollection = await DbCacheWriteCollection.createFromDatabase(
+		context,
+		context.directCollections.Rundowns,
+		{
+			playlistId: newPlaylistId,
+		}
+	)
+
+	const newPlaylist = generatePlaylistAndRundownsCollectionInner(
 		context,
 		finalRundown,
 		newPlaylistId,
-		newPlaylistExternalId
+		newPlaylistExternalId,
+		existingPlaylist,
+		rundownsCollection
 	)
 
-	if (!result) {
+	if (!newPlaylist) {
 		throw new Error(`RundownPlaylist had no rundowns, even though ingest created one`)
 	}
-
-	const [newPlaylist, rundownsCollection] = result
 
 	// Update the ingestCache to keep them in sync
 	const updatedRundown = rundownsCollection.findOne(ingestCache.RundownId)
@@ -314,35 +337,27 @@ async function generatePlaylistAndRundownsCollection(
 	return [newPlaylist, rundownsCollection]
 }
 
-async function generatePlaylistAndRundownsCollectionInner(
+function generatePlaylistAndRundownsCollectionInner(
 	context: JobContext,
 	changedRundown: ReadonlyDeep<DBRundown> | undefined,
 	newPlaylistId: RundownPlaylistId,
 	newPlaylistExternalId: string,
-	existingPlaylist0?: ReadonlyDeep<DBRundownPlaylist>,
-	existingRundownsCollection?: DbCacheWriteCollection<DBRundown>
-): Promise<[DBRundownPlaylist, DbCacheWriteCollection<DBRundown>] | null> {
-	if (existingPlaylist0) {
-		if (existingPlaylist0._id !== newPlaylistId) {
+	existingPlaylist: ReadonlyDeep<DBRundownPlaylist> | undefined,
+	rundownsCollection: DbCacheWriteCollection<DBRundown>
+): DBRundownPlaylist | null {
+	if (existingPlaylist) {
+		if (existingPlaylist._id !== newPlaylistId) {
 			throw new Error(
-				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0._id}") newPlaylistId("${newPlaylistId}") to be the same`
+				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist("${existingPlaylist._id}") newPlaylistId("${newPlaylistId}") to be the same`
 			)
 		}
-		if (existingPlaylist0.externalId !== newPlaylistExternalId) {
+		if (existingPlaylist.externalId !== newPlaylistExternalId) {
 			throw new Error(
-				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist0("${existingPlaylist0.externalId}") newPlaylistExternalId("${newPlaylistExternalId}") to be the same`
+				`ingest.generatePlaylistAndRundownsCollection requires existingPlaylist("${existingPlaylist.externalId}") newPlaylistExternalId("${newPlaylistExternalId}") to be the same`
 			)
 		}
 	}
 
-	// Load existing playout data
-	const [existingPlaylist, rundownsCollection] = await Promise.all([
-		existingPlaylist0
-			? existingPlaylist0
-			: (RundownPlaylists.findOneAsync(newPlaylistId) as Promise<ReadonlyDeep<RundownPlaylist>>),
-		existingRundownsCollection ??
-			DbCacheWriteCollection.createFromDatabase(Rundowns, { playlistId: newPlaylistId }),
-	])
 	if (changedRundown) {
 		rundownsCollection.replace(changedRundown)
 	}
@@ -374,7 +389,7 @@ async function generatePlaylistAndRundownsCollectionInner(
 			rundownsCollection.update(changedRundownId, { $set: { _rank: last + 1 } })
 		}
 
-		return [newPlaylist, rundownsCollection]
+		return newPlaylist
 	} else {
 		return null
 	}
@@ -441,31 +456,40 @@ function updatePartInstancesBasicProperties(
  */
 export async function regeneratePlaylistAndRundownOrder(
 	context: JobContext,
+	lock: PlaylistLock,
 	oldPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	existingRundownsCollection?: DbCacheWriteCollection<DBRundown>
 ): Promise<DBRundownPlaylist | null> {
-	const result = await generatePlaylistAndRundownsCollectionInner(
+	// ensure the lock is held for the correct playlist
+	if (lock.playlistId !== oldPlaylist._id)
+		throw new Error(`Lock is for wrong playlist. Holding "${lock.playlistId}", need "${oldPlaylist._id}"`)
+
+	const rundownsCollection =
+		existingRundownsCollection ??
+		(await DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Rundowns, {
+			playlistId: oldPlaylist._id,
+		}))
+
+	const newPlaylist = generatePlaylistAndRundownsCollectionInner(
 		context,
 		undefined,
 		oldPlaylist._id,
 		oldPlaylist.externalId,
 		oldPlaylist,
-		existingRundownsCollection
+		rundownsCollection
 	)
 
-	if (result) {
-		const [newPlaylist, rundownsCollection] = result
-
+	if (newPlaylist) {
 		// Save the changes
 		await Promise.all([
 			!existingRundownsCollection ? rundownsCollection.updateDatabaseWithData() : null,
-			RundownPlaylists.upsertAsync(newPlaylist._id, newPlaylist),
+			context.directCollections.RundownPlaylists.replace(newPlaylist),
 		])
 
 		return newPlaylist
 	} else {
 		// Playlist is empty and should be removed
-		await RundownPlaylists.removeAsync(oldPlaylist._id)
+		await context.directCollections.RundownPlaylists.remove(oldPlaylist._id)
 
 		return null
 	}
@@ -481,34 +505,91 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 	insertedRundown: ReadonlyDeep<DBRundown> | null
 ): Promise<void> {
 	// ensure the 'old' playout is updated to remove any references to the rundown
-	return runPlayoutOperationWithCacheFromStudioOperation(
-		'updatePlayoutAfterChangingRundownInPlaylist',
-		playlistLock,
-		playlist,
-		PlayoutLockFunctionPriority.USER_PLAYOUT,
-		null,
-		async (playoutCache) => {
-			if (playoutCache.Rundowns.documents.size === 0) {
-				if (playoutCache.Playlist.doc.activationId)
-					throw new Error(`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`)
-				// Remove an empty playlist
-				await RundownPlaylists.removeAsync({ _id: playoutCache.PlaylistId })
-				playoutCache.assertNoChanges()
-				return
-			}
+	await runWithPlaylistCache(context, playlist, playlistLock, null, async (playoutCache) => {
+		if (playoutCache.Rundowns.documents.size === 0) {
+			if (playoutCache.Playlist.doc.activationId)
+				throw new Error(`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`)
 
-			// Ensure playout is in sync
+			// Remove an empty playlist
+			await context.directCollections.RundownPlaylists.remove({ _id: playoutCache.PlaylistId })
 
-			if (insertedRundown) {
-				// If a rundown has changes, ensure instances are updated
-				updatePartInstancesBasicProperties(playoutCache, insertedRundown._id, new Map())
-			}
-
-			await ensureNextPartIsValid(context, playoutCache)
-
-			if (playoutCache.Playlist.doc.activationId) {
-				triggerUpdateTimelineAfterIngestData(playoutCache.PlaylistId)
-			}
+			playoutCache.assertNoChanges()
+			return
 		}
-	)
+
+		// Ensure playout is in sync
+
+		if (insertedRundown) {
+			// If a rundown has changes, ensure instances are updated
+			updatePartInstancesBasicProperties(playoutCache, insertedRundown._id, new Map())
+		}
+
+		await ensureNextPartIsValid(context, playoutCache)
+
+		if (playoutCache.Playlist.doc.activationId) {
+			triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
+		}
+	})
+}
+
+interface UpdateTimelineFromIngestDataTimeout {
+	timeout?: NodeJS.Timeout
+}
+const updateTimelineFromIngestDataTimeouts = new Map<RundownPlaylistId, UpdateTimelineFromIngestDataTimeout>()
+export function triggerUpdateTimelineAfterIngestData(context: JobContext, playlistId: RundownPlaylistId): void {
+	if (process.env.JEST_WORKER_ID) {
+		// Don't run this when in jest, as it is not useful and ends up producing errors
+		return
+	}
+
+	// TODO: HACK - this should be workqueue backed, not in-memory
+	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
+	const data = updateTimelineFromIngestDataTimeouts.get(playlistId) ?? {}
+	if (data.timeout) clearTimeout(data.timeout)
+
+	data.timeout = setTimeout(() => {
+		if (updateTimelineFromIngestDataTimeouts.delete(playlistId)) {
+			context
+				.queueStudioJob(StudioJobs.UpdateTimelineAfterIngest, {
+					playlistId,
+				})
+				.catch((e) => {
+					logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${e}`)
+				})
+		}
+	}, 1000)
+
+	updateTimelineFromIngestDataTimeouts.set(playlistId, data)
+}
+
+async function getSelectedPartInstances(
+	context: JobContext,
+	playlist: DBRundownPlaylist,
+	rundownIds: Array<RundownId>
+) {
+	// let rundownIds = rundownIds0
+	// if (!rundownIds) {
+	// 	rundownIds = this.getRundownIDs()
+	// }
+
+	const ids = _.compact([
+		playlist.currentPartInstanceId,
+		playlist.previousPartInstanceId,
+		playlist.nextPartInstanceId,
+	])
+
+	const instances =
+		ids.length > 0
+			? await context.directCollections.PartInstances.findFetch({
+					rundownId: { $in: rundownIds },
+					_id: { $in: ids },
+					reset: { $ne: true },
+			  })
+			: []
+
+	return {
+		currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInstanceId),
+		nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInstanceId),
+		previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInstanceId),
+	}
 }

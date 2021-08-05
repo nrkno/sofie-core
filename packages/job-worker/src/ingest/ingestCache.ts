@@ -81,7 +81,11 @@ export class RundownIngestDataCache {
 		const ingestRundown = cachedRundown.data as LocalIngestRundown
 		ingestRundown.modified = cachedRundown.modified
 
-		const segmentMap = _.groupBy(cacheEntries, (e) => e.segmentId)
+		const hasSegmentId = (obj: IngestDataCacheObj): obj is IngestDataCacheObjSegment | IngestDataCacheObjPart => {
+			return !!obj.segmentId
+		}
+
+		const segmentMap = _.groupBy(cacheEntries.filter(hasSegmentId), (e) => unprotectString(e.segmentId))
 		_.each(segmentMap, (objs) => {
 			const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
 			if (segmentEntry) {

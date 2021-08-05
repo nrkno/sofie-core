@@ -9,6 +9,7 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
+import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 
 export { ApmSpan }
 
@@ -33,6 +34,10 @@ export interface JobContext {
 		name: T,
 		data: Parameters<IngestJobFunc[T]>[0]
 	): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> // TODO - this return type isnt the best..
+	queueStudioJob<T extends keyof StudioJobFunc>(
+		name: T,
+		data: Parameters<StudioJobFunc[T]>[0]
+	): Promise<WorkerJob<ReturnType<StudioJobFunc[T]>>> // TODO - this return type isnt the best..
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig
 

@@ -47,7 +47,7 @@ import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { VTContent } from '@sofie-automation/blueprints-integration'
+import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPackageDB, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
@@ -517,7 +517,7 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
 		const studio = Studios.findOne(Meteor.settings.manualSnapshotIngestStudioId || 'studio0')
 		if (studio) {
-			importIngestRundown(studio._id, snapshot)
+			importIngestRundown(studio._id, snapshot as unknown as IngestRundown)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)

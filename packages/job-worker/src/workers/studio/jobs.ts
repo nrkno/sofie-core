@@ -11,6 +11,7 @@ import {
 	disableNextPiece,
 	executeAction,
 	handleTimelineTriggerTime,
+	handleUpdateTimelineAfterIngest,
 	moveNextPart,
 	onPartPlaybackStarted,
 	onPartPlaybackStopped,
@@ -48,6 +49,8 @@ export type StudioJobHandlers = {
 
 export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.UpdateTimeline]: updateTimelineDebug,
+	[StudioJobs.UpdateTimelineAfterIngest]: handleUpdateTimelineAfterIngest,
+
 	[StudioJobs.AdlibPieceStart]: adLibPieceStart,
 	[StudioJobs.TakePieceAsAdlibNow]: takePieceAsAdlibNow,
 	[StudioJobs.StartStickyPieceOnSourceLayer]: startStickyPieceOnSourceLayer,

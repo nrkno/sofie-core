@@ -23,13 +23,14 @@ import {
 	DisableNextPieceProps,
 	SetNextSegmentProps,
 	OnTimelineTriggerTimeProps,
+	UpdateTimelineAfterIngestProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { logger } from '../logging'
 import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { innerStopPieces } from './adlib'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
-import { runAsPlayoutJob, runAsPlayoutLock } from './lock'
+import { runAsPlayoutJob, runAsPlayoutLock, runWithPlaylistCache } from './lock'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import {
 	onPartHasStoppedPlaying,
@@ -1252,50 +1253,24 @@ async function shouldUpdateStudioBaselineInner(context: JobContext, cache: Cache
 	return libShouldUpdateStudioBaselineInner(getSystemVersion(), studio, timeline, blueprint)
 }
 
-// interface UpdateTimelineFromIngestDataTimeout {
-// 	timeout?: number
-// }
-// const updateTimelineFromIngestDataTimeouts = new Map<RundownPlaylistId, UpdateTimelineFromIngestDataTimeout>()
-// export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylistId) {
-// 	if (process.env.JEST_WORKER_ID) {
-// 		// Don't run this when in jest, as it is not useful and ends up producing errors
-// 		return
-// 	}
-
-// 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
-// 	const data = updateTimelineFromIngestDataTimeouts.get(playlistId) ?? {}
-// 	if (data.timeout) Meteor.clearTimeout(data.timeout)
-
-// 	data.timeout = Meteor.setTimeout(() => {
-// 		if (updateTimelineFromIngestDataTimeouts.delete(playlistId)) {
-// 			const transaction = profiler.startTransaction('triggerUpdateTimelineAfterIngestData', 'playout')
-// 			runPlayoutOperationWithCache(
-// 				null,
-// 				'triggerUpdateTimelineAfterIngestData',
-// 				playlistId,
-// 				PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 				null,
-// 				async (cache) => {
-// 					const playlist = cache.Playlist.doc
-
-// 					if (playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
-// 						const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-// 						if (!currentPartInstance?.timings?.startedPlayback) {
-// 							// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
-// 							// We mustn't run before that does, or we will get the timings in playout-gateway confused.
-// 						} else {
-// 							// It is safe enough (except adlibs) to update the timeline directly
-// 							// If the playlist is active, then updateTimeline as lookahead could have been affected
-// 							await updateTimeline(cache)
-// 						}
-// 					}
-// 				}
-// 			).catch((e) => {
-// 				logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${e}`)
-// 			})
-// 			transaction?.end()
-// 		}
-// 	}, 1000)
-
-// 	updateTimelineFromIngestDataTimeouts.set(playlistId, data)
-// }
+export async function handleUpdateTimelineAfterIngest(
+	context: JobContext,
+	data: UpdateTimelineAfterIngestProps
+): Promise<void> {
+	await runAsPlayoutLock(context, data, async (playlist, lock) => {
+		if (playlist && playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
+			//
+			await runWithPlaylistCache(context, playlist, lock, null, async (cache) => {
+				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+				if (!currentPartInstance?.timings?.startedPlayback) {
+					// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
+					// We mustn't run before that does, or we will get the timings in playout-gateway confused.
+				} else {
+					// It is safe enough (except adlibs) to update the timeline directly
+					// If the playlist is active, then updateTimeline as lookahead could have been affected
+					await updateTimeline(context, cache)
+				}
+			})
+		}
+	})
+}
