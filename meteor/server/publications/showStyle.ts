@@ -7,6 +7,7 @@ import { ShowStyleReadAccess } from '../security/showStyle'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
+import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 
 meteorPublish(PubSub.showStyleBases, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
@@ -54,7 +55,7 @@ meteorPublish(PubSub.triggeredActions, function (selector0, token) {
 		fields: {},
 	}
 	if (ShowStyleReadAccess.showStyleBaseContent(selector, cred)) {
-		return RundownLayouts.find(selector, modifier)
+		return TriggeredActions.find(selector, modifier)
 	}
 	return null
 })
