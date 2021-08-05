@@ -4,7 +4,7 @@ import { ExpectedPackagesRegenerateProps, PackageInfosUpdatedProps } from '@sofi
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import { regenerateSegmentsFromIngestData } from './generation'
-import { runAsIngestJob, runAsRundownLock } from './lock'
+import { runIngestJob, runWithRundownLock } from './lock'
 import { CacheForIngest } from './cache'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 
@@ -12,7 +12,7 @@ export async function handleExpectedPackagesRegenerate(
 	context: JobContext,
 	data: ExpectedPackagesRegenerateProps
 ): Promise<void> {
-	await runAsRundownLock(context, data.rundownId, async (rundown) => {
+	await runWithRundownLock(context, data.rundownId, async (rundown) => {
 		if (!rundown) throw new Error(`Rundown "${data.rundownId}" not found`)
 
 		const cache = await CacheForIngest.createFromRundown(context, rundown)
@@ -31,7 +31,7 @@ export async function handleUpdatedPackageInfoForRundown(
 		return
 	}
 
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {

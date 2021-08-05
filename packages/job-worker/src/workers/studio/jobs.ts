@@ -1,4 +1,4 @@
-import { runAsPlayoutJob } from '../../playout/lock'
+import { runJobWithPlayoutCache } from '../../playout/lock'
 import { updateTimeline, updateStudioTimeline } from '../../playout/timeline'
 import { JobContext } from '../../jobs'
 import { adLibPieceStart, startStickyPieceOnSourceLayer, takePieceAsAdlibNow } from '../../playout/adlib'
@@ -25,7 +25,7 @@ import {
 	takeNextPart,
 	updateStudioBaseline,
 } from '../../playout/playout'
-import { runAsStudioJob } from '../../studio/lock'
+import { runJobWithStudioCache } from '../../studio/lock'
 import {
 	handleDebugSyncPlayheadInfinitesForNextPartInstance,
 	handleDebugRegenerateNextPartInstance,
@@ -88,7 +88,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {
 	console.log('running updateTimelineDebug')
-	await runAsStudioJob(context, async (studioCache) => {
+	await runJobWithStudioCache(context, async (studioCache) => {
 		const activePlaylists = studioCache.getActiveRundownPlaylists()
 		if (activePlaylists.length > 1) {
 			throw new Error(`Too many active playlists`)
@@ -98,7 +98,7 @@ async function updateTimelineDebug(context: JobContext, _data: void): Promise<vo
 			const playlist = activePlaylists[0]
 			console.log('for playlist', playlist._id)
 
-			await runAsPlayoutJob(context, { playlistId: playlist._id }, null, async (playoutCache) => {
+			await runJobWithPlayoutCache(context, { playlistId: playlist._id }, null, async (playoutCache) => {
 				await updateTimeline(context, playoutCache)
 			})
 		} else {

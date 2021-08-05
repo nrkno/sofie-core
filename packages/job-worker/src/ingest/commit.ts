@@ -18,7 +18,7 @@ import { getRundown } from './lib'
 import { JobContext } from '../jobs'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { runAsPlayoutLock, runWithPlaylistCache } from '../playout/lock'
+import { runJobWithPlaylistLock, runWithPlaylistCache } from '../playout/lock'
 import { removeSegmentContents } from './cleanup'
 import { CommitIngestData } from './lock'
 import { clone, max } from '@sofie-automation/corelib/dist/lib'
@@ -71,7 +71,7 @@ export async function CommitIngestOperation(
 	let trappedInPlaylistId: [RundownPlaylistId, string] | undefined
 	if (beforeRundown?.playlistId && (beforeRundown.playlistId !== targetPlaylistId[0] || data.removeRundown)) {
 		const beforePlaylistId = beforeRundown.playlistId
-		await runAsPlayoutLock(
+		await runJobWithPlaylistLock(
 			context,
 			// 'ingest.commit.removeRundownFromOldPlaylist',
 			{ playlistId: beforePlaylistId },
@@ -177,7 +177,7 @@ export async function CommitIngestOperation(
 		}
 	}
 
-	await runAsPlayoutLock(
+	await runJobWithPlaylistLock(
 		context,
 		// 'ingest.commit.saveRundownToPlaylist',
 		{ playlistId: newPlaylistId[0] },

@@ -30,7 +30,7 @@ import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { innerStopPieces } from './adlib'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
-import { runAsPlayoutJob, runAsPlayoutLock, runWithPlaylistCache } from './lock'
+import { runJobWithPlayoutCache, runJobWithPlaylistLock, runWithPlaylistCache } from './lock'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import {
 	onPartHasStoppedPlaying,
@@ -73,7 +73,7 @@ import {
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { sortPieceInstancesByStart } from './pieces'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { runAsStudioJob } from '../studio/lock'
+import { runJobWithStudioCache } from '../studio/lock'
 import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { CacheForStudio } from '../studio/cache'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
@@ -115,7 +115,7 @@ export async function prepareRundownPlaylistForBroadcast(
 	context: JobContext,
 	data: PrepareRundownForBroadcastProps
 ): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'prepareRundownPlaylistForBroadcast',
 		data,
@@ -139,7 +139,7 @@ export async function prepareRundownPlaylistForBroadcast(
  * Optionally activate the rundown at the end.
  */
 export async function resetRundownPlaylist(context: JobContext, data: ResetRundownPlaylistProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'resetRundownPlaylist',
 		data,
@@ -161,7 +161,7 @@ export async function resetRundownPlaylist(context: JobContext, data: ResetRundo
 						// Try deactivating everything in parallel, although there should only ever be one active
 						await Promise.allSettled(
 							anyOtherActivePlaylists.map(async (otherRundownPlaylist) =>
-								runAsPlayoutJob(
+								runJobWithPlayoutCache(
 									context,
 									// 'forceResetAndActivateRundownPlaylist',
 									{ playlistId: otherRundownPlaylist._id },
@@ -202,7 +202,7 @@ export async function resetRundownPlaylist(context: JobContext, data: ResetRundo
  * Only activate the rundown, don't reset anything
  */
 export async function activateRundownPlaylist(context: JobContext, data: ActivateRundownPlaylistProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'activateRundownPlaylist',
 		data,
@@ -225,7 +225,7 @@ export async function deactivateRundownPlaylist(
 	context: JobContext,
 	data: DeactivateRundownPlaylistProps
 ): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'deactivateRundownPlaylist',
 		data,
@@ -243,7 +243,7 @@ export async function deactivateRundownPlaylist(
 export async function takeNextPart(context: JobContext, data: TakeNextPartProps): Promise<void> {
 	const now = getCurrentTime()
 
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'takeNextPartInner',
 		data,
@@ -288,7 +288,7 @@ export async function takeNextPart(context: JobContext, data: TakeNextPartProps)
 }
 
 export async function setNextPart(context: JobContext, data: SetNextPartProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'setNextPart',
 		data,
@@ -343,7 +343,7 @@ export async function setNextPartInner(
 	await updateTimeline(context, cache)
 }
 export async function moveNextPart(context: JobContext, data: MoveNextPartProps): Promise<PartId | null> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'moveNextPart',
 		data,
@@ -465,7 +465,7 @@ export async function moveNextPartInner(
 	}
 }
 export async function setNextSegment(context: JobContext, data: SetNextSegmentProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'setNextSegment',
 		data,
@@ -523,7 +523,7 @@ export async function setNextSegment(context: JobContext, data: SetNextSegmentPr
 	)
 }
 export async function activateHold(context: JobContext, data: ActivateHoldProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'activateHold',
 		data,
@@ -563,7 +563,7 @@ export async function activateHold(context: JobContext, data: ActivateHoldProps)
 	)
 }
 export async function deactivateHold(context: JobContext, data: DeactivateHoldProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'deactivateHold',
 		data,
@@ -583,7 +583,7 @@ export async function deactivateHold(context: JobContext, data: DeactivateHoldPr
 	)
 }
 export async function disableNextPiece(context: JobContext, data: DisableNextPieceProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'disableNextPiece',
 		data,
@@ -689,7 +689,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
  * Triggered from Playout-gateway when a Piece has started playing
  */
 export async function onPiecePlaybackStarted(context: JobContext, data: OnPiecePlaybackStartedProps): Promise<void> {
-	return runAsPlayoutLock(
+	return runJobWithPlaylistLock(
 		context,
 		// 'onPiecePlaybackStarted',
 		data,
@@ -730,7 +730,7 @@ export async function onPiecePlaybackStarted(context: JobContext, data: OnPieceP
  * Triggered from Playout-gateway when a Piece has stopped playing
  */
 export async function onPiecePlaybackStopped(context: JobContext, data: OnPiecePlaybackStoppedProps): Promise<void> {
-	return runAsPlayoutLock(
+	return runJobWithPlaylistLock(
 		context,
 		// 'onPiecePlaybackStopped',
 		data,
@@ -771,7 +771,7 @@ export async function onPiecePlaybackStopped(context: JobContext, data: OnPieceP
  * Triggered from Playout-gateway when a Part has started playing
  */
 export async function onPartPlaybackStarted(context: JobContext, data: OnPartPlaybackStartedProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'onPartPlaybackStarted',
 		data,
@@ -913,7 +913,7 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
  * Triggered from Playout-gateway when a Part has stopped playing
  */
 export async function onPartPlaybackStopped(context: JobContext, data: OnPartPlaybackStoppedProps): Promise<void> {
-	return runAsPlayoutLock(
+	return runJobWithPlaylistLock(
 		context,
 		// 'onPartPlaybackStopped',
 		data,
@@ -956,13 +956,13 @@ export async function onPartPlaybackStopped(context: JobContext, data: OnPartPla
  */
 export async function handleTimelineTriggerTime(context: JobContext, data: OnTimelineTriggerTimeProps): Promise<void> {
 	if (data.results.length > 0) {
-		await runAsStudioJob(context, async (studioCache) => {
+		await runJobWithStudioCache(context, async (studioCache) => {
 			const activePlaylists = studioCache.getActiveRundownPlaylists()
 
 			if (activePlaylists.length === 1) {
 				const activePlaylist = activePlaylists[0]
 				const playlistId = activePlaylist._id
-				await runAsPlayoutLock(context, { playlistId }, async () => {
+				await runJobWithPlaylistLock(context, { playlistId }, async () => {
 					const rundownIDs = (
 						await context.directCollections.Rundowns.findFetch({ playlistId }, { projection: { _id: 1 } })
 					).map((r) => r._id)
@@ -1106,7 +1106,7 @@ export async function executeActionInner(
 ): Promise<void> {
 	const now = getCurrentTime()
 
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'executeActionInner',
 		data,
@@ -1189,7 +1189,7 @@ export async function stopPiecesOnSourceLayers(
 	data: StopPiecesOnSourceLayersProps
 ): Promise<void> {
 	if (data.sourceLayerIds.length === 0) return
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'sourceLayerOnPartStop',
 		data,
@@ -1229,7 +1229,7 @@ export async function stopPiecesOnSourceLayers(
 }
 
 export async function updateStudioBaseline(context: JobContext, _data: void): Promise<string | false> {
-	return runAsStudioJob(context, async (cache) => {
+	return runJobWithStudioCache(context, async (cache) => {
 		const activePlaylists = cache.getActiveRundownPlaylists()
 
 		if (activePlaylists.length === 0) {
@@ -1257,7 +1257,7 @@ export async function handleUpdateTimelineAfterIngest(
 	context: JobContext,
 	data: UpdateTimelineAfterIngestProps
 ): Promise<void> {
-	await runAsPlayoutLock(context, data, async (playlist, lock) => {
+	await runJobWithPlaylistLock(context, data, async (playlist, lock) => {
 		if (playlist && playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
 			//
 			await runWithPlaylistCache(context, playlist, lock, null, async (cache) => {

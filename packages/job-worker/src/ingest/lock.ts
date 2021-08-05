@@ -49,7 +49,7 @@ export enum UpdateIngestRundownAction {
  * @param calcFcn Function to run to update the Rundown. Return the blob of data about the change to help the post-update perform its duties. Return null to indicate that nothing changed
  */
 // runPlayoutOperationWithCacheFromStudioOperation
-export async function runAsIngestJob(
+export async function runIngestJob(
 	context: JobContext,
 	data: IngestPropsBase,
 	updateCacheFcn: (
@@ -67,7 +67,7 @@ export async function runAsIngestJob(
 	}
 
 	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
-	return runInRundownLock(context, rundownId, async () => {
+	return runWithRundownLockInner(context, rundownId, async () => {
 		const span = context.startSpan(`ingestLockFunction.${context}`)
 
 		// Load the old ingest data
@@ -118,65 +118,11 @@ export async function runAsIngestJob(
 	})
 }
 
-// /**
-//  * Perform an operation on a rundown that has no effect on playout
-//  * Warning: this will not attempt to update playout or perform the usual ingest post-changes. Be very careful what is changed as it could cause weird behaviour
-//  * @param context Contextual information for the call to this function. to aid debugging
-//  * @param studioId Id of the studio the rundown belongs to
-//  * @param rundownExternalId ExternalId of the rundown to lock
-//  * @param fcn Function to run while holding the lock
-//  * @param playlistLock If the playlist lock is already held, supply it here to avoid trying to reaquire the lock
-//  */
-// export async function runIngestOperationFromRundown(
-// 	context: string,
-// 	refRundown: DBRundown,
-// 	fcn: (ingestCache: CacheForIngest) => Promise<void>
-// ): Promise<void> {
-// 	const refRundownId = refRundown._id
-// 	const studioId = refRundown.studioId
-// 	const rundownExternalId = refRundown.externalId
-
-// 	const targetRundownId = getRundownId(studioId, rundownExternalId)
-// 	if (targetRundownId !== refRundownId) {
-// 		throw new Meteor.Error(
-// 			500,
-// 			`Rundown id cannot run ingest operations, as it's _id "${refRundownId}" does not match the expected "${targetRundownId}". Perhaps it was restored from a snapshot?`
-// 		)
-// 	}
-
-// 	return ingestLockFunctionInner(context, rundownExternalId, async () => {
-// 		const ingestCache = await CacheForIngest.create(studioId, rundownExternalId)
-// 		const beforeRundown = getRundown(ingestCache)
-
-// 		// Do the function
-// 		await fcn(ingestCache)
-
-// 		// Check the change isn't making a mess
-// 		const afterRundown = getRundown(ingestCache)
-// 		if (beforeRundown.playlistId !== afterRundown.playlistId)
-// 			throw new Meteor.Error(
-// 				500,
-// 				`RundownPlaylist id for Rundown "${ingestCache.RundownId}" cannot be changed during a ingestRundownOnlyLockFunction`
-// 			)
-
-// 		await runPlayoutOperationWithLock(
-// 			null,
-// 			context,
-// 			beforeRundown.playlistId,
-// 			PlayoutLockFunctionPriority.MISC,
-// 			async () => {
-// 				// This needs to be inside the playout lock to ensure that a take doesnt happen mid update
-// 				await ingestCache.saveAllToDatabase()
-// 			}
-// 		)
-// 	})
-// }
-
 /**
  * Run a minimal rundown job
  * This avoids loading the cache
  */
-export async function runAsRundownLock<TRes>(
+export async function runWithRundownLock<TRes>(
 	context: JobContext,
 	rundownId: RundownId,
 	fcn: (rundown: DBRundown | undefined, lock: unknown) => Promise<TRes>
@@ -190,13 +136,13 @@ export async function runAsRundownLock<TRes>(
 		throw new Error(`Job rundown "${rundownId}" not found or for another studio`)
 	}
 
-	return runInRundownLock(context, rundownId, async (lock) => fcn(rundown, lock))
+	return runWithRundownLockInner(context, rundownId, async (lock) => fcn(rundown, lock))
 }
 
 /**
  * Lock the rundown for a quick task without the cache
  */
-export async function runInRundownLock<TRes>(
+async function runWithRundownLockInner<TRes>(
 	_context: JobContext,
 	_rundownId: RundownId,
 	fcn: (lock: unknown) => Promise<TRes>

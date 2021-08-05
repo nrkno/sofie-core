@@ -11,7 +11,7 @@ import { CacheForPlayoutPreInit, CacheForPlayout } from './cache'
  * Run a typical playout job
  * This means loading the playout cache in stages, doing some calculations and saving the result
  */
-export async function runAsPlayoutJob<TRes>(
+export async function runJobWithPlayoutCache<TRes>(
 	context: JobContext,
 	data: RundownPlayoutPropsBase,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
@@ -26,7 +26,7 @@ export async function runAsPlayoutJob<TRes>(
 		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
 	}
 
-	return runInPlaylistLock(context, playlist._id, async (playlistLock) => {
+	return runWithPlaylistLock(context, playlist._id, async (playlistLock) => {
 		return runWithPlaylistCache(context, playlist, playlistLock, preInitFcn, fcn)
 	})
 }
@@ -35,7 +35,7 @@ export async function runAsPlayoutJob<TRes>(
  * Run a minimal playout job
  * This avoids loading the cache
  */
-export async function runAsPlayoutLock<TRes>(
+export async function runJobWithPlaylistLock<TRes>(
 	context: JobContext,
 	data: RundownPlayoutPropsBase,
 	fcn: (playlist: DBRundownPlaylist | undefined, lock: PlaylistLock) => Promise<TRes>
@@ -49,13 +49,13 @@ export async function runAsPlayoutLock<TRes>(
 		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
 	}
 
-	return runInPlaylistLock(context, data.playlistId, async (lock) => fcn(playlist, lock))
+	return runWithPlaylistLock(context, data.playlistId, async (lock) => fcn(playlist, lock))
 }
 
 /**
  * Lock the playlist for a quick task without the cache
  */
-export async function runInPlaylistLock<TRes>(
+export async function runWithPlaylistLock<TRes>(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	fcn: (lock: PlaylistLock) => Promise<TRes>

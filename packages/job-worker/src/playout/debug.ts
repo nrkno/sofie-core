@@ -7,7 +7,7 @@ import { logger } from '../logging'
 import { getSelectedPartInstancesFromCache } from './cache'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { setNextPart } from './lib'
-import { runAsPlayoutJob } from './lock'
+import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline'
 
 /**
@@ -20,7 +20,7 @@ export async function handleDebugSyncPlayheadInfinitesForNextPartInstance(
 ): Promise<void> {
 	logger.info(`syncPlayheadInfinitesForNextPartInstance ${data.playlistId}`)
 
-	await runAsPlayoutJob(context, data, null, async (cache) => {
+	await runJobWithPlayoutCache(context, data, null, async (cache) => {
 		await syncPlayheadInfinitesForNextPartInstance(context, cache)
 	})
 }
@@ -35,7 +35,7 @@ export async function handleDebugRegenerateNextPartInstance(
 ): Promise<void> {
 	logger.info('regenerateNextPartInstance')
 
-	await runAsPlayoutJob(context, data, null, async (cache) => {
+	await runJobWithPlayoutCache(context, data, null, async (cache) => {
 		const playlist = cache.Playlist.doc
 		if (playlist.nextPartInstanceId && playlist.activationId) {
 			const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)

@@ -18,7 +18,7 @@ import {
 	getRundownIDsFromCache,
 	getSelectedPartInstancesFromCache,
 } from './cache'
-import { runAsPlayoutJob } from './lock'
+import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline'
 import { prefixAllObjectIds, selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
@@ -45,7 +45,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'pieceTakeNow',
 		data,
@@ -158,7 +158,7 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 }
 
 export async function adLibPieceStart(context: JobContext, data: AdlibPieceStartProps): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'rundownBaselineAdLibPieceStart',
 		data,
@@ -292,7 +292,7 @@ export async function startStickyPieceOnSourceLayer(
 	context: JobContext,
 	data: StartStickyPieceOnSourceLayerProps
 ): Promise<void> {
-	return runAsPlayoutJob(
+	return runJobWithPlayoutCache(
 		context,
 		// 'sourceLayerStickyPieceStart',
 		data,

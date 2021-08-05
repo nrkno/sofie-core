@@ -19,7 +19,7 @@ import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
 import { LocalIngestRundown, makeNewIngestPart, makeNewIngestRundown, makeNewIngestSegment } from './ingestCache'
 import { canRundownBeUpdated, canSegmentBeUpdated, getRundown, getSegmentId } from './lib'
-import { CommitIngestData, runAsIngestJob, runAsRundownLock, UpdateIngestRundownAction } from './lock'
+import { CommitIngestData, runIngestJob, runWithRundownLock, UpdateIngestRundownAction } from './lock'
 import { removeRundownsFromDb } from '../rundownPlaylists'
 
 // async function getIngestPlaylist(
@@ -103,7 +103,7 @@ import { removeRundownsFromDb } from '../rundownPlaylists'
 // }
 
 export async function handleRemovedRundown(context: JobContext, data: IngestRemoveRundownProps): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		() => {
@@ -133,7 +133,7 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 	}
 
 	if (tmpRundown.restoredFromSnapshotId) {
-		return runAsRundownLock(context, data.rundownId, async (rundown) => {
+		return runWithRundownLock(context, data.rundownId, async (rundown) => {
 			if (rundown) {
 				// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
 				// Note: this bypasses activation checks, but that probably doesnt matter
@@ -161,7 +161,7 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 
 /** Handle an updated (or inserted) Rundown */
 export async function handleUpdatedRundown(context: JobContext, data: IngestUpdateRundownProps): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -199,7 +199,7 @@ export async function handleUpdatedRundownInner(
 	return updateRundownFromIngestData(context, cache, ingestRundown, peripheralDeviceId)
 }
 export async function handleRegenerateRundown(context: JobContext, data: IngestRegenerateRundownProps): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -220,7 +220,7 @@ export async function handleRegenerateRundown(context: JobContext, data: IngestR
 }
 
 export async function handleRegenerateSegment(context: JobContext, data: IngestRegenerateSegmentProps): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -248,7 +248,7 @@ export async function handleRegenerateSegment(context: JobContext, data: IngestR
 }
 
 export async function handleRemovedSegment(context: JobContext, data: IngestRemoveSegmentProps): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -294,7 +294,7 @@ export async function handleRemovedSegment(context: JobContext, data: IngestRemo
 }
 export async function handleUpdatedSegment(context: JobContext, data: IngestUpdateSegmentProps): Promise<void> {
 	const segmentExternalId = data.ingestSegment.externalId
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -321,7 +321,7 @@ export async function handleUpdatedSegmentRanks(
 	context: JobContext,
 	data: IngestUpdateSegmentRanksProps
 ): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -367,7 +367,7 @@ export async function handleUpdatedSegmentRanks(
 }
 
 export async function handleRemovedPart(context: JobContext, data: IngestRemovePartProps): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -396,7 +396,7 @@ export async function handleRemovedPart(context: JobContext, data: IngestRemoveP
 }
 
 export async function handleUpdatedPart(context: JobContext, data: IngestUpdatePartProps): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -426,7 +426,7 @@ export async function handleUpdatedPart(context: JobContext, data: IngestUpdateP
 }
 
 export async function handleUserUnsyncRundown(context: JobContext, data: UserUnsyncRundownProps): Promise<void> {
-	return runAsRundownLock(context, data.rundownId, async (rundown) => {
+	return runWithRundownLock(context, data.rundownId, async (rundown) => {
 		if (rundown) {
 			if (!rundown.orphaned) {
 				await context.directCollections.Rundowns.update(rundown._id, {

@@ -1,9 +1,9 @@
-import { runAsPlayoutLock } from '../playout/lock'
+import { runJobWithPlaylistLock } from '../playout/lock'
 import { JobContext } from '../jobs'
-import { runAsStudioJob } from './lock'
+import { runJobWithStudioCache } from './lock'
 
 export async function removeEmptyPlaylists(context: JobContext, _data: void): Promise<void> {
-	await runAsStudioJob(context, async (cache) => {
+	await runJobWithStudioCache(context, async (cache) => {
 		// Skip any playlists which are active
 		const tmpPlaylists = cache.RundownPlaylists.findFetch(
 			{ activationId: { $exists: false } },
@@ -14,7 +14,7 @@ export async function removeEmptyPlaylists(context: JobContext, _data: void): Pr
 		await Promise.allSettled(
 			tmpPlaylists.map(async (tmpPlaylist) =>
 				// Take the playlist lock, to ensure we don't fight something else
-				runAsPlayoutLock(context, { playlistId: tmpPlaylist._id }, async (playlist) => {
+				runJobWithPlaylistLock(context, { playlistId: tmpPlaylist._id }, async (playlist) => {
 					if (playlist) {
 						const rundowns = await context.directCollections.Rundowns.findFetch(
 							{ playlistId: playlist._id },

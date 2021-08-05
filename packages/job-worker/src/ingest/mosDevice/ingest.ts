@@ -16,7 +16,7 @@ import { JobContext } from '../../jobs'
 import { updateSegmentFromIngestData } from '../generation'
 import { LocalIngestPart, LocalIngestRundown, LocalIngestSegment } from '../ingestCache'
 import { canRundownBeUpdated, getPartId, getRundownId } from '../lib'
-import { CommitIngestData, runAsIngestJob } from '../lock'
+import { CommitIngestData, runIngestJob } from '../lock'
 import { diffAndApplyChanges, diffAndUpdateSegmentIds } from './diff'
 import { fixIllegalObject, getPartIdFromMosStory, getSegmentExternalId, parseMosString } from './lib'
 import { getCurrentTime } from '../../lib'
@@ -107,7 +107,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 	if (parseMosString(data.mosRunningOrder.ID) !== data.rundownExternalId)
 		throw new Error('mosRunningOrder.ID and rundownExternalId mismatch!')
 
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -175,7 +175,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 	)
 }
 export async function handleMosRundownMetadata(context: JobContext, data: MosRundownMetadataProps): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -202,7 +202,7 @@ export async function handleMosFullStory(context: JobContext, data: MosFullStory
 
 	const partExternalId = parseMosString(data.story.ID)
 
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -240,7 +240,7 @@ export async function handleMosFullStory(context: JobContext, data: MosFullStory
 export async function handleMosDeleteStory(context: JobContext, data: MosDeleteStoryProps): Promise<void> {
 	if (data.stories.length === 0) return
 
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -303,7 +303,7 @@ export async function handleMosInsertStories(context: JobContext, data: MosInser
 	// inserts stories and all of their defined items before the referenced story in a Running Order
 	// ...and roStoryReplace message replaces the referenced story with another story or stories
 
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -379,7 +379,7 @@ export async function handleMosSwapStories(context: JobContext, data: MosSwapSto
 		throw new Error(`Cannot swap part ${story0Str} with itself in rundown ${data.rundownExternalId}`)
 	}
 
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {
@@ -413,7 +413,7 @@ export async function handleMosSwapStories(context: JobContext, data: MosSwapSto
 	)
 }
 export async function handleMosMoveStories(context: JobContext, data: MosMoveStoryProps): Promise<void> {
-	return runAsIngestJob(
+	return runIngestJob(
 		context,
 		data,
 		(ingestRundown) => {

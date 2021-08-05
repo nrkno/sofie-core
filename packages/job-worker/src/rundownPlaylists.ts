@@ -15,7 +15,7 @@ import { BlueprintResultOrderedRundowns } from '@sofie-automation/blueprints-int
 import { JobContext } from './jobs'
 import { logger } from './logging'
 import { resetRundownPlaylist } from './playout/lib'
-import { runAsPlayoutLock, runWithPlaylistCache } from './playout/lock'
+import { runJobWithPlaylistLock, runWithPlaylistCache } from './playout/lock'
 import { updateTimeline } from './playout/timeline'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { WrappedStudioBlueprint } from './blueprints/cache'
@@ -29,7 +29,7 @@ import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
 	// TODO - should this lock each rundown for removal? Perhaps by putting work onto the ingest queue?
-	await runAsPlayoutLock(context, data, async (playlist) => {
+	await runJobWithPlaylistLock(context, data, async (playlist) => {
 		if (playlist) {
 			await removeRundownPlaylistFromDb(context, playlist)
 		}
@@ -43,7 +43,7 @@ export async function handleRegenerateRundownPlaylist(
 	context: JobContext,
 	data: RegeneratePlaylistProps
 ): Promise<void> {
-	const ingestData = await runAsPlayoutLock(context, data, async (playlist, playlistLock) => {
+	const ingestData = await runJobWithPlaylistLock(context, data, async (playlist, playlistLock) => {
 		if (!playlist) throw new Error(`Rundown Playlist "${data.playlistId}" not found`)
 
 		logger.info(`Regenerating rundown playlist ${playlist.name} (${playlist._id})`)
@@ -301,112 +301,122 @@ export async function moveRundownIntoPlaylist(
 
 	if (data.intoPlaylistId && rundown.playlistId !== data.intoPlaylistId) {
 		// Do a check if we're allowed to move out of currently playing playlist:
-		await runAsPlayoutLock(context, { playlistId: rundown.playlistId }, async (oldPlaylist, oldPlaylistLock) => {
-			if (!oldPlaylist)
-				throw new Error(`RundownPlaylists "${rundown.playlistId}" for rundown "${rundown._id}" not found!`)
+		await runJobWithPlaylistLock(
+			context,
+			{ playlistId: rundown.playlistId },
+			async (oldPlaylist, oldPlaylistLock) => {
+				if (!oldPlaylist)
+					throw new Error(`RundownPlaylists "${rundown.playlistId}" for rundown "${rundown._id}" not found!`)
 
-			if (!(await allowedToMoveRundownOutOfPlaylist(context, oldPlaylist, rundown))) {
-				throw new Error(`Not allowed to move currently playing rundown!`)
+				if (!(await allowedToMoveRundownOutOfPlaylist(context, oldPlaylist, rundown))) {
+					throw new Error(`Not allowed to move currently playing rundown!`)
+				}
+
+				// Quickly Remove it from the old playlist so that we can free the lock
+				await context.directCollections.Rundowns.update(rundown._id, {
+					$set: { playlistId: protectString('__TMP__'), playlistIdIsSetInSofie: true },
+				})
+
+				// Regenerate the playlist
+				const newPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylistLock, oldPlaylist)
+				if (newPlaylist) {
+					// ensure the 'old' playout is updated to remove any references to the rundown
+					await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, oldPlaylistLock, null)
+				}
 			}
-
-			// Quickly Remove it from the old playlist so that we can free the lock
-			await context.directCollections.Rundowns.update(rundown._id, {
-				$set: { playlistId: protectString('__TMP__'), playlistIdIsSetInSofie: true },
-			})
-
-			// Regenerate the playlist
-			const newPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylistLock, oldPlaylist)
-			if (newPlaylist) {
-				// ensure the 'old' playout is updated to remove any references to the rundown
-				await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, oldPlaylistLock, null)
-			}
-		})
+		)
 	}
 
 	if (data.intoPlaylistId) {
 		// Move into an existing playlist:
-		await runAsPlayoutLock(context, { playlistId: data.intoPlaylistId }, async (intoPlaylist, intoPlaylistLock) => {
-			if (!intoPlaylist)
-				throw new Error(`RundownPlaylists "${data.intoPlaylistId}" for rundown "${rundown._id}" not found!`)
+		await runJobWithPlaylistLock(
+			context,
+			{ playlistId: data.intoPlaylistId },
+			async (intoPlaylist, intoPlaylistLock) => {
+				if (!intoPlaylist)
+					throw new Error(`RundownPlaylists "${data.intoPlaylistId}" for rundown "${rundown._id}" not found!`)
 
-			const rundownsCollection = await DbCacheWriteCollection.createFromDatabase(
-				context,
-				context.directCollections.Rundowns,
-				{
-					playlistId: intoPlaylist._id,
-				}
-			)
-
-			if (!intoPlaylist.rundownRanksAreSetInSofie) {
-				intoPlaylist.rundownRanksAreSetInSofie = true
-				await context.directCollections.RundownPlaylists.update(intoPlaylist._id, {
-					$set: {
-						rundownRanksAreSetInSofie: true,
-					},
-				})
-			}
-			if (intoPlaylist._id === rundown.playlistId) {
-				// Move the rundown within the playlist
-				const i = data.rundownsIdsInPlaylistInOrder.indexOf(data.rundownId)
-				if (i === -1) throw new Error(`RundownId "${data.rundownId}" not found in rundownsIdsInPlaylistInOrder`)
-
-				const rundownIdBefore: RundownId | undefined = data.rundownsIdsInPlaylistInOrder[i - 1]
-				const rundownIdAfter: RundownId | undefined = data.rundownsIdsInPlaylistInOrder[i + 1]
-				const rundownBefore: DBRundown | undefined =
-					rundownIdBefore && rundownsCollection.findOne(rundownIdBefore)
-				const rundownAfter: DBRundown | undefined = rundownIdAfter && rundownsCollection.findOne(rundownIdAfter)
-
-				const newRank: number | undefined = getRank(rundownBefore, rundownAfter)
-				if (newRank === undefined) throw new Error(`newRank is undefined`)
-
-				rundownsCollection.update(rundown._id, {
-					$set: {
-						_rank: newRank,
-					},
-				})
-			} else {
-				// Moving from another playlist
-				rundownsCollection.replace(rundown)
-
-				// Note: When moving into another playlist, the rundown is placed last.
-				rundownsCollection.update(rundown._id, {
-					$set: {
+				const rundownsCollection = await DbCacheWriteCollection.createFromDatabase(
+					context,
+					context.directCollections.Rundowns,
+					{
 						playlistId: intoPlaylist._id,
-						playlistIdIsSetInSofie: true,
-						_rank: 99999, // The rank will be set later, in updateRundownsInPlaylist
-					},
-				})
-				rundown.playlistId = intoPlaylist._id
-				rundown.playlistIdIsSetInSofie = true
+					}
+				)
 
-				// When updating the rundowns in the playlist, the newly moved rundown will be given it's proper _rank:
-				updateRundownsInPlaylist(
+				if (!intoPlaylist.rundownRanksAreSetInSofie) {
+					intoPlaylist.rundownRanksAreSetInSofie = true
+					await context.directCollections.RundownPlaylists.update(intoPlaylist._id, {
+						$set: {
+							rundownRanksAreSetInSofie: true,
+						},
+					})
+				}
+				if (intoPlaylist._id === rundown.playlistId) {
+					// Move the rundown within the playlist
+					const i = data.rundownsIdsInPlaylistInOrder.indexOf(data.rundownId)
+					if (i === -1)
+						throw new Error(`RundownId "${data.rundownId}" not found in rundownsIdsInPlaylistInOrder`)
+
+					const rundownIdBefore: RundownId | undefined = data.rundownsIdsInPlaylistInOrder[i - 1]
+					const rundownIdAfter: RundownId | undefined = data.rundownsIdsInPlaylistInOrder[i + 1]
+					const rundownBefore: DBRundown | undefined =
+						rundownIdBefore && rundownsCollection.findOne(rundownIdBefore)
+					const rundownAfter: DBRundown | undefined =
+						rundownIdAfter && rundownsCollection.findOne(rundownIdAfter)
+
+					const newRank: number | undefined = getRank(rundownBefore, rundownAfter)
+					if (newRank === undefined) throw new Error(`newRank is undefined`)
+
+					rundownsCollection.update(rundown._id, {
+						$set: {
+							_rank: newRank,
+						},
+					})
+				} else {
+					// Moving from another playlist
+					rundownsCollection.replace(rundown)
+
+					// Note: When moving into another playlist, the rundown is placed last.
+					rundownsCollection.update(rundown._id, {
+						$set: {
+							playlistId: intoPlaylist._id,
+							playlistIdIsSetInSofie: true,
+							_rank: 99999, // The rank will be set later, in updateRundownsInPlaylist
+						},
+					})
+					rundown.playlistId = intoPlaylist._id
+					rundown.playlistIdIsSetInSofie = true
+
+					// When updating the rundowns in the playlist, the newly moved rundown will be given it's proper _rank:
+					updateRundownsInPlaylist(
+						intoPlaylist,
+						_.object(
+							literal<Array<[string, number]>>(
+								data.rundownsIdsInPlaylistInOrder.map((id, index) => [unprotectString(id), index + 1])
+							)
+						),
+						rundownsCollection
+					)
+				}
+
+				// Update the playlist and the order of the contents
+				const newPlaylist = await regeneratePlaylistAndRundownOrder(
+					context,
+					intoPlaylistLock,
 					intoPlaylist,
-					_.object(
-						literal<Array<[string, number]>>(
-							data.rundownsIdsInPlaylistInOrder.map((id, index) => [unprotectString(id), index + 1])
-						)
-					),
 					rundownsCollection
 				)
+				if (!newPlaylist) {
+					throw new Error(`RundownPlaylist must still be valid as it has some Rundowns`)
+				}
+
+				await rundownsCollection.updateDatabaseWithData()
+
+				// If the playlist is active this could have changed lookahead
+				await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, intoPlaylistLock, rundown)
 			}
-
-			// Update the playlist and the order of the contents
-			const newPlaylist = await regeneratePlaylistAndRundownOrder(
-				context,
-				intoPlaylistLock,
-				intoPlaylist,
-				rundownsCollection
-			)
-			if (!newPlaylist) {
-				throw new Error(`RundownPlaylist must still be valid as it has some Rundowns`)
-			}
-
-			await rundownsCollection.updateDatabaseWithData()
-
-			// If the playlist is active this could have changed lookahead
-			await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, intoPlaylistLock, rundown)
-		})
+		)
 	} else {
 		// Move into a new playlist:
 
@@ -435,7 +445,7 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 	context: JobContext,
 	data: OrderRestoreToDefaultProps
 ): Promise<void> {
-	await runAsPlayoutLock(context, data, async (playlist, playlistLock) => {
+	await runJobWithPlaylistLock(context, data, async (playlist, playlistLock) => {
 		if (playlist) {
 			// Update the playlist
 			await context.directCollections.RundownPlaylists.update(playlist._id, {
