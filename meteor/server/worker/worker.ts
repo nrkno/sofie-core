@@ -6,14 +6,7 @@ import { logger } from '../../lib/logging'
 import PLazy from 'p-lazy'
 import _ from 'underscore'
 import { UserError } from '@sofie-automation/corelib/dist/error'
-
-// class QueueWrapper {}
-
-// const WorkQueueCache = new Map<string, QueueWrapper>()
-
-// export const a = 1
-
-// type JobNames = keyof StudioJobFunc
+import { Meteor } from 'meteor/meteor'
 
 export interface JobTimings {
 	queueTime: number
@@ -54,6 +47,8 @@ export async function QueueStudioJob<T extends keyof StudioJobFunc>(
 	studioId: StudioId,
 	data: Parameters<StudioJobFunc[T]>[0]
 ): Promise<WorkerJob<ReturnType<StudioJobFunc[T]>>> {
+	if (!studioId) throw new Meteor.Error(500, 'Missing studioId')
+
 	let queue0 = studioQueueCache.get(studioId)
 	if (!queue0) {
 		logger.info(`Setting up work queue for Studio "${studioId}"`)
@@ -77,6 +72,8 @@ export async function QueueIngestJob<T extends keyof IngestJobFunc>(
 	studioId: StudioId,
 	data: Parameters<IngestJobFunc[T]>[0]
 ): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> {
+	if (!studioId) throw new Meteor.Error(500, 'Missing studioId')
+
 	let queue0 = ingestQueueCache.get(studioId)
 	if (!queue0) {
 		logger.info(`Setting up work queue for Ingest"${studioId}"`)
@@ -106,6 +103,8 @@ async function pushJobToQueue<T>(
 	const job = await queue.add(name, data, {
 		// priority,
 	})
+
+	console.log('job is queued!', job.id, queue.name)
 
 	// TODO - timeouts
 	// TODO - better errors
@@ -149,6 +148,8 @@ async function pushJobToQueue<T>(
 			// lazily await the result
 			// TODO - should this error be re-wrapped?
 			const res = await completedPromise
+
+			console.log('job is done!', job.id, queue.name)
 
 			if ('error' in res) {
 				throw res.error

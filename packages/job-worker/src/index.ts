@@ -27,6 +27,13 @@ setupApmAgent()
 void (async () => {
 	const client = await createMongoConnection(mongoUri)
 
+	client.on('close', () => {
+		console.log('Mongo connection closed. Forcing exit')
+		// TODO - this isnt a great error handling
+		// eslint-disable-next-line no-process-exit
+		process.exit(0)
+	})
+
 	const studioWorker = await StudioWorkerParent.start(workerId, mongoUri, mongoDb, client, studioId, { connection })
 
 	try {

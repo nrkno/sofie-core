@@ -131,6 +131,7 @@ export class StudioWorkerParent {
 						// block: true, // wait for there to be a job ready
 					})
 
+					// Handle any invalidations
 					if (hasInvalidation) {
 						const invalidations2 = invalidations
 						invalidations = { studio: false, blueprints: [] }
@@ -138,14 +139,14 @@ export class StudioWorkerParent {
 						await this.#worker.invalidateCaches(invalidations2)
 					}
 
-					// Ensure the lock is still good
-					await job.extendLock(this.#workerId, 30000) // TODO - what should the lock duration be?
-
 					// TODO - job lock may timeout, we need to run at an interval to make sure it doesnt
 					// TODO - enforce a timeout? we could kill the thread once it reaches the limit as a hard abort
 
 					// we may not get a job even when blocking, so try again
 					if (job) {
+						// Ensure the lock is still good
+						await job.extendLock(this.#workerId, 30000) // TODO - what should the lock duration be?
+
 						const transaction = startTransaction(job.name, 'worker-studio-parent')
 						if (transaction) {
 							transaction.setLabel('studioId', unprotectString(this.#studioId))

@@ -149,12 +149,14 @@ Meteor.startup(() => {
 	function cleanupPlaylists() {
 		// Ensure there are no empty playlists on an interval
 		const studios = Studios.find({}, { fields: { _id: 1 } }).fetch()
-		waitForPromiseAll(
+		Promise.all(
 			studios.map(async (studio) => {
 				const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studio._id, undefined)
 				await job.complete
 			})
-		)
+		).catch((e) => {
+			logger.error(`Cron: CleanupPlaylists error: ${e}`)
+		})
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
 	cleanupPlaylists()

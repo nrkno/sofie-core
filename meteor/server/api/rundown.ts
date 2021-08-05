@@ -24,6 +24,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 
 /** Return true if the rundown is allowed to be moved out of that playlist */
 export function allowedToMoveRundownOutOfPlaylist(
@@ -246,6 +247,8 @@ export namespace ClientRundownAPI {
 
 class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	async removeRundownPlaylist(_playlistId: RundownPlaylistId) {
+		triggerWriteAccessBecauseNoCheckNecessary()
+
 		throw new Error('Removed')
 	}
 	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
@@ -274,9 +277,13 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		_intoPlaylistId: RundownPlaylistId | null,
 		_rundownsIdsInPlaylistInOrder: RundownId[]
 	) {
+		triggerWriteAccessBecauseNoCheckNecessary()
+
 		throw new Error('Removed')
 	}
 	async restoreRundownsInPlaylistToDefaultOrder(_playlistId: RundownPlaylistId) {
+		triggerWriteAccessBecauseNoCheckNecessary()
+
 		throw new Error('Removed')
 	}
 }

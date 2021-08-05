@@ -68,7 +68,9 @@ const studioMethods = {
 			// Execute function, or fail if no handler
 			const handler = (studioJobHandlers as any)[jobName]
 			if (handler) {
-				return handler(context, data)
+				const res = await handler(context, data)
+				// explicitly await, to force the promise to resolve before the apm transaction is terminated
+				return res
 			} else {
 				throw new Error(`Unknown job name: "${jobName}"`)
 			}

@@ -9,9 +9,12 @@ import { MethodContextAPI } from '../../../lib/api/methods'
 import { Settings } from '../../../lib/Settings'
 import { QueueStudioJob } from '../../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { StudioContentWriteAccess } from '../../security/studio'
 
 class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
 	async updateStudioBaseline(studioId: StudioId): Promise<string | false> {
+		StudioContentWriteAccess.baseline(this, studioId)
+
 		const res = await QueueStudioJob(StudioJobs.UpdateStudioBaseline, studioId, undefined)
 		return res.complete
 	}
