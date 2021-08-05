@@ -28,7 +28,7 @@ export enum ConfigManifestEntryType {
 	INT = 'int',
 	TABLE = 'table',
 	OBJECT = 'object',
-	ENUM = 'enum' // @todo: implement
+	ENUM = 'enum', // @todo: implement
 }
 
 export type ConfigManifestEntry =
@@ -85,7 +85,7 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	config: { [type: string]: ConfigManifestEntry[] }
 }
 
-export type MappingsManifest = Record<string, MappingManifestEntry[]>
+export type MappingsManifest = Record<string | number, MappingManifestEntry[]>
 
 export interface MappingManifestEntryProps {
 	optional?: boolean
