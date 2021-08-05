@@ -129,7 +129,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 							},
 							{ upper: index >= array.length / 2 },
 							{ lower: index < array.length / 2 }
-						)}></div>
+						)}
+					></div>
 				)
 			})
 	}
@@ -147,13 +148,15 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 						'overflow-label': end !== '',
 					})}
 					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}>
+					style={this.getItemLabelOffsetLeft()}
+				>
 					{begin}
 				</span>
 				<span
 					className="segment-timeline__piece__label right-side"
 					ref={this.setRightLabelRef}
-					style={this.getItemLabelOffsetRight()}>
+					style={this.getItemLabelOffsetRight()}
+				>
 					<span className="segment-timeline__piece__label last-words">{end}</span>
 					{this.renderInfiniteIcon()}
 					{this.renderOverflowTimeLabel()}

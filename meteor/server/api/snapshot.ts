@@ -190,10 +190,24 @@ async function createRundownPlaylistSnapshot(
 	const segments = await Segments.findFetchAsync({ rundownId: { $in: rundownIds } })
 	const parts = await Parts.findFetchAsync({ rundownId: { $in: rundownIds } })
 	const validTime = getCurrentTime() - 1000 * 3600 * 24 // 24 hours ago
-    const partInstances = await PartInstances.findFetchAsync(full ? { rundownId: { $in: rundownIds } } : { rundownId: { $in: rundownIds }, $or: [{'timings.takeOut': { $gte: validTime }, reset: true }, { reset: { $ne: true } }] })
+	const partInstances = await PartInstances.findFetchAsync(
+		full
+			? { rundownId: { $in: rundownIds } }
+			: {
+					rundownId: { $in: rundownIds },
+					$or: [{ 'timings.takeOut': { $gte: validTime }, reset: true }, { reset: { $ne: true } }],
+			  }
+	)
 	const partInstanceIds = partInstances.map((p) => p._id)
 	const pieces = await Pieces.findFetchAsync({ startRundownId: { $in: rundownIds } })
-	const pieceInstances = await PieceInstances.findFetchAsync(full ? { rundownId: { $in: rundownIds } } : { rundownId: { $in: rundownIds }, $or: [{ partInstanceId: { $in: partInstanceIds } }, { reset: { $ne: true } }] })
+	const pieceInstances = await PieceInstances.findFetchAsync(
+		full
+			? { rundownId: { $in: rundownIds } }
+			: {
+					rundownId: { $in: rundownIds },
+					$or: [{ partInstanceId: { $in: partInstanceIds } }, { reset: { $ne: true } }],
+			  }
+	)
 	const adLibPieces = await AdLibPieces.findFetchAsync({ rundownId: { $in: rundownIds } })
 	const baselineAdlibs = await RundownBaselineAdLibPieces.findFetchAsync({ rundownId: { $in: rundownIds } })
 	const adLibActions = await AdLibActions.findFetchAsync({ rundownId: { $in: rundownIds } })
@@ -873,11 +887,23 @@ export async function internalStoreSystemSnapshot(
 export async function storeRundownPlaylistSnapshot(
 	context: MethodContext,
 	playlistId: RundownPlaylistId,
-	reason: string
+	reason: string,
 	full?: boolean
 ): Promise<SnapshotId> {
 	check(playlistId, String)
 	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
+	return internalStoreRundownPlaylistSnapshot(organizationId, playlistId, reason, full)
+}
+/** Take and store a rundoen playlist snapshot. For internal use only, performs no access control. */
+export async function internalStoreRundownPlaylistSnapshot(
+	organizationId: OrganizationId | null,
+	playlistId: RundownPlaylistId,
+	reason: string,
+	full?: boolean
+) {
+	check(playlistId, String)
+	check(full, Match.Maybe(Boolean))
+
 	const s = await createRundownPlaylistSnapshot(playlistId, organizationId, full)
 	return storeSnaphot(s, organizationId, reason)
 }
@@ -949,8 +975,8 @@ if (!Settings.enableUserAccounts) {
 			return createSystemSnapshot(protectString(params.studioId), organizationId)
 		})
 	})
-	function createRundownSnapshot(response: ServerResponse, params) {
-		handleResponse(response, async () => {
+	async function createRundownSnapshot(response: ServerResponse, params) {
+		return handleResponse(response, async () => {
 			check(params.playlistId, String)
 			check(params.full, Match.Optional(String))
 
@@ -966,11 +992,12 @@ if (!Settings.enableUserAccounts) {
 	PickerGET.route('/snapshot/rundown/:playlistId', async (params, req: IncomingMessage, response: ServerResponse) =>
 		createRundownSnapshot(response, params)
 	)
-	PickerGET.route('/snapshot/rundown/:playlistId/:full', async (params, req: IncomingMessage, response: ServerResponse) =>
-		createRundownSnapshot(response, params)
+	PickerGET.route(
+		'/snapshot/rundown/:playlistId/:full',
+		async (params, req: IncomingMessage, response: ServerResponse) => createRundownSnapshot(response, params)
 	)
 	PickerGET.route('/snapshot/debug/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {
-		return handleResponse(response, () => {
+		return handleResponse(response, async () => {
 			check(params.studioId, String)
 
 			const cred0: Credentials = { userId: null, token: params.token }

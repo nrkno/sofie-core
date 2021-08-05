@@ -888,7 +888,8 @@ const StudioRoutings = withTranslation()(
 													options={StudioRouteType}
 													optionsAreNumbers={true}
 													collection={Studios}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											)}
 										</label>
 									</div>

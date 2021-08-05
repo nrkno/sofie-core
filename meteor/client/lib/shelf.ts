@@ -101,9 +101,7 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function getUnfinishedPieceInstancesGrouped(
-	currentPartInstanceId: PartInstanceId | null
-): {
+export function getUnfinishedPieceInstancesGrouped(currentPartInstanceId: PartInstanceId | null): {
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 	unfinishedPieceInstances: PieceInstance[]
@@ -185,7 +183,7 @@ export function getUnfinishedPieceInstancesReactive(
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
 			const piece = pieceInstance.piece
-			let end: number | undefined =
+			const end: number | undefined =
 				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
 					? pieceInstance.userDuration.end
 					: typeof piece.enable.duration === 'number'

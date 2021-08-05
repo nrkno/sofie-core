@@ -21,6 +21,7 @@ import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { CacheForIngest } from './cache'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -78,7 +79,6 @@ export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
 	const playlist = RundownPlaylists.findOne(rundown.playlistId)
 	if (!playlist)
 		throw new Meteor.Error(500, `Rundown playlist "${rundown.playlistId}" of rundown "${rundown._id}" not found!`)
-	playlist.touch()
 
 	span?.end()
 	return playlist

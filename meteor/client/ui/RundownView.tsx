@@ -2278,7 +2278,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		refreshHotkeys = () => {
 			const { t } = this.props
-			let preventDefault = (e) => {
+			const preventDefault = (e) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
 				e.stopPropagation()
@@ -2680,8 +2680,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 															? this.props.nextPartInstance
 															: undefined
 													}
-                                                    studioMode={this.state.studioMode}
-                                                    miniShelfFilter={this.props.miniShelfFilter}
+													studioMode={this.state.studioMode}
+													miniShelfFilter={this.props.miniShelfFilter}
 												/>
 											</VirtualElement>
 										</ErrorBoundary>
@@ -2923,7 +2923,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
 			const { t } = this.props
 
-			let sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
+			const sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
 
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -2997,7 +2997,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (currentSegmentId) {
 					const currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
 					if (currentSegmentInd > 0) {
-						let nextShelfOnlySegment = forward
+						const nextShelfOnlySegment = forward
 							? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
 							  this.findShelfOnlySegment(0, currentSegmentInd)
 							: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||

@@ -46,7 +46,8 @@ export const RundownShelfLayoutSelection = withTranslation()(
 					<div className="action-btn expco-item">
 						<div
 							className={classNames('action-btn layout-icon', { small: !layout.icon })}
-							style={{ color: layout.iconColor || 'transparent' }}>
+							style={{ color: layout.iconColor || 'transparent' }}
+						>
 							<FontAwesomeIcon icon={(layout.icon as IconProp) || 'circle'} />
 						</div>
 						{layout.name}
@@ -64,12 +65,12 @@ export const RundownShelfLayoutSelection = withTranslation()(
 			)
 
 			const standaloneLayouts = layoutsInRundown
-				.filter((layout) => RundownLayoutsAPI.IsLayoutForShelf(layout) && layout.exposeAsStandalone)
+				.filter((layout) => RundownLayoutsAPI.isLayoutForShelf(layout) && layout.exposeAsStandalone)
 				.map((layout) => {
 					return this.renderLinkItem(layout, getShelfLink(this.props.playlistId, layout._id), `standalone${layout._id}`)
 				})
 			const shelfLayouts = layoutsInRundown
-				.filter((layout) => RundownLayoutsAPI.IsLayoutForShelf(layout) && layout.exposeAsShelf)
+				.filter((layout) => RundownLayoutsAPI.isLayoutForShelf(layout) && layout.exposeAsShelf)
 				.map((layout) => {
 					return this.renderLinkItem(
 						layout,
@@ -90,7 +91,8 @@ export const RundownShelfLayoutSelection = withTranslation()(
 				<Link
 					to={getRundownPlaylistLink(this.props.playlistId)}
 					onClick={() => this.saveViewChoice('default')}
-					key={'default'}>
+					key={'default'}
+				>
 					<div className="action-btn expco-item">Default</div>
 				</Link>,
 			]

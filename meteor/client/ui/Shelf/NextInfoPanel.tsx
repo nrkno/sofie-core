@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import ClassNames from 'classnames'
 import {
 	RundownLayoutBase,
 	DashboardLayoutNextInfo,
@@ -53,7 +52,8 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 					{
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
-				)}>
+				)}
+			>
 				<span className="next-info-panel__name" style={style}>
 					{showAny && this.props.panel.name}{' '}
 				</span>

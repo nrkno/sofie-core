@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { PartId } from '../../lib/collections/Parts'
-import { Segments, SegmentId } from '../../lib/collections/Segments'
+import { Segments, SegmentId, SegmentUnsyncedReason } from '../../lib/collections/Segments'
 import {
 	unprotectObjectArray,
 	protectString,
@@ -369,6 +369,34 @@ export namespace ServerRundownAPI {
 		return innerResyncRundown(access.rundown)
 	}
 
+	export async function unsyncSegment(
+		context: MethodContext,
+		rundownId: RundownId,
+		segmentId: SegmentId,
+		reason: SegmentUnsyncedReason
+	): Promise<void> {
+		check(rundownId, String)
+		check(segmentId, String)
+		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+
+		await runIngestOperationFromRundown('unsyncSegment', access.rundown, async (cache) => {
+			const rundown = getRundown(cache)
+			const segment = rundown.getSegments({ _id: segmentId })[0]
+			if (!segment.orphaned) {
+				cache.Segments.update(
+					{ _id: segmentId },
+					{
+						$set: {
+							orphaned: reason,
+						},
+					}
+				)
+			} else {
+				logger.info(`Segment "${rundownId}" was already unsynced`)
+			}
+		})
+	}
+
 	export function resyncSegment(
 		context: MethodContext,
 		rundownId: RundownId,
@@ -546,8 +574,8 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	async unsyncRundown(rundownId: RundownId) {
 		return ServerRundownAPI.unsyncRundown(this, rundownId)
 	}
-	unsyncSegment(rundownId: RundownId, segmentId: SegmentId, reason: SegmentUnsyncedReason) {
-		return makePromise(() => ServerRundownAPI.unsyncSegment(this, rundownId, segmentId, reason))
+	async unsyncSegment(rundownId: RundownId, segmentId: SegmentId, reason: SegmentUnsyncedReason) {
+		return ServerRundownAPI.unsyncSegment(this, rundownId, segmentId, reason)
 	}
 	async moveRundown(
 		rundownId: RundownId,

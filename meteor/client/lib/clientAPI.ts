@@ -3,7 +3,6 @@ import * as mousetrap from 'mousetrap'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'
-import { ExtendedKeyboardEvent } from 'mousetrap'
 
 export async function callPeripheralDeviceFunction(
 	e: any,

@@ -11,8 +11,9 @@ import {
 	waitForPromise,
 	UnprotectedStringProperties,
 	clone,
+	waitTime,
 } from '../../../../lib/lib'
-import { Part, Parts } from '../../../../lib/collections/Parts'
+import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
 	IEventContext,
@@ -43,6 +44,9 @@ import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
 import { WatchedPackagesHelper } from './watchedPackages'
+import { PeripheralDevices, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { MediaObjects } from '../../../../lib/collections/MediaObjects'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -544,7 +548,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	hackGetMediaObjectDuration(mediaId: string): number | undefined {
-		return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: this.studioId })?.mediainfo?.format
-			?.duration
+		return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+			?.mediainfo?.format?.duration
 	}
 }

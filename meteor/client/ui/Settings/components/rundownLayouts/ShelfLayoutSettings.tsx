@@ -67,7 +67,8 @@ export default withTranslation()(
 								options={RundownLayoutType}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -80,7 +81,8 @@ export default withTranslation()(
 								options={RundownLayoutType}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 				</React.Fragment>

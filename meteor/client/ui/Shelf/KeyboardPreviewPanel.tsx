@@ -1,7 +1,6 @@
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { withTranslation } from 'react-i18next'
 import * as React from 'react'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { KeyboardPreview } from './KeyboardPreview'
 import { Settings } from '../../../lib/Settings'
@@ -42,7 +41,8 @@ export const KeyboardPreviewPanel = withTranslation()(
 							{
 								visibility: this.props.visible ? 'visible' : 'hidden',
 							}
-						)}>
+						)}
+					>
 						<KeyboardPreview
 							physicalLayout={KeyboardLayouts.nameToPhysicalLayout(Settings.keyboardMapLayout)}
 							showStyleBase={this.props.showStyleBase}

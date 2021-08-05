@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { DashboardLayout, DashboardLayoutFilter, RundownLayouts } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { DashboardPanel } from './DashboardPanel'

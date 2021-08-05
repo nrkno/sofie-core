@@ -77,10 +77,6 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 		} else if (isSegment(o)) {
 			if (o.externalModified) o.externalModified = 0
 			// } else if (isPieceInstance(o)) {
-		} else if (isSegment(o)) {
-			delete o.externalModified
-		} else if (isTimelineComplete(o)) {
-			delete o.generated
 		}
 		return o
 	}

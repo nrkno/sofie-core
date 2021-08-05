@@ -285,7 +285,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									attribute="cron.casparCG.disabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
-									collection={CoreSystem}></EditAttribute>
+									collection={CoreSystem}
+								></EditAttribute>
 							</div>
 						</div>
 						<div className="field">
@@ -295,7 +296,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									attribute="cron.storeRundownSnapshots.enabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
-									collection={CoreSystem}></EditAttribute>
+									collection={CoreSystem}
+								></EditAttribute>
 							</div>
 							<div className="mdi">
 								<EditAttribute

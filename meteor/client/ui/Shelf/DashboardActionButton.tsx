@@ -101,7 +101,8 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 						)}
 						onMouseDown={(e) => this.props.onButtonDown(button, e)}
 						onMouseUp={(e) => this.props.onButtonUp(button, e)}
-						data-obj-id={button.type}>
+						data-obj-id={button.type}
+					>
 						<div className="dashboard-panel__panel__button__content">
 							<div className="dashboard-panel__panel__button__label-container">
 								<span className="dashboard-panel__panel__button__label">{this.getLabel()}</span>

@@ -78,7 +78,7 @@ export namespace TrackerMock {
 				this.stop()
 				this.parentComputation.invalidate()
 			}
-        }
+		}
 		public onInvalidate = (clb: ComputationCallback) => {
 			this.onInvalidateClbs.push(clb)
 		}

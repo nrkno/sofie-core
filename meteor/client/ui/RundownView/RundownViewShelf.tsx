@@ -126,7 +126,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 			return
 		}
 
-		let sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
+		const sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
 
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
@@ -216,7 +216,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 			tag: this.props.hotkeyGroup,
 		})
 
-		let preventDefault = (e) => {
+		const preventDefault = (e) => {
 			e.preventDefault()
 		}
 
@@ -294,7 +294,8 @@ class RundownViewShelfInner extends MeteorReactComponent<
 								displayStyle={PieceDisplayStyle.BUTTONS}
 								canOverflowHorizontally={true}
 								widthScale={3.27} // @todo: css
-								isSelected={false}>
+								isSelected={false}
+							>
 								{adLibPiece.name}
 							</DashboardPieceButton>
 						)

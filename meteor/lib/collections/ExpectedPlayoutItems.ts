@@ -5,7 +5,6 @@ import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'
 import { PartId } from './Parts'
 import { registerIndex } from '../database'
-import { RundownPlaylistId } from './RundownPlaylists'
 
 /** A string, identifying a Rundown
  * @deprecated
@@ -23,8 +22,6 @@ export interface ExpectedPlayoutItemBase extends ExpectedPlayoutItemGeneric {
 export interface ExpectedPlayoutItemRundown extends ExpectedPlayoutItemBase {
 	/** The rundown id that is the source of this PlayoutItem */
 	rundownId: RundownId
-	/** The rundown playlist id that the source rundown of this PlayoutItem belongs to */
-	playlistId: RundownPlaylistId
 	/** The part id that is the source of this Playout Item */
 	partId?: PartId
 	// /** The piece id that is the source of this Playout Item */

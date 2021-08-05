@@ -47,6 +47,9 @@ import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '..
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { RundownViewShelf } from '../RundownView/RundownViewShelf'
+import { MiniShelfLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
+import { AdlibSegmentUi } from '../Shelf/AdLibPanel'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
@@ -851,10 +854,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
 						: partOffset + lastTakeOffset
 
-				if (lastStartedPlayback && simulationPercentage < 1) {
-					this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
-				}
-
 				const budgetDuration = this.getSegmentBudgetDuration()
 
 				this.setState({
@@ -973,13 +972,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								studio={this.props.studio}
 								parts={this.props.parts}
 								segmentNotes={this.props.segmentNotes}
-								timeScale={this.props.timeScale}
+								timeScale={this.state.timeScale}
+								maxTimeScale={this.state.maxTimeScale}
+								onRecalculateMaxTimeScale={this.updateMaxTimeScale}
+								showingAllSegment={this.state.showingAllSegment}
 								onItemClick={this.props.onPieceClick}
 								onItemDoubleClick={this.props.onPieceDoubleClick}
 								onCollapseOutputToggle={this.onCollapseOutputToggle}
 								collapsedOutputs={this.state.collapsedOutputs}
-								onCollapseSegmentToggle={this.onCollapseSegmentToggle}
-								isCollapsed={this.state.collapsed}
 								scrollLeft={this.state.scrollLeft}
 								playlist={this.props.playlist}
 								followLiveSegments={this.props.followLiveSegments}
@@ -991,7 +991,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								autoNextPart={this.state.autoNextPart}
 								hasAlreadyPlayed={this.props.hasAlreadyPlayed}
 								followLiveLine={this.state.followLiveLine}
-								liveLineHistorySize={this.props.liveLineHistorySize}
+								liveLineHistorySize={LIVELINE_HISTORY_SIZE}
 								livePosition={this.state.livePosition}
 								onContextMenu={this.props.onContextMenu}
 								onFollowLiveLine={this.onFollowLiveLine}

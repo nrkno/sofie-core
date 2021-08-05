@@ -803,6 +803,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							!!this.props.playlist.nextPartInstanceId
 						}
 						part={part}
+						isBudgetGap={false}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
@@ -821,61 +822,59 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							isLastInSegment={true}
 							timelineWidth={this.state.timelineWidth}
 						/>
-					)
-				})}
-				{this.props.budgetGap > 0 && (
-					<SegmentTimelinePart
-						segment={this.props.segment}
-						playlist={this.props.playlist}
-						studio={this.props.studio}
-						collapsedOutputs={this.props.collapsedOutputs}
-						isCollapsed={this.props.isCollapsed}
-						scrollLeft={this.props.scrollLeft}
-						timeScale={this.props.timeScale}
-						autoNextPart={this.props.autoNextPart}
-						followLiveLine={this.props.followLiveLine}
-						liveLineHistorySize={this.props.liveLineHistorySize}
-						livePosition={this.props.livePosition}
-						onScroll={this.props.onScroll}
-						onCollapseOutputToggle={this.props.onCollapseOutputToggle}
-						onCollapseSegmentToggle={this.props.onCollapseSegmentToggle}
-						onFollowLiveLine={this.props.onFollowLiveLine}
-						onContextMenu={this.props.onContextMenu}
-						relative={false}
-						onPieceClick={this.props.onItemClick}
-						onPieceDoubleClick={this.props.onItemDoubleClick}
-						scrollWidth={this.state.timelineWidth / this.props.timeScale}
-						firstPartInSegment={this.props.parts[0]}
-						lastPartInSegment={this.props.parts[this.props.parts.length - 1]}
-						isLastSegment={this.props.isLastSegment}
-						isLastInSegment={true}
-						isAfterLastValidInSegmentAndItsLive={
-							this.props.parts.length === (this.props.lastValidPartIndex || 0) + 1 &&
-							partIsLive &&
-							!!this.props.playlist.nextPartInstanceId
-						}
-						isBudgetGap={true}
-						part={{
-							partId: protectString('gap'),
-							instance: wrapPartToTemporaryInstance({
-								_id: protectString('gap'),
-								_rank: 0,
-								segmentId: this.props.segment._id,
-								rundownId: this.props.segment.rundownId,
-								externalId: 'gap',
-								gap: true,
-								title: 'gap',
-								invalid: true,
-							}),
-							pieces: [],
-							renderedDuration: this.props.budgetGap,
-							startsAt: 0,
-							willProbablyAutoNext: false,
-						}}
-					/>
-				)}
-			</React.Fragment>
-		)
+					)}
+					{this.props.budgetGap > 0 && (
+						<SegmentTimelinePart
+							segment={this.props.segment}
+							playlist={this.props.playlist}
+							studio={this.props.studio}
+							collapsedOutputs={this.props.collapsedOutputs}
+							scrollLeft={this.props.scrollLeft}
+							timeScale={this.props.timeScale}
+							autoNextPart={this.props.autoNextPart}
+							followLiveLine={this.props.followLiveLine}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							livePosition={this.props.livePosition}
+							onScroll={this.props.onScroll}
+							onCollapseOutputToggle={this.props.onCollapseOutputToggle}
+							onFollowLiveLine={this.props.onFollowLiveLine}
+							onContextMenu={this.props.onContextMenu}
+							relative={false}
+							onPieceClick={this.props.onItemClick}
+							onPieceDoubleClick={this.props.onItemDoubleClick}
+							scrollWidth={this.state.timelineWidth / this.props.timeScale}
+							firstPartInSegment={this.props.parts[0]}
+							lastPartInSegment={this.props.parts[this.props.parts.length - 1]}
+							isLastSegment={this.props.isLastSegment}
+							isLastInSegment={true}
+							isAfterLastValidInSegmentAndItsLive={
+								this.props.parts.length === (this.props.lastValidPartIndex || 0) + 1 &&
+								partIsLive &&
+								!!this.props.playlist.nextPartInstanceId
+							}
+							isBudgetGap={true}
+							part={{
+								partId: protectString('gap'),
+								instance: wrapPartToTemporaryInstance(this.props.playlist.activationId ?? protectString('tmp'), {
+									_id: protectString('gap'),
+									_rank: 0,
+									segmentId: this.props.segment._id,
+									rundownId: this.props.segment.rundownId,
+									externalId: 'gap',
+									gap: true,
+									title: 'gap',
+									invalid: true,
+								}),
+								pieces: [],
+								renderedDuration: this.props.budgetGap,
+								startsAt: 0,
+								willProbablyAutoNext: false,
+							}}
+						/>
+					)}
+				</React.Fragment>
+			)
+		})
 	}
 
 	renderEndOfSegment() {
@@ -951,7 +950,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	renderEditorialLine() {
 		if (this.props.budgetDuration !== undefined) {
-			let lineStyle = {
+			const lineStyle = {
 				left: this.props.budgetDuration * this.props.timeScale - this.props.scrollLeft * this.props.timeScale + 'px',
 			}
 			return <div className="segment-timeline__editorialline" style={lineStyle}></div>
@@ -1092,9 +1091,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				</div>
 
 				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
-				<div
-					className="segment-timeline__timeUntil"
-					onClick={this.onTimeUntilClick}>
+				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
 					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
 						<PartCountdown
 							partId={countdownToPartId}

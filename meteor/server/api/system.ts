@@ -57,6 +57,7 @@ import { getBundle as getTranslationBundleInner } from './translationsBundles'
 import { TranslationsBundle, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ClientAPI } from '../../lib/api/client'
+import { nightlyCronjobInner } from '../cronjobs'
 
 function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -772,7 +773,7 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	async cleanupOldData(actuallyRemoveOldData: boolean) {
 		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
 	}
-	runCronjob() {
+	async runCronjob() {
 		return makePromise(() => runCronjob(this))
 	}
 	async doSystemBenchmark(runCount: number = 1) {

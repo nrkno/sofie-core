@@ -461,42 +461,44 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onTouchStart={!this.props.canOverflowHorizontally ? this.handleOnMouseEnter : undefined}
 				onTouchEnd={!this.props.canOverflowHorizontally ? this.handleOnMouseLeave : undefined}
 				onTouchMove={!this.props.canOverflowHorizontally ? this.handleOnTouchMove : undefined}
-				data-obj-id={this.props.piece._id}>
+				data-obj-id={this.props.piece._id}
+			>
 				<div className="dashboard-panel__panel__button__content">
-				{!this.props.layer
-					? null
-					: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
-					? // VT should have thumbnails in "Button" layout.
-					  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
-					: this.props.layer.type === SourceLayerType.SPLITS
-					? this.renderSplits(isList && this.props.showThumbnailsInList)
-					: this.props.layer.type === SourceLayerType.GRAPHICS || this.props.layer.type === SourceLayerType.LOWER_THIRD
-					? this.renderGraphics(/*(isButtons || (isList && this.props.showThumbnailsInList)*/)
-					: null}
+					{!this.props.layer
+						? null
+						: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
+						? // VT should have thumbnails in "Button" layout.
+						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
+						: this.props.layer.type === SourceLayerType.SPLITS
+						? this.renderSplits(isList && this.props.showThumbnailsInList)
+						: this.props.layer.type === SourceLayerType.GRAPHICS ||
+						  this.props.layer.type === SourceLayerType.LOWER_THIRD
+						? this.renderGraphics(/*(isButtons || (isList && this.props.showThumbnailsInList)*/)
+						: null}
 					{this.renderHotkey()}
-				{this.props.editableName ? (
-					<textarea
-						className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
-						value={this.state.label}
-						onChange={this.onNameChanged}
-						onBlur={this.onRenameTextBoxBlur}
-						ref={this.onRenameTextBoxShow}
-					></textarea>
-				) : (
-							<span className="dashboard-panel__panel__button__label">
-								{this.props.lineBreak && this.state.label.includes(this.props.lineBreak!)
-									? this.state.label.split(this.props.lineBreak!).map((line, index) => {
-											return (
-												<span key={index}>
-													{line}
-													<br />
-												</span>
-											)
-									  })
-									: this.state.label}
-							</span>
-				)}
-					</div>
+					{this.props.editableName ? (
+						<textarea
+							className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
+							value={this.state.label}
+							onChange={this.onNameChanged}
+							onBlur={this.onRenameTextBoxBlur}
+							ref={this.onRenameTextBoxShow}
+						></textarea>
+					) : (
+						<span className="dashboard-panel__panel__button__label">
+							{this.props.lineBreak && this.state.label.includes(this.props.lineBreak!)
+								? this.state.label.split(this.props.lineBreak!).map((line, index) => {
+										return (
+											<span key={index}>
+												{line}
+												<br />
+											</span>
+										)
+								  })
+								: this.state.label}
+						</span>
+					)}
+				</div>
 			</div>
 		)
 	}

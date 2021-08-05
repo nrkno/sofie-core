@@ -20,6 +20,7 @@ import {
 	fetchAndFilter,
 	matchFilter,
 	AdLibPanelToolbar,
+	AdLibPieceUi,
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import {
@@ -29,12 +30,19 @@ import {
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { PieceId, Pieces } from '../../../lib/collections/Pieces'
+import { PieceId } from '../../../lib/collections/Pieces'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
+import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
+import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { invalidateAt } from '../../lib/invalidatingTime'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { isAdLibOnAir } from '../../lib/shelf'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface IState {
 	outputLayers: {
@@ -107,6 +115,7 @@ export function dashboardElementPosition(el: DashboardPositionableElement): Reac
 				: el.height < 0
 				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
 				: undefined,
+		// @ts-ignore
 		'--dashboard-panel-scale': el.scale || undefined,
 	}
 }
@@ -391,6 +400,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 		if (this.props.sourceLayerLookup) {
 			const clearKeyboardHotkeySourceLayers: { [hotkey: string]: ISourceLayer[] } = {}
+			const { t } = this.props
 
 			_.each(this.props.sourceLayerLookup, (sourceLayer) => {
 				if (sourceLayer.clearKeyboardHotkey) {
@@ -855,9 +865,10 @@ export function getNextPiecesReactive(
 	return prospectivePieceInstances
 }
 
-export function getUnfinishedPieceInstancesGrouped(
-	currentPartInstanceId: PartInstanceId | null
-): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> & {
+export function getUnfinishedPieceInstancesGrouped(currentPartInstanceId: PartInstanceId | null): Pick<
+	IDashboardPanelTrackedProps,
+	'unfinishedAdLibIds' | 'unfinishedTags'
+> & {
 	unfinishedPieceInstances: PieceInstance[]
 } {
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)

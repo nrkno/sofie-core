@@ -460,7 +460,7 @@ export async function executeAction(
 	actionId: string,
 	userData: any,
 	triggerMode?: string
-): Promise<ClientAPI.ClientResponse<void>> {
+): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }>> {
 	check(rundownPlaylistId, String)
 	check(actionDocId, String)
 	check(actionId, String)
@@ -1113,7 +1113,8 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			userStoreRundownSnapshot,
 			this,
 			playlistId,
-			reason
+			reason,
+			full
 		)
 	}
 	async removeRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {

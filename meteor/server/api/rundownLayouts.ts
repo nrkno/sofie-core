@@ -26,11 +26,6 @@ export function createRundownLayout(
 	regionId: CustomizableRegions,
 	blueprintId: BlueprintId | undefined,
 	userId?: UserId | undefined
-	userId?: UserId | undefined,
-	exposeAsStandalone?: boolean,
-	exposeAsShelf?: boolean,
-	openByDefault?: boolean,
-	showBuckets?: boolean
 ) {
 	const id: RundownLayoutId = getRandomId()
 	RundownLayouts.insert(
@@ -43,9 +38,6 @@ export function createRundownLayout(
 			userId,
 			icon: '',
 			iconColor: '#ffffff',
-			openByDefault: openByDefault ?? false,
-			showBuckets: showBuckets === undefined ? true : showBuckets,
-			disableContextMenu: false,
 			regionId,
 		})
 	)

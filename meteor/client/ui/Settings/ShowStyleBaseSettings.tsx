@@ -1269,7 +1269,8 @@ const HotkeyLegendSettings = withTranslation()(
 													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
-													className="input text-input input-l"></EditAttribute>
+													className="input text-input input-l"
+												></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -1296,7 +1297,8 @@ const HotkeyLegendSettings = withTranslation()(
 													options={defaultColorPickerPalette}
 													type="colorpicker"
 													collection={ShowStyleBases}
-													className="input text-input input-s"></EditAttribute>
+													className="input text-input input-s"
+												></EditAttribute>
 											</label>
 										</div>
 									</div>
@@ -1337,7 +1339,8 @@ const HotkeyLegendSettings = withTranslation()(
 							className="btn mls btn-secondary"
 							accept="application/json,.json"
 							onChange={(e) => this.importHotKeyJSON(e)}
-							key={this.state.uploadFileKey}>
+							key={this.state.uploadFileKey}
+						>
 							<FontAwesomeIcon icon={faUpload} />
 							&nbsp;{t('Import')}
 						</UploadButton>

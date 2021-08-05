@@ -42,7 +42,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 				if (this.props.piece && layer) {
 					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
-					let objId: string | undefined = getMediaObjectMediaId(piece, layer)
+					const objId: string | undefined = getMediaObjectMediaId(piece, layer)
 
 					if (objId && objId !== this.objId && this.props.studio) {
 						if (this.subscription) this.subscription.stop()

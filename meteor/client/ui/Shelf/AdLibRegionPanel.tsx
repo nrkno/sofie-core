@@ -199,7 +199,8 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibDisplayedAsOnAir(piece),
 						blackout: !!this.props.piece || (this.props.panel.showBlackIfNoThumbnailPiece && !this.getThumbnailUrl()),
-					})}>
+					})}
+				>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
 						{this.renderPreview()}
 						{
