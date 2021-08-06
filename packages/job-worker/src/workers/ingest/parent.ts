@@ -2,7 +2,7 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import { WorkerOptions } from 'bullmq'
 import { spawn, Worker as ThreadWorker, ModuleThread, Thread } from 'threads'
-import { StudioMethods } from './child'
+import { IngestMethods } from './child'
 import { MongoClient } from 'mongodb'
 import { InvalidateWorkerDataCache } from '../caches'
 import { LocksManager } from '../../locks'
@@ -10,8 +10,8 @@ import { WorkerParentBase } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { Observable } from 'threads/observable'
 
-export class StudioWorkerParent extends WorkerParentBase {
-	readonly #thread: ModuleThread<StudioMethods>
+export class IngestWorkerParent extends WorkerParentBase {
+	readonly #thread: ModuleThread<IngestMethods>
 
 	private constructor(
 		workerId: string,
@@ -20,7 +20,7 @@ export class StudioWorkerParent extends WorkerParentBase {
 		locksManager: LocksManager,
 		queueName: string,
 		options: WorkerOptions,
-		thread: ModuleThread<StudioMethods>
+		thread: ModuleThread<IngestMethods>
 	) {
 		super(workerId, studioId, mongoClient, locksManager, queueName, options)
 
@@ -35,14 +35,14 @@ export class StudioWorkerParent extends WorkerParentBase {
 		locksManager: LocksManager,
 		studioId: StudioId,
 		options: WorkerOptions
-	): Promise<StudioWorkerParent> {
-		const workerThread = await spawn<StudioMethods>(new ThreadWorker('./child'))
+	): Promise<IngestWorkerParent> {
+		const workerThread = await spawn<IngestMethods>(new ThreadWorker('./child'))
 
 		// TODO - do more with the events
 		Thread.events(workerThread).subscribe((event) => console.log('Thread event:', event))
 
 		// create and start the worker
-		const parent = new StudioWorkerParent(
+		const parent = new IngestWorkerParent(
 			workerId,
 			studioId,
 			mongoClient,

@@ -2,7 +2,7 @@ import { assertNever, getRandomString } from '@sofie-automation/corelib/dist/lib
 import type { Subscription } from 'observable-fns'
 import { logger } from './logging'
 import { AnyLockEvent } from './workers/locks'
-import { StudioMethods } from './workers/studio/child'
+import { WorkerParentBase } from './workers/parent-base'
 
 type OwnerAndLockIds = [string, string]
 
@@ -15,7 +15,7 @@ class LockResource {
 
 export class LocksManager {
 	readonly #resources = new Map<string, LockResource>()
-	readonly #ids = new Map<string, StudioMethods>()
+	readonly #ids = new Map<string, WorkerParentBase>()
 	readonly #subs = new Map<string, Subscription<AnyLockEvent>>()
 
 	private getResource(resourceId: string): LockResource {
@@ -40,7 +40,7 @@ export class LocksManager {
 
 				resource.holder = nextWorker
 
-				worker.lockChange(nextWorker[1], true).catch((e) => {
+				worker.workerLockChange(nextWorker[1], true).catch((e) => {
 					logger.error(`Failed to report lock to worker: ${e}`)
 					if (
 						resource.holder &&
@@ -56,11 +56,11 @@ export class LocksManager {
 		}
 	}
 
-	async subscribe(worker: StudioMethods): Promise<void> {
+	async subscribe(worker: WorkerParentBase): Promise<void> {
 		const id = getRandomString()
 		this.#ids.set(id, worker)
 
-		const events = worker.observelockEvents()
+		const events = worker.workerLockEvents()
 		const sub = events.subscribe((e) => {
 			const resource = this.getResource(e.resourceId)
 
@@ -76,7 +76,7 @@ export class LocksManager {
 					if (resource.holder && resource.holder[0] === id && resource.holder[1] === e.lockId) {
 						resource.holder = null
 
-						worker.lockChange(e.lockId, false).catch((e) => {
+						worker.workerLockChange(e.lockId, false).catch((e) => {
 							logger.error(`Failed to report lock to worker: ${e}`)
 						})
 					} else {
@@ -94,7 +94,7 @@ export class LocksManager {
 	}
 
 	/** Unsubscribe a worker from the lock channels */
-	async unsubscribe(worker: StudioMethods): Promise<void> {
+	async unsubscribe(worker: WorkerParentBase): Promise<void> {
 		const idPair = Array.from(this.#ids.entries()).find((w) => w[1] === worker)
 		if (idPair) {
 			const id = idPair[0]

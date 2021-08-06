@@ -24,11 +24,11 @@ let staticData: StaticData | undefined
 setupApmAgent()
 
 const studioMethods = {
-	async init(mongoUri: string, mongoDb: string, studioId: StudioId): Promise<void> {
+	async init(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
 		if (staticData) throw new Error('Worker already initialised')
 
 		const mongoClient = await createMongoConnection(mongoUri)
-		const collections = getMongoCollections(mongoClient, mongoDb)
+		const collections = getMongoCollections(mongoClient, dbName)
 
 		// Load some 'static' data from the db
 		const dataCache = await loadWorkerDataCache(collections, studioId)

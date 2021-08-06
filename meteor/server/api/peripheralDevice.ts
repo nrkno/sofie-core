@@ -259,11 +259,12 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.studioId)
 			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
 
-		await QueueStudioJob(StudioJobs.OnPartPlaybackStarted, peripheralDevice.studioId, {
+		const job = await QueueStudioJob(StudioJobs.OnPartPlaybackStarted, peripheralDevice.studioId, {
 			playlistId: r.rundownPlaylistId,
 			partInstanceId: r.partInstanceId,
 			startedPlayback: r.time,
 		})
+		await job.complete
 
 		transaction?.end()
 	}
@@ -284,11 +285,12 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.studioId)
 			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
 
-		await QueueStudioJob(StudioJobs.OnPartPlaybackStopped, peripheralDevice.studioId, {
+		const job = await QueueStudioJob(StudioJobs.OnPartPlaybackStopped, peripheralDevice.studioId, {
 			playlistId: r.rundownPlaylistId,
 			partInstanceId: r.partInstanceId,
 			stoppedPlayback: r.time,
 		})
+		await job.complete
 
 		transaction?.end()
 	}
@@ -310,11 +312,12 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.studioId)
 			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
 
-		await QueueStudioJob(StudioJobs.OnPiecePlaybackStarted, peripheralDevice.studioId, {
+		const job = await QueueStudioJob(StudioJobs.OnPiecePlaybackStarted, peripheralDevice.studioId, {
 			playlistId: r.rundownPlaylistId,
 			pieceInstanceId: r.pieceInstanceId,
 			startedPlayback: r.time,
 		})
+		await job.complete
 
 		transaction?.end()
 	}
@@ -336,11 +339,12 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.studioId)
 			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
 
-		await QueueStudioJob(StudioJobs.OnPiecePlaybackStopped, peripheralDevice.studioId, {
+		const job = await QueueStudioJob(StudioJobs.OnPiecePlaybackStopped, peripheralDevice.studioId, {
 			playlistId: r.rundownPlaylistId,
 			pieceInstanceId: r.pieceInstanceId,
 			stoppedPlayback: r.time,
 		})
+		await job.complete
 
 		transaction?.end()
 	}

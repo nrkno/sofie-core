@@ -29,6 +29,13 @@ export interface InvalidateWorkerDataCache {
 	blueprints: Array<BlueprintId>
 }
 
+export function createInvalidateWorkerDataCache(): InvalidateWorkerDataCache {
+	return {
+		studio: false,
+		blueprints: [],
+	}
+}
+
 export async function loadWorkerDataCache(
 	collections: Readonly<IDirectCollections>,
 	studioId: StudioId

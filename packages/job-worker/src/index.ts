@@ -7,6 +7,7 @@ import { createMongoConnection } from './db'
 import { StudioWorkerParent } from './workers/studio/parent'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { LocksManager } from './locks'
+import { IngestWorkerParent } from './workers/ingest/parent'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -37,9 +38,14 @@ void (async () => {
 
 	const locksManager = new LocksManager()
 
-	const studioWorker = await StudioWorkerParent.start(workerId, mongoUri, mongoDb, client, locksManager, studioId, {
-		connection,
-	})
+	const [studioWorker, ingestWorker] = await Promise.all([
+		StudioWorkerParent.start(workerId, mongoUri, mongoDb, client, locksManager, studioId, {
+			connection,
+		}),
+		IngestWorkerParent.start(workerId, mongoUri, mongoDb, client, locksManager, studioId, {
+			connection,
+		}),
+	])
 
 	try {
 		// eslint-disable-next-line no-constant-condition
@@ -48,7 +54,7 @@ void (async () => {
 			await sleep(10000)
 		}
 	} finally {
-		await studioWorker.terminate()
+		await Promise.allSettled([studioWorker.terminate(), ingestWorker.terminate()])
 
 		// Ensures that the client will close when you finish/error
 		await client.close()
