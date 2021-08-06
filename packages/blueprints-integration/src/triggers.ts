@@ -16,6 +16,25 @@ export interface IBlueprintTrigger {
 }
 
 /**
+ * Non-implementation note: Chromium-based browsers have certain keyboard combinations that are either
+ * unbindable or the default action is non-preventDefault()'able, which makes them useless. The key combinations
+ * are:
+ *
+ *	* Close tab (ctrl+w)
+ *	* Close tab (ctrl+f4)
+ *	* Close window (ctrl+shift+w)
+ *	* New incognito window (ctrl+shift+n)
+ *	* New tab (ctrl+t)
+ *	* New window (ctrl+n)
+ *	* Restore tab (ctrl+shift+t)
+ *	* Select next tab (ctrl+tab)
+ *	* Select next tab (ctrl+next)
+ *	* Select previous tab (ctrl+shift+tab)
+ *	* Select previous tab (ctrl+prior)
+ *	* Exit (Escape - only in programmatic full screen mode, i.e. element.requestFullscreen())
+ */
+
+/**
  * A hotkey trigger is a trigger local to the current client and as such, it should only be used with
  * filter chains containing `IGUIContextFilterLink`
  *

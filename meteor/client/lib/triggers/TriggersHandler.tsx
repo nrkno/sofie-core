@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
-import Simonsson from 'simonsson'
+import Sorensen from 'sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
@@ -15,7 +15,6 @@ import {
 	createAction as libCreateAction,
 	isPreviewableAction,
 } from '../../../lib/api/triggers/actionFactory'
-import simonsson from 'simonsson'
 import { Tracker } from 'meteor/tracker'
 import { PartId } from '../../../lib/collections/Parts'
 import { flatten, ProtectedString, protectString } from '../../../lib/lib'
@@ -44,64 +43,36 @@ function useSubscriptions(
 	showStyleBaseId: ShowStyleBaseId
 ) {
 	const allReady = [
-		useSubscription(
-			PubSub.rundownPlaylists,
-			{
-				_id: rundownPlaylistId,
-			},
-			[rundownPlaylistId]
-		),
-		useSubscription(
-			PubSub.rundowns,
-			{
-				playlistId: rundownPlaylistId,
-			},
-			[rundownPlaylistId]
-		),
+		useSubscription(PubSub.rundownPlaylists, {
+			_id: rundownPlaylistId,
+		}),
+		useSubscription(PubSub.rundowns, {
+			playlistId: rundownPlaylistId,
+		}),
 
-		useSubscription(
-			PubSub.adLibActions,
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
+		useSubscription(PubSub.adLibActions, {
+			rundownId: {
+				$in: rundownIds,
 			},
-			[rundownIds]
-		),
-		useSubscription(
-			PubSub.adLibPieces,
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
+		}),
+		useSubscription(PubSub.adLibPieces, {
+			rundownId: {
+				$in: rundownIds,
 			},
-			[rundownIds]
-		),
-		useSubscription(
-			PubSub.rundownBaselineAdLibActions,
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
+		}),
+		useSubscription(PubSub.rundownBaselineAdLibActions, {
+			rundownId: {
+				$in: rundownIds,
 			},
-			[rundownIds]
-		),
-		useSubscription(
-			PubSub.rundownBaselineAdLibPieces,
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
+		}),
+		useSubscription(PubSub.rundownBaselineAdLibPieces, {
+			rundownId: {
+				$in: rundownIds,
 			},
-			[rundownIds]
-		),
-		useSubscription(
-			PubSub.showStyleBases,
-			{
-				_id: showStyleBaseId,
-			},
-			[rundownIds]
-		),
+		}),
+		useSubscription(PubSub.showStyleBases, {
+			_id: showStyleBaseId,
+		}),
 	]
 
 	return !allReady.some((state) => state === false)
@@ -138,7 +109,7 @@ function createAction(
 }
 
 function bindHotkey(id: TriggeredActionId, keys: string, up: boolean, action: HotkeyTriggerListener) {
-	simonsson.bind(keys, action, {
+	Sorensen.bind(keys, action, {
 		up,
 		exclusive: true,
 		ordered: 'modifiersFirst',
@@ -147,7 +118,7 @@ function bindHotkey(id: TriggeredActionId, keys: string, up: boolean, action: Ho
 }
 
 function unbindHotkey(keys: string, listener: (e: KeyboardEvent) => void) {
-	Simonsson.unbind(keys, listener)
+	Sorensen.unbind(keys, listener)
 }
 
 let rundownPlaylistContext: ActionContext | null = null
@@ -167,19 +138,17 @@ interface MountedTrigger {
 export const MountedTriggers = new Mongo.Collection<MountedTrigger>(null)
 
 function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker.Computation {
-	let cleanUp: void | (() => void) | undefined
 	const computation = Tracker.nonreactive(() =>
-		Tracker.autorun(() => {
-			cleanUp = autorun()
+		Tracker.autorun((computation) => {
+			const cleanUp = autorun()
+
+			if (typeof cleanUp === 'function') {
+				computation.onInvalidate(() => {
+					cleanUp()
+				})
+			}
 		})
 	)
-	function invalidationHandler() {
-		if (typeof cleanUp === 'function') cleanUp()
-		computation.onInvalidate(invalidationHandler)
-	}
-	if (cleanUp) {
-		computation.onInvalidate(invalidationHandler)
-	}
 	if (Tracker.currentComputation) {
 		Tracker.currentComputation.onStop(() => {
 			computation.stop()
@@ -203,14 +172,14 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 	}
 
 	useEffect(() => {
-		Simonsson.init()
+		Sorensen.init()
 			.then(() => {
 				setInitialized(true)
 			})
 			.catch(console.error)
 
 		return () => {
-			Simonsson.destroy().catch(console.error)
+			Sorensen.destroy().catch(console.error)
 		}
 	}, []) // run once
 
@@ -245,13 +214,9 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 		props.nextSegmentPartIds,
 	])
 
-	const triggerSubsReady = useSubscription(
-		PubSub.triggeredActions,
-		{
-			showStyleBaseId: props.showStyleBaseId,
-		},
-		[props.showStyleBaseId]
-	)
+	const triggerSubsReady = useSubscription(PubSub.triggeredActions, {
+		showStyleBaseId: props.showStyleBaseId,
+	})
 
 	const rundownIds =
 		useTracker(() => {
@@ -276,6 +241,7 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 		}).fetch()
 	}, [props.showStyleBaseId])
 	useEffect(() => {
+		console.log(triggeredActions, initialized, triggerSubsReady, showStyleBase)
 		if (!triggeredActions || !initialized || !triggerSubsReady || !showStyleBase) {
 			return
 		}
@@ -283,6 +249,7 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 		const createdActions: Map<TriggeredActionId, (e) => void> = new Map()
 		const previewAutoruns: Tracker.Computation[] = []
 
+		console.log(props.showStyleBaseId, triggeredActions)
 		triggeredActions.forEach((pair) => {
 			const action = createAction(pair._id, pair.actions, showStyleBase, t, collectCurrentContext, pair.name)
 			createdActions.set(pair._id, action.listener)
@@ -297,7 +264,14 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 
 			previewAutoruns.push(
 				isolatedAutorunWithCleanup(() => {
-					const previewAdLibs = action.preview()
+					let previewAdLibs: IWrappedAdLib[] = []
+					try {
+						previewAdLibs = action.preview()
+					} catch (e) {
+						console.error('Exception thrown while previewing action', e)
+					}
+
+					console.log(pair._id, previewAdLibs)
 					previewAdLibs.forEach((adLib) => {
 						MountedTriggers.insert({
 							_id: protectString(pair._id + '_' + adLib._id + '_' + adLib.type),
@@ -333,7 +307,7 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 
 			previewAutoruns.forEach((autorun) => autorun.stop())
 		}
-	}, [triggeredActions])
+	}, [triggeredActions, initialized, triggerSubsReady, showStyleBase])
 
 	return null
 }

@@ -655,7 +655,8 @@ export function compileAdLibFilter(
 			}
 		}
 
-		return result
+		// remove any falsy values from the result set
+		return result.filter(Boolean)
 	}
 }
 
