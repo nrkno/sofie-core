@@ -31,6 +31,7 @@ import { logger } from '../logging'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { IS_PRODUCTION } from '../environment'
 import { LocksManager } from './locks'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export class JobContextBase implements JobContext {
 	private readonly locks: Array<LockBase> = []
@@ -66,17 +67,29 @@ export class JobContextBase implements JobContext {
 	}
 
 	async lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock> {
+		const span = this.startSpan('lockPlaylist')
+		if (span) span.setLabel('playlistId', unprotectString(playlistId))
+
 		const lockId = getRandomString()
 		logger.info(`PlaylistLock: Locking "${playlistId}"`)
 
 		const resourceId = `playlist:${playlistId}`
 		await this.locksManager.aquire(lockId, resourceId)
 
-		const doRelease = () => this.locksManager.release(lockId, resourceId)
+		const doRelease = async () => {
+			const span = this.startSpan('unlockPlaylist')
+			if (span) span.setLabel('playlistId', unprotectString(playlistId))
+
+			await this.locksManager.release(lockId, resourceId)
+
+			if (span) span.end()
+		}
 		const lock = new PlaylistLockImpl(playlistId, doRelease)
 		this.locks.push(lock)
 
 		logger.info(`PlaylistLock: Locked "${playlistId}"`)
+
+		if (span) span.end()
 
 		return lock
 	}
@@ -109,13 +122,13 @@ export class JobContextBase implements JobContext {
 		return null
 	}
 
-	queueIngestJob<T extends keyof IngestJobFunc>(
+	async queueIngestJob<T extends keyof IngestJobFunc>(
 		_name: T,
 		_data: Parameters<IngestJobFunc[T]>[0]
 	): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> {
 		throw new Error('Method not implemented.')
 	}
-	queueStudioJob<T extends keyof StudioJobFunc>(
+	async queueStudioJob<T extends keyof StudioJobFunc>(
 		_name: T,
 		_data: Parameters<StudioJobFunc[T]>[0]
 	): Promise<WorkerJob<ReturnType<StudioJobFunc[T]>>> {

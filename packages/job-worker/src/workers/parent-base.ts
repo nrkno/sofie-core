@@ -147,7 +147,7 @@ export abstract class WorkerParentBase {
 						// Ensure the lock is still good
 						await job.extendLock(this.#workerId, 30000) // TODO - what should the lock duration be?
 
-						const transaction = startTransaction(job.name, 'worker-studio-parent')
+						const transaction = startTransaction(job.name, 'worker-parent')
 						if (transaction) {
 							transaction.setLabel('studioId', unprotectString(this.#studioId))
 						}

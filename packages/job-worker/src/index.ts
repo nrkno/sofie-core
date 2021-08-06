@@ -16,7 +16,7 @@ logger.info('Starting ')
 console.log('hello world')
 
 const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
-const mongoDb = 'meteor'
+const dbName = 'meteor'
 const connection: ConnectionOptions = {
 	// TODO - something here?
 }
@@ -39,10 +39,10 @@ void (async () => {
 	const locksManager = new LocksManager()
 
 	const [studioWorker, ingestWorker] = await Promise.all([
-		StudioWorkerParent.start(workerId, mongoUri, mongoDb, client, locksManager, studioId, {
+		StudioWorkerParent.start(workerId, mongoUri, dbName, client, locksManager, studioId, {
 			connection,
 		}),
-		IngestWorkerParent.start(workerId, mongoUri, mongoDb, client, locksManager, studioId, {
+		IngestWorkerParent.start(workerId, mongoUri, dbName, client, locksManager, studioId, {
 			connection,
 		}),
 	])

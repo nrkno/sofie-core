@@ -1,5 +1,4 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import { WorkerOptions } from 'bullmq'
 import { spawn, Worker as ThreadWorker, ModuleThread, Thread } from 'threads'
 import { IngestMethods } from './child'
@@ -9,6 +8,7 @@ import { LocksManager } from '../../locks'
 import { WorkerParentBase } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { Observable } from 'threads/observable'
+import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
 
 export class IngestWorkerParent extends WorkerParentBase {
 	readonly #thread: ModuleThread<IngestMethods>
@@ -47,7 +47,7 @@ export class IngestWorkerParent extends WorkerParentBase {
 			studioId,
 			mongoClient,
 			locksManager,
-			getStudioQueueName(studioId),
+			getIngestQueueName(studioId),
 			options,
 			workerThread
 		)
