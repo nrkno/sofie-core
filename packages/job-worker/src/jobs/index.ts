@@ -10,6 +10,8 @@ import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/di
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
+import { LockBase } from './lock'
+import { ReadOnlyCacheBase } from '../cache/CacheBase'
 
 export { ApmSpan }
 
@@ -27,6 +29,12 @@ export interface JobContext {
 	readonly studio: ReadonlyDeep<DBStudio>
 
 	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+
+	/** Track a lock, to ensure it gets freed at the end of the job */
+	trackLock(lock: LockBase): void
+
+	/** Track a cache, to check it was saved at the end of the job */
+	trackCache(cache: ReadOnlyCacheBase<any>): void
 
 	startSpan(name: string): ApmSpan
 

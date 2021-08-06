@@ -21,8 +21,15 @@ import {
 	ProcessedStudioConfig,
 } from '../blueprints/config'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
+import { LockBase } from '../jobs/lock'
+import { logger } from '../logging'
+import { ReadOnlyCacheBase } from '../cache/CacheBase'
+import { IS_PRODUCTION } from '../environment'
 
 export class JobContextBase implements JobContext {
+	private readonly locks: Array<LockBase> = []
+	private readonly caches: Array<ReadOnlyCacheBase<any>> = []
+
 	constructor(
 		readonly directCollections: Readonly<IDirectCollections>,
 		readonly settings: ReadonlyDeep<ISettings>,
@@ -41,6 +48,37 @@ export class JobContextBase implements JobContext {
 
 	get studioBlueprint(): ReadonlyObjectDeep<WrappedStudioBlueprint> {
 		return this.cacheData.studioBlueprint
+	}
+
+	trackLock(lock: LockBase): void {
+		this.locks.push(lock)
+	}
+
+	trackCache(cache: ReadOnlyCacheBase<any>): void {
+		this.caches.push(cache)
+	}
+
+	/** Ensure resources are cleaned up after the job completes */
+	async cleanupResources(): Promise<void> {
+		// Ensure all locks are freed
+		for (const lock of this.locks) {
+			if (lock.isLocked) {
+				logger.warn(`Lock never freed: ${lock}`)
+				await lock.release().catch((e) => {
+					logger.error(`Lock free failed: ${e}`)
+				})
+			}
+		}
+
+		// Ensure all caches were saved/aborted
+		if (!IS_PRODUCTION) {
+			for (const cache of this.caches) {
+				if (cache.hasChanges()) {
+					// TODO - cache will not serialize well..
+					logger.warn(`Cache has unsaved changes: ${cache}`)
+				}
+			}
+		}
 	}
 
 	startSpan(spanName: string): ApmSpan | null {

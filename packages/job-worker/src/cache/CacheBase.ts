@@ -32,31 +32,9 @@ export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	protected _deferredFunctions: DeferredFunction<T>[] = []
 	protected _deferredAfterSaveFunctions: (() => void | Promise<void>)[] = []
-	private _activeTimeout: NodeJS.Timer | null = null
-	private _hasTimedOut = false
 
 	constructor(protected readonly context: JobContext) {
-		if (!IS_PRODUCTION) {
-			// When this is set up, we expect saveAllToDatabase() to have been called at the end, otherwise something is wrong
-			const futureError = new Error(`saveAllToDatabase never called`)
-			this._activeTimeout = setTimeout(() => {
-				this._hasTimedOut = true
-				logger.error(futureError.toString())
-				if (futureError.stack) logger.error(futureError.stack)
-			}, 5000)
-		}
-	}
-
-	_abortActiveTimeout() {
-		if (this._activeTimeout) {
-			clearTimeout(this._activeTimeout)
-		}
-
-		if (this._hasTimedOut) {
-			const err = new Error(`saveAllToDatabase called after timeout`)
-			logger.warn(err.toString())
-			if (err.stack) logger.warn(err.stack)
-		}
+		context.trackCache(this)
 	}
 
 	protected getAllCollections() {
@@ -87,7 +65,6 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 
 	async saveAllToDatabase() {
 		const span = this.context.startSpan('Cache.saveAllToDatabase')
-		this._abortActiveTimeout()
 
 		// Execute cache.defer()'s
 		for (let i = 0; i < this._deferredFunctions.length; i++) {
@@ -186,9 +163,23 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 			}
 		})
 
-		this._abortActiveTimeout()
-
 		if (span) span.end()
+	}
+
+	hasChanges(): boolean {
+		const { allDBs } = this.getAllCollections()
+
+		if (this._deferredFunctions.length > 0) return true
+
+		if (this._deferredAfterSaveFunctions.length > 0) return true
+
+		for (const db of allDBs) {
+			if (db.isModified()) {
+				return true
+			}
+		}
+
+		return false
 	}
 }
 export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase<T> {

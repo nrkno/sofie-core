@@ -194,8 +194,6 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	}
 
 	discardChanges(): void {
-		this._abortActiveTimeout()
-
 		this.toBeRemoved = false
 		super.discardChanges()
 
@@ -209,9 +207,9 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	async saveAllToDatabase(): Promise<void> {
 		if (this.toBeRemoved) {
 			const span = this.context.startSpan('CacheForIngest.saveAllToDatabase')
-			this._abortActiveTimeout()
 
 			// Ignoring any deferred functions
+			super.discardChanges()
 
 			if (this.Rundown.doc) {
 				await removeRundownsFromDb(this.context, [this.Rundown.doc._id])

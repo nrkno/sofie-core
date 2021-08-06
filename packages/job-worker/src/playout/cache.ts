@@ -59,7 +59,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		playlistLock: PlaylistLock,
 		tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 		reloadPlaylist = true
-	): Promise<CacheForPlayoutPreInit> {
+	): Promise<ReadOnlyCache<CacheForPlayoutPreInit>> {
 		const span = context.startSpan('CacheForPlayoutPreInit.createPreInit')
 		if (span) span.setLabel('playlistId', unprotectString(tmpPlaylist._id))
 
@@ -154,19 +154,19 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		this.BaselineObjects = baselineObjects
 	}
 
-	// static async create(tmpPlaylist: ReadonlyDeep<RundownPlaylist>): Promise<CacheForPlayout> {
-	// 	const initData = await CacheForPlayoutPreInit.loadInitData(tmpPlaylist, undefined)
-	// 	const res = new CacheForPlayout(tmpPlaylist._id, ...initData)
-
-	// 	return res
-	// }
-
-	static async fromInit(context: JobContext, initCache: CacheForPlayoutPreInit): Promise<CacheForPlayout> {
+	static async fromInit(
+		context: JobContext,
+		initCache: ReadOnlyCache<CacheForPlayoutPreInit>
+	): Promise<CacheForPlayout> {
 		const span = context.startSpan('CacheForPlayout.fromInit')
 		if (span) span.setLabel('playlistId', unprotectString(initCache.PlaylistId))
 
 		// we are claiming the collections
-		initCache._abortActiveTimeout()
+		initCache.assertNoChanges()
+
+		if (!initCache.PlaylistLock.isLocked) {
+			throw new Error('Cannot create cache with released playlist lock')
+		}
 
 		const content = await CacheForPlayout.loadContent(
 			context,
@@ -175,12 +175,20 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			initCache.Rundowns.findFetch({}).map((r) => r._id)
 		)
 
+		// Not strictly necessary, but make a copy of the collection that we know is writable
+		const mutablePlaylist = DbCacheWriteObject.createFromDoc<DBRundownPlaylist>(
+			context,
+			context.directCollections.RundownPlaylists,
+			false,
+			initCache.Playlist.doc
+		)
+
 		const res = new CacheForPlayout(
 			context,
 			initCache.PlaylistLock,
 			initCache.PlaylistId,
 			initCache.PeripheralDevices,
-			initCache.Playlist,
+			mutablePlaylist,
 			initCache.Rundowns,
 			...content
 		)
@@ -300,8 +308,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 
 	discardChanges() {
-		this._abortActiveTimeout()
-
 		this.toBeRemoved = false
 		super.discardChanges()
 
@@ -313,15 +319,16 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 
 	async saveAllToDatabase() {
+		// TODO - ideally we should make sure to preserve the lock during this operation
 		if (!this.PlaylistLock.isLocked) {
 			throw new Error('Cannot save changes with released playlist lock')
 		}
 
 		if (this.toBeRemoved) {
 			const span = this.context.startSpan('CacheForPlayout.saveAllToDatabase')
-			this._abortActiveTimeout()
 
 			// Ignoring any deferred functions
+			super.discardChanges()
 
 			await removeRundownPlaylistFromDb(this.context, this.Playlist.doc)
 

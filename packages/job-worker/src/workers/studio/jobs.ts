@@ -93,8 +93,6 @@ async function updateTimelineDebug(context: JobContext, _data: void): Promise<vo
 		if (activePlaylists.length > 1) {
 			throw new Error(`Too many active playlists`)
 		} else if (activePlaylists.length > 0) {
-			studioCache._abortActiveTimeout() // no changes have been made or should be kept
-
 			const playlist = activePlaylists[0]
 			console.log('for playlist', playlist._id)
 
