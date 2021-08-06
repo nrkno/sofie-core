@@ -337,7 +337,7 @@ function compileAdLibActionFilter(
 			case 'pick':
 				pick = link.value
 				if (!options['limit']) {
-					options['limit'] = link.value // there's no point in getting more than a positive pick
+					options['limit'] = link.value + 1 // there's no point in getting more than a positive pick
 				}
 				return
 			case 'pickEnd':
@@ -435,7 +435,7 @@ function compileAdLibPieceFilter(
 			case 'pick':
 				pick = link.value
 				if (!options['limit']) {
-					options['limit'] = link.value // there's no point in getting more than a positive pick
+					options['limit'] = link.value + 1 // there's no point in getting more than a positive pick
 				}
 				return
 			case 'pickEnd':
