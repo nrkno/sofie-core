@@ -23,6 +23,7 @@ import { Mongo } from 'meteor/mongo'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { PieceId } from '../../../lib/collections/Pieces'
+import { ReactiveVar } from 'meteor/reactive-var'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -121,9 +122,12 @@ function unbindHotkey(keys: string, listener: (e: KeyboardEvent) => void) {
 	Sorensen.unbind(keys, listener)
 }
 
-let rundownPlaylistContext: ActionContext | null = null
+const rundownPlaylistContext: ReactiveVar<ActionContext | null> = new ReactiveVar(null)
 function setRundownPlaylistContext(ctx: ActionContext | null) {
-	rundownPlaylistContext = ctx
+	rundownPlaylistContext.set(ctx)
+}
+function getCurrentContext(): ActionContext | null {
+	return rundownPlaylistContext.get()
 }
 
 type MountedTriggerId = ProtectedString<'mountedTriggerId'>
@@ -143,9 +147,7 @@ function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker
 			const cleanUp = autorun()
 
 			if (typeof cleanUp === 'function') {
-				computation.onInvalidate(() => {
-					cleanUp()
-				})
+				computation.onInvalidate(cleanUp)
 			}
 		})
 	)
@@ -167,10 +169,6 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 	const [initialized, setInitialized] = useState(false)
 	const { t } = useTranslation()
 
-	function collectCurrentContext(): ActionContext | null {
-		return rundownPlaylistContext
-	}
-
 	useEffect(() => {
 		Sorensen.init()
 			.then(() => {
@@ -184,7 +182,7 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 	}, []) // run once
 
 	useEffect(() => {
-		if (rundownPlaylistContext) {
+		if (rundownPlaylistContext.get() !== null) {
 			throw new Error('There can only be a single instance of TriggersHandler in the Node tree.')
 		}
 
@@ -214,7 +212,7 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 		props.nextSegmentPartIds,
 	])
 
-	const triggerSubsReady = useSubscription(PubSub.triggeredActions, {
+	const triggerSubReady = useSubscription(PubSub.triggeredActions, {
 		showStyleBaseId: props.showStyleBaseId,
 	})
 
@@ -241,17 +239,15 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 		}).fetch()
 	}, [props.showStyleBaseId])
 	useEffect(() => {
-		console.log(triggeredActions, initialized, triggerSubsReady, showStyleBase)
-		if (!triggeredActions || !initialized || !triggerSubsReady || !showStyleBase) {
+		if (!triggeredActions || !initialized || !showStyleBase || !triggerSubReady) {
 			return
 		}
 
 		const createdActions: Map<TriggeredActionId, (e) => void> = new Map()
 		const previewAutoruns: Tracker.Computation[] = []
 
-		console.log(props.showStyleBaseId, triggeredActions)
 		triggeredActions.forEach((pair) => {
-			const action = createAction(pair._id, pair.actions, showStyleBase, t, collectCurrentContext, pair.name)
+			const action = createAction(pair._id, pair.actions, showStyleBase, t, getCurrentContext, pair.name)
 			createdActions.set(pair._id, action.listener)
 			pair.triggers.forEach((trigger) => {
 				if (trigger.type === TriggerType.hotkey) {
@@ -271,7 +267,6 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 						console.error('Exception thrown while previewing action', e)
 					}
 
-					console.log(pair._id, previewAdLibs)
 					previewAdLibs.forEach((adLib) => {
 						MountedTriggers.insert({
 							_id: protectString(pair._id + '_' + adLib._id + '_' + adLib.type),
@@ -307,7 +302,7 @@ export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
 
 			previewAutoruns.forEach((autorun) => autorun.stop())
 		}
-	}, [triggeredActions, initialized, triggerSubsReady, showStyleBase])
+	}, [triggeredActions, initialized, showStyleBase, triggerSubReady])
 
 	return null
 }

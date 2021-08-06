@@ -645,12 +645,12 @@ export function compileAdLibFilter(
 			result = result.sort((a, b) => a._rank - b._rank || compareLabels(a.label, b.label))
 
 			// finalize the process: apply limit and pick
-			if (adLibPieceTypeFilter.limit) {
+			if (adLibPieceTypeFilter.limit !== undefined) {
 				result = result.slice(0, adLibPieceTypeFilter.limit)
 			}
-			if (adLibPieceTypeFilter.pick && adLibPieceTypeFilter.pick > 0) {
+			if (adLibPieceTypeFilter.pick !== undefined && adLibPieceTypeFilter.pick >= 0) {
 				result = [result[adLibPieceTypeFilter.pick]]
-			} else if (adLibPieceTypeFilter.pick && adLibPieceTypeFilter.pick < 0) {
+			} else if (adLibPieceTypeFilter.pick !== undefined && adLibPieceTypeFilter.pick < 0) {
 				result = [result[result.length + adLibPieceTypeFilter.pick]]
 			}
 		}

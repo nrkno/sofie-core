@@ -335,7 +335,7 @@ export function useSubscription(sub: PubSub, ...args: any[]) {
 	const [ready, setReady] = useState<boolean>(false)
 
 	useEffect(() => {
-		const subscription = meteorSubscribe(sub, ...args)
+		const subscription = Tracker.nonreactive(() => meteorSubscribe(sub, ...args))
 		const isReadyComp = Tracker.nonreactive(() => Tracker.autorun(() => setReady(subscription.ready())))
 		return () => {
 			isReadyComp.stop()
