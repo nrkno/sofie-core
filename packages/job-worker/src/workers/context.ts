@@ -4,14 +4,19 @@ import { JobContext, WorkerJob } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { WorkerDataCache } from './caches'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { clone } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import {
@@ -21,10 +26,11 @@ import {
 	ProcessedStudioConfig,
 } from '../blueprints/config'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { LockBase } from '../jobs/lock'
+import { LockBase, PlaylistLock } from '../jobs/lock'
 import { logger } from '../logging'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { IS_PRODUCTION } from '../environment'
+import { LocksManager } from './locks'
 
 export class JobContextBase implements JobContext {
 	private readonly locks: Array<LockBase> = []
@@ -34,6 +40,7 @@ export class JobContextBase implements JobContext {
 		readonly directCollections: Readonly<IDirectCollections>,
 		readonly settings: ReadonlyDeep<ISettings>,
 		private readonly cacheData: WorkerDataCache,
+		private readonly locksManager: LocksManager,
 		private readonly transaction: ApmTransaction | undefined
 	) {}
 
@@ -50,12 +57,28 @@ export class JobContextBase implements JobContext {
 		return this.cacheData.studioBlueprint
 	}
 
-	trackLock(lock: LockBase): void {
-		this.locks.push(lock)
-	}
+	// trackLock(lock: LockBase): void {
+	// 	this.locks.push(lock)
+	// }
 
 	trackCache(cache: ReadOnlyCacheBase<any>): void {
 		this.caches.push(cache)
+	}
+
+	async lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock> {
+		const lockId = getRandomString()
+		logger.info(`PlaylistLock: Locking "${playlistId}"`)
+
+		const resourceId = `playlist:${playlistId}`
+		await this.locksManager.aquire(lockId, resourceId)
+
+		const doRelease = () => this.locksManager.release(lockId, resourceId)
+		const lock = new PlaylistLockImpl(playlistId, doRelease)
+		this.locks.push(lock)
+
+		logger.info(`PlaylistLock: Locked "${playlistId}"`)
+
+		return lock
 	}
 
 	/** Ensure resources are cleaned up after the job completes */
@@ -231,5 +254,31 @@ async function loadShowStyleBlueprint(
 	return {
 		blueprintId: showStyleBase.blueprintId,
 		blueprint: blueprintManifest,
+	}
+}
+
+class PlaylistLockImpl extends PlaylistLock {
+	#isLocked = true
+
+	public constructor(playlistId: RundownPlaylistId, private readonly doRelease: () => Promise<void>) {
+		super(playlistId)
+	}
+
+	get isLocked(): boolean {
+		return this.#isLocked
+	}
+
+	async release(): Promise<void> {
+		if (!this.#isLocked) {
+			logger.warn(`PlaylistLock: Already released "${this.playlistId}"`)
+		} else {
+			logger.info(`PlaylistLock: Releasing "${this.playlistId}"`)
+
+			this.#isLocked = false
+
+			await this.doRelease()
+
+			logger.info(`PlaylistLock: Released "${this.playlistId}"`)
+		}
 	}
 }

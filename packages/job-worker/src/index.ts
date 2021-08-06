@@ -6,6 +6,7 @@ import { setupApmAgent } from './profiler'
 import { createMongoConnection } from './db'
 import { StudioWorkerParent } from './workers/studio/parent'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
+import { LocksManager } from './locks'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -34,7 +35,11 @@ void (async () => {
 		process.exit(0)
 	})
 
-	const studioWorker = await StudioWorkerParent.start(workerId, mongoUri, mongoDb, client, studioId, { connection })
+	const locksManager = new LocksManager()
+
+	const studioWorker = await StudioWorkerParent.start(workerId, mongoUri, mongoDb, client, locksManager, studioId, {
+		connection,
+	})
 
 	try {
 		// eslint-disable-next-line no-constant-condition

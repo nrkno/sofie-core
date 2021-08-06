@@ -4,7 +4,7 @@ import { RundownPlayoutPropsBase } from '@sofie-automation/corelib/dist/worker/s
 import { ReadonlyDeep } from 'type-fest'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { JobContext } from '../jobs'
-import { PlaylistLock, lockPlaylist } from '../jobs/lock'
+import { PlaylistLock } from '../jobs/lock'
 import { CacheForPlayoutPreInit, CacheForPlayout } from './cache'
 
 /**
@@ -60,7 +60,7 @@ export async function runWithPlaylistLock<TRes>(
 	playlistId: RundownPlaylistId,
 	fcn: (lock: PlaylistLock) => Promise<TRes>
 ): Promise<TRes> {
-	const playlistLock = await lockPlaylist(context, playlistId)
+	const playlistLock = await context.lockPlaylist(playlistId)
 	try {
 		return await fcn(playlistLock)
 	} finally {

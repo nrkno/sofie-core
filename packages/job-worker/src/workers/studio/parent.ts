@@ -13,12 +13,14 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { logger } from '../../logging'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { LocksManager } from '../../locks'
 
 export class StudioWorkerParent {
 	readonly #workerId: string
 	readonly #studioId: StudioId
 
 	readonly #mongoClient: MongoClient
+	readonly #locksManager: LocksManager
 	readonly #worker: ModuleThread<StudioMethods>
 
 	#terminate: ManualPromise<void> | undefined
@@ -32,12 +34,14 @@ export class StudioWorkerParent {
 		workerId: string,
 		studioId: StudioId,
 		mongoClient: MongoClient,
+		locksManager: LocksManager,
 		worker: ModuleThread<StudioMethods>,
 		options: WorkerOptions
 	) {
 		this.#workerId = workerId
 		this.#studioId = studioId
 		this.#mongoClient = mongoClient
+		this.#locksManager = locksManager
 		this.#worker = worker
 
 		this.#queue = new Worker(getStudioQueueName(studioId), undefined, options)
@@ -51,6 +55,7 @@ export class StudioWorkerParent {
 		mongoUri: string,
 		mongoDb: string,
 		mongoClient: MongoClient,
+		locksManager: LocksManager,
 		studioId: StudioId,
 		options: WorkerOptions
 	): Promise<StudioWorkerParent> {
@@ -60,7 +65,7 @@ export class StudioWorkerParent {
 		Thread.events(studioWorker).subscribe((event) => console.log('Thread event:', event))
 
 		// create and start the worker
-		const parent = new StudioWorkerParent(workerId, studioId, mongoClient, studioWorker, options)
+		const parent = new StudioWorkerParent(workerId, studioId, mongoClient, locksManager, studioWorker, options)
 		parent.run(mongoUri, mongoDb)
 		return parent
 	}
@@ -122,8 +127,7 @@ export class StudioWorkerParent {
 
 				// Start the worker running
 				await this.#worker.init(mongoUri, mongoDb, this.#studioId)
-
-				// TODO - clear worker caches
+				await this.#locksManager.subscribe(this.#worker)
 
 				// Run until told to terminate
 				while (!this.#terminate) {
@@ -177,6 +181,8 @@ export class StudioWorkerParent {
 			} catch (e) {
 				// TODO - report error
 
+				await this.#locksManager.unsubscribe(this.#worker)
+
 				// Ensure the termination is tracked
 				if (!this.#terminate) {
 					this.#terminate = createManualPromise()
@@ -189,6 +195,8 @@ export class StudioWorkerParent {
 	}
 
 	async terminate(): Promise<void> {
+		await this.#locksManager.unsubscribe(this.#worker)
+
 		if (!this.#terminate) {
 			this.#terminate = createManualPromise()
 		}

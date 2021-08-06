@@ -8,14 +8,16 @@ import { setupApmAgent, startTransaction } from '../../profiler'
 import { DEFAULT_SETTINGS, ISettings } from '@sofie-automation/corelib/dist/settings'
 import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
 import { JobContextBase } from '../context'
+import { Observable } from 'threads/observable'
+import { AnyLockEvent, LocksManager } from '../locks'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
 	readonly collections: IDirectCollections
 
-	// readonly rundownId: RundownId
-
 	readonly dataCache: WorkerDataCache
+
+	readonly locks: LocksManager
 }
 let staticData: StaticData | undefined
 
@@ -31,12 +33,25 @@ const ingestMethods = {
 		// Load some 'static' data from the db
 		const dataCache = await loadWorkerDataCache(collections, studioId)
 
+		const locks = new LocksManager()
+
 		staticData = {
 			mongoClient,
 			collections,
 
 			dataCache,
+
+			locks,
 		}
+	},
+	observelockEvents(): Observable<AnyLockEvent> {
+		if (!staticData) throw new Error('Worker not initialised')
+		return staticData.locks.lockEvents
+	},
+	async lockChange(lockId: string, locked: boolean): Promise<void> {
+		if (!staticData) throw new Error('Worker not initialised')
+
+		staticData.locks.changeEvent(lockId, locked)
 	},
 	async invalidateCaches(data: InvalidateWorkerDataCache): Promise<void> {
 		if (!staticData) throw new Error('Worker not initialised')
@@ -61,13 +76,19 @@ const ingestMethods = {
 			// transaction.setLabel('rundownId', unprotectString(staticData.rundownId))
 		}
 
+		const settings = Object.freeze<ISettings>({
+			...DEFAULT_SETTINGS,
+		})
+
+		const context = new JobContextBase(
+			staticData.collections,
+			settings,
+			staticData.dataCache,
+			staticData.locks,
+			transaction
+		)
+
 		try {
-			const settings = Object.freeze<ISettings>({
-				...DEFAULT_SETTINGS,
-			})
-
-			const context = new JobContextBase(staticData.collections, settings, staticData.dataCache, transaction)
-
 			// Execute function, or fail if no handler
 			const handler = (ingestJobHandlers as any)[jobName]
 			if (handler) {
@@ -76,6 +97,8 @@ const ingestMethods = {
 				throw new Error(`Unknown job name: "${jobName}"`)
 			}
 		} finally {
+			await context.cleanupResources()
+
 			transaction?.end()
 		}
 	},

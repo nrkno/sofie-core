@@ -1,7 +1,12 @@
 import { IDirectCollections } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
-import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ISettings } from '@sofie-automation/corelib/dist/settings'
 import { ApmSpan } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
@@ -10,7 +15,7 @@ import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/di
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { LockBase } from './lock'
+import { PlaylistLock } from './lock'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 
 export { ApmSpan }
@@ -30,11 +35,12 @@ export interface JobContext {
 
 	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 
-	/** Track a lock, to ensure it gets freed at the end of the job */
-	trackLock(lock: LockBase): void
-
-	/** Track a cache, to check it was saved at the end of the job */
+	// /** Internal: Track a lock, to ensure it gets freed at the end of the job */
+	// trackLock(lock: LockBase): void
+	/** Internal: Track a cache, to check it was saved at the end of the job */
 	trackCache(cache: ReadOnlyCacheBase<any>): void
+
+	lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock>
 
 	startSpan(name: string): ApmSpan
 
