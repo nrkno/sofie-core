@@ -101,10 +101,15 @@ export async function runIngestJob(
 			const beforeRundown = ingestCache.Rundown.doc
 			const beforePartMap = generatePartMap(ingestCache)
 
+			const span = context.startSpan('ingest.calcFcn')
 			const commitData = await calcFcn(context, ingestCache, newIngestRundown, oldIngestRundown)
+			span?.end()
+
 			if (commitData) {
+				const span = context.startSpan('ingest.commit')
 				// The change is accepted. Perform some playout calculations and save it all
 				await CommitIngestOperation(context, ingestCache, beforeRundown, beforePartMap, commitData)
+				span?.end()
 			} else {
 				// Should be no changes
 				ingestCache.assertNoChanges()

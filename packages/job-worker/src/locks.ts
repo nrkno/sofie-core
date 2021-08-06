@@ -28,6 +28,9 @@ export class LocksManager {
 	}
 
 	private lockNextWorker(resource: LockResource): void {
+		logger.info(
+			`Resource: ${resource.id} has holder "${resource.holder?.[0]}" and ${resource.waitingWorkers.length} waiting`
+		)
 		if (resource.holder === null) {
 			const nextWorker = resource.waitingWorkers.shift()
 			if (nextWorker) {
@@ -39,6 +42,10 @@ export class LocksManager {
 				}
 
 				resource.holder = nextWorker
+
+				logger.info(
+					`Resource: ${resource.id} giving to "${nextWorker[0]}". ${resource.waitingWorkers.length} waiting`
+				)
 
 				worker.workerLockChange(nextWorker[1], true).catch((e) => {
 					logger.error(`Failed to report lock to worker: ${e}`)
@@ -75,6 +82,10 @@ export class LocksManager {
 				case 'unlock':
 					if (resource.holder && resource.holder[0] === id && resource.holder[1] === e.lockId) {
 						resource.holder = null
+
+						logger.info(
+							`Resource: ${resource.id} releaseing from "${id}". ${resource.waitingWorkers.length} waiting`
+						)
 
 						worker.workerLockChange(e.lockId, false).catch((e) => {
 							logger.error(`Failed to report lock to worker: ${e}`)

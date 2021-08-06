@@ -145,7 +145,7 @@ export abstract class WorkerParentBase {
 					// we may not get a job even when blocking, so try again
 					if (job) {
 						// Ensure the lock is still good
-						await job.extendLock(this.#workerId, 30000) // TODO - what should the lock duration be?
+						await job.extendLock(this.#workerId, 10000) // TODO - what should the lock duration be?
 
 						const transaction = startTransaction(job.name, 'worker-parent')
 						if (transaction) {
