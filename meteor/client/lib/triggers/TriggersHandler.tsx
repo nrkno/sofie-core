@@ -165,7 +165,9 @@ function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker
  * @param {IProps} props
  * @return {*}
  */
-export const TriggersHandler: React.FC<IProps> = (props: IProps) => {
+export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
+	props: IProps
+): React.ReactElement<any, any> | null {
 	const [initialized, setInitialized] = useState(false)
 	const { t } = useTranslation()
 
