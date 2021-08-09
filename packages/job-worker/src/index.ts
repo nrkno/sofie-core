@@ -4,7 +4,7 @@ import { protectString, protectStringArray } from '@sofie-automation/corelib/dis
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupApmAgent } from './profiler'
 import { createMongoConnection } from './db'
-import { sleep } from '@sofie-automation/corelib/dist/lib'
+import { createManualPromise, getRandomString, sleep } from '@sofie-automation/corelib/dist/lib'
 import { StudioWorkerSet } from './workers/worker-set'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Db as MongoDb } from 'mongodb'
@@ -19,10 +19,13 @@ const connection: ConnectionOptions = {
 	// TODO - something here?
 }
 
+/** Get the ids of the studios to run for */
 async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 	if (process.env.STUDIO_IDS) {
 		// either run for a dedicated list of studios
-		return protectStringArray(process.env.STUDIO_IDS.split(','))
+		const ids = protectStringArray(process.env.STUDIO_IDS.split(','))
+		logger.info(`Running for specified studios: ${JSON.stringify(ids)}`)
+		return ids
 	} else {
 		// Or find the current studios, and run for everything
 		const studios = await db
@@ -32,14 +35,29 @@ async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 
 		// TODO - watch for creation/deletion
 
-		return studios.map((s) => protectString(s._id))
+		const ids = studios.map((s) => protectString(s._id))
+		logger.warn(`Running for all studios: ${JSON.stringify(ids)}. Make sure there is only one worker running!`)
+		return ids
 	}
 }
 
-// const studioId: StudioId = protectString('studio0')
-const workerId = 'abc' // unique 'id' for the worker
+/** The unique id for this worker, used by the queue to track job ownership */
+function getWorkerId(): string {
+	if (process.env.WORKER_ID) {
+		logger.info(`Running with id "${process.env.WORKER_ID}"`)
+		return process.env.WORKER_ID
+	} else {
+		const id = getRandomString(10)
+		logger.info(`Running with generated id "${id}"`)
+		return id
+	}
+}
+
+const workerId = getWorkerId()
 
 setupApmAgent()
+
+const shutdownPromise = createManualPromise<void>() // TODO - this should be .resolve/.reject in some places
 
 void (async () => {
 	const client = await createMongoConnection(mongoUri)
@@ -66,16 +84,16 @@ void (async () => {
 	const workers = new Map<StudioId, StudioWorkerSet>()
 
 	for (const studioId of studioIds) {
-		const worker = await StudioWorkerSet.create(workerId, mongoUri, dbName, client, studioId, { connection })
-		workers.set(studioId, worker)
+		// Start up each studio, one at a time
+		workers.set(
+			studioId,
+			await StudioWorkerSet.create(workerId, mongoUri, dbName, client, studioId, { connection })
+		)
 	}
 
 	try {
-		// eslint-disable-next-line no-constant-condition
-		while (true) {
-			// temporary until parent does more dynamic thread creation/deletion
-			await sleep(10000)
-		}
+		// Wait for something to trigger a shutdown
+		await shutdownPromise
 	} finally {
 		// Terminate everything
 		await Promise.allSettled(Array.from(workers.values()).map((w) => w.terminate()))
