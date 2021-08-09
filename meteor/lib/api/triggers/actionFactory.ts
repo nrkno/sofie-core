@@ -27,6 +27,7 @@ import {
 	rundownPlaylistFilter,
 	IWrappedAdLib,
 } from './actionFilterChainCompilers'
+import { ClientAPI } from '../client'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
@@ -273,20 +274,17 @@ function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean 
 	}
 }
 
-type RundownPlaylistFilterLink = IRundownPlaylistFilterLink | IGUIContextFilterLink
-
-function createActivateRundownPlaylistAction(
-	filterChain: RundownPlaylistFilterLink[],
-	rehearsal?: boolean
+function createUserActionWithCtx(
+	action: SomeAction,
+	userAction: UserAction,
+	userActionExec: (e: string, ctx: InternalActionContext) => Promise<ClientAPI.ClientResponse<any>>
 ): ExecutableAction {
 	return {
-		action: PlayoutActions.activateRundownPlaylist,
+		action: action.action,
 		execute: (t, e, ctx) => {
-			const innerCtx = Tracker.nonreactive(() => createRundownPlaylistContext(ctx, filterChain))
+			const innerCtx = Tracker.nonreactive(() => createRundownPlaylistContext(ctx, action.filterChain))
 			if (innerCtx) {
-				doUserAction(t, e, UserAction.ACTIVATE_RUNDOWN_PLAYLIST, async (e) =>
-					MeteorCall.userAction.activate(e, innerCtx.rundownPlaylistId, rehearsal || false)
-				)
+				doUserAction(t, e, userAction, async (e) => userActionExec(e, innerCtx))
 			}
 		},
 	}
@@ -294,20 +292,58 @@ function createActivateRundownPlaylistAction(
 
 export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): ExecutableAction {
 	switch (action.action) {
+		case ClientActions.shelf:
+			return createShelfAction(action.filterChain, action.state)
 		case PlayoutActions.adlib:
 			return createAdLibAction(action.filterChain, showStyleBase)
 		case PlayoutActions.activateRundownPlaylist:
-			return createActivateRundownPlaylistAction(action.filterChain, action.rehearsal)
-		case ClientActions.shelf:
-			return createShelfAction(action.filterChain, action.state)
+			return createUserActionWithCtx(action, UserAction.ACTIVATE_RUNDOWN_PLAYLIST, async (e, ctx) =>
+				MeteorCall.userAction.activate(e, ctx.rundownPlaylistId, !!action.rehearsal || false)
+			)
+		case PlayoutActions.deactivateRundownPlaylist:
+			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ctx) =>
+				MeteorCall.userAction.deactivate(e, ctx.rundownPlaylistId)
+			)
+		case PlayoutActions.take:
+			return createUserActionWithCtx(action, UserAction.TAKE, async (e, ctx) =>
+				MeteorCall.userAction.take(e, ctx.rundownPlaylistId)
+			)
+		case PlayoutActions.hold:
+			return createUserActionWithCtx(action, UserAction.ACTIVATE_HOLD, async (e, ctx) =>
+				MeteorCall.userAction.activateHold(e, ctx.rundownPlaylistId, !!action.undo)
+			)
+		case PlayoutActions.disableNextPiece:
+			return createUserActionWithCtx(action, UserAction.DISABLE_NEXT_PIECE, async (e, ctx) =>
+				MeteorCall.userAction.disableNextPiece(e, ctx.rundownPlaylistId, !!action.undo)
+			)
+		case PlayoutActions.createSnapshotForDebug:
+			return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ctx) =>
+				MeteorCall.userAction.storeRundownSnapshot(e, ctx.rundownPlaylistId, `action`)
+			)
+		case PlayoutActions.moveNext:
+			return createUserActionWithCtx(action, UserAction.MOVE_NEXT, async (e, ctx) =>
+				MeteorCall.userAction.moveNext(e, ctx.rundownPlaylistId, action.parts, action.segments)
+			)
+		case PlayoutActions.reloadRundownPlaylistData:
+			return createUserActionWithCtx(action, UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA, async (e, ctx) =>
+				// TODO: Needs some handling of the response. Perhaps this should switch to
+				// an event on the RundownViewEventBus, if ran on the client?
+				MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId)
+			)
+		case PlayoutActions.resetRundownPlaylist:
+			return createUserActionWithCtx(action, UserAction.RESET_RUNDOWN_PLAYLIST, async (e, ctx) =>
+				MeteorCall.userAction.resetRundownPlaylist(e, ctx.rundownPlaylistId)
+			)
 		// TODO: turn this on, once all actions are implemented
-		// default:
-		// 	assertNever(action)
-		// 	break
+		default:
+			assertNever(action)
+			break
 	}
 
 	// return a NO-OP, if not recognized
 	return {
+		// @ts-ignore action.action is "never", based on TypeScript rules, but if input doesn't folllow them,
+		// it can actually exist
 		action: action.action,
 		execute: () => {},
 	}

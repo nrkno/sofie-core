@@ -174,6 +174,7 @@ export interface ITakeAction extends ITriggeredActionBase {
 export interface IHoldAction extends ITriggeredActionBase {
 	action: PlayoutActions.hold
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
+	undo?: boolean
 }
 
 export interface IMoveNextAction extends ITriggeredActionBase {
@@ -204,6 +205,7 @@ export interface ICreateSnapshotForDebugAction extends ITriggeredActionBase {
 export interface IDisableNextPieceAction extends ITriggeredActionBase {
 	action: PlayoutActions.disableNextPiece
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
+	undo?: boolean
 }
 
 export interface IRundownPlaylistReloadDataAction extends ITriggeredActionBase {
