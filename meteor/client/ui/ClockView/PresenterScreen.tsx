@@ -230,7 +230,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 	protected subscribeToData() {
 		this.autorun(() => {
-			let playlist = RundownPlaylists.findOne(this.props.playlistId, {
+			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
 				fields: {
 					_id: 1,
 				},
@@ -241,12 +241,14 @@ export class PresenterScreenBase extends MeteorReactComponent<
 				})
 
 				this.autorun(() => {
-					const rundownIds = playlist!.getRundownIDs()
-					const showStyleBaseIds = (playlist!.getRundowns(undefined, {
-						fields: {
-							showStyleBaseId: 1,
-						},
-					}) as Pick<Rundown, 'showStyleBaseId'>[]).map((r) => r.showStyleBaseId)
+					const rundownIds = playlist.getRundownIDs()
+					const showStyleBaseIds = (
+						playlist.getRundowns(undefined, {
+							fields: {
+								showStyleBaseId: 1,
+							},
+						}) as Pick<Rundown, 'showStyleBaseId'>[]
+					).map((r) => r.showStyleBaseId)
 
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIds },
@@ -282,12 +284,14 @@ export class PresenterScreenBase extends MeteorReactComponent<
 									| 'getSelectedPartInstances'
 							  >
 							| undefined
-						const { nextPartInstance, currentPartInstance } = playlistR!.getSelectedPartInstances()
-						this.subscribe(PubSub.pieceInstances, {
-							partInstanceId: {
-								$in: [currentPartInstance?._id, nextPartInstance?._id],
-							},
-						})
+						if (playlistR) {
+							const { nextPartInstance, currentPartInstance } = playlistR.getSelectedPartInstances()
+							this.subscribe(PubSub.pieceInstances, {
+								partInstanceId: {
+									$in: [currentPartInstance?._id, nextPartInstance?._id],
+								},
+							})
+						}
 					})
 				})
 			}
