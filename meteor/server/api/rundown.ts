@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
-import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import { unprotectString, makePromise, normalizeArray } from '../../lib/lib'
 import { logger } from '../logging'
@@ -13,38 +13,17 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios } from '../../lib/collections/Studios'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { ReadonlyDeep } from 'type-fest'
 import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-
-/** Return true if the rundown is allowed to be moved out of that playlist */
-export function allowedToMoveRundownOutOfPlaylist(
-	playlist: ReadonlyDeep<RundownPlaylist>,
-	rundown: ReadonlyDeep<DBRundown>
-) {
-	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-
-	if (rundown.playlistId !== playlist._id)
-		throw new Meteor.Error(
-			500,
-			`Wrong playlist "${playlist._id}" provided for rundown "${rundown._id}" ("${rundown.playlistId}")`
-		)
-
-	return !(
-		playlist.activationId &&
-		((currentPartInstance && currentPartInstance.rundownId === rundown._id) ||
-			(nextPartInstance && nextPartInstance.rundownId === rundown._id))
-	)
-}
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */

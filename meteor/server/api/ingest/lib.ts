@@ -136,35 +136,3 @@ export function canRundownBeUpdated(rundown: ReadonlyDeep<Rundown> | undefined, 
 	}
 	return true
 }
-export function canSegmentBeUpdated(
-	rundown: ReadonlyDeep<Rundown> | undefined,
-	segment: ReadonlyDeep<Segment> | undefined,
-	isCreateAction: boolean
-): boolean {
-	if (!canRundownBeUpdated(rundown, false)) {
-		return false
-	}
-
-	if (!segment) return true
-	if (segment.orphaned && !isCreateAction) {
-		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
-		return false
-	}
-
-	return true
-}
-
-export function extendIngestRundownCore(
-	ingestRundown: IngestRundown,
-	existingDbRundown: ReadonlyDeep<Rundown> | undefined
-): ExtendedIngestRundown {
-	const extendedIngestRundown: ExtendedIngestRundown = {
-		...ingestRundown,
-		coreData: unprotectObject(clone(existingDbRundown)),
-	}
-	return extendedIngestRundown
-}
-export function modifyPlaylistExternalId(playlistExternalId: string | undefined, showStyleBase: ShowStyleBase) {
-	if (playlistExternalId) return `${showStyleBase._id}_${playlistExternalId}`
-	else return undefined
-}
