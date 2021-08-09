@@ -215,7 +215,16 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	])
 
 	const triggerSubReady = useSubscription(PubSub.triggeredActions, {
-		showStyleBaseId: props.showStyleBaseId,
+		$or: [
+			{
+				showStyleBaseId: props.showStyleBaseId,
+			},
+			{
+				showStyleBaseId: {
+					$exists: false,
+				},
+			},
+		],
 	})
 
 	const rundownIds =
@@ -237,7 +246,16 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 
 	const triggeredActions = useTracker(() => {
 		return TriggeredActions.find({
-			showStyleBaseId: props.showStyleBaseId,
+			$or: [
+				{
+					showStyleBaseId: props.showStyleBaseId,
+				},
+				{
+					showStyleBaseId: {
+						$exists: false,
+					},
+				},
+			],
 		}).fetch()
 	}, [props.showStyleBaseId])
 	useEffect(() => {
