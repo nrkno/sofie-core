@@ -89,7 +89,7 @@ export interface NewUserActionAPI extends MethodContext {
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
-	): Promise<ClientAPI.ClientResponse<void>>
+	): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }>>
 	segmentAdLibPieceStart(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,

@@ -1149,7 +1149,7 @@ export namespace ServerPlayoutAPI {
 			rundown: Rundown,
 			currentPartInstance: PartInstance
 		) => Promise<void>
-	): Promise<void> {
+	): Promise<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }> {
 		const now = getCurrentTime()
 
 		return runPlayoutOperationWithCache(
@@ -1216,14 +1216,23 @@ export namespace ServerPlayoutAPI {
 
 				if (actionContext.takeAfterExecute) {
 					await ServerPlayoutAPI.callTakeWithCache(cache, now)
+					return {
+						queuedPartInstnaceId: actionContext.queuedPartInstanceId,
+						taken: true,
+					}
 				} else {
 					if (
 						actionContext.currentPartState !== ActionPartChange.NONE ||
 						actionContext.nextPartState !== ActionPartChange.NONE
 					) {
 						await updateTimeline(cache)
+						return {
+							queuedPartInstnaceId: actionContext.queuedPartInstanceId,
+						}
 					}
 				}
+
+				return {}
 			}
 		)
 	}

@@ -16,6 +16,7 @@ import {
 	RundownLayoutShelfBase,
 	CustomizableRegions,
 	RundownLayoutWithFilters,
+	DashboardLayoutFilter,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -152,10 +153,10 @@ export namespace RundownLayoutsAPI {
 		],
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
-		supportedFilters: [],
+		supportedFilters: [RundownLayoutElementType.FILTER],
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
-		supportedFilters: [],
+		supportedFilters: [RundownLayoutElementType.FILTER],
 	})
 	registry.registerRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
 		supportedFilters: [],
@@ -218,6 +219,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isPieceCountdown(element: RundownLayoutElementBase): element is RundownLayoutPieceCountdown {
 		return element.type === RundownLayoutElementType.PIECE_COUNTDOWN
+	}
+
+	export function isDashboardLayoutFilter(element: RundownLayoutElementBase): element is DashboardLayoutFilter {
+		return element.type === RundownLayoutElementType.FILTER
 	}
 
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {

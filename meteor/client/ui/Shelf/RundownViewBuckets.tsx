@@ -28,7 +28,6 @@ import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { AdLibPieceUi } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from './AdLibListItem'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
@@ -38,6 +37,7 @@ import RundownViewEventBus, {
 	BucketEvent,
 	IEventContext,
 } from '../RundownView/RundownViewEventBus'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface BucketAdLibUi extends BucketAdLib {
 	sourceLayer?: ISourceLayer

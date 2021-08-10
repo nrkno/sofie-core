@@ -47,6 +47,8 @@ import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '..
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { AdlibSegmentUi } from '../../lib/shelf'
+import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
@@ -111,6 +113,9 @@ interface IProps {
 	isLastSegment: boolean
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
+	adLibSegmentUi?: AdlibSegmentUi
+	minishelfRegisterHotkeys?: boolean
+	studioMode: boolean
 }
 interface IState {
 	scrollLeft: number
@@ -277,9 +282,24 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
-			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore)
+			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
+			props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys
 		) {
 			return true
+		}
+		const findNextOrCurentPart = (parts: PartUi[]) => {
+			return (
+				parts.find(
+					(i) =>
+						i.instance._id === props.playlist.currentPartInstanceId ||
+						i.instance._id === nextProps.playlist.currentPartInstanceId
+				) ||
+				parts.find(
+					(i) =>
+						i.instance._id === props.playlist.nextPartInstanceId ||
+						i.instance._id === nextProps.playlist.nextPartInstanceId
+				)
+			)
 		}
 		// Check rundown changes that are important to the segment
 		if (
@@ -288,17 +308,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				(props.playlist.nextSegmentId === props.segmentId || nextProps.playlist.nextSegmentId === props.segmentId)) ||
 			((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
 				props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
-				data.parts &&
-				(data.parts.find(
-					(i) =>
-						i.instance._id === props.playlist.currentPartInstanceId ||
-						i.instance._id === nextProps.playlist.currentPartInstanceId
-				) ||
-					data.parts.find(
-						(i) =>
-							i.instance._id === props.playlist.nextPartInstanceId ||
-							i.instance._id === nextProps.playlist.nextPartInstanceId
-					))) ||
+				((data.parts && findNextOrCurentPart(data.parts)) || data.segmentui?.showShelf)) ||
 			props.playlist.holdState !== nextProps.playlist.holdState ||
 			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 			props.playlist.activationId !== nextProps.playlist.activationId ||
@@ -850,6 +860,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		getShowAllTimeScale = () => {
+			if (!this.timelineDiv) return this.state.maxTimeScale
+
 			let newScale =
 				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
 				((computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1) -
@@ -898,44 +910,60 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		render() {
 			return (
 				(this.props.segmentui && (
-					<SegmentTimeline
-						id={this.props.id}
-						segmentRef={this.segmentRef}
-						key={unprotectString(this.props.segmentui._id)}
-						segment={this.props.segmentui}
-						studio={this.props.studio}
-						parts={this.props.parts}
-						segmentNotes={this.props.segmentNotes}
-						timeScale={this.state.timeScale}
-						maxTimeScale={this.state.maxTimeScale}
-						onRecalculateMaxTimeScale={this.updateMaxTimeScale}
-						showingAllSegment={this.state.showingAllSegment}
-						onItemClick={this.props.onPieceClick}
-						onItemDoubleClick={this.props.onPieceDoubleClick}
-						onCollapseOutputToggle={this.onCollapseOutputToggle}
-						collapsedOutputs={this.state.collapsedOutputs}
-						scrollLeft={this.state.scrollLeft}
-						playlist={this.props.playlist}
-						followLiveSegments={this.props.followLiveSegments}
-						isLiveSegment={this.state.isLiveSegment}
-						isNextSegment={this.state.isNextSegment}
-						isQueuedSegment={this.props.playlist.nextSegmentId === this.props.segmentId}
-						hasRemoteItems={this.props.hasRemoteItems}
-						hasGuestItems={this.props.hasGuestItems}
-						autoNextPart={this.state.autoNextPart}
-						hasAlreadyPlayed={this.props.hasAlreadyPlayed}
-						followLiveLine={this.state.followLiveLine}
-						liveLineHistorySize={LIVELINE_HISTORY_SIZE}
-						livePosition={this.state.livePosition}
-						onContextMenu={this.props.onContextMenu}
-						onFollowLiveLine={this.onFollowLiveLine}
-						onShowEntireSegment={this.onShowEntireSegment}
-						onZoomChange={this.onZoomChange}
-						onScroll={this.onScroll}
-						isLastSegment={this.props.isLastSegment}
-						lastValidPartIndex={this.props.lastValidPartIndex}
-						onHeaderNoteClick={this.props.onHeaderNoteClick}
-					/>
+					<React.Fragment key={unprotectString(this.props.segmentui._id)}>
+						{!this.props.segmentui.isHidden && (
+							<SegmentTimeline
+								id={this.props.id}
+								segmentRef={this.segmentRef}
+								key={unprotectString(this.props.segmentui._id)}
+								segment={this.props.segmentui}
+								studio={this.props.studio}
+								parts={this.props.parts}
+								segmentNotes={this.props.segmentNotes}
+								timeScale={this.state.timeScale}
+								maxTimeScale={this.state.maxTimeScale}
+								onRecalculateMaxTimeScale={this.updateMaxTimeScale}
+								showingAllSegment={this.state.showingAllSegment}
+								onItemClick={this.props.onPieceClick}
+								onItemDoubleClick={this.props.onPieceDoubleClick}
+								onCollapseOutputToggle={this.onCollapseOutputToggle}
+								collapsedOutputs={this.state.collapsedOutputs}
+								scrollLeft={this.state.scrollLeft}
+								playlist={this.props.playlist}
+								followLiveSegments={this.props.followLiveSegments}
+								isLiveSegment={this.state.isLiveSegment}
+								isNextSegment={this.state.isNextSegment}
+								isQueuedSegment={this.props.playlist.nextSegmentId === this.props.segmentId}
+								hasRemoteItems={this.props.hasRemoteItems}
+								hasGuestItems={this.props.hasGuestItems}
+								autoNextPart={this.state.autoNextPart}
+								hasAlreadyPlayed={this.props.hasAlreadyPlayed}
+								followLiveLine={this.state.followLiveLine}
+								liveLineHistorySize={LIVELINE_HISTORY_SIZE}
+								livePosition={this.state.livePosition}
+								onContextMenu={this.props.onContextMenu}
+								onFollowLiveLine={this.onFollowLiveLine}
+								onShowEntireSegment={this.onShowEntireSegment}
+								onZoomChange={this.onZoomChange}
+								onScroll={this.onScroll}
+								isLastSegment={this.props.isLastSegment}
+								lastValidPartIndex={this.props.lastValidPartIndex}
+								onHeaderNoteClick={this.props.onHeaderNoteClick}
+							/>
+						)}
+						{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (
+							<RundownViewShelf
+								studio={this.props.studio}
+								segment={this.props.segmentui}
+								playlist={this.props.playlist}
+								showStyleBase={this.props.showStyleBase}
+								adLibSegmentUi={this.props.adLibSegmentUi}
+								hotkeyGroup={unprotectString(this.props.segmentui._id) + '_RundownViewShelf'}
+								studioMode={this.props.studioMode}
+								registerHotkeys={this.props.minishelfRegisterHotkeys}
+							/>
+						)}
+					</React.Fragment>
 				)) ||
 				null
 			)

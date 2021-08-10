@@ -9,6 +9,7 @@ export interface IProps {
 	width?: string | number
 	margin?: string
 	id?: string | undefined
+	className?: string
 }
 
 declare global {
@@ -161,7 +162,13 @@ export class VirtualElement extends React.Component<IProps, IState> {
 				!this.state.inView && (!this.props.initialShow || this.state.isMeasured)
 			)
 		return (
-			<InView threshold={0} rootMargin={this.props.margin || '50% 0px 50% 0px'} onChange={this.visibleChanged} as="div">
+			<InView
+				threshold={0}
+				rootMargin={this.props.margin || '50% 0px 50% 0px'}
+				onChange={this.visibleChanged}
+				className={this.props.className}
+				as="div"
+			>
 				<div ref={this.setRef}>
 					{!this.state.inView && (!this.props.initialShow || this.state.isMeasured) ? (
 						<div

@@ -12,7 +12,6 @@ import {
 	NoraContent,
 	Accessor,
 } from '@sofie-automation/blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from './AdLibListItem'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
@@ -27,6 +26,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailPackageSettings } from '../../../lib/collections/ExpectedPackages'
 import { ensureHasTrailingSlash } from '../../lib/lib'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -390,6 +390,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
+	renderHotkey = () => {
+		if (this.props.piece.hotkey) {
+			return <div className="dashboard-panel__panel__button__hotkey">{this.props.piece.hotkey}</div>
+		}
+	}
+
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
@@ -435,28 +441,34 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onMouseMove={this.handleOnMouseMove}
 				data-obj-id={this.props.piece._id}
 			>
-				{!this.props.layer
-					? null
-					: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
-					? // VT should have thumbnails in "Button" layout.
-					  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
-					: this.props.layer.type === SourceLayerType.SPLITS
-					? this.renderSplits(isList && this.props.showThumbnailsInList)
-					: this.props.layer.type === SourceLayerType.GRAPHICS || this.props.layer.type === SourceLayerType.LOWER_THIRD
-					? this.renderGraphics(/*(isButtons || (isList && this.props.showThumbnailsInList)*/)
-					: null}
+				<div className="dashboard-panel__panel__button__content">
+					{!this.props.layer
+						? null
+						: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
+						? // VT should have thumbnails in "Button" layout.
+						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
+						: this.props.layer.type === SourceLayerType.SPLITS
+						? this.renderSplits(isList && this.props.showThumbnailsInList)
+						: this.props.layer.type === SourceLayerType.GRAPHICS ||
+						  this.props.layer.type === SourceLayerType.LOWER_THIRD
+						? this.renderGraphics(/*(isButtons || (isList && this.props.showThumbnailsInList)*/)
+						: null}
 
-				{this.props.editableName ? (
-					<textarea
-						className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
-						value={this.state.label}
-						onChange={this.onNameChanged}
-						onBlur={this.onRenameTextBoxBlur}
-						ref={this.onRenameTextBoxShow}
-					></textarea>
-				) : (
-					<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
-				)}
+					{this.renderHotkey()}
+					<div className="dashboard-panel__panel__button__label-container">
+						{this.props.editableName ? (
+							<textarea
+								className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
+								value={this.state.label}
+								onChange={this.onNameChanged}
+								onBlur={this.onRenameTextBoxBlur}
+								ref={this.onRenameTextBoxShow}
+							></textarea>
+						) : (
+							<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+						)}
+					</div>
+				</div>
 			</div>
 		)
 	}
