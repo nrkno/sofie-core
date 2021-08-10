@@ -5,7 +5,6 @@ import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/Ru
 import { Settings } from '../../../lib/Settings'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { forceClearAllBlueprintConfigCaches } from '../blueprints/config'
 import { check } from 'meteor/check'
 import { StudioId } from '../../../lib/collections/Studios'
 import { profiler } from '../profiler'
@@ -106,7 +105,6 @@ if (!Settings.enableUserAccounts) {
 		debug_forceClearAllCaches() {
 			logger.info('forceClearAllCaches')
 
-			forceClearAllBlueprintConfigCaches()
 			// TODO - hook into workers
 		},
 

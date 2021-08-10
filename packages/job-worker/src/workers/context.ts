@@ -1,6 +1,6 @@
 import { ISettings } from '@sofie-automation/corelib/dist/settings'
 import { IDirectCollections } from '../db'
-import { JobContext, WorkerJob } from '../jobs'
+import { JobContext } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { WorkerDataCache } from './caches'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -32,6 +32,7 @@ import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { IS_PRODUCTION } from '../environment'
 import { LocksManager } from './locks'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
 
 export class JobContextBase implements JobContext {
 	private readonly locks: Array<LockBase> = []
@@ -122,17 +123,20 @@ export class JobContextBase implements JobContext {
 		return null
 	}
 
-	async queueIngestJob<T extends keyof IngestJobFunc>(
-		_name: T,
-		_data: Parameters<IngestJobFunc[T]>[0]
-	): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> {
-		throw new Error('Method not implemented.')
+	async queueIngestJob<T extends keyof IngestJobFunc>(name: T, data: Parameters<IngestJobFunc[T]>[0]): Promise<void> {
+		await this.cacheData.ingestQueue.add(name, data, {
+			// priority,
+		})
 	}
-	async queueStudioJob<T extends keyof StudioJobFunc>(
-		_name: T,
-		_data: Parameters<StudioJobFunc[T]>[0]
-	): Promise<WorkerJob<ReturnType<StudioJobFunc[T]>>> {
-		throw new Error('Method not implemented.')
+	async queueStudioJob<T extends keyof StudioJobFunc>(name: T, data: Parameters<StudioJobFunc[T]>[0]): Promise<void> {
+		await this.cacheData.studioQueue.add(name, data, {
+			// priority,
+		})
+	}
+	async queueEventJob<T extends keyof EventsJobFunc>(name: T, data: Parameters<EventsJobFunc[T]>[0]): Promise<void> {
+		await this.cacheData.eventsQueue.add(name, data, {
+			// priority,
+		})
 	}
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig {

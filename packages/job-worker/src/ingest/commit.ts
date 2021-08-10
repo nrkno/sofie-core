@@ -29,6 +29,7 @@ import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { getTranslatedMessage, ServerTranslatedMesssages } from '../notes'
 import _ = require('underscore')
+import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -269,10 +270,14 @@ export async function CommitIngestOperation(
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
-					// TODO: HACK
-					// Meteor.setTimeout(() => {
-					// 	reportRundownDataHasChanged(playoutCache.Playlist.doc, newRundown)
-					// }, LOW_PRIO_DEFER_TIME)
+					context
+						.queueEventJob(EventsJobs.RundownDataChanged, {
+							playlistId: playoutCache.PlaylistId,
+							rundownId: newRundown._id,
+						})
+						.catch((e) => {
+							logger.error(`Queue RundownDataChanged failed: ${e}`)
+						})
 
 					triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
 				})

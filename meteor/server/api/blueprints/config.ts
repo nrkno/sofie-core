@@ -3,25 +3,14 @@ import {
 	ConfigItemValue,
 	ConfigManifestEntry,
 	IBlueprintConfig,
-	StudioBlueprintManifest,
-	ShowStyleBlueprintManifest,
 	BasicConfigItemValue,
 	TableConfigItemValue,
 } from '@sofie-automation/blueprints-integration'
-import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
+import { Studios, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
-import {
-	ShowStyleVariantId,
-	ShowStyleCompound,
-	ShowStyleVariant,
-	ShowStyleVariants,
-} from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
-import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
-import { ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
-import { CommonContext } from './context'
 import { ReadonlyDeep } from 'type-fest'
 import { getShowStyleCompound } from '../showStyles'
 
@@ -87,47 +76,6 @@ export namespace ConfigRef {
 	}
 }
 
-export function preprocessStudioConfig(studio: ReadonlyDeep<Studio>, blueprint?: StudioBlueprintManifest) {
-	let res: any = {}
-	if (blueprint && blueprint.studioConfigManifest !== undefined) {
-		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
-	} else {
-		res = studio.blueprintConfig
-	}
-
-	// Expose special values as defined in the studio
-	res['SofieHostURL'] = studio.settings.sofieUrl
-
-	if (blueprint && blueprint.preprocessConfig) {
-		const context = new CommonContext({
-			name: `preprocessStudioConfig`,
-			identifier: `studioId=${studio._id}`,
-		})
-		res = blueprint.preprocessConfig(context, res)
-	}
-	return res
-}
-
-export function preprocessShowStyleConfig(
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
-	blueprint?: ShowStyleBlueprintManifest
-) {
-	let res: any = {}
-	if (blueprint && blueprint.showStyleConfigManifest !== undefined) {
-		applyToConfig(res, blueprint.showStyleConfigManifest, showStyle.blueprintConfig, `ShowStyle ${showStyle._id}`)
-	} else {
-		res = showStyle.blueprintConfig
-	}
-	if (blueprint && blueprint.preprocessConfig) {
-		const context = new CommonContext({
-			name: `preprocessShowStyleConfig`,
-			identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
-		})
-		res = blueprint.preprocessConfig(context, res)
-	}
-	return res
-}
-
 export function findMissingConfigs(
 	manifest: ConfigManifestEntry[] | undefined,
 	config: ReadonlyDeep<IBlueprintConfig>
@@ -167,182 +115,3 @@ export function applyToConfig(
 		objectPathSet(res, val.id, newVal)
 	}
 }
-
-const studioBlueprintConfigCache = new Map<BlueprintId, Map<StudioId, Cache>>()
-const showStyleBlueprintConfigCache = new Map<BlueprintId, Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>>>()
-interface Cache {
-	config: unknown
-}
-
-export function forceClearAllBlueprintConfigCaches() {
-	studioBlueprintConfigCache.clear()
-	showStyleBlueprintConfigCache.clear()
-}
-
-export async function resetStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): Promise<void> {
-	for (const map of studioBlueprintConfigCache.values()) {
-		map.delete(studio._id)
-	}
-	await getStudioBlueprintConfig(studio)
-}
-
-export async function getStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): Promise<unknown> {
-	let blueprintConfigMap = studio.blueprintId ? studioBlueprintConfigCache.get(studio.blueprintId) : undefined
-	if (!blueprintConfigMap && studio.blueprintId) {
-		blueprintConfigMap = new Map()
-		studioBlueprintConfigCache.set(studio.blueprintId, blueprintConfigMap)
-	}
-
-	const cachedConfig = blueprintConfigMap?.get(studio._id)
-	if (cachedConfig) {
-		return cachedConfig.config
-	}
-
-	logger.debug('Building Studio config')
-	const studioBlueprint = await loadStudioBlueprint(studio)
-	if (studioBlueprint) {
-		const diffs = findMissingConfigs(studioBlueprint.blueprint.studioConfigManifest, studio.blueprintConfig)
-		if (diffs && diffs.length) {
-			logger.warn(`Studio "${studio._id}" missing required config: ${diffs.join(', ')}`)
-		}
-	} else {
-		logger.warn(`Studio blueprint "${studio.blueprintId}" not found!`)
-	}
-	const compiledConfig = preprocessStudioConfig(studio, studioBlueprint?.blueprint)
-	blueprintConfigMap?.set(studio._id, {
-		config: compiledConfig,
-	})
-	return compiledConfig
-}
-
-export async function resetShowStyleBlueprintConfig(showStyleCompound: ReadonlyDeep<ShowStyleCompound>): Promise<void> {
-	for (const map of showStyleBlueprintConfigCache.values()) {
-		map.get(showStyleCompound._id)?.delete(showStyleCompound.showStyleVariantId)
-	}
-	await getShowStyleBlueprintConfig(showStyleCompound)
-}
-export async function getShowStyleBlueprintConfig(
-	showStyleCompound: ReadonlyDeep<ShowStyleCompound>
-): Promise<unknown> {
-	let blueprintConfigMap: Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>> | undefined =
-		showStyleCompound.blueprintId ? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId) : new Map()
-	if (!blueprintConfigMap) {
-		blueprintConfigMap = new Map()
-		showStyleBlueprintConfigCache.set(showStyleCompound.blueprintId, blueprintConfigMap)
-	}
-
-	let showStyleBaseMap = blueprintConfigMap.get(showStyleCompound._id)
-	if (!showStyleBaseMap) {
-		showStyleBaseMap = new Map()
-		blueprintConfigMap.set(showStyleCompound._id, showStyleBaseMap)
-	}
-
-	const cachedConfig = showStyleBaseMap.get(showStyleCompound.showStyleVariantId)
-	if (cachedConfig) {
-		return cachedConfig.config
-	}
-
-	const showStyleBlueprint = await loadShowStyleBlueprint(showStyleCompound)
-	if (showStyleBlueprint) {
-		const diffs = findMissingConfigs(
-			showStyleBlueprint.blueprint.showStyleConfigManifest,
-			showStyleCompound.blueprintConfig
-		)
-		if (diffs && diffs.length) {
-			logger.warn(
-				`ShowStyle "${showStyleCompound._id}-${
-					showStyleCompound.showStyleVariantId
-				}" missing required config: ${diffs.join(', ')}`
-			)
-		}
-	} else {
-		logger.warn(`ShowStyle blueprint "${showStyleCompound.blueprintId}" not found!`)
-	}
-
-	const compiledConfig = preprocessShowStyleConfig(showStyleCompound, showStyleBlueprint?.blueprint)
-	showStyleBaseMap.set(showStyleCompound.showStyleVariantId, { config: compiledConfig })
-	return compiledConfig
-}
-
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Studios.find(
-			{},
-			{
-				fields: {
-					_rundownVersionHash: 1,
-					blueprintId: 1,
-				},
-			}
-		).observeChanges({
-			changed: (id: StudioId) => {
-				for (const map of studioBlueprintConfigCache.values()) {
-					map.delete(id)
-				}
-			},
-			removed: (id: StudioId) => {
-				for (const map of studioBlueprintConfigCache.values()) {
-					map.delete(id)
-				}
-			},
-		})
-		ShowStyleBases.find(
-			{},
-			{
-				fields: {
-					_rundownVersionHash: 1,
-					blueprintId: 1,
-				},
-			}
-		).observeChanges({
-			changed: (id: ShowStyleBaseId) => {
-				for (const map of showStyleBlueprintConfigCache.values()) {
-					map.delete(id)
-				}
-			},
-			removed: (id: ShowStyleBaseId) => {
-				for (const map of showStyleBlueprintConfigCache.values()) {
-					map.delete(id)
-				}
-			},
-		})
-		ShowStyleVariants.find(
-			{},
-			{
-				fields: {
-					_rundownVersionHash: 1,
-					showStyleBaseId: 1,
-					_id: 1,
-				},
-			}
-		).observe({
-			changed: (doc: ShowStyleVariant) => {
-				for (const map of showStyleBlueprintConfigCache.values()) {
-					map.get(doc.showStyleBaseId)?.delete(doc._id)
-				}
-			},
-			removed: (doc: ShowStyleVariant) => {
-				for (const map of showStyleBlueprintConfigCache.values()) {
-					map.get(doc.showStyleBaseId)?.delete(doc._id)
-				}
-			},
-		})
-		Blueprints.find(
-			{},
-			{
-				fields: {
-					modified: 1,
-				},
-			}
-		).observeChanges({
-			changed: (id: BlueprintId) => {
-				studioBlueprintConfigCache.delete(id)
-				showStyleBlueprintConfigCache.delete(id)
-			},
-			removed: (id: BlueprintId) => {
-				studioBlueprintConfigCache.delete(id)
-				showStyleBlueprintConfigCache.delete(id)
-			},
-		})
-	}
-})

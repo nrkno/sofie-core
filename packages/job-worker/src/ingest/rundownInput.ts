@@ -9,6 +9,7 @@ import {
 	IngestUpdateRundownProps,
 	IngestUpdateSegmentProps,
 	IngestUpdateSegmentRanksProps,
+	RemoveOrphanedSegmentsProps,
 	UserRemoveRundownProps,
 	UserUnsyncRundownProps,
 } from '@sofie-automation/corelib/dist/worker/ingest'
@@ -359,6 +360,32 @@ export async function handleUpdatedSegmentRanks(
 				renamedSegments: new Map(),
 				removeRundown: false,
 
+				showStyle: undefined,
+				blueprint: undefined,
+			}
+		}
+	)
+}
+
+export async function handleRemoveOrphanedSegemnts(
+	context: JobContext,
+	data: RemoveOrphanedSegmentsProps
+): Promise<void> {
+	return runIngestJob(
+		context,
+		data,
+		(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
+		async (_context, ingestCache) => {
+			// Find the segments that are still orphaned (in case they have resynced before this executes)
+			// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
+			const stillOrphanedSegments = ingestCache.Segments.findFetch(
+				(s) => s.orphaned === 'deleted' && data.candidateSegmentIds.includes(s._id)
+			)
+			return {
+				changedSegmentIds: [],
+				removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
+				renamedSegments: new Map(),
+				removeRundown: false,
 				showStyle: undefined,
 				blueprint: undefined,
 			}

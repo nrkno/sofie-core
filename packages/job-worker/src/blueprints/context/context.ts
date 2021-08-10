@@ -15,24 +15,46 @@ import {
 	IPartEventContext,
 	IStudioUserContext,
 	ISegmentUserContext,
+	IRundownDataChangedEventContext,
+	IBlueprintExternalMessageQueueObj,
+	IBlueprintSegmentDB,
+	IRundownTimingEventContext,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	protectString,
+	protectStringArray,
+	unDeepString,
 	unpartialString,
 	unprotectObject,
+	unprotectObjectArray,
 	unprotectString,
 } from '@sofie-automation/corelib/dist/protectedString'
 import { PartId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { DBPartInstance, unprotectPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { clone, getHash, getRandomString, omit } from '@sofie-automation/corelib/dist/lib'
+import {
+	DBPartInstance,
+	protectPartInstance,
+	unprotectPartInstance,
+	unprotectPartInstanceArray,
+} from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import {
+	clone,
+	formatDateAsTimecode,
+	formatDurationAsTimecode,
+	getHash,
+	getRandomString,
+	omit,
+} from '@sofie-automation/corelib/dist/lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib'
-import { protectPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import {
+	protectPieceInstance,
+	unprotectPieceInstanceArray,
+} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { getShowStyleConfigRef, getStudioConfigRef, ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config'
 import _ = require('underscore')
@@ -573,138 +595,141 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	}
 }
 
-// export class RundownDataChangedEventContext extends RundownContext implements IRundownDataChangedEventContext {
-// 	constructor(
-// 		contextInfo: ContextInfo,
-// 		studio: ReadonlyDeep<Studio>,
-// 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-// 		rundown: ReadonlyDeep<Rundown>
-// 	) {
-// 		super(contextInfo, studio, showStyleCompound, rundown)
-// 	}
+export class RundownDataChangedEventContext extends RundownContext implements IRundownDataChangedEventContext {
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<DBStudio>,
+		studioBlueprintConfig: ProcessedStudioConfig,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
+		rundown: ReadonlyDeep<DBRundown>
+	) {
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, rundown)
+	}
 
-// 	getCurrentTime(): number {
-// 		return getCurrentTime()
-// 	}
+	getCurrentTime(): number {
+		return getCurrentTime()
+	}
 
-// 	/** Get all unsent and queued messages in the rundown */
-// 	getAllUnsentQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]> {
-// 		return unprotectObjectArray(
-// 			ExternalMessageQueue.find(
-// 				{
-// 					rundownId: this._rundown._id,
-// 					queueForLaterReason: { $exists: true },
-// 				},
-// 				{
-// 					sort: {
-// 						created: 1,
-// 					},
-// 				}
-// 			).fetch()
-// 		)
-// 	}
+	/** Get all unsent and queued messages in the rundown */
+	getAllUnsentQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]> {
+		return unprotectObjectArray(
+			ExternalMessageQueue.find(
+				{
+					rundownId: this._rundown._id,
+					queueForLaterReason: { $exists: true },
+				},
+				{
+					sort: {
+						created: 1,
+					},
+				}
+			).fetch()
+		)
+	}
 
-// 	formatDateAsTimecode(time: number): string {
-// 		check(time, Number)
-// 		return formatDateAsTimecode(new Date(time))
-// 	}
-// 	formatDurationAsTimecode(time: number): string {
-// 		check(time, Number)
-// 		return formatDurationAsTimecode(time)
-// 	}
-// }
+	formatDateAsTimecode(time: number): string {
+		check(time, Number)
+		return formatDateAsTimecode(this.context.settings, new Date(time))
+	}
+	formatDurationAsTimecode(time: number): string {
+		check(time, Number)
+		return formatDurationAsTimecode(this.context.settings, time)
+	}
+}
 
-// export class RundownTimingEventContext extends RundownDataChangedEventContext implements IRundownTimingEventContext {
-// 	readonly previousPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
-// 	private readonly _currentPart: PartInstance
-// 	readonly nextPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
+export class RundownTimingEventContext extends RundownDataChangedEventContext implements IRundownTimingEventContext {
+	readonly previousPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
+	private readonly _currentPart: DBPartInstance
+	readonly nextPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
 
-// 	public get currentPart(): Readonly<IBlueprintPartInstance<unknown>> {
-// 		return unprotectPartInstance(this._currentPart)
-// 	}
+	public get currentPart(): Readonly<IBlueprintPartInstance<unknown>> {
+		return unprotectPartInstance(this._currentPart)
+	}
 
-// 	constructor(
-// 		contextInfo: ContextInfo,
-// 		studio: ReadonlyDeep<Studio>,
-// 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-// 		rundown: ReadonlyDeep<Rundown>,
-// 		previousPartInstance: PartInstance | undefined,
-// 		partInstance: PartInstance,
-// 		nextPartInstance: PartInstance | undefined
-// 	) {
-// 		super(contextInfo, studio, showStyleCompound, rundown)
+	constructor(
+		contextInfo: ContextInfo,
+		studio: ReadonlyDeep<DBStudio>,
+		studioBlueprintConfig: ProcessedStudioConfig,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
+		rundown: ReadonlyDeep<DBRundown>,
+		previousPartInstance: DBPartInstance | undefined,
+		partInstance: DBPartInstance,
+		nextPartInstance: DBPartInstance | undefined
+	) {
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, rundown)
 
-// 		this.previousPart = unprotectPartInstance(previousPartInstance)
-// 		this._currentPart = partInstance
-// 		this.nextPart = unprotectPartInstance(nextPartInstance)
-// 	}
+		this.previousPart = unprotectPartInstance(previousPartInstance)
+		this._currentPart = partInstance
+		this.nextPart = unprotectPartInstance(nextPartInstance)
+	}
 
-// 	getFirstPartInstanceInRundown(): Readonly<IBlueprintPartInstance<unknown>> {
-// 		const partInstance = PartInstances.findOne(
-// 			{
-// 				rundownId: this._rundown._id,
-// 				playlistActivationId: this._currentPart.playlistActivationId,
-// 			},
-// 			{
-// 				sort: {
-// 					takeCount: 1,
-// 				},
-// 			}
-// 		)
+	getFirstPartInstanceInRundown(): Readonly<IBlueprintPartInstance<unknown>> {
+		const partInstance = PartInstances.findOne(
+			{
+				rundownId: this._rundown._id,
+				playlistActivationId: this._currentPart.playlistActivationId,
+			},
+			{
+				sort: {
+					takeCount: 1,
+				},
+			}
+		)
 
-// 		// If this doesn't find anything, then where did our reference PartInstance come from?
-// 		if (!partInstance)
-// 			throw new Meteor.Error(
-// 				500,
-// 				`No PartInstances found for Rundown "${this._rundown._id}" (PlaylistActivationId "${this._currentPart.playlistActivationId}")`
-// 			)
+		// If this doesn't find anything, then where did our reference PartInstance come from?
+		if (!partInstance)
+			throw new Error(
+				`No PartInstances found for Rundown "${this._rundown._id}" (PlaylistActivationId "${this._currentPart.playlistActivationId}")`
+			)
 
-// 		return unprotectPartInstance(partInstance)
-// 	}
+		return unprotectPartInstance(partInstance)
+	}
 
-// 	getPartInstancesInSegmentPlayoutId(
-// 		refPartInstance: Readonly<IBlueprintPartInstance<unknown>>
-// 	): readonly IBlueprintPartInstance<unknown>[] {
-// 		const refPartInstance2 = protectPartInstance(refPartInstance)
-// 		if (!refPartInstance2 || !refPartInstance2.segmentId || !refPartInstance2.segmentPlayoutId)
-// 			throw new Meteor.Error(500, '')
+	getPartInstancesInSegmentPlayoutId(
+		refPartInstance: Readonly<IBlueprintPartInstance<unknown>>
+	): readonly IBlueprintPartInstance<unknown>[] {
+		const refPartInstance2 = protectPartInstance(refPartInstance)
+		if (!refPartInstance2 || !refPartInstance2.segmentId || !refPartInstance2.segmentPlayoutId)
+			throw new Meteor.Error(500, '')
 
-// 		const partInstances = PartInstances.find(
-// 			{
-// 				rundownId: this._rundown._id,
-// 				playlistActivationId: this._currentPart.playlistActivationId,
-// 				segmentId: unDeepString(refPartInstance2.segmentId),
-// 				segmentPlayoutId: unDeepString(refPartInstance2.segmentPlayoutId),
-// 			},
-// 			{
-// 				sort: {
-// 					takeCount: 1,
-// 				},
-// 			}
-// 		).fetch()
+		const partInstances = PartInstances.find(
+			{
+				rundownId: this._rundown._id,
+				playlistActivationId: this._currentPart.playlistActivationId,
+				segmentId: unDeepString(refPartInstance2.segmentId),
+				segmentPlayoutId: unDeepString(refPartInstance2.segmentPlayoutId),
+			},
+			{
+				sort: {
+					takeCount: 1,
+				},
+			}
+		).fetch()
 
-// 		return unprotectPartInstanceArray(partInstances)
-// 	}
+		return unprotectPartInstanceArray(partInstances)
+	}
 
-// 	getPieceInstances(...partInstanceIds: string[]): readonly IBlueprintPieceInstance<unknown>[] {
-// 		if (partInstanceIds.length === 0) return []
+	getPieceInstances(...partInstanceIds: string[]): readonly IBlueprintPieceInstance<unknown>[] {
+		if (partInstanceIds.length === 0) return []
 
-// 		const pieceInstances = PieceInstances.find({
-// 			rundownId: this._rundown._id,
-// 			playlistActivationId: this._currentPart.playlistActivationId,
-// 			partInstanceId: { $in: protectStringArray(partInstanceIds) },
-// 		}).fetch()
+		const pieceInstances = PieceInstances.find({
+			rundownId: this._rundown._id,
+			playlistActivationId: this._currentPart.playlistActivationId,
+			partInstanceId: { $in: protectStringArray(partInstanceIds) },
+		}).fetch()
 
-// 		return unprotectPieceInstanceArray(pieceInstances)
-// 	}
+		return unprotectPieceInstanceArray(pieceInstances)
+	}
 
-// 	getSegment(segmentId: string): Readonly<IBlueprintSegmentDB<unknown>> | undefined {
-// 		check(segmentId, String)
-// 		return unprotectObject(
-// 			Segments.findOne({
-// 				_id: protectString(segmentId),
-// 				rundownId: this._rundown._id,
-// 			})
-// 		)
-// 	}
-// }
+	getSegment(segmentId: string): Readonly<IBlueprintSegmentDB<unknown>> | undefined {
+		check(segmentId, String)
+		return unprotectObject(
+			Segments.findOne({
+				_id: protectString(segmentId),
+				rundownId: this._rundown._id,
+			})
+		)
+	}
+}

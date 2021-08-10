@@ -31,7 +31,13 @@ const studioMethods = {
 		const collections = getMongoCollections(mongoClient, dbName)
 
 		// Load some 'static' data from the db
-		const dataCache = await loadWorkerDataCache(collections, studioId)
+		const dataCache = await loadWorkerDataCache(
+			{
+				/* TODO */
+			},
+			collections,
+			studioId
+		)
 
 		const locks = new LocksManager()
 

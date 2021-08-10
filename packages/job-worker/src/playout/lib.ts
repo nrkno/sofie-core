@@ -27,8 +27,7 @@ import { protectString, unprotectString } from '@sofie-automation/corelib/dist/p
 import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/corelib/dist/constants'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
-
-// export const LOW_PRIO_DEFER_TIME = 40 // ms
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
@@ -412,7 +411,7 @@ export async function setNextPart(
 		}
 	}
 
-	cleanupOrphanedItems(context, cache)
+	await cleanupOrphanedItems(context, cache)
 
 	if (span) span.end()
 }
@@ -421,7 +420,7 @@ export async function setNextPart(
  * Cleanup any orphaned (deleted) segments and partinstances once they are no longer being played
  * @param cache
  */
-function cleanupOrphanedItems(_context: JobContext, cache: CacheForPlayout) {
+async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout) {
 	const playlist = cache.Playlist.doc
 	const selectedPartInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
 
@@ -455,40 +454,17 @@ function cleanupOrphanedItems(_context: JobContext, cache: CacheForPlayout) {
 	}
 
 	// We need to run this outside of the current lock, and within an ingest lock, so defer to the work queue
-	for (const [rundownId, _candidateSegmentIds] of removeSegmentsFromRundowns) {
+	for (const [rundownId, candidateSegmentIds] of removeSegmentsFromRundowns) {
 		const rundown = cache.Rundowns.findOne(rundownId)
 		if (rundown?.restoredFromSnapshotId) {
 			// This is not valid as the rundownId won't match the externalId, so ingest will fail
 			// For now do nothing
 		} else if (rundown) {
-			// TODO - HACK this was disabled
-			// Meteor.defer(async () => {
-			// 	try {
-			// 		await runIngestOperationWithCache(
-			// 			'cleanupOrphanedItems:defer',
-			// 			rundown.studioId,
-			// 			rundown.externalId,
-			// 			(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
-			// 			async (ingestCache) => {
-			// 				// Find the segments that are still orphaned (in case they have resynced before this executes)
-			// 				// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
-			// 				const stillOrphanedSegments = ingestCache.Segments.findFetch(
-			// 					(s) => s.orphaned === 'deleted' && candidateSegmentIds.includes(s._id)
-			// 				)
-			// 				return {
-			// 					changedSegmentIds: [],
-			// 					removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
-			// 					renamedSegments: new Map(),
-			// 					removeRundown: false,
-			// 					showStyle: undefined,
-			// 					blueprint: undefined,
-			// 				}
-			// 			}
-			// 		)
-			// 	} catch (e) {
-			// 		logger.error('cleanupOrphanedItems:defer error', e)
-			// 	}
-			// })
+			await context.queueIngestJob(IngestJobs.RemoveOrphanedSegments, {
+				rundownExternalId: rundown.externalId,
+				peripheralDeviceId: null,
+				candidateSegmentIds,
+			})
 		}
 	}
 

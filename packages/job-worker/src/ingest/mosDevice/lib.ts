@@ -10,23 +10,6 @@ export function getRundownIdFromMosRO(studio: DBStudio, runningOrderMosId: MOS.M
 	return getRundownId(studio, parseMosString(runningOrderMosId))
 }
 
-// export function getRundownFromMosRO(studio: Studio, runningOrderMosId: MOS.MosString128) {
-// 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
-// 	const rundownExternalId = parseMosString(runningOrderMosId)
-
-// 	const rundown = Rundowns.findOne(rundownId)
-// 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" ("${rundownExternalId}") not found`)
-// 	if (getCurrentTime() - rundown.modified > 3600 * 1000) {
-// 		const m = getCurrentTime()
-// 		rundown.modified = m
-// 		Meteor.defer(() => {
-// 			Rundowns.update(rundownId, { $set: { modified: m } })
-// 		})
-// 	}
-
-// 	return rundown
-// }
-
 export function getPartIdFromMosStory(rundownId: RundownId, partMosId: MOS.MosString128): PartId {
 	if (!partMosId) throw new Error('parameter partMosId missing!')
 	return getPartId(rundownId, parseMosString(partMosId))

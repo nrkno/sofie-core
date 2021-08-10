@@ -47,6 +47,7 @@
 		"i18next": "^19.9.2",
 		"mos-connection": "^1.0.2",
 		"object-path": "^0.11.5",
+		"timecode": "0.0.4",
 		"tslib": "^2.1.0",
 		"type-fest": "^1.2.2",
 		"underscore": "1.12.0"

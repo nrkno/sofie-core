@@ -1,6 +1,7 @@
 import React from 'react'
 import ClassNames from 'classnames'
 import { Time, formatDurationAsTimecode } from '../../lib/lib'
+import { Settings } from '../../lib/Settings'
 
 interface IProps {
 	time: Time
@@ -11,7 +12,7 @@ const FRAMES_INLINE_STYLE: React.CSSProperties = {
 }
 
 export function StyledTimecode({ time: time }: IProps) {
-	const timecode = formatDurationAsTimecode(time)
+	const timecode = formatDurationAsTimecode(Settings, time)
 	const hours = timecode.substring(0, 3)
 	const minutesSeconds = timecode.substring(3, 8)
 	const frames = timecode.substring(8)

@@ -1,8 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from './logging'
-import { Timecode } from 'timecode'
-import { Settings } from './Settings'
 import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { AsyncTransformedCollection } from './collections/lib'
@@ -71,25 +69,7 @@ export interface ObjId {
 export function applyClassToDocument(docClass, document) {
 	return new docClass(document)
 }
-export function formatDateAsTimecode(date: Date) {
-	const tc = Timecode.init({
-		framerate: Settings.frameRate + '',
-		timecode: date,
-		drop_frame: !Number.isInteger(Settings.frameRate),
-	})
-	return tc.toString()
-}
-/**
- * @param duration time in milliseconds
- */
-export function formatDurationAsTimecode(duration: Time) {
-	const tc = Timecode.init({
-		framerate: Settings.frameRate + '',
-		timecode: (duration * Settings.frameRate) / 1000,
-		drop_frame: !Number.isInteger(Settings.frameRate),
-	})
-	return tc.toString()
-}
+
 /**
  * Formats the time as human-readable time "YYYY-MM-DD hh:ii:ss"
  * @param time

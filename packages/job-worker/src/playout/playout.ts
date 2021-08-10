@@ -816,7 +816,7 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 						}
 					}
 
-					reportPartInstanceHasStarted(cache, playingPartInstance, data.startedPlayback)
+					reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
 				} else if (playlist.nextPartInstanceId === data.partInstanceId) {
 					// this is the next part, clearly an autoNext has taken place
 					if (playlist.currentPartInstanceId) {
@@ -838,7 +838,7 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 						},
 					})
 
-					reportPartInstanceHasStarted(cache, playingPartInstance, data.startedPlayback)
+					reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
 
 					// Update generated properties on the newly playing partInstance
 					const currentRundown = currentPartInstance
@@ -886,7 +886,7 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 							},
 						})
 
-						reportPartInstanceHasStarted(cache, playingPartInstance, data.startedPlayback)
+						reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
 
 						const nextPart = selectNextPart(
 							context,

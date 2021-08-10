@@ -12,6 +12,10 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
+import { Queue, QueueOptions } from 'bullmq'
+import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
+import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
+import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 
 export interface WorkerDataCache {
 	studio: DBStudio
@@ -22,6 +26,10 @@ export interface WorkerDataCache {
 	showStyleVariants: Map<ShowStyleVariantId, DBShowStyleVariant | null> // null when not found
 	showStyleBlueprints: Map<BlueprintId, WrappedShowStyleBlueprint | null> // null when not found
 	showStyleBlueprintConfig: Map<BlueprintId, ProcessedShowStyleConfig>
+
+	studioQueue: Queue
+	ingestQueue: Queue
+	eventsQueue: Queue
 }
 
 export interface InvalidateWorkerDataCache {
@@ -37,6 +45,7 @@ export function createInvalidateWorkerDataCache(): InvalidateWorkerDataCache {
 }
 
 export async function loadWorkerDataCache(
+	queueOptions: QueueOptions,
 	collections: Readonly<IDirectCollections>,
 	studioId: StudioId
 ): Promise<WorkerDataCache> {
@@ -55,6 +64,10 @@ export async function loadWorkerDataCache(
 		showStyleVariants: new Map(),
 		showStyleBlueprints: new Map(),
 		showStyleBlueprintConfig: new Map(),
+
+		studioQueue: new Queue(getStudioQueueName(studioId), queueOptions),
+		ingestQueue: new Queue(getIngestQueueName(studioId), queueOptions),
+		eventsQueue: new Queue(getEventsQueueName(studioId), queueOptions),
 	}
 }
 

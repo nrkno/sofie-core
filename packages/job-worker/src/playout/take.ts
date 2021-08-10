@@ -237,7 +237,7 @@ async function afterTakeUpdateTimingsAndEvents(
 					takePartInstance._id
 				}" to have started playback on timestamp ${new Date(takeDoneTime).toISOString()}`
 			)
-			reportPartInstanceHasStarted(cache, takePartInstance, takeDoneTime)
+			reportPartInstanceHasStarted(context, cache, takePartInstance, takeDoneTime)
 		}
 
 		// let bp = getBlueprintOfRundown(rundown)

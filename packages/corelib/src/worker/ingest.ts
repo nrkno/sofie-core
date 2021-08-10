@@ -5,6 +5,7 @@ import {
 	PeripheralDeviceId,
 	PieceId,
 	RundownId,
+	SegmentId,
 	ShowStyleVariantId,
 	StudioId,
 } from '../dataModel/Ids'
@@ -21,6 +22,8 @@ export enum IngestJobs {
 	UpdatePart = 'updatePart',
 	RegenerateRundown = 'regenerateRundown',
 	RegenerateSegment = 'regenerateSegment',
+
+	RemoveOrphanedSegments = 'removeOrphanedSegments',
 
 	MosRundown = 'mosRundown',
 	MosRundownMetadata = 'mosRundownMetadata',
@@ -76,6 +79,10 @@ export interface IngestUpdatePartProps extends IngestPropsBase {
 export type IngestRegenerateRundownProps = IngestPropsBase
 export interface IngestRegenerateSegmentProps extends IngestPropsBase {
 	segmentExternalId: string
+}
+
+export interface RemoveOrphanedSegmentsProps extends IngestPropsBase {
+	candidateSegmentIds: SegmentId[]
 }
 
 export interface MosRundownProps extends IngestPropsBase {
@@ -149,6 +156,8 @@ export type IngestJobFunc = {
 	[IngestJobs.UpdatePart]: (data: IngestUpdatePartProps) => void
 	[IngestJobs.RegenerateRundown]: (data: IngestRegenerateRundownProps) => void
 	[IngestJobs.RegenerateSegment]: (data: IngestRegenerateSegmentProps) => void
+
+	[IngestJobs.RemoveOrphanedSegments]: (data: RemoveOrphanedSegmentsProps) => void
 
 	[IngestJobs.MosRundown]: (data: MosRundownProps) => void
 	[IngestJobs.MosRundownMetadata]: (data: MosRundownMetadataProps) => void

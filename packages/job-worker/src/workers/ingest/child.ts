@@ -31,7 +31,13 @@ const ingestMethods = {
 		const collections = getMongoCollections(mongoClient, mongoDb)
 
 		// Load some 'static' data from the db
-		const dataCache = await loadWorkerDataCache(collections, studioId)
+		const dataCache = await loadWorkerDataCache(
+			{
+				/* TODO */
+			},
+			collections,
+			studioId
+		)
 
 		const locks = new LocksManager()
 

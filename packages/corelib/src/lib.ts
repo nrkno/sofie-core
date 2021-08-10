@@ -5,6 +5,9 @@ import { Random } from './random'
 import { ProtectedString, protectString } from './protectedString'
 import * as objectPath from 'object-path'
 import * as crypto from 'crypto'
+import { Timecode } from 'timecode'
+import { Time } from '@sofie-automation/blueprints-integration'
+import { ISettings } from './settings'
 
 export type TimeDuration = number
 
@@ -209,4 +212,24 @@ export function createManualPromise<T>(): ManualPromise<T> {
 	manualPromise.manualResolve = resolve
 
 	return manualPromise
+}
+
+export function formatDateAsTimecode(settings: ISettings, date: Date): string {
+	const tc = Timecode.init({
+		framerate: settings.frameRate + '',
+		timecode: date,
+		drop_frame: !Number.isInteger(settings.frameRate),
+	})
+	return tc.toString()
+}
+/**
+ * @param duration time in milliseconds
+ */
+export function formatDurationAsTimecode(settings: ISettings, duration: Time): string {
+	const tc = Timecode.init({
+		framerate: settings.frameRate + '',
+		timecode: (duration * settings.frameRate) / 1000,
+		drop_frame: !Number.isInteger(settings.frameRate),
+	})
+	return tc.toString()
 }
