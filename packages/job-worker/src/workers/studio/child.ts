@@ -68,6 +68,8 @@ const studioMethods = {
 		}
 	},
 	async runJob(jobName: string, data: unknown): Promise<unknown> {
+		const start = Date.now()
+
 		if (!staticData) throw new Error('Worker not initialised')
 
 		const transaction = startTransaction(jobName, 'worker-studio')
@@ -101,6 +103,8 @@ const studioMethods = {
 			await context.cleanupResources()
 
 			transaction?.end()
+
+			console.log(`I TOOK ${Date.now() - start}ms for ${jobName}`)
 		}
 	},
 }

@@ -63,8 +63,8 @@ export async function getLookeaheadObjects(
 	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(context, cache, maxLookaheadDistance)
 
 	const piecesToSearchQuery: FilterQuery<Piece> = {
-		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
 		startRundownId: { $in: getRundownIDsFromCache(cache) },
+		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
 		invalid: { $ne: true },
 	}
 	const pPiecesToSearch = context.directCollections.Pieces.findFetch(piecesToSearchQuery, {

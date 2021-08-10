@@ -104,7 +104,7 @@ async function pushJobToQueue<T>(
 		// priority,
 	})
 
-	console.log('job is queued!', job.id, queue.name)
+	logger.debug(`Queued job #${job.id} of "${name}" to "${queue.name}"`)
 
 	// TODO - timeouts
 	// TODO - better errors
@@ -149,11 +149,11 @@ async function pushJobToQueue<T>(
 			// TODO - should this error be re-wrapped?
 			const res = await completedPromise
 
-			console.log('job is done!', job.id, queue.name)
-
 			if ('error' in res) {
+				logger.debug(`Completed job #${job.id} with error of "${name}" to "${queue.name}"`)
 				throw res.error
 			} else {
+				logger.debug(`Completed job #${job.id} with success of "${name}" to "${queue.name}"`)
 				return res.result
 			}
 		}),

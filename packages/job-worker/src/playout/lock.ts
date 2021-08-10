@@ -21,12 +21,13 @@ export async function runJobWithPlayoutCache<TRes>(
 		throw new Error(`Job is missing playlistId`)
 	}
 
-	const playlist = await context.directCollections.RundownPlaylists.findOne(data.playlistId)
-	if (!playlist || playlist.studioId !== context.studioId) {
-		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
-	}
+	// We can lock before checking ownership, as the locks are scoped to the studio
+	return runWithPlaylistLock(context, data.playlistId, async (playlistLock) => {
+		const playlist = await context.directCollections.RundownPlaylists.findOne(data.playlistId)
+		if (!playlist || playlist.studioId !== context.studioId) {
+			throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
+		}
 
-	return runWithPlaylistLock(context, playlist._id, async (playlistLock) => {
 		return runWithPlaylistCache(context, playlist, playlistLock, preInitFcn, fcn)
 	})
 }
@@ -44,12 +45,15 @@ export async function runJobWithPlaylistLock<TRes>(
 		throw new Error(`Job is missing playlistId`)
 	}
 
-	const playlist = await context.directCollections.RundownPlaylists.findOne(data.playlistId)
-	if (playlist && playlist.studioId !== context.studioId) {
-		throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
-	}
+	// We can lock before checking ownership, as the locks are scoped to the studio
+	return runWithPlaylistLock(context, data.playlistId, async (lock) => {
+		const playlist = await context.directCollections.RundownPlaylists.findOne(data.playlistId)
+		if (playlist && playlist.studioId !== context.studioId) {
+			throw new Error(`Job playlist "${data.playlistId}" not found or for another studio`)
+		}
 
-	return runWithPlaylistLock(context, data.playlistId, async (lock) => fcn(playlist, lock))
+		return fcn(playlist, lock)
+	})
 }
 
 /**

@@ -14,3 +14,8 @@ registerIndex(Pieces, {
 	startSegmentId: 1,
 	startPartId: 1,
 })
+
+registerIndex(Pieces, {
+	startRundownId: 1,
+	startPartId: 1,
+})
