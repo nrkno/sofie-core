@@ -35,7 +35,8 @@ interface IProps {
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]
 
-	simulateHotkeyBinding?: boolean
+	simulateTriggerBinding?: boolean
+	sorensen?: typeof Sorensen
 }
 
 function useSubscriptions(
@@ -109,19 +110,6 @@ function createAction(
 	}
 }
 
-function bindHotkey(id: TriggeredActionId, keys: string, up: boolean, action: HotkeyTriggerListener) {
-	Sorensen.bind(keys, action, {
-		up,
-		exclusive: true,
-		ordered: 'modifiersFirst',
-		tag: id,
-	})
-}
-
-function unbindHotkey(keys: string, listener: (e: KeyboardEvent) => void) {
-	Sorensen.unbind(keys, listener)
-}
-
 const rundownPlaylistContext: ReactiveVar<ActionContext | null> = new ReactiveVar(null)
 function setRundownPlaylistContext(ctx: ActionContext | null) {
 	rundownPlaylistContext.set(ctx)
@@ -170,16 +158,35 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 ): React.ReactElement<any, any> | null {
 	const [initialized, setInitialized] = useState(false)
 	const { t } = useTranslation()
+	const localSorensen = props.sorensen || Sorensen
+
+	function bindHotkey(id: TriggeredActionId, keys: string, up: boolean, action: HotkeyTriggerListener) {
+		localSorensen.bind(keys, action, {
+			up,
+			exclusive: true,
+			ordered: 'modifiersFirst',
+			tag: id,
+		})
+	}
+
+	function unbindHotkey(keys: string, listener: (e: KeyboardEvent) => void) {
+		localSorensen.unbind(keys, listener)
+	}
 
 	useEffect(() => {
-		Sorensen.init()
-			.then(() => {
-				setInitialized(true)
-			})
-			.catch(console.error)
+		if (!props.sorensen) {
+			localSorensen
+				.init()
+				.then(() => {
+					setInitialized(true)
+				})
+				.catch(console.error)
+		}
 
 		return () => {
-			Sorensen.destroy().catch(console.error)
+			if (!props.sorensen) {
+				localSorensen.destroy().catch(console.error)
+			}
 		}
 	}, []) // run once
 
@@ -268,12 +275,14 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 
 		triggeredActions.forEach((pair) => {
 			const action = createAction(pair._id, pair.actions, showStyleBase, t, getCurrentContext, pair.name)
-			createdActions.set(pair._id, action.listener)
-			pair.triggers.forEach((trigger) => {
-				if (trigger.type === TriggerType.hotkey) {
-					bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
-				}
-			})
+			if (!props.simulateTriggerBinding) {
+				createdActions.set(pair._id, action.listener)
+				pair.triggers.forEach((trigger) => {
+					if (trigger.type === TriggerType.hotkey) {
+						bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
+					}
+				})
+			}
 			const hotkeyTriggers = pair.triggers
 				.filter((trigger) => trigger.type === TriggerType.hotkey)
 				.map((trigger) => trigger.keys)
@@ -309,11 +318,11 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		return () => {
 			if (initialized) {
 				triggeredActions.forEach((pair) => {
-					const action = createdActions.get(pair._id)
-					if (action) {
+					const actionListener = createdActions.get(pair._id)
+					if (actionListener) {
 						pair.triggers.forEach((trigger) => {
 							if (trigger.type === TriggerType.hotkey) {
-								unbindHotkey(trigger.keys, action)
+								unbindHotkey(trigger.keys, actionListener)
 							}
 						})
 					}

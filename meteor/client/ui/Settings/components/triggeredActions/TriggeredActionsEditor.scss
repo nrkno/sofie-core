@@ -1,0 +1,119 @@
+$triggered-action-color: #146985;
+
+.triggered-action-entry {
+	background: #ddd;
+	display: flex;
+	margin-bottom: 5px;
+
+	&:hover {
+		background: #eee;
+	}
+
+	.triggered-action-entry__triggers {
+		flex: 0 0;
+		min-width: 20%;
+		padding: 9px 5px 8px 6px;
+
+		> .triggered-action-entry__hotkey {
+			display: inline-flex;
+			border-radius: 3px;
+			padding: 0 3px;
+		}
+
+		> .triggered-action-entry__hotkey {
+			background: #555;
+			color: #fff;
+			font-weight: 400;
+			justify-content: center;
+			min-width: 20px;
+		}
+	}
+
+	.triggered-action-entry__actions {
+		flex: 1 0;
+		padding: 9px 5px 8px 10px;
+
+		.triggered-action-entry__action {
+			> .triggered-action-entry__action__type,
+			.triggered-action-entry__action__filter {
+				position: relative;
+				display: inline-flex;
+				margin: 0;
+				padding: 0;
+				border-radius: 3px 0 0 3px;
+				padding: 0 3px;
+				justify-content: center;
+				margin-right: 12px;
+
+				> dd {
+					display: inline-flex;
+					margin: 0;
+					padding: 0 3px;
+					background: black;
+					text-transform: capitalize;
+				}
+				> dt {
+					display: inline-flex;
+					margin: 0;
+					padding: 0 3px;
+					text-transform: capitalize;
+				}
+			}
+
+			> .triggered-action-entry__action__type {
+				background: $triggered-action-color;
+				color: #fff;
+				font-weight: 400;
+
+				&::after {
+					position: absolute;
+					content: ' ';
+					display: block;
+					width: 0;
+					height: 0;
+					border-top: 10px solid transparent;
+					border-bottom: 9px solid transparent;
+
+					border-left: 9px solid $triggered-action-color;
+					right: -9px;
+					top: 0;
+				}
+			}
+
+			> .triggered-action-entry__action__filter {
+				background: #999;
+				color: #fff;
+				font-weight: 300;
+				padding: 0;
+
+				> dd::after {
+					position: absolute;
+					content: ' ';
+					display: block;
+					width: 0;
+					height: 0;
+					border-top: 10px solid transparent;
+					border-bottom: 9px solid transparent;
+
+					border-left: 9px solid black;
+					right: -9px;
+					top: 0;
+				}
+
+				> :only-child::after {
+					position: absolute;
+					content: ' ';
+					display: block;
+					width: 0;
+					height: 0;
+					border-top: 10px solid transparent;
+					border-bottom: 9px solid transparent;
+
+					border-left: 9px solid #999;
+					right: -9px;
+					top: 0;
+				}
+			}
+		}
+	}
+}

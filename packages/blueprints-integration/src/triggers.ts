@@ -218,6 +218,11 @@ export interface IRundownPlaylistResetAction extends ITriggeredActionBase {
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
 }
 
+export interface IRundownPlaylistResyncAction extends ITriggeredActionBase {
+	action: PlayoutActions.resyncRundownPlaylist
+	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
+}
+
 export interface IShelfAction extends ITriggeredActionBase {
 	action: ClientActions.shelf
 	state: true | false | 'toggle'
@@ -235,6 +240,7 @@ export type SomeAction =
 	| IDisableNextPieceAction
 	| IRundownPlaylistReloadDataAction
 	| IRundownPlaylistResetAction
+	| IRundownPlaylistResyncAction
 	| IShelfAction
 
 export interface IBlueprintTriggeredActions {

@@ -334,6 +334,10 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 			return createUserActionWithCtx(action, UserAction.RESET_RUNDOWN_PLAYLIST, async (e, ctx) =>
 				MeteorCall.userAction.resetRundownPlaylist(e, ctx.rundownPlaylistId)
 			)
+		case PlayoutActions.resyncRundownPlaylist:
+			return createUserActionWithCtx(action, UserAction.RESYNC_RUNDOWN_PLAYLIST, async (e, ctx) =>
+				MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId)
+			)
 		// TODO: turn this on, once all actions are implemented
 		default:
 			assertNever(action)
