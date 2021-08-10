@@ -7,21 +7,21 @@ import {
 	RundownLayoutAdLibRegionRole,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import {
-	dashboardElementPosition,
-	IDashboardPanelTrackedProps,
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
-	isAdLibOnAir,
-	isAdLibNext,
-} from './DashboardPanel'
+import { dashboardElementPosition, IDashboardPanelTrackedProps } from './DashboardPanel'
 import ClassNames from 'classnames'
-import { AdLibPieceUi, IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
+import {
+	AdLibPieceUi,
+	getNextPieceInstancesGrouped,
+	getUnfinishedPieceInstancesGrouped,
+	isAdLibNext,
+	isAdLibOnAir,
+} from '../../lib/shelf'
 
 interface IState {}
 
@@ -132,11 +132,12 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 
 	render() {
+		const liveSegment = this.props.uiSegments.find((i) => i.isLive === true)
 		const piece =
 			this.props.panel.tags && this.props.rundownBaselineAdLibs
 				? this.props.rundownBaselineAdLibs
 						.concat(_.flatten(this.props.uiSegments.map((seg) => seg.pieces)))
-						.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))[
+						.filter((item) => matchFilter(item, this.props.showStyleBase, liveSegment, this.props.filter))[
 						this.props.adlibRank ? this.props.adlibRank : 0
 				  ]
 				: undefined

@@ -122,6 +122,8 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	isHidden?: boolean
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
+	/** Show the minishelf of the segment */
+	showShelf?: boolean
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {

@@ -460,7 +460,7 @@ export async function executeAction(
 	actionId: string,
 	userData: any,
 	triggerMode?: string
-): Promise<ClientAPI.ClientResponse<void>> {
+): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }>> {
 	check(rundownPlaylistId, String)
 	check(actionDocId, String)
 	check(actionId, String)

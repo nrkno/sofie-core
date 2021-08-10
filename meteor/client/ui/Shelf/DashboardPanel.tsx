@@ -7,18 +7,16 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
 import { IOutputLayer, ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
-import { unprotectString, getCurrentTime } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import {
 	IAdLibPanelProps,
 	AdLibFetchAndFilterProps,
 	fetchAndFilter,
-	AdLibPieceUi,
 	matchFilter,
 	AdLibPanelToolbar,
 } from './AdLibPanel'
@@ -31,13 +29,19 @@ import {
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
-import { invalidateAt } from '../../lib/invalidatingTime'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
+import {
+	AdLibPieceUi,
+	getNextPieceInstancesGrouped,
+	getUnfinishedPieceInstancesGrouped,
+	isAdLibNext,
+	isAdLibOnAir,
+} from '../../lib/shelf'
+import { RundownViewKbdShortcuts } from '../RundownView/RundownViewKbdShortcuts'
 
 interface IState {
 	outputLayers: {
@@ -257,10 +261,11 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		state: IState,
 		uniquenessIds?: Set<string>
 	): AdLibPieceUi[] {
+		const liveSegment = props.uiSegments.find((i) => i.isLive === true)
 		return props.rundownBaselineAdLibs
 			.concat(props.uiSegments.map((seg) => seg.pieces).flat())
 			.filter((item) =>
-				matchFilter(item, props.showStyleBase, props.uiSegments, props.filter, state.searchFilter, uniquenessIds)
+				matchFilter(item, props.showStyleBase, liveSegment, props.filter, state.searchFilter, uniquenessIds)
 			)
 	}
 
@@ -683,182 +688,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 		return null
 	}
-}
-
-export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartInstanceId | null) {
-	let prospectivePieces: PieceInstance[] = []
-	const now = getCurrentTime()
-	if (currentPartInstanceId) {
-		prospectivePieces = PieceInstances.find({
-			startedPlayback: {
-				$exists: true,
-			},
-			$and: [
-				{
-					$or: [
-						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
-						},
-						{
-							stoppedPlayback: {
-								$exists: false,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							adLibSourceId: {
-								$exists: true,
-							},
-						},
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							userDuration: {
-								$exists: false,
-							},
-						},
-						{
-							'userDuration.end': {
-								$exists: false,
-							},
-						},
-					],
-				},
-			],
-		}).fetch()
-
-		let nearestEnd = Number.POSITIVE_INFINITY
-		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-			const piece = pieceInstance.piece
-			const end: number | undefined =
-				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
-					? pieceInstance.userDuration.end
-					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + pieceInstance.startedPlayback!
-					: undefined
-
-			if (end !== undefined) {
-				if (end > now) {
-					nearestEnd = nearestEnd > end ? end : nearestEnd
-					return true
-				} else {
-					return false
-				}
-			}
-			return true
-		})
-
-		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
-	}
-
-	return prospectivePieces
-}
-
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): PieceInstance[] {
-	let prospectivePieceInstances: PieceInstance[] = []
-	if (nextPartInstanceId) {
-		prospectivePieceInstances = PieceInstances.find({
-			partInstanceId: nextPartInstanceId,
-			$and: [
-				{
-					piece: {
-						$exists: true,
-					},
-				},
-				{
-					$or: [
-						{
-							adLibSourceId: {
-								$exists: true,
-							},
-						},
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
-			],
-		}).fetch()
-	}
-
-	return prospectivePieceInstances
-}
-
-export function getUnfinishedPieceInstancesGrouped(
-	currentPartInstanceId: PartInstanceId | null
-): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
-
-	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.adLibSourceId)
-		.map((piece) => piece.adLibSourceId!)
-	const unfinishedTags: string[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
-
-	return {
-		unfinishedAdLibIds,
-		unfinishedTags,
-	}
-}
-
-export function getNextPieceInstancesGrouped(
-	nextPartInstanceId: PartInstanceId | null
-): Pick<IDashboardPanelTrackedProps, 'nextAdLibIds' | 'nextTags'> & { nextPieceInstances: PieceInstance[] } {
-	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
-
-	const nextAdLibIds: PieceId[] = nextPieceInstances
-		.filter((piece) => !!piece.adLibSourceId)
-		.map((piece) => piece.adLibSourceId!)
-	const nextTags: string[] = nextPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
-
-	return { nextAdLibIds, nextTags, nextPieceInstances }
-}
-
-export function isAdLibOnAir(
-	unfinishedAdLibIds: IDashboardPanelTrackedProps['unfinishedAdLibIds'],
-	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
-	adLib: AdLibPieceUi
-) {
-	if (
-		unfinishedAdLibIds.includes(adLib._id) ||
-		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
-}
-
-export function isAdLibNext(
-	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
-	nextTags: IDashboardPanelTrackedProps['nextTags'],
-	adLib: AdLibPieceUi
-) {
-	if (
-		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
 }
 
 export function findNext(
