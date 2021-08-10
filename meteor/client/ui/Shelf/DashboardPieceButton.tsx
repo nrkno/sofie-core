@@ -25,7 +25,7 @@ import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailPackageSettings } from '../../../lib/collections/ExpectedPackages'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IDashboardButtonProps {
@@ -251,7 +251,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	private handleOnMouseEnter = (_e: React.MouseEvent<HTMLDivElement>) => {
+	private handleOnMouseEnter = (_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
 			this.positionAndSize = {
@@ -264,7 +264,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.setState({ isHovered: true })
 	}
 
-	private handleOnMouseLeave = (_e: React.MouseEvent<HTMLDivElement>) => {
+	private handleOnMouseLeave = (_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
 		this.setState({ isHovered: false })
 		this.positionAndSize = null
 	}
@@ -288,14 +288,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.setState({
 			timePosition: timePercentage * sourceDuration,
 		})
-	}
-
-	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-		if (isTouchDevice()) {
-			// hide the hoverscrub
-			this.handleOnMouseLeave(e)
-		}
 	}
 
 	private onNameChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -360,6 +352,10 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 		} else {
 			this.props.onSelectAdLib(this.props.piece, e)
+		}
+		if (isTouchDevice()) {
+			// hide the hoverscrub
+			this.handleOnMouseLeave(e)
 		}
 	}
 
