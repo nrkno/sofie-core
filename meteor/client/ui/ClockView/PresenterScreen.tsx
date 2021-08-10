@@ -241,9 +241,9 @@ export class PresenterScreenBase extends MeteorReactComponent<
 				})
 
 				this.autorun(() => {
-					const rundownIds = playlist!.getRundownIDs()
+					const rundownIds = playlist.getRundownIDs()
 					const showStyleBaseIds = (
-						playlist!.getRundowns(undefined, {
+						playlist.getRundowns(undefined, {
 							fields: {
 								showStyleBaseId: 1,
 							},
@@ -284,12 +284,14 @@ export class PresenterScreenBase extends MeteorReactComponent<
 									| 'getSelectedPartInstances'
 							  >
 							| undefined
-						const { nextPartInstance, currentPartInstance } = playlistR!.getSelectedPartInstances()
-						this.subscribe(PubSub.pieceInstances, {
-							partInstanceId: {
-								$in: [currentPartInstance?._id, nextPartInstance?._id],
-							},
-						})
+						if (playlistR) {
+							const { nextPartInstance, currentPartInstance } = playlistR.getSelectedPartInstances()
+							this.subscribe(PubSub.pieceInstances, {
+								partInstanceId: {
+									$in: [currentPartInstance?._id, nextPartInstance?._id],
+								},
+							})
+						}
 					})
 				})
 			}

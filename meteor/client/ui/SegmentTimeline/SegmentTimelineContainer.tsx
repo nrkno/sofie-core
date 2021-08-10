@@ -47,9 +47,8 @@ import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '..
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { AdlibSegmentUi } from '../../lib/shelf'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
-import { MiniShelfLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
-import { AdlibSegmentUi } from '../Shelf/AdLibPanel'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
@@ -115,8 +114,8 @@ interface IProps {
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
 	adLibSegmentUi?: AdlibSegmentUi
+	minishelfRegisterHotkeys?: boolean
 	studioMode: boolean
-	miniShelfFilter?: RundownLayoutFilterBase
 }
 interface IState {
 	scrollLeft: number
@@ -285,14 +284,12 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
-			props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
-			props.ownNextPartInstance !== nextProps.ownNextPartInstance ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
-			props.miniShelfFilter !== nextProps.miniShelfFilter
+			props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys
 		) {
 			return true
 		}
-		const findNextOrCurrentPart = (parts: PartUi[]) => {
+		const findNextOrCurentPart = (parts: PartUi[]) => {
 			return (
 				parts.find(
 					(i) =>
@@ -313,7 +310,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				(props.playlist.nextSegmentId === props.segmentId || nextProps.playlist.nextSegmentId === props.segmentId)) ||
 			((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
 				props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
-				((data.parts && findNextOrCurrentPart(data.parts)) || data.segmentui?.showShelf)) ||
+				((data.parts && findNextOrCurentPart(data.parts)) || data.segmentui?.showShelf)) ||
 			props.playlist.holdState !== nextProps.playlist.holdState ||
 			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 			props.playlist.activationId !== nextProps.playlist.activationId ||
@@ -914,6 +911,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		getShowAllTimeScale = () => {
+			if (!this.timelineDiv) return this.state.maxTimeScale
+
 			let newScale =
 				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
 				((computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1) -
@@ -962,7 +961,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		render() {
 			return (
 				(this.props.segmentui && (
-					<>
+					<React.Fragment key={unprotectString(this.props.segmentui._id)}>
 						{!this.props.segmentui.isHidden && (
 							<SegmentTimeline
 								id={this.props.id}
@@ -1001,23 +1000,21 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								isLastSegment={this.props.isLastSegment}
 								lastValidPartIndex={this.props.lastValidPartIndex}
 								onHeaderNoteClick={this.props.onHeaderNoteClick}
-								budgetDuration={this.state.budgetDuration}
-								budgetGap={this.state.budgetGap}
 							/>
 						)}
 						{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (
 							<RundownViewShelf
 								studio={this.props.studio}
 								segment={this.props.segmentui}
-								adLibSegmentUi={this.props.adLibSegmentUi}
 								playlist={this.props.playlist}
 								showStyleBase={this.props.showStyleBase}
+								adLibSegmentUi={this.props.adLibSegmentUi}
 								hotkeyGroup={unprotectString(this.props.segmentui._id) + '_RundownViewShelf'}
 								studioMode={this.props.studioMode}
-								registerHotkeys={(this.props.miniShelfFilter as MiniShelfLayoutFilter | undefined)?.assignHotKeys}
+								registerHotkeys={this.props.minishelfRegisterHotkeys}
 							/>
 						)}
-					</>
+					</React.Fragment>
 				)) ||
 				null
 			)

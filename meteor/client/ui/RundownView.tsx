@@ -80,6 +80,8 @@ import {
 	RundownViewLayout,
 	RundownLayoutShelfBase,
 	RundownLayoutRundownHeader,
+	RundownLayoutFilterBase,
+	RundownLayoutFilter,
 } from '../../lib/collections/RundownLayouts'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
@@ -102,6 +104,9 @@ import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioPackageContainersContext from './RundownView/StudioPackageContainersContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
+import { RundownViewKbdShortcuts } from './RundownView/RundownViewKbdShortcuts'
+import { AdLibPieceUi, AdlibSegmentUi } from '../lib/shelf'
+import { fetchAndFilter, matchFilter, SourceLayerLookup } from './Shelf/AdLibPanel'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1541,9 +1546,13 @@ interface IState {
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
+	/** Minishelf data */
 	keyboardQueuedPiece: AdLibPieceUi | undefined
 	keyboardQueuedPartInstanceId: PartInstanceId | undefined
 	keyboardRequeue: boolean
+	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
+	uiSegments: AdlibSegmentUi[]
+	sourceLayerLookup: SourceLayerLookup
 }
 
 type MatchedSegment = {
@@ -1609,6 +1618,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	const bucketDisplayFilter = !(params['buckets'] as string)
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
+
+	const showStyleBase = rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined
 
 	const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
 	for (const rundown of rundowns) {
@@ -1854,6 +1865,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				keyboardQueuedPiece: undefined,
 				keyboardQueuedPartInstanceId: undefined,
 				keyboardRequeue: false,
+				uiSegmentMap: new Map(),
+				uiSegments: [],
+				sourceLayerLookup: {},
 			}
 		}
 
@@ -1953,6 +1967,63 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			}
 
+			let uiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
+			let uiSegments: AdlibSegmentUi[] = []
+			let sourceLayerLookup: SourceLayerLookup = {}
+			if (props.playlist && props.showStyleBase && props.studio) {
+				const { t, i18n, tReady } = props
+				let filter =
+					selectedMiniShelfLayout && RundownLayoutsAPI.isLayoutForMiniShelf(selectedMiniShelfLayout)
+						? selectedMiniShelfLayout.filters[0]
+						: undefined // Only allow 1 filter for now
+
+				// Check type of filter
+				if (filter && !RundownLayoutsAPI.isFilter(filter)) {
+					filter = undefined
+				}
+				;({ uiSegmentMap, uiSegments, sourceLayerLookup } = fetchAndFilter({
+					t,
+					i18n,
+					tReady,
+					playlist: props.playlist,
+					showStyleBase: props.showStyleBase,
+					includeGlobalAdLibs: false,
+					visible: true,
+					studio: props.studio,
+					studioMode: getAllowStudio(),
+					hotkeyGroup: 'minishelf',
+					selectedPiece: undefined,
+					filter,
+				}))
+				const liveSegment = uiSegments.find((i) => i.isLive === true)
+
+				Object.values(uiSegmentMap).forEach((segment) => {
+					const uniquenessIds = new Set<string>()
+					const filteredPieces = segment.pieces.filter((piece) =>
+						matchFilter(
+							piece,
+							props.showStyleBase!,
+							liveSegment,
+							filter
+								? {
+										...(filter as RundownLayoutFilterBase),
+										currentSegment:
+											!(segment.isHidden && segment.showShelf) && (filter as RundownLayoutFilterBase).currentSegment,
+								  }
+								: undefined,
+							undefined,
+							uniquenessIds
+						)
+					)
+					const filteredSegment = {
+						...segment,
+						pieces: filteredPieces,
+					}
+					uiSegmentMap.set(segment._id, filteredSegment)
+					uiSegments.push(filteredSegment)
+				})
+			}
+
 			return {
 				shelfLayout:
 					selectedShelfLayout && RundownLayoutsAPI.isLayoutForShelf(selectedShelfLayout)
@@ -1968,6 +2039,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						? selectedMiniShelfLayout
 						: undefined,
 				currentRundown,
+				uiSegmentMap,
+				uiSegments,
+				sourceLayerLookup,
 			}
 		}
 
@@ -2373,6 +2447,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		keyQueueNextMinishelfAdLib = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.queueNextMinishelfAdLib(e)
 		}
+
 		keyQueuePrevMinishelfAdLib = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.queuePrevMinishelfAdLib(e)
 		}
@@ -2614,10 +2689,189 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		onPieceQueued = (
+			err: any,
+			res: { queuedPartInstanceId?: PartInstanceId | undefined; taken?: boolean | undefined } | undefined
+		): boolean | void => {
+			if (!err && res) {
+				if (res.taken) {
+					this.setState({ keyboardQueuedPartInstanceId: undefined })
+				} else {
+					this.setState({ keyboardQueuedPartInstanceId: res.queuedPartInstanceId })
+				}
+			}
+		}
+
+		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
+			const { t } = this.props
+
+			if (adlibPiece.invalid) {
+				NotificationCenter.push(
+					new Notification(
+						t('Invalid AdLib'),
+						NoticeLevel.WARNING,
+						t('Cannot play this AdLib because it is marked as Invalid'),
+						'toggleAdLib'
+					)
+				)
+				return
+			}
+
+			if (adlibPiece.floated) {
+				NotificationCenter.push(
+					new Notification(
+						t('Floated Adlib'),
+						NoticeLevel.WARNING,
+						t('Cannot play this AdLib because it is marked as Floated'),
+						'toggleAdLib'
+					)
+				)
+				return
+			}
+
+			let sourceLayer = this.state.sourceLayerLookup[adlibPiece.sourceLayerId]
+
+			if (!adlibPiece.isAction && sourceLayer && !sourceLayer.isQueueable) {
+				NotificationCenter.push(
+					new Notification(
+						t('Not queueable'),
+						NoticeLevel.WARNING,
+						t('Cannot play this adlib because source layer is not queueable'),
+						'toggleAdLib'
+					)
+				)
+				return
+			}
+
+			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+				if (!(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+					if (adlibPiece.isAction && adlibPiece.adlibAction) {
+						const action = adlibPiece.adlibAction
+						doUserAction(
+							t,
+							e,
+							adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB,
+							(e) =>
+								MeteorCall.userAction.executeAction(
+									e,
+									this.props.playlist!._id,
+									action._id,
+									action.actionId,
+									action.userData
+								),
+							this.onPieceQueued
+						)
+					} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
+						doUserAction(
+							t,
+							e,
+							UserAction.START_ADLIB,
+							(e) =>
+								MeteorCall.userAction.segmentAdLibPieceStart(
+									e,
+									this.props.playlist!._id,
+									currentPartInstanceId,
+									adlibPiece._id,
+									true
+								),
+							this.onPieceQueued
+						)
+					} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
+						doUserAction(
+							t,
+							e,
+							UserAction.START_GLOBAL_ADLIB,
+							(e) =>
+								MeteorCall.userAction.baselineAdLibPieceStart(
+									e,
+									this.props.playlist!._id,
+									currentPartInstanceId,
+									adlibPiece._id,
+									true
+								),
+							this.onPieceQueued
+						)
+					}
+				}
+			}
+		}
+
+		isAdLibQueueable = (piece: AdLibPieceUi) => {
+			return !piece.invalid && !piece.floated && (piece.isAction || piece.sourceLayer?.isQueueable)
+		}
+
+		findShelfOnlySegment = (begin: number, end: number) => {
+			const { uiSegments } = this.state
+			for (let i = begin; begin > end ? i > end : i < end; begin > end ? i-- : i++) {
+				const queueablePieces = uiSegments[i].pieces.filter(this.isAdLibQueueable)
+				if (uiSegments[i].isHidden && uiSegments[i].showShelf && uiSegments[i].pieces.length) {
+					return { segment: uiSegments[i], queueablePieces }
+				}
+			}
+			return undefined
+		}
+
+		queueMinishelfAdLib = (e: any, forward: boolean) => {
+			const { uiSegments, uiSegmentMap } = this.state
+			const { keyboardQueuedPiece } = this.state
+			let pieceToQueue: AdLibPieceUi | undefined
+			let currentSegmentId: SegmentId | undefined
+			if (keyboardQueuedPiece) {
+				const uiSegment = keyboardQueuedPiece.segmentId ? uiSegmentMap.get(keyboardQueuedPiece.segmentId) : undefined
+				if (uiSegment) {
+					const pieces = uiSegment.pieces.filter(this.isAdLibQueueable)
+					const nextPieceInd = pieces.findIndex((piece) => piece._id === keyboardQueuedPiece._id) + (forward ? 1 : -1)
+					if (nextPieceInd >= 0 && nextPieceInd < pieces.length) {
+						pieceToQueue = pieces[nextPieceInd]
+					}
+				}
+				currentSegmentId = keyboardQueuedPiece.segmentId
+			} else {
+				currentSegmentId = this.props.currentPartInstance?.segmentId
+			}
+
+			if (!pieceToQueue) {
+				if (currentSegmentId) {
+					const currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
+					if (currentSegmentInd >= 0) {
+						let nextShelfOnlySegment = forward
+							? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
+							  this.findShelfOnlySegment(0, currentSegmentInd)
+							: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
+							  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
+						if (nextShelfOnlySegment && nextShelfOnlySegment.queueablePieces.length) {
+							pieceToQueue =
+								nextShelfOnlySegment.queueablePieces[forward ? 0 : nextShelfOnlySegment.queueablePieces.length - 1]
+						}
+					}
+				}
+			}
+
+			if (pieceToQueue) {
+				this.queueAdLibPiece(pieceToQueue, e)
+				this.setState({ keyboardQueuedPiece: pieceToQueue })
+			}
+		}
+
+		queueNextMinishelfAdLib = (e: any) => {
+			this.queueMinishelfAdLib(e, true)
+		}
+
+		queuePrevMinishelfAdLib = (e: any) => {
+			this.queueMinishelfAdLib(e, false)
+		}
+
 		renderSegments() {
 			if (this.props.matchedSegments) {
 				let globalIndex = 0
 				const rundowns = this.props.matchedSegments.map((m) => m.rundown._id)
+				const minishelfRegisterHotkeys = () => {
+					const filter = this.state.miniShelfLayout?.filters[0]
+					if (!filter || !RundownLayoutsAPI.isDashboardLayoutFilter(filter)) return false
+
+					return !!filter.assignHotKeys
+				}
 				return this.props.matchedSegments.map((rundownAndSegments, rundownIndex, rundownArray) => {
 					const rundownIdsBefore = rundowns.slice(0, rundownIndex)
 					return (
@@ -2634,6 +2888,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									return (
 										<ErrorBoundary key={unprotectString(segment._id)}>
 											<VirtualElement
+												className={ClassNames({
+													'segment-timeline-wraper--hidden': segment.isHidden,
+													'segment-timeline-wraper--shelf': segment.showShelf,
+												})}
 												id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 												margin={'100% 0px 100% 0px'}
 												initialShow={globalIndex++ < window.innerHeight / 260}
@@ -2648,6 +2906,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													followLiveSegments={this.state.followLiveSegments}
 													rundownId={rundownAndSegments.rundown._id}
 													segmentId={segment._id}
+													adLibSegmentUi={this.state.uiSegmentMap.get(segment._id)}
+													minishelfRegisterHotkeys={minishelfRegisterHotkeys()}
 													playlist={this.props.playlist}
 													rundown={rundownAndSegments.rundown}
 													timeScale={this.state.timeScale}
@@ -2681,7 +2941,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 															: undefined
 													}
 													studioMode={this.state.studioMode}
-													miniShelfFilter={this.props.miniShelfFilter}
 												/>
 											</VirtualElement>
 										</ErrorBoundary>

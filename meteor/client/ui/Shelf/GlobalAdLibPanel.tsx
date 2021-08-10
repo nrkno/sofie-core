@@ -10,9 +10,6 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
-
-import { RundownViewKbdShortcuts } from '../RundownView'
-
 import { Spinner } from '../../lib/Spinner'
 import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -30,7 +27,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { PartInstances } from '../../../lib/collections/PartInstances'
-import { AdlibSegmentUi, AdLibPieceUi, AdLibPanelToolbar } from './AdLibPanel'
+import { AdLibPanelToolbar } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
@@ -43,6 +40,8 @@ import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../R
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
+import { RundownViewKbdShortcuts } from '../RundownView/RundownViewKbdShortcuts'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void

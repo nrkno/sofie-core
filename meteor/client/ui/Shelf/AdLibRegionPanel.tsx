@@ -7,7 +7,7 @@ import {
 	RundownLayoutAdLibRegionRole,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, IDashboardPanelTrackedProps, isAdLibDisplayedAsOnAir } from './DashboardPanel'
+import { dashboardElementPosition, IDashboardPanelTrackedProps } from './DashboardPanel'
 import ClassNames from 'classnames'
 import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -15,16 +15,10 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ensureHasTrailingSlash } from '../../lib/lib'
 import {
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
 	AdLibPieceUi,
+	getNextPieceInstancesGrouped,
+	getUnfinishedPieceInstancesGrouped,
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'

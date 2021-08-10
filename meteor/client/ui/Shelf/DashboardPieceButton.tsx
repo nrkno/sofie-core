@@ -12,7 +12,6 @@ import {
 	NoraContent,
 	Accessor,
 } from '@sofie-automation/blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from './AdLibListItem'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
@@ -27,6 +26,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailPackageSettings } from '../../../lib/collections/ExpectedPackages'
 import { ensureHasTrailingSlash } from '../../lib/lib'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -414,6 +414,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
+	renderHotkey = () => {
+		if (this.props.piece.hotkey) {
+			return <div className="dashboard-panel__panel__button__hotkey">{this.props.piece.hotkey}</div>
+		}
+	}
+
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
@@ -475,29 +481,21 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						  this.props.layer.type === SourceLayerType.LOWER_THIRD
 						? this.renderGraphics(/*(isButtons || (isList && this.props.showThumbnailsInList)*/)
 						: null}
+
 					{this.renderHotkey()}
-					{this.props.editableName ? (
-						<textarea
-							className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
-							value={this.state.label}
-							onChange={this.onNameChanged}
-							onBlur={this.onRenameTextBoxBlur}
-							ref={this.onRenameTextBoxShow}
-						></textarea>
-					) : (
-						<span className="dashboard-panel__panel__button__label">
-							{this.props.lineBreak && this.state.label.includes(this.props.lineBreak!)
-								? this.state.label.split(this.props.lineBreak!).map((line, index) => {
-										return (
-											<span key={index}>
-												{line}
-												<br />
-											</span>
-										)
-								  })
-								: this.state.label}
-						</span>
-					)}
+					<div className="dashboard-panel__panel__button__label-container">
+						{this.props.editableName ? (
+							<textarea
+								className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
+								value={this.state.label}
+								onChange={this.onNameChanged}
+								onBlur={this.onRenameTextBoxBlur}
+								ref={this.onRenameTextBoxShow}
+							></textarea>
+						) : (
+							<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+						)}
+					</div>
 				</div>
 			</div>
 		)

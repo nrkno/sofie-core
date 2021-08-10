@@ -36,7 +36,7 @@ import {
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { IDashboardPanelTrackedProps, isAdLibDisplayedAsOnAir } from './DashboardPanel'
+import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
@@ -49,7 +49,6 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { PartInstances, PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
-import { AdLibPieceUi } from './AdLibPanel'
 import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
@@ -62,6 +61,12 @@ import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
+import {
+	AdLibPieceUi,
+	getNextPieceInstancesGrouped,
+	getUnfinishedPieceInstancesGrouped,
+	isAdLibOnAir,
+} from '../../lib/shelf'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {

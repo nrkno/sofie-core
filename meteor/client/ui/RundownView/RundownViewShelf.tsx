@@ -1,11 +1,9 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import ClassNames from 'classnames'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { normalizeArray, unprotectString } from '../../../lib/lib'
-import { AdlibSegmentUi } from '../Shelf/AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
@@ -20,16 +18,16 @@ import { PieceId } from '../../../lib/collections/Pieces'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import {
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
 	AdLibPieceUi,
-	isAdLibOnAir,
+	AdlibSegmentUi,
+	getNextPieceInstancesGrouped,
+	getUnfinishedPieceInstancesGrouped,
 	isAdLibNext,
+	isAdLibOnAir,
 } from '../../lib/shelf'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import mousetrap from 'mousetrap'
-import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
-import { RundownViewKbdShortcuts } from '../RundownViewKbdShortcuts'
+import Mousetrap from 'mousetrap'
+import { RundownViewKbdShortcuts } from './RundownViewKbdShortcuts'
 
 interface IRundownViewShelfProps {
 	studio: Studio
@@ -43,10 +41,10 @@ interface IRundownViewShelfProps {
 }
 
 interface IRundownViewShelfTrackedProps {
-	outputLayerLookup: {
+	outputLayers: {
 		[key: string]: IOutputLayer
 	}
-	sourceLayerLookup: {
+	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
 	unfinishedAdLibIds: PieceId[]
@@ -62,6 +60,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	IRundownViewShelfState
 > {
 	usedHotkeys: Array<string> = []
+
 	constructor(props) {
 		super(props)
 		this.state = {}
@@ -92,7 +91,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
@@ -126,7 +125,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 			return
 		}
 
-		const sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
+		const sourceLayer = this.props.sourceLayers[adlibPiece.sourceLayerId]
 
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
@@ -141,6 +140,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 						MeteorCall.userAction.executeAction(
 							e,
 							this.props.playlist._id,
+							action._id,
 							action.actionId,
 							action.userData,
 							mode?.data
@@ -184,26 +184,6 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	componentDidUpdate(prevProps) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-		this.usedHotkeys.length = 0
-
-		// Unregister hotkeys if group name has changed
-		if (prevProps.hotkeyGroup !== this.props.hotkeyGroup) {
-			RegisteredHotkeys.remove({
-				tag: prevProps.hotkeyGroup,
-			})
-		}
-
-		this.refreshKeyboardHotkeys()
-	}
-
-	componentWillUnmount() {
-		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-
-		RegisteredHotkeys.remove({
-			tag: this.props.hotkeyGroup,
-		})
 
 		this.usedHotkeys.length = 0
 	}
@@ -211,10 +191,6 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
-
-		RegisteredHotkeys.remove({
-			tag: this.props.hotkeyGroup,
-		})
 
 		const preventDefault = (e) => {
 			e.preventDefault()
@@ -226,7 +202,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						item.hotkey,
-						(e: mousetrap.ExtendedKeyboardEvent) => {
+						(e: Mousetrap.ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, false, e)
 						},
@@ -235,24 +211,13 @@ class RundownViewShelfInner extends MeteorReactComponent<
 					)
 					this.usedHotkeys.push(item.hotkey)
 
-					registerHotkey(
-						item.hotkey,
-						item.name,
-						HotkeyAssignmentType.ADLIB,
-						this.props.sourceLayerLookup[item.sourceLayerId],
-						item.toBeQueued || false,
-						this.onToggleAdLib,
-						[item, false],
-						this.props.hotkeyGroup
-					)
-
-					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
+					const sourceLayer = this.props.sourceLayers[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							queueHotkey,
-							(e: mousetrap.ExtendedKeyboardEvent) => {
+							(e: Mousetrap.ExtendedKeyboardEvent) => {
 								preventDefault(e)
 								this.onToggleAdLib(item, true, e)
 							},
@@ -280,9 +245,12 @@ class RundownViewShelfInner extends MeteorReactComponent<
 								key={unprotectString(adLibPiece._id)}
 								piece={adLibPiece}
 								studio={this.props.studio}
-								layer={this.props.sourceLayerLookup[adLibPiece.sourceLayerId]}
-								outputLayer={this.props.outputLayerLookup[adLibPiece.outputLayerId]}
+								layer={this.props.sourceLayers[adLibPiece.sourceLayerId]}
+								outputLayer={this.props.outputLayers[adLibPiece.outputLayerId]}
 								onToggleAdLib={this.onToggleAdLib}
+								onSelectAdLib={() => {
+									/* no-op */
+								}}
 								playlist={this.props.playlist}
 								isOnAir={this.isAdLibOnAir(adLibPiece)}
 								isNext={this.isAdLibNext(adLibPiece)}
@@ -292,7 +260,6 @@ class RundownViewShelfInner extends MeteorReactComponent<
 										: ''
 								}
 								displayStyle={PieceDisplayStyle.BUTTONS}
-								canOverflowHorizontally={true}
 								widthScale={3.27} // @todo: css
 								isSelected={false}
 							>
@@ -311,18 +278,14 @@ export const RundownViewShelf = translateWithTracker<
 	IRundownViewShelfState,
 	IRundownViewShelfTrackedProps
 >(
-	(props: IRundownViewShelfProps & IRundownViewShelfTrackedProps) => {
+	(props: IRundownViewShelfProps) => {
 		const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id') // @todo: optimize
 		const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
-			(
-				currentPartInstanceId: PartInstanceId | null,
-				nextPartInstanceId: PartInstanceId | null,
-				showStyleBase: ShowStyleBase
-			) => {
+			(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null) => {
 				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(currentPartInstanceId)
-				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(showStyleBase, nextPartInstanceId)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(nextPartInstanceId)
 				return {
 					unfinishedAdLibIds,
 					unfinishedTags,
@@ -332,13 +295,12 @@ export const RundownViewShelf = translateWithTracker<
 			},
 			'unfinishedAndNextAdLibsAndTags',
 			props.playlist.currentPartInstanceId,
-			props.playlist.nextPartInstanceId,
-			props.showStyleBase
+			props.playlist.nextPartInstanceId
 		)
 
 		return {
-			sourceLayerLookup,
-			outputLayerLookup,
+			sourceLayers: sourceLayerLookup,
+			outputLayers: outputLayerLookup,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,

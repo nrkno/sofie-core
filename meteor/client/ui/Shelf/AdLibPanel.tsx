@@ -6,9 +6,9 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { useTranslation, withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -18,7 +18,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownViewKbdShortcuts'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
@@ -43,7 +42,6 @@ import { literal, normalizeArray, unprotectString, protectString } from '../../.
 import { RundownAPI } from '../../../lib/api/rundown'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import {
-	PartInstance,
 	PartInstances,
 	PartInstanceId,
 	findPartInstanceOrWrapToTemporary,
@@ -62,10 +60,11 @@ import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
-import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
+import { RundownViewKbdShortcuts } from '../RundownView/RundownViewKbdShortcuts'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -447,31 +446,6 @@ export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
 	)
 }
 
-export interface AdLibPieceUi extends AdLibPiece {
-	hotkey?: string
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	isGlobal?: boolean
-	isHidden?: boolean
-	isSticky?: boolean
-	isAction?: boolean
-	isClearSourceLayer?: boolean
-	adlibAction?: AdLibAction | RundownBaselineAdLibAction
-	contentMetaData?: any
-	contentPackageInfos?: ScanInfoForPackages
-	message?: string | null
-	uniquenessId?: string
-	segmentId?: SegmentId
-}
-
-export interface AdlibSegmentUi extends DBSegment {
-	/** Pieces belonging to this part */
-	parts: Array<PartInstance>
-	pieces: Array<AdLibPieceUi>
-	isLive: boolean
-	isNext: boolean
-}
-
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
@@ -578,7 +552,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 			if (!segments) {
 				return {
-					uiSegments: [] as AdlibSegmentUi[],
+					uiSegments: [],
 					uiSegmentMap: new Map(),
 					liveSegment: undefined,
 					uiPartSegmentMap,
@@ -653,7 +627,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		segments
 	)
 
-	uiSegments.forEach((segment) => (segment.pieces.length = 0))
+	uiSegments.forEach((segment) => (segment.pieces = []))
 
 	const rundownIds = props.playlist.getRundownIDs()
 	const partIds = Array.from(uiPartSegmentMap.keys())
@@ -715,7 +689,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		const segment = uiPartSegmentMap.get(action[0])
 
 		if (segment) {
-			segment.pieces.push({ ...action[1], segmentId: segment._id } as AdLibPieceUi)
+			segment.pieces.push({ ...action[1], segmentId: segment._id })
 		}
 	})
 
@@ -923,7 +897,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	return {
 		uiSegments: props.filter && props.filter.rundownBaseline === 'only' ? [] : uiSegments,
-		uiSegmentMap,
+		uiSegmentMap: props.filter && props.filter.rundownBaseline === 'only' ? new Map() : uiSegmentMap,
 		liveSegment,
 		sourceLayerLookup,
 		rundownBaselineAdLibs,
@@ -970,7 +944,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps) {
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-			this.usedHotkeys.length = 0
+			this.usedHotkeys = []
 
 			if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
 				this.setState({
@@ -986,7 +960,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
-			this.usedHotkeys.length = 0
+			this.usedHotkeys = []
 
 			RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 		}

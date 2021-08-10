@@ -36,6 +36,7 @@ import { FindOptions } from '../../lib/typings/meteor'
 import { AdLibPieceUi } from './shelf'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown, RundownId } from '../../lib/collections/Rundowns'
+import { AdLibPieceUi } from './shelf'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId

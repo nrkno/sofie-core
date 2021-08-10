@@ -15,7 +15,7 @@ import { NextInfoPanel } from './NextInfoPanel'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from './AdLibPanel'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout

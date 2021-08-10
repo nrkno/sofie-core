@@ -167,6 +167,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 				rootMargin={this.props.margin || '50% 0px 50% 0px'}
 				onChange={this.visibleChanged}
 				className={this.props.className}
+				as="div"
 			>
 				<div ref={this.setRef}>
 					{!this.state.inView && (!this.props.initialShow || this.state.isMeasured) ? (

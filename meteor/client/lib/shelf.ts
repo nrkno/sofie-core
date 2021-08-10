@@ -1,14 +1,13 @@
-import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { AdLibAction } from '../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
-import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
-import { SegmentId } from '../../lib/collections/Segments'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { getCurrentTime } from '../../lib/lib'
-import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
+import { ScanInfoForPackages } from '../../lib/mediaObjects'
 import { invalidateAt } from './invalidatingTime'
 
 export interface AdLibPieceUi extends AdLibPiece {
@@ -22,9 +21,17 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isClearSourceLayer?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	message?: string | null
-	uniquenessId?: string
 	segmentId?: SegmentId
+}
+
+export interface AdlibSegmentUi extends DBSegment {
+	/** Pieces belonging to this part */
+	parts: Array<PartInstance>
+	pieces: Array<AdLibPieceUi>
+	isLive: boolean
+	isNext: boolean
 }
 
 export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
@@ -47,10 +54,7 @@ export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: 
 	return false
 }
 
-export function getNextPiecesReactive(
-	showStyleBase: ShowStyleBase,
-	nextPartInstanceId: PartInstanceId | null
-): PieceInstance[] {
+export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
@@ -77,18 +81,17 @@ export function getNextPiecesReactive(
 				},
 			],
 		}).fetch()
-
-		prospectivePieceInstances = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieceInstances, 0)
 	}
 
 	return prospectivePieceInstances
 }
 
-export function getNextPieceInstancesGrouped(
-	showStyleBase: ShowStyleBase,
-	nextPartInstanceId: PartInstanceId | null
-): { nextAdLibIds: PieceId[]; nextTags: string[]; nextPieceInstances: PieceInstance[] } {
-	const nextPieceInstances = getNextPiecesReactive(showStyleBase, nextPartInstanceId)
+export function getNextPieceInstancesGrouped(nextPartInstanceId: PartInstanceId | null): {
+	nextAdLibIds: PieceId[]
+	nextTags: string[]
+	nextPieceInstances: PieceInstance[]
+} {
+	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -101,32 +104,7 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function getUnfinishedPieceInstancesGrouped(currentPartInstanceId: PartInstanceId | null): {
-	unfinishedAdLibIds: PieceId[]
-	unfinishedTags: string[]
-	unfinishedPieceInstances: PieceInstance[]
-} {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
-
-	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.adLibSourceId)
-		.map((piece) => piece.adLibSourceId!)
-	const unfinishedTags: string[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
-
-	return {
-		unfinishedAdLibIds,
-		unfinishedTags,
-		unfinishedPieceInstances,
-	}
-}
-
-export function getUnfinishedPieceInstancesReactive(
-	currentPartInstanceId: PartInstanceId | null,
-	adlib: boolean = true
-) {
+export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartInstanceId | null) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
 	if (currentPartInstanceId) {
@@ -205,4 +183,24 @@ export function getUnfinishedPieceInstancesReactive(
 	}
 
 	return prospectivePieces
+}
+
+export function getUnfinishedPieceInstancesGrouped(currentPartInstanceId: PartInstanceId | null): {
+	unfinishedAdLibIds: PieceId[]
+	unfinishedTags: string[]
+} {
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
+
+	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
+		.filter((piece) => !!piece.adLibSourceId)
+		.map((piece) => piece.adLibSourceId!)
+	const unfinishedTags: string[] = unfinishedPieceInstances
+		.filter((piece) => !!piece.piece.tags)
+		.map((piece) => piece.piece.tags!)
+		.reduce((a, b) => a.concat(b), [])
+
+	return {
+		unfinishedAdLibIds,
+		unfinishedTags,
+	}
 }
