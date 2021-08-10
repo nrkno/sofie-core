@@ -5,6 +5,7 @@ import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
 
 interface IPartCountdownProps {
 	partId?: PartId
@@ -40,8 +41,10 @@ export const PartCountdown = withTiming<IPartCountdownProps, {}>()(function Part
 								? // if show is activated, use currentTime as base
 								  props.timingDurations.currentTime ?? 0
 								: // if show is not activated, use expectedStart or currentTime, whichever is later
-								  Math.max(props.playlist.expectedStart ?? 0, props.timingDurations.currentTime ?? 0)) +
-							(thisPartCountdown || 0)
+								  Math.max(
+										PlaylistTiming.getExpectedStart(props.playlist.timing) ?? 0,
+										props.timingDurations.currentTime ?? 0
+								  )) + (thisPartCountdown || 0)
 						}
 					/>
 				) : (

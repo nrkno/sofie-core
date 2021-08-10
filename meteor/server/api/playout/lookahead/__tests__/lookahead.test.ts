@@ -80,6 +80,9 @@ describe('Lookahead', () => {
 						core: '',
 					},
 					externalNRCSName: 'mock',
+					timing: {
+						type: 'none' as any,
+					},
 				}
 				Rundowns.insert(rundown)
 

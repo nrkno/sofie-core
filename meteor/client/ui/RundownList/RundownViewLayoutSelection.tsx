@@ -68,12 +68,12 @@ export const RundownViewLayoutSelection = withTranslation()(
 			)
 
 			const standaloneLayouts = layoutsInRundown
-				.filter((layout) => RundownLayoutsAPI.IsLayoutForShelf(layout) && layout.exposeAsStandalone)
+				.filter((layout) => RundownLayoutsAPI.isLayoutForShelf(layout) && layout.exposeAsStandalone)
 				.map((layout) => {
 					return this.renderLinkItem(layout, getShelfLink(this.props.playlistId, layout._id), `standalone${layout._id}`)
 				})
 			const rundownViewLayouts = layoutsInRundown
-				.filter((layout) => RundownLayoutsAPI.IsLayoutForRundownView(layout) && layout.exposeAsSelectableLayout)
+				.filter((layout) => RundownLayoutsAPI.isLayoutForRundownView(layout) && layout.exposeAsSelectableLayout)
 				.map((layout) => {
 					return this.renderLinkItem(
 						layout,

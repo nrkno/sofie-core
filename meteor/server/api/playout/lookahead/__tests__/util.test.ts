@@ -69,6 +69,9 @@ describe('getOrderedPartsAfterPlayhead', () => {
 					},
 
 					externalNRCSName: 'mock',
+					timing: {
+						type: 'none' as any,
+					},
 				}
 				Rundowns.insert(rundown)
 				RundownPlaylists.update(playlistId, { $set: { activationId: protectString('active') } })
