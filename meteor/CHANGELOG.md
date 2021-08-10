@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.34.1-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.34.1-0...v1.34.1-1) (2021-08-10)
+
+
+### Bug Fixes
+
+* **Presenter screen:** getSelectedPartInstances on undefined crashes view ([745ff77](https://github.com/nrkno/tv-automation-server-core/commit/745ff7792254437922c6bcbf97217bd3d8f033ec))
+
 ### [1.34.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.34.0...v1.34.1-0) (2021-07-14)
 
 
