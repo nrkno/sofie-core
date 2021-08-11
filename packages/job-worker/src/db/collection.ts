@@ -15,6 +15,10 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		return this.#collection.collectionName
 	}
 
+	get rawCollection(): MongoCollection<TDoc> {
+		return this.#collection
+	}
+
 	async findFetch(selector: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>> {
 		const span = startSpanManual('WrappedCollection.findFetch')
 		if (span) {
@@ -54,7 +58,6 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 			})
 		}
 
-		// TODO - fill in id if missing?
 		const res = await this.#collection.insertOne(doc as any)
 		if (span) span.end()
 		return res.insertedId

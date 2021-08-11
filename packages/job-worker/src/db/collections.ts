@@ -1,5 +1,12 @@
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { MongoClient, AnyBulkWriteOperation, Filter, FindOptions, UpdateFilter } from 'mongodb'
+import {
+	MongoClient,
+	AnyBulkWriteOperation,
+	Filter,
+	FindOptions,
+	UpdateFilter,
+	Collection as MongoCollection,
+} from 'mongodb'
 import { wrapMongoCollection } from './collection'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
@@ -30,12 +37,15 @@ import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageI
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
 
 export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	readonly name: string
+
+	readonly rawCollection: MongoCollection<TDoc>
 
 	findFetch(selector?: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>>
 	findOne(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined>
@@ -77,6 +87,8 @@ export interface IDirectCollections {
 
 	ExpectedPackages: ICollection<ExpectedPackageDB>
 	PackageInfos: ICollection<PackageInfoDB>
+
+	ExternalMessageQueue: ICollection<ExternalMessageQueueObj>
 }
 
 export function getMongoCollections(client: MongoClient, dbName: string): Readonly<IDirectCollections> {
@@ -114,6 +126,8 @@ export function getMongoCollections(client: MongoClient, dbName: string): Readon
 
 			ExpectedPackages: wrapMongoCollection(database.collection(CollectionName.ExpectedPackages)),
 			PackageInfos: wrapMongoCollection(database.collection(CollectionName.PackageInfos)),
+
+			ExternalMessageQueue: wrapMongoCollection(database.collection(CollectionName.ExternalMessageQueue)),
 		})
 	)
 	return collections

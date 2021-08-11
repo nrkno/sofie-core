@@ -20,7 +20,8 @@ function handlePartInstanceTimingEvent(
 	playlistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId
 ): void {
-	// TODO
+	// TODO: HACK - this should be workqueue backed, not in-memory
+
 	// wait EVENT_WAIT_TIME, because blueprint.onAsRunEvent() it is likely for there to be a bunch of started and stopped events coming in at the same time
 	// These blueprint methods are not time critical (meaning they do raw db operations), and can be easily delayed
 	const funcId = `${playlistId}_${partInstanceId}`
@@ -30,7 +31,6 @@ function handlePartInstanceTimingEvent(
 	} else {
 		const newFunc = debounceFn(
 			() => {
-				// handlePartInstanceTimingEventInner(playlistId, partInstanceId)
 				context
 					.queueEventJob(EventsJobs.PartInstanceTimings, {
 						playlistId,

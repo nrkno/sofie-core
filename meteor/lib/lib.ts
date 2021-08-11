@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from './logging'
-import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { AsyncTransformedCollection } from './collections/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
@@ -92,27 +91,6 @@ export function formatDateTime(time: Time) {
 	if (ss < 10) ss = '0' + ss
 
 	return `${yyyy}-${mm}-${dd} ${hh}:${ii}:${ss}`
-}
-/**
- * Deeply iterates through the object and removes propertys whose value equals null
- * @param obj
- */
-export function removeNullyProperties<T>(obj: T): T {
-	iterateDeeply(obj, (val, _key) => {
-		if (_.isArray(val)) {
-			return iterateDeeplyEnum.CONTINUE
-		} else if (_.isObject(val)) {
-			_.each(_.keys(val), (k) => {
-				if (_.isNull(val[k])) {
-					delete val[k]
-				}
-			})
-			return iterateDeeplyEnum.CONTINUE
-		} else {
-			return val
-		}
-	})
-	return obj
 }
 /**
  * Returns a string that can be used to compare objects for equality

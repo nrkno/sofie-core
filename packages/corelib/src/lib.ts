@@ -8,6 +8,7 @@ import * as crypto from 'crypto'
 import { Timecode } from 'timecode'
 import { Time } from '@sofie-automation/blueprints-integration'
 import { ISettings } from './settings'
+import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
 
 export type TimeDuration = number
 
@@ -232,4 +233,26 @@ export function formatDurationAsTimecode(settings: ISettings, duration: Time): s
 		drop_frame: !Number.isInteger(settings.frameRate),
 	})
 	return tc.toString()
+}
+
+/**
+ * Deeply iterates through the object and removes propertys whose value equals null
+ * @param obj
+ */
+export function removeNullyProperties<T>(obj: T): T {
+	iterateDeeply(obj, (val, _key) => {
+		if (_.isArray(val)) {
+			return iterateDeeplyEnum.CONTINUE
+		} else if (_.isObject(val)) {
+			_.each(_.keys(val), (k) => {
+				if (_.isNull(val[k])) {
+					delete val[k]
+				}
+			})
+			return iterateDeeplyEnum.CONTINUE
+		} else {
+			return val
+		}
+	})
+	return obj
 }

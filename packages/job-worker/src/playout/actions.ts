@@ -10,6 +10,8 @@ import { updateStudioTimeline, updateTimeline } from './timeline'
 import { RundownEventContext } from '../blueprints/context'
 import { getCurrentTime } from '../lib'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { executePeripheralDeviceFunction } from '../peripheralDevice'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
@@ -201,35 +203,32 @@ export async function deactivateRundownPlaylistInner(
  */
 export async function prepareStudioForBroadcast(
 	context: JobContext,
-	_cache: CacheForPlayout,
-	_okToDestoryStuff: boolean
+	cache: CacheForPlayout,
+	okToDestoryStuff: boolean
 ): Promise<void> {
-	// const rundownPlaylistToBeActivated = cache.Playlist.doc
+	const rundownPlaylistToBeActivated = cache.Playlist.doc
 	logger.info('prepareStudioForBroadcast ' + context.studio._id)
 
-	// TODO - need to fire some 'DDP commands'
+	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
-	// const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	await Promise.allSettled(
+		playoutDevices.map(async (device) => {
+			try {
+				await executePeripheralDeviceFunction(
+					context,
+					device._id,
+					null,
+					'devicesMakeReady',
+					okToDestoryStuff,
+					rundownPlaylistToBeActivated._id
+				)
 
-	// await Promise.allSettled(
-	// 	playoutDevices.map(async (device) =>
-	// 		makePromise(() => {
-	// 			PeripheralDeviceAPI.executeFunction(
-	// 				device._id,
-	// 				(err) => {
-	// 					if (err) {
-	// 						logger.error(err)
-	// 					} else {
-	// 						logger.info('devicesMakeReady OK')
-	// 					}
-	// 				},
-	// 				'devicesMakeReady',
-	// 				okToDestoryStuff,
-	// 				rundownPlaylistToBeActivated._id
-	// 			)
-	// 		})
-	// 	)
-	// )
+				logger.info(`devicesMakeReady for "${device._id}" OK`)
+			} catch (err) {
+				logger.error(`devicesMakeReady for "${device._id}" failed: ${err}`)
+			}
+		})
+	)
 }
 /**
  * Makes a studio "stand down" after a broadcast
@@ -238,31 +237,22 @@ export async function prepareStudioForBroadcast(
  */
 export async function standDownStudio(
 	context: JobContext,
-	_cache: CacheForPlayout,
-	_okToDestoryStuff: boolean
+	cache: CacheForPlayout,
+	okToDestoryStuff: boolean
 ): Promise<void> {
 	logger.info('standDownStudio ' + context.studio._id)
 
-	// TODO - need to fire some 'DDP commands'
+	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
-	// 	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	await Promise.allSettled(
+		playoutDevices.map(async (device) => {
+			try {
+				await executePeripheralDeviceFunction(context, device._id, null, 'devicesStandDown', okToDestoryStuff)
 
-	// 	await Promise.allSettled(
-	// 		playoutDevices.map(async (device) =>
-	// 			makePromise(() => {
-	// 				PeripheralDeviceAPI.executeFunction(
-	// 					device._id,
-	// 					(err) => {
-	// 						if (err) {
-	// 							logger.error(err)
-	// 						} else {
-	// 							logger.info('devicesStandDown OK')
-	// 						}
-	// 					},
-	// 					'devicesStandDown',
-	// 					okToDestoryStuff
-	// 				)
-	// 			})
-	// 		)
-	// 	)
+				logger.info(`devicesStandDown for "${device._id}" OK`)
+			} catch (err) {
+				logger.error(`devicesStandDown for "${device._id}" failed: ${err}`)
+			}
+		})
+	)
 }
