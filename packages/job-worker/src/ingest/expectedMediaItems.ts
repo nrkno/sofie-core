@@ -138,26 +138,30 @@ export async function cleanUpExpectedMediaItemForBucketAdLibPiece(
 	context: JobContext,
 	adLibIds: PieceId[]
 ): Promise<void> {
-	const removedItems = await context.directCollections.ExpectedMediaItems.remove({
-		bucketAdLibPieceId: {
-			$in: adLibIds,
-		},
-	})
+	if (adLibIds.length > 0) {
+		const removedItems = await context.directCollections.ExpectedMediaItems.remove({
+			bucketAdLibPieceId: {
+				$in: adLibIds,
+			},
+		})
 
-	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib items`)
+		logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib items`)
+	}
 }
 
 export async function cleanUpExpectedMediaItemForBucketAdLibActions(
 	context: JobContext,
 	actionIds: AdLibActionId[]
 ): Promise<void> {
-	const removedItems = await context.directCollections.ExpectedMediaItems.remove({
-		bucketAdLibActionId: {
-			$in: actionIds,
-		},
-	})
+	if (actionIds.length > 0) {
+		const removedItems = await context.directCollections.ExpectedMediaItems.remove({
+			bucketAdLibActionId: {
+				$in: actionIds,
+			},
+		})
 
-	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib actions`)
+		logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib actions`)
+	}
 }
 
 export async function updateExpectedMediaItemForBucketAdLibPiece(

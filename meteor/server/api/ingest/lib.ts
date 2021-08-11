@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, unprotectObject, clone, isProtectedString } from '../../../lib/lib'
+import { getHash, getCurrentTime, protectString, isProtectedString } from '../../../lib/lib'
 import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
@@ -10,13 +10,11 @@ import {
 } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
-import { SegmentId, Segment } from '../../../lib/collections/Segments'
+import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
 import { Credentials } from '../../security/lib/credentials'
-import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
@@ -121,18 +119,11 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 }
 
 function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
-	PeripheralDevices.update(deviceId, {
+	PeripheralDevices.updateAsync(deviceId, {
 		$set: {
 			lastDataReceived: getCurrentTime(),
 		},
+	}).catch((e) => {
+		logger.warn(`Failed to update lastDataReceived for PeripheralDevice "${deviceId}": ${e}`)
 	})
-}
-
-export function canRundownBeUpdated(rundown: ReadonlyDeep<Rundown> | undefined, isCreateAction: boolean): boolean {
-	if (!rundown) return true
-	if (rundown.orphaned && !isCreateAction) {
-		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
-		return false
-	}
-	return true
 }

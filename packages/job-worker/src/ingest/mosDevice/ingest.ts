@@ -1,12 +1,15 @@
 import { PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
+	IngestJobs,
 	MosDeleteStoryProps,
 	MosFullStoryProps,
 	MosInsertStoryProps,
 	MosMoveStoryProps,
 	MosRundownMetadataProps,
 	MosRundownProps,
+	MosRundownStatusProps,
+	MosStoryStatusProps,
 	MosSwapStoryProps,
 } from '@sofie-automation/corelib/dist/worker/ingest'
 import * as MOS from 'mos-connection'
@@ -16,7 +19,7 @@ import { JobContext } from '../../jobs'
 import { updateSegmentFromIngestData } from '../generation'
 import { LocalIngestPart, LocalIngestRundown, LocalIngestSegment } from '../ingestCache'
 import { canRundownBeUpdated, getPartId, getRundownId } from '../lib'
-import { CommitIngestData, runIngestJob } from '../lock'
+import { CommitIngestData, runIngestJob, runWithRundownLock } from '../lock'
 import { diffAndApplyChanges, diffAndUpdateSegmentIds } from './diff'
 import { fixIllegalObject, getPartIdFromMosStory, getSegmentExternalId, parseMosString } from './lib'
 import { getCurrentTime } from '../../lib'
@@ -195,6 +198,87 @@ export async function handleMosRundownMetadata(context: JobContext, data: MosRun
 			return handleUpdatedRundownInner(context, cache, ingestRundown, false, data.peripheralDeviceId)
 		}
 	)
+}
+
+export async function handleMosRundownStatus(context: JobContext, data: MosRundownStatusProps): Promise<void> {
+	const rundownId = getRundownId(context.studio, data.rundownExternalId)
+
+	return runWithRundownLock(context, rundownId, async (rundown) => {
+		if (rundown) {
+			if (!canRundownBeUpdated(rundown, false)) return
+
+			await context.directCollections.Rundowns.update(rundown._id, {
+				$set: {
+					status: data.status,
+				},
+			})
+		}
+	})
+}
+
+export async function handleMosRundownReadyToAir(context: JobContext, data: MosRundownStatusProps): Promise<void> {
+	const rundownId = getRundownId(context.studio, data.rundownExternalId)
+
+	return runWithRundownLock(context, rundownId, async (rundown) => {
+		if (rundown) {
+			if (!canRundownBeUpdated(rundown, false)) return
+
+			// Set the ready to air status of a Rundown
+			if (rundown.airStatus !== data.status) {
+				await context.directCollections.Rundowns.update(rundown._id, {
+					$set: {
+						airStatus: data.status,
+					},
+				})
+
+				// Trigger a regenerate
+				await context.queueIngestJob(IngestJobs.RegenerateRundown, {
+					rundownExternalId: rundown.externalId,
+					peripheralDeviceId: data.peripheralDeviceId,
+				})
+			}
+		}
+	})
+}
+
+export async function handleMosStoryStatus(context: JobContext, data: MosStoryStatusProps): Promise<void> {
+	const rundownId = getRundownId(context.studio, data.rundownExternalId)
+
+	return runWithRundownLock(context, rundownId, async (rundown) => {
+		if (rundown) {
+			if (!canRundownBeUpdated(rundown, false)) return
+			// TODO ORPHAN include segment in check
+
+			// Save Stories (aka Part ) status into database:
+			const part = await context.directCollections.Parts.findOne({
+				_id: getPartIdFromMosStory(rundown._id, data.partExternalId),
+				rundownId: rundown._id,
+			})
+			if (part) {
+				await Promise.all([
+					context.directCollections.Parts.update(part._id, {
+						$set: {
+							status: data.status,
+						},
+					}),
+					// TODO-PartInstance - pending new data flow
+					context.directCollections.PartInstances.update(
+						{
+							'part._id': part._id,
+							reset: { $ne: true },
+						},
+						{
+							$set: {
+								status: data.status,
+							},
+						}
+					),
+				])
+			} else {
+				throw new Error(`Part ${data.partExternalId} in rundown ${rundown._id} not found`)
+			}
+		}
+	})
 }
 
 export async function handleMosFullStory(context: JobContext, data: MosFullStoryProps): Promise<void> {

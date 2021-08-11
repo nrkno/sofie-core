@@ -1,5 +1,6 @@
 import {
 	AdLibActionId,
+	BucketAdLibActionId,
 	BucketId,
 	ExpectedPackageId,
 	PeripheralDeviceId,
@@ -11,6 +12,7 @@ import {
 } from '../dataModel/Ids'
 import * as MOS from 'mos-connection'
 import { IngestAdlib, IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
+import { BucketAdLibAction } from '../dataModel/BucketAdLibAction'
 
 export enum IngestJobs {
 	RemoveRundown = 'removeRundown',
@@ -27,6 +29,9 @@ export enum IngestJobs {
 
 	MosRundown = 'mosRundown',
 	MosRundownMetadata = 'mosRundownMetadata',
+	MosRundownStatus = 'mosRundownStatus',
+	MosRundownReadyToAir = 'mosRundownReadyToAir',
+	MosStoryStatus = 'mosStoryStatus',
 	MosFullStory = 'mosFullStory',
 	MosDeleteStory = 'mosDeleteStory',
 	MosInsertStory = 'mosInsertStory',
@@ -41,6 +46,9 @@ export enum IngestJobs {
 
 	// For now these are in this queue, but if this gets split up to be per rundown, then a single bucket queue will be needed
 	BucketItemImport = 'bucketItemImport',
+	BucketActionRegenerateExpectedPackages = 'bucketActionRegenerateExpectedPackages',
+	BucketActionModify = 'bucketActionModify',
+	BucketPieceModify = 'bucketPieceModify',
 	BucketRemoveAdlibPiece = 'bucketRemoveAdlibPiece',
 	BucketRemoveAdlibAction = 'bucketRemoveAdlibAction',
 	BucketEmpty = 'bucketEmpty',
@@ -92,6 +100,16 @@ export interface MosRundownProps extends IngestPropsBase {
 export interface MosRundownMetadataProps extends IngestPropsBase {
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
 }
+export interface MosRundownStatusProps extends IngestPropsBase {
+	status: string
+}
+export interface MosRundownReadyToAirProps extends IngestPropsBase {
+	status: string
+}
+export interface MosStoryStatusProps extends IngestPropsBase {
+	partExternalId: string
+	status: string
+}
 export interface MosFullStoryProps extends IngestPropsBase {
 	story: MOS.IMOSROFullStory
 }
@@ -127,20 +145,31 @@ export interface UserRemoveRundownProps extends UserRundownPropsBase {
 }
 export type UserUnsyncRundownProps = UserRundownPropsBase
 
-export interface BucketPropsBase {
+export interface BucketItemImportProps {
 	bucketId: BucketId
-}
-export interface BucketItemImportProps extends BucketPropsBase {
 	showStyleVariantId: ShowStyleVariantId
 	payload: IngestAdlib
 }
-export interface BucketRemoveAdlibPieceProps extends BucketPropsBase {
-	itemId: PieceId
+export interface BucketActionRegenerateExpectedPackagesProps {
+	actionId: BucketAdLibActionId
 }
-export interface BucketRemoveAdlibActionProps extends BucketPropsBase {
-	itemId: AdLibActionId
+export interface BucketActionModifyProps {
+	actionId: BucketAdLibActionId
+	props: Partial<Omit<BucketAdLibAction, '_id'>>
 }
-export type BucketEmptyProps = BucketPropsBase
+export interface BucketPieceModifyProps {
+	pieceId: PieceId
+	props: Partial<Omit<BucketAdLibAction, '_id'>>
+}
+export interface BucketRemoveAdlibPieceProps {
+	pieceId: PieceId
+}
+export interface BucketRemoveAdlibActionProps {
+	actionId: AdLibActionId
+}
+export interface BucketEmptyProps {
+	bucketId: BucketId
+}
 
 /**
  * Set of valid functions, of form:
@@ -161,6 +190,9 @@ export type IngestJobFunc = {
 
 	[IngestJobs.MosRundown]: (data: MosRundownProps) => void
 	[IngestJobs.MosRundownMetadata]: (data: MosRundownMetadataProps) => void
+	[IngestJobs.MosRundownStatus]: (data: MosRundownStatusProps) => void
+	[IngestJobs.MosRundownReadyToAir]: (data: MosRundownReadyToAirProps) => void
+	[IngestJobs.MosStoryStatus]: (data: MosStoryStatusProps) => void
 	[IngestJobs.MosFullStory]: (data: MosFullStoryProps) => void
 	[IngestJobs.MosDeleteStory]: (data: MosDeleteStoryProps) => void
 	[IngestJobs.MosInsertStory]: (data: MosInsertStoryProps) => void
@@ -174,6 +206,9 @@ export type IngestJobFunc = {
 	[IngestJobs.UserUnsyncRundown]: (data: UserUnsyncRundownProps) => void
 
 	[IngestJobs.BucketItemImport]: (data: BucketItemImportProps) => void
+	[IngestJobs.BucketActionModify]: (data: BucketActionModifyProps) => void
+	[IngestJobs.BucketPieceModify]: (data: BucketPieceModifyProps) => void
+	[IngestJobs.BucketActionRegenerateExpectedPackages]: (data: BucketActionRegenerateExpectedPackagesProps) => void
 	[IngestJobs.BucketRemoveAdlibPiece]: (data: BucketRemoveAdlibPieceProps) => void
 	[IngestJobs.BucketRemoveAdlibAction]: (data: BucketRemoveAdlibActionProps) => void
 	[IngestJobs.BucketEmpty]: (data: BucketEmptyProps) => void

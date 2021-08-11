@@ -14,7 +14,6 @@ import { Meteor } from 'meteor/meteor'
 import { IndexSpecification } from 'mongodb'
 import { TransformedCollection, MongoQuery } from '../../lib/typings/meteor'
 import { logger } from '../logging'
-import { isAnyQueuedWorkRunning } from '../codeControl'
 import { SystemWriteAccess } from '../security/system'
 import { check } from '../../lib/check'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
@@ -467,9 +466,7 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 }
 
 function isAllowedToRunCleanup(): string | void {
-	if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
-
-	const studios = Studios.find().fetch()
+	const studios = Studios.find({}, { fields: { _id: 1 } }).fetch()
 	for (const studio of studios) {
 		const activePlaylist: RundownPlaylist | undefined = waitForPromise(
 			getActiveRundownPlaylistsInStudioFromDb(studio._id)

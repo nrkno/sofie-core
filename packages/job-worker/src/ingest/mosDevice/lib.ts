@@ -10,9 +10,9 @@ export function getRundownIdFromMosRO(studio: DBStudio, runningOrderMosId: MOS.M
 	return getRundownId(studio, parseMosString(runningOrderMosId))
 }
 
-export function getPartIdFromMosStory(rundownId: RundownId, partMosId: MOS.MosString128): PartId {
+export function getPartIdFromMosStory(rundownId: RundownId, partMosId: MOS.MosString128 | string): PartId {
 	if (!partMosId) throw new Error('parameter partMosId missing!')
-	return getPartId(rundownId, parseMosString(partMosId))
+	return getPartId(rundownId, typeof partMosId === 'string' ? partMosId : parseMosString(partMosId))
 }
 
 export function getSegmentExternalId(rundownId: RundownId, ingestPart: IngestPart): string {

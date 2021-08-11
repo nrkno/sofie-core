@@ -308,41 +308,43 @@ function generateExpectedPackageBases(
 	return bases
 }
 
-export async function updateExpectedPackagesForBucketAdLib(
+export async function updateExpectedPackagesForBucketAdLibPiece(
 	context: JobContext,
-	studio: ReadonlyDeep<DBStudio>,
 	adlib: BucketAdLib
 ): Promise<void> {
-	const packages = generateExpectedPackagesForBucketAdlib(studio, [adlib])
+	const packages = generateExpectedPackagesForBucketAdlib(context.studio, [adlib])
 
 	await saveIntoDb(context, context.directCollections.ExpectedPackages, { pieceId: adlib._id }, packages)
 }
 
 export async function updateExpectedPackagesForBucketAdLibAction(
 	context: JobContext,
-	studio: ReadonlyDeep<DBStudio>,
 	action: BucketAdLibAction
 ): Promise<void> {
-	const packages = generateExpectedPackagesForBucketAdlibAction(studio, [action])
+	const packages = generateExpectedPackagesForBucketAdlibAction(context.studio, [action])
 
 	await saveIntoDb(context, context.directCollections.ExpectedPackages, { pieceId: action._id }, packages)
 }
 export async function cleanUpExpectedPackagesForBucketAdLibs(context: JobContext, adLibIds: PieceId[]): Promise<void> {
-	await context.directCollections.ExpectedPackages.remove({
-		pieceId: {
-			$in: adLibIds,
-		},
-	})
+	if (adLibIds.length > 0) {
+		await context.directCollections.ExpectedPackages.remove({
+			pieceId: {
+				$in: adLibIds,
+			},
+		})
+	}
 }
 export async function cleanUpExpectedPackagesForBucketAdLibsActions(
 	context: JobContext,
 	adLibIds: AdLibActionId[]
 ): Promise<void> {
-	await context.directCollections.ExpectedPackages.remove({
-		pieceId: {
-			$in: adLibIds,
-		},
-	})
+	if (adLibIds.length > 0) {
+		await context.directCollections.ExpectedPackages.remove({
+			pieceId: {
+				$in: adLibIds,
+			},
+		})
+	}
 }
 
 export function updateBaselineExpectedPackagesOnRundown(

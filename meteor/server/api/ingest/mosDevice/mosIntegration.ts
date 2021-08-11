@@ -1,12 +1,7 @@
-import { Meteor } from 'meteor/meteor'
 import * as MOS from 'mos-connection'
-
-import { Rundowns } from '../../../../lib/collections/Rundowns'
-import { Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../logging'
-import { getStudioFromDevice, canRundownBeUpdated, checkAccessAndGetPeripheralDevice, runIngestOperation } from '../lib'
-import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
-import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { getStudioFromDevice, checkAccessAndGetPeripheralDevice, runIngestOperation } from '../lib'
+import { parseMosString } from './lib'
 import { PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../../lib/api/methods'
 import { profiler } from '../../profiler'
@@ -126,18 +121,17 @@ export namespace MosIntegration {
 		// TODO: Worker
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
+		const studio = getStudioFromDevice(peripheralDevice)
 
-		logger.info(`mosRoStatus "${status.ID}"`)
+		const rundownExternalId = parseMosString(status.ID)
+
+		logger.info(`mosRoStatus "${rundownExternalId}"`)
 		logger.debug(status)
 
-		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundownFromMosRO(studio, status.ID)
-		if (!canRundownBeUpdated(rundown, false)) return
-
-		await Rundowns.updateAsync(rundown._id, {
-			$set: {
-				status: status.Status,
-			},
+		await runIngestOperation(studio._id, IngestJobs.MosRundownStatus, {
+			rundownExternalId: rundownExternalId,
+			peripheralDeviceId: peripheralDevice._id,
+			status: status.Status,
 		})
 
 		transaction?.end()
@@ -151,46 +145,21 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryStatus', apmNamespace)
 
-		// TODO: Worker
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
+		const studio = getStudioFromDevice(peripheralDevice)
+
+		const rundownExternalId = parseMosString(status.RunningOrderId)
+		const partExternalId = parseMosString(status.ID)
 
 		logger.info(`mosRoStoryStatus "${status.ID}"`)
 		logger.debug(status)
 
-		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundownFromMosRO(studio, status.RunningOrderId)
-		if (!canRundownBeUpdated(rundown, false)) return
-		// TODO ORPHAN include segment in check
-
-		// Save Stories (aka Part ) status into database:
-		const part = await Parts.findOneAsync({
-			_id: getPartIdFromMosStory(rundown._id, status.ID),
-			rundownId: rundown._id,
+		await runIngestOperation(studio._id, IngestJobs.MosStoryStatus, {
+			rundownExternalId: rundownExternalId,
+			peripheralDeviceId: peripheralDevice._id,
+			partExternalId: partExternalId,
+			status: status.Status,
 		})
-		if (part) {
-			await Promise.all([
-				Parts.updateAsync(part._id, {
-					$set: {
-						status: status.Status,
-					},
-				}),
-				// TODO-PartInstance - pending new data flow
-				PartInstances.updateAsync(
-					{
-						'part._id': part._id,
-						reset: { $ne: true },
-					},
-					{
-						$set: {
-							status: status.Status,
-						},
-					},
-					{ multi: true }
-				),
-			])
-		} else {
-			throw new Meteor.Error(404, `Part ${status.ID} in rundown ${status.RunningOrderId} not found`)
-		}
 
 		transaction?.end()
 	}
@@ -338,26 +307,18 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoReadyToAir', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
+		const studio = getStudioFromDevice(peripheralDevice)
 
-		logger.info(`mosRoReadyToAir "${Action.ID}"`)
+		const rundownExternalId = parseMosString(Action.ID)
+
+		logger.info(`mosRoReadyToAir "${rundownExternalId}"`)
 		logger.debug(Action)
 
-		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundownFromMosRO(studio, Action.ID)
-		if (!canRundownBeUpdated(rundown, false)) return
-
-		// Set the ready to air status of a Rundown
-		if (rundown.airStatus !== Action.Status) {
-			await Rundowns.updateAsync(rundown._id, {
-				$set: {
-					airStatus: Action.Status,
-				},
-			})
-			await runIngestOperation(studio._id, IngestJobs.RegenerateRundown, {
-				rundownExternalId: rundown.externalId,
-				peripheralDeviceId: peripheralDevice._id,
-			})
-		}
+		await runIngestOperation(studio._id, IngestJobs.MosRundownReadyToAir, {
+			rundownExternalId: rundownExternalId,
+			peripheralDeviceId: peripheralDevice._id,
+			status: Action.Status,
+		})
 
 		transaction?.end()
 	}

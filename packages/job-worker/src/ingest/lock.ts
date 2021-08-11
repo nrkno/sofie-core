@@ -136,12 +136,14 @@ export async function runWithRundownLock<TRes>(
 		throw new Error(`Job is missing rundownId`)
 	}
 
-	const rundown = await context.directCollections.Rundowns.findOne(rundownId)
-	if (rundown && rundown.studioId !== context.studioId) {
-		throw new Error(`Job rundown "${rundownId}" not found or for another studio`)
-	}
+	return runWithRundownLockInner(context, rundownId, async (lock) => {
+		const rundown = await context.directCollections.Rundowns.findOne(rundownId)
+		if (rundown && rundown.studioId !== context.studioId) {
+			throw new Error(`Job rundown "${rundownId}" not found or for another studio`)
+		}
 
-	return runWithRundownLockInner(context, rundownId, async (lock) => fcn(rundown, lock))
+		return fcn(rundown, lock)
+	})
 }
 
 /**

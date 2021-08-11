@@ -189,7 +189,7 @@ interface SaveIntoDbHandlers<DBInterface> {
 	remove: (o: DBInterface) => void
 	unchanged?: (o: DBInterface) => void
 }
-export function saveIntoBase<DocClass extends DBInterface, DBInterface extends DBObj>(
+function saveIntoBase<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collectionName: string,
 	oldDocs: DocClass[],
 	newData: Array<DBInterface>,

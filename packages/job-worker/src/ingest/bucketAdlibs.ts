@@ -6,15 +6,18 @@ import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { JobContext } from '../jobs'
 import { getSystemVersion } from '../lib'
 import {
+	BucketActionModifyProps,
+	BucketActionRegenerateExpectedPackagesProps,
 	BucketEmptyProps,
 	BucketItemImportProps,
+	BucketPieceModifyProps,
 	BucketRemoveAdlibActionProps,
 	BucketRemoveAdlibPieceProps,
 } from '@sofie-automation/corelib/dist/worker/ingest'
 import {
 	cleanUpExpectedPackagesForBucketAdLibs,
 	cleanUpExpectedPackagesForBucketAdLibsActions,
-	updateExpectedPackagesForBucketAdLib,
+	updateExpectedPackagesForBucketAdLibPiece,
 	updateExpectedPackagesForBucketAdLibAction,
 } from './expectedPackages'
 import {
@@ -24,6 +27,9 @@ import {
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from './expectedMediaItems'
 import { postProcessBucketAction, postProcessBucketAdLib } from '../blueprints/postProcess'
+import { omit } from '@sofie-automation/corelib/dist/lib'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
+import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -33,8 +39,9 @@ export async function handleBucketRemoveAdlibPiece(
 	context: JobContext,
 	data: BucketRemoveAdlibPieceProps
 ): Promise<void> {
-	const piece = await context.directCollections.BucketAdLibPieces.findOne(data.itemId)
-	if (!piece || piece.studioId !== context.studioId) throw new Error(`BucketAdLibPiece "${data.itemId}" not found`)
+	const piece = await context.directCollections.BucketAdLibPieces.findOne(data.pieceId)
+	if (!piece || piece.studioId !== context.studioId)
+		throw new Error(`Bucket Piece "${data.pieceId}" not found in this studio`)
 
 	await Promise.all([
 		context.directCollections.BucketAdLibPieces.remove(piece._id),
@@ -47,8 +54,9 @@ export async function handleBucketRemoveAdlibAction(
 	context: JobContext,
 	data: BucketRemoveAdlibActionProps
 ): Promise<void> {
-	const action = await context.directCollections.BucketAdLibActions.findOne(data.itemId)
-	if (!action || action.studioId !== context.studioId) throw new Error(`BucketAdLibAction "${data.itemId}" not found`)
+	const action = await context.directCollections.BucketAdLibActions.findOne(data.actionId)
+	if (!action || action.studioId !== context.studioId)
+		throw new Error(`Bucket Action "${data.actionId}" not found in this studio`)
 
 	await Promise.all([
 		context.directCollections.BucketAdLibActions.remove(action._id),
@@ -205,7 +213,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 
 			await Promise.all([
 				updateExpectedMediaItemForBucketAdLibAction(context, action),
-				updateExpectedPackagesForBucketAdLibAction(context, studio, action),
+				updateExpectedPackagesForBucketAdLibAction(context, action),
 			])
 
 			// Preserve this one
@@ -224,7 +232,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 
 			await Promise.all([
 				updateExpectedMediaItemForBucketAdLibPiece(context, adlib),
-				updateExpectedPackagesForBucketAdLib(context, studio, adlib),
+				updateExpectedPackagesForBucketAdLibPiece(context, adlib),
 			])
 
 			// Preserve this one
@@ -241,4 +249,66 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 			context.directCollections.BucketAdLibActions.remove({ _id: { $in: actionIdsToRemove } }),
 		])
 	}
+}
+
+export async function handleBucketActionRegenerateExpectedPackages(
+	context: JobContext,
+	data: BucketActionRegenerateExpectedPackagesProps
+): Promise<void> {
+	const action = await context.directCollections.BucketAdLibActions.findOne(data.actionId)
+	if (!action || action.studioId !== context.studioId)
+		throw new Error(`Bucket Action "${data.actionId}" not found in this studio`)
+
+	await Promise.all([
+		updateExpectedMediaItemForBucketAdLibAction(context, action),
+		updateExpectedPackagesForBucketAdLibAction(context, action),
+	])
+}
+
+export async function handleBucketActionModify(context: JobContext, data: BucketActionModifyProps): Promise<void> {
+	const action = await context.directCollections.BucketAdLibActions.findOne(data.actionId)
+	if (!action || action.studioId !== context.studioId)
+		throw new Error(`Bucket Action "${data.actionId}" not found in this studio`)
+
+	const newProps = omit(
+		data.props as Partial<BucketAdLibAction>,
+		'_id',
+		'studioId',
+		'importVersions',
+		'showStyleVariantId'
+	)
+	await context.directCollections.BucketAdLibActions.update(action._id, {
+		$set: newProps,
+	})
+
+	const newAction = {
+		...action,
+		...newProps,
+	}
+
+	await Promise.all([
+		updateExpectedMediaItemForBucketAdLibAction(context, newAction),
+		updateExpectedPackagesForBucketAdLibAction(context, newAction),
+	])
+}
+
+export async function handleBucketPieceModify(context: JobContext, data: BucketPieceModifyProps): Promise<void> {
+	const piece = await context.directCollections.BucketAdLibPieces.findOne(data.pieceId)
+	if (!piece || piece.studioId !== context.studioId)
+		throw new Error(`Bucket Piece "${data.pieceId}" not found in this studio`)
+
+	const newProps = omit(data.props as Partial<BucketAdLib>, '_id', 'studioId', 'importVersions', 'showStyleVariantId')
+	await context.directCollections.BucketAdLibPieces.update(piece._id, {
+		$set: newProps,
+	})
+
+	const newPiece = {
+		...piece,
+		...newProps,
+	}
+
+	await Promise.all([
+		updateExpectedMediaItemForBucketAdLibPiece(context, newPiece),
+		updateExpectedPackagesForBucketAdLibPiece(context, newPiece),
+	])
 }

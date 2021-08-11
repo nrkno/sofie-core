@@ -7,6 +7,9 @@ import {
 	handleMosMoveStories,
 	handleMosRundownData,
 	handleMosRundownMetadata,
+	handleMosRundownReadyToAir,
+	handleMosRundownStatus,
+	handleMosStoryStatus,
 	handleMosSwapStories,
 } from '../../ingest/mosDevice/ingest'
 import {
@@ -25,8 +28,11 @@ import {
 } from '../../ingest/rundownInput'
 import { handleExpectedPackagesRegenerate, handleUpdatedPackageInfoForRundown } from '../../ingest/packageInfo'
 import {
+	handleBucketActionModify,
+	handleBucketActionRegenerateExpectedPackages,
 	handleBucketEmpty,
 	handleBucketItemImport,
+	handleBucketPieceModify,
 	handleBucketRemoveAdlibAction,
 	handleBucketRemoveAdlibPiece,
 } from '../../ingest/bucketAdlibs'
@@ -55,6 +61,9 @@ export const ingestJobHandlers: IngestJobHandlers = {
 
 	[IngestJobs.MosRundown]: handleMosRundownData,
 	[IngestJobs.MosRundownMetadata]: handleMosRundownMetadata,
+	[IngestJobs.MosRundownStatus]: handleMosRundownStatus,
+	[IngestJobs.MosRundownReadyToAir]: handleMosRundownReadyToAir,
+	[IngestJobs.MosStoryStatus]: handleMosStoryStatus,
 	[IngestJobs.MosFullStory]: handleMosFullStory,
 	[IngestJobs.MosDeleteStory]: handleMosDeleteStory,
 	[IngestJobs.MosInsertStory]: handleMosInsertStories,
@@ -68,6 +77,9 @@ export const ingestJobHandlers: IngestJobHandlers = {
 	[IngestJobs.UserUnsyncRundown]: handleUserUnsyncRundown,
 
 	[IngestJobs.BucketItemImport]: handleBucketItemImport,
+	[IngestJobs.BucketActionRegenerateExpectedPackages]: handleBucketActionRegenerateExpectedPackages,
+	[IngestJobs.BucketActionModify]: handleBucketActionModify,
+	[IngestJobs.BucketPieceModify]: handleBucketPieceModify,
 	[IngestJobs.BucketRemoveAdlibPiece]: handleBucketRemoveAdlibPiece,
 	[IngestJobs.BucketRemoveAdlibAction]: handleBucketRemoveAdlibAction,
 	[IngestJobs.BucketEmpty]: handleBucketEmpty,
