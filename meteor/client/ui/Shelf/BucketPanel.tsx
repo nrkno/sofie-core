@@ -65,6 +65,7 @@ import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,
 	getUnfinishedPieceInstancesGrouped,
+	isAdLibDisplayedAsOnAir,
 	isAdLibOnAir,
 } from '../../lib/shelf'
 

@@ -38,7 +38,7 @@ import { RundownUtils } from '../lib/rundown'
 import * as mousetrap from 'mousetrap'
 import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
+import { ModalDialog, doModalDialog } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
@@ -81,7 +81,6 @@ import {
 	RundownLayoutShelfBase,
 	RundownLayoutRundownHeader,
 	RundownLayoutFilterBase,
-	RundownLayoutFilter,
 } from '../../lib/collections/RundownLayouts'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
@@ -90,7 +89,6 @@ import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
 import { MeteorCall } from '../../lib/api/methods'
-import { AdlibSegmentUi, fetchAndFilter, matchFilter, SourceLayerLookup } from './Shelf/AdLibPanel'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { documentTitle } from '../lib/DocumentTitleProvider'
@@ -105,8 +103,9 @@ import StudioPackageContainersContext from './RundownView/StudioPackageContainer
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
 import { RundownViewKbdShortcuts } from './RundownView/RundownViewKbdShortcuts'
+import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../lib/hotkeyRegistry'
 import { AdLibPieceUi, AdlibSegmentUi } from '../lib/shelf'
-import { fetchAndFilter, matchFilter, SourceLayerLookup } from './Shelf/AdLibPanel'
+import { fetchAndFilter, SourceLayerLookup, matchFilter } from './Shelf/AdLibPanel'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1576,8 +1575,6 @@ interface ITrackedProps {
 	rundownViewLayoutId?: RundownLayoutId
 	rundownHeaderLayoutId?: RundownLayoutId
 	miniShelfLayoutId?: RundownLayoutId
-	miniShelfLayout: RundownLayoutShelfBase | undefined
-	miniShelfFilter: RundownLayoutFilterBase | undefined
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1586,13 +1583,8 @@ interface ITrackedProps {
 	bucketDisplayFilter: number[] | undefined
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
-	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
-	uiSegments: AdlibSegmentUi[]
-	sourceLayerLookup: SourceLayerLookup
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
-	const { t, i18n, tReady } = props
-
 	let playlistId
 	if (props.match && props.match.params.playlistId) {
 		playlistId = decodeURIComponent(unprotectString(props.match.params.playlistId))
@@ -1626,76 +1618,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
 	}
 
-	const showStyleBase = rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined
-	let uiSegments: AdlibSegmentUi[] = []
-	let sourceLayerLookup: SourceLayerLookup = {}
-
-	const { rundownLayouts, miniShelfFilter, selectedMiniShelfLayout, miniShelfLayoutId } = memoizedIsolatedAutorun(
-		(rundowns: Rundown[]) => {
-			const rundownLayouts =
-				rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined
-
-			let selectedMiniShelfLayout: RundownLayoutBase | undefined = undefined
-			const miniShelfLayoutId = protectString((params['miniShelfLayout'] as string) || '')
-
-			if (rundownLayouts) {
-				if (miniShelfLayoutId) {
-					selectedMiniShelfLayout = rundownLayouts.find((i) => i._id === miniShelfLayoutId)
-					if (!selectedMiniShelfLayout) {
-						selectedMiniShelfLayout = rundownLayouts.find(
-							(i) => i.name.indexOf(unprotectString(miniShelfLayoutId!)) >= 0
-						)
-					}
-				}
-				if (!selectedMiniShelfLayout) {
-					selectedMiniShelfLayout = rundownLayouts.filter((i) => i.type === RundownLayoutType.MINI_SHELF_LAYOUT)[0]
-				}
-			}
-			const miniShelfFilter = selectedMiniShelfLayout?.filters.find((filter) => RundownLayoutsAPI.isFilter(filter)) as
-				| RundownLayoutFilterBase
-				| undefined
-			return { rundownLayouts, miniShelfFilter, selectedMiniShelfLayout, miniShelfLayoutId }
-		},
-		'getMiniShelfFilter',
-		rundowns
-	)
-
-	const filteredUiSegmentMap = new Map<SegmentId, AdlibSegmentUi>()
-	const filteredUiSegments: AdlibSegmentUi[] = []
-	if (playlist && showStyleBase) {
-		;({ uiSegments, sourceLayerLookup } = fetchAndFilter({
-			t,
-			i18n,
-			tReady,
-			playlist,
-			showStyleBase,
-			includeGlobalAdLibs: false,
-			filter: miniShelfFilter,
-		}))
-		const liveSegment = uiSegments.find((i) => i.isLive === true)
-		uiSegments.forEach((segment) => {
-			const uniquenessIds = new Set<string>()
-			const filteredPieces = segment.pieces.filter((piece) =>
-				matchFilter(
-					piece,
-					showStyleBase,
-					liveSegment,
-					miniShelfFilter && {
-						...miniShelfFilter,
-						currentSegment: !(segment.isHidden && segment.showShelf) && miniShelfFilter.currentSegment,
-					},
-					undefined,
-					uniquenessIds
-				)
-			)
-			const filteredSegment = {
-				...segment,
-				pieces: filteredPieces,
-			}
-			filteredUiSegmentMap.set(segment._id, filteredSegment)
-			filteredUiSegments.push(filteredSegment)
-		})
-	}
+	const rundownLayouts =
+		rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
@@ -1751,11 +1675,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownViewLayoutId: protectString((params['rundownViewLayout'] as string) || ''),
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
 		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
-		miniShelfLayout:
-			selectedMiniShelfLayout && RundownLayoutsAPI.IsLayoutForMiniShelf(selectedMiniShelfLayout)
-				? selectedMiniShelfLayout
-				: undefined,
-		miniShelfFilter,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
@@ -1764,9 +1683,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		bucketDisplayFilter,
 		currentPartInstance,
 		nextPartInstance,
-		uiSegmentMap: filteredUiSegmentMap,
-		uiSegments: filteredUiSegments,
-		sourceLayerLookup,
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -2351,15 +2267,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		refreshHotkeys = () => {
-			const { t } = this.props
-			const preventDefault = (e) => {
-				e.preventDefault()
-				e.stopImmediatePropagation()
-				e.stopPropagation()
-			}
-			const noOp = (e) => {
-				preventDefault(e)
-			}
 			this.usedArgumentKeys = []
 
 			const HOTKEY_GROUP = 'RuntimeArguments'
@@ -2729,7 +2636,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				return
 			}
 
-			let sourceLayer = this.state.sourceLayerLookup[adlibPiece.sourceLayerId]
+			const sourceLayer = this.state.sourceLayerLookup[adlibPiece.sourceLayerId]
 
 			if (!adlibPiece.isAction && sourceLayer && !sourceLayer.isQueueable) {
 				NotificationCenter.push(
@@ -2835,7 +2742,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (currentSegmentId) {
 					const currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
 					if (currentSegmentInd >= 0) {
-						let nextShelfOnlySegment = forward
+						const nextShelfOnlySegment = forward
 							? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
 							  this.findShelfOnlySegment(0, currentSegmentInd)
 							: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
@@ -3169,117 +3076,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		onPieceQueued = (err: any, res: { queuedPartInstanceId?: PartInstanceId; taken?: boolean }) => {
-			if (!err && res) {
-				if (res.taken) {
-					this.setState({ keyboardQueuedPartInstanceId: undefined })
-				} else {
-					this.setState({ keyboardQueuedPartInstanceId: res.queuedPartInstanceId })
-				}
-			}
-		}
-
-		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
-			const { t } = this.props
-
-			const sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
-
-			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				if (!(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
-					if (adlibPiece.isAction && adlibPiece.adlibAction) {
-						const action = adlibPiece.adlibAction
-						doUserAction(
-							t,
-							e,
-							adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB,
-							(e) => MeteorCall.userAction.executeAction(e, this.props.playlist!._id, action.actionId, action.userData),
-							this.onPieceQueued
-						)
-					} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
-						doUserAction(
-							t,
-							e,
-							UserAction.START_ADLIB,
-							(e) =>
-								MeteorCall.userAction.segmentAdLibPieceStart(
-									e,
-									this.props.playlist!._id,
-									currentPartInstanceId,
-									adlibPiece._id,
-									true
-								),
-							this.onPieceQueued
-						)
-					}
-				}
-			}
-		}
-
 		isAdLibQueueableAndNonFloated = (piece: AdLibPieceUi) => {
 			return (piece.isAction || piece.sourceLayer?.isQueueable) && !piece.invalid && !piece.floated
-		}
-
-		findShelfOnlySegment = (begin: number, end: number) => {
-			const { uiSegments } = this.props
-			for (let i = begin; begin > end ? i > end : i < end; begin > end ? i-- : i++) {
-				const queueablePieces = uiSegments[i].pieces.filter(this.isAdLibQueueableAndNonFloated)
-				if (uiSegments[i].isHidden && uiSegments[i].showShelf && queueablePieces.length) {
-					return { segment: uiSegments[i], queueablePieces }
-				}
-			}
-			return undefined
-		}
-
-		queueMinishelfAdLib = (e: any, forward: boolean) => {
-			const { uiSegments, uiSegmentMap } = this.props
-			const { keyboardQueuedPiece } = this.state
-			let pieceToQueue: AdLibPieceUi | undefined
-			let currentSegmentId: SegmentId | undefined
-			if (keyboardQueuedPiece) {
-				if (this.state.keyboardRequeue) {
-					pieceToQueue = keyboardQueuedPiece
-				} else if (keyboardQueuedPiece.segmentId && uiSegmentMap.has(keyboardQueuedPiece.segmentId)) {
-					const pieces = uiSegmentMap
-						.get(keyboardQueuedPiece.segmentId)!
-						.pieces.filter(this.isAdLibQueueableAndNonFloated)
-					const nextPieceInd = pieces.findIndex((piece) => piece._id === keyboardQueuedPiece._id) + (forward ? 1 : -1)
-					if (nextPieceInd >= 0 && nextPieceInd < pieces.length) {
-						pieceToQueue = pieces[nextPieceInd]
-					}
-				}
-				currentSegmentId = keyboardQueuedPiece.segmentId
-			} else {
-				currentSegmentId = this.props.currentPartInstance?.segmentId
-			}
-			if (!pieceToQueue) {
-				if (currentSegmentId) {
-					const currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
-					if (currentSegmentInd > 0) {
-						const nextShelfOnlySegment = forward
-							? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
-							  this.findShelfOnlySegment(0, currentSegmentInd)
-							: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
-							  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
-						if (nextShelfOnlySegment && nextShelfOnlySegment.queueablePieces.length) {
-							pieceToQueue =
-								nextShelfOnlySegment.queueablePieces[forward ? 0 : nextShelfOnlySegment.queueablePieces.length - 1]
-						}
-					}
-				}
-			}
-			if (pieceToQueue) {
-				this.queueAdLibPiece(pieceToQueue, e)
-				this.setState({ keyboardQueuedPiece: pieceToQueue, keyboardRequeue: false })
-			}
-		}
-
-		queueNextMinishelfAdLib = (e: any) => {
-			this.queueMinishelfAdLib(e, true)
-		}
-
-		queuePrevMinishelfAdLib = (e: any) => {
-			this.queueMinishelfAdLib(e, false)
 		}
 
 		onShelfChangeExpanded = (value: boolean) => {

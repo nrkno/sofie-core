@@ -33,6 +33,10 @@ import RundownViewEventBus, {
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
 import { RundownViewKbdShortcuts } from '../RundownView/RundownViewKbdShortcuts'
+import { isModalShowing } from '../../lib/ModalDialog'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { MeteorCall } from '../../../lib/api/methods'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',

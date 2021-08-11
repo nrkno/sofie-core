@@ -19,9 +19,15 @@ import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,
 	getUnfinishedPieceInstancesGrouped,
+	isAdLibDisplayedAsOnAir,
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 
 interface IState {
 	objId?: string
@@ -246,7 +252,7 @@ export const AdLibRegionPanel = translateWithTracker<
 
 		const pieceUi: PieceUi | undefined = thumbnailPiece
 			? {
-					instance: thumbnailPiece,
+					instance: { ...thumbnailPiece, priority: 1 },
 					renderedInPoint: null,
 					renderedDuration: null,
 			  }

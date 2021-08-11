@@ -83,7 +83,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						status: this.props.piece.status,
 						message: this.props.piece.message,
 						metadata: this.props.piece.contentMetaData,
-						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
+						mediaPreviewUrl: ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl)!,
 						packageInfos: this.props.piece.contentPackageInfos,
 						studioPackageContainers: this.props.studio.packageContainers,
 					})}

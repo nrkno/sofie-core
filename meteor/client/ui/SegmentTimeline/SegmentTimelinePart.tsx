@@ -448,8 +448,6 @@ interface IState {
 	highlight: boolean
 }
 
-export const LIVE_LINE_TIME_PADDING = 150
-
 const CARRIAGE_RETURN_ICON = (
 	<div className="segment-timeline__part__nextline__label__carriage-return">
 		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 11.36 7.92">

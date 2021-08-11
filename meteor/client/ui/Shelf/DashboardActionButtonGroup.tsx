@@ -9,7 +9,6 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]
@@ -61,7 +60,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 		klarOnAir = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
-				if (this.props.playlist.active) {
+				if (this.props.playlist.activationId) {
 					doModalDialog({
 						title: this.props.playlist.name,
 						message: t('Are you sure you want to deactivate this Rundown\n(This will clear the outputs)'),

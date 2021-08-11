@@ -28,6 +28,7 @@ import {
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import Mousetrap from 'mousetrap'
 import { RundownViewKbdShortcuts } from './RundownViewKbdShortcuts'
+import { RegisteredHotkeys } from '../../lib/hotkeyRegistry'
 
 interface IRundownViewShelfProps {
 	studio: Studio
@@ -184,8 +185,16 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	componentDidUpdate(prevProps) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
+		this.usedHotkeys = []
 
-		this.usedHotkeys.length = 0
+		// Unregister hotkeys if group name has changed
+		if (prevProps.hotkeyGroup !== this.props.hotkeyGroup) {
+			RegisteredHotkeys.remove({
+				tag: prevProps.hotkeyGroup,
+			})
+		}
+
+		this.refreshKeyboardHotkeys()
 	}
 
 	refreshKeyboardHotkeys() {
@@ -285,7 +294,7 @@ export const RundownViewShelf = translateWithTracker<
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
 			(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null) => {
 				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(currentPartInstanceId)
-				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(nextPartInstanceId)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.showStyleBase, nextPartInstanceId)
 				return {
 					unfinishedAdLibIds,
 					unfinishedTags,

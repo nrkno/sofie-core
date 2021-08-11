@@ -17,9 +17,7 @@ import {
 	DashboardLayoutActionButton,
 	RundownLayoutElementType,
 	RundownLayoutId,
-	RundownLayoutPieceCountdown,
-	RundownLayoutKeyboardPreview,
-	RundownLayoutNextInfo,
+	CustomizableRegions,
 } from '../../../lib/collections/RundownLayouts'
 import {
 	CustomizableRegionLayout,
@@ -65,7 +63,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		showStyleBaseId: props.showStyleBase._id,
 		userId: { $exists: false },
 		type: { $in: layoutTypes },
-		regionId: props.customRegion._id,
+		regionId: props.customRegion._id as CustomizableRegions,
 	}).fetch()
 
 	return {
@@ -315,115 +313,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
-		renderKeyboardLayout(
-			item: RundownLayoutBase,
-			tab: RundownLayoutKeyboardPreview,
-			index: number,
-			isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
 		renderElements(item: RundownLayoutBase, layout: CustomizableRegionLayout | undefined) {
 			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Name')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.name`}
-								obj={item}
-								type="text"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
-					{isDashboardLayout && (
-						<React.Fragment>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('X')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.x`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Y')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.y`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Width')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.width`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Height')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.height`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Scale')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.scale`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Display Rank')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.rank`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-						</React.Fragment>
-					)}
-				</React.Fragment>
-			)
-		}
 
 			const isShelfLayout = RundownLayoutsAPI.isLayoutForShelf(item)
 			const isRundownViewLayout = RundownLayoutsAPI.isLayoutForRundownView(item)

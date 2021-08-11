@@ -50,7 +50,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibActions, AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
-import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
+import { registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { ShelfTabs } from './Shelf'
 import {
 	RundownBaselineAdLibActions,

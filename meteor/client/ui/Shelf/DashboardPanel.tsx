@@ -19,7 +19,6 @@ import {
 	fetchAndFilter,
 	matchFilter,
 	AdLibPanelToolbar,
-	AdLibPieceUi,
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import {
@@ -39,10 +38,14 @@ import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,
 	getUnfinishedPieceInstancesGrouped,
+	isAdLibDisplayedAsOnAir,
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
 import { RundownViewKbdShortcuts } from '../RundownView/RundownViewKbdShortcuts'
+import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IState {
 	outputLayers: {
@@ -282,6 +285,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	protected isAdLibOnAir(adLib: AdLibPieceUi) {
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
+	}
+
+	protected isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
+		return isAdLibDisplayedAsOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
 	protected findNext(adLibs: AdLibPieceUi[]): AdLibPieceUiWithNext[] {
@@ -650,8 +657,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		const filteredAdLibs = this.findNext(DashboardPanelInner.filterOutAdLibs(this.props, this.state, uniquenessIds))
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
-			const uniquenessIds = new Set<string>()
-			const liveSegment = this.props.uiSegments.find((i) => i.isLive === true)
 			if (!this.props.uiSegments || !this.props.playlist) {
 				return <Spinner />
 			} else {
@@ -697,7 +702,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											onToggleAdLib={this.onToggleOrSelectAdLib}
 											onSelectAdLib={this.onSelectAdLib}
 											playlist={this.props.playlist}
-											isOnAir={this.isAdLibOnAir(adLibPiece)}
+											isOnAir={this.isAdLibDisplayedAsOnAir(adLibPiece)}
 											isNext={adLibPiece.isNext}
 											mediaPreviewUrl={
 												this.props.studio

@@ -43,6 +43,7 @@ export enum RundownAPIMethods {
 	'resyncRundown' = 'rundown.resyncRundown',
 	'resyncSegment' = 'rundown.resyncSegment',
 	'unsyncRundown' = 'rundown.unsyncRundown',
+	'unsyncSegment' = 'rundown.unsyncSegment',
 	'moveRundown' = 'rundown.moveRundown',
 	'restoreRundownsInPlaylistToDefaultOrder' = 'rundown.restoreRundownsInPlaylistToDefaultOrder',
 }

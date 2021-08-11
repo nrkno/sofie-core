@@ -108,6 +108,3 @@ addSteps1_36_0()
 // Migrations for the in-development release:
 import { addSteps as addStepsX_X_X } from './X_X_X'
 addStepsX_X_X()
-
-import { addSteps as addStepsTV2_Overrides } from './tv2_overrides'
-addStepsTV2_Overrides()

@@ -636,7 +636,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		private getSegmentDuration(): number {
 			let total = 0
 			if (this.context && this.context.durations) {
-				const durations = this.context.durations as RundownTiming.RundownTimingContext
+				const durations = this.context.durations as RundownTimingContext
 				this.props.parts.forEach((item) => {
 					const duration = Math.max(
 						(durations.partLiveDisplayDurations &&
@@ -1000,6 +1000,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								isLastSegment={this.props.isLastSegment}
 								lastValidPartIndex={this.props.lastValidPartIndex}
 								onHeaderNoteClick={this.props.onHeaderNoteClick}
+								budgetGap={0} // TODO
 							/>
 						)}
 						{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (

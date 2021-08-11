@@ -46,13 +46,10 @@ import {
 	ConfigManifestEntry,
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
-import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
-import { Link } from 'react-router-dom'
-import RundownLayoutEditor from './RundownLayoutEditor'
-import { getHelpMode } from '../../lib/localStorage'
-import { SettingsNavigation } from '../../lib/SettingsNavigation'
-import { MeteorCall } from '../../../lib/api/methods'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { defaultColorPickerPalette } from '../../lib/colorPicker'
+import { UploadButton } from '../../lib/uploadButton'
 
 interface IProps {
 	match: {
@@ -359,8 +356,8 @@ const SourceLayerSettings = withTranslation()(
 					return t('Split Screen')
 				case SourceLayerType.VT:
 					return t('Clips')
-				// case SourceLayerType.METADATA:
-				// 	return t('Metadata')
+				case SourceLayerType.METADATA:
+					return t('Metadata')
 				// case SourceLayerType.CAMERA_MOVEMENT:
 				// 	return t('Camera Movement')
 				case SourceLayerType.UNKNOWN:

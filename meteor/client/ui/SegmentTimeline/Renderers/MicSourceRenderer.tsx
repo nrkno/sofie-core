@@ -4,7 +4,6 @@ import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
-import ClassNames from 'classnames'
 
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'

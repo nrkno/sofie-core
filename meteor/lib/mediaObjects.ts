@@ -611,16 +611,6 @@ export function checkPieceContentStatus(
 					break
 			}
 		}
-
-		if (messages.length) {
-			if (newStatus === RundownAPI.PieceStatusCode.OK) {
-				newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-			}
-			message = t('{{displayName}}: {{messages}}', {
-				displayName: displayName,
-				messages: messages.join(', '),
-			})
-		}
 	}
 
 	return {

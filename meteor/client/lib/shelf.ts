@@ -6,8 +6,10 @@ import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstan
 import { PieceId } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { getCurrentTime } from '../../lib/lib'
 import { ScanInfoForPackages } from '../../lib/mediaObjects'
+import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { invalidateAt } from './invalidatingTime'
 
 export interface AdLibPieceUi extends AdLibPiece {
@@ -54,7 +56,10 @@ export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: 
 	return false
 }
 
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): PieceInstance[] {
+export function getNextPiecesReactive(
+	showsStyleBase: ShowStyleBase,
+	nextPartInstanceId: PartInstanceId | null
+): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
@@ -83,15 +88,20 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 		}).fetch()
 	}
 
+	prospectivePieceInstances = processAndPrunePieceInstanceTimings(showsStyleBase, prospectivePieceInstances, 0)
+
 	return prospectivePieceInstances
 }
 
-export function getNextPieceInstancesGrouped(nextPartInstanceId: PartInstanceId | null): {
+export function getNextPieceInstancesGrouped(
+	showStyleBase: ShowStyleBase,
+	nextPartInstanceId: PartInstanceId | null
+): {
 	nextAdLibIds: PieceId[]
 	nextTags: string[]
 	nextPieceInstances: PieceInstance[]
 } {
-	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
+	const nextPieceInstances = getNextPiecesReactive(showStyleBase, nextPartInstanceId)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -186,6 +196,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 }
 
 export function getUnfinishedPieceInstancesGrouped(currentPartInstanceId: PartInstanceId | null): {
+	unfinishedPieceInstances: PieceInstance[]
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 } {
@@ -200,7 +211,13 @@ export function getUnfinishedPieceInstancesGrouped(currentPartInstanceId: PartIn
 		.reduce((a, b) => a.concat(b), [])
 
 	return {
+		unfinishedPieceInstances,
 		unfinishedAdLibIds,
 		unfinishedTags,
 	}
+}
+
+export function isAdLibDisplayedAsOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+	const isOnAir = isAdLibOnAir(unfinishedAdLibIds, unfinishedTags, adLib)
+	return adLib.invertOnAirState ? !isAdLibOnAir : isOnAir
 }

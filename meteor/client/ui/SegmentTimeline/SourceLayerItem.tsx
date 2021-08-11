@@ -11,7 +11,6 @@ import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
 import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
-import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
