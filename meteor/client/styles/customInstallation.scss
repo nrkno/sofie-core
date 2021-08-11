@@ -432,6 +432,10 @@ body.tv2 {
 		&.piece-tag--no_next_highlight.selected {
 			box-shadow: none;
 		}
+
+		&.unknown {
+			background-color: black;
+		}
 	}
 	.rundown-view-shelf .dashboard-panel__panel__button,
 	.dashboard-panel__panel__button.list {
