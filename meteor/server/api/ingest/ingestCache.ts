@@ -5,7 +5,6 @@ import { IngestDataCache, IngestCacheType, IngestDataCacheObj } from '../../../l
 import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { DbCacheReadCollection } from '../../cache/CacheCollection'
 import { profiler } from '../profiler'
 
 interface LocalIngestBase {
@@ -20,15 +19,12 @@ export interface LocalIngestSegment extends IngestSegment, LocalIngestBase {
 export interface LocalIngestPart extends IngestPart, LocalIngestBase {}
 
 export class RundownIngestDataCache {
-	private constructor(
-		private readonly rundownId: RundownId,
-		private readonly collection: DbCacheReadCollection<IngestDataCacheObj, IngestDataCacheObj>
-	) {}
+	private constructor(private readonly rundownId: RundownId, private readonly documents: IngestDataCacheObj[]) {}
 
 	static async create(rundownId: RundownId): Promise<RundownIngestDataCache> {
-		const col = await DbCacheReadCollection.createFromDatabase(IngestDataCache, { rundownId })
+		const docs = await IngestDataCache.findFetchAsync({ rundownId })
 
-		const ingestObjCache = new RundownIngestDataCache(rundownId, col)
+		const ingestObjCache = new RundownIngestDataCache(rundownId, docs)
 
 		return ingestObjCache
 	}
@@ -36,9 +32,7 @@ export class RundownIngestDataCache {
 	fetchRundown(): LocalIngestRundown | undefined {
 		const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
 
-		const cacheEntries = this.collection.findFetch({})
-
-		const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
+		const cachedRundown = this.documents.find((e) => e.type === IngestCacheType.RUNDOWN)
 		if (!cachedRundown) {
 			span?.end()
 			return undefined
@@ -47,7 +41,7 @@ export class RundownIngestDataCache {
 		const ingestRundown = cachedRundown.data as LocalIngestRundown
 		ingestRundown.modified = cachedRundown.modified
 
-		const segmentMap = _.groupBy(cacheEntries, (e) => e.segmentId)
+		const segmentMap = _.groupBy(this.documents, (e) => e.segmentId)
 		_.each(segmentMap, (objs) => {
 			const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
 			if (segmentEntry) {
@@ -75,7 +69,7 @@ export class RundownIngestDataCache {
 	}
 
 	fetchSegment(segmentId: SegmentId): LocalIngestSegment | undefined {
-		const cacheEntries = this.collection.findFetch({ segmentId: segmentId })
+		const cacheEntries = this.documents.filter((d) => d.segmentId && d.segmentId === segmentId)
 
 		const segmentEntries = cacheEntries.filter((e) => e.type === IngestCacheType.SEGMENT)
 		if (segmentEntries.length > 1)
