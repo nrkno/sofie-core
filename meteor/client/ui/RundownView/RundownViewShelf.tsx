@@ -9,7 +9,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
 import { IBlueprintActionTriggerMode, IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
@@ -54,7 +54,9 @@ interface IRundownViewShelfTrackedProps {
 	nextTags: string[]
 }
 
-interface IRundownViewShelfState {}
+interface IRundownViewShelfState {
+	singleClickMode: boolean
+}
 
 class RundownViewShelfInner extends MeteorReactComponent<
 	Translated<IRundownViewShelfProps & IRundownViewShelfTrackedProps>,
@@ -64,7 +66,25 @@ class RundownViewShelfInner extends MeteorReactComponent<
 
 	constructor(props) {
 		super(props)
-		this.state = {}
+		this.state = {
+			singleClickMode: false,
+		}
+	}
+
+	protected setRef = (ref: HTMLDivElement) => {
+		const _panel = ref
+		if (_panel) {
+			const style = window.getComputedStyle(_panel)
+			// check if a special variable is set through CSS to indicate that we shouldn't expect
+			// double clicks to trigger AdLibs
+			const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+			const shouldBeSingleClick = !!value.match(UserAgentPointer.NO_POINTER)
+			if (this.state.singleClickMode !== shouldBeSingleClick) {
+				this.setState({
+					singleClickMode: shouldBeSingleClick,
+				})
+			}
+		}
 	}
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
@@ -244,7 +264,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 		const { pieces } = this.props.adLibSegmentUi
 		if (!pieces.length) return null
 		return (
-			<div className="rundown-view-shelf dashboard-panel">
+			<div className="rundown-view-shelf dashboard-panel" ref={this.setRef}>
 				<div className="rundown-view-shelf__identifier">{this.props.segment.identifier}</div>
 				<div className="dashboard-panel__panel">
 					{pieces.map((adLibPiece) => {
@@ -271,6 +291,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 								displayStyle={PieceDisplayStyle.BUTTONS}
 								widthScale={3.27} // @todo: css
 								isSelected={false}
+								toggleOnSingleClick={this.state.singleClickMode}
 							>
 								{adLibPiece.name}
 							</DashboardPieceButton>
