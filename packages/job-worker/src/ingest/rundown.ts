@@ -21,7 +21,7 @@ export async function selectShowStyleVariant(
 		return null
 	}
 	const showStyleBases = await context.directCollections.ShowStyleBases.findFetch({
-		// TODO - cache
+		// TODO: Worker - cache
 		_id: { $in: clone<Array<ShowStyleBaseId>>(studio.supportedShowStyleBase) },
 	})
 	let showStyleBase = _.first(showStyleBases)
@@ -35,15 +35,8 @@ export async function selectShowStyleVariant(
 	const studioBlueprint = context.studioBlueprint
 	if (!studioBlueprint) throw new Error(`Studio "${studio._id}" does not have a blueprint`)
 
-	if (!studioBlueprint.blueprint.getShowStyleId)
-		throw new Error(`Studio "${studio._id}" blueprint missing property getShowStyleId`)
-
 	const showStyleId: ShowStyleBaseId | null = protectString(
-		studioBlueprint.blueprint.getShowStyleId(
-			blueprintContext,
-			unprotectObjectArray(showStyleBases) as any,
-			ingestRundown
-		)
+		studioBlueprint.blueprint.getShowStyleId(blueprintContext, unprotectObjectArray(showStyleBases), ingestRundown)
 	)
 	if (showStyleId === null) {
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned showStyleId = null`)
@@ -56,8 +49,9 @@ export async function selectShowStyleVariant(
 		)
 		return null
 	}
+
 	const showStyleVariants = await context.directCollections.ShowStyleVariants.findFetch({
-		// TODO - cache
+		// TODO: Worker - cache
 		showStyleBaseId: showStyleBase._id,
 	})
 	if (!showStyleVariants.length) throw new Error(`ShowStyleBase "${showStyleBase._id}" has no variants`)

@@ -67,7 +67,7 @@ async function runUserAction<T extends keyof StudioJobFunc>(
 		const res = await job.complete
 		span?.end()
 
-		// TODO - track timings
+		// TODO: Worker - track timings
 		// console.log(await job.getTimings)
 
 		return ClientAPI.responseSuccess(res)
@@ -85,7 +85,7 @@ async function runUserAction<T extends keyof StudioJobFunc>(
 
 		logger.error(`UserAction "${name}" failed: ${userError.rawError.toString()}`)
 
-		// TODO - this isnt great, but is good enough for a prototype
+		// TODO: Worker - this isnt great, but is good enough for a prototype
 		return ClientAPI.responseError(JSON.stringify(userError.message))
 	}
 }

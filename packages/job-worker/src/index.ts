@@ -16,7 +16,7 @@ logger.info('Starting ')
 const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
 const dbName = 'meteor'
 const connection: ConnectionOptions = {
-	// TODO - something here?
+	// TODO: Worker - something here?
 }
 
 /** Get the ids of the studios to run for */
@@ -33,7 +33,7 @@ async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 			.find({}, { projection: { _id: 1 } })
 			.toArray()
 
-		// TODO - watch for creation/deletion
+		// TODO: Worker - watch for creation/deletion
 
 		const ids = studios.map((s) => protectString(s._id))
 		logger.warn(`Running for all studios: ${JSON.stringify(ids)}. Make sure there is only one worker running!`)
@@ -57,14 +57,14 @@ const workerId = getWorkerId()
 
 setupApmAgent()
 
-const shutdownPromise = createManualPromise<void>() // TODO - this should be .resolve/.reject in some places
+const shutdownPromise = createManualPromise<void>() // TODO: Worker - this should be .resolve/.reject in some places
 
 void (async () => {
 	const client = await createMongoConnection(mongoUri)
 
 	client.on('close', () => {
 		console.log('Mongo connection closed. Forcing exit')
-		// TODO - this isnt a great error handling
+		// TODO: Worker - this isnt a great error handling
 		// eslint-disable-next-line no-process-exit
 		process.exit(0)
 	})

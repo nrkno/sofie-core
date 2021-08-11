@@ -24,7 +24,7 @@ export interface WorkerJob<TRes> {
 }
 
 const connection: ConnectionOptions = {
-	// TODO
+	// TODO: Worker
 }
 
 const studioQueueCache = new Map<StudioId, [Queue, QueueEvents]>()
@@ -106,9 +106,9 @@ async function pushJobToQueue<T>(
 
 	logger.debug(`Queued job #${job.id} of "${name}" to "${queue.name}"`)
 
-	// TODO - timeouts
-	// TODO - better errors
-	// TODO - anything else from the old implementation
+	// TODO: Worker - timeouts
+	// TODO: Worker - better errors
+	// TODO: Worker - anything else from the old implementation
 
 	// Lazily watch for completion once, to be used for multiple caller promises
 	const completedPromise = PLazy.from<WrappedResult<T>>(async () => {
@@ -146,7 +146,7 @@ async function pushJobToQueue<T>(
 	return {
 		complete: PLazy.from(async () => {
 			// lazily await the result
-			// TODO - should this error be re-wrapped?
+			// TODO: Worker - should this error be re-wrapped?
 			const res = await completedPromise
 
 			if ('error' in res) {
@@ -159,7 +159,7 @@ async function pushJobToQueue<T>(
 		}),
 		getTimings: PLazy.from(async () => {
 			// lazily await the completion
-			// TODO - should this error be re-wrapped?
+			// TODO: Worker - should this error be re-wrapped?
 			const result = await completedPromise
 			const result2 = _.pick(result, 'queueTime', 'startedTime', 'finishedTime', 'completedTime')
 

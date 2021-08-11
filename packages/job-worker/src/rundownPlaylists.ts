@@ -28,7 +28,7 @@ import { DbCacheWriteCollection } from './cache/CacheCollection'
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
-	// TODO - should this lock each rundown for removal? Perhaps by putting work onto the ingest queue?
+	// TODO: Worker - should this lock each rundown for removal? Perhaps by putting work onto the ingest queue?
 	await runJobWithPlaylistLock(context, data, async (playlist) => {
 		if (playlist) {
 			await removeRundownPlaylistFromDb(context, playlist)
@@ -279,7 +279,7 @@ export async function moveRundownIntoPlaylist(
 ): Promise<void> {
 	const studio = context.studio
 
-	// TODO - this feels dangerously like it will clash with ingest/playout operations due to all the locking. Perhaps it should be done as an 'ingest' operation?
+	// TODO: Worker - this feels dangerously like it will clash with ingest/playout operations due to all the locking. Perhaps it should be done as an 'ingest' operation?
 
 	const rundown = await context.directCollections.Rundowns.findOne(data.rundownId)
 	if (!rundown || rundown.studioId !== context.studioId) throw new Error(`Rundown "${data.rundownId}" not found`)

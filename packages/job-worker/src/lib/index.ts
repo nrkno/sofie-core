@@ -3,6 +3,6 @@ export function getCurrentTime(): number {
 }
 
 export function getSystemVersion(): string {
-	return '0.1.2' // TODO
+	return '0.1.2' // TODO: Worker
 	// return PackageInfo.versionExtended || PackageInfo.version
 }

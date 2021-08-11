@@ -71,7 +71,7 @@ export abstract class WorkerParentBase {
 			})
 		}
 
-		// TODO - maybe these should be shared across threads, as there will be a bunch looking for the exact same changes..
+		// TODO: Worker - maybe these should be shared across threads, as there will be a bunch looking for the exact same changes..
 		const database = this.#mongoClient.db(dbName)
 		attachChangesStream<DBStudio>(
 			database.collection(CollectionName.Studios).watch([{ $match: { _id: this.#studioId } }], {
@@ -85,7 +85,7 @@ export abstract class WorkerParentBase {
 		attachChangesStream<Blueprint>(
 			database.collection(CollectionName.Blueprints).watch(
 				[
-					// TODO - can/should this be scoped down at all?
+					// TODO: Worker - can/should this be scoped down at all?
 				],
 				{
 					batchSize: 1,
@@ -139,13 +139,13 @@ export abstract class WorkerParentBase {
 						await this.invalidateWorkerCaches(invalidations)
 					}
 
-					// TODO - job lock may timeout, we need to run at an interval to make sure it doesnt
-					// TODO - enforce a timeout? we could kill the thread once it reaches the limit as a hard abort
+					// TODO: Worker - job lock may timeout, we need to run at an interval to make sure it doesnt
+					// TODO: Worker - enforce a timeout? we could kill the thread once it reaches the limit as a hard abort
 
 					// we may not get a job even when blocking, so try again
 					if (job) {
 						// Ensure the lock is still good
-						await job.extendLock(this.#workerId, 10000) // TODO - what should the lock duration be?
+						await job.extendLock(this.#workerId, 10000) // TODO: Worker - what should the lock duration be?
 
 						const transaction = startTransaction(job.name, 'worker-parent')
 						if (transaction) {
@@ -155,8 +155,8 @@ export abstract class WorkerParentBase {
 						try {
 							console.log('Running work ', job.id, job.name, JSON.stringify(job.data))
 
-							// TODO - we should call extendLock on an interval with a fairly low duration
-							// TODO - this never resolves if the worker dies. Hopefully the bug will be fixed, or swap it out for threadedclass https://github.com/andywer/threads.js/issues/386
+							// TODO: Worker - we should call extendLock on an interval with a fairly low duration
+							// TODO: Worker - this never resolves if the worker dies. Hopefully the bug will be fixed, or swap it out for threadedclass https://github.com/andywer/threads.js/issues/386
 							const result = await this.runJobInWorker(job.name, job.data)
 
 							await job.moveToCompleted(result, this.#workerId, false)
@@ -175,7 +175,7 @@ export abstract class WorkerParentBase {
 				// Mark completed
 				this.#terminate.manualResolve()
 			} catch (e) {
-				// TODO - report error
+				// TODO: Worker - report error
 
 				await this.#locksManager.unsubscribe(this)
 

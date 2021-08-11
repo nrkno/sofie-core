@@ -40,7 +40,7 @@ export class LocksManager {
 	}
 
 	async aquire(lockId: string, resourceId: string): Promise<void> {
-		// TODO - this should handle timeouts
+		// TODO: Worker - this should handle timeouts
 
 		if (this.pendingLocks.has(lockId)) throw new Error(`Lock "${lockId}" is already pending`)
 
@@ -62,7 +62,7 @@ export class LocksManager {
 	}
 
 	async release(lockId: string, resourceId: string): Promise<void> {
-		// TODO - this should handle timeouts
+		// TODO: Worker - this should handle timeouts
 
 		if (this.pendingLocks.has(lockId)) throw new Error(`Lock "${lockId}" is already pending`)
 

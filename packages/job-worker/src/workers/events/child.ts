@@ -33,7 +33,7 @@ const eventsMethods = {
 		// Load some 'static' data from the db
 		const dataCache = await loadWorkerDataCache(
 			{
-				/* TODO */
+				/* TODO: Worker */
 			},
 			collections,
 			studioId

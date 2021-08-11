@@ -228,7 +228,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	 */
 	private static async loadContent(
 		context: JobContext,
-		ingestCache: any, //ReadOnlyCache<CacheForIngest> | null,
+		ingestCache: ReadOnlyCache<CacheForIngest> | null,
 		playlist: ReadonlyDeep<DBRundownPlaylist>,
 		rundownIds: RundownId[]
 	): Promise<
@@ -249,14 +249,18 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
 		const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
-		const loadBaselineIds = rundownIds // TODO
+		const baselineFromIngest = ingestCache && ingestCache.RundownBaselineObjs.getIfLoaded()
+		const loadBaselineIds = baselineFromIngest ? loadRundownIds : rundownIds
 
-		const [segments, parts, ...collections] = await Promise.all([
+		const [segments, parts, baselineObjects, ...collections] = await Promise.all([
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.Segments, {
 				rundownId: { $in: loadRundownIds },
 			}),
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.Parts, {
 				rundownId: { $in: loadRundownIds },
+			}),
+			DbCacheReadCollection.createFromDatabase(context, context.directCollections.RundownBaselineObjects, {
+				rundownId: { $in: loadBaselineIds },
 			}),
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.PartInstances, {
 				playlistActivationId: playlist.activationId,
@@ -279,18 +283,18 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Timelines, {
 				_id: playlist.studioId,
 			}),
-			DbCacheReadCollection.createFromDatabase(context, context.directCollections.RundownBaselineObjects, {
-				rundownId: { $in: loadBaselineIds },
-			}),
 		])
 
 		if (ingestCache) {
 			// Populate the collections with the cached data instead
-			segments.fillWithDataFromArray(ingestCache.Segments.findFetch(), true)
-			parts.fillWithDataFromArray(ingestCache.Parts.findFetch(), true)
+			segments.fillWithDataFromArray(ingestCache.Segments.findFetch({}), true)
+			parts.fillWithDataFromArray(ingestCache.Parts.findFetch({}), true)
+			if (baselineFromIngest) {
+				baselineObjects.fillWithDataFromArray(baselineFromIngest.findFetch({}), true)
+			}
 		}
 
-		return [segments, parts, ...collections]
+		return [segments, parts, ...collections, baselineObjects]
 	}
 
 	/**

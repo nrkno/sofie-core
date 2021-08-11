@@ -47,7 +47,7 @@ export class JobContextBase implements JobContext {
 	) {}
 
 	get studio(): ReadonlyDeep<DBStudio> {
-		// TODO - Clone and seal to avoid mutations?
+		// TODO: Worker - Clone and seal to avoid mutations?
 		return this.cacheData.studio
 	}
 
@@ -111,7 +111,7 @@ export class JobContextBase implements JobContext {
 		if (!IS_PRODUCTION) {
 			for (const cache of this.caches) {
 				if (cache.hasChanges()) {
-					// TODO - cache will not serialize well..
+					// TODO: Worker - cache will not serialize well..
 					logger.warn(`Cache has unsaved changes: ${cache}`)
 				}
 			}
@@ -164,7 +164,7 @@ export class JobContextBase implements JobContext {
 		}
 
 		if (doc) {
-			// TODO - freeze the raw doc instead
+			// TODO: Worker - freeze the raw doc instead
 			return clone(doc)
 		}
 
@@ -190,7 +190,7 @@ export class JobContextBase implements JobContext {
 				throw new Error(`ShowStyleVariant "${id}" is not allowed in studio`)
 			}
 
-			// TODO - freeze the raw doc instead
+			// TODO: Worker - freeze the raw doc instead
 			return clone(doc)
 		}
 
@@ -224,7 +224,7 @@ export class JobContextBase implements JobContext {
 		}
 
 		if (blueprint) {
-			// TODO - freeze the raw doc instead
+			// TODO: Worker - freeze the raw doc instead
 			return blueprint
 		}
 

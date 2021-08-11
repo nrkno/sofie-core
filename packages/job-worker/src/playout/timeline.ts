@@ -62,24 +62,7 @@ import { StudioBaselineContext, TimelineEventContext } from '../blueprints/conte
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
-
-// export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
-// 	const playlists = cache.getActiveRundownPlaylists()
-// 	if (playlists.length === 1) {
-// 		return runPlayoutOperationWithCacheFromStudioOperation(
-// 			'updateStudioOrPlaylistTimeline',
-// 			cache,
-// 			playlists[0],
-// 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-// 			null,
-// 			async (playlistCache) => {
-// 				await updateTimeline(playlistCache)
-// 			}
-// 		)
-// 	} else {
-// 		return updateStudioTimeline(cache)
-// 	}
-// }
+import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -149,7 +132,7 @@ export async function updateStudioTimeline(
 
 	processAndSaveTimelineObjects(context, cache, baselineObjects, undefined)
 	if (studioBaseline) {
-		// updateBaselineExpectedPackagesOnStudio(cache, studioBaseline) // TODO
+		updateBaselineExpectedPackagesOnStudio(context, cache, studioBaseline)
 	}
 
 	logger.debug('updateStudioTimeline done!')

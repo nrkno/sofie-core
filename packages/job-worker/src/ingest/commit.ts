@@ -547,7 +547,7 @@ export function triggerUpdateTimelineAfterIngestData(context: JobContext, playli
 		return
 	}
 
-	// TODO: HACK - this should be workqueue backed, not in-memory
+	// TODO: Worker - this should be workqueue backed, not in-memory
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
 	const data = updateTimelineFromIngestDataTimeouts.get(playlistId) ?? {}
 	if (data.timeout) clearTimeout(data.timeout)

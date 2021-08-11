@@ -5,7 +5,7 @@ import { unprotectString } from '../protectedString'
 import { Blueprint } from '../dataModel/Blueprint'
 
 export function shouldUpdateStudioBaselineInner(
-	coreVersion: string, // TODO - is this ok?
+	coreVersion: string,
 	studio: ReadonlyDeep<DBStudio>,
 	studioTimeline: ReadonlyDeep<TimelineComplete> | undefined,
 	studioBlueprint: Pick<Blueprint, 'blueprintVersion'> | null

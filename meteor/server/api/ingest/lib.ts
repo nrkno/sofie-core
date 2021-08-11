@@ -41,7 +41,7 @@ export async function runIngestOperation<T extends keyof IngestJobFunc>(
 		const res = await job.complete
 		span?.end()
 
-		// TODO - track timings
+		// TODO: Worker - track timings
 		// console.log(await job.getTimings)
 
 		return res

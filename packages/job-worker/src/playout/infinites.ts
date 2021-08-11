@@ -25,6 +25,8 @@ import { PartsAndSegments, selectNextPart } from './lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { flatten } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
+import { ReadOnlyCache } from '../cache/CacheBase'
+import { CacheForIngest } from '../ingest/cache'
 
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -109,7 +111,7 @@ function getIdsBeforeThisPart(context: JobContext, cache: CacheForPlayout, nextP
 export async function fetchPiecesThatMayBeActiveForPart(
 	context: JobContext,
 	cache: CacheForPlayout,
-	unsavedIngestCache: any, // Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | undefined, // TODO
+	unsavedIngestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | undefined,
 	part: DBPart
 ): Promise<Piece[]> {
 	const span = context.startSpan('fetchPiecesThatMayBeActiveForPart')

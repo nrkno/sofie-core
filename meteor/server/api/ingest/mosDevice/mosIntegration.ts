@@ -123,6 +123,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStatus', apmNamespace)
 
+		// TODO: Worker
+
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.info(`mosRoStatus "${status.ID}"`)
@@ -149,6 +151,7 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryStatus', apmNamespace)
 
+		// TODO: Worker
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.info(`mosRoStoryStatus "${status.ID}"`)

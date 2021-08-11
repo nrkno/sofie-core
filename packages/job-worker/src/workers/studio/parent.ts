@@ -38,7 +38,7 @@ export class StudioWorkerParent extends WorkerParentBase {
 	): Promise<StudioWorkerParent> {
 		const workerThread = await spawn<StudioMethods>(new ThreadWorker('./child'))
 
-		// TODO - do more with the events
+		// TODO: Worker - do more with the events
 		Thread.events(workerThread).subscribe((event) => console.log('Thread event:', event))
 
 		// create and start the worker

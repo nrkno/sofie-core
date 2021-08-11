@@ -16,6 +16,8 @@ import { Queue, QueueOptions } from 'bullmq'
 import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
+import { DefaultStudioBlueprint } from '../blueprints/defaults/studio'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export interface WorkerDataCache {
 	studio: DBStudio
@@ -52,8 +54,7 @@ export async function loadWorkerDataCache(
 	// Load some 'static' data from the db
 	const studio = await collections.Studios.findOne(studioId)
 	if (!studio) throw new Error('Missing studio')
-	const studioBlueprint = await loadStudioBlueprint(collections, studio)
-	if (!studioBlueprint) throw new Error('Missing studio blueprint') // TODO - this can be allowed
+	const studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, studio) // TODO: Worker - guard against errors?
 
 	return {
 		studio,
@@ -96,15 +97,13 @@ export async function invalidateWorkerDataCache(
 
 	// Reload studioBlueprint
 	if (updateStudioBlueprint) {
-		const newStudioBlueprint = await loadStudioBlueprint(collections, cache.studio)
-		if (!newStudioBlueprint) throw new Error('Missing studio blueprint') // TODO - this can be allowed
-		cache.studioBlueprint = newStudioBlueprint
+		cache.studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, cache.studio) // TODO: Worker - guard against errors?
 		cache.studioBlueprintConfig = undefined
 	}
 
 	// Check if studioBlueprint config should be re-processed
 	if (updateStudioBlueprint || cache.studio) {
-		// TODO - invalidate studioBluepint config
+		// TODO: Worker - invalidate studioBluepint config
 	}
 
 	if (data.studio) {
@@ -123,21 +122,26 @@ export async function invalidateWorkerDataCache(
 			}
 		}
 
-		// TODO - can we delete any blueprints
+		// TODO: Worker - can we delete any blueprints
 	}
-	// TODO - handle showStyleBases & showStyleVariants changes
+	// TODO: Worker - handle showStyleBases & showStyleVariants changes
 
-	// TODO - showStyleBlueprints on change
+	// TODO: Worker - showStyleBlueprints on change
 
-	// TODO - showStyleBlueprints inactivity timeout?
-	// TODO - showStyleBlueprintConfig cleanup
+	// TODO: Worker - showStyleBlueprints inactivity timeout?
+	// TODO: Worker - showStyleBlueprintConfig cleanup
 }
 
-async function loadStudioBlueprint(
+async function loadStudioBlueprintOrPlaceholder(
 	collections: IDirectCollections,
 	studio: ReadonlyDeep<DBStudio>
-): Promise<WrappedStudioBlueprint | undefined> {
-	if (!studio.blueprintId) return undefined
+): Promise<WrappedStudioBlueprint> {
+	if (!studio.blueprintId) {
+		return {
+			blueprintId: protectString('__placeholder__'),
+			blueprint: DefaultStudioBlueprint,
+		}
+	}
 
 	const blueprintManifest = await loadBlueprintById(collections, studio.blueprintId)
 	if (!blueprintManifest) {

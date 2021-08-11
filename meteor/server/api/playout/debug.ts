@@ -105,7 +105,7 @@ if (!Settings.enableUserAccounts) {
 		debug_forceClearAllCaches() {
 			logger.info('forceClearAllCaches')
 
-			// TODO - hook into workers
+			// TODO: Worker - hook into workers
 		},
 
 		/**

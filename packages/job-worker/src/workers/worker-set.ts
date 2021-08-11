@@ -65,7 +65,7 @@ export class StudioWorkerSet {
 			this.#workerOptions
 		)
 
-		// TODO - listen for termination?
+		// TODO: Worker - listen for termination?
 	}
 
 	private async initEventsThread(): Promise<void> {
@@ -80,7 +80,7 @@ export class StudioWorkerSet {
 			this.#workerOptions
 		)
 
-		// TODO - listen for termination?
+		// TODO: Worker - listen for termination?
 	}
 
 	private async initIngestThread(): Promise<void> {
@@ -95,7 +95,7 @@ export class StudioWorkerSet {
 			this.#workerOptions
 		)
 
-		// TODO - listen for termination?
+		// TODO: Worker - listen for termination?
 	}
 
 	public async terminate(): Promise<void> {
