@@ -1,14 +1,24 @@
+const path = require('path')
+
 module.exports = {
 	globals: {
 		'ts-jest': {
 			tsconfig: 'tsconfig.json',
+			babelConfig: {
+				plugins: ['@babel/plugin-transform-modules-commonjs'],
+			},
+			diagnostics: {
+				// ignoreCodes: ['TS151001'],
+			},
 		},
 	},
 	moduleFileExtensions: ['js', 'ts'],
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest',
+		'^.+\\.(js|jsx|mjs)$': path.resolve('./scripts/babel-jest.js'),
 	},
-	testMatch: ['**/__tests__/**/*.spec.(ts|js)'],
+	transformIgnorePatterns: ['node_modules/(?!(debounce-fn|p-queue|p-timeout)/)', '\\.pnp\\.[^\\/]+$'],
+	testMatch: ['**/__tests__/**/*.(spec|test).(ts|js)'],
 	testPathIgnorePatterns: ['integrationTests'],
 	testEnvironment: 'node',
 	coverageThreshold: {

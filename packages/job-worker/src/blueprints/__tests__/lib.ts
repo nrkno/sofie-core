@@ -1,8 +1,13 @@
 import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
-import { literal, protectString } from '../../../../lib/lib'
-import { Blueprint } from '../../../../lib/collections/Blueprints'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 
-export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, codeFcn?: () => SomeBlueprintManifest) {
+export function generateFakeBlueprint(
+	id: string,
+	type?: BlueprintManifestType,
+	codeFcn?: () => SomeBlueprintManifest
+): Blueprint {
 	const codeFcnString = codeFcn
 		? codeFcn.toString()
 		: `\

@@ -29,6 +29,8 @@
 		"test": "lerna run --concurrency 2 --stream test"
 	},
 	"devDependencies": {
+		"@babel/core": "^7.15.0",
+		"@babel/plugin-transform-modules-commonjs": "^7.15.0",
 		"@sofie-automation/code-standard-preset": "^0.4.1",
 		"@strictsoftware/typedoc-plugin-monorepo": "^0.4.2",
 		"@types/ejson": "^2.1.2",
@@ -38,6 +40,7 @@
 		"@types/node": "^12.20.13",
 		"@types/object-path": "^0.11.1",
 		"@types/underscore": "^1.11.2",
+		"babel-jest": "^26.6.3",
 		"codecov": "^3.8.2",
 		"copyfiles": "^2.4.1",
 		"jest": "^26.6.3",
