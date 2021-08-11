@@ -29,6 +29,17 @@ $triggered-action-color: #146985;
 		}
 	}
 
+	.triggered-action-entry__modify {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 4px;
+
+		> .action-btn {
+			margin-left: 10px;
+		}
+	}
+
 	.triggered-action-entry__actions {
 		flex: 1 0;
 		padding: 9px 5px 8px 10px;
@@ -50,13 +61,11 @@ $triggered-action-color: #146985;
 					margin: 0;
 					padding: 0 3px;
 					background: black;
-					text-transform: capitalize;
 				}
 				> dt {
 					display: inline-flex;
 					margin: 0;
 					padding: 0 3px;
-					text-transform: capitalize;
 				}
 			}
 
@@ -86,7 +95,12 @@ $triggered-action-color: #146985;
 				font-weight: 300;
 				padding: 0;
 
-				> dd::after {
+				&.final {
+					border-radius: 3px;
+					overflow: hidden;
+				}
+
+				&:not(.final) > dd::after {
 					position: absolute;
 					content: ' ';
 					display: block;

@@ -5,6 +5,8 @@ import { AdLibFilter } from './filterPreviews/AdLibFilter'
 import { assertNever } from '../../../../../../lib/lib'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
+import { ViewFilter } from './filterPreviews/ViewFilter'
+import { RundownPlaylistFilter } from './filterPreviews/RundownPlaylistFilter'
 
 interface IProps {
 	action: SomeAction
@@ -49,11 +51,19 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({ action }: 
 	return (
 		<div className="triggered-action-entry__action">
 			<div className="triggered-action-entry__action__type">{actionToLabel(t, action.action)}</div>
-			{action.filterChain.map((chainLink, index) => (
-				<dl className="triggered-action-entry__action__filter" key={index}>
-					{chainLink.object === 'adLib' ? <AdLibFilter link={chainLink} /> : <dt>{chainLink.object}</dt>}
-				</dl>
-			))}
+			{action.filterChain.map((chainLink, index) =>
+				chainLink.object === 'adLib' ? (
+					<AdLibFilter link={chainLink} key={index} />
+				) : chainLink.object === 'view' ? (
+					<ViewFilter link={chainLink} key={index} />
+				) : chainLink.object === 'rundownPlaylist' ? (
+					<RundownPlaylistFilter link={chainLink} key={index} />
+				) : (
+					<dl className="triggered-action-entry__action__filter" key={index}>
+						<dt>{chainLink.object}</dt>
+					</dl>
+				)
+			)}
 		</div>
 	)
 }

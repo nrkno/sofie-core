@@ -1,3 +1,5 @@
+import { faPencilAlt, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import * as React from 'react'
@@ -8,15 +10,16 @@ import { HotkeyTrigger } from './triggerPreviews/HotkeyTrigger'
 interface IProps {
 	triggeredAction: TriggeredActionsObj
 	selected?: boolean
+	onEdit: (e) => void
 }
 
 export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEntry(
 	props: IProps
 ): React.ReactElement | null {
-	const { triggeredAction, selected } = props
+	const { triggeredAction, selected, onEdit } = props
 	return (
 		<div
-			className={classNames('triggered-action-entry selectable clickable', {
+			className={classNames('triggered-action-entry selectable', {
 				'selectable-selected': selected,
 			})}
 		>
@@ -33,6 +36,14 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 				{triggeredAction.actions.map((action, index) => (
 					<ActionEditor key={index} action={action} index={index} triggeredAction={triggeredAction} />
 				))}
+			</div>
+			<div className="triggered-action-entry__modify">
+				<button className="action-btn" onClick={onEdit}>
+					<FontAwesomeIcon icon={faPencilAlt} />
+				</button>
+				<button className="action-btn" onClick={() => {}}>
+					<FontAwesomeIcon icon={faTrash} />
+				</button>
 			</div>
 		</div>
 	)

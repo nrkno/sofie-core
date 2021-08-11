@@ -311,8 +311,12 @@ export type Translated<T> = T & WithTranslation
  * 		of React renders.
  * @return {*}  {(T | undefined)}
  */
-export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | undefined): T | undefined {
-	const [meteorData, setMeteorData] = useState<T | undefined>(undefined)
+export function useTracker<T, K extends undefined | T = undefined>(
+	autorun: () => T,
+	deps: React.DependencyList,
+	initial?: K
+): T | K {
+	const [meteorData, setMeteorData] = useState<T | K>(initial as K)
 
 	useEffect(() => {
 		const computation = Tracker.nonreactive(() => Tracker.autorun(() => setMeteorData(autorun())))
