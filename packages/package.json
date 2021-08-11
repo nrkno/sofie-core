@@ -8,7 +8,8 @@
 			"job-worker"
 		],
 		"nohoist": [
-			"**/timeline-state-resolver-types"
+			"**/timeline-state-resolver-types",
+			"**/timecode"
 		]
 	},
 	"scripts": {

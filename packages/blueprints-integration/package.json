@@ -39,10 +39,8 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"moment": "2.29.1",
 		"timeline-state-resolver-types": "^6.1.0-release36.0",
-		"tslib": "^2.1.0",
-		"underscore": "1.13.1"
+		"tslib": "^2.1.0"
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
