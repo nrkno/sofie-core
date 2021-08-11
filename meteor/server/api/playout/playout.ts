@@ -1217,7 +1217,7 @@ export namespace ServerPlayoutAPI {
 				if (actionContext.takeAfterExecute) {
 					await ServerPlayoutAPI.callTakeWithCache(cache, now)
 					return {
-						queuedPartInstnaceId: actionContext.queuedPartInstanceId,
+						queuedPartInstanceId: actionContext.queuedPartInstanceId,
 						taken: true,
 					}
 				} else {
@@ -1227,7 +1227,7 @@ export namespace ServerPlayoutAPI {
 					) {
 						await updateTimeline(cache)
 						return {
-							queuedPartInstnaceId: actionContext.queuedPartInstanceId,
+							queuedPartInstanceId: actionContext.queuedPartInstanceId,
 						}
 					}
 

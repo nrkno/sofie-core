@@ -13,7 +13,7 @@ import {
 	AdLibPanelToolbar,
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import {
 	DashboardPanelInner,
 	dashboardElementPosition,
@@ -53,9 +53,28 @@ export const TimelineDashboardPanel = translateWithTracker<
 	class TimelineDashboardPanel extends DashboardPanelInner {
 		liveLine: HTMLDivElement
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
-		setRef = (el: HTMLDivElement) => {
-			this.liveLine = el
+
+		constructor(props) {
+			super(props)
+		}
+
+		setRef = (ref: HTMLDivElement) => {
+			this.liveLine = ref
 			this.ensureLiveLineVisible()
+
+			const _panel = ref
+			if (_panel) {
+				const style = window.getComputedStyle(_panel)
+				// check if a special variable is set through CSS to indicate that we shouldn't expect
+				// double clicks to trigger AdLibs
+				const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+				const shouldBeSingleClick = !!value.match(UserAgentPointer.NO_POINTER)
+				if (this.state.singleClickMode !== shouldBeSingleClick) {
+					this.setState({
+						singleClickMode: shouldBeSingleClick,
+					})
+				}
+			}
 		}
 		componentDidUpdate(prevProps, prevState) {
 			super.componentDidUpdate(prevProps, prevState)
@@ -196,6 +215,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 														showThumbnailsInList={filter.showThumbnailsInList}
 														canOverflowHorizontally={filter.overflowHorizontally}
 														displayStyle={filter.displayStyle}
+														toggleOnSingleClick={this.state.singleClickMode}
 													>
 														{adLibListItem.name}
 													</DashboardPieceButton>

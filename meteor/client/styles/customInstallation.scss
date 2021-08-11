@@ -1,3 +1,8 @@
+:root {
+	// Set to force single-click to toggle adlibs	
+	--pointer: 'no-pointer';
+}
+
 body.tv2 {
 	--general-live-color: #c40000;
 	//--general-next-color: #FF0000;
@@ -98,6 +103,10 @@ body.tv2 {
 			padding-left: 2em;
 			margin-left: 4em;
 			line-height: 1.8em;
+
+			> .segment-timeline__duration__label {
+				display: none;
+			}
 		}
 
 		.segment-timeline__zoom-area-container {
@@ -141,6 +150,10 @@ body.tv2 {
 			color: #555;
 			transition: 0.3s color;
 			line-height: 1.5em;
+
+			> .segment-timeline__timeUntil__label {
+				display: none;
+			}
 
 			&:hover {
 				transition: 0s color;

@@ -44,7 +44,7 @@ import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
 import { WatchedPackagesHelper } from './watchedPackages'
-import { PeripheralDevices, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { MediaObjects } from '../../../../lib/collections/MediaObjects'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 

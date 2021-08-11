@@ -270,6 +270,7 @@ export namespace ServerPlayoutAdLibAPI {
 		if (!playlist.activationId) throw new Meteor.Error(500, 'RundownPlaylist is not active')
 
 		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
+		let queuedPartInstanceId: PartInstanceId | undefined
 		if (queue || adLibPiece.toBeQueued) {
 			const newPartInstance = new PartInstance({
 				_id: getRandomId(),
@@ -302,6 +303,7 @@ export namespace ServerPlayoutAdLibAPI {
 				queue
 			)
 			await innerStartQueuedAdLib(cache, rundown, currentPartInstance, newPartInstance, [newPieceInstance])
+			queuedPartInstanceId = newPartInstance._id
 
 			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 		} else {
