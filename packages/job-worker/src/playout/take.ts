@@ -25,6 +25,7 @@ import { PartEventContext, RundownContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlib'
 import { reportPartInstanceHasStarted } from '../blueprints/events'
+import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 
 export async function takeNextPartInnerSync(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
 	const span = context.startSpan('takeNextPartInner')
@@ -340,7 +341,7 @@ export function updatePartInstanceOnTake(
 export async function afterTake(
 	context: JobContext,
 	cache: CacheForPlayout,
-	_takePartInstance: DBPartInstance,
+	takePartInstance: DBPartInstance,
 	timeOffset: number | null = null
 ): Promise<void> {
 	const span = context.startSpan('afterTake')
@@ -353,22 +354,15 @@ export async function afterTake(
 	// or after a new part has started playing
 	await updateTimeline(context, cache, forceNowTime)
 
-	cache.deferAfterSave(() => {
-		// TODO - hack
-		// Meteor.setTimeout(() => {
-		// 	// This is low-prio, defer so that it's executed well after publications has been updated,
-		// 	// so that the playout gateway has haf the chance to learn about the timeline changes
-		// 	// todo
-		// 	if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
-		// 		const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
-		// 		if (!currentRundown)
-		// 			throw new Meteor.Error(
-		// 				404,
-		// 				`Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`
-		// 			)
-		// 		IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
-		// 	}
-		// }, LOW_PRIO_DEFER_TIME)
+	cache.deferAfterSave(async () => {
+		// This is low-prio, defer so that it's executed well after publications has been updated,
+		// so that the playout gateway has haf the chance to learn about the timeline changes
+		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
+			await context.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
+				rundownId: takePartInstance.rundownId,
+				partExternalId: takePartInstance.part.externalId,
+			})
+		}
 	})
 
 	if (span) span.end()

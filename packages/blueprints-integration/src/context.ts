@@ -258,7 +258,7 @@ export interface IRundownDataChangedEventContext extends IEventContext, IRundown
 	formatDurationAsTimecode(time: number): string
 
 	/** Get all unsent and queued messages in the rundown */
-	getAllUnsentQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]>
+	getAllUnsentQueuedMessages(): Promise<Readonly<IBlueprintExternalMessageQueueObj[]>>
 }
 
 export interface IRundownTimingEventContext extends IRundownDataChangedEventContext {
@@ -270,7 +270,7 @@ export interface IRundownTimingEventContext extends IRundownDataChangedEventCont
 	 * Returns the first PartInstance in the Rundown within the current playlist activation.
 	 * This allows for a start time for the Rundown to be determined
 	 */
-	getFirstPartInstanceInRundown(): Readonly<IBlueprintPartInstance>
+	getFirstPartInstanceInRundown(): Promise<Readonly<IBlueprintPartInstance>>
 
 	/**
 	 * Returns the partInstances in the Segment, limited to the playthrough of the segment that refPartInstance is part of
@@ -278,17 +278,17 @@ export interface IRundownTimingEventContext extends IRundownDataChangedEventCont
 	 */
 	getPartInstancesInSegmentPlayoutId(
 		refPartInstance: Readonly<IBlueprintPartInstance>
-	): Readonly<IBlueprintPartInstance[]>
+	): Promise<Readonly<IBlueprintPartInstance[]>>
 
 	/**
 	 * Returns pieces in a partInstance
 	 * @param id Id of partInstance to fetch items in
 	 */
-	getPieceInstances(...partInstanceIds: string[]): Readonly<IBlueprintPieceInstance[]>
+	getPieceInstances(...partInstanceIds: string[]): Promise<Readonly<IBlueprintPieceInstance[]>>
 
 	/**
 	 * Returns a segment
 	 * @param id Id of segment to fetch
 	 */
-	getSegment(id: string): Readonly<IBlueprintSegmentDB> | undefined
+	getSegment(id: string): Promise<Readonly<IBlueprintSegmentDB> | undefined>
 }

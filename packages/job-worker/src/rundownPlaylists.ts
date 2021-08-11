@@ -80,16 +80,9 @@ export async function handleRegenerateRundownPlaylist(
 	// Fire off all the updates in parallel, in their own low-priority tasks
 	await Promise.all(
 		ingestData.map(async ({ rundownExternalId }) => {
-			const job = await context.queueIngestJob(IngestJobs.RegenerateRundown, {
+			await context.queueIngestJob(IngestJobs.RegenerateRundown, {
 				rundownExternalId: rundownExternalId,
 				peripheralDeviceId: null,
-			})
-
-			// Attach a catch, to 'handle' the rejection in the background
-			job.complete.catch((e: any) => {
-				logger.error(
-					`Regenerate of Rundown "${rundownExternalId}" for RundownPlaylist "${data.playlistId}" failed: ${e}`
-				)
 			})
 		})
 	)

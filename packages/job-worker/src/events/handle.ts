@@ -1,10 +1,14 @@
-import { PartInstanceTimingsProps, RundownDataChangedProps } from '@sofie-automation/corelib/dist/worker/events'
+import {
+	NotifyCurrentlyPlayingPartProps,
+	PartInstanceTimingsProps,
+	RundownDataChangedProps,
+} from '@sofie-automation/corelib/dist/worker/events'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
-import { RundownTimingEventContext } from '../blueprints/context'
+import { RundownDataChangedEventContext, RundownTimingEventContext } from '../blueprints/context'
 import { IBlueprintExternalMessageQueueObj } from '@sofie-automation/blueprints-integration'
 import { protectString, unDeepString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
@@ -82,14 +86,12 @@ export async function handlePartInstanceTimings(context: JobContext, data: PartI
 			])
 
 			const context2 = new RundownTimingEventContext(
+				context,
 				{
 					name: rundown.name,
 					identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
 				},
-				context.studio,
-				context.getStudioBlueprintConfig(),
 				showStyle,
-				context.getShowStyleBlueprintConfig(showStyle),
 				rundown,
 				previousPartInstance,
 				partInstance,
@@ -178,38 +180,46 @@ export async function queueExternalMessages(
 	)
 }
 
-export async function handleRundownDataHasChanged(_context: JobContext, _data: RundownDataChangedProps): Promise<void> {
-	// TODO - implement
-	// 	Meteor.defer(async () => {
-	// 		try {
-	// 			// Called when the data in rundown is changed
-	// 			if (!rundown) {
-	// 				logger.error(`rundown argument missing in reportRundownDataHasChanged`)
-	// 			} else if (!playlist) {
-	// 				logger.error(`playlist argument missing in reportRundownDataHasChanged`)
-	// 			} else {
-	// 				const timestamp = getCurrentTime()
-	// 				const { studio, showStyle, blueprint } = await getBlueprintAndDependencies(rundown)
-	// 				if (blueprint.onRundownDataChangedEvent) {
-	// 					const context = new RundownDataChangedEventContext(
-	// 						{
-	// 							name: rundown.name,
-	// 							identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
-	// 						},
-	// 						studio,
-	// 						showStyle,
-	// 						rundown
-	// 					)
-	// 					try {
-	// 						const messages = await blueprint.onRundownDataChangedEvent(context)
-	// 						queueExternalMessages(rundown, messages)
-	// 					} catch (error) {
-	// 						logger.error(error)
-	// 					}
-	// 				}
-	// 			}
-	// 		} catch (e) {
-	// 			logger.error(`reportRundownDataHasChanged: ${e}`)
-	// 		}
-	// 	})
+export async function handleRundownDataHasChanged(context: JobContext, data: RundownDataChangedProps): Promise<void> {
+	try {
+		const [rundown, playlist] = await Promise.all([
+			context.directCollections.Rundowns.findOne({ _id: data.rundownId, studioId: context.studioId }),
+			context.directCollections.RundownPlaylists.findOne({ _id: data.playlistId, studioId: context.studioId }),
+		])
+
+		// Called when the data in rundown is changed
+		if (!rundown) {
+			logger.error(`rundown missing in reportRundownDataHasChanged`)
+		} else if (!playlist) {
+			logger.error(`playlist missing in reportRundownDataHasChanged`)
+		} else if (playlist._id !== rundown.playlistId) {
+			logger.error(`rudnown does not belong to playlist in reportRundownDataHasChanged`)
+		} else {
+			const timestamp = getCurrentTime()
+			const { showStyle, blueprint } = await getBlueprintAndDependencies(context, rundown)
+			if (blueprint.onRundownDataChangedEvent) {
+				const context2 = new RundownDataChangedEventContext(
+					context,
+					{
+						name: rundown.name,
+						identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
+					},
+					showStyle,
+					rundown
+				)
+
+				const messages = await blueprint.onRundownDataChangedEvent(context2)
+				await queueExternalMessages(context.directCollections.ExternalMessageQueue, rundown, playlist, messages)
+			}
+		}
+	} catch (e) {
+		logger.error(`reportRundownDataHasChanged: ${e}`)
+	}
+}
+
+export async function handleNotifyCurrentlyPlayingPart(
+	_context: JobContext,
+	_data: NotifyCurrentlyPlayingPartProps
+): Promise<void> {
+	//
 }

@@ -4,6 +4,7 @@ import { LocksManager } from '../locks'
 import { IngestWorkerParent } from './ingest/parent'
 import { StudioWorkerParent } from './studio/parent'
 import { WorkerOptions } from 'bullmq'
+import { EventsWorkerParent } from './events/parent'
 
 export class StudioWorkerSet {
 	#workerId: string
@@ -16,6 +17,7 @@ export class StudioWorkerSet {
 
 	#locksManager: LocksManager
 	#studioWorker!: StudioWorkerParent
+	#eventsWorker!: EventsWorkerParent
 	#ingestWorker!: IngestWorkerParent
 
 	constructor(
@@ -46,7 +48,7 @@ export class StudioWorkerSet {
 	): Promise<StudioWorkerSet> {
 		const result = new StudioWorkerSet(workerId, mongoUri, dbName, mongoClient, studioId, workerOptions)
 
-		await Promise.all([result.initStudioThread(), result.initIngestThread()])
+		await Promise.all([result.initStudioThread(), result.initEventsThread(), result.initIngestThread()])
 
 		return result
 	}
@@ -54,6 +56,21 @@ export class StudioWorkerSet {
 	private async initStudioThread(): Promise<void> {
 		// Note: if this times out, try setting THREADS_WORKER_INIT_TIMEOUT=30000
 		this.#studioWorker = await StudioWorkerParent.start(
+			this.#workerId,
+			this.#mongoUri,
+			this.#dbName,
+			this.#mongoClient,
+			this.#locksManager,
+			this.#studioId,
+			this.#workerOptions
+		)
+
+		// TODO - listen for termination?
+	}
+
+	private async initEventsThread(): Promise<void> {
+		// Note: if this times out, try setting THREADS_WORKER_INIT_TIMEOUT=30000
+		this.#eventsWorker = await EventsWorkerParent.start(
 			this.#workerId,
 			this.#mongoUri,
 			this.#dbName,
@@ -82,6 +99,10 @@ export class StudioWorkerSet {
 	}
 
 	public async terminate(): Promise<void> {
-		await Promise.allSettled([this.#studioWorker.terminate(), this.#ingestWorker.terminate()])
+		await Promise.allSettled([
+			this.#studioWorker.terminate(),
+			this.#eventsWorker.terminate(),
+			this.#ingestWorker.terminate(),
+		])
 	}
 }

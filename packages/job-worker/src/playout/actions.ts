@@ -12,6 +12,7 @@ import { getCurrentTime } from '../lib'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { executePeripheralDeviceFunction } from '../peripheralDevice'
+import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
@@ -151,23 +152,12 @@ export async function deactivateRundownPlaylistInner(
 	if (currentPartInstance) {
 		rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 
-		// TODO - queue this task:
-
-		// // defer so that an error won't prevent deactivate
-		// cache.deferAfterSave(() => {
-		// 	// Run in the background, we don't want to hold onto the lock to do this
-		// 	Meteor.setTimeout(() => {
-		// 		const currentRundown = Rundowns.findOne(currentPartInstance.rundownId)
-
-		// 		if (currentRundown) {
-		// 			IngestActions.notifyCurrentPlayingPart(currentRundown, null)
-		// 		} else {
-		// 			logger.error(
-		// 				`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`
-		// 			)
-		// 		}
-		// 	}, LOW_PRIO_DEFER_TIME)
-		// })
+		cache.deferAfterSave(async () => {
+			await context.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
+				rundownId: currentPartInstance.rundownId,
+				partExternalId: null,
+			})
+		})
 	} else if (nextPartInstance) {
 		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
 	}
