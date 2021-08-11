@@ -266,7 +266,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		}).fetch()
 	}, [props.showStyleBaseId])
 	useEffect(() => {
-		if (!triggeredActions || !initialized || !showStyleBase || !triggerSubReady) {
+		if (!triggeredActions || (!initialized && !props.sorensen) || !showStyleBase || !triggerSubReady) {
 			return
 		}
 

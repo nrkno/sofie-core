@@ -39,6 +39,7 @@ import { rundownContentAllowWrite, pieceContentAllowWrite } from './rundown'
 import { SystemWriteAccess } from './system'
 import { Buckets } from '../../lib/collections/Buckets'
 import { studioContentAllowWrite } from './studio'
+import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 
 // Set up direct collection write access
 
@@ -251,6 +252,23 @@ RundownLayouts.allow({
 		const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 		return rejectFields(doc, fields, ['_id', 'showStyleBaseId'])
+	},
+	remove() {
+		return false
+	},
+})
+TriggeredActions.allow({
+	insert(): boolean {
+		return false
+	},
+	update(userId, doc, fields) {
+		if (doc.showStyleBaseId) {
+			const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+			if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
+			return rejectFields(doc, fields, ['_id'])
+		} else {
+			return false
+		}
 	},
 	remove() {
 		return false

@@ -54,7 +54,10 @@ meteorPublish(PubSub.triggeredActions, function (selector0, token) {
 	const modifier: FindOptions<RundownLayoutBase> = {
 		fields: {},
 	}
-	if (ShowStyleReadAccess.showStyleBaseContent(selector, cred)) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(selector.showStyleBaseId && ShowStyleReadAccess.showStyleBaseContent(selector, cred))
+	) {
 		return TriggeredActions.find(selector, modifier)
 	}
 	return null

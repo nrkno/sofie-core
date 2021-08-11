@@ -3,20 +3,28 @@ import Sorensen from 'sorensen'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../../../lib/api/pubsub'
-import { ShowStyleBaseId } from '../../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId, ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry } from './TriggeredActionEntry'
-import { unprotectString } from '../../../../../lib/lib'
+import { literal, unprotectString } from '../../../../../lib/lib'
 import { useEffect, useState } from 'react'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
-import { RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../../../../lib/collections/Rundowns'
 import { PartInstances } from '../../../../../lib/collections/PartInstances'
 import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
 
 export const SorensenContext = React.createContext<null | typeof Sorensen>(null)
+
+export interface PreviewContext {
+	rundownPlaylist: RundownPlaylist | null
+	currentSegmentPartIds: PartId[]
+	nextSegmentPartIds: PartId[]
+	currentPartId: PartId | null
+	nextPartId: PartId | null
+}
 
 interface IProps {
 	showStyleBaseId: ShowStyleBaseId
@@ -27,6 +35,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 ): React.ReactElement | null {
 	const [localSorensen, setLocalSorensen] = useState<null | typeof Sorensen>(null)
 	const [selectedTriggeredActionId, setSelectedTriggeredActionId] = useState<null | TriggeredActionId>(null)
+
+	const showStyleBase = useTracker(() => ShowStyleBases.findOne(props.showStyleBaseId), [props.showStyleBaseId])
 
 	const { showStyleBaseId } = props
 	const showStyleBaseSelector = {
@@ -111,7 +121,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		rundownId: rundown?._id ?? false,
 	})
 
-	const [currentPartId, nextPartId, currentSegmentPartIds, nextSegmentPartIds] = useTracker(
+	const previewContext = useTracker(
 		() => {
 			let thisCurrentPart: Part | null = null
 			let thisNextPart: Part | null = null
@@ -137,15 +147,22 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					}
 				}
 			}
-			return [
-				thisCurrentPart?._id ?? null,
-				thisNextPart?._id ?? null,
-				thisCurrentSegmentPartIds,
-				thisNextSegmentPartIds,
-			]
+			return literal<PreviewContext>({
+				currentPartId: thisCurrentPart?._id ?? null,
+				nextPartId: thisNextPart?._id ?? null,
+				currentSegmentPartIds: thisCurrentSegmentPartIds,
+				nextSegmentPartIds: thisNextSegmentPartIds,
+				rundownPlaylist: rundownPlaylist,
+			})
 		},
 		[rundownPlaylist?.currentPartInstanceId, rundownPlaylist?.nextPartInstanceId],
-		[null, null, [], []]
+		{
+			currentPartId: null,
+			nextPartId: null,
+			currentSegmentPartIds: [],
+			nextSegmentPartIds: [],
+			rundownPlaylist: rundownPlaylist,
+		}
 	)
 
 	const { t } = useTranslation()
@@ -169,19 +186,19 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		}
 	}
 
-	return (
+	return showStyleBase !== undefined ? (
 		<div>
 			<SorensenContext.Provider value={localSorensen}>
-				{localSorensen && rundownPlaylist && (
+				{localSorensen && previewContext.rundownPlaylist && (
 					<TriggersHandler
 						sorensen={localSorensen}
 						simulateTriggerBinding={true}
 						showStyleBaseId={showStyleBaseId}
-						rundownPlaylistId={rundownPlaylist._id}
-						currentPartId={currentPartId}
-						nextPartId={nextPartId}
-						currentSegmentPartIds={currentSegmentPartIds}
-						nextSegmentPartIds={nextSegmentPartIds}
+						rundownPlaylistId={previewContext.rundownPlaylist._id}
+						currentPartId={previewContext.currentPartId}
+						nextPartId={previewContext.nextPartId}
+						currentSegmentPartIds={previewContext.currentSegmentPartIds}
+						nextSegmentPartIds={previewContext.nextSegmentPartIds}
 					/>
 				)}
 				<h2 className="mhn">{t('Action Triggers')}</h2>
@@ -192,6 +209,9 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 							triggeredAction={triggeredAction}
 							selected={selectedTriggeredActionId === triggeredAction._id}
 							onEdit={(e) => onEditEntry(e, triggeredAction._id)}
+							showStyleBase={showStyleBase}
+							previewContext={rundownPlaylist ? previewContext : null}
+							onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
 						/>
 					))}
 				</div>
@@ -204,6 +224,9 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 							triggeredAction={triggeredAction}
 							selected={selectedTriggeredActionId === triggeredAction._id}
 							onEdit={(e) => onEditEntry(e, triggeredAction._id)}
+							showStyleBase={showStyleBase}
+							previewContext={rundownPlaylist ? previewContext : null}
+							onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
 						/>
 					))}
 				</div>
@@ -214,5 +237,5 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				</div>
 			</SorensenContext.Provider>
 		</div>
-	)
+	) : null
 }

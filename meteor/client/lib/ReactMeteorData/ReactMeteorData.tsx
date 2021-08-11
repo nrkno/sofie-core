@@ -305,11 +305,12 @@ export type Translated<T> = T & WithTranslation
  *
  * @export
  * @template T
+ * @template K
  * @param {() => T} autorun The autorun function to be run.
- * @param {(React.DependencyList | undefined)} [deps] An optional list of dependenices to limit the tracker re-running
- * 		for each render. Optional, but highly recommended, due to the heavy nature of Meteor.Trackers and high frequency
- * 		of React renders.
- * @return {*}  {(T | undefined)}
+ * @param {React.DependencyList} [deps] A required list of dependenices to limit the tracker re-running. Can be left empty, if tracker
+ * 		has no external dependencies and should only be rerun when it's invalidated.
+ * @param {K} [initial] An optional, initial state of the tracker. If not provided, the tracker may return undefined.
+ * @return {*}  {(T | K)}
  */
 export function useTracker<T, K extends undefined | T = undefined>(
 	autorun: () => T,

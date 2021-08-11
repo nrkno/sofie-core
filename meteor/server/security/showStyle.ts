@@ -11,6 +11,7 @@ import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../../lib/Settings'
 import { isProtectedString } from '../../lib/lib'
+import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 
 type ShowStyleContent = { showStyleBaseId: ShowStyleBaseId }
 export namespace ShowStyleReadAccess {
@@ -70,6 +71,26 @@ export namespace ShowStyleContentWriteAccess {
 			existingLayout = m
 		}
 		return { ...anyContent(cred0, existingLayout.showStyleBaseId), rundownLayout: existingLayout }
+	}
+	export function triggeredActions(
+		cred0: Credentials,
+		existingTriggeredAction: TriggeredActionsObj | TriggeredActionId
+	) {
+		triggerWriteAccess()
+		if (existingTriggeredAction && isProtectedString(existingTriggeredAction)) {
+			const layoutId = existingTriggeredAction
+			const m = TriggeredActions.findOne(layoutId)
+			if (!m) throw new Meteor.Error(404, `RundownLayout "${layoutId}" not found!`)
+			existingTriggeredAction = m
+		}
+		if (existingTriggeredAction.showStyleBaseId) {
+			return {
+				...anyContent(cred0, existingTriggeredAction.showStyleBaseId),
+				triggeredAcition: existingTriggeredAction,
+			}
+		} else {
+			return true // global triggered actions are accessible to everyone
+		}
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
 	export function anyContent(
