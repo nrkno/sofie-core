@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react'
 import classNames from 'classnames'
 import { usePopper } from 'react-popper'
-import type { ModifierPhases } from '@popperjs/core'
 import { EditAttribute } from '../../../../../../lib/EditAttribute'
 import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import { sameWidth } from '../../../../../../lib/popperUtils'
 
 interface IProps {
 	fieldLabel: string
@@ -27,23 +27,6 @@ interface IProps {
 	onClose: () => void
 }
 
-const sameWidth = {
-	name: 'sameWidth',
-	enabled: true,
-	phase: 'beforeWrite' as ModifierPhases,
-	requires: ['computeStyles'],
-	fn: ({ state }) => {
-		const targetWidth = Math.max(208, state.rects.reference.width + 10)
-		state.styles.popper.width = `${targetWidth}px`
-		state.styles.popper.transform = `translate(${
-			state.rects.reference.x - 10 + (state.rects.reference.width + 10 - targetWidth) / 2
-		}px, ${Math.ceil(state.modifiersData.popperOffsets.y)}px)`
-	},
-	effect: ({ state }) => {
-		state.elements.popper.style.width = `${state.elements.reference.offsetWidth + 10}px`
-	},
-}
-
 export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProps): React.ReactElement | null {
 	const { opened, onClose, onFocus } = props
 	const { t } = useTranslation()
@@ -57,15 +40,6 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 					offset: [0, -30],
 				},
 			},
-			// {
-			// 	name: 'computeStyles',
-			// 	options: {
-			// 		roundOffsets: ({ x, y }) => ({
-			// 			x: Math.round(x ?? 0 + 2),
-			// 			y: Math.round(y ?? 0 + 2),
-			// 		}),
-			// 	},
-			// },
 			sameWidth,
 		],
 	})

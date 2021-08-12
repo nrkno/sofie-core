@@ -119,14 +119,19 @@ function fieldToOptions(
 }
 
 function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase, link: IAdLibFilterLink) {
+	if (link.value === undefined || (Array.isArray(link.value) && link.value.length === 0)) {
+		return ''
+	}
+
 	switch (link.field) {
 		case 'global':
 		case 'label':
 		case 'limit':
-		case 'pick':
-		case 'pickEnd':
 		case 'tag':
 			return String(link.value)
+		case 'pick':
+		case 'pickEnd':
+			return String(Number(link.value ?? 0) + 1)
 		case 'outputLayerId':
 			return Array.isArray(link.value)
 				? link.value
@@ -185,9 +190,10 @@ function fieldValueMutate(link: IAdLibFilterLink, newValue: any) {
 		case 'tag':
 			return String(newValue).split(',')
 		case 'limit':
+			return Number(newValue)
 		case 'pick':
 		case 'pickEnd':
-			return Number(newValue)
+			return Number(newValue - 1)
 		case 'outputLayerId':
 		case 'sourceLayerId':
 			return Array.isArray(newValue) ? newValue.map((layerId) => String(layerId)) : [String(newValue)]
@@ -198,6 +204,35 @@ function fieldValueMutate(link: IAdLibFilterLink, newValue: any) {
 			return Array.isArray(newValue) ? newValue.map((type) => Number(type)) : [Number(newValue)]
 		case 'type':
 			return String(newValue)
+		default:
+			assertNever(link)
+			//@ts-ignore fallback
+			return String(newValue)
+	}
+}
+
+function fieldValueToEditorValue(link: IAdLibFilterLink) {
+	if (link.value === undefined || (Array.isArray(link.value) && link.value.length === 0)) {
+		return link.value
+	}
+
+	switch (link.field) {
+		case 'pick':
+		case 'pickEnd':
+			return Number(link.value + 1)
+		case 'label':
+		case 'tag':
+			return link.value.join(',')
+		case 'limit':
+			return Number(link.value ?? 0)
+		case 'global':
+		case 'outputLayerId':
+		case 'sourceLayerId':
+		case 'part':
+		case 'segment':
+		case 'sourceLayerType':
+		case 'type':
+			return link.value
 		default:
 			assertNever(link)
 			//@ts-ignore fallback
@@ -237,7 +272,7 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 			]}
 			fieldLabel={fieldToLabel(t, link.field)}
 			valueLabel={fieldValueToValueLabel(t, showStyleBase, link)}
-			value={link.value}
+			value={fieldValueToEditorValue(link)}
 			final={link.field === 'pick' || link.field === 'pickEnd'}
 			values={fieldToOptions(t, showStyleBase, link.field)}
 			type={fieldToType(link.field)}

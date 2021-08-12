@@ -1,12 +1,11 @@
 import { faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import * as React from 'react'
 import { TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
-import { HotkeyTrigger } from './triggerPreviews/HotkeyTrigger'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { flatten, normalizeArray } from '../../../../../lib/lib'
 import { createAction, isPreviewableAction } from '../../../../../lib/api/triggers/actionFactory'
@@ -15,6 +14,7 @@ import { IWrappedAdLib } from '../../../../../lib/api/triggers/actionFilterChain
 import { RundownUtils } from '../../../../lib/rundown'
 import { useTranslation } from 'react-i18next'
 import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
+import { TriggerEditor } from './triggerEditors/TriggerEditor'
 
 interface IProps {
 	showStyleBase: ShowStyleBase
@@ -71,13 +71,9 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 			})}
 		>
 			<div className="triggered-action-entry__triggers">
-				{triggeredAction.triggers.map((trigger, index) =>
-					trigger.type === TriggerType.hotkey ? (
-						<HotkeyTrigger key={index} keys={trigger.keys} />
-					) : (
-						<React.Fragment key={index}>Unknown trigger type: {trigger.type}</React.Fragment>
-					)
-				)}
+				{triggeredAction.triggers.map((trigger, index) => (
+					<TriggerEditor key={index} trigger={trigger} />
+				))}
 				<button className="triggered-action-entry__add" onClick={() => {}}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
