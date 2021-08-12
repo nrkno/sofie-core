@@ -1,13 +1,16 @@
 import * as React from 'react'
-import { ClientActions, PlayoutActions, SomeAction } from '@sofie-automation/blueprints-integration'
+import { ClientActions, IAdLibFilterLink, PlayoutActions, SomeAction } from '@sofie-automation/blueprints-integration'
 import { TriggeredActions, TriggeredActionsObj } from '../../../../../../lib/collections/TriggeredActions'
 import { AdLibFilter } from './filterPreviews/AdLibFilter'
-import { assertNever } from '../../../../../../lib/lib'
+import { assertNever, literal } from '../../../../../../lib/lib'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { ViewFilter } from './filterPreviews/ViewFilter'
 import { RundownPlaylistFilter } from './filterPreviews/RundownPlaylistFilter'
 import { ShowStyleBase } from '../../../../../../lib/collections/ShowStyleBases'
+import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus } from '@fortawesome/free-solid-svg-icons'
 
 interface IProps {
 	action: SomeAction
@@ -59,18 +62,56 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	onFocus,
 }: IProps): React.ReactElement | null {
 	const { t } = useTranslation()
+	const [openIndex, setOpenIndex] = useState(-1)
 
-	function onFilterChange(newVal, oldVal) {
-		const filterIndex = action.filterChain.indexOf(oldVal)
-		if (filterIndex >= 0) {
-			action.filterChain.splice(filterIndex, 1, newVal)
+	function onClose() {
+		setOpenIndex(-1)
+	}
 
-			TriggeredActions.update(triggeredAction._id, {
-				$set: {
-					[`actions.${index}`]: action,
-				},
+	function onFilterChange(filterIndex, newVal) {
+		action.filterChain.splice(filterIndex, 1, newVal)
+
+		TriggeredActions.update(triggeredAction._id, {
+			$set: {
+				[`actions.${index}`]: action,
+			},
+		})
+	}
+
+	function onInsertNext(filterIndex) {
+		action.filterChain.splice(
+			filterIndex + 1,
+			0,
+			literal<IAdLibFilterLink>({
+				object: 'adLib',
+				field: 'label',
+				value: [],
 			})
-		}
+		)
+
+		TriggeredActions.update(triggeredAction._id, {
+			$set: {
+				[`actions.${index}`]: action,
+			},
+		})
+
+		setOpenIndex(filterIndex + 1)
+		if (typeof onFocus === 'function') onFocus()
+	}
+
+	function onRemove(filterIndex) {
+		action.filterChain.splice(filterIndex, 1)
+
+		TriggeredActions.update(triggeredAction._id, {
+			$set: {
+				[`actions.${index}`]: action,
+			},
+		})
+	}
+
+	function isFinished(): boolean {
+		const last = action.filterChain[action.filterChain.length - 1]
+		return last?.object === 'adLib' && (last?.field === 'pick' || last?.field === 'pickEnd')
 	}
 
 	return (
@@ -82,9 +123,16 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 						link={chainLink}
 						readonly={readonly}
 						key={index}
-						onChange={onFilterChange}
+						opened={openIndex === index}
+						onChange={(newVal) => onFilterChange(index, newVal)}
 						showStyleBase={showStyleBase}
-						onFocus={onFocus}
+						onFocus={() => {
+							setOpenIndex(index)
+							if (typeof onFocus === 'function') onFocus()
+						}}
+						onClose={onClose}
+						onInsertNext={() => onInsertNext(index)}
+						onRemove={() => onRemove(index)}
 					/>
 				) : chainLink.object === 'view' ? (
 					<ViewFilter link={chainLink} key={index} />
@@ -96,6 +144,14 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 					</dl>
 				)
 			)}
+			{!isFinished() ? (
+				<button
+					className="triggered-action-entry__action__filter-add"
+					onClick={() => onInsertNext(action.filterChain.length - 1)}
+				>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+			) : null}
 		</div>
 	)
 }

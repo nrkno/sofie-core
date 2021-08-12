@@ -288,17 +288,17 @@ function compileAdLibActionFilter(
 				return
 			case 'label':
 				selector['display.label.key'] = {
-					$regex: link.value.join('|'),
+					$regex: Array.isArray(link.value) ? link.value.join('|') : link.value,
 				}
 				return
 			case 'outputLayerId':
 				selector['display.outputLayerId'] = {
-					$in: link.value as any,
+					$in: link.value,
 				}
 				return
 			case 'sourceLayerId':
 				selector['display.sourceLayerId'] = {
-					$in: link.value as any,
+					$in: link.value,
 				}
 				return
 			case 'sourceLayerType':
@@ -322,7 +322,7 @@ function compileAdLibActionFilter(
 				return
 			case 'tag':
 				selector['display.tags'] = {
-					$all: link.value as any,
+					$all: link.value,
 				}
 				return
 			case 'type':
@@ -341,7 +341,7 @@ function compileAdLibActionFilter(
 				}
 				return
 			case 'pickEnd':
-				pick = link.value * -1
+				pick = (link.value + 1) * -1
 				return
 			default:
 				assertNever(link)
@@ -386,17 +386,17 @@ function compileAdLibPieceFilter(
 				return
 			case 'label':
 				selector['name'] = {
-					$regex: link.value.join('|'),
+					$regex: Array.isArray(link.value) ? link.value.join('|') : link.value,
 				}
 				return
 			case 'outputLayerId':
 				selector['outputLayerId'] = {
-					$in: link.value as any,
+					$in: link.value,
 				}
 				return
 			case 'sourceLayerId':
 				selector['sourceLayerId'] = {
-					$in: link.value as any,
+					$in: link.value,
 				}
 				return
 			case 'sourceLayerType':
@@ -420,7 +420,7 @@ function compileAdLibPieceFilter(
 				return
 			case 'tag':
 				selector['tags'] = {
-					$all: link.value as any,
+					$all: link.value,
 				}
 				return
 			case 'type':
@@ -439,13 +439,15 @@ function compileAdLibPieceFilter(
 				}
 				return
 			case 'pickEnd':
-				pick = link.value * -1
+				pick = (link.value + 1) * -1
 				return
 			default:
 				assertNever(link)
 				return
 		}
 	})
+
+	console.log(selector)
 
 	return {
 		selector,

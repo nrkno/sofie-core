@@ -1,4 +1,4 @@
-import { faPencilAlt, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
@@ -78,6 +78,9 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 						<React.Fragment key={index}>Unknown trigger type: {trigger.type}</React.Fragment>
 					)
 				)}
+				<button className="triggered-action-entry__add" onClick={() => {}}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
 			</div>
 			<div className="triggered-action-entry__actions">
 				{triggeredAction.actions.map((action, index) => (

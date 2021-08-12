@@ -143,13 +143,18 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 			const innerCtx = createRundownPlaylistContext(ctx, filterChain)
 
 			if (innerCtx) {
-				return compiledAdLibFilter(
-					innerCtx.rundownPlaylistId,
-					innerCtx.currentSegmentPartIds || [],
-					innerCtx.nextSegmentPartIds || [],
-					innerCtx.currentPartId || null,
-					innerCtx.nextPartId || null
-				)
+				try {
+					return compiledAdLibFilter(
+						innerCtx.rundownPlaylistId,
+						innerCtx.currentSegmentPartIds || [],
+						innerCtx.nextSegmentPartIds || [],
+						innerCtx.currentPartId || null,
+						innerCtx.nextPartId || null
+					)
+				} catch (e) {
+					logger.error(e)
+					return []
+				}
 			} else {
 				return []
 			}

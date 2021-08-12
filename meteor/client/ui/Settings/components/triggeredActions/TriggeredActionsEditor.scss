@@ -15,12 +15,13 @@ $triggered-action-color: #146985;
 	.triggered-action-entry__triggers {
 		flex: 0 0;
 		min-width: 20%;
-		padding: 9px 5px 8px 6px;
+		padding: 9px 5px 5px 6px;
 
-		> .triggered-action-entry__hotkey {
+		> div {
 			display: inline-flex;
 			border-radius: 3px;
 			padding: 0 3px;
+			margin: 0 3px 3px 0;
 		}
 
 		> .triggered-action-entry__hotkey {
@@ -29,6 +30,23 @@ $triggered-action-color: #146985;
 			font-weight: 400;
 			justify-content: center;
 			min-width: 20px;
+		}
+
+		> .triggered-action-entry__add {
+			border: none;
+			font-size: 0.7em;
+			background: none;
+			display: inline-flex;
+			height: 1.5em;
+			color: #777;
+			visibility: hidden;
+			margin-left: -0.2em;
+		}
+
+		&:hover {
+			> .triggered-action-entry__add {
+				visibility: visible;
+			}
 		}
 	}
 
@@ -46,10 +64,11 @@ $triggered-action-color: #146985;
 	.triggered-action-entry__preview {
 		width: 100%;
 		display: flex;
+		flex-wrap: wrap;
 		margin: 0;
 		padding: 0;
 		background: #f0f0f0;
-		padding: 8px 6px;
+		padding: 8px 6px 5px 6px;
 
 		> li {
 			display: inline-flex;
@@ -59,7 +78,7 @@ $triggered-action-color: #146985;
 			font-weight: 400;
 			text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.2), 1px 1px 0px rgba(0, 0, 0, 0.2), 1px -1px 0px rgba(0, 0, 0, 0.2),
 				1px -1px 0px rgba(0, 0, 0, 0.2), 0.5px 0.5px 2px rgba(0, 0, 0, 0.2);
-			margin: 0;
+			margin: 0 3px 3px 0;
 			padding: 0 0.3em;
 			overflow: hidden;
 
@@ -75,14 +94,14 @@ $triggered-action-color: #146985;
 
 	.triggered-action-entry__actions {
 		flex: 1 0;
-		padding: 9px 5px 8px 10px;
+		padding: 9px 5px 5px 10px;
 
 		.triggered-action-entry__action {
 			> .triggered-action-entry__action__type,
 			.triggered-action-entry__action__filter {
 				position: relative;
 				display: inline-flex;
-				margin: 0;
+				margin: 0 0 3px;
 				padding: 0;
 				border-radius: 3px 0 0 3px;
 				padding: 0 3px;
@@ -166,10 +185,46 @@ $triggered-action-color: #146985;
 				}
 			}
 
+			> .triggered-action-entry__action__filter-add {
+				border: none;
+				font-size: 0.7em;
+				background: none;
+				display: inline-flex;
+				height: 1.5em;
+				color: #777;
+				visibility: hidden;
+				margin-left: -0.5em;
+			}
+
 			> .triggered-action-entry__action__filter-editor {
+				box-sizing: content-box;
+				min-width: 208px;
+				> * {
+					box-sizing: border-box;
+				}
+
 				> label {
 					display: block;
 				}
+
+				> div > .form-control.input {
+					width: 100%;
+				}
+
+				> div > .form-control.input.expco-popper {
+					width: auto;
+					min-width: 100%;
+
+					.expco-item {
+						white-space: nowrap;
+					}
+				}
+			}
+		}
+
+		.triggered-action-entry__action:hover {
+			> .triggered-action-entry__action__filter-add {
+				visibility: visible;
 			}
 		}
 	}

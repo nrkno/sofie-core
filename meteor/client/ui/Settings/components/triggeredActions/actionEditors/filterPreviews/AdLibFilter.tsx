@@ -11,8 +11,12 @@ interface IProps {
 	link: IAdLibFilterLink
 	showStyleBase: ShowStyleBase
 	readonly?: boolean
+	opened: boolean
 	onChange: (newVal: IAdLibFilterLink, oldVal: IAdLibFilterLink) => void
 	onFocus?: () => void
+	onInsertNext?: () => void
+	onRemove?: () => void
+	onClose: () => void
 }
 
 function fieldToType(field: IAdLibFilterLink['field']) {
@@ -86,7 +90,7 @@ function fieldToOptions(
 		case 'tag':
 			return {}
 		case 'outputLayerId':
-			return _.object(showStyleBase.outputLayers.map((layer) => [layer._id, layer.name]))
+			return _.object(showStyleBase.outputLayers.map((layer) => [layer.name, layer._id]))
 		case 'part':
 			return {
 				[t('OnAir')]: 'current',
@@ -98,7 +102,7 @@ function fieldToOptions(
 				[t('Next')]: 'next',
 			}
 		case 'sourceLayerId':
-			return _.object(showStyleBase.sourceLayers.map((layer) => [layer._id, layer.name]))
+			return _.object(showStyleBase.sourceLayers.map((layer) => [layer.name, layer._id]))
 		case 'sourceLayerType':
 			return _.pick(SourceLayerType, (key) => Number.isInteger(key))
 		case 'type':
@@ -124,12 +128,14 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase, link
 		case 'tag':
 			return String(link.value)
 		case 'outputLayerId':
-			return link.value
-				.map(
-					(outputLayerId) =>
-						showStyleBase.outputLayers.find((layer) => layer._id === outputLayerId)?.name ?? outputLayerId
-				)
-				.join(', ')
+			return Array.isArray(link.value)
+				? link.value
+						.map(
+							(outputLayerId) =>
+								showStyleBase.outputLayers.find((layer) => layer._id === outputLayerId)?.name ?? outputLayerId
+						)
+						.join(', ')
+				: link.value
 		case 'part':
 			return (
 				_.invert({
@@ -145,14 +151,16 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase, link
 				})[link.value] ?? String(link.value)
 			)
 		case 'sourceLayerId':
-			return link.value
-				.map(
-					(sourceLayerId) =>
-						showStyleBase.sourceLayers.find((layer) => layer._id === sourceLayerId)?.name ?? sourceLayerId
-				)
-				.join(', ')
+			return Array.isArray(link.value)
+				? link.value
+						.map(
+							(sourceLayerId) =>
+								showStyleBase.sourceLayers.find((layer) => layer._id === sourceLayerId)?.name ?? sourceLayerId
+						)
+						.join(', ')
+				: link.value
 		case 'sourceLayerType':
-			return link.value.map((type) => SourceLayerType[type]).join(', ')
+			return Array.isArray(link.value) ? link.value.map((type) => SourceLayerType[type]).join(', ') : link.value
 		case 'type':
 			return (
 				_.invert({
@@ -169,12 +177,44 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase, link
 	}
 }
 
+function fieldValueMutate(link: IAdLibFilterLink, newValue: any) {
+	switch (link.field) {
+		case 'global':
+			return Boolean(newValue)
+		case 'label':
+		case 'tag':
+			return String(newValue).split(',')
+		case 'limit':
+		case 'pick':
+		case 'pickEnd':
+			return Number(newValue)
+		case 'outputLayerId':
+		case 'sourceLayerId':
+			return Array.isArray(newValue) ? newValue.map((layerId) => String(layerId)) : [String(newValue)]
+		case 'part':
+		case 'segment':
+			return String(newValue)
+		case 'sourceLayerType':
+			return Array.isArray(newValue) ? newValue.map((type) => Number(type)) : [Number(newValue)]
+		case 'type':
+			return String(newValue)
+		default:
+			assertNever(link)
+			//@ts-ignore fallback
+			return String(newValue)
+	}
+}
+
 export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 	link,
 	readonly,
 	showStyleBase,
+	opened,
+	onClose,
 	onChange,
 	onFocus,
+	onInsertNext,
+	onRemove,
 }: IProps) {
 	const { t } = useTranslation()
 
@@ -202,11 +242,12 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 			values={fieldToOptions(t, showStyleBase, link.field)}
 			type={fieldToType(link.field)}
 			readonly={readonly}
+			opened={opened}
 			onChange={(newValue) => {
 				onChange(
 					{
 						...link,
-						value: newValue,
+						value: fieldValueMutate(link, newValue) as any,
 					},
 					link
 				)
@@ -222,6 +263,9 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 				)
 			}}
 			onFocus={onFocus}
+			onClose={onClose}
+			onInsertNext={onInsertNext}
+			onRemove={onRemove}
 		/>
 	)
 }

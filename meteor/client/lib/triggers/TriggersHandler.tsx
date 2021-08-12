@@ -297,12 +297,15 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					}
 
 					previewAdLibs.forEach((adLib) => {
-						MountedTriggers.insert({
-							_id: protectString(pair._id + '_' + adLib._id + '_' + adLib.type),
-							targetId: adLib._id,
-							type: adLib.type,
-							triggeredActionId: pair._id,
-							keys: hotkeyTriggers,
+						const triggerId = protectString(pair._id + '_' + adLib._id + '_' + adLib.type)
+						MountedTriggers.upsert(triggerId, {
+							$set: {
+								_id: triggerId,
+								targetId: adLib._id,
+								type: adLib.type,
+								triggeredActionId: pair._id,
+								keys: hotkeyTriggers,
+							},
 						})
 					})
 
