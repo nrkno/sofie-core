@@ -122,6 +122,7 @@ export type IAdLibFilterLink =
 	| {
 			object: 'adLib'
 			field: 'pick' | 'pickEnd' | 'limit'
+			/** for `pick` and `pickEnd`: note that while this is 0-indexed in the data structure, the GUI will show this as `value + 1` */
 			value: number
 	  }
 	| {
