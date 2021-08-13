@@ -93,6 +93,7 @@ export interface IPackageInfoContext {
 	 * eg, baseline packages can be accessed when generating the baseline objects, piece/adlib packages can be access when regenerating the segment they are from
 	 */
 	getPackageInfo: (packageId: string) => Readonly<PackageInfo.Any[]>
+	hackGetMediaObjectDuration: (mediaId: string) => number | undefined
 }
 
 export interface IStudioBaselineContext extends IStudioContext, IPackageInfoContext {}
@@ -124,7 +125,6 @@ export interface ISegmentUserContext extends IUserNotesContext, IRundownContext,
 	notifyUserError: (message: string, params?: { [key: string]: any }, partExternalId?: string) => void
 	/** Display a notification to the user of an warning */
 	notifyUserWarning: (message: string, params?: { [key: string]: any }, partExternalId?: string) => void
-	hackGetMediaObjectDuration: (mediaId: string) => number | undefined
 }
 
 /** Actions */
@@ -183,8 +183,6 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 	moveNextPart(partDelta: number, segmentDelta: number): void
 	/** Set flag to perform take after executing the current action. Returns state of the flag after each call. */
 	takeAfterExecuteAction(take: boolean): boolean
-
-	hackGetMediaObjectDuration: (mediaId: string) => number | undefined
 
 	/** Misc actions */
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different

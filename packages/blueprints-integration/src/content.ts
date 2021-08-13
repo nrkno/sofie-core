@@ -74,7 +74,7 @@ export interface GraphicsContent extends BaseContent {
 	path: string
 	mediaFlowIds?: string[]
 	thumbnail?: string
-	templateData?: object
+	templateData?: Record<string, any>
 }
 
 export interface CameraContent extends BaseContent {
