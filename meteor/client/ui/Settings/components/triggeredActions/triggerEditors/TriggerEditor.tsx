@@ -1,36 +1,120 @@
-import React from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
+import { TFunction } from 'i18next'
 import { TriggerType } from '@sofie-automation/blueprints-integration'
 import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
 import { HotkeyTrigger } from './HotkeyTrigger'
-// import { usePopper } from 'react-popper'
-// import { sameWidth } from '../../../../../lib/popperUtils'
+import { usePopper } from 'react-popper'
+import { sameWidth } from '../../../../../lib/popperUtils'
+import { useTranslation } from 'react-i18next'
+import { EditAttribute } from '../../../../../lib/EditAttribute'
+import { HotkeyEditor } from './HotkeyEditor'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 interface IProps {
 	trigger: DBBlueprintTrigger
 	opened?: boolean
+	onChangeTrigger: (newVal: DBBlueprintTrigger) => void
+	onRemove: () => void
+	onFocus: () => void
+	onClose: () => void
 }
 
-export const TriggerEditor = function TriggerEditor({ trigger }: IProps) {
-	// const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
-	// const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
-	// const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
-	// 	modifiers: [
-	// 		{
-	// 			name: 'offset',
-	// 			options: {
-	// 				offset: [0, -30],
-	// 			},
-	// 		},
-	// 		sameWidth,
-	// 	],
-	// })
+function getTriggerTypes(t: TFunction): Record<string, string> {
+	return {
+		[t('Hotkey')]: 'hotkey',
+	}
+}
+
+export const TriggerEditor = function TriggerEditor({ opened, trigger, onFocus, onClose, onRemove }: IProps) {
+	const { t } = useTranslation()
+	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
+	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
+	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
+		modifiers: [
+			{
+				name: 'offset',
+				options: {
+					offset: [0, -30],
+				},
+			},
+			sameWidth,
+		],
+	})
+
+	useEffect(() => {
+		function closeHandler(e: MouseEvent) {
+			const composedPath = e.composedPath()
+			if (
+				popperElement &&
+				referenceElement &&
+				!composedPath.includes(popperElement) &&
+				!composedPath.includes(referenceElement)
+			) {
+				onClose()
+			}
+		}
+
+		if (opened) {
+			document.body.addEventListener('click', closeHandler)
+		}
+
+		return () => {
+			document.body.removeEventListener('click', closeHandler)
+		}
+	}, [popperElement, referenceElement, opened])
 
 	const triggerPreview =
 		trigger.type === TriggerType.hotkey ? (
-			<HotkeyTrigger keys={trigger.keys} />
+			<HotkeyTrigger innerRef={setReferenceElement} keys={trigger.keys} onClick={onFocus} selected={opened} />
 		) : (
-			<div>Unknown trigger type: {trigger.type}</div>
+			<div ref={setReferenceElement}>Unknown trigger type: {trigger.type}</div>
 		)
 
-	return <>{triggerPreview}</>
+	const triggerEditor =
+		trigger.type === TriggerType.hotkey ? <HotkeyEditor trigger={trigger} onChange={() => {}} /> : null
+
+	useLayoutEffect(() => {
+		update && update().catch(console.error)
+	}, [trigger])
+
+	function onChangeType(_newValue: string) {}
+
+	function onConfirm() {}
+
+	return (
+		<>
+			{triggerPreview}
+			{opened ? (
+				<div
+					className="expco expco-expanded expco-popper mod pas ptl expco-popper-rounded triggered-action-entry__trigger-editor"
+					ref={setPopperElement}
+					style={styles.popper}
+					{...attributes.popper}
+				>
+					<div>
+						<EditAttribute
+							className="form-control input text-input input-m"
+							modifiedClassName="bghl"
+							type={'dropdown'}
+							label={t('Trigger Type')}
+							options={getTriggerTypes(t)}
+							overrideDisplayValue={trigger.type}
+							attribute={''}
+							updateFunction={(e, newVal) => onChangeType(newVal)}
+						/>
+					</div>
+					<div>{triggerEditor}</div>
+					<div className="mts">
+						<button className="btn right btn-tight btn-primary" onClick={onConfirm}>
+							<FontAwesomeIcon icon={faCheck} />
+						</button>
+						<button className="btn btn-tight btn-secondary" onClick={onRemove}>
+							<FontAwesomeIcon icon={faTrash} />
+						</button>
+					</div>
+				</div>
+			) : null}
+		</>
+	)
 }

@@ -30,6 +30,11 @@ $triggered-action-color: #146985;
 			font-weight: 400;
 			justify-content: center;
 			min-width: 20px;
+
+			&.selected {
+				position: relative;
+				z-index: 1001;
+			}
 		}
 
 		> .triggered-action-entry__add {
@@ -41,6 +46,11 @@ $triggered-action-color: #146985;
 			color: #777;
 			visibility: hidden;
 			margin-left: -0.2em;
+		}
+
+		> .triggered-action-entry__trigger-editor {
+			display: block;
+			min-width: 228px;
 		}
 
 		&:hover {

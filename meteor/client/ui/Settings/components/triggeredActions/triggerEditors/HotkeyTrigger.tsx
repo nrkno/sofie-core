@@ -1,4 +1,6 @@
-import * as React from 'react'
+import classNames from 'classnames'
+import React from 'react'
+import type Sorensen from 'sorensen'
 import { useContext } from 'react'
 import { SorensenContext } from '../TriggeredActionsEditor'
 
@@ -10,20 +12,47 @@ function toTitleCase(input: string): string {
 	return str.join(' ')
 }
 
-export const HotkeyTrigger = ({ keys }: { keys: string }) => {
+export function codesToKeyLabels(keys: string, sorensen: typeof Sorensen) {
+	return keys
+		.split(/\s+/gi)
+		.map((note) =>
+			note
+				.split(/\+/gi)
+				.map((code) => toTitleCase(sorensen.getKeyForCode(code)))
+				.join('+')
+		)
+		.join(' ')
+}
+
+export const HotkeyTrigger = ({
+	keys,
+	up,
+	innerRef,
+	selected,
+	onClick,
+}: {
+	keys: string
+	up?: boolean
+	innerRef?: React.Ref<HTMLDivElement>
+	selected?: boolean
+	onClick?: () => void
+}) => {
 	const Sorensen = useContext(SorensenContext)
 
 	if (Sorensen) {
-		keys = keys
-			.split(/\s+/gi)
-			.map((note) =>
-				note
-					.split(/\+/gi)
-					.map((code) => toTitleCase(Sorensen.getKeyForCode(code)))
-					.join('+')
-			)
-			.join(' ')
+		keys = codesToKeyLabels(keys, Sorensen)
 	}
 
-	return <div className="triggered-action-entry__hotkey">{keys}</div>
+	return (
+		<div
+			ref={innerRef}
+			className={classNames('triggered-action-entry__hotkey clickable', {
+				selected: selected,
+			})}
+			onClick={onClick}
+		>
+			{keys}
+			{up ? '⇪' : ''}
+		</div>
+	)
 }

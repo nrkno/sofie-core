@@ -1,9 +1,9 @@
+import React, { useState } from 'react'
 import { faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import * as React from 'react'
-import { TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
+import { TriggeredActions, TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
@@ -31,6 +31,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 	const { showStyleBase, triggeredAction, selected, previewContext, onEdit } = props
 
 	const { t } = useTranslation()
+	const [selectedTrigger, setSelectedTrigger] = useState(-1)
 
 	const previewItems = useTracker(
 		() => {
@@ -64,6 +65,18 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 			: t('Unknown')
 	}
 
+	function removeTrigger(index: number) {
+		triggeredAction.triggers.splice(index, 1)
+
+		TriggeredActions.update(triggeredAction._id, {
+			$set: {
+				triggers: triggeredAction.triggers,
+			},
+		})
+
+		setSelectedTrigger(-1)
+	}
+
 	return (
 		<div
 			className={classNames('triggered-action-entry selectable', {
@@ -72,7 +85,21 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 		>
 			<div className="triggered-action-entry__triggers">
 				{triggeredAction.triggers.map((trigger, index) => (
-					<TriggerEditor key={index} trigger={trigger} />
+					<TriggerEditor
+						key={index}
+						trigger={trigger}
+						opened={selectedTrigger === index}
+						onChangeTrigger={() => {}}
+						onFocus={() => {
+							setSelectedTrigger(index)
+						}}
+						onClose={() => {
+							setSelectedTrigger(-1)
+						}}
+						onRemove={() => {
+							removeTrigger(index)
+						}}
+					/>
 				))}
 				<button className="triggered-action-entry__add" onClick={() => {}}>
 					<FontAwesomeIcon icon={faPlus} />
