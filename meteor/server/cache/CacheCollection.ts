@@ -130,7 +130,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	}
 	/**
 	 * Populate this cache with an array of documents.
-	 * Note: this wipes the current collection first
+	 * Note: By default this wipes the current collection first
 	 * @param documents The documents to store
 	 */
 	fillWithDataFromArray(documents: ReadonlyDeep<Array<Class>>, append = false) {

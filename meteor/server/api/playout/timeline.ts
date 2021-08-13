@@ -34,6 +34,7 @@ import {
 	getRandomId,
 	applyToArray,
 	protectString,
+	waitForPromise,
 } from '../../../lib/lib'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -41,7 +42,7 @@ import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import { StudioContext, TimelineEventContext } from '../blueprints/context'
+import { StudioBaselineContext, TimelineEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds } from './lib'
@@ -61,6 +62,8 @@ import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCacheFromStudioOperation } from './lockFunction'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
+import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 
 export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 	const playlists = cache.getActiveRundownPlaylists()
@@ -107,9 +110,19 @@ export async function updateStudioTimeline(cache: CacheForStudio | CacheForPlayo
 
 	const studioBlueprint = await loadStudioBlueprint(studio)
 	if (studioBlueprint) {
+		const watchedPackages = waitForPromise(
+			WatchedPackagesHelper.create(studio._id, {
+				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+			})
+		)
+
 		const blueprint = studioBlueprint.blueprint
 		studioBaseline = blueprint.getBaseline(
-			new StudioContext({ name: 'studioBaseline', identifier: `studioId=${studio._id}` }, studio)
+			new StudioBaselineContext(
+				{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+				studio,
+				watchedPackages
+			)
 		)
 		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
 
@@ -285,7 +298,7 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
 			const pShowStyle = cache.activationCache.getShowStyleCompound(activeRundown)
-			const pshowStyleBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
+			const pshowStyleBlueprint = pShowStyle.then(async (showStyle) => loadShowStyleBlueprint(showStyle))
 
 			const showStyle = await pShowStyle
 			if (!showStyle) {

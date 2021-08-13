@@ -10,7 +10,7 @@ import { UserActivity } from './Status/UserActivity'
 import { EvaluationView } from './Status/Evaluations'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { PubSub } from '../../lib/api/pubsub'
-import { ExpectedPackagesStatus } from './Status/ExpectedPackages'
+import { ExpectedPackagesStatus } from './Status/package-status'
 
 interface IStatusMenuProps {
 	match?: any

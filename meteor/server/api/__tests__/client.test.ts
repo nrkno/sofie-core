@@ -86,30 +86,33 @@ describe('ClientAPI', () => {
 				expect(pdc.functionName).toBe(mockFunctionName)
 				expect(pdc.args).toMatchObject(mockArgs)
 			})
-			testInFiber('Resolves the returned promise once a response from the peripheralDevice is received', () => {
-				PeripheralDeviceCommands.update(
-					{
-						deviceId: mockDeviceId,
-						functionName: mockFunctionName,
-					},
-					{
-						$set: {
-							hasReply: true,
-							reply: 'OK',
+			testInFiber(
+				'Resolves the returned promise once a response from the peripheralDevice is received',
+				async () => {
+					PeripheralDeviceCommands.update(
+						{
+							deviceId: mockDeviceId,
+							functionName: mockFunctionName,
 						},
-					}
-				)
-				return promise.then((value) => {
-					const log = UserActionsLog.findOne({
-						method: logMethodName,
-					}) as UserActionsLogItem
-					expect(log).toBeTruthy()
+						{
+							$set: {
+								hasReply: true,
+								reply: 'OK',
+							},
+						}
+					)
+					return promise.then((value) => {
+						const log = UserActionsLog.findOne({
+							method: logMethodName,
+						}) as UserActionsLogItem
+						expect(log).toBeTruthy()
 
-					expect(log.success).toBe(true)
-					expect(log.doneTime).toBeDefined()
-					expect(value).toBe('OK')
-				})
-			})
+						expect(log.success).toBe(true)
+						expect(log.doneTime).toBeDefined()
+						expect(value).toBe('OK')
+					})
+				}
+			)
 		})
 		describe('Call a failing method on the peripheralDevice', () => {
 			let logMethodName = `not set yet`

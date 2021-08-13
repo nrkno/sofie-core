@@ -47,6 +47,8 @@ const tsBase = {
 			},
 		],
 		'jest/no-standalone-expect': 'off', // testInFiber confuses the rule
+
+		'@typescript-eslint/promise-function-async': ['error'], // TODO - move to preset
 		...tmpRules,
 	},
 }
@@ -86,6 +88,7 @@ module.exports = {
 				'node/no-missing-import': 'off', // erroring on every single import
 				'react/prop-types': 'off', // we don't use this
 				'@typescript-eslint/no-empty-interface': 'off', // many prop/state types are {}
+				'@typescript-eslint/promise-function-async': 'off', // event handlers can't be async
 			},
 		},
 		{

@@ -33,7 +33,7 @@ export namespace MediaManagerAPI {
 		}, [] as PeripheralDeviceId[])
 		waitForPromise(
 			Promise.all(
-				deviceIds.map((deviceId) => {
+				deviceIds.map(async (deviceId) => {
 					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,
@@ -69,7 +69,7 @@ export namespace MediaManagerAPI {
 		}, [] as PeripheralDeviceId[])
 		waitForPromise(
 			Promise.all(
-				deviceIds.map((deviceId) => {
+				deviceIds.map(async (deviceId) => {
 					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,

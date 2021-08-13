@@ -4,30 +4,25 @@ import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
 	ExpectedPackageWorkStatusId,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { assertNever, getCurrentTime, literal, waitForPromise, waitForPromiseAll } from '../../../lib/lib'
+import { assertNever, getCurrentTime, literal } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageId,
 } from '../../../lib/collections/PackageContainerPackageStatus'
-import {
-	getPackageInfoId,
-	PackageInfoBase,
-	PackageInfoDB,
-	PackageInfoDBType,
-	PackageInfos,
-} from '../../../lib/collections/PackageInfos'
+import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
 import { BulkWriteOperation } from 'mongodb'
+import { onUpdatedPackageInfo } from '../ingest/packageInfo'
 
 export namespace PackageManagerIntegration {
-	export function updateExpectedPackageWorkStatuses(
+	export async function updateExpectedPackageWorkStatuses(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
@@ -47,7 +42,7 @@ export namespace PackageManagerIntegration {
 					status: Partial<ExpectedPackageStatusAPI.WorkStatus>
 			  }
 		)[]
-	): void {
+	): Promise<void> {
 		type FromPackage = Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> & { id: ExpectedPackageId }
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
@@ -131,23 +126,23 @@ export namespace PackageManagerIntegration {
 				},
 			})
 		}
-		waitForPromiseAll(ps)
-		waitForPromise(ExpectedPackageWorkStatuses.bulkWriteAsync(bulkChanges))
+		await Promise.all(ps)
+		await ExpectedPackageWorkStatuses.bulkWriteAsync(bulkChanges)
 	}
 
-	export function removeAllExpectedPackageWorkStatusOfDevice(
+	export async function removeAllExpectedPackageWorkStatusOfDevice(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string
-	): void {
+	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
-		ExpectedPackageWorkStatuses.remove({
+		await ExpectedPackageWorkStatuses.removeAsync({
 			deviceId: peripheralDevice._id,
 		})
 	}
 
-	export function updatePackageContainerPackageStatuses(
+	export async function updatePackageContainerPackageStatuses(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
@@ -164,7 +159,7 @@ export namespace PackageManagerIntegration {
 					status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
 			  }
 		)[]
-	) {
+	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
@@ -183,8 +178,8 @@ export namespace PackageManagerIntegration {
 				removedIds.push(id)
 			} else if (change.type === 'update') {
 				ps.push(
-					Promise.resolve().then(() => {
-						const updateCount = PackageContainerPackageStatuses.update(id, {
+					Promise.resolve().then(async () => {
+						const updateCount = await PackageContainerPackageStatuses.updateAsync(id, {
 							$set: {
 								status: change.status,
 								modified: getCurrentTime(),
@@ -194,7 +189,7 @@ export namespace PackageManagerIntegration {
 							// The PackageContainerStatus doesn't exist
 							// Create it on the fly:
 
-							PackageContainerPackageStatuses.upsert(id, {
+							await PackageContainerPackageStatuses.upsertAsync(id, {
 								$set: literal<PackageContainerPackageStatusDB>({
 									_id: id,
 									studioId: studioId,
@@ -214,15 +209,17 @@ export namespace PackageManagerIntegration {
 		if (removedIds.length) {
 			ps.push(PackageContainerPackageStatuses.removeAsync({ _id: { $in: removedIds } }))
 		}
-		waitForPromiseAll(ps)
+		await Promise.all(ps)
 	}
-	export function fetchPackageInfoMetadata(
+	export async function fetchPackageInfoMetadata(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		type: string,
 		packageIds: ExpectedPackageId[]
-	): { packageId: ExpectedPackageId; expectedContentVersionHash: string; actualContentVersionHash: string }[] {
+	): Promise<
+		Array<{ packageId: ExpectedPackageId; expectedContentVersionHash: string; actualContentVersionHash: string }>
+	> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageIds, Array)
 		check(type, String)
@@ -230,30 +227,30 @@ export namespace PackageManagerIntegration {
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
 		const ids = packageIds.map((packageId) => getPackageInfoId(packageId, type))
-		const packageInfos = PackageInfos.find(
+		const packageInfos = await PackageInfos.findFetchAsync(
 			{ _id: { $in: ids } },
 			{
 				fields: {
 					payload: 0,
 				},
 			}
-		).fetch()
+		)
 		return packageInfos.map((packageInfo) => ({
 			packageId: packageInfo.packageId,
 			expectedContentVersionHash: packageInfo.expectedContentVersionHash,
 			actualContentVersionHash: packageInfo.actualContentVersionHash,
 		}))
 	}
-	export function updatePackageInfo(
+	export async function updatePackageInfo(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		type: PackageInfoDBType, // string
+		type: PackageInfo.Type, // string
 		packageId: ExpectedPackageId,
 		expectedContentVersionHash: string,
 		actualContentVersionHash: string,
 		payload: any
-	): void {
+	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageId, String)
 		check(type, String)
@@ -262,30 +259,33 @@ export namespace PackageManagerIntegration {
 
 		const id = getPackageInfoId(packageId, type)
 
-		PackageInfos.upsert(id, {
-			$set: literal<PackageInfoBase>({
-				_id: id,
+		const doc: PackageInfoDB = {
+			_id: id,
 
-				packageId: packageId,
-				expectedContentVersionHash: expectedContentVersionHash,
-				actualContentVersionHash: actualContentVersionHash,
+			packageId: packageId,
+			expectedContentVersionHash: expectedContentVersionHash,
+			actualContentVersionHash: actualContentVersionHash,
 
-				studioId: peripheralDevice.studioId,
+			studioId: peripheralDevice.studioId,
 
-				deviceId: peripheralDevice._id,
+			deviceId: peripheralDevice._id,
 
-				type: type,
-				payload: payload,
-			}) as PackageInfoDB,
+			type: type,
+			payload: payload,
+		}
+		await PackageInfos.upsertAsync(id, {
+			$set: doc,
 		})
+
+		onUpdatedPackageInfo(packageId, doc)
 	}
-	export function removePackageInfo(
+	export async function removePackageInfo(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		type: string,
 		packageId: ExpectedPackageId
-	): void {
+	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageId, String)
 		check(type, String)
@@ -294,6 +294,8 @@ export namespace PackageManagerIntegration {
 
 		const id = getPackageInfoId(packageId, type)
 
-		PackageInfos.remove(id)
+		await PackageInfos.removeAsync(id)
+
+		onUpdatedPackageInfo(packageId, null) // ?
 	}
 }

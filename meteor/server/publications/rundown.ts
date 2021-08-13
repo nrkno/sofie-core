@@ -164,6 +164,10 @@ meteorPublish(PubSub.pieceInstancesSimple, function (selector: MongoQuery<PieceI
 			'piece.metaData': 0,
 			// @ts-ignore
 			'piece.content.timelineObjects': 0,
+			// @ts-ignore
+			startedPlayback: 0,
+			// @ts-ignore
+			stoppedPlayback: 0,
 		},
 	}
 

@@ -12,6 +12,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -221,8 +222,8 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 										item,
 										(this.props.timingDurations && this.props.timingDurations.partDurations) || {},
 										Math.max(
-											(this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1,
-											this.props.playlist!.expectedDuration || 1
+											(this.props.timingDurations && this.props.timingDurations.asDisplayedPlaylistDuration) || 1,
+											PlaylistTiming.getExpectedDuration(this.props.playlist!.timing) || 1
 										)
 									)
 								})}

@@ -16,9 +16,6 @@ import {
 	defaultPart,
 	defaultPiece,
 	defaultAdLibPiece,
-	// } from '../../../__mocks__/defaultCollectionObjects'
-	// import { updateExpectedPackagesOnRundown } from '../expectedPackages'
-	// import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 } from '../../../../__mocks__/defaultCollectionObjects'
 import { runIngestOperationFromRundown } from '../lockFunction'
 import { updateExpectedPackagesOnRundown } from '../expectedPackages'
@@ -104,7 +101,7 @@ describe('Expected Media Items', () => {
 		)
 		Parts.insert(
 			literal<DBPart>({
-				...defaultPart(protectString(rdId + '_' + mockPart0), rd._id, protectString('')),
+				...defaultPart(protectString(rdId + '_' + mockPart0), rd._id, protectString('segment1')),
 				_rank: 1,
 				title: '',
 			})
@@ -134,7 +131,7 @@ describe('Expected Media Items', () => {
 		)
 		Parts.insert(
 			literal<DBPart>({
-				...defaultPart(protectString(rdId + '_' + mockPart1), rd._id, protectString('')),
+				...defaultPart(protectString(rdId + '_' + mockPart1), rd._id, protectString('segment1')),
 				_rank: 1,
 				externalId: '',
 				title: '',
@@ -196,23 +193,25 @@ describe('Expected Media Items', () => {
 	})
 
 	describe('Based on a Rundown', () => {
-		testInFiber('Generates ExpectedPackages(/ExpectedMediaItems) based on a Rundown', () => {
-			const rundown = Rundowns.findOne(rdId0) as DBRundown
+		testInFiber('Generates ExpectedPackages(/ExpectedMediaItems) based on a Rundown', async () => {
+			const rundown = (await Rundowns.findOneAsync(rdId0)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			runIngestOperationFromRundown('test', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
+			await runIngestOperationFromRundown('test', rundown, async (cache) =>
+				updateExpectedPackagesOnRundown(cache)
+			)
 
-			const packages = ExpectedPackages.find({
+			const packages = await ExpectedPackages.findFetchAsync({
 				rundownId: rdId0,
 				studioId: env.studio._id,
-			}).fetch()
+			})
 			expect(packages).toHaveLength(4)
 
 			// to be deprecated:
-			const items = ExpectedMediaItems.find({
+			const items = await ExpectedMediaItems.findFetchAsync({
 				rundownId: rdId0,
 				studioId: env.studio._id,
-			}).fetch()
+			})
 			expect(items).toHaveLength(4)
 		})
 		// testInFiber('Removes associated ExpectedMediaItems if a Rundown has been removed', () => {

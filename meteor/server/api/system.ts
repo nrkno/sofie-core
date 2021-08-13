@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { makePromise, ProtectedString, getCurrentTime, waitTime, waitForPromise } from '../../lib/lib'
+import { makePromise, ProtectedString, getCurrentTime, waitTime, waitForPromise, MeteorWrapAsync } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -14,7 +14,7 @@ import { Meteor } from 'meteor/meteor'
 import { IndexSpecification } from 'mongodb'
 import { TransformedCollection, MongoQuery } from '../../lib/typings/meteor'
 import { logger } from '../logging'
-import { MeteorWrapAsync, isAnySyncFunctionsRunning } from '../codeControl'
+import { isAnyQueuedWorkRunning } from '../codeControl'
 import { SystemWriteAccess } from '../security/system'
 import { check } from '../../lib/check'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
@@ -467,7 +467,7 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 }
 
 function isAllowedToRunCleanup(): string | void {
-	if (isAnySyncFunctionsRunning()) return `Another sync-function is running, try again later`
+	if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
 
 	const studios = Studios.find().fetch()
 	for (const studio of studios) {
@@ -761,16 +761,16 @@ function getTranslationBundle(context: MethodContext, bundleId: TranslationsBund
 }
 
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
-	cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
+	async cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
 		return makePromise(() => cleanupIndexes(this, actuallyRemoveOldIndexes))
 	}
-	cleanupOldData(actuallyRemoveOldData: boolean) {
+	async cleanupOldData(actuallyRemoveOldData: boolean) {
 		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
 	}
 	async doSystemBenchmark(runCount: number = 1) {
 		return doSystemBenchmark(this, runCount)
 	}
-	getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
+	async getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
 		return makePromise(() => getTranslationBundle(this, bundleId))
 	}
 }

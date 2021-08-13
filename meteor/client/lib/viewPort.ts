@@ -45,7 +45,7 @@ function quitFocusOnPart() {
 	}
 }
 
-export function scrollToPartInstance(
+export async function scrollToPartInstance(
 	partInstanceId: PartInstanceId,
 	forceScroll?: boolean,
 	noAnimation?: boolean
@@ -103,7 +103,7 @@ export function getHeaderHeight(): number {
 let pendingSecondStageScroll: number | undefined
 let currentScrollingElement: HTMLElement | undefined
 
-export function scrollToSegment(
+export async function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
 	forceScroll?: boolean,
 	noAnimation?: boolean
@@ -151,7 +151,7 @@ export function scrollToSegment(
 	)
 }
 
-function innerScrollToSegment(
+async function innerScrollToSegment(
 	elementToScrollTo: HTMLElement,
 	forceScroll?: boolean,
 	noAnimation?: boolean,
@@ -174,7 +174,7 @@ function innerScrollToSegment(
 		if (pendingSecondStageScroll) window.cancelIdleCallback(pendingSecondStageScroll)
 
 		return scrollToPosition(top + window.scrollY, noAnimation).then(
-			() => {
+			async () => {
 				// retry scroll in case we have to load some data
 				if (pendingSecondStageScroll) window.cancelIdleCallback(pendingSecondStageScroll)
 				return new Promise<boolean>((resolve, reject) => {
@@ -234,7 +234,7 @@ function getRegionPosition(topElement: HTMLElement, bottomElement: HTMLElement):
 let scrollToPositionRequest: number | undefined
 let scrollToPositionRequestReject: ((reason?: any) => void) | undefined
 
-export function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
+export async function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
 	if (noAnimation) {
 		window.scroll({
 			top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),

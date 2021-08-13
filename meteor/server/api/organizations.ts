@@ -77,7 +77,7 @@ export function removeOrganization(context: MethodContext, organizationId: Organ
 }
 
 class ServerOrganizationAPI extends MethodContextAPI implements NewOrganizationAPI {
-	removeOrganization(organizationId: OrganizationId) {
+	async removeOrganization(organizationId: OrganizationId) {
 		return makePromise(() => removeOrganization(this, organizationId))
 	}
 }

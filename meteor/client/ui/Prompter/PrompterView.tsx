@@ -592,7 +592,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		componentDidMount() {
 			this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
 
-			// TODO-PartInstance the prompter should probably consider instances
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId)
 				if (playlist) {
@@ -609,6 +608,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					})
 					this.subscribe(PubSub.pieces, {
 						startRundownId: { $in: rundownIDs },
+					})
+					this.subscribe(PubSub.pieceInstancesSimple, {
+						rundownId: { $in: rundownIDs },
+						reset: { $ne: true },
 					})
 				}
 			})
@@ -674,9 +677,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 		renderPrompterData(prompterData: PrompterData) {
 			const getPartStatus = (part: PrompterDataPart) => {
-				if (prompterData.currentPartId === part.id) {
+				if (prompterData.currentPartInstanceId === part.id) {
 					return 'live'
-				} else if (prompterData.nextPartId === part.id) {
+				} else if (prompterData.nextPartInstanceId === part.id) {
 					return 'next'
 				} else {
 					return null

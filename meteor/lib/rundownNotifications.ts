@@ -176,15 +176,17 @@ export function getBasicNotesForSegment(
 	for (const part of parts) {
 		const newNotes = part.notes?.slice() || []
 
-		if (part.invalidReason) {
-			newNotes.push({
-				type: NoteType.ERROR,
-				message: part.invalidReason.message,
-				origin: {
-					name: part.title,
-				},
-			})
-		}
+		// Temporarily disable showing invalidReason notifications
+		//		-- Jan Starzak, 2021/06/30
+		// if (part.invalidReason) {
+		// 	newNotes.push({
+		// 		type: NoteType.ERROR,
+		// 		message: part.invalidReason.message,
+		// 		origin: {
+		// 			name: part.title,
+		// 		},
+		// 	})
+		// }
 
 		if (newNotes.length > 0) {
 			notes.push(

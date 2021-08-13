@@ -2,7 +2,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
-import { literal, protectString } from '../../../../lib/lib'
+import { literal, protectString, waitForPromise } from '../../../../lib/lib'
 import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
@@ -38,6 +38,9 @@ async function createMockRO(): Promise<RundownId> {
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
 		activationId: protectString('active'),
+		timing: {
+			type: 'none' as any,
+		},
 	})
 
 	Rundowns.insert({
@@ -55,6 +58,9 @@ async function createMockRO(): Promise<RundownId> {
 		_rank: 0,
 		externalNRCSName: 'mockNRCS',
 		organizationId: protectString(''),
+		timing: {
+			type: 'none' as any,
+		},
 	})
 
 	await saveIntoDb(
@@ -319,13 +325,15 @@ describe('ensureNextPartIsValid', () => {
 		})
 	}
 	function ensureNextPartIsValid() {
-		return runPlayoutOperationWithCache(
-			null,
-			'ensureNextPartIsValid',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => ensureNextPartIsValidRaw(cache)
+		return waitForPromise(
+			runPlayoutOperationWithCache(
+				null,
+				'ensureNextPartIsValid',
+				rundownPlaylistId,
+				PlayoutLockFunctionPriority.USER_PLAYOUT,
+				null,
+				async (cache) => ensureNextPartIsValidRaw(cache)
+			)
 		)
 	}
 

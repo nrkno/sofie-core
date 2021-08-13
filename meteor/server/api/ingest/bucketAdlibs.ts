@@ -15,7 +15,6 @@ import {
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from './expectedMediaItems'
 import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
-import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { bucketSyncFunction } from '../buckets'
 import {
 	cleanUpExpectedPackagesForBucketAdLibs,
@@ -24,18 +23,21 @@ import {
 	updateExpectedPackagesForBucketAdLibAction,
 } from './expectedPackages'
 import { ShowStyleUserContext } from '../blueprints/context'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
 }
 
-export function updateBucketAdlibFromIngestData(
+export async function updateBucketAdlibFromIngestData(
 	showStyle: ShowStyleCompound,
 	studio: Studio,
 	bucketId: BucketId,
 	ingestData: IngestAdlib
-): void {
-	const { blueprint, blueprintId } = waitForPromise(loadShowStyleBlueprint(showStyle))
+): Promise<void> {
+	const { blueprint, blueprintId } = await loadShowStyleBlueprint(showStyle)
+
+	const watchedPackages = WatchedPackagesHelper.empty()
 
 	const context = new ShowStyleUserContext(
 		{
@@ -44,7 +46,8 @@ export function updateBucketAdlibFromIngestData(
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
 		},
 		studio,
-		showStyle
+		showStyle,
+		watchedPackages
 	)
 	if (!blueprint.getAdlibItem) throw new Meteor.Error(501, "This blueprint doesn't support ingest AdLibs")
 	const rawAdlib = blueprint.getAdlibItem(context, ingestData)
@@ -57,8 +60,8 @@ export function updateBucketAdlibFromIngestData(
 		core: PackageInfo.version,
 	}
 
-	bucketSyncFunction(bucketId, 'updateBucketAdlibFromIngestData', () => {
-		const [oldAdLibPieces, oldAdLibActions] = waitForPromiseAll([
+	await bucketSyncFunction(bucketId, 'updateBucketAdlibFromIngestData', async () => {
+		const [oldAdLibPieces, oldAdLibActions] = await Promise.all([
 			BucketAdLibs.findFetchAsync({
 				externalId: ingestData.externalId,
 				showStyleVariantId: showStyle.showStyleVariantId,
@@ -75,7 +78,7 @@ export function updateBucketAdlibFromIngestData(
 
 		if (!rawAdlib) {
 			// Cleanup any old copied
-			waitForPromiseAll([
+			await Promise.all([
 				cleanUpExpectedMediaItemForBucketAdLibPiece(oldAdLibPieces.map((adlib) => adlib._id)),
 				cleanUpExpectedMediaItemForBucketAdLibActions(oldAdLibActions.map((adlib) => adlib._id)),
 				cleanUpExpectedPackagesForBucketAdLibs(oldAdLibPieces.map((adlib) => adlib._id)),
@@ -97,7 +100,7 @@ export function updateBucketAdlibFromIngestData(
 			])
 			return null
 		} else {
-			const [highestAdlib, highestAction] = waitForPromiseAll([
+			const [highestAdlib, highestAction] = await Promise.all([
 				BucketAdLibs.findFetchAsync(
 					{
 						bucketId,
@@ -147,7 +150,7 @@ export function updateBucketAdlibFromIngestData(
 					newRank,
 					importVersions
 				)
-				BucketAdLibActions.upsert(
+				await BucketAdLibActions.upsertAsync(
 					{
 						externalId: ingestData.externalId,
 						showStyleVariantId: showStyle.showStyleVariantId,
@@ -157,8 +160,10 @@ export function updateBucketAdlibFromIngestData(
 					action
 				)
 
-				waitForPromise(updateExpectedMediaItemForBucketAdLibAction(action._id))
-				waitForPromise(updateExpectedPackagesForBucketAdLibAction(action._id))
+				await Promise.all([
+					updateExpectedMediaItemForBucketAdLibAction(action._id),
+					updateExpectedPackagesForBucketAdLibAction(action._id),
+				])
 
 				// Preserve this one
 				actionIdsToRemove = actionIdsToRemove.filter((id) => id !== action._id)
@@ -172,7 +177,7 @@ export function updateBucketAdlibFromIngestData(
 					newRank,
 					importVersions
 				)
-				BucketAdLibs.upsert(
+				await BucketAdLibs.upsertAsync(
 					{
 						externalId: ingestData.externalId,
 						showStyleVariantId: showStyle.showStyleVariantId,
@@ -182,15 +187,17 @@ export function updateBucketAdlibFromIngestData(
 					adlib
 				)
 
-				waitForPromise(updateExpectedMediaItemForBucketAdLibPiece(adlib._id))
-				waitForPromise(updateExpectedPackagesForBucketAdLib(adlib._id))
+				await Promise.all([
+					updateExpectedMediaItemForBucketAdLibPiece(adlib._id),
+					updateExpectedPackagesForBucketAdLib(adlib._id),
+				])
 
 				// Preserve this one
 				adlibIdsToRemove = adlibIdsToRemove.filter((id) => id !== adlib._id)
 			}
 
 			// Cleanup the old items
-			waitForPromiseAll([
+			await Promise.all([
 				cleanUpExpectedMediaItemForBucketAdLibPiece(adlibIdsToRemove),
 				cleanUpExpectedMediaItemForBucketAdLibActions(actionIdsToRemove),
 				cleanUpExpectedPackagesForBucketAdLibs(adlibIdsToRemove),

@@ -2,7 +2,7 @@ import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../l
 import { StudioId } from '../../../lib/collections/Studios'
 import { protectString } from '../../../lib/lib'
 
-export function getActiveRundownPlaylistsInStudioFromDb(
+export async function getActiveRundownPlaylistsInStudioFromDb(
 	studioId: StudioId,
 	excludeRundownPlaylistId?: RundownPlaylistId
 ): Promise<RundownPlaylist[]> {

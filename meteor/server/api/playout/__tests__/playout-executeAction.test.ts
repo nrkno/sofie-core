@@ -38,6 +38,8 @@ const {
 
 jest.mock('../../playout/timeline')
 import { updateTimeline } from '../../playout/timeline'
+import { AdLibActionId } from '../../../../lib/collections/AdLibActions'
+import { protectString } from '../../../../lib/lib'
 type TupdateTimeline = jest.MockedFunction<typeof updateTimeline>
 const updateTimelineMock = updateTimeline as TupdateTimeline
 
@@ -63,8 +65,8 @@ describe('Playout API', () => {
 			playlistId = playlistId0
 			rundownId = rundownId0
 
-			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId, true)
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId)
+			await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId, true)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId)
 
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
@@ -81,24 +83,25 @@ describe('Playout API', () => {
 			BLUEPRINT_CACHE_CONTROL.disable = false
 		})
 
-		testInFiber('invalid parameters', () => {
-			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), 9, '', '')).toThrowError(
-				'Match error: Expected string'
-			)
-			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), '', 9, '')).toThrowError(
-				'Match error: Expected string'
-			)
+		testInFiber('invalid parameters', async () => {
+			await expect(
+				// @ts-ignore
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), 9, '', '')
+			).rejects.toThrowError('Match error: Expected string')
+			await expect(
+				// @ts-ignore
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), '', 9, '')
+			).rejects.toThrowError('Match error: Expected string')
 		})
 
-		testInFiber('throws errors', () => {
+		testInFiber('throws errors', async () => {
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
 
-			expect(() =>
-				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
-			).toThrowError(/ShowStyle blueprint .* does not support executing actions/)
+			await expect(
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
+			).rejects.toMatchToString(/ShowStyle blueprint .* does not support executing actions/)
 
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 
@@ -121,15 +124,15 @@ describe('Playout API', () => {
 					),
 				},
 			})
-			expect(() =>
-				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
-			).toThrowError('action execution threw')
+			await expect(
+				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
+			).rejects.toThrowError('action execution threw')
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
 		})
 
-		testInFiber('no changes', () => {
+		testInFiber('no changes', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
@@ -159,15 +162,22 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await ServerPlayoutAPI.executeAction(
+				DEFAULT_ACCESS(playlistId),
+				playlistId,
+				actionDocId,
+				actionId,
+				userData
+			)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
 		})
 
-		testInFiber('safe next part', () => {
+		testInFiber('safe next part', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
@@ -199,15 +209,22 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await ServerPlayoutAPI.executeAction(
+				DEFAULT_ACCESS(playlistId),
+				playlistId,
+				actionDocId,
+				actionId,
+				userData
+			)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
 		})
 
-		testInFiber('safe current part', () => {
+		testInFiber('safe current part', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
@@ -239,15 +256,22 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await ServerPlayoutAPI.executeAction(
+				DEFAULT_ACCESS(playlistId),
+				playlistId,
+				actionDocId,
+				actionId,
+				userData
+			)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
 		})
 
-		testInFiber('take after execute (true)', () => {
+		testInFiber('take after execute (true)', async () => {
 			const api = ServerPlayoutAPI
 			const mockTake = jest.fn().mockReturnThis()
 			api.callTakeWithCache = mockTake
@@ -278,16 +302,17 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
 
 			const timesTakeCalled = mockTake.mock.calls.length
 			mockTake.mockRestore()
 			expect(timesTakeCalled).toBe(1)
 		})
 
-		testInFiber('take after execute (false)', () => {
+		testInFiber('take after execute (false)', async () => {
 			const api = ServerPlayoutAPI
 			const mockTake = jest.fn().mockReturnThis()
 			api.callTakeWithCache = mockTake
@@ -318,9 +343,10 @@ describe('Playout API', () => {
 				},
 			})
 
+			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionId, userData)
+			await api.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
 
 			const timesTakeCalled = mockTake.mock.calls.length
 			mockTake.mockRestore()

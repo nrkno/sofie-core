@@ -47,7 +47,7 @@ describe('Basic test of test environment', () => {
 				expect(isInFiber()).toBeTruthy()
 				return 'a'
 			})
-			.then((val) => {
+			.then(async (val) => {
 				return new Promise((resolve) => {
 					expect(isInFiber()).toBeTruthy()
 					resolve(val)

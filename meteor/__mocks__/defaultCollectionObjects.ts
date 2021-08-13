@@ -30,6 +30,9 @@ export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioI
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
+		timing: {
+			type: 'none' as any,
+		},
 	}
 }
 export function defaultRundown(
@@ -66,6 +69,9 @@ export function defaultRundown(
 		},
 
 		externalNRCSName: 'mock',
+		timing: {
+			type: 'none' as any,
+		},
 	}
 }
 

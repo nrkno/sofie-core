@@ -100,6 +100,38 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 				},
 			})
 		}
+		troubleshootDevice(device: PeripheralDevice, e: Event | React.SyntheticEvent<object>) {
+			const { t } = this.props
+			PeripheralDevicesAPI.troubleshootDevice(device, e)
+				.then((result) => {
+					console.log(`Troubleshooting data for device ${device.name}`)
+					console.log(result)
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.NOTIFICATION,
+							t('Check the console for troubleshooting data from device "{{deviceName}}"!', {
+								deviceName: device.name,
+							}),
+							'DeviceSettings'
+						)
+					)
+				})
+				.catch((err) => {
+					// console.error(err)
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', {
+								deviceName: device.name,
+								errorMessage: err + '',
+							}),
+							'DeviceSettings'
+						)
+					)
+				})
+		}
 
 		renderEditForm(device: PeripheralDevice) {
 			const { t } = this.props
@@ -140,6 +172,16 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							<div className="mbs">
 								<PeripheralDeviceStatus device={device} />
 							</div>
+							{device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER ? (
+								<div className="mbs">
+									<button
+										className="btn btn-secondary btn-tight"
+										onClick={(e) => device && this.troubleshootDevice(device, e)}
+									>
+										{t('Troubleshoot')}
+									</button>
+								</div>
+							) : null}
 							<div className="mbs">
 								{latencies.average > 0 ? (
 									<React.Fragment>
