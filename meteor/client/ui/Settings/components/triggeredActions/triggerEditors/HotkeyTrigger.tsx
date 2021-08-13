@@ -3,6 +3,7 @@ import React from 'react'
 import type Sorensen from 'sorensen'
 import { useContext } from 'react'
 import { SorensenContext } from '../TriggeredActionsEditor'
+import { useTranslation } from 'react-i18next'
 
 function toTitleCase(input: string): string {
 	const str = input.toLowerCase().split(' ')
@@ -38,6 +39,7 @@ export const HotkeyTrigger = ({
 	onClick?: () => void
 }) => {
 	const Sorensen = useContext(SorensenContext)
+	const { t } = useTranslation()
 
 	if (Sorensen) {
 		keys = codesToKeyLabels(keys, Sorensen)
@@ -51,7 +53,7 @@ export const HotkeyTrigger = ({
 			})}
 			onClick={onClick}
 		>
-			{keys}
+			{keys ? keys : <i className="subtle">{t('Empty')}</i>}
 			{up ? '⇪' : ''}
 		</div>
 	)

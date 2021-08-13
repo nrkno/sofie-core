@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import { TriggeredActions, TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
@@ -77,6 +77,22 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 		setSelectedTrigger(-1)
 	}
 
+	function addTrigger() {
+		const index =
+			triggeredAction.triggers.push({
+				type: TriggerType.hotkey,
+				keys: '',
+			}) - 1
+
+		TriggeredActions.update(triggeredAction._id, {
+			$set: {
+				triggers: triggeredAction.triggers,
+			},
+		})
+
+		setSelectedTrigger(index)
+	}
+
 	return (
 		<div
 			className={classNames('triggered-action-entry selectable', {
@@ -101,7 +117,12 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 						}}
 					/>
 				))}
-				<button className="triggered-action-entry__add" onClick={() => {}}>
+				<button
+					className={classNames('triggered-action-entry__add-trigger', {
+						force: triggeredAction.triggers.length === 0,
+					})}
+					onClick={addTrigger}
+				>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
 			</div>

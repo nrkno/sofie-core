@@ -1,5 +1,6 @@
 import classNames from 'classnames'
 import React, { useContext, useState } from 'react'
+import { useLayoutEffect } from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
@@ -13,6 +14,7 @@ interface IProps {
 
 export const HotkeyEditor = function HotkeyEditor({ trigger }: IProps) {
 	const sorensen = useContext(SorensenContext)
+	const [input, setInput] = useState<HTMLInputElement | null>(null)
 	const [displayValue, setDisplayValue] = useState(trigger.keys)
 	const [value, setValue] = useState(trigger.keys)
 	const { t } = useTranslation()
@@ -41,6 +43,12 @@ export const HotkeyEditor = function HotkeyEditor({ trigger }: IProps) {
 		setValue(trigger.keys)
 	}, [trigger.keys, sorensen])
 
+	useLayoutEffect(() => {
+		setTimeout(() => {
+			input?.focus()
+		}, 40)
+	}, [input])
+
 	return (
 		<>
 			<input
@@ -48,6 +56,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger }: IProps) {
 				className={classNames('form-control input text-input input-m', {
 					bghl: value !== trigger.keys,
 				})}
+				ref={setInput}
 				value={displayValue}
 				onKeyDown={onKeyDown}
 				onBlur={onBlur}

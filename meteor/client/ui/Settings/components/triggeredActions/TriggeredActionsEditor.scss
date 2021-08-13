@@ -35,9 +35,13 @@ $triggered-action-color: #146985;
 				position: relative;
 				z-index: 1001;
 			}
+
+			.subtle {
+				color: #aaa;
+			}
 		}
 
-		> .triggered-action-entry__add {
+		> .triggered-action-entry__add-trigger {
 			border: none;
 			font-size: 0.7em;
 			background: none;
@@ -46,6 +50,10 @@ $triggered-action-color: #146985;
 			color: #777;
 			visibility: hidden;
 			margin-left: -0.2em;
+
+			&.force {
+				visibility: visible;
+			}
 		}
 
 		> .triggered-action-entry__trigger-editor {
@@ -54,7 +62,7 @@ $triggered-action-color: #146985;
 		}
 
 		&:hover {
-			> .triggered-action-entry__add {
+			> .triggered-action-entry__add-trigger {
 				visibility: visible;
 			}
 		}
