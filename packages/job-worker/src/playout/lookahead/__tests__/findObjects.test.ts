@@ -1,22 +1,24 @@
-import '../../../../../__mocks__/_extendJest'
-import { RundownId } from '../../../../../lib/collections/Rundowns'
-import { literal, omit, protectString } from '../../../../../lib/lib'
 import { findLookaheadObjectsForPart } from '../findObjects'
-import { Part } from '../../../../../lib/collections/Parts'
 import { OnGenerateTimelineObj, PieceLifespan, TSR } from '@sofie-automation/blueprints-integration'
-import { PartInstanceId } from '../../../../../lib/collections/PartInstances'
-import { PieceInstance } from '../../../../../lib/collections/PieceInstances'
-import { TimelineObjRundown } from '../../../../../lib/collections/Timeline'
-import _ from 'underscore'
 import { sortPieceInstancesByStart } from '../../pieces'
+import { RundownId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { setupDefaultJobEnvironment } from '../../../__mocks__/context'
+import _ = require('underscore')
 
 function stripObjectProperties(objs: Array<TimelineObjRundown & OnGenerateTimelineObj>, keepContent?: boolean): any[] {
 	const keys = _.compact([keepContent ? undefined : 'content', 'enable', 'objectType', 'keyframes'])
-	return objs.map((o) => omit(o, ...keys))
+	return objs.map((o) => _.omit(o, ...keys))
 }
 
 describe('findLookaheadObjectsForPart', () => {
-	function definePart(rundownId: RundownId): Part {
+	const context = setupDefaultJobEnvironment()
+
+	function definePart(rundownId: RundownId): DBPart {
 		return { rundownId } as any
 	}
 	test('no pieces', () => {
@@ -24,7 +26,14 @@ describe('findLookaheadObjectsForPart', () => {
 		const rundownId: RundownId = protectString('rundown0')
 		const layerName = 'layer0'
 		const partInfo = { part: definePart(rundownId), pieces: [] }
-		const objects = findLookaheadObjectsForPart(currentPartInstanceId, layerName, undefined, partInfo, null)
+		const objects = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layerName,
+			undefined,
+			partInfo,
+			null
+		)
 		expect(objects).toHaveLength(0)
 	})
 
@@ -79,11 +88,11 @@ describe('findLookaheadObjectsForPart', () => {
 		}
 
 		// Empty layer
-		const objects = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, null)
+		const objects = findLookaheadObjectsForPart(context, currentPartInstanceId, layer0, undefined, partInfo, null)
 		expect(objects).toHaveLength(0)
 
 		// Layer has an object
-		const objects2 = findLookaheadObjectsForPart(currentPartInstanceId, layer1, undefined, partInfo, null)
+		const objects2 = findLookaheadObjectsForPart(context, currentPartInstanceId, layer1, undefined, partInfo, null)
 		expect(objects2).toHaveLength(1)
 	})
 
@@ -117,7 +126,7 @@ describe('findLookaheadObjectsForPart', () => {
 		}
 
 		// Run for future part
-		const objects = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, null)
+		const objects = findLookaheadObjectsForPart(context, currentPartInstanceId, layer0, undefined, partInfo, null)
 		expect(stripObjectProperties(objects)).toStrictEqual([
 			{
 				id: 'obj0',
@@ -129,7 +138,14 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Run for future part with a partInstanceId
-		const objects1 = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, partInstanceId)
+		const objects1 = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer0,
+			undefined,
+			partInfo,
+			partInstanceId
+		)
 		expect(stripObjectProperties(objects1)).toStrictEqual([
 			{
 				id: 'obj0',
@@ -141,7 +157,7 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Run for partInstance without the id
-		const objects2 = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, null)
+		const objects2 = findLookaheadObjectsForPart(context, currentPartInstanceId, layer0, undefined, partInfo, null)
 		expect(stripObjectProperties(objects2)).toStrictEqual([
 			{
 				id: 'obj0',
@@ -153,7 +169,14 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Run for partInstance with the id
-		const objects3 = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, partInstanceId)
+		const objects3 = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer0,
+			undefined,
+			partInfo,
+			partInstanceId
+		)
 		expect(objects3).toStrictEqual(objects1)
 	})
 
@@ -204,7 +227,14 @@ describe('findLookaheadObjectsForPart', () => {
 		}
 
 		// No transition piece
-		const objects = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, partInstanceId)
+		const objects = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer0,
+			undefined,
+			partInfo,
+			partInstanceId
+		)
 		expect(stripObjectProperties(objects, true)).toStrictEqual([
 			{
 				id: 'obj0',
@@ -219,8 +249,9 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Allowed transition
-		const previousPart: Part = { disableOutTransition: false, classesForNext: undefined } as any
+		const previousPart: DBPart = { disableOutTransition: false, classesForNext: undefined } as any
 		const objects1 = findLookaheadObjectsForPart(
+			context,
 			currentPartInstanceId,
 			layer0,
 			previousPart,
@@ -240,6 +271,7 @@ describe('findLookaheadObjectsForPart', () => {
 			},
 		})
 		const objects2 = findLookaheadObjectsForPart(
+			context,
 			currentPartInstanceId,
 			layer0,
 			previousPart,
@@ -261,12 +293,20 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// No previous should still allow it
-		const objects3 = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, partInstanceId)
+		const objects3 = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer0,
+			undefined,
+			partInfo,
+			partInstanceId
+		)
 		expect(stripObjectProperties(objects3, true)).toStrictEqual(stripObjectProperties(objects1, true))
 
 		// Previous disables transition
-		const blockedPreviousPart: Part = { disableOutTransition: true, classesForNext: undefined } as any
+		const blockedPreviousPart: DBPart = { disableOutTransition: true, classesForNext: undefined } as any
 		const objects4 = findLookaheadObjectsForPart(
+			context,
 			currentPartInstanceId,
 			layer0,
 			blockedPreviousPart,
@@ -326,7 +366,7 @@ describe('findLookaheadObjectsForPart', () => {
 		}
 
 		// Run for future part
-		const objects = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, null)
+		const objects = findLookaheadObjectsForPart(context, currentPartInstanceId, layer0, undefined, partInfo, null)
 		expect(stripObjectProperties(objects)).toStrictEqual([
 			{
 				id: 'obj0',
@@ -345,7 +385,14 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Run for future part with a partInstanceId
-		const objects1 = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, partInstanceId)
+		const objects1 = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer0,
+			undefined,
+			partInfo,
+			partInstanceId
+		)
 		expect(stripObjectProperties(objects1)).toStrictEqual([
 			{
 				id: 'obj0',
@@ -364,7 +411,7 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Run for partInstance without the id
-		const objects2 = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, null)
+		const objects2 = findLookaheadObjectsForPart(context, currentPartInstanceId, layer0, undefined, partInfo, null)
 		expect(stripObjectProperties(objects2)).toStrictEqual([
 			{
 				id: 'obj0',
@@ -383,7 +430,14 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Run for partInstance with the id
-		const objects3 = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, partInstanceId)
+		const objects3 = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer0,
+			undefined,
+			partInfo,
+			partInstanceId
+		)
 		expect(stripObjectProperties(objects3)).toStrictEqual([
 			{
 				id: 'obj0',
@@ -476,7 +530,14 @@ describe('findLookaheadObjectsForPart', () => {
 		}
 
 		// No transition piece
-		const objects = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, partInstanceId)
+		const objects = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer0,
+			undefined,
+			partInfo,
+			partInstanceId
+		)
 		expect(stripObjectProperties(objects, true)).toStrictEqual([
 			{
 				id: 'obj0',
@@ -501,8 +562,9 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Allowed transition
-		const previousPart: Part = { disableOutTransition: false, classesForNext: undefined } as any
+		const previousPart: DBPart = { disableOutTransition: false, classesForNext: undefined } as any
 		const objects1 = findLookaheadObjectsForPart(
+			context,
 			currentPartInstanceId,
 			layer0,
 			previousPart,
@@ -532,6 +594,7 @@ describe('findLookaheadObjectsForPart', () => {
 			},
 		})
 		const objects2 = findLookaheadObjectsForPart(
+			context,
 			currentPartInstanceId,
 			layer0,
 			previousPart,
@@ -564,12 +627,20 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// No previous should still allow it
-		const objects3 = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, partInstanceId)
+		const objects3 = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer0,
+			undefined,
+			partInfo,
+			partInstanceId
+		)
 		expect(stripObjectProperties(objects3, true)).toStrictEqual(stripObjectProperties(objects1, true))
 
 		// Previous disables transition
-		const blockedPreviousPart: Part = { disableOutTransition: true, classesForNext: undefined } as any
+		const blockedPreviousPart: DBPart = { disableOutTransition: true, classesForNext: undefined } as any
 		const objects4 = findLookaheadObjectsForPart(
+			context,
 			currentPartInstanceId,
 			layer0,
 			blockedPreviousPart,
@@ -677,8 +748,9 @@ describe('findLookaheadObjectsForPart', () => {
 		}
 
 		// Allowed transition
-		const previousPart: Part = { disableOutTransition: false, classesForNext: undefined } as any
+		const previousPart: DBPart = { disableOutTransition: false, classesForNext: undefined } as any
 		const objects2 = findLookaheadObjectsForPart(
+			context,
 			currentPartInstanceId,
 			layer0,
 			previousPart,
@@ -710,7 +782,14 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// No previous part
-		const objects3 = findLookaheadObjectsForPart(currentPartInstanceId, layer0, undefined, partInfo, partInstanceId)
+		const objects3 = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer0,
+			undefined,
+			partInfo,
+			partInstanceId
+		)
 		expect(stripObjectProperties(objects3, true)).toStrictEqual([
 			{
 				id: 'obj0',

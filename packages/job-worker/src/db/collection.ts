@@ -1,4 +1,4 @@
-import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ProtectedString, unprotectString, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { AnyBulkWriteOperation, Collection as MongoCollection, FindOptions } from 'mongodb'
 import { startSpanManual } from '../profiler'
 import { ICollection, MongoModifier, MongoQuery } from './collections'
@@ -62,6 +62,20 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		if (span) span.end()
 		return res.insertedId
 	}
+
+	// async insertMany(docs: Array<TDoc>): Promise<Array<TDoc['_id']>> {
+	// 	const span = startSpanManual('WrappedCollection.insertMany')
+	// 	if (span) {
+	// 		span.addLabels({
+	// 			collection: this.name,
+	// 			ids: unprotectStringArray(docs.map((d) => d._id)).join(','),
+	// 		})
+	// 	}
+
+	// 	const res = await this.#collection.insertMany(docs as any)
+	// 	if (span) span.end()
+	// 	return res.insertedIds
+	// }
 
 	async replace(doc: TDoc): Promise<boolean> {
 		const span = startSpanManual('WrappedCollection.replace')

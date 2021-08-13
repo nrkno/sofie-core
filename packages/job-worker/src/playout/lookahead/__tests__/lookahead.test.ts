@@ -1,38 +1,33 @@
-import '../../../../../__mocks__/_extendJest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../../../__mocks__/helpers/database'
-import { DBRundown, RundownId, Rundowns } from '../../../../../lib/collections/Rundowns'
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
-import { getCurrentTime, getRandomId, protectString } from '../../../../../lib/lib'
-import { SegmentId } from '../../../../../lib/collections/Segments'
-import { DBPart, Part, PartId, Parts } from '../../../../../lib/collections/Parts'
-import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
-import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
-import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../../lib/collections/Timeline'
-import { PartAndPieces, PartInstanceAndPieceInstances } from '../util'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
+import { RundownPlaylistId, PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { getCurrentTime } from '../../../lib'
+import { SelectedPartInstancesTimelineInfo } from '../../../playout/timeline'
 import { getLookeaheadObjects } from '..'
-import { SelectedPartInstancesTimelineInfo } from '../../timeline'
-import { testInFiber } from '../../../../../__mocks__/helpers/jest'
-import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../../lockFunction'
-import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '../../../../../lib/constants'
+import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
+import { setupDefaultJobEnvironment, MockJobContext } from '../../../__mocks__/context'
+import { runJobWithPlayoutCache } from '../../../playout/lock'
+import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObjects'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { TimelineObjRundown, OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 jest.mock('../findForLayer')
 type TfindLookaheadForLayer = jest.MockedFunction<typeof findLookaheadForLayer>
-const findLookaheadForLayerMock = findLookaheadForLayer as TfindLookaheadForLayer
 import { findLookaheadForLayer } from '../findForLayer'
+const findLookaheadForLayerMock = findLookaheadForLayer as TfindLookaheadForLayer
 
 jest.mock('../util')
 type TgetOrderedPartsAfterPlayhead = jest.MockedFunction<typeof getOrderedPartsAfterPlayhead>
+import { getOrderedPartsAfterPlayhead, PartAndPieces, PartInstanceAndPieceInstances } from '../util'
 const getOrderedPartsAfterPlayheadMock = getOrderedPartsAfterPlayhead as TgetOrderedPartsAfterPlayhead
-import { getOrderedPartsAfterPlayhead } from '../util'
 
 describe('Lookahead', () => {
-	let env: DefaultEnvironment
+	let context!: MockJobContext
 	let playlistId: RundownPlaylistId
-	// let rundownId: RundownId
+	let rundownId: RundownId
 	// let segmentId: SegmentId
 	let partIds: PartId[]
 
@@ -40,97 +35,101 @@ describe('Lookahead', () => {
 		findLookaheadForLayerMock.mockReset().mockReturnValue({ timed: [], future: [] }) // Default mock
 		getOrderedPartsAfterPlayheadMock.mockReset().mockReturnValue([])
 
-		env = await setupDefaultStudioEnvironment()
+		context = setupDefaultJobEnvironment()
 		const mappings: MappingsExt = {}
-		for (const k of Object.keys(LookaheadMode)) {
+		for (const [k, v] of Object.entries(LookaheadMode)) {
 			if (isNaN(parseInt(k))) {
 				mappings[k] = {
 					device: TSR.DeviceType.ABSTRACT,
 					deviceId: protectString('fake0'),
-					lookahead: LookaheadMode[k],
+					lookahead: v as LookaheadMode,
 					// lookaheadDepth: 0,
 					// lookaheadMaxSearchDistance: 0,
 				}
 			}
 		}
-		Studios.update(env.studio._id, { $set: { mappings } })
-		env.studio.mappings = mappings
-		;({ playlistId } = setupDefaultRundownPlaylist(
-			env,
-			undefined,
-			(env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId) => {
-				const rundown: DBRundown = {
-					peripheralDeviceId: env.ingestDevice._id,
-					organizationId: null,
-					studioId: env.studio._id,
-					showStyleBaseId: env.showStyleBase._id,
-					showStyleVariantId: env.showStyleVariant._id,
-					playlistId: playlistId,
-					_rank: 0,
-					_id: rundownId,
-					externalId: 'MOCK_RUNDOWN',
-					name: 'Default Rundown',
-					created: getCurrentTime(),
-					modified: getCurrentTime(),
-					importVersions: {
-						studio: '',
-						showStyleBase: '',
-						showStyleVariant: '',
-						blueprint: '',
-						core: '',
-					},
-					externalNRCSName: 'mock',
-				}
-				Rundowns.insert(rundown)
+		context.setStudio({
+			...context.studio,
+			mappings: mappings,
+		})
 
-				function createMockPart(index: number, segId: SegmentId): DBPart {
-					return {
-						_id: protectString(rundownId + '_part' + index),
-						segmentId: segId,
-						rundownId: rundown._id,
-						_rank: index,
-						externalId: 'MOCK_PART_' + index,
-						title: 'Part ' + index,
-					}
-				}
+		// Create a playlist with some parts
+		rundownId = protectString(`rundown0`)
+		playlistId = protectString(`playlist0`)
 
-				const segmentId0: SegmentId = getRandomId()
-				const segmentId1: SegmentId = getRandomId()
-				const segmentId2: SegmentId = getRandomId()
+		await context.directCollections.RundownPlaylists.insertOne({
+			...defaultRundownPlaylist(playlistId, context.studioId),
+			activationId: protectString('active'),
+		})
 
-				partIds = [
-					Parts.insert(createMockPart(0, segmentId0)),
-					Parts.insert(createMockPart(1, segmentId0)),
-					Parts.insert(createMockPart(2, segmentId0)),
-					Parts.insert(createMockPart(3, segmentId0)),
-					Parts.insert(createMockPart(4, segmentId0)),
+		await context.directCollections.Rundowns.insertOne({
+			peripheralDeviceId: undefined,
+			organizationId: null,
+			studioId: context.studioId,
+			showStyleBaseId: protectString('showStyleBase0'),
+			showStyleVariantId: protectString('showStyleVariante0'),
+			playlistId: playlistId,
+			_rank: 0,
+			_id: rundownId,
+			externalId: 'MOCK_RUNDOWN',
+			name: 'Default Rundown',
+			created: getCurrentTime(),
+			modified: getCurrentTime(),
+			importVersions: {
+				studio: '',
+				showStyleBase: '',
+				showStyleVariant: '',
+				blueprint: '',
+				core: '',
+			},
+			externalNRCSName: 'mock',
+		})
 
-					Parts.insert(createMockPart(10, segmentId1)),
-					Parts.insert(createMockPart(11, segmentId1)),
-					Parts.insert(createMockPart(12, segmentId1)),
-
-					Parts.insert(createMockPart(20, segmentId2)),
-					Parts.insert(createMockPart(21, segmentId2)),
-					Parts.insert(createMockPart(22, segmentId2)),
-				]
-
-				return rundownId
+		function createMockPart(index: number, segId: SegmentId): DBPart {
+			return {
+				_id: protectString(rundownId + '_part' + index),
+				segmentId: segId,
+				rundownId: rundownId,
+				_rank: index,
+				externalId: 'MOCK_PART_' + index,
+				title: 'Part ' + index,
 			}
-		))
+		}
+
+		const segmentId0: SegmentId = getRandomId()
+		const segmentId1: SegmentId = getRandomId()
+		const segmentId2: SegmentId = getRandomId()
+
+		partIds = await Promise.all([
+			context.directCollections.Parts.insertOne(createMockPart(0, segmentId0)),
+			context.directCollections.Parts.insertOne(createMockPart(1, segmentId0)),
+			context.directCollections.Parts.insertOne(createMockPart(2, segmentId0)),
+			context.directCollections.Parts.insertOne(createMockPart(3, segmentId0)),
+			context.directCollections.Parts.insertOne(createMockPart(4, segmentId0)),
+
+			context.directCollections.Parts.insertOne(createMockPart(10, segmentId1)),
+			context.directCollections.Parts.insertOne(createMockPart(11, segmentId1)),
+			context.directCollections.Parts.insertOne(createMockPart(12, segmentId1)),
+
+			context.directCollections.Parts.insertOne(createMockPart(20, segmentId2)),
+			context.directCollections.Parts.insertOne(createMockPart(21, segmentId2)),
+			context.directCollections.Parts.insertOne(createMockPart(22, segmentId2)),
+		])
 	})
 
-	function expectLookaheadForLayerMock(
+	async function expectLookaheadForLayerMock(
 		playlistId0: RundownPlaylistId,
 		partInstances: PartInstanceAndPieceInstances[],
 		previous: PartInstanceAndPieceInstances | undefined,
 		orderedPartsFollowingPlayhead: PartAndPieces[]
 	) {
-		const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+		const playlist = (await context.directCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 		expect(playlist).toBeTruthy()
 
 		expect(findLookaheadForLayerMock).toHaveBeenCalledTimes(2)
 		expect(findLookaheadForLayerMock).toHaveBeenNthCalledWith(
 			1,
+			context,
 			playlist.currentPartInstanceId,
 			partInstances,
 			previous,
@@ -141,6 +140,7 @@ describe('Lookahead', () => {
 		)
 		expect(findLookaheadForLayerMock).toHaveBeenNthCalledWith(
 			2,
+			context,
 			playlist.currentPartInstanceId,
 			partInstances,
 			previous,
@@ -152,28 +152,20 @@ describe('Lookahead', () => {
 		findLookaheadForLayerMock.mockClear()
 	}
 
-	testInFiber('No pieces', async () => {
-		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-		expect(playlist).toBeTruthy()
-
+	test('No pieces', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
-		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
+		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts.map((p) => p.part))
 
-		const res = await runPlayoutOperationWithCache(
-			null,
-			'test',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
+		const res = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
+			getLookeaheadObjects(context, cache, partInstancesInfo)
 		)
 		expect(res).toHaveLength(0)
 
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
-		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 10) // default distance
-		expectLookaheadForLayerMock(playlistId, [], undefined, fakeParts)
+		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(context, expect.anything(), 10) // default distance
+		await expectLookaheadForLayerMock(playlistId, [], undefined, fakeParts)
 	})
 
 	function fakeResultObj(id: string, pieceId: string, layer: string): TimelineObjRundown & OnGenerateTimelineObjExt {
@@ -185,14 +177,14 @@ describe('Lookahead', () => {
 		} as any
 	}
 
-	testInFiber('got some objects', async () => {
+	test('got some objects', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
-		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
+		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts.map((p) => p.part))
 
 		findLookaheadForLayerMock
-			.mockImplementationOnce((_id, _parts, _prev, _parts2, layer) => ({
+			.mockImplementationOnce((_context, _id, _parts, _prev, _parts2, layer) => ({
 				timed: [fakeResultObj('obj0', 'piece0', layer), fakeResultObj('obj1', 'piece1', layer)],
 				future: [
 					fakeResultObj('obj2', 'piece0', layer),
@@ -200,7 +192,7 @@ describe('Lookahead', () => {
 					fakeResultObj('obj4', 'piece0', layer),
 				],
 			}))
-			.mockImplementationOnce((_id, _parts, _prev, _parts2, layer) => ({
+			.mockImplementationOnce((_context, _id, _parts, _prev, _parts2, layer) => ({
 				timed: [fakeResultObj('obj5', 'piece1', layer), fakeResultObj('obj6', 'piece0', layer)],
 				future: [
 					fakeResultObj('obj7', 'piece1', layer),
@@ -209,72 +201,67 @@ describe('Lookahead', () => {
 				],
 			}))
 
-		const res = await runPlayoutOperationWithCache(
-			null,
-			'test',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
+		const res = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
+			getLookeaheadObjects(context, cache, partInstancesInfo)
 		)
 		expect(res).toMatchSnapshot()
 
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
-		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 10) // default distance
-		expectLookaheadForLayerMock(playlistId, [], undefined, fakeParts)
+		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(context, expect.anything(), 10) // default distance
+		await expectLookaheadForLayerMock(playlistId, [], undefined, fakeParts)
 	})
 
-	testInFiber('Different max distances', async () => {
+	test('Different max distances', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
 		// Set really low
-		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = 0
-		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 0
-		await runPlayoutOperationWithCache(
-			null,
-			'test',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
+		{
+			const studio = clone<DBStudio>(context.studio)
+			studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = 0
+			studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 0
+			context.setStudio(studio)
+		}
+		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
+			getLookeaheadObjects(context, cache, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
-		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 0)
+		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(context, expect.anything(), 0)
 
 		// really high
 		getOrderedPartsAfterPlayheadMock.mockClear()
-		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = -1
-		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 2000
-		await runPlayoutOperationWithCache(
-			null,
-			'test',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
+		{
+			const studio = clone<DBStudio>(context.studio)
+			studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = -1
+			studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 2000
+			context.setStudio(studio)
+		}
+		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
+			getLookeaheadObjects(context, cache, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
-		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 2000)
+		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(context, expect.anything(), 2000)
 
 		// unset
 		getOrderedPartsAfterPlayheadMock.mockClear()
-		env.studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = undefined
-		env.studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = -1
-		await runPlayoutOperationWithCache(
-			null,
-			'test',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
+		{
+			const studio = clone<DBStudio>(context.studio)
+			studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = undefined
+			studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = -1
+			context.setStudio(studio)
+		}
+		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
+			getLookeaheadObjects(context, cache, partInstancesInfo)
 		)
 		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledTimes(1)
-		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(expect.anything(), 10)
+		expect(getOrderedPartsAfterPlayheadMock).toHaveBeenCalledWith(context, expect.anything(), 10)
 	})
 
-	testInFiber('PartInstances translation', async () => {
-		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
+	test('PartInstances translation', async () => {
+		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValue(fakeParts.map((p) => p.part))
+
+		// It does have assertions, but hidden inside helper methods
+		expect(true).toBeTruthy()
 
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {
 			previous: {
@@ -291,15 +278,10 @@ describe('Lookahead', () => {
 		}
 
 		// With a previous
-		await runPlayoutOperationWithCache(
-			null,
-			'test',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
+		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
+			getLookeaheadObjects(context, cache, partInstancesInfo)
 		)
-		expectLookaheadForLayerMock(playlistId, [], expectedPrevious, fakeParts)
+		await expectLookaheadForLayerMock(playlistId, [], expectedPrevious, fakeParts)
 
 		// Add a current
 		partInstancesInfo.current = {
@@ -313,15 +295,10 @@ describe('Lookahead', () => {
 			nowInPart: partInstancesInfo.current!.nowInPart,
 			allPieces: partInstancesInfo.current!.pieceInstances,
 		}
-		await runPlayoutOperationWithCache(
-			null,
-			'test',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
+		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
+			getLookeaheadObjects(context, cache, partInstancesInfo)
 		)
-		expectLookaheadForLayerMock(playlistId, [expectedCurrent], expectedPrevious, fakeParts)
+		await expectLookaheadForLayerMock(playlistId, [expectedCurrent], expectedPrevious, fakeParts)
 
 		// Add a next
 		partInstancesInfo.next = {
@@ -335,28 +312,18 @@ describe('Lookahead', () => {
 			nowInPart: partInstancesInfo.next!.nowInPart,
 			allPieces: partInstancesInfo.next!.pieceInstances,
 		}
-		await runPlayoutOperationWithCache(
-			null,
-			'test',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
+		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
+			getLookeaheadObjects(context, cache, partInstancesInfo)
 		)
-		expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
+		await expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 
 		// current has autonext
 		partInstancesInfo.current.partInstance.part.autoNext = true
 		expectedNext.onTimeline = true
-		await runPlayoutOperationWithCache(
-			null,
-			'test',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => getLookeaheadObjects(cache, partInstancesInfo)
+		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
+			getLookeaheadObjects(context, cache, partInstancesInfo)
 		)
-		expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
+		await expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 	})
 
 	// testInFiber('Pieces', () => {
@@ -402,11 +369,11 @@ describe('Lookahead', () => {
 	// 	// pieceMap should have come through valid
 	// 	;(
 	// 		wrapWithCacheForRundownPlaylist(playlist, async (cache) => {
-	// 			await getLookeaheadObjects(cache, env.studio, playlist, partInstancesInfo)
+	// 			await getLookeaheadObjects(context, cache, env.studio, playlist, partInstancesInfo)
 	// 			expect(cache.Pieces.initialized).toBeFalsy()
 	// 		})
 	// 	)
-	// 	expectLookaheadForLayerMock(playlist, [], undefined, fakeParts, pieceMap)
+	// 	await expectLookaheadForLayerMock(playlist, [], undefined, fakeParts, pieceMap)
 
 	// 	// Use the modified cache values
 	// 	const removedIds: PieceId[] = protectStringArray(['piece_1_0', 'piece_4_0'])
@@ -422,7 +389,7 @@ describe('Lookahead', () => {
 	// 			cache.Pieces.remove(removedIds[1])
 	// 			expect(cache.Pieces.initialized).toBeTruthy()
 
-	// 			await getLookeaheadObjects(cache, env.studio, playlist, partInstancesInfo)
+	// 			await getLookeaheadObjects(context, cache, env.studio, playlist, partInstancesInfo)
 	// 		})
 	// 	)
 	// 	const pieceMap2 = new Map<PartId, Piece[]>()
@@ -430,6 +397,6 @@ describe('Lookahead', () => {
 	// 		const pieces2 = pieces.filter((p) => !removedIds.includes(p._id))
 	// 		if (pieces2.length) pieceMap2.set(id, pieces2)
 	// 	}
-	// 	expectLookaheadForLayerMock(playlist, [], undefined, fakeParts, pieceMap2)
+	// 	await expectLookaheadForLayerMock(playlist, [], undefined, fakeParts, pieceMap2)
 	// })
 })

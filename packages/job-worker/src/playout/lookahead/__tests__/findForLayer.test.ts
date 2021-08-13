@@ -1,19 +1,21 @@
-import '../../../../../__mocks__/_extendJest'
-import { Part } from '../../../../../lib/collections/Parts'
 import { findLookaheadForLayer } from '../findForLayer'
 import { PartAndPieces, PartInstanceAndPieceInstances } from '../util'
-import { Random } from 'meteor/random'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { setupDefaultJobEnvironment } from '../../../__mocks__/context'
 
 jest.mock('../findObjects')
 import { findLookaheadObjectsForPart } from '../findObjects'
-import { PieceInstance } from '../../../../../lib/collections/PieceInstances'
 type TfindLookaheadObjectsForPart = jest.MockedFunction<typeof findLookaheadObjectsForPart>
 const findLookaheadObjectsForPartMock = findLookaheadObjectsForPart as TfindLookaheadObjectsForPart
 findLookaheadObjectsForPartMock.mockImplementation(() => []) // Default mock
 
 describe('findLookaheadForLayer', () => {
+	const context = setupDefaultJobEnvironment()
+
 	test('no data', () => {
-		const res = findLookaheadForLayer(null, [], undefined, [], 'abc', 1, 1)
+		const res = findLookaheadForLayer(context, null, [], undefined, [], 'abc', 1, 1)
 		expect(res.timed).toHaveLength(0)
 		expect(res.future).toHaveLength(0)
 	})
@@ -26,6 +28,7 @@ describe('findLookaheadForLayer', () => {
 	): void {
 		expect(findLookaheadObjectsForPartMock).toHaveBeenNthCalledWith(
 			index,
+			context,
 			null,
 			layer,
 			previousPart?.part.part,
@@ -49,7 +52,7 @@ describe('findLookaheadForLayer', () => {
 	}
 
 	test('partInstances', () => {
-		const layer = Random.id()
+		const layer = getRandomString()
 
 		const partInstancesInfo: PartInstanceAndPieceInstances[] = [
 			{
@@ -80,7 +83,7 @@ describe('findLookaheadForLayer', () => {
 			.mockReturnValueOnce(['t4', 't5'] as any)
 
 		// Run it
-		const res = findLookaheadForLayer(null, partInstancesInfo, undefined, [], layer, 1, 1)
+		const res = findLookaheadForLayer(context, null, partInstancesInfo, undefined, [], layer, 1, 1)
 		expect(res.timed).toEqual(['t0', 't1', 't2', 't3'])
 		expect(res.future).toEqual(['t4', 't5'])
 
@@ -97,7 +100,7 @@ describe('findLookaheadForLayer', () => {
 			onTimeline: true,
 		} as any
 		findLookaheadObjectsForPartMock.mockReset().mockReturnValue([])
-		findLookaheadForLayer(null, partInstancesInfo, previousPartInfo, [], layer, 1, 1)
+		findLookaheadForLayer(context, null, partInstancesInfo, previousPartInfo, [], layer, 1, 1)
 		expect(findLookaheadObjectsForPartMock).toHaveBeenCalledTimes(3)
 		expectInstancesToMatch(1, layer, partInstancesInfo[0], previousPartInfo)
 
@@ -109,7 +112,7 @@ describe('findLookaheadForLayer', () => {
 			.mockReturnValueOnce(['t2', 't3'] as any)
 			.mockReturnValueOnce(['t4', 't5'] as any)
 
-		const res2 = findLookaheadForLayer(null, partInstancesInfo, undefined, [], layer, 1, 0)
+		const res2 = findLookaheadForLayer(context, null, partInstancesInfo, undefined, [], layer, 1, 0)
 		expect(res2.timed).toEqual(['t0', 't1', 't2', 't3'])
 		expect(res2.future).toHaveLength(0)
 		expect(findLookaheadObjectsForPartMock).toHaveBeenCalledTimes(2)
@@ -121,10 +124,11 @@ describe('findLookaheadForLayer', () => {
 		index: number,
 		layer: string,
 		partInfo: PartAndPieces,
-		previousPart: Part | undefined
+		previousPart: DBPart | undefined
 	): void {
 		expect(findLookaheadObjectsForPartMock).toHaveBeenNthCalledWith(
 			index,
+			context,
 			null,
 			layer,
 			previousPart,
@@ -134,7 +138,7 @@ describe('findLookaheadForLayer', () => {
 	}
 
 	test('parts', () => {
-		const layer = Random.id()
+		const layer = getRandomString()
 
 		const orderedParts: PartAndPieces[] = [
 			{ _id: 'p1' },
@@ -143,7 +147,7 @@ describe('findLookaheadForLayer', () => {
 			{ _id: 'p4' },
 			{ _id: 'p5' },
 		].map((p) => ({
-			part: new Part(p as any),
+			part: p as any,
 			pieces: [{ _id: p._id + '_p1' } as any],
 		}))
 
@@ -157,13 +161,13 @@ describe('findLookaheadForLayer', () => {
 			.mockReturnValueOnce(['t8', 't9'] as any)
 
 		// Cant search far enough
-		const res = findLookaheadForLayer(null, [], undefined, orderedParts, layer, 1, 1)
+		const res = findLookaheadForLayer(context, null, [], undefined, orderedParts, layer, 1, 1)
 		expect(res.timed).toHaveLength(0)
 		expect(res.future).toHaveLength(0)
 		expect(findLookaheadObjectsForPartMock).toHaveBeenCalledTimes(0)
 
 		// Find the target of 1
-		const res2 = findLookaheadForLayer(null, [], undefined, orderedParts, layer, 1, 4)
+		const res2 = findLookaheadForLayer(context, null, [], undefined, orderedParts, layer, 1, 4)
 		expect(res2.timed).toHaveLength(0)
 		expect(res2.future).toEqual(['t0', 't1'])
 		expect(findLookaheadObjectsForPartMock).toHaveBeenCalledTimes(1)
@@ -171,7 +175,7 @@ describe('findLookaheadForLayer', () => {
 
 		// Find the target of 0
 		findLookaheadObjectsForPartMock.mockReset().mockReturnValue([])
-		const res3 = findLookaheadForLayer(null, [], undefined, orderedParts, layer, 0, 4)
+		const res3 = findLookaheadForLayer(context, null, [], undefined, orderedParts, layer, 0, 4)
 		expect(res3.timed).toHaveLength(0)
 		expect(res3.future).toHaveLength(0)
 		expect(findLookaheadObjectsForPartMock).toHaveBeenCalledTimes(0)
@@ -186,7 +190,7 @@ describe('findLookaheadForLayer', () => {
 			.mockReturnValueOnce(['t6', 't7'] as any)
 			.mockReturnValueOnce(['t8', 't9'] as any)
 
-		const res4 = findLookaheadForLayer(null, [], undefined, orderedParts, layer, 100, 5)
+		const res4 = findLookaheadForLayer(context, null, [], undefined, orderedParts, layer, 100, 5)
 		expect(res4.timed).toHaveLength(0)
 		expect(res4.future).toEqual(['t0', 't1', 't2', 't3', 't4', 't5'])
 		expect(findLookaheadObjectsForPartMock).toHaveBeenCalledTimes(3)

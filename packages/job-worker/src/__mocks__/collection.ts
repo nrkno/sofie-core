@@ -54,7 +54,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		if (typeof selector === 'string') selector = { _id: selector }
 		selector = selector ?? {}
 
-		const unimplementedUsedOptions = _.without(_.keys(options), 'sort', 'limit', 'fields')
+		const unimplementedUsedOptions = _.without(_.keys(options), 'sort', 'limit', 'projection')
 		if (unimplementedUsedOptions.length > 0) {
 			throw new Error(`find being performed using unimplemented options: ${unimplementedUsedOptions}`)
 		}

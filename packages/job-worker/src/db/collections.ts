@@ -50,6 +50,7 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	findFetch(selector?: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>>
 	findOne(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined>
 	insertOne(doc: TDoc | ReadonlyDeep<TDoc>): Promise<TDoc['_id']>
+	// insertMany(docs: Array<TDoc | ReadonlyDeep<TDoc>>): Promise<Array<TDoc['_id']>>
 	remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number>
 	update(selector: MongoQuery<TDoc> | TDoc['_id'], modifier: MongoModifier<TDoc>): Promise<number>
 

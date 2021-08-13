@@ -100,10 +100,11 @@ export class MockJobContext implements JobContext {
 	}
 
 	trackCache(_cache: ReadOnlyCacheBase<any>): void {
-		throw new Error('Method not implemented.')
+		// TODO
+		// throw new Error('Method not implemented.')
 	}
-	lockPlaylist(_playlistId: RundownPlaylistId): Promise<PlaylistLock> {
-		throw new Error('Method not implemented.')
+	async lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock> {
+		return new MockPlaylistLock(playlistId)
 	}
 
 	startSpan(_name: string): ApmSpan | null {
@@ -272,4 +273,20 @@ const MockShowStyleBlueprint: ShowStyleBlueprintManifest = {
 	// onPostTake?: (context: EventContext & PartEventContext) => Promise<void>,
 	// onTimelineGenerate?: (context: EventContext & RundownContext, timeline: Timeline.TimelineObject[]) => Promise<Timeline.TimelineObject[]>,
 	// onAsRunEvent?: (context: EventContext & AsRunEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>,
+}
+
+class MockPlaylistLock extends PlaylistLock {
+	#locked = true
+
+	constructor(playlistId: RundownPlaylistId) {
+		super(playlistId)
+	}
+
+	get isLocked(): boolean {
+		return this.#locked
+	}
+	async release(): Promise<void> {
+		if (!this.#locked) throw new Error('Already unlocked!')
+		this.#locked = false
+	}
 }
