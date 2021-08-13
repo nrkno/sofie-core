@@ -11,7 +11,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleUserContext, CommonContext, StudioUserContext, SegmentUserContext } from '../blueprints/context'
@@ -599,7 +599,7 @@ export async function updateRundownFromIngestData(
 		// If any of the rundown baseline datas was modified, we'll update the baselineModifyHash of the rundown
 		cache.Rundown.update({
 			$set: {
-				baselineModifyHash: getRandomString(),
+				baselineModifyHash: getCurrentTime() + '',
 			},
 		})
 	}

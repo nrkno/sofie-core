@@ -8,6 +8,7 @@ import {
 	MosMoveStoryProps,
 	MosRundownMetadataProps,
 	MosRundownProps,
+	MosRundownReadyToAirProps,
 	MosRundownStatusProps,
 	MosStoryStatusProps,
 	MosSwapStoryProps,
@@ -204,39 +205,39 @@ export async function handleMosRundownStatus(context: JobContext, data: MosRundo
 	const rundownId = getRundownId(context.studio, data.rundownExternalId)
 
 	return runWithRundownLock(context, rundownId, async (rundown) => {
-		if (rundown) {
-			if (!canRundownBeUpdated(rundown, false)) return
+		if (!rundown) throw new Error(`Rundown "${rundownId}" not found!`)
 
-			await context.directCollections.Rundowns.update(rundown._id, {
-				$set: {
-					status: data.status,
-				},
-			})
-		}
+		if (!canRundownBeUpdated(rundown, false)) return
+
+		await context.directCollections.Rundowns.update(rundown._id, {
+			$set: {
+				status: data.status,
+			},
+		})
 	})
 }
 
-export async function handleMosRundownReadyToAir(context: JobContext, data: MosRundownStatusProps): Promise<void> {
+export async function handleMosRundownReadyToAir(context: JobContext, data: MosRundownReadyToAirProps): Promise<void> {
 	const rundownId = getRundownId(context.studio, data.rundownExternalId)
 
 	return runWithRundownLock(context, rundownId, async (rundown) => {
-		if (rundown) {
-			if (!canRundownBeUpdated(rundown, false)) return
+		if (!rundown) throw new Error(`Rundown "${rundownId}" not found!`)
 
-			// Set the ready to air status of a Rundown
-			if (rundown.airStatus !== data.status) {
-				await context.directCollections.Rundowns.update(rundown._id, {
-					$set: {
-						airStatus: data.status,
-					},
-				})
+		if (!canRundownBeUpdated(rundown, false)) return
 
-				// Trigger a regenerate
-				await context.queueIngestJob(IngestJobs.RegenerateRundown, {
-					rundownExternalId: rundown.externalId,
-					peripheralDeviceId: data.peripheralDeviceId,
-				})
-			}
+		// Set the ready to air status of a Rundown
+		if (rundown.airStatus !== data.status) {
+			await context.directCollections.Rundowns.update(rundown._id, {
+				$set: {
+					airStatus: data.status,
+				},
+			})
+
+			// Trigger a regenerate
+			await context.queueIngestJob(IngestJobs.RegenerateRundown, {
+				rundownExternalId: rundown.externalId,
+				peripheralDeviceId: data.peripheralDeviceId,
+			})
 		}
 	})
 }
@@ -245,38 +246,38 @@ export async function handleMosStoryStatus(context: JobContext, data: MosStorySt
 	const rundownId = getRundownId(context.studio, data.rundownExternalId)
 
 	return runWithRundownLock(context, rundownId, async (rundown) => {
-		if (rundown) {
-			if (!canRundownBeUpdated(rundown, false)) return
-			// TODO ORPHAN include segment in check
+		if (!rundown) throw new Error(`Rundown "${rundownId}" not found!`)
 
-			// Save Stories (aka Part ) status into database:
-			const part = await context.directCollections.Parts.findOne({
-				_id: getPartIdFromMosStory(rundown._id, data.partExternalId),
-				rundownId: rundown._id,
-			})
-			if (part) {
-				await Promise.all([
-					context.directCollections.Parts.update(part._id, {
+		if (!canRundownBeUpdated(rundown, false)) return
+		// TODO ORPHAN include segment in check
+
+		// Save Stories (aka Part ) status into database:
+		const part = await context.directCollections.Parts.findOne({
+			_id: getPartIdFromMosStory(rundown._id, data.partExternalId),
+			rundownId: rundown._id,
+		})
+		if (part) {
+			await Promise.all([
+				context.directCollections.Parts.update(part._id, {
+					$set: {
+						status: data.status,
+					},
+				}),
+				// TODO-PartInstance - pending new data flow
+				context.directCollections.PartInstances.update(
+					{
+						'part._id': part._id,
+						reset: { $ne: true },
+					},
+					{
 						$set: {
 							status: data.status,
 						},
-					}),
-					// TODO-PartInstance - pending new data flow
-					context.directCollections.PartInstances.update(
-						{
-							'part._id': part._id,
-							reset: { $ne: true },
-						},
-						{
-							$set: {
-								status: data.status,
-							},
-						}
-					),
-				])
-			} else {
-				throw new Error(`Part ${data.partExternalId} in rundown ${rundown._id} not found`)
-			}
+					}
+				),
+			])
+		} else {
+			throw new Error(`Part ${data.partExternalId} in rundown ${rundown._id} not found`)
 		}
 	})
 }

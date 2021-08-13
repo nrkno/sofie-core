@@ -47,11 +47,11 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 // import _ = require('underscore')
 import { defaultStudio } from './defaultCollectionObjects'
 
-export function setupDefaultJobEnvironment(): MockJobContext {
+export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const collections = getMockCollections()
 
 	const studio: DBStudio = {
-		...defaultStudio(protectString('mockStudio0')),
+		...defaultStudio(studioId ?? protectString('mockStudio0')),
 		name: 'mockStudio',
 		_rundownVersionHash: 'asdf',
 		blueprintId: protectString('studioBlueprint0'),
@@ -73,8 +73,8 @@ export class MockJobContext implements JobContext {
 		this.#settings = clone(DEFAULT_SETTINGS)
 		this.#studio = studio
 
-		this.#studioBlueprint = clone(MockStudioBlueprint)
-		this.#showStyleBlueprint = clone(MockShowStyleBlueprint)
+		this.#studioBlueprint = MockStudioBlueprint()
+		this.#showStyleBlueprint = MockShowStyleBlueprint()
 	}
 
 	get directCollections(): Readonly<IDirectCollections> {
@@ -112,13 +112,22 @@ export class MockJobContext implements JobContext {
 		return null
 	}
 
-	queueIngestJob<T extends keyof IngestJobFunc>(_name: T, _data: Parameters<IngestJobFunc[T]>[0]): Promise<void> {
+	async queueIngestJob<T extends keyof IngestJobFunc>(
+		_name: T,
+		_data: Parameters<IngestJobFunc[T]>[0]
+	): Promise<void> {
 		throw new Error('Method not implemented.')
 	}
-	queueStudioJob<T extends keyof StudioJobFunc>(_name: T, _data: Parameters<StudioJobFunc[T]>[0]): Promise<void> {
+	async queueStudioJob<T extends keyof StudioJobFunc>(
+		_name: T,
+		_data: Parameters<StudioJobFunc[T]>[0]
+	): Promise<void> {
 		throw new Error('Method not implemented.')
 	}
-	queueEventJob<T extends keyof EventsJobFunc>(_name: T, _data: Parameters<EventsJobFunc[T]>[0]): Promise<void> {
+	async queueEventJob<T extends keyof EventsJobFunc>(
+		_name: T,
+		_data: Parameters<EventsJobFunc[T]>[0]
+	): Promise<void> {
 		throw new Error('Method not implemented.')
 	}
 
@@ -127,12 +136,12 @@ export class MockJobContext implements JobContext {
 	}
 	async getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBase> {
 		const style = await this.directCollections.ShowStyleBases.findOne(id)
-		if (!style) throw new Error('Not found!')
+		if (!style) throw new Error(`ShowStyleBase "${id}" Not found!`)
 		return style
 	}
 	async getShowStyleVariant(id: ShowStyleVariantId): Promise<DBShowStyleVariant> {
 		const style = await this.directCollections.ShowStyleVariants.findOne(id)
-		if (!style) throw new Error('Not found!')
+		if (!style) throw new Error(`ShowStyleVariant "${id}" Not found!`)
 		return style
 	}
 	async getShowStyleCompound(variantId: ShowStyleVariantId, baseId?: ShowStyleBaseId): Promise<ShowStyleCompound> {
@@ -176,7 +185,7 @@ export class MockJobContext implements JobContext {
 	}
 }
 
-const MockStudioBlueprint: StudioBlueprintManifest = {
+const MockStudioBlueprint: () => StudioBlueprintManifest = () => ({
 	blueprintType: BlueprintManifestType.STUDIO,
 	blueprintVersion: '0.0.0',
 	integrationVersion: '0.0.0',
@@ -192,9 +201,9 @@ const MockStudioBlueprint: StudioBlueprintManifest = {
 	getShowStyleId: (_context, showStyles): string | null => {
 		return showStyles[0]._id
 	},
-}
+})
 
-const MockShowStyleBlueprint: ShowStyleBlueprintManifest = {
+const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 	blueprintType: BlueprintManifestType.SHOWSTYLE,
 	blueprintVersion: '0.0.0',
 	integrationVersion: '0.0.0',
@@ -273,7 +282,7 @@ const MockShowStyleBlueprint: ShowStyleBlueprintManifest = {
 	// onPostTake?: (context: EventContext & PartEventContext) => Promise<void>,
 	// onTimelineGenerate?: (context: EventContext & RundownContext, timeline: Timeline.TimelineObject[]) => Promise<Timeline.TimelineObject[]>,
 	// onAsRunEvent?: (context: EventContext & AsRunEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>,
-}
+})
 
 class MockPlaylistLock extends PlaylistLock {
 	#locked = true

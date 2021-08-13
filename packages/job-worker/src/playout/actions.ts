@@ -103,7 +103,7 @@ export async function activateRundownPlaylist(
 
 	cache.defer(async () => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleVariantId)
+		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 		const context2 = new RundownEventContext(
 			context.studio,

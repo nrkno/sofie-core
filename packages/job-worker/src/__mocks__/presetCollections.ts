@@ -9,7 +9,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { getCurrentTime } from '../lib'
+import { getCurrentTime, getSystemVersion } from '../lib'
 import { IOutputLayer, ISourceLayer, PieceLifespan, SourceLayerType } from '../../../blueprints-integration/dist'
 import { JobContext } from '../jobs'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -17,7 +17,14 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { defaultRundownPlaylist } from './defaultCollectionObjects'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+	PeripheralDevice,
+	PeripheralDeviceSubType,
+	PeripheralDeviceStatusCode,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -338,4 +345,55 @@ export async function setupDefaultRundown(
 
 	await context.directCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib0)
 	await context.directCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib1)
+}
+
+export async function setupMockPeripheralDevice(
+	context: JobContext,
+	category: PeripheralDeviceCategory,
+	type: PeripheralDeviceType,
+	subType: PeripheralDeviceSubType,
+	doc?: Partial<PeripheralDevice>
+): Promise<PeripheralDevice> {
+	doc = doc || {}
+
+	const dbI = (await context.directCollections.ShowStyleBases.findFetch()).length
+
+	const defaultDevice: PeripheralDevice = {
+		_id: protectString('mockDevice' + dbI),
+		name: 'mockDevice',
+		organizationId: null,
+		studioId: context.studioId,
+
+		category: category,
+		type: type,
+		subType: subType,
+
+		created: 1234,
+		status: {
+			statusCode: PeripheralDeviceStatusCode.GOOD,
+		},
+		lastSeen: 1234,
+		lastConnected: 1234,
+		connected: true,
+		connectionId: 'myConnectionId',
+		token: 'mockToken',
+		configManifest: {
+			deviceConfig: [],
+		},
+		versions: {
+			'@sofie-automation/server-core-integration': getSystemVersion(),
+		},
+	}
+	const device = _.extend(defaultDevice, doc) as PeripheralDevice
+	await context.directCollections.PeripheralDevices.insertOne(device)
+	return device
+}
+
+export async function setupMockIngestDevice(context: JobContext): Promise<PeripheralDevice> {
+	return setupMockPeripheralDevice(
+		context,
+		PeripheralDeviceCategory.INGEST,
+		PeripheralDeviceType.MOS,
+		PERIPHERAL_SUBTYPE_PROCESS
+	)
 }

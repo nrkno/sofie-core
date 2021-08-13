@@ -1,6 +1,14 @@
 import { IBlueprintRundownDB, Time } from '@sofie-automation/blueprints-integration'
 import { ProtectedStringProperties } from '../protectedString'
-import { RundownId, OrganizationId, StudioId, ShowStyleBaseId, PeripheralDeviceId, RundownPlaylistId } from './Ids'
+import {
+	RundownId,
+	OrganizationId,
+	StudioId,
+	ShowStyleBaseId,
+	PeripheralDeviceId,
+	RundownPlaylistId,
+	ShowStyleVariantId,
+} from './Ids'
 import { RundownNote } from './Notes'
 
 export interface RundownImportVersions {
@@ -23,6 +31,7 @@ export interface DBRundown
 
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: ShowStyleBaseId
+	showStyleVariantId: ShowStyleVariantId
 	/** The peripheral device the rundown originates from */
 	peripheralDeviceId?: PeripheralDeviceId
 	restoredFromSnapshotId?: RundownId
