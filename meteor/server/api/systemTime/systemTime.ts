@@ -17,7 +17,7 @@ const UPDATE_SYSTEM_TIME_INTERVAL = 3600 * 1000
  * https://stackoverflow.com/questions/1228089/how-does-the-network-time-protocol-work
  * @param config config object
  */
-function determineDiffTimeInner(config: Config): Promise<DiffTimeResult> {
+async function determineDiffTimeInner(config: Config): Promise<DiffTimeResult> {
 	const maxSampleCount = config.maxSampleCount || 20
 	const minSampleCount = config.minSampleCount || 10
 	const maxAllowedDelay = config.maxAllowedDelay || 500
@@ -72,7 +72,7 @@ interface ServerTime {
 	serverTime: number
 	responseTime: number
 }
-function getServerTime(host?: string, port?: number, timeout?: number): Promise<ServerTime> {
+async function getServerTime(host?: string, port?: number, timeout?: number): Promise<ServerTime> {
 	return new Promise((resolve, reject) => {
 		ntpClient.ntpReplyTimeout = timeout || 500
 
@@ -220,7 +220,7 @@ Meteor.startup(() => {
 // 	logger.debug('result', result)
 // 	// if result.stdDev is less than one frame-time, we should be okay
 // })
-export function determineDiffTime() {
+export async function determineDiffTime() {
 	return determineDiffTimeInner({
 		maxSampleCount: 20,
 		minSampleCount: 10,

@@ -149,16 +149,16 @@ export async function removeShowStyleVariant(
 }
 
 class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
-	insertShowStyleBase() {
+	async insertShowStyleBase() {
 		return insertShowStyleBase(this)
 	}
-	insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
+	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
 		return insertShowStyleVariant(this, showStyleBaseId)
 	}
-	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
+	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)
 	}
-	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId) {
+	async removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId) {
 		return removeShowStyleVariant(this, showStyleVariantId)
 	}
 }

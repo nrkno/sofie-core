@@ -298,7 +298,7 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
 			const pShowStyle = cache.activationCache.getShowStyleCompound(activeRundown)
-			const pshowStyleBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
+			const pshowStyleBlueprint = pShowStyle.then(async (showStyle) => loadShowStyleBlueprint(showStyle))
 
 			const showStyle = await pShowStyle
 			if (!showStyle) {

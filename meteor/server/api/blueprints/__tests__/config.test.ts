@@ -58,13 +58,14 @@ describe('Test blueprint config', () => {
 		test('undefined - bail', async () => {
 			const modifier = jest.fn((v) => v)
 
-			await expect(() => ConfigRef.retrieveRefs('${studio.one.two}_extra', modifier, true)).rejects.toThrowMeteor(
+			await expect(ConfigRef.retrieveRefs('${studio.one.two}_extra', modifier, true)).rejects.toThrowMeteor(
 				404,
 				`Ref \"\${studio.one.two}\": Studio \"one\" not found`
 			)
-			await expect(() =>
-				ConfigRef.retrieveRefs('${showStyle.one.two}_extra', modifier, true)
-			).rejects.toThrowMeteor(404, `Ref \"\${showStyle.one.two}\": Showstyle variant \"one\" not found`)
+			await expect(ConfigRef.retrieveRefs('${showStyle.one.two}_extra', modifier, true)).rejects.toThrowMeteor(
+				404,
+				`Ref \"\${showStyle.one.two}\": Showstyle variant \"one\" not found`
+			)
 
 			expect(modifier).toHaveBeenCalledTimes(0)
 		})

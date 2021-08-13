@@ -36,15 +36,18 @@ export function getShelfLink(rundownId: RundownId | RundownPlaylistId, layoutId:
 	const encodedRundownId = encodeURIComponent(encodeURIComponent(unprotectString(rundownId)))
 	const encodedLayoutId = encodeURIComponent(encodeURIComponent(unprotectString(layoutId)))
 
-	return `/rundown/${encodedRundownId}/shelf/?layout=${encodedLayoutId}`
+	return `/rundown/${encodedRundownId}/shelf/?shelfLayout=${encodedLayoutId}`
 }
 
-export function getRundownWithLayoutLink(rundownId: RundownId | RundownPlaylistId, layoutId: RundownLayoutId): string {
+export function getRundownWithShelfLayoutLink(
+	rundownId: RundownId | RundownPlaylistId,
+	layoutId: RundownLayoutId
+): string {
 	// double encoding so that "/" are handled correctly
 	const encodedRundownId = encodeURIComponent(encodeURIComponent(unprotectString(rundownId)))
 	const encodedLayoutId = encodeURIComponent(encodeURIComponent(unprotectString(layoutId)))
 
-	return `/rundown/${encodedRundownId}?layout=${encodedLayoutId}`
+	return `/rundown/${encodedRundownId}?rundownViewLayout=${encodedLayoutId}`
 }
 
 export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {
@@ -53,7 +56,9 @@ export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {
 		yes: t('Delete'),
 		no: t('Cancel'),
 		onAccept: (e) => {
-			doUserAction(t, e, UserAction.REMOVE_RUNDOWN, (e) => MeteorCall.userAction.removeRundown(e, rundown._id))
+			doUserAction(t, e, UserAction.REMOVE_RUNDOWN, async (e) =>
+				MeteorCall.userAction.removeRundown(e, rundown._id)
+			)
 		},
 		message:
 			t('Are you sure you want to delete the "{{name}}" rundown?', { name: rundown.name }) +
@@ -72,7 +77,7 @@ export function confirmReSyncRundown(rundown: Rundown, t: TFunction): void {
 				t,
 				e,
 				UserAction.RESYNC_RUNDOWN,
-				(e) => MeteorCall.userAction.resyncRundown(e, rundown._id),
+				async (e) => MeteorCall.userAction.resyncRundown(e, rundown._id),
 				(err, res) => {
 					if (!err && res) {
 						return handleRundownReloadResponse(t, rundown._id, res)

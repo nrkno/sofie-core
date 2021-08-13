@@ -46,7 +46,7 @@ function health(status: StatusResponse, res: ServerResponse) {
 }
 
 class ServerSystemStatusAPI extends MethodContextAPI implements NewSystemStatusAPI {
-	getSystemStatus() {
+	async getSystemStatus() {
 		return makePromise(() => getSystemStatus(this))
 	}
 }

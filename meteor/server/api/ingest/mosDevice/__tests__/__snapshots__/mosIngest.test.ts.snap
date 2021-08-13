@@ -12,6 +12,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -157,6 +160,9 @@ Object {
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -298,6 +304,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -443,6 +452,9 @@ Object {
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -583,6 +595,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -730,6 +745,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -882,6 +900,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1029,6 +1050,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1170,6 +1194,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1316,6 +1343,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1457,6 +1487,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1604,6 +1637,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1710,6 +1746,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1857,6 +1896,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2010,6 +2052,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2157,6 +2202,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2319,6 +2367,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2466,6 +2517,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2610,6 +2664,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2757,6 +2814,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2901,6 +2961,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3048,6 +3111,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3323,6 +3389,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3467,6 +3536,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3614,6 +3686,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3749,6 +3824,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3896,6 +3974,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -4067,6 +4148,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -4214,6 +4298,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -4358,6 +4445,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -4505,6 +4595,9 @@ Object {
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 

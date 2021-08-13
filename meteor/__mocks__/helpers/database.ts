@@ -311,6 +311,9 @@ export async function setupMockShowStyleBlueprint(
 						// expectedStart?:
 						// expectedDuration?: number;
 						metaData: ingestRundown.payload,
+						timing: {
+							type: 'none' as any,
+						},
 					}
 
 					// Allow the rundown to specify a playlistExternalId that should be used
@@ -468,6 +471,9 @@ export function setupDefaultRundown(
 		studioId: env.studio._id,
 		showStyleBaseId: env.showStyleBase._id,
 		showStyleVariantId: env.showStyleVariant._id,
+		timing: {
+			type: 'none' as any,
+		},
 
 		playlistId: playlistId,
 		_rank: 0,

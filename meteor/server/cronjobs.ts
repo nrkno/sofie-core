@@ -2,7 +2,7 @@ import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { getCurrentTime, makePromise, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
@@ -148,13 +148,7 @@ Meteor.startup(() => {
 	function cleanupPlaylists() {
 		// Ensure there are no empty playlists on an interval
 		const studios = Studios.find().fetch()
-		waitForPromiseAll(
-			studios.map((studio) =>
-				makePromise(() => {
-					removeEmptyPlaylists(studio._id)
-				})
-			)
-		)
+		waitForPromiseAll(studios.map(async (studio) => removeEmptyPlaylists(studio._id)))
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
 	cleanupPlaylists()

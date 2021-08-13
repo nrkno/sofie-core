@@ -31,7 +31,7 @@ ${e.toString()}`)
 export function isInFiber(): boolean {
 	return !!Fiber.current
 }
-export function runInFiber<T>(fcn: () => T | Promise<T>): Promise<T> {
+export async function runInFiber<T>(fcn: () => T | Promise<T>): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Fiber(() => {
 			try {

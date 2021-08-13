@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
-import { WrapAsyncCallback } from '../../../../lib/lib'
+import { waitForPromise, WrapAsyncCallback } from '../../../../lib/lib'
 import { logger } from '../../../logging'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import * as _ from 'underscore'
@@ -51,7 +51,7 @@ export namespace GenericDeviceActions {
 								// 	throw new Meteor.Error(401, iNewsRunningOrder)
 								// }
 
-								handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, true)
+								waitForPromise(handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, true))
 
 								cb(null, TriggerReloadDataResponse.COMPLETED)
 							}
@@ -82,7 +82,7 @@ export namespace GenericDeviceActions {
 			(err: Error, ingestSegment: IngestSegment | null) => {
 				if (err) {
 					if (_.isString(err) && err.match(/segment does not exist/i)) {
-						handleRemovedSegment(peripheralDevice, rundown.externalId, segment.externalId)
+						waitForPromise(handleRemovedSegment(peripheralDevice, rundown.externalId, segment.externalId))
 						// Don't throw an error, instead return MISSING value
 						cb(null, TriggerReloadDataResponse.MISSING)
 					} else {
@@ -107,7 +107,9 @@ export namespace GenericDeviceActions {
 								)
 							}
 
-							handleUpdatedSegment(peripheralDevice, rundown.externalId, ingestSegment, true)
+							waitForPromise(
+								handleUpdatedSegment(peripheralDevice, rundown.externalId, ingestSegment, true)
+							)
 
 							cb(null, TriggerReloadDataResponse.COMPLETED)
 						}
