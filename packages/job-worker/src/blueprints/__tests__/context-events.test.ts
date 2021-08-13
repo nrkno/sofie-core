@@ -1,11 +1,4 @@
 import * as _ from 'underscore'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../../__mocks__/helpers/database'
-import { getRandomId, protectString, unprotectString } from '../../../../lib/lib'
-import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintSegmentDB, IBlueprintPieceInstance } from '@sofie-automation/blueprints-integration'
 import {
 	PartEventContext,
@@ -13,26 +6,52 @@ import {
 	RundownDataChangedEventContext,
 	RundownTimingEventContext,
 } from '../context'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import {
-	wrapPartToTemporaryInstance,
-	PartInstances,
+	RundownPlaylistActivationId,
 	PartInstanceId,
-	PartInstance,
-	unprotectPartInstance,
-} from '../../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstanceInfiniteId, PieceInstance } from '../../../../lib/collections/PieceInstances'
-import { RundownPlaylist, RundownPlaylists, ABSessionInfo } from '../../../../lib/collections/RundownPlaylists'
-import { OnGenerateTimelineObjExt } from '../../../../lib/collections/Timeline'
-import { getShowStyleCompoundForRundown } from '../../showStyles'
+	PieceInstanceInfiniteId,
+	PartId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBPartInstance, unprotectPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
+import {
+	setupDefaultRundownPlaylist,
+	setupMockShowStyleBase,
+	setupMockShowStyleVariant,
+} from '../../__mocks__/presetCollections'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { createShowStyleCompound } from '../../showStyles'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+
+// TODO: Worker - deduplicate
+function wrapPartToTemporaryInstance(playlistActivationId: RundownPlaylistActivationId, part: DBPart): DBPartInstance {
+	return {
+		_id: protectString(`${part._id}_tmp_instance`),
+		rundownId: part.rundownId,
+		segmentId: part.segmentId,
+		playlistActivationId,
+		segmentPlayoutId: protectString(''), // Only needed when stored in the db, and filled in nearer the time
+		takeCount: -1,
+		rehearsal: false,
+		part: part,
+	}
+}
 
 describe('Test blueprint api context', () => {
-	function generateSparsePieceInstances(rundown: Rundown) {
+	async function generateSparsePieceInstances(rundown: DBRundown) {
 		const playlistActivationId = protectString('active')
-		_.each(rundown.getParts(), (part, i) => {
+		const parts = await jobContext.directCollections.Parts.findFetch({ rundownId: rundown._id })
+		for (let i = 0; i < parts.length; i++) {
+			const part = parts[i]
+
 			// make into a partInstance
-			PartInstances.insert({
+			await jobContext.directCollections.PartInstances.insertOne({
 				_id: protectString(`${part._id}_instance`),
 				playlistActivationId: playlistActivationId,
 				segmentPlayoutId: protectString(part.segmentId + '_1'),
@@ -45,7 +64,7 @@ describe('Test blueprint api context', () => {
 
 			const count = ((i + 2) % 4) + 1 // Some consistent randomness
 			for (let o = 0; o < count; o++) {
-				PieceInstances.insert({
+				await jobContext.directCollections.PieceInstances.insertOne({
 					_id: protectString(`${part._id}_piece${o}`),
 					rundownId: rundown._id,
 					playlistActivationId: playlistActivationId,
@@ -60,35 +79,47 @@ describe('Test blueprint api context', () => {
 					},
 				} as any)
 			}
-		})
+		}
 	}
 
-	let env: DefaultEnvironment
-	beforeAll(async () => {
-		env = await setupDefaultStudioEnvironment()
+	let jobContext: MockJobContext
+	let showStyle: ShowStyleCompound
+	beforeEach(async () => {
+		jobContext = setupDefaultJobEnvironment()
+
+		const showStyleBase = await setupMockShowStyleBase(jobContext)
+		const showStyleVariant = await setupMockShowStyleVariant(jobContext, showStyleBase._id)
+		showStyle = createShowStyleCompound(showStyleBase, showStyleVariant) as ShowStyleCompound
 	})
 
 	describe('PartEventContext', () => {
 		test('get part', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext, showStyle)
+
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+			const playlist = (await jobContext.directCollections.RundownPlaylists.findOne(
+				rundown.playlistId
+			)) as DBRundownPlaylist
 			expect(playlist).toBeTruthy()
 
-			const studio = Studios.findOne(rundown.studioId) as Studio
-			expect(studio).toBeTruthy()
-
-			const showStyle = await getShowStyleCompoundForRundown(rundown)
-			expect(showStyle).toBeTruthy()
+			const showStyleConfig = jobContext.getShowStyleBlueprintConfig(showStyle)
 
 			const mockPart = {
 				_id: protectString('not-a-real-part'),
 			}
 
 			const tmpPart = wrapPartToTemporaryInstance(protectString('active'), mockPart as DBPart)
-			const context = new PartEventContext('fake', studio, showStyle, rundown, tmpPart)
+			const context = new PartEventContext(
+				'fake',
+				jobContext.studio,
+				jobContext.getStudioBlueprintConfig(),
+				showStyle,
+				showStyleConfig,
+				rundown,
+				tmpPart
+			)
 			expect(context.studio).toBeTruthy()
 
 			expect(context.part).toEqual(tmpPart)
@@ -96,30 +127,26 @@ describe('Test blueprint api context', () => {
 	})
 
 	describe('RundownDataChangedEventContext', () => {
-		async function getContext(rundown: Rundown) {
-			const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+		async function getContext(rundown: DBRundown) {
+			const playlist = (await jobContext.directCollections.RundownPlaylists.findOne(
+				rundown.playlistId
+			)) as DBRundownPlaylist
 			expect(playlist).toBeTruthy()
 
-			const studio = Studios.findOne(rundown.studioId) as Studio
-			expect(studio).toBeTruthy()
-
-			const showStyle = await getShowStyleCompoundForRundown(rundown)
-			expect(showStyle).toBeTruthy()
-
 			return new RundownDataChangedEventContext(
+				jobContext,
 				{
 					name: 'as-run',
 					identifier: unprotectString(rundown._id),
 				},
-				studio,
 				showStyle,
 				rundown
 			)
 		}
 
 		test('formatDateAsTimecode', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const context = await getContext(rundown)
@@ -129,8 +156,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('formatDurationAsTimecode', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const context = await getContext(rundown)
@@ -143,26 +170,22 @@ describe('Test blueprint api context', () => {
 
 	describe('RundownTimingEventContext', () => {
 		async function getContext(
-			rundown: Rundown,
-			previousPartInstance: PartInstance | undefined,
-			partInstance: PartInstance,
-			nextPartInstance: PartInstance | undefined
+			rundown: DBRundown,
+			previousPartInstance: DBPartInstance | undefined,
+			partInstance: DBPartInstance,
+			nextPartInstance: DBPartInstance | undefined
 		) {
-			const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+			const playlist = (await jobContext.directCollections.RundownPlaylists.findOne(
+				rundown.playlistId
+			)) as DBRundownPlaylist
 			expect(playlist).toBeTruthy()
 
-			const studio = Studios.findOne(rundown.studioId) as Studio
-			expect(studio).toBeTruthy()
-
-			const showStyle = await getShowStyleCompoundForRundown(rundown)
-			expect(showStyle).toBeTruthy()
-
 			return new RundownTimingEventContext(
+				jobContext,
 				{
 					name: 'as-run',
 					identifier: unprotectString(rundown._id),
 				},
-				studio,
 				showStyle,
 				rundown,
 				previousPartInstance,
@@ -172,17 +195,19 @@ describe('Test blueprint api context', () => {
 		}
 
 		test('getFirstPartInstanceInRundown', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			generateSparsePieceInstances(rundown)
+			await generateSparsePieceInstances(rundown)
 
-			const partInstance = PartInstances.findOne({ rundownId }) as PartInstance
+			const partInstance = (await jobContext.directCollections.PartInstances.findOne({
+				rundownId,
+			})) as DBPartInstance
 			expect(partInstance).toBeTruthy()
 
 			const context = await getContext(rundown, undefined, partInstance, undefined)
-			expect(context.getFirstPartInstanceInRundown()).toMatchObject({
+			await expect(context.getFirstPartInstanceInRundown()).resolves.toMatchObject({
 				playlistActivationId: partInstance.playlistActivationId,
 			})
 
@@ -190,124 +215,150 @@ describe('Test blueprint api context', () => {
 			partInstance.playlistActivationId = protectString('something-else')
 
 			const context2 = await getContext(rundown, undefined, partInstance, undefined)
-			expect(() => context2.getFirstPartInstanceInRundown()).toThrowError('No PartInstances found for Rundown')
+			await expect(context2.getFirstPartInstanceInRundown()).rejects.toThrowError(
+				'No PartInstances found for Rundown'
+			)
 		})
 
 		test('getPartInstancesInSegmentPlayoutId', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			generateSparsePieceInstances(rundown)
+			await generateSparsePieceInstances(rundown)
 
-			const partInstance = PartInstances.findOne({ rundownId }) as PartInstance
+			const partInstance = (await jobContext.directCollections.PartInstances.findOne({
+				rundownId,
+			})) as DBPartInstance
 			expect(partInstance).toBeTruthy()
 
 			// Check what was generated
 			const context = await getContext(rundown, undefined, partInstance, undefined)
-			expect(context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance))).toHaveLength(2)
+			await expect(
+				context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance))
+			).resolves.toHaveLength(2)
 
 			// Insert a new instance, and try again
-			const newId = PartInstances.insert({
+			const newId = await jobContext.directCollections.PartInstances.insertOne({
 				...partInstance,
 				_id: getRandomId(),
 				segmentPlayoutId: protectString('new segment'),
 			})
 
-			expect(context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance))).toHaveLength(2)
+			await expect(
+				context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance))
+			).resolves.toHaveLength(2)
 
 			// Try for the new instance
-			const partInstance2 = PartInstances.findOne(newId) as PartInstance
+			const partInstance2 = (await jobContext.directCollections.PartInstances.findOne(newId)) as DBPartInstance
 			expect(partInstance2).toBeTruthy()
-			expect(context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance2))).toHaveLength(1)
+			await expect(
+				context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance2))
+			).resolves.toHaveLength(1)
 		})
 
 		test('getPieceInstances', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			generateSparsePieceInstances(rundown)
+			await generateSparsePieceInstances(rundown)
 
-			const partInstance = PartInstances.findOne({ rundownId }) as PartInstance
+			const partInstance = (await jobContext.directCollections.PartInstances.findOne({
+				rundownId,
+			})) as DBPartInstance
 			expect(partInstance).toBeTruthy()
 
-			const pieceInstance = PieceInstances.findOne({ rundownId }) as PieceInstance
+			const pieceInstance = (await jobContext.directCollections.PieceInstances.findOne({
+				rundownId,
+			})) as PieceInstance
 			expect(pieceInstance).toBeTruthy()
 
 			// Check what was generated
 			const context = await getContext(rundown, undefined, partInstance, undefined)
-			expect(context.getPieceInstances(unprotectString(pieceInstance.partInstanceId))).toHaveLength(3)
+			await expect(
+				context.getPieceInstances(unprotectString(pieceInstance.partInstanceId))
+			).resolves.toHaveLength(3)
 
 			// mark one of the piece as different activation
-			PieceInstances.update(pieceInstance._id, {
+			await jobContext.directCollections.PieceInstances.update(pieceInstance._id, {
 				$set: { playlistActivationId: protectString('another activation') },
 			})
 
 			// should now be less
-			expect(context.getPieceInstances(unprotectString(pieceInstance.partInstanceId))).toHaveLength(2)
+			await expect(
+				context.getPieceInstances(unprotectString(pieceInstance.partInstanceId))
+			).resolves.toHaveLength(2)
 		})
 
 		test('getSegment - no id', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			generateSparsePieceInstances(rundown)
+			await generateSparsePieceInstances(rundown)
 
-			const partInstance = PartInstances.findOne({ rundownId }) as PartInstance
+			const partInstance = (await jobContext.directCollections.PartInstances.findOne({
+				rundownId,
+			})) as DBPartInstance
 			expect(partInstance).toBeTruthy()
 
 			const context = await getContext(rundown, undefined, partInstance, undefined)
 
-			expect(() => {
+			await expect(
 				// @ts-expect-error
 				context.getSegment()
-			}).toThrowError('Match error: Expected string, got undefined')
+			).resolves.toBeUndefined()
 		})
 		test('getSegment - unknown id', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			generateSparsePieceInstances(rundown)
+			await generateSparsePieceInstances(rundown)
 
-			const partInstance = PartInstances.findOne({ rundownId }) as PartInstance
+			const partInstance = (await jobContext.directCollections.PartInstances.findOne({
+				rundownId,
+			})) as DBPartInstance
 			expect(partInstance).toBeTruthy()
 
 			const context = await getContext(rundown, undefined, partInstance, undefined)
 
-			expect(context.getSegment('not-a-real-segment')).toBeUndefined()
+			await expect(context.getSegment('not-a-real-segment')).resolves.toBeUndefined()
 		})
 		test('getSegment - good', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			generateSparsePieceInstances(rundown)
+			await generateSparsePieceInstances(rundown)
 
-			const partInstance = PartInstances.findOne({ rundownId }) as PartInstance
+			const partInstance = (await jobContext.directCollections.PartInstances.findOne({
+				rundownId,
+			})) as DBPartInstance
 			expect(partInstance).toBeTruthy()
 
 			const context = await getContext(rundown, undefined, partInstance, undefined)
 
-			const segment = context.getSegment(`${rundown._id}_segment1`) as IBlueprintSegmentDB
+			const segment = (await context.getSegment(`${rundown._id}_segment1`)) as IBlueprintSegmentDB
 			expect(segment).toBeTruthy()
 			expect(segment._id).toEqual(`${rundown._id}_segment1`)
 		})
 		test('getSegment - good with event segmentId', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			generateSparsePieceInstances(rundown)
+			await generateSparsePieceInstances(rundown)
 
-			const partInstance = PartInstances.findOne({ rundownId }) as PartInstance
+			const partInstance = (await jobContext.directCollections.PartInstances.findOne({
+				rundownId,
+			})) as DBPartInstance
 			expect(partInstance).toBeTruthy()
 
 			const context = await getContext(rundown, undefined, partInstance, undefined)
 
-			const segment = context.getSegment(`${rundown._id}_segment2`) as IBlueprintSegmentDB
+			const segment = (await context.getSegment(`${rundown._id}_segment2`)) as IBlueprintSegmentDB
 			expect(segment).toBeTruthy()
 			expect(segment._id).toEqual(`${rundown._id}_segment2`)
 		})
@@ -316,23 +367,21 @@ describe('Test blueprint api context', () => {
 	describe('TimelineEventContext', () => {
 		const getSessionId = (n: number): string => `session#${n}`
 		async function getContext(
-			rundown: Rundown,
-			previousPartInstance: PartInstance | undefined,
-			currentPartInstance: PartInstance | undefined,
-			nextPartInstance: PartInstance | undefined
+			rundown: DBRundown,
+			previousPartInstance: DBPartInstance | undefined,
+			currentPartInstance: DBPartInstance | undefined,
+			nextPartInstance: DBPartInstance | undefined
 		) {
-			const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+			const playlist = (await jobContext.directCollections.RundownPlaylists.findOne(
+				rundown.playlistId
+			)) as DBRundownPlaylist
 			expect(playlist).toBeTruthy()
 
-			const studio = Studios.findOne(rundown.studioId) as Studio
-			expect(studio).toBeTruthy()
-
-			const showStyle = await getShowStyleCompoundForRundown(rundown)
-			expect(showStyle).toBeTruthy()
-
 			const context = new TimelineEventContext(
-				studio,
+				jobContext.studio,
+				jobContext.getStudioBlueprintConfig(),
 				showStyle,
+				jobContext.getShowStyleBlueprintConfig(showStyle),
 				playlist,
 				rundown,
 				previousPartInstance,
@@ -379,7 +428,7 @@ describe('Test blueprint api context', () => {
 				isLookahead: !!isLookahead,
 			} as any
 		}
-		function createPartInstance(id: string, partId: string, rank: number): PartInstance {
+		function createPartInstance(id: string, partId: string, rank: number): DBPartInstance {
 			// This defines only the minimum required values for the method we are calling
 			return {
 				_id: id,
@@ -391,8 +440,8 @@ describe('Test blueprint api context', () => {
 		}
 
 		test('getPieceABSessionId - knownSessions basic', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			// No sessions
@@ -406,7 +455,7 @@ describe('Test blueprint api context', () => {
 				const sessions: ABSessionInfo[] = [{ id: 'abc', name: 'no' }]
 				// Mod the sessions to be returned by knownSessions
 				const moddedSessions = sessions.map((s) => ({ ...s, keep: true }))
-				RundownPlaylists.update(rundown.playlistId, {
+				await jobContext.directCollections.RundownPlaylists.update(rundown.playlistId, {
 					$set: {
 						trackedAbSessions: moddedSessions,
 					},
@@ -417,8 +466,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getPieceABSessionId - bad parameters', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			{
@@ -450,8 +499,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getPieceABSessionId - normal session', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const nextPartInstance = createPartInstance('abcdef', 'aaa', 1)
@@ -493,8 +542,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getPieceABSessionId - existing normal sessions', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const nextPartInstance = createPartInstance('abcdef', 'aaa', 1)
@@ -517,7 +566,7 @@ describe('Test blueprint api context', () => {
 					partInstanceIds: [nextPartInstance._id],
 				},
 			]
-			RundownPlaylists.update(rundown.playlistId, {
+			await jobContext.directCollections.RundownPlaylists.update(rundown.playlistId, {
 				$set: {
 					trackedAbSessions: expectedSessions,
 				},
@@ -543,8 +592,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getPieceABSessionId - continue normal session from previous part', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const nextPartInstance = createPartInstance('abcdef', 'aaa', 1)
@@ -563,8 +612,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getPieceABSessionId - promote lookahead session from previous part', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const previousPartInstance = createPartInstance('abcdef', 'aaa', 0)
@@ -591,7 +640,7 @@ describe('Test blueprint api context', () => {
 					partInstanceIds: undefined,
 				},
 			]
-			RundownPlaylists.update(rundown.playlistId, {
+			await jobContext.directCollections.RundownPlaylists.update(rundown.playlistId, {
 				$set: {
 					trackedAbSessions: lookaheadSessions,
 				},
@@ -617,8 +666,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getPieceABSessionId - infinite sessions', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const nextPartInstance = createPartInstance('abcdef', 'aaa', 1)
@@ -650,8 +699,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getTimelineObjectAbSessionId - bad parameters', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const context = await getContext(rundown, undefined, undefined, undefined)
@@ -665,8 +714,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		function generateGetTimelineObjectAbSessionIdSessions(
-			currentPartInstance: PartInstance,
-			nextPartInstance: PartInstance,
+			currentPartInstance: DBPartInstance,
+			nextPartInstance: DBPartInstance,
 			distantPartId: PartId,
 			infinite0: PieceInstanceInfiniteId,
 			infinite1: PieceInstanceInfiniteId
@@ -719,8 +768,8 @@ describe('Test blueprint api context', () => {
 		}
 
 		test('getTimelineObjectAbSessionId - normal', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const nextPartInstance = createPartInstance('abcdef', 'aaa', 1)
@@ -733,7 +782,7 @@ describe('Test blueprint api context', () => {
 				protectString('infinite0'),
 				protectString('infinite1')
 			)
-			RundownPlaylists.update(rundown.playlistId, {
+			await jobContext.directCollections.RundownPlaylists.update(rundown.playlistId, {
 				$set: {
 					trackedAbSessions: existingSessions,
 				},
@@ -764,8 +813,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getTimelineObjectAbSessionId - lookahead', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const nextPartInstance = createPartInstance('abcdef', 'aaa', 1)
@@ -779,7 +828,7 @@ describe('Test blueprint api context', () => {
 				protectString('infinite0'),
 				protectString('infinite1')
 			)
-			RundownPlaylists.update(rundown.playlistId, {
+			await jobContext.directCollections.RundownPlaylists.update(rundown.playlistId, {
 				$set: {
 					trackedAbSessions: [...existingSessions],
 				},
@@ -823,8 +872,8 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getTimelineObjectAbSessionId - lookahead2', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			const nextPartInstance = createPartInstance('abcdef', 'aaa', 1)
@@ -840,7 +889,7 @@ describe('Test blueprint api context', () => {
 				infinite0,
 				infinite1
 			)
-			RundownPlaylists.update(rundown.playlistId, {
+			await jobContext.directCollections.RundownPlaylists.update(rundown.playlistId, {
 				$set: {
 					trackedAbSessions: [...existingSessions],
 				},

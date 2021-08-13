@@ -1,5 +1,5 @@
 import { setupDefaultStudioEnvironment, setupMockStudio } from '../../../../__mocks__/helpers/database'
-import { preprocessStudioConfig, ConfigRef } from '../config'
+import { ConfigRef } from '../config'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
@@ -9,23 +9,6 @@ import '../../../../__mocks__/_extendJest'
 describe('Test blueprint config', () => {
 	beforeAll(async () => {
 		await setupDefaultStudioEnvironment()
-	})
-
-	test('compileStudioConfig', () => {
-		const studio = setupMockStudio({
-			settings: {
-				sofieUrl: 'host url',
-				mediaPreviewsUrl: '',
-			},
-			blueprintConfig: { sdfsdf: 'one', another: 5 },
-		})
-
-		const res = preprocessStudioConfig(studio)
-		expect(res).toEqual({
-			SofieHostURL: 'host url',
-			sdfsdf: 'one',
-			another: 5,
-		})
 	})
 
 	test('getStudioConfigRef', () => {

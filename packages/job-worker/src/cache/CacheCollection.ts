@@ -78,7 +78,13 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		}
 
 		let docsToSearch = this.documents
-		if ('_id' in selector && selector['_id'] && isProtectedString(selector['_id'])) {
+		if (
+			selector &&
+			typeof selector === 'object' &&
+			'_id' in selector &&
+			selector['_id'] &&
+			isProtectedString(selector['_id'])
+		) {
 			// Optimization: Make the lookup as small as possible:
 			docsToSearch = new Map()
 			const doc = this.documents.get(selector['_id'])

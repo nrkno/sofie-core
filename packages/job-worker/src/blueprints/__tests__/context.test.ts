@@ -1,46 +1,31 @@
-import { setupDefaultStudioEnvironment, setupMockStudio } from '../../../../__mocks__/helpers/database'
-import { getHash, protectString, unprotectString } from '../../../../lib/lib'
-import { Studio } from '../../../../lib/collections/Studios'
-import {
-	LookaheadMode,
-	TSR,
-	ConfigManifestEntryType,
-	BlueprintManifestType,
-	ConfigManifestEntry,
-	SomeBlueprintManifest,
-} from '@sofie-automation/blueprints-integration'
-import { CommonContext, StudioContext, ShowStyleContext } from '../context'
-import { ConfigRef } from '../config'
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleCompound, ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
-import { RundownId } from '../../../../lib/collections/Rundowns'
-import { SegmentId } from '../../../../lib/collections/Segments'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Blueprints } from '../../../../lib/collections/Blueprints'
-import { generateFakeBlueprint } from './lib'
-import { createShowStyleCompound } from '../../showStyles'
+import { getHash } from '@sofie-automation/corelib/dist/lib'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
+import { getShowStyleConfigRef, getStudioConfigRef } from '../config'
+import { CommonContext, ShowStyleContext, StudioContext } from '../context/context'
 
 describe('Test blueprint api context', () => {
+	let jobContext: MockJobContext
 	beforeAll(async () => {
-		await setupDefaultStudioEnvironment()
+		jobContext = setupDefaultJobEnvironment()
 	})
 
 	describe('CommonContext', () => {
-		testInFiber('no param', () => {
+		test('no param', () => {
 			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId(undefined as any)
 			expect(res).toEqual(getHash('pre_hash0'))
 			expect(context.unhashId(res)).toEqual('hash0')
 		})
-		testInFiber('no param + notUnique', () => {
+		test('no param + notUnique', () => {
 			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId(undefined as any, true)
 			expect(res).toEqual(getHash('pre_hash0_1'))
 			expect(context.unhashId(res)).toEqual('hash0_1')
 		})
-		testInFiber('empty param', () => {
+		test('empty param', () => {
 			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId('')
@@ -53,7 +38,7 @@ describe('Test blueprint api context', () => {
 
 			expect(res2).not.toEqual(res)
 		})
-		testInFiber('string', () => {
+		test('string', () => {
 			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId('something')
@@ -66,7 +51,7 @@ describe('Test blueprint api context', () => {
 
 			expect(res2).toEqual(res)
 		})
-		testInFiber('string + notUnique', () => {
+		test('string + notUnique', () => {
 			const context = new CommonContext({ name: 'name', identifier: 'pre' })
 
 			const res = context.getHashId('something', true)
@@ -82,292 +67,65 @@ describe('Test blueprint api context', () => {
 	})
 
 	describe('StudioContext', () => {
-		function mockStudio() {
-			const manifest = () => ({
-				blueprintType: 'studio' as BlueprintManifestType.STUDIO,
-				blueprintVersion: '0.0.0',
-				integrationVersion: '0.0.0',
-				TSRVersion: '0.0.0',
+		test('getStudio', () => {
+			const studio = jobContext.studio
+			const studioConfig = jobContext.getStudioBlueprintConfig()
+			const context = new StudioContext(
+				{ name: 'studio', identifier: unprotectString(jobContext.studioId) },
+				studio,
+				studioConfig
+			)
 
-				studioConfigManifest: [
-					{
-						id: 'abc',
-						name: '',
-						description: '',
-						type: 'boolean' as ConfigManifestEntryType.BOOLEAN,
-						defaultVal: false,
-						required: false,
-					},
-					{
-						id: '123',
-						name: '',
-						description: '',
-						type: 'string' as ConfigManifestEntryType.STRING,
-						defaultVal: '',
-						required: false,
-					},
-				] as ConfigManifestEntry[],
-
-				studioMigrations: [],
-				getBaseline: () => {
-					return {
-						timelineObjects: [],
-					}
-				},
-				getShowStyleId: () => null,
-			})
-			const blueprint = generateFakeBlueprint('', BlueprintManifestType.STUDIO, manifest)
-			return setupMockStudio({
-				settings: {
-					sofieUrl: 'testUrl',
-					mediaPreviewsUrl: '',
-				},
-				mappings: {
-					abc: {
-						deviceId: protectString('abc'),
-						device: TSR.DeviceType.ABSTRACT,
-						lookahead: LookaheadMode.PRELOAD,
-					},
-				},
-				blueprintConfig: { abc: true, '123': 'val2', notInManifest: 'val3' },
-				blueprintId: Blueprints.insert(blueprint),
-			})
-		}
-
-		testInFiber('getStudio', () => {
-			const studio = mockStudio()
-			const context = new StudioContext({ name: 'studio', identifier: unprotectString(studio._id) }, studio)
-
-			expect(context.studio).toEqual(studio)
+			expect(context.studio).toBe(studio)
+			expect(context.getStudioConfig()).toBe(studioConfig)
+			expect(context.getStudioMappings()).toBe(studio.mappings)
 		})
-		testInFiber('getStudioConfig', () => {
-			const studio = mockStudio()
-			const context = new StudioContext({ name: 'studio', identifier: unprotectString(studio._id) }, studio)
+		test('getStudioConfigRef', () => {
+			const context = new StudioContext(
+				{ name: 'studio', identifier: unprotectString(jobContext.studioId) },
+				jobContext.studio,
+				jobContext.getStudioBlueprintConfig()
+			)
 
-			expect(context.getStudioConfig()).toEqual({
-				SofieHostURL: 'testUrl', // Injected
-				abc: true,
-				'123': 'val2',
-			})
-		})
-		testInFiber('getStudioConfigRef', () => {
-			const studio = mockStudio()
-			const context = new StudioContext({ name: 'studio', identifier: unprotectString(studio._id) }, studio)
-
-			const getStudioConfigRef = jest.spyOn(ConfigRef, 'getStudioConfigRef')
-			getStudioConfigRef.mockImplementation(() => {
-				return 'configVal1'
-			})
-
-			try {
-				expect(context.getStudioConfigRef('conf1')).toEqual('configVal1')
-
-				expect(getStudioConfigRef).toHaveBeenCalledTimes(1)
-				expect(getStudioConfigRef).toHaveBeenCalledWith(studio._id, 'conf1')
-			} finally {
-				getStudioConfigRef.mockRestore()
-			}
-		})
-
-		testInFiber('getStudioMappings', () => {
-			const studio = mockStudio()
-			const context = new StudioContext({ name: 'studio', identifier: unprotectString(studio._id) }, studio)
-
-			expect(context.getStudioMappings()).toEqual({
-				abc: {
-					deviceId: 'abc',
-					device: TSR.DeviceType.ABSTRACT,
-					lookahead: LookaheadMode.PRELOAD,
-				},
-			})
+			expect(context.getStudioConfigRef('conf1')).toEqual(getStudioConfigRef(jobContext.studioId, 'conf1'))
 		})
 	})
 
 	describe('ShowStyleContext', () => {
-		function mockStudio() {
-			return setupMockStudio({
-				mappings: {
-					abc: {
-						deviceId: protectString('abc'),
-						device: TSR.DeviceType.ABSTRACT,
-						lookahead: LookaheadMode.PRELOAD,
-					},
-				},
-			})
-		}
+		test('getShowStyleConfig', async () => {
+			const showStyleCompound = 'fakeShowstyle' as any
+			const showStyleConfig = 'fakeConfig' as any
 
-		function getContext(studio: Studio, contextName?: string, rundownId?: RundownId, segmentId?: SegmentId) {
-			const showStyleVariant = ShowStyleVariants.findOne() as ShowStyleVariant
-			expect(showStyleVariant).toBeTruthy()
-
-			const manifest = () => ({
-				blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
-				blueprintVersion: '0.0.0',
-				integrationVersion: '0.0.0',
-				TSRVersion: '0.0.0',
-
-				showStyleConfigManifest: [
-					{
-						id: 'one',
-						name: '',
-						description: '',
-						type: 'boolean' as ConfigManifestEntryType.BOOLEAN,
-						defaultVal: false,
-						required: false,
-					},
-					{
-						id: 'two',
-						name: '',
-						description: '',
-						type: 'string' as ConfigManifestEntryType.STRING,
-						defaultVal: '',
-						required: false,
-					},
-					{
-						id: 'three',
-						name: '',
-						description: '',
-						type: 'number' as ConfigManifestEntryType.NUMBER,
-						defaultVal: 0,
-						required: false,
-					},
-					{
-						id: 'four.a',
-						name: '',
-						description: '',
-						type: 'string' as ConfigManifestEntryType.STRING,
-						defaultVal: '',
-						required: false,
-					},
-					{
-						id: 'four.b',
-						name: '',
-						description: '',
-						type: 'table' as ConfigManifestEntryType.TABLE,
-						defaultVal: [],
-						required: false,
-						columns: [
-							{
-								id: 'x',
-								name: '',
-								description: '',
-								type: 'number' as ConfigManifestEntryType.NUMBER,
-								required: false,
-								defaultVal: 0,
-								rank: 0,
-							},
-						],
-					},
-					{
-						id: 'four.c',
-						name: '',
-						description: '',
-						type: 'number' as ConfigManifestEntryType.NUMBER,
-						defaultVal: 0,
-						required: false,
-					},
-				] as ConfigManifestEntry[],
-				showStyleMigrations: [],
-				getRundown: () => null,
-				getSegment: () => null,
-				getShowStyleVariantId: () => null,
-			})
-			const showStyleBase = ShowStyleBases.findOne() as ShowStyleBase
-			expect(showStyleBase).toBeTruthy()
-			const blueprint = generateFakeBlueprint(
-				unprotectString(showStyleBase.blueprintId),
-				BlueprintManifestType.SHOWSTYLE,
-				manifest as any as () => SomeBlueprintManifest
-			)
-			Blueprints.update(blueprint._id, blueprint)
-
-			const showStyleCompund = createShowStyleCompound(showStyleBase, showStyleVariant) as ShowStyleCompound
-			expect(showStyleCompund).toBeTruthy()
-
-			return new ShowStyleContext(
+			const context = new ShowStyleContext(
 				{
-					name: contextName || 'N/A',
-					identifier: `rundownId=${rundownId},segmentId=${segmentId}`,
+					name: 'N/A',
+					identifier: `fake context`,
 				},
-				studio,
-				showStyleCompund
+				jobContext.studio,
+				jobContext.getStudioBlueprintConfig(),
+				showStyleCompound,
+				showStyleConfig
 			)
-		}
 
-		testInFiber('getShowStyleConfig', () => {
-			const studio = mockStudio()
-			const context = getContext(studio)
-
-			// Set some config
-			ShowStyleVariants.update(context.showStyleCompound.showStyleVariantId, {
-				$set: {
-					blueprintConfig: {
-						one: true,
-						two: 'val2',
-						four: {
-							a: 'abc',
-							b: [
-								{ _id: '0', x: 789 },
-								{ _id: '1', x: 567 },
-							],
-						},
-					},
-				},
-			})
-			ShowStyleBases.update(context.showStyleCompound._id, {
-				$set: {
-					blueprintConfig: {
-						two: 'default',
-						three: 765,
-						four: {
-							a: 'xyz',
-							b: [
-								{ _id: '0', x: 123 },
-								{ _id: '1', x: 456 },
-								{ _id: '2', x: 789 },
-							],
-							c: 1234,
-						},
-					},
-				},
-			})
-
-			const context2 = getContext(studio)
-			expect(context2.getShowStyleConfig()).toEqual({
-				one: true,
-				two: 'val2',
-				three: 765,
-				four: {
-					a: 'abc',
-					b: [
-						{ _id: '0', x: 789 },
-						{ _id: '1', x: 567 },
-					],
-					c: 1234,
-				},
-			})
+			expect(context.getShowStyleConfig()).toBe(showStyleConfig)
+			expect(context.showStyleCompound).toBe(showStyleCompound)
 		})
 
-		testInFiber('getShowStyleConfigRef', () => {
-			const studio = mockStudio()
-			const context = getContext(studio)
+		test('getShowStyleConfigRef', () => {
+			const context = new ShowStyleContext(
+				{
+					name: 'N/A',
+					identifier: `fake context`,
+				},
+				jobContext.studio,
+				jobContext.getStudioBlueprintConfig(),
+				'1' as any,
+				'2' as any
+			)
 
-			const getShowStyleConfigRef = jest.spyOn(ConfigRef, 'getShowStyleConfigRef')
-			getShowStyleConfigRef.mockImplementation(() => {
-				return 'configVal1'
-			})
-
-			try {
-				expect(context.getShowStyleConfigRef('conf1')).toEqual('configVal1')
-
-				expect(getShowStyleConfigRef).toHaveBeenCalledTimes(1)
-				expect(getShowStyleConfigRef).toHaveBeenCalledWith(
-					context.showStyleCompound.showStyleVariantId,
-					'conf1'
-				)
-			} finally {
-				getShowStyleConfigRef.mockRestore()
-			}
+			expect(context.getShowStyleConfigRef('conf1')).toEqual(
+				getShowStyleConfigRef(context.showStyleCompound.showStyleVariantId, 'conf1')
+			)
 		})
 	})
 

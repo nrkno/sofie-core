@@ -151,8 +151,19 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		this.#documents.set(doc._id, clone(doc))
 		return exists
 	}
-	bulkWrite(_ops: AnyBulkWriteOperation<TDoc>[]): Promise<unknown> {
-		throw new Error('Method not implemented.')
+	async bulkWrite(ops: AnyBulkWriteOperation<TDoc>[]): Promise<unknown> {
+		for (const op of ops) {
+			if ('replaceOne' in op) {
+				await this.replace(op.replaceOne.replacement)
+			} else if ('deleteMany' in op) {
+				await this.remove(op.deleteMany.filter)
+			} else {
+				// Note: implement more as we start using them
+				throw new Error(`Unknown mongo Bulk Operation: ${JSON.stringify(op)}`)
+			}
+		}
+
+		return null
 	}
 }
 
