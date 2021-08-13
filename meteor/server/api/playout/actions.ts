@@ -5,7 +5,7 @@ import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Ru
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, makePromise } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { RundownEventContext } from '../blueprints/context'
+import { RundownContext, RundownEventContext } from '../blueprints/context'
 import { setNextPart, onPartHasStoppedPlaying, selectNextPart, LOW_PRIO_DEFER_TIME, resetRundownPlaylist } from './lib'
 import { updateStudioTimeline, updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
@@ -115,10 +115,32 @@ export async function deactivateRundownPlaylist(cache: CacheForPlayout): Promise
 			const { blueprint } = await loadShowStyleBlueprint(showStyle)
 			let result: Promise<void> | undefined
 			if (blueprint.onRundownDeActivate) {
-				result = blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))
+				result = blueprint.onRundownDeActivate(
+					new RundownContext(
+						{
+							name: `${cache.Playlist.doc.name}`,
+							identifier: `playlist=${cache.Playlist.doc._id},currentPartInstance=${
+								cache.Playlist.doc.currentPartInstanceId
+							},execution=${getRandomId()}`,
+						},
+						cache.Studio.doc,
+						showStyle,
+						rundown
+					)
+				)
 			}
 
-			const context = new RundownContext(rundown, cache, undefined)
+			const context = new RundownContext(
+				{
+					name: `${cache.Playlist.doc.name}`,
+					identifier: `playlist=${cache.Playlist.doc._id},currentPartInstance=${
+						cache.Playlist.doc.currentPartInstanceId
+					},execution=${getRandomId()}`,
+				},
+				cache.Studio.doc,
+				showStyle,
+				rundown
+			)
 			context.wipeCache()
 
 			if (result) {

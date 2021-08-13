@@ -219,5 +219,5 @@ export function getUnfinishedPieceInstancesGrouped(currentPartInstanceId: PartIn
 
 export function isAdLibDisplayedAsOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
 	const isOnAir = isAdLibOnAir(unfinishedAdLibIds, unfinishedTags, adLib)
-	return adLib.invertOnAirState ? !isAdLibOnAir : isOnAir
+	return adLib.invertOnAirState ? !isOnAir : isOnAir
 }
