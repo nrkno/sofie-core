@@ -74,7 +74,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	}
 
 	function onFilterInsertNext(filterIndex) {
-		if (filterIndex > -1 || action.filterChain.length === 0) {
+		if (action.filterChain.length === filterIndex + 1) {
 			const obj =
 				filterIndex > -1
 					? literal<IAdLibFilterLink>({

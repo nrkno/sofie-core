@@ -30,6 +30,7 @@ $triggered-action-color: #146985;
 			font-weight: 400;
 			justify-content: center;
 			min-width: 20px;
+			word-break: break-word;
 
 			&.selected {
 				position: relative;
@@ -211,7 +212,7 @@ $triggered-action-color: #146985;
 
 					border-left: 9px solid black;
 					right: -9px;
-					top: 0;
+					bottom: 0;
 				}
 
 				> :only-child::after {
@@ -225,7 +226,7 @@ $triggered-action-color: #146985;
 
 					border-left: 9px solid #999;
 					right: -9px;
-					top: 0;
+					bottom: 0;
 				}
 			}
 

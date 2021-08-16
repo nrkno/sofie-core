@@ -2,9 +2,8 @@ import React, { useState, useEffect, useLayoutEffect } from 'react'
 import classNames from 'classnames'
 import { usePopper } from 'react-popper'
 import { EditAttribute } from '../../../../../../lib/EditAttribute'
-import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { sameWidth } from '../../../../../../lib/popperUtils'
 
 interface IProps {
@@ -17,7 +16,7 @@ interface IProps {
 	value: any
 	final?: boolean
 	readonly?: boolean
-	type: 'switch' | 'text' | 'int' | 'dropdown' | 'multiselect'
+	type: 'toggle' | 'text' | 'int' | 'dropdown' | 'multiselect'
 	values?: Record<string, any>
 	onChangeField: (newField: any) => void
 	onChange: (newValue: any) => void
@@ -29,7 +28,6 @@ interface IProps {
 
 export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProps): React.ReactElement | null {
 	const { opened, onClose, onFocus } = props
-	const { t } = useTranslation()
 	const [referenceElement, setReferenceElement] = useState<HTMLDListElement | null>(null)
 	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
@@ -108,10 +106,10 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 					</div>
 					<div>
 						<EditAttribute
-							className={props.type === 'switch' ? 'form-control' : 'form-control input text-input input-m'}
+							className={props.type === 'toggle' ? 'form-control' : 'form-control input text-input input-m'}
 							modifiedClassName="bghl"
 							type={props.type}
-							label={props.fieldLabel}
+							label={props.valueLabel}
 							options={props.values}
 							overrideDisplayValue={typeof props.value === 'number' ? String(props.value) : props.value}
 							attribute={''}
@@ -121,7 +119,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 					<div className="mts">
 						{!props.final ? (
 							<button className="btn right btn-tight btn-primary" onClick={props.onInsertNext}>
-								{t('Insert next')}
+								<FontAwesomeIcon icon={faAngleRight} />
 							</button>
 						) : null}
 						<button className="btn btn-tight btn-secondary" onClick={props.onRemove}>

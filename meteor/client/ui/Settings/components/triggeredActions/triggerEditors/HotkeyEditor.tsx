@@ -4,6 +4,7 @@ import { useLayoutEffect } from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
+import { EditAttribute } from '../../../../../lib/EditAttribute'
 import { SorensenContext } from '../TriggeredActionsEditor'
 import { codesToKeyLabels } from './HotkeyTrigger'
 
@@ -93,30 +94,18 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange 
 				onBlur={onBlur}
 				onChange={() => {}}
 			/>
-			<div className="mvs">
-				<a
-					className={classNames('switch-button', 'sb-nocolor', 'mrs', {
-						'sb-on': trigger.up,
-					})}
-					role="button"
-					onClick={() =>
-						onChange({
-							...trigger,
-							up: !trigger.up,
-						})
-					}
-					tabIndex={0}
-				>
-					<div className="sb-content">
-						<div className="sb-label">
-							<span className="mls">&nbsp;</span>
-							<span className="mrs right">&nbsp;</span>
-						</div>
-						<div className="sb-switch"></div>
-					</div>
-				</a>
-				<span>{t('On release')}</span>
-			</div>
+			<EditAttribute
+				type={'toggle'}
+				className="sb-nocolor"
+				overrideDisplayValue={trigger.up}
+				updateFunction={(_e, newValue) =>
+					onChange({
+						...trigger,
+						up: newValue,
+					})
+				}
+				label={t('On release')}
+			/>
 		</>
 	)
 }

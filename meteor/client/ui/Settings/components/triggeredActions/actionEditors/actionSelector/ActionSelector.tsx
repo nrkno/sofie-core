@@ -8,7 +8,7 @@ import { usePopper } from 'react-popper'
 import classNames from 'classnames'
 import { EditAttribute } from '../../../../../../lib/EditAttribute'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 interface IProps {
 	action: SomeAction
@@ -171,7 +171,7 @@ function getActionParametersEditor(
 					<EditAttribute
 						className="form-control"
 						modifiedClassName="bghl"
-						type={'switch'}
+						type={'toggle'}
 						label={t('Rehearsal')}
 						overrideDisplayValue={action.rehearsal}
 						attribute={''}
@@ -185,7 +185,7 @@ function getActionParametersEditor(
 					<EditAttribute
 						className="form-control"
 						modifiedClassName="bghl"
-						type={'switch'}
+						type={'toggle'}
 						label={t('Force (deactivate others)')}
 						overrideDisplayValue={action.force}
 						attribute={''}
@@ -210,7 +210,7 @@ function getActionParametersEditor(
 					<EditAttribute
 						className="form-control"
 						modifiedClassName="bghl"
-						type={'switch'}
+						type={'toggle'}
 						label={t('Undo')}
 						overrideDisplayValue={action.undo}
 						attribute={''}
@@ -229,7 +229,7 @@ function getActionParametersEditor(
 					<EditAttribute
 						className="form-control"
 						modifiedClassName="bghl"
-						type={'switch'}
+						type={'toggle'}
 						label={t('Undo')}
 						overrideDisplayValue={action.undo}
 						attribute={''}
@@ -426,7 +426,7 @@ export const ActionSelector = function ActionSelector({
 								onSetFilter && onSetFilter()
 							}}
 						>
-							{t('Set Target')}
+							<FontAwesomeIcon icon={faAngleRight} />
 						</button>
 					</div>
 				</div>
