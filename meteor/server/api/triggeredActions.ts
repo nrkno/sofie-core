@@ -131,6 +131,9 @@ function apiCreateTriggeredActions(
 	check(showStyleBaseId, String)
 	check(base, Match.Optional(Object))
 
+	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	if (!access) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
+
 	return createTriggeredActions(showStyleBaseId, base)
 }
 function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId) {
@@ -138,7 +141,7 @@ function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId
 
 	const access = ShowStyleContentWriteAccess.triggeredActions(context, id)
 	const triggeredActions = access === true ? access : access.triggeredActions
-	if (!triggeredActions) throw new Meteor.Error(404, `RundownLayout "${id}" not found`)
+	if (!triggeredActions) throw new Meteor.Error(404, `Action Trigger "${id}" not found`)
 
 	removeTriggeredActions(id)
 }

@@ -159,6 +159,7 @@ export interface IAdlibPlayoutAction extends ITriggeredActionBase {
 export interface IRundownPlaylistActivateAction extends ITriggeredActionBase {
 	action: PlayoutActions.activateRundownPlaylist
 	rehearsal: boolean
+	force?: boolean
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
 }
 

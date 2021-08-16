@@ -447,8 +447,6 @@ function compileAdLibPieceFilter(
 		}
 	})
 
-	console.log(selector)
-
 	return {
 		selector,
 		options,

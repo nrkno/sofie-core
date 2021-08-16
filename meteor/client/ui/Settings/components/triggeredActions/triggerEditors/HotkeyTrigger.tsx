@@ -6,7 +6,7 @@ import { SorensenContext } from '../TriggeredActionsEditor'
 import { useTranslation } from 'react-i18next'
 
 function toTitleCase(input: string): string {
-	const str = input.toLowerCase().split(' ')
+	const str = input.split(' ')
 	for (let i = 0; i < str.length; i++) {
 		str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1)
 	}

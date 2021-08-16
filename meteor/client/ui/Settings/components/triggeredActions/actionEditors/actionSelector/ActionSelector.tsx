@@ -20,10 +20,71 @@ interface IProps {
 	onSetFilter?: () => void
 }
 
+function getArguments(t: TFunction, action: SomeAction): string[] {
+	const result: string[] = []
+	switch (action.action) {
+		case PlayoutActions.activateRundownPlaylist:
+			if (action.force) {
+				result.push(t('Force'))
+			}
+			if (action.rehearsal) {
+				result.push(t('Rehearsal'))
+			}
+			break
+		case PlayoutActions.adlib:
+			break
+		case PlayoutActions.createSnapshotForDebug:
+			break
+		case PlayoutActions.deactivateRundownPlaylist:
+			break
+		case PlayoutActions.disableNextPiece:
+			if (action.undo) {
+				result.push(t('Undo'))
+			}
+			break
+		case PlayoutActions.hold:
+			if (action.undo) {
+				result.push(t('Undo'))
+			}
+			break
+		case PlayoutActions.moveNext:
+			if (action.segments) {
+				result.push(t('Segments: {{count}}', { count: action.segments }))
+			}
+			if (action.parts) {
+				result.push(t('Parts: {{count}}', { count: action.parts }))
+			}
+			break
+		case PlayoutActions.reloadRundownPlaylistData:
+			break
+		case PlayoutActions.resetRundownPlaylist:
+			break
+		case PlayoutActions.take:
+			break
+		case PlayoutActions.resyncRundownPlaylist:
+			break
+		case ClientActions.shelf:
+			if (action.state === true) {
+				result.push(t('Open'))
+			} else if (action.state === false) {
+				result.push(t('Close'))
+			} else if (action.state === 'toggle') {
+				result.push(t('Toggle'))
+			} else {
+				assertNever(action.state)
+			}
+			break
+		default:
+			assertNever(action)
+			return action
+	}
+	return result
+}
+
 function hasArguments(action: SomeAction): boolean {
 	switch (action.action) {
 		case PlayoutActions.activateRundownPlaylist:
-			return true
+			return action.force || action.rehearsal
 		case PlayoutActions.adlib:
 			return false
 		case PlayoutActions.createSnapshotForDebug:
@@ -31,19 +92,19 @@ function hasArguments(action: SomeAction): boolean {
 		case PlayoutActions.deactivateRundownPlaylist:
 			return false
 		case PlayoutActions.disableNextPiece:
-			return false
+			return !!action.undo
 		case PlayoutActions.hold:
-			return true
+			return !!action.undo
 		case PlayoutActions.moveNext:
-			return true
+			return !!(action.parts || action.segments)
 		case PlayoutActions.reloadRundownPlaylistData:
 			return false
 		case PlayoutActions.resetRundownPlaylist:
 			return false
 		case PlayoutActions.take:
-			return true
+			return false
 		case PlayoutActions.resyncRundownPlaylist:
-			return true
+			return false
 		case ClientActions.shelf:
 			return true
 		default:
@@ -98,6 +159,163 @@ function getAvailableActions(t: TFunction): Record<string, string> {
 	return result
 }
 
+function getActionParametersEditor(
+	t: TFunction,
+	action: SomeAction,
+	onChange: (newVal: Partial<typeof action>) => void
+): React.ReactElement | null {
+	switch (action.action) {
+		case PlayoutActions.activateRundownPlaylist:
+			return (
+				<div className="mts">
+					<EditAttribute
+						className="form-control"
+						modifiedClassName="bghl"
+						type={'switch'}
+						label={t('Rehearsal')}
+						overrideDisplayValue={action.rehearsal}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								rehearsal: newVal,
+							})
+						}}
+					/>
+					<EditAttribute
+						className="form-control"
+						modifiedClassName="bghl"
+						type={'switch'}
+						label={t('Force (deactivate others)')}
+						overrideDisplayValue={action.force}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								force: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
+		case PlayoutActions.adlib:
+			return null
+		case PlayoutActions.createSnapshotForDebug:
+			return null
+		case PlayoutActions.deactivateRundownPlaylist:
+			return null
+		case PlayoutActions.disableNextPiece:
+			return (
+				<div className="mts">
+					<EditAttribute
+						className="form-control"
+						modifiedClassName="bghl"
+						type={'switch'}
+						label={t('Undo')}
+						overrideDisplayValue={action.undo}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								undo: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
+		case PlayoutActions.hold:
+			return (
+				<div className="mts">
+					<EditAttribute
+						className="form-control"
+						modifiedClassName="bghl"
+						type={'switch'}
+						label={t('Undo')}
+						overrideDisplayValue={action.undo}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								undo: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
+		case PlayoutActions.moveNext:
+			return (
+				<div className="mts">
+					<label className="block">{t('Move Segments')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type={'int'}
+						label={t('By Segments')}
+						overrideDisplayValue={action.segments}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								segments: newVal,
+							})
+						}}
+					/>
+					<label className="block">{t('Move Parts')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type={'int'}
+						label={t('By Parts')}
+						overrideDisplayValue={action.parts}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								parts: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
+		case PlayoutActions.reloadRundownPlaylistData:
+			return null
+		case PlayoutActions.resetRundownPlaylist:
+			return null
+		case PlayoutActions.take:
+			return null
+		case PlayoutActions.resyncRundownPlaylist:
+			return null
+		case ClientActions.shelf:
+			return (
+				<div className="mts">
+					<label className="block">{t('State')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type={'dropdown'}
+						label={t('State')}
+						options={{
+							[t('Open')]: true,
+							[t('Close')]: false,
+							[t('Toggle')]: 'toggle',
+						}}
+						overrideDisplayValue={action.state}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								state: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
+		default:
+			assertNever(action)
+			return action
+	}
+}
+
 export const ActionSelector = function ActionSelector({
 	action,
 	opened,
@@ -148,19 +366,23 @@ export const ActionSelector = function ActionSelector({
 	}, [action])
 
 	const { t } = useTranslation()
+
+	const actionArguments = getArguments(t, action)
+
 	return (
 		<>
 			<div
 				ref={setReferenceElement}
 				className={classNames('triggered-action-entry__action__type clickable', {
 					focused: opened,
-					hasArguments: hasArguments(action),
+					'has-arguments': hasArguments(action),
 				})}
 				tabIndex={0}
 				role="button"
 				onClick={onFocus}
 			>
 				{actionToLabel(t, action.action)}
+				{actionArguments.length > 0 ? <span className="arguments">{actionArguments.join(', ')}</span> : null}
 			</div>
 			{opened ? (
 				<div
@@ -186,6 +408,13 @@ export const ActionSelector = function ActionSelector({
 							}}
 						/>
 					</div>
+					{getActionParametersEditor(t, action, (newVal: Partial<typeof action>) => {
+						onChange({
+							...action,
+							// typescript doesn't seem to recognize that if action and newVal are of equal type, they must inherently be compatible
+							...(newVal as any),
+						})
+					})}
 					<div className="mts">
 						<button className="btn btn-tight btn-secondary" onClick={onRemove}>
 							<FontAwesomeIcon icon={faTrash} />
@@ -197,7 +426,7 @@ export const ActionSelector = function ActionSelector({
 								onSetFilter && onSetFilter()
 							}}
 						>
-							{t('Set Filters')}
+							{t('Set Target')}
 						</button>
 					</div>
 				</div>

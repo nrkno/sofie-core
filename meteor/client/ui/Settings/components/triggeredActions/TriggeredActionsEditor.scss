@@ -171,6 +171,18 @@ $triggered-action-color: #146985;
 					right: -9px;
 					top: 0;
 				}
+
+				&.has-arguments {
+					&::after {
+						border-left-color: #000;
+					}
+				}
+
+				> .arguments {
+					background: #000;
+					margin: 0 -3px 0 3px;
+					padding: 0 3px;
+				}
 			}
 
 			> .triggered-action-entry__action__filter {

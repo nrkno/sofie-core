@@ -74,24 +74,26 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	}
 
 	function onFilterInsertNext(filterIndex) {
-		const obj =
-			filterIndex > -1
-				? literal<IAdLibFilterLink>({
-						object: 'adLib',
-						field: 'label',
-						value: [],
-				  })
-				: literal<IGUIContextFilterLink>({
-						object: 'view',
-				  })
+		if (filterIndex > -1 || action.filterChain.length === 0) {
+			const obj =
+				filterIndex > -1
+					? literal<IAdLibFilterLink>({
+							object: 'adLib',
+							field: 'label',
+							value: [],
+					  })
+					: literal<IGUIContextFilterLink>({
+							object: 'view',
+					  })
 
-		action.filterChain.splice(filterIndex + 1, 0, obj)
+			action.filterChain.splice(filterIndex + 1, 0, obj)
 
-		TriggeredActions.update(triggeredAction._id, {
-			$set: {
-				[`actions.${index}`]: action,
-			},
-		})
+			TriggeredActions.update(triggeredAction._id, {
+				$set: {
+					[`actions.${index}`]: action,
+				},
+			})
+		}
 
 		setOpenFilterIndex(filterIndex + 1)
 		if (typeof onFocus === 'function') onFocus()

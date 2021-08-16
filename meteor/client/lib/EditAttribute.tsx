@@ -158,7 +158,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 	}
 	getAttribute() {
 		let v = null
-		if (this.props.overrideDisplayValue) {
+		if (this.props.overrideDisplayValue !== undefined) {
 			v = this.props.overrideDisplayValue
 		} else {
 			v = this.deepAttribute(this.props.myObject, this.props.attribute)
