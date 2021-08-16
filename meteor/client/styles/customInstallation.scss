@@ -271,6 +271,12 @@ body.tv2 {
 					background-color: var(--dve-lower) !important;
 				}
 			}
+
+			&.live-speak {
+				background: linear-gradient(
+					180deg
+					,var(--segment-layer-background-vt) 50%,var(--segment-layer-background-camera) 50.0001%) !important;
+			}
 		}
 	}
 	.segment-timeline.next,
