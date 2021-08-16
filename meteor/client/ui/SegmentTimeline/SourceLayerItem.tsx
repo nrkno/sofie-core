@@ -602,7 +602,6 @@ export const SourceLayerItem = withTranslation()(
 							{...this.state}
 						/>
 					)
-				case SourceLayerType.GRAPHICS:
 				case SourceLayerType.LOWER_THIRD:
 					return (
 						<L3rdSourceRenderer
@@ -647,6 +646,7 @@ export const SourceLayerItem = withTranslation()(
 					)
 
 				case SourceLayerType.TRANSITION:
+				case SourceLayerType.GRAPHICS:
 					return (
 						<VTSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}
