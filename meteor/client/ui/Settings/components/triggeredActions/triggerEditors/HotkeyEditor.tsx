@@ -9,10 +9,34 @@ import { codesToKeyLabels } from './HotkeyTrigger'
 
 interface IProps {
 	trigger: DBBlueprintTrigger
+	modified?: boolean
 	onChange: (newVal: DBBlueprintTrigger) => void
 }
 
-export const HotkeyEditor = function HotkeyEditor({ trigger }: IProps) {
+const MODIFIER_MAP = {
+	ControlLeft: 'Control',
+	ControlRight: 'Control',
+	ShiftLeft: 'Shift',
+	ShiftRight: 'Shift',
+	AltLeft: 'Alt',
+	AltRight: 'Alt',
+	MetaLeft: 'Meta',
+	MetaRight: 'Meta',
+	Enter: 'AnyEnter',
+	NumpadEnter: 'AnyEnter',
+}
+
+export function convertToLenientModifiers(keys: string[]): string[] {
+	return keys.map((key) => {
+		if (key in MODIFIER_MAP) {
+			return MODIFIER_MAP[key]
+		} else {
+			return key
+		}
+	})
+}
+
+export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange }: IProps) {
 	const sorensen = useContext(SorensenContext)
 	const [input, setInput] = useState<HTMLInputElement | null>(null)
 	const [displayValue, setDisplayValue] = useState(trigger.keys)
@@ -21,7 +45,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger }: IProps) {
 
 	function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (sorensen) {
-			const pressedKeys = sorensen.getPressedKeys().join('+')
+			const pressedKeys = convertToLenientModifiers(sorensen.getPressedKeys()).join('+')
 			setValue(pressedKeys)
 			setDisplayValue(codesToKeyLabels(pressedKeys, sorensen))
 		}
@@ -49,12 +73,19 @@ export const HotkeyEditor = function HotkeyEditor({ trigger }: IProps) {
 		}, 40)
 	}, [input])
 
+	useEffect(() => {
+		onChange({
+			...trigger,
+			keys: value,
+		})
+	}, [value])
+
 	return (
 		<>
 			<input
 				type="text"
 				className={classNames('form-control input text-input input-m', {
-					bghl: value !== trigger.keys,
+					bghl: modified,
 				})}
 				ref={setInput}
 				value={displayValue}
@@ -68,7 +99,12 @@ export const HotkeyEditor = function HotkeyEditor({ trigger }: IProps) {
 						'sb-on': trigger.up,
 					})}
 					role="button"
-					onClick={() => (trigger.up = !trigger.up)}
+					onClick={() =>
+						onChange({
+							...trigger,
+							up: !trigger.up,
+						})
+					}
 					tabIndex={0}
 				>
 					<div className="sb-content">

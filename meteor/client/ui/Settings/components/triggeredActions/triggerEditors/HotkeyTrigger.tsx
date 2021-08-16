@@ -33,7 +33,7 @@ export const HotkeyTrigger = ({
 	onClick,
 }: {
 	keys: string
-	up?: boolean
+	up: boolean
 	innerRef?: React.Ref<HTMLDivElement>
 	selected?: boolean
 	onClick?: () => void
@@ -52,6 +52,8 @@ export const HotkeyTrigger = ({
 				selected: selected,
 			})}
 			onClick={onClick}
+			tabIndex={0}
+			role="button"
 		>
 			{keys ? keys : <i className="subtle">{t('Empty')}</i>}
 			{up ? '⇪' : ''}

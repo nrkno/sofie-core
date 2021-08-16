@@ -5,7 +5,7 @@ import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/Rea
 import { PubSub } from '../../../../../lib/api/pubsub'
 import { ShowStyleBaseId, ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry } from './TriggeredActionEntry'
 import { literal, unprotectString } from '../../../../../lib/lib'
@@ -15,6 +15,9 @@ import { RundownPlaylist, RundownPlaylists } from '../../../../../lib/collection
 import { Rundown, Rundowns } from '../../../../../lib/collections/Rundowns'
 import { PartInstances } from '../../../../../lib/collections/PartInstances'
 import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
+import { MeteorCall } from '../../../../../lib/api/methods'
+import { UploadButton } from '../../../../lib/uploadButton'
+import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
 
 export const SorensenContext = React.createContext<null | typeof Sorensen>(null)
 
@@ -178,7 +181,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		}
 	}, [])
 
-	function onEditEntry(e, triggeredActionId: TriggeredActionId) {
+	function onEditEntry(triggeredActionId: TriggeredActionId) {
 		if (selectedTriggeredActionId === triggeredActionId) {
 			setSelectedTriggeredActionId(null)
 		} else {
@@ -186,20 +189,36 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		}
 	}
 
+	function onNewTriggeredAction() {
+		MeteorCall.triggeredActions.createTriggeredActions(props.showStyleBaseId).catch(console.error)
+	}
+
+	function onRemoveTriggeredAction(triggeredActionsId: TriggeredActionId) {
+		MeteorCall.triggeredActions.removeTriggeredActions(triggeredActionsId).catch(console.error)
+	}
+
+	function onDownloadActions() {
+		window.location.replace(`/actionTriggers/download/${showStyleBaseId}`)
+	}
+
+	function onUploadActions() {}
+
 	return showStyleBase !== undefined ? (
 		<div>
 			<SorensenContext.Provider value={localSorensen}>
 				{localSorensen && previewContext.rundownPlaylist && (
-					<TriggersHandler
-						sorensen={localSorensen}
-						simulateTriggerBinding={true}
-						showStyleBaseId={showStyleBaseId}
-						rundownPlaylistId={previewContext.rundownPlaylist._id}
-						currentPartId={previewContext.currentPartId}
-						nextPartId={previewContext.nextPartId}
-						currentSegmentPartIds={previewContext.currentSegmentPartIds}
-						nextSegmentPartIds={previewContext.nextSegmentPartIds}
-					/>
+					<ErrorBoundary>
+						<TriggersHandler
+							sorensen={localSorensen}
+							simulateTriggerBinding={true}
+							showStyleBaseId={showStyleBaseId}
+							rundownPlaylistId={previewContext.rundownPlaylist._id}
+							currentPartId={previewContext.currentPartId}
+							nextPartId={previewContext.nextPartId}
+							currentSegmentPartIds={previewContext.currentSegmentPartIds}
+							nextSegmentPartIds={previewContext.nextSegmentPartIds}
+						/>
+					</ErrorBoundary>
 				)}
 				<h2 className="mhn">{t('Action Triggers')}</h2>
 				<div className="mod mhn">
@@ -208,14 +227,15 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 							key={unprotectString(triggeredAction._id)}
 							triggeredAction={triggeredAction}
 							selected={selectedTriggeredActionId === triggeredAction._id}
-							onEdit={(e) => onEditEntry(e, triggeredAction._id)}
+							onEdit={() => onEditEntry(triggeredAction._id)}
+							onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
 							showStyleBase={showStyleBase}
 							previewContext={rundownPlaylist ? previewContext : null}
 							onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
 						/>
 					))}
 				</div>
-				{(systemTriggeredActions?.length ?? 0) > 0 ? <hr /> : null}
+				{(systemTriggeredActions?.length ?? 0) > 0 ? <hr className="mhn" /> : null}
 				<div className="mod mhn">
 					{(systemTriggeredActions?.length ?? 0) > 0 ? <h3 className="mhn">{t('System-wide')}</h3> : null}
 					{systemTriggeredActions?.map((triggeredAction) => (
@@ -223,7 +243,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 							key={unprotectString(triggeredAction._id)}
 							triggeredAction={triggeredAction}
 							selected={selectedTriggeredActionId === triggeredAction._id}
-							onEdit={(e) => onEditEntry(e, triggeredAction._id)}
+							onEdit={() => onEditEntry(triggeredAction._id)}
+							onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
 							showStyleBase={showStyleBase}
 							previewContext={rundownPlaylist ? previewContext : null}
 							onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
@@ -231,8 +252,14 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					))}
 				</div>
 				<div className="mod mhs">
-					<button className="btn btn-primary" onClick={() => {}}>
+					<button className="btn btn-primary" onClick={onNewTriggeredAction}>
 						<FontAwesomeIcon icon={faPlus} />
+					</button>
+					<UploadButton className="btn btn-secondary mls" onChange={onUploadActions} accept="application/json,.json">
+						<FontAwesomeIcon icon={faUpload} />
+					</UploadButton>
+					<button className="btn btn-secondary mls" onClick={onDownloadActions}>
+						<FontAwesomeIcon icon={faDownload} />
 					</button>
 				</div>
 			</SorensenContext.Provider>

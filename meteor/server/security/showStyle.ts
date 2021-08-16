@@ -86,7 +86,7 @@ export namespace ShowStyleContentWriteAccess {
 		if (existingTriggeredAction.showStyleBaseId) {
 			return {
 				...anyContent(cred0, existingTriggeredAction.showStyleBaseId),
-				triggeredAcition: existingTriggeredAction,
+				triggeredActions: existingTriggeredAction,
 			}
 		} else {
 			return true // global triggered actions are accessible to everyone

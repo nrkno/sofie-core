@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { IRundownPlaylistFilterLink } from '@sofie-automation/blueprints-integration'
 import { assertNever } from '../../../../../../../lib/lib'
+import classNames from 'classnames'
 
 interface IProps {
 	link: IRundownPlaylistFilterLink
+	final?: boolean
 }
 
 function fieldToLabel(t: TFunction, field: IRundownPlaylistFilterLink['field']): string {
@@ -22,11 +24,15 @@ function fieldToLabel(t: TFunction, field: IRundownPlaylistFilterLink['field']):
 	}
 }
 
-export const RundownPlaylistFilter: React.FC<IProps> = function RundownPlaylistFilter({ link }: IProps) {
+export const RundownPlaylistFilter: React.FC<IProps> = function RundownPlaylistFilter({ link, final }: IProps) {
 	const { t } = useTranslation()
 
 	return (
-		<dl className="triggered-action-entry__action__filter">
+		<dl
+			className={classNames('triggered-action-entry__action__filter', {
+				final: final,
+			})}
+		>
 			<dt>{fieldToLabel(t, link.field)}</dt>
 			<dd>{link.value}</dd>
 		</dl>

@@ -19,6 +19,15 @@ interface IProps {
 	onClose: () => void
 }
 
+function typeOptionsWithLabels(t: TFunction) {
+	return {
+		[t('Ad-Lib')]: 'adLib',
+		[t('Ad-Lib Action')]: 'adLibAction',
+		[t('Clear Source Layer')]: 'clear',
+		[t('Sticky Piece')]: 'sticky',
+	}
+}
+
 function fieldToType(field: IAdLibFilterLink['field']) {
 	switch (field) {
 		case 'global':
@@ -106,12 +115,7 @@ function fieldToOptions(
 		case 'sourceLayerType':
 			return _.pick(SourceLayerType, (key) => Number.isInteger(key))
 		case 'type':
-			return {
-				[t('AdLib')]: 'adLib',
-				[t('AdLib Action')]: 'adLibAction',
-				[t('Clear Source Layer')]: 'clear',
-				[t('Sticky Piece')]: 'sticky',
-			}
+			return typeOptionsWithLabels(t)
 		default:
 			assertNever(field)
 			return field
@@ -167,14 +171,7 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase, link
 		case 'sourceLayerType':
 			return Array.isArray(link.value) ? link.value.map((type) => SourceLayerType[type]).join(', ') : link.value
 		case 'type':
-			return (
-				_.invert({
-					[t('AdLib')]: 'adLib',
-					[t('AdLib Action')]: 'adLibAction',
-					[t('Clear Source Layer')]: 'clear',
-					[t('Sticky Piece')]: 'sticky',
-				})[link.value] ?? String(link.value)
-			)
+			return _.invert(typeOptionsWithLabels(t))[link.value] ?? String(link.value)
 		default:
 			assertNever(link)
 			//@ts-ignore fallback
@@ -240,6 +237,15 @@ function fieldValueToEditorValue(link: IAdLibFilterLink) {
 	}
 }
 
+function getAvailableFields(t: TFunction, fields: IAdLibFilterLink['field'][]): Record<string, string> {
+	const result: Record<string, string> = {}
+	fields.forEach((key) => {
+		result[fieldToLabel(t, key)] = key
+	})
+
+	return result
+}
+
 export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 	link,
 	readonly,
@@ -253,23 +259,25 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 }: IProps) {
 	const { t } = useTranslation()
 
+	const fields: IAdLibFilterLink['field'][] = [
+		'global',
+		'label',
+		'limit',
+		'pick',
+		'pickEnd',
+		'tag',
+		'outputLayerId',
+		'part',
+		'segment',
+		'sourceLayerId',
+		'sourceLayerType',
+		'type',
+	]
+
 	return (
 		<FilterEditor
 			field={link.field}
-			fields={[
-				'global',
-				'label',
-				'limit',
-				'pick',
-				'pickEnd',
-				'tag',
-				'outputLayerId',
-				'part',
-				'segment',
-				'sourceLayerId',
-				'sourceLayerType',
-				'type',
-			]}
+			fields={getAvailableFields(t, fields)}
 			fieldLabel={fieldToLabel(t, link.field)}
 			valueLabel={fieldValueToValueLabel(t, showStyleBase, link)}
 			value={fieldValueToEditorValue(link)}

@@ -13,7 +13,7 @@ interface IProps {
 	valueLabel?: string
 	opened: boolean
 	field: string
-	fields: string[]
+	fields: string[] | Record<string, string>
 	value: any
 	final?: boolean
 	readonly?: boolean
@@ -80,6 +80,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 				})}
 				ref={setReferenceElement}
 				tabIndex={0}
+				role="button"
 				onClick={() => !props.readonly && typeof onFocus === 'function' && onFocus()}
 			>
 				<dt>{props.fieldLabel}</dt>

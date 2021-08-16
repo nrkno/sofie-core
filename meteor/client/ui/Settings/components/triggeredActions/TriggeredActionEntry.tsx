@@ -1,9 +1,13 @@
 import React, { useState } from 'react'
 import { faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
+import { PlayoutActions, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import { TriggeredActions, TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
+import {
+	DBBlueprintTrigger,
+	TriggeredActions,
+	TriggeredActionsObj,
+} from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
@@ -15,6 +19,7 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { useTranslation } from 'react-i18next'
 import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
 import { TriggerEditor } from './triggerEditors/TriggerEditor'
+import { useEffect } from 'react'
 
 interface IProps {
 	showStyleBase: ShowStyleBase
@@ -22,32 +27,37 @@ interface IProps {
 	selected?: boolean
 	previewContext: PreviewContext | null
 	onEdit: (e) => void
+	onRemove: (e) => void
 	onFocus?: () => void
 }
+
+let LAST_UP_SETTING = false
 
 export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEntry(
 	props: IProps
 ): React.ReactElement | null {
-	const { showStyleBase, triggeredAction, selected, previewContext, onEdit } = props
+	const { showStyleBase, triggeredAction, selected, previewContext, onEdit, onRemove } = props
 
 	const { t } = useTranslation()
 	const [selectedTrigger, setSelectedTrigger] = useState(-1)
+	const [selectedAction, setSelectedAction] = useState(-1)
 
 	const previewItems = useTracker(
 		() => {
-			if (selected) {
-				const executableActions = triggeredAction.actions.map((value) => createAction(value, showStyleBase))
-				const ctx = previewContext
-				if (ctx && ctx.rundownPlaylist) {
-					return flatten(
-						executableActions.map((action) => (isPreviewableAction(action) ? action.preview(ctx as any) : []))
-					)
-				} else {
-					return [] as IWrappedAdLib[]
+			try {
+				if (selected) {
+					const executableActions = triggeredAction.actions.map((value) => createAction(value, showStyleBase))
+					const ctx = previewContext
+					if (ctx && ctx.rundownPlaylist) {
+						return flatten(
+							executableActions.map((action) => (isPreviewableAction(action) ? action.preview(ctx as any) : []))
+						)
+					}
 				}
-			} else {
-				return [] as IWrappedAdLib[]
+			} catch (e) {
+				console.error(e)
 			}
+			return [] as IWrappedAdLib[]
 		},
 		[selected, triggeredAction],
 		[] as IWrappedAdLib[]
@@ -77,11 +87,26 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 		setSelectedTrigger(-1)
 	}
 
+	function changeTrigger(index: number, newVal: DBBlueprintTrigger) {
+		triggeredAction.triggers.splice(index, 1, newVal)
+
+		LAST_UP_SETTING = !!newVal.up
+
+		TriggeredActions.update(triggeredAction._id, {
+			$set: {
+				triggers: triggeredAction.triggers,
+			},
+		})
+
+		setSelectedTrigger(-1)
+	}
+
 	function addTrigger() {
 		const index =
 			triggeredAction.triggers.push({
 				type: TriggerType.hotkey,
 				keys: '',
+				up: LAST_UP_SETTING,
 			}) - 1
 
 		TriggeredActions.update(triggeredAction._id, {
@@ -91,7 +116,44 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 		})
 
 		setSelectedTrigger(index)
+		setSelectedAction(-1)
 	}
+
+	function addAction() {
+		const index =
+			triggeredAction.actions.push({
+				action: PlayoutActions.adlib,
+				filterChain: [],
+			}) - 1
+
+		TriggeredActions.update(triggeredAction._id, {
+			$set: {
+				actions: triggeredAction.actions,
+			},
+		})
+
+		setSelectedTrigger(-1)
+		setSelectedAction(index)
+	}
+
+	function removeAction(index: number) {
+		triggeredAction.actions.splice(index, 1)
+
+		TriggeredActions.update(triggeredAction._id, {
+			$set: {
+				actions: triggeredAction.actions,
+			},
+		})
+
+		setSelectedAction(-1)
+	}
+
+	useEffect(() => {
+		LAST_UP_SETTING =
+			selectedTrigger >= 0
+				? !!triggeredAction.triggers[selectedTrigger]?.up
+				: triggeredAction.triggers[triggeredAction.triggers.length - 1]?.up ?? LAST_UP_SETTING
+	}, [triggeredAction.triggers[triggeredAction.triggers.length - 1]?.up, selectedTrigger])
 
 	return (
 		<div
@@ -105,16 +167,10 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 						key={index}
 						trigger={trigger}
 						opened={selectedTrigger === index}
-						onChangeTrigger={() => {}}
-						onFocus={() => {
-							setSelectedTrigger(index)
-						}}
-						onClose={() => {
-							setSelectedTrigger(-1)
-						}}
-						onRemove={() => {
-							removeTrigger(index)
-						}}
+						onChangeTrigger={(newVal) => changeTrigger(index, newVal)}
+						onFocus={() => setSelectedTrigger(index)}
+						onClose={() => setSelectedTrigger(-1)}
+						onRemove={() => removeTrigger(index)}
 					/>
 				))}
 				<button
@@ -134,15 +190,26 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 						index={index}
 						triggeredAction={triggeredAction}
 						showStyleBase={showStyleBase}
+						onActionFocus={() => setSelectedAction(index)}
 						onFocus={props.onFocus}
+						onClose={() => setSelectedAction(-1)}
+						opened={selectedAction === index}
+						onRemove={() => removeAction(index)}
 					/>
 				))}
+				{triggeredAction.actions.length === 0 ? (
+					<div className="triggered-action-entry__action">
+						<button className="triggered-action-entry__action-add clickable" onClick={addAction}>
+							{t('Select Action')}
+						</button>
+					</div>
+				) : null}
 			</div>
 			<div className="triggered-action-entry__modify">
 				<button className="action-btn" onClick={onEdit}>
 					<FontAwesomeIcon icon={faPencilAlt} />
 				</button>
-				<button className="action-btn" onClick={() => {}}>
+				<button className="action-btn" onClick={onRemove}>
 					<FontAwesomeIcon icon={faTrash} />
 				</button>
 			</div>
@@ -159,7 +226,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 					{previewItems.length === 0 ? (
 						previewContext?.rundownPlaylist ? (
 							<span className="placeholder dimmed">
-								{t('No matches in the current state of Rundown: "{{rundownPlaylistName}}"', {
+								{t('No Ad-Lib matches in the current state of Rundown: "{{rundownPlaylistName}}"', {
 									rundownPlaylistName: previewContext?.rundownPlaylist?.name,
 								})}
 							</span>

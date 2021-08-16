@@ -1,16 +1,24 @@
-import * as React from 'react'
-import { ClientActions, IAdLibFilterLink, PlayoutActions, SomeAction } from '@sofie-automation/blueprints-integration'
+import React from 'react'
+import _ from 'underscore'
+import {
+	IAdLibFilterLink,
+	IGUIContextFilterLink,
+	IRundownPlaylistFilterLink,
+	PlayoutActions,
+	SomeAction,
+} from '@sofie-automation/blueprints-integration'
 import { TriggeredActions, TriggeredActionsObj } from '../../../../../../lib/collections/TriggeredActions'
 import { AdLibFilter } from './filterPreviews/AdLibFilter'
-import { assertNever, literal } from '../../../../../../lib/lib'
-import { useTranslation } from 'react-i18next'
-import { TFunction } from 'i18next'
+import { literal } from '../../../../../../lib/lib'
 import { ViewFilter } from './filterPreviews/ViewFilter'
 import { RundownPlaylistFilter } from './filterPreviews/RundownPlaylistFilter'
 import { ShowStyleBase } from '../../../../../../lib/collections/ShowStyleBases'
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faExclamationTriangle, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { ActionSelector } from './actionSelector/ActionSelector'
+import Tooltip from 'rc-tooltip'
+import { useTranslation } from 'react-i18next'
 
 interface IProps {
 	action: SomeAction
@@ -18,38 +26,21 @@ interface IProps {
 	triggeredAction: TriggeredActionsObj
 	index: number
 	readonly?: boolean
+	opened?: boolean
+	onRemove: () => void
 	onFocus?: () => void
+	onActionFocus?: () => void
+	onClose?: () => void
 }
 
-function actionToLabel(t: TFunction, action: SomeAction['action']): string {
-	switch (action) {
-		case PlayoutActions.activateRundownPlaylist:
-			return t('Activate Rundown')
-		case PlayoutActions.adlib:
-			return t('AdLib')
-		case PlayoutActions.createSnapshotForDebug:
-			return t('Store Snapshot')
-		case PlayoutActions.deactivateRundownPlaylist:
-			return t('Deactivate Rundown')
-		case PlayoutActions.disableNextPiece:
-			return t('Disable next Piece')
-		case PlayoutActions.hold:
-			return t('Hold')
-		case PlayoutActions.moveNext:
-			return t('Move Next')
-		case PlayoutActions.reloadRundownPlaylistData:
-			return t('Reload NRCS Data')
-		case PlayoutActions.resetRundownPlaylist:
-			return t('Reset Rundown')
-		case PlayoutActions.take:
-			return t('Take')
-		case PlayoutActions.resyncRundownPlaylist:
-			return t('Resync with NRCS')
-		case ClientActions.shelf:
-			return t('Shelf')
-		default:
-			assertNever(action)
-			return action
+function isFinal(
+	action: SomeAction,
+	chainLink: IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink | undefined
+): boolean {
+	if (action.action === PlayoutActions.adlib) {
+		return chainLink?.object === 'adLib' && (chainLink?.field === 'pick' || chainLink?.field === 'pickEnd')
+	} else {
+		return chainLink?.object === 'view'
 	}
 }
 
@@ -60,12 +51,16 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	triggeredAction,
 	showStyleBase,
 	onFocus,
+	onActionFocus,
+	onRemove,
+	onClose: onOuterClose,
+	opened,
 }: IProps): React.ReactElement | null {
+	const [openFilterIndex, setOpenFilterIndex] = useState(-1)
 	const { t } = useTranslation()
-	const [openIndex, setOpenIndex] = useState(-1)
 
 	function onClose() {
-		setOpenIndex(-1)
+		setOpenFilterIndex(-1)
 	}
 
 	function onFilterChange(filterIndex, newVal) {
@@ -78,16 +73,19 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		})
 	}
 
-	function onInsertNext(filterIndex) {
-		action.filterChain.splice(
-			filterIndex + 1,
-			0,
-			literal<IAdLibFilterLink>({
-				object: 'adLib',
-				field: 'label',
-				value: [],
-			})
-		)
+	function onFilterInsertNext(filterIndex) {
+		const obj =
+			filterIndex > -1
+				? literal<IAdLibFilterLink>({
+						object: 'adLib',
+						field: 'label',
+						value: [],
+				  })
+				: literal<IGUIContextFilterLink>({
+						object: 'view',
+				  })
+
+		action.filterChain.splice(filterIndex + 1, 0, obj)
 
 		TriggeredActions.update(triggeredAction._id, {
 			$set: {
@@ -95,11 +93,11 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 			},
 		})
 
-		setOpenIndex(filterIndex + 1)
+		setOpenFilterIndex(filterIndex + 1)
 		if (typeof onFocus === 'function') onFocus()
 	}
 
-	function onRemove(filterIndex) {
+	function onFilterRemove(filterIndex) {
 		action.filterChain.splice(filterIndex, 1)
 
 		TriggeredActions.update(triggeredAction._id, {
@@ -109,33 +107,63 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		})
 	}
 
+	function onChange(newVal: SomeAction) {
+		TriggeredActions.update(triggeredAction._id, {
+			$set: {
+				[`actions.${index}`]: newVal,
+			},
+		})
+	}
+
 	function isFinished(): boolean {
-		const last = action.filterChain[action.filterChain.length - 1]
-		return last?.object === 'adLib' && (last?.field === 'pick' || last?.field === 'pickEnd')
+		return isFinal(action, _.last(action.filterChain))
+	}
+
+	function isValid(): boolean {
+		return (
+			action.filterChain.length > 0 &&
+			((action.filterChain[0] as IRundownPlaylistFilterLink | IGUIContextFilterLink).object === 'view' ||
+				(action.filterChain[0] as IRundownPlaylistFilterLink | IGUIContextFilterLink).object === 'rundownPlaylist')
+		)
 	}
 
 	return (
 		<div className="triggered-action-entry__action">
-			<div className="triggered-action-entry__action__type">{actionToLabel(t, action.action)}</div>
+			<ActionSelector
+				action={action}
+				opened={opened}
+				onFocus={() => {
+					onActionFocus && onActionFocus()
+					onFocus && onFocus()
+				}}
+				onChange={onChange}
+				onRemove={onRemove}
+				onSetFilter={() => onFilterInsertNext(-1)}
+				onClose={onOuterClose}
+			/>
 			{action.filterChain.map((chainLink, index) =>
 				chainLink.object === 'adLib' ? (
 					<AdLibFilter
 						link={chainLink}
 						readonly={readonly}
 						key={index}
-						opened={openIndex === index}
+						opened={openFilterIndex === index}
 						onChange={(newVal) => onFilterChange(index, newVal)}
 						showStyleBase={showStyleBase}
 						onFocus={() => {
-							setOpenIndex(index)
+							setOpenFilterIndex(index)
 							if (typeof onFocus === 'function') onFocus()
 						}}
 						onClose={onClose}
-						onInsertNext={() => onInsertNext(index)}
-						onRemove={() => onRemove(index)}
+						onInsertNext={() => onFilterInsertNext(index)}
+						onRemove={() => onFilterRemove(index)}
 					/>
 				) : chainLink.object === 'view' ? (
-					<ViewFilter link={chainLink} key={index} />
+					<ViewFilter
+						link={chainLink}
+						key={index}
+						final={action.filterChain.length === 1 && isFinal(action, chainLink)}
+					/>
 				) : chainLink.object === 'rundownPlaylist' ? (
 					<RundownPlaylistFilter link={chainLink} key={index} />
 				) : (
@@ -147,10 +175,17 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 			{!isFinished() ? (
 				<button
 					className="triggered-action-entry__action__filter-add"
-					onClick={() => onInsertNext(action.filterChain.length - 1)}
+					onClick={() => onFilterInsertNext(action.filterChain.length - 1)}
 				>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
+			) : null}
+			{!isValid() ? (
+				<Tooltip overlay={t('This action has an invalid combination of filters')} placement="left">
+					<div className="right error-notice">
+						<FontAwesomeIcon icon={faExclamationTriangle} />
+					</div>
+				</Tooltip>
 			) : null}
 		</div>
 	)

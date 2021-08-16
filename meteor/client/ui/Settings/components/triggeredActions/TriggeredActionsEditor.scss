@@ -116,7 +116,8 @@ $triggered-action-color: #146985;
 
 		.triggered-action-entry__action {
 			> .triggered-action-entry__action__type,
-			.triggered-action-entry__action__filter {
+			.triggered-action-entry__action__filter,
+			.triggered-action-entry__action-add {
 				position: relative;
 				display: inline-flex;
 				margin: 0 0 3px;
@@ -139,10 +140,23 @@ $triggered-action-color: #146985;
 				}
 			}
 
+			> .triggered-action-entry__action-add {
+				background: none;
+				color: #777;
+				font-weight: 300;
+				font-style: italic;
+				border: 1px solid #777;
+				border-radius: 3px;
+			}
+
 			> .triggered-action-entry__action__type {
 				background: $triggered-action-color;
 				color: #fff;
 				font-weight: 400;
+
+				&.focused {
+					z-index: 1001;
+				}
 
 				&::after {
 					position: absolute;
@@ -212,6 +226,14 @@ $triggered-action-color: #146985;
 				color: #777;
 				visibility: hidden;
 				margin-left: -0.5em;
+			}
+
+			> .triggered-action-entry__action-editor {
+				box-sizing: content-box;
+				min-width: 208px;
+				> * {
+					box-sizing: border-box;
+				}
 			}
 
 			> .triggered-action-entry__action__filter-editor {

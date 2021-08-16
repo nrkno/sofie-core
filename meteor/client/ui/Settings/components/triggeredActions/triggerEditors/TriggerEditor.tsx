@@ -20,14 +20,22 @@ interface IProps {
 	onClose: () => void
 }
 
-function getTriggerTypes(t: TFunction): Record<string, string> {
+function getTriggerTypes(t: TFunction): Record<string, TriggerType> {
 	return {
-		[t('Hotkey')]: 'hotkey',
+		[t('Hotkey')]: TriggerType.hotkey,
 	}
 }
 
-export const TriggerEditor = function TriggerEditor({ opened, trigger, onFocus, onClose, onRemove }: IProps) {
+export const TriggerEditor = function TriggerEditor({
+	opened,
+	trigger,
+	onFocus,
+	onClose,
+	onRemove,
+	onChangeTrigger,
+}: IProps) {
 	const { t } = useTranslation()
+	const [localTrigger, setLocalTrigger] = useState<DBBlueprintTrigger>(trigger)
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
 	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
@@ -66,21 +74,39 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, onFocus, 
 
 	const triggerPreview =
 		trigger.type === TriggerType.hotkey ? (
-			<HotkeyTrigger innerRef={setReferenceElement} keys={trigger.keys} onClick={onFocus} selected={opened} />
+			<HotkeyTrigger
+				innerRef={setReferenceElement}
+				keys={trigger.keys}
+				up={trigger.up || false}
+				onClick={onFocus}
+				selected={opened}
+			/>
 		) : (
 			<div ref={setReferenceElement}>Unknown trigger type: {trigger.type}</div>
 		)
 
 	const triggerEditor =
-		trigger.type === TriggerType.hotkey ? <HotkeyEditor trigger={trigger} onChange={() => {}} /> : null
+		trigger.type === TriggerType.hotkey ? (
+			<HotkeyEditor
+				trigger={localTrigger}
+				onChange={(newVal) => setLocalTrigger(newVal)}
+				modified={trigger.keys !== localTrigger.keys}
+			/>
+		) : null
 
 	useLayoutEffect(() => {
 		update && update().catch(console.error)
 	}, [trigger])
 
+	useEffect(() => {
+		setLocalTrigger(trigger)
+	}, [opened])
+
 	function onChangeType(_newValue: string) {}
 
-	function onConfirm() {}
+	function onConfirm() {
+		onChangeTrigger(localTrigger)
+	}
 
 	return (
 		<>
