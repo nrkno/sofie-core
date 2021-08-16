@@ -29,6 +29,8 @@ export interface BaseContent {
 
 	sourceDuration?: number
 	ignoreMediaObjectStatus?: boolean
+	ignoreBlackFrames?: boolean
+	ignoreFreezeFrame?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -65,8 +67,6 @@ export interface VTContent extends BaseContent {
 	seek?: number
 	editable?: VTEditableParameters
 	ignoreMediaObjectStatus?: boolean
-	ignoreBlackFrames?: boolean
-	ignoreFreezeFrame?: boolean
 }
 
 export interface GraphicsContent extends BaseContent {

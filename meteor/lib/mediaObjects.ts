@@ -406,10 +406,10 @@ export function checkPieceContentStatus(
 									)
 								}
 							}
-							if (deepScan?.blacks) {
+							if (deepScan?.blacks?.length) {
 								addFrameWarning(deepScan.blacks, 'black', t)
 							}
-							if (deepScan?.freezes) {
+							if (deepScan?.freezes?.length) {
 								addFrameWarning(deepScan.freezes, 'freeze', t)
 							}
 						}
@@ -433,6 +433,7 @@ export function checkPieceContentStatus(
 			switch (sourceLayer.type) {
 				case SourceLayerType.VT:
 				case SourceLayerType.LIVE_SPEAK:
+				case SourceLayerType.TRANSITION:
 					// If the fileName is not set...
 					if (!fileName) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
@@ -567,10 +568,10 @@ export function checkPieceContentStatus(
 												)
 											}
 										}
-										if (mediaObject.mediainfo.blacks) {
+										if (!piece.content.ignoreBlackFrames && mediaObject.mediainfo.blacks?.length) {
 											addFrameWarning(mediaObject.mediainfo.blacks, t('black'), t)
 										}
-										if (mediaObject.mediainfo.freezes) {
+										if (!piece.content.ignoreFreezeFrame && mediaObject.mediainfo.freezes?.length) {
 											addFrameWarning(mediaObject.mediainfo.freezes, t('freeze'), t)
 										}
 									}

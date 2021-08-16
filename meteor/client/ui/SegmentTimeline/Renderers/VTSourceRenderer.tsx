@@ -327,7 +327,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
 				// TODO: support multiple packages:
-				if (piece.contentPackageInfos[0]?.deepScan?.freezes) {
+				if (piece.contentPackageInfos[0]?.deepScan?.freezes?.length) {
 					items = piece.contentPackageInfos[0].deepScan.freezes
 						.filter((i) => i.start < itemDuration)
 						.map((i): PackageInfo.Anomaly => {
@@ -340,7 +340,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				const metadata = piece.contentMetaData as MediaObject
 				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
-				if (metadata && metadata.mediainfo && metadata.mediainfo.freezes) {
+				if (metadata && metadata.mediainfo && metadata.mediainfo.freezes?.length) {
 					items = metadata.mediainfo.freezes
 						.filter((i) => i.start < itemDuration)
 						.map((i): PackageInfo.Anomaly => {
@@ -408,7 +408,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			timebase = metadata?.mediainfo?.timebase || 20
 		}
 
-		if (this.state.blacks) {
+		if (this.state.blacks?.length) {
 			let tot = 0
 			for (const b of this.state.blacks) {
 				tot += b.duration
@@ -425,7 +425,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			// @todo: hardcoded 25fps
 			if (tot > 0) msgBlacks = `${Math.ceil(tot / timebase)} black frame${tot > timebase ? 's' : ''} in clip`
 		}
-		if (this.state.freezes) {
+		if (this.state.freezes?.length) {
 			let tot = 0
 			for (const b of this.state.freezes) {
 				tot += b.duration
