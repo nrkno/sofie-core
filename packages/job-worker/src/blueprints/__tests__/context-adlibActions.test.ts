@@ -17,13 +17,8 @@ import {
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	setupDefaultRundown,
-	setupMockShowStyleBase,
-	setupMockShowStyleVariant,
-} from '../../__mocks__/presetCollections'
-import { createShowStyleCompound } from '../../showStyles'
-import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { setupDefaultRundown, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { JobContext } from '../../jobs'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -175,9 +170,7 @@ describe('Test blueprint api context', () => {
 			activationId: activationId,
 		})
 
-		const showStyleBase = await setupMockShowStyleBase(context)
-		const showStyleVariant = await setupMockShowStyleVariant(context, showStyleBase._id)
-		const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant) as ShowStyleCompound
+		const showStyleCompound = await setupMockShowStyleCompound(context)
 		expect(showStyleCompound).toBeTruthy()
 
 		const rundownId: RundownId = getRandomId()

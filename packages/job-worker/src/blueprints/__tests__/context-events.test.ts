@@ -20,13 +20,8 @@ import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataMod
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import {
-	setupDefaultRundownPlaylist,
-	setupMockShowStyleBase,
-	setupMockShowStyleVariant,
-} from '../../__mocks__/presetCollections'
+import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { createShowStyleCompound } from '../../showStyles'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 // TODO: Worker - deduplicate
@@ -87,9 +82,7 @@ describe('Test blueprint api context', () => {
 	beforeEach(async () => {
 		jobContext = setupDefaultJobEnvironment()
 
-		const showStyleBase = await setupMockShowStyleBase(jobContext)
-		const showStyleVariant = await setupMockShowStyleVariant(jobContext, showStyleBase._id)
-		showStyle = createShowStyleCompound(showStyleBase, showStyleVariant) as ShowStyleCompound
+		showStyle = await setupMockShowStyleCompound(jobContext)
 	})
 
 	describe('PartEventContext', () => {

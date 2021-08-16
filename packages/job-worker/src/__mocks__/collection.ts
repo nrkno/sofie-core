@@ -35,9 +35,15 @@ import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
 import { ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
 
+export interface CollectionOperation {
+	type: string
+	args: any[]
+}
+
 export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> implements ICollection<TDoc> {
 	readonly #name: string
 	readonly #documents = new Map<TDoc['_id'], TDoc>()
+	readonly #ops: CollectionOperation[] = []
 
 	constructor(name: CollectionName) {
 		this.#name = name
@@ -50,7 +56,21 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		throw new Error('Not implemented.')
 	}
 
+	get operations(): CollectionOperation[] {
+		return this.#ops
+	}
+
+	clearOpLog(): void {
+		this.#ops.length = 0
+	}
+
 	async findFetch(selector?: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<TDoc[]> {
+		this.#ops.push({ type: 'findFetch', args: [selector, options] })
+
+		return this.findFetchInner(selector, options)
+	}
+
+	private async findFetchInner(selector?: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<TDoc[]> {
 		if (typeof selector === 'string') selector = { _id: selector }
 		selector = selector ?? {}
 
@@ -111,13 +131,17 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		return clone(matchedDocs)
 	}
 	async findOne(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined> {
-		const docs = await this.findFetch(selector, {
+		this.#ops.push({ type: 'findOne', args: [selector, options] })
+
+		const docs = await this.findFetchInner(selector, {
 			...options,
 			limit: 1,
 		})
 		return docs[0]
 	}
 	async insertOne(doc: TDoc | ReadonlyDeep<TDoc>): Promise<TDoc['_id']> {
+		this.#ops.push({ type: 'insertOne', args: [doc._id] })
+
 		if (!doc._id) throw new Error(`insertOne requires document to have an _id`)
 
 		if (this.#documents.has(doc._id)) throw new Error(`insertOne document already exists`)
@@ -127,7 +151,12 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		return doc._id
 	}
 	async remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
-		const docs = await this.findFetch(selector, { projection: { _id: 1 } })
+		this.#ops.push({ type: 'remove', args: [selector] })
+
+		return this.removeInner(selector)
+	}
+	private async removeInner(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
+		const docs = await this.findFetchInner(selector, { projection: { _id: 1 } })
 		for (const doc of docs) {
 			this.#documents.delete(doc._id)
 		}
@@ -135,7 +164,9 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		return docs.length
 	}
 	async update(selector: MongoQuery<TDoc> | TDoc['_id'], modifier: MongoModifier<TDoc>): Promise<number> {
-		const docs = await this.findFetch(selector)
+		this.#ops.push({ type: 'update', args: [selector, modifier] })
+
+		const docs = await this.findFetchInner(selector)
 
 		for (const doc of docs) {
 			const newDoc = mongoModify(selector, doc, modifier)
@@ -145,6 +176,11 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		return docs.length
 	}
 	async replace(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean> {
+		this.#ops.push({ type: 'replace', args: [doc._id] })
+
+		return this.replaceInner(doc)
+	}
+	private async replaceInner(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean> {
 		if (!doc._id) throw new Error(`replace requires document to have an _id`)
 
 		const exists = this.#documents.has(doc._id)
@@ -152,11 +188,13 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		return exists
 	}
 	async bulkWrite(ops: AnyBulkWriteOperation<TDoc>[]): Promise<unknown> {
+		this.#ops.push({ type: 'bulkWrite', args: [ops.length] })
+
 		for (const op of ops) {
 			if ('replaceOne' in op) {
-				await this.replace(op.replaceOne.replacement)
+				await this.replaceInner(op.replaceOne.replacement)
 			} else if ('deleteMany' in op) {
-				await this.remove(op.deleteMany.filter)
+				await this.removeInner(op.deleteMany.filter)
 			} else {
 				// Note: implement more as we start using them
 				throw new Error(`Unknown mongo Bulk Operation: ${JSON.stringify(op)}`)

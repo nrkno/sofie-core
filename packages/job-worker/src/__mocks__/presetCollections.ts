@@ -25,11 +25,25 @@ import {
 	PeripheralDeviceStatusCode,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { createShowStyleCompound } from '../showStyles'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
 	SOURCE_VT0 = 'vt0',
 	OUTPUT_PGM = 'pgm',
+}
+
+export async function setupMockShowStyleCompound(
+	context: JobContext,
+	blueprintId?: BlueprintId,
+	doc?: Partial<DBShowStyleBase>,
+	doc2?: Partial<DBShowStyleVariant>
+): Promise<ShowStyleCompound> {
+	const base = await setupMockShowStyleBase(context, blueprintId, doc)
+	const variant = await setupMockShowStyleVariant(context, base._id, doc2)
+	const compound = createShowStyleCompound(base, variant)
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	return compound!
 }
 
 export async function setupMockShowStyleBase(

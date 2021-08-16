@@ -19,11 +19,7 @@ import {
 } from '../ingest'
 import { parseMosString } from '../lib'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../../__mocks__/context'
-import {
-	setupMockIngestDevice,
-	setupMockShowStyleBase,
-	setupMockShowStyleVariant,
-} from '../../../__mocks__/presetCollections'
+import { setupMockIngestDevice, setupMockShowStyleCompound } from '../../../__mocks__/presetCollections'
 import { fixSnapshot } from '../../../__mocks__/helpers/snapshot'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -67,12 +63,11 @@ describe('Test recieved mos ingest payloads', () => {
 	beforeAll(async () => {
 		context = setupDefaultJobEnvironment(protectString('mockStudio4'))
 
-		const showStyleBase = await setupMockShowStyleBase(context)
-		await setupMockShowStyleVariant(context, showStyleBase._id)
+		const showStyleCompound = await setupMockShowStyleCompound(context)
 
 		context.setStudio({
 			...context.studio,
-			supportedShowStyleBase: [showStyleBase._id],
+			supportedShowStyleBase: [showStyleCompound._id],
 		})
 
 		device = await setupMockIngestDevice(context)

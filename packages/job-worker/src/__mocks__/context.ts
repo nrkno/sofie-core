@@ -25,7 +25,7 @@ import { ApmSpan, JobContext } from '../jobs'
 import { createShowStyleCompound } from '../showStyles'
 import { getMockCollections } from './collection'
 import { clone } from '@sofie-automation/corelib/dist/lib'
-import { IDirectCollections } from '../db'
+import { ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
 import {
 	BlueprintManifestType,
 	BlueprintResultPart,
@@ -43,9 +43,10 @@ import {
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
 } from '../../../blueprints-integration/dist'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 // import _ = require('underscore')
 import { defaultStudio } from './defaultCollectionObjects'
+import { Collection, FindOptions, AnyBulkWriteOperation } from 'mongodb'
 
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const collections = getMockCollections()

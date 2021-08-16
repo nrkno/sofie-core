@@ -43,13 +43,13 @@ export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioI
 export function defaultRundown(
 	externalId: string,
 	studioId: StudioId,
-	ingestDeviceId: PeripheralDeviceId,
+	ingestDeviceId: PeripheralDeviceId | null,
 	playlistId: RundownPlaylistId,
 	showStyleBaseId: ShowStyleBaseId,
 	showStyleVariantId: ShowStyleVariantId
 ): DBRundown {
 	return {
-		peripheralDeviceId: ingestDeviceId,
+		peripheralDeviceId: ingestDeviceId ?? undefined,
 		studioId: studioId,
 		showStyleBaseId: showStyleBaseId,
 		showStyleVariantId: showStyleVariantId,

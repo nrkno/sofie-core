@@ -7,11 +7,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../__mocks__/context'
-import {
-	setupDefaultRundownPlaylist,
-	setupMockShowStyleBase,
-	setupMockShowStyleVariant,
-} from '../__mocks__/presetCollections'
+import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../__mocks__/presetCollections'
 import { updatePartInstanceRanks } from '../rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -29,8 +25,7 @@ describe('updatePartInstanceRanks', () => {
 	beforeAll(async () => {
 		context = setupDefaultJobEnvironment()
 
-		const showStyleBase = await setupMockShowStyleBase(context)
-		await setupMockShowStyleVariant(context, showStyleBase._id)
+		await setupMockShowStyleCompound(context)
 
 		// Set up a playlist:
 		const info = await setupDefaultRundownPlaylist(context)
