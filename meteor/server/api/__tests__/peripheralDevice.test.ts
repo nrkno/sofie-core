@@ -288,9 +288,13 @@ describe('test peripheralDevice general API methods', () => {
 		expect(resultMessage).toEqual(replyMessage)
 	})
 
-	testInFiber('partPlaybackStarted', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+	testInFiber('partPlaybackStarted', async () => {
+		await ActualServerPlayoutAPI.activateRundownPlaylist(
+			DEFAULT_ACCESS(rundownPlaylistID),
+			rundownPlaylistID,
+			false
+		)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -306,12 +310,16 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(ServerPlayoutAPI.onPartPlaybackStarted).toHaveBeenCalled()
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
-	testInFiber('partPlaybackStopped', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+	testInFiber('partPlaybackStopped', async () => {
+		await ActualServerPlayoutAPI.activateRundownPlaylist(
+			DEFAULT_ACCESS(rundownPlaylistID),
+			rundownPlaylistID,
+			false
+		)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -328,12 +336,16 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(ServerPlayoutAPI.onPartPlaybackStopped).toHaveBeenCalled()
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
-	testInFiber('piecePlaybackStarted', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+	testInFiber('piecePlaybackStarted', async () => {
+		await ActualServerPlayoutAPI.activateRundownPlaylist(
+			DEFAULT_ACCESS(rundownPlaylistID),
+			rundownPlaylistID,
+			false
+		)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -358,12 +370,16 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(ServerPlayoutAPI.onPiecePlaybackStarted).toHaveBeenCalled()
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
-	testInFiber('piecePlaybackStopped', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+	testInFiber('piecePlaybackStopped', async () => {
+		await ActualServerPlayoutAPI.activateRundownPlaylist(
+			DEFAULT_ACCESS(rundownPlaylistID),
+			rundownPlaylistID,
+			false
+		)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -388,12 +404,16 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(ServerPlayoutAPI.onPiecePlaybackStopped).toHaveBeenCalled()
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
-	testInFiber('timelineTriggerTime', () => {
-		ActualServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, false)
-		ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+	testInFiber('timelineTriggerTime', async () => {
+		await ActualServerPlayoutAPI.activateRundownPlaylist(
+			DEFAULT_ACCESS(rundownPlaylistID),
+			rundownPlaylistID,
+			false
+		)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -430,7 +450,7 @@ describe('test peripheralDevice general API methods', () => {
 			expect(enable.start).toBeGreaterThan(0)
 		})
 
-		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('killProcess with a rundown present', () => {

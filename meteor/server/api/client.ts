@@ -106,7 +106,7 @@ export namespace ServerClientAPI {
 		}
 	}
 
-	export function callPeripheralDeviceFunction(
+	export async function callPeripheralDeviceFunction(
 		methodContext: MethodContext,
 		context: string,
 		deviceId: PeripheralDeviceId,
@@ -228,17 +228,17 @@ export namespace ServerClientAPI {
 }
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
-	clientErrorReport(timestamp: Time, errorObject: any, location: string) {
+	async clientErrorReport(timestamp: Time, errorObject: any, location: string) {
 		return makePromise(() => ServerClientAPI.clientErrorReport(this, timestamp, errorObject, location))
 	}
-	callPeripheralDeviceFunction(
+	async callPeripheralDeviceFunction(
 		context: string,
 		deviceId: PeripheralDeviceId,
 		timeoutTime: number | undefined,
 		functionName: string,
 		...args: any[]
 	) {
-		return makePromise(() => {
+		return makePromise(async () => {
 			const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
 			if (!Settings.enableUserAccounts) {
 				// Note: This is a temporary hack to keep backwards compatibility.

@@ -191,7 +191,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		headers: { [headers: string]: string } | undefined
 	) {
 		return this.channel.assertExchange(exchangeTopic, 'topic', { durable: true }).then(
-			() =>
+			async () =>
 				new Promise((resolve, reject) => {
 					this.outgoingQueue.push({
 						_id: messageId,

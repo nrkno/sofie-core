@@ -315,16 +315,16 @@ async function setRunMessageQueue(_context: MethodContext, value: boolean): Prom
 }
 
 class ServerExternalMessageQueueAPI extends MethodContextAPI implements NewExternalMessageQueueAPI {
-	remove(messageId: ExternalMessageQueueObjId) {
+	async remove(messageId: ExternalMessageQueueObjId) {
 		return removeExternalMessage(this, messageId)
 	}
-	toggleHold(messageId: ExternalMessageQueueObjId) {
+	async toggleHold(messageId: ExternalMessageQueueObjId) {
 		return toggleHold(this, messageId)
 	}
-	retry(messageId: ExternalMessageQueueObjId) {
+	async retry(messageId: ExternalMessageQueueObjId) {
 		return retry(this, messageId)
 	}
-	setRunMessageQueue(value: boolean) {
+	async setRunMessageQueue(value: boolean) {
 		return setRunMessageQueue(this, value)
 	}
 }

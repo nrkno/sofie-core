@@ -2,7 +2,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
-import { literal, protectString } from '../../../../lib/lib'
+import { literal, protectString, waitForPromise } from '../../../../lib/lib'
 import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
@@ -325,13 +325,15 @@ describe('ensureNextPartIsValid', () => {
 		})
 	}
 	function ensureNextPartIsValid() {
-		return runPlayoutOperationWithCache(
-			null,
-			'ensureNextPartIsValid',
-			rundownPlaylistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => ensureNextPartIsValidRaw(cache)
+		return waitForPromise(
+			runPlayoutOperationWithCache(
+				null,
+				'ensureNextPartIsValid',
+				rundownPlaylistId,
+				PlayoutLockFunctionPriority.USER_PLAYOUT,
+				null,
+				async (cache) => ensureNextPartIsValidRaw(cache)
+			)
 		)
 	}
 

@@ -254,9 +254,9 @@ export namespace MeteorMock {
 		return (...args: any[]) => {
 			const fiber = Fiber.current
 			if (fiber) {
-				fcn(...args)
+				return fcn(...args)
 			} else {
-				runInFiber(() => fcn(...args)).catch(console.error)
+				return runInFiber(() => fcn(...args)).catch(console.error)
 			}
 		}
 	}
@@ -307,7 +307,7 @@ export namespace MeteorMock {
 	})
 
 	/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */
-	export function sleepNoFakeTimers(time: number): Promise<void> {
+	export async function sleepNoFakeTimers(time: number): Promise<void> {
 		return new Promise<void>((resolve) => $.orgSetTimeout(resolve, time))
 	}
 }

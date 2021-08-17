@@ -65,7 +65,7 @@ export const MeteorCall: IMeteorCall = {
 function makeMethods(methods: object): any {
 	const o = {}
 	_.each(methods, (value: any, methodName: string) => {
-		o[methodName] = (...args) => MeteorPromiseCall(value, ...args)
+		o[methodName] = async (...args) => MeteorPromiseCall(value, ...args)
 	})
 	return o
 }

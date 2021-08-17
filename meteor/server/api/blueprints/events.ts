@@ -25,7 +25,7 @@ async function getBlueprintAndDependencies(rundown: ReadonlyDeep<Rundown>) {
 		pShowStyle,
 		Studios.findOneAsync(rundown.studioId),
 		RundownPlaylists.findOneAsync(rundown.playlistId),
-		pShowStyle.then((ss) => loadShowStyleBlueprint(ss)),
+		pShowStyle.then(async (ss) => loadShowStyleBlueprint(ss)),
 	])
 
 	if (!studio) throw new Meteor.Error(404, `Studio "${rundown.studioId}" not found!`)

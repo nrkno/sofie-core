@@ -89,13 +89,13 @@ export function removeUser(context: MethodContext) {
 }
 
 class ServerUserAPI extends MethodContextAPI implements NewUserAPI {
-	enrollUser(email: string, name: string) {
+	async enrollUser(email: string, name: string) {
 		return makePromise(() => enrollUser(email, name))
 	}
-	requestPasswordReset(email: string) {
+	async requestPasswordReset(email: string) {
 		return makePromise(() => requestResetPassword(email))
 	}
-	removeUser() {
+	async removeUser() {
 		return makePromise(() => removeUser(this))
 	}
 }
