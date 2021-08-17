@@ -94,6 +94,7 @@ export const SegmentTimelinePartHoverPreview = ({
 							isAfterLastValidInSegmentAndItsLive={false}
 							part={part}
 							isPreview={true}
+							isBudgetGap={false}
 						/>
 					)
 				})}
@@ -120,6 +121,7 @@ export const SegmentTimelinePartHoverPreview = ({
 						part={followingPart}
 						isPreview={true}
 						cropDuration={followingPartPreviewDuration}
+						isBudgetGap={false}
 					/>
 				)}
 				{!followingPart && isLastInSegment && (

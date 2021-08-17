@@ -31,8 +31,6 @@ interface IRundownTimingProviderProps {
 	refreshInterval?: number
 	/** Fallback duration for Parts that have no as-played duration of their own. */
 	defaultDuration?: number
-	/** Time scale of the rundown, used to calculate partLiveDisplayDurations */
-	timeScale?: number
 }
 interface IRundownTimingProviderChildContext {
 	durations: RundownTimingContext

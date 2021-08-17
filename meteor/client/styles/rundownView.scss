@@ -1329,7 +1329,7 @@ svg.icon {
 				background: $segment-background-color;
 				height: 100%;
 				top: 0;
-				min-width: 200%;
+				min-width: 100vw;
 				z-index: 0;
 			}
 
@@ -1508,6 +1508,11 @@ svg.icon {
 				.segment-timeline__piece {
 					display: none;
 				}
+			}
+
+			&.budget-gap {
+				flex: 1;
+				z-index: -1;
 			}
 
 			&:not(.live) {
@@ -2276,6 +2281,12 @@ svg.icon {
 				background-color: $part-identifier;
 				border-radius: 0 10px 10px 0;
 				color: $part-identifier-text;
+			}
+
+			&.gap {
+				.segment-timeline__layer {
+					border-bottom: none;
+				}
 			}
 		}
 	}

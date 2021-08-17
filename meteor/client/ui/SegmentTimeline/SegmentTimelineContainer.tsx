@@ -130,11 +130,11 @@ interface IState {
 	currentLivePart: PartUi | undefined
 	currentNextPart: PartUi | undefined
 	autoNextPart: boolean
+	budgetDuration: number | undefined
+	budgetGap: number
 	timeScale: number
 	maxTimeScale: number
 	showingAllSegment: boolean
-	budgetDuration: number | undefined
-	budgetGap: number
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined
@@ -366,11 +366,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				autoNextPart: false,
 				currentLivePart: undefined,
 				currentNextPart: undefined,
+				budgetDuration: undefined,
+				budgetGap: 0,
 				timeScale: props.timeScale,
 				maxTimeScale: props.timeScale,
 				showingAllSegment: true,
-				budgetDuration: undefined,
-				budgetGap: 0,
 			}
 
 			this.isVisible = false
@@ -594,6 +594,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.pastInfinitesComp.invalidate()
 			}
 
+			const budgetDuration = this.getSegmentBudgetDuration()
+
 			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
 				this.updateMaxTimeScale().catch(console.error)
 			}
@@ -602,8 +604,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.showEntireSegment()
 			}
 
-			const budgetDuration = this.getSegmentBudgetDuration()
-
 			this.setState({
 				isLiveSegment,
 				isNextSegment,
@@ -611,7 +611,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				currentNextPart,
 				autoNextPart,
 				budgetDuration,
-				budgetGap: budgetDuration ? budgetDuration - this.getSegmentDuration() : 0,
 			})
 		}
 
@@ -631,30 +630,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART, this.onGoToPart)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
 			window.removeEventListener('resize', this.onWindowResize)
-		}
-
-		private getSegmentDuration(): number {
-			let total = 0
-			if (this.context && this.context.durations) {
-				const durations = this.context.durations as RundownTimingContext
-				this.props.parts.forEach((item) => {
-					const duration = Math.max(
-						(durations.partLiveDisplayDurations &&
-							durations.partLiveDisplayDurations[unprotectString(item.instance.part._id)]) ||
-							0,
-						item.instance.timings?.duration ||
-							(durations.partDisplayDurations &&
-								durations.partDisplayDurations[unprotectString(item.instance.part._id)]) ||
-							item.renderedDuration ||
-							Settings.defaultDisplayDuration ||
-							0
-					)
-					total += duration
-				})
-			} else {
-				total = RundownUtils.getSegmentDuration(this.props.parts, true)
-			}
-			return total
 		}
 
 		private getSegmentBudgetDuration(): number | undefined {
@@ -859,7 +834,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						? Math.max(newLivePosition - LIVELINE_HISTORY_SIZE / this.state.timeScale, 0)
 						: this.state.scrollLeft,
 					budgetDuration,
-					budgetGap: budgetDuration ? budgetDuration - this.getSegmentDuration() : 0,
 				})
 			}
 		}
@@ -1000,7 +974,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								isLastSegment={this.props.isLastSegment}
 								lastValidPartIndex={this.props.lastValidPartIndex}
 								onHeaderNoteClick={this.props.onHeaderNoteClick}
-								budgetGap={0} // TODO
+								budgetDuration={this.state.budgetDuration}
 							/>
 						)}
 						{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (
