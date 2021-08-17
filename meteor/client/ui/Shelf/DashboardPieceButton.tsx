@@ -146,28 +146,17 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		return undefined
 	}
 
-	renderGraphics() {
+	renderGraphics(renderThumbnail?: boolean) {
 		const adLib = this.props.piece as any as AdLibPieceUi
-		const noraContent = adLib.content as NoraContent | undefined
 
 		const thumbnailUrl = this.getThumbnailUrl()
 		return (
 			<>
-				<L3rdFloatingInspector
-					showMiniInspector={this.state.isHovered}
-					content={noraContent}
-					floatingInspectorStyle={{
-						top: this.positionAndSize?.top + 'px',
-						left: this.positionAndSize?.left + 'px',
-						transform: 'translate(0, -100%)',
-					}}
-					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
-					itemElement={this.element}
-					piece={{ ...adLib, enable: { start: 0 }, startPartId: protectString(''), invalid: false }}
-					pieceRenderedDuration={adLib.expectedDuration || null}
-					pieceRenderedIn={null}
-					displayOn="viewport"
-				/>
+				{thumbnailUrl && renderThumbnail && (
+					<div className="dashboard-panel__panel__button__thumbnail">
+						<img src={thumbnailUrl} />
+					</div>
+				)}
 			</>
 		)
 	}
@@ -475,7 +464,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						? this.renderSplits(isList && this.props.showThumbnailsInList)
 						: this.props.layer.type === SourceLayerType.GRAPHICS ||
 						  this.props.layer.type === SourceLayerType.LOWER_THIRD
-						? this.renderGraphics(/*(isButtons || (isList && this.props.showThumbnailsInList)*/)
+						? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
 						: null}
 
 					{this.renderHotkey()}
