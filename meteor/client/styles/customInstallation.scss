@@ -435,6 +435,12 @@ body.tv2 {
 			}
 		}
 
+		&.live-speak {
+			background: linear-gradient(
+				180deg
+				,var(--segment-layer-background-vt) 50%,var(--segment-layer-background-camera) 50.0001%) !important;
+		}
+
 		&.piece-tag--no_next_highlight.selected {
 			box-shadow: none;
 		}
