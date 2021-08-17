@@ -18,7 +18,7 @@ import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from '../../lib/ap
 import { SystemWriteAccess } from '../security/system'
 
 export function createTriggeredActions(
-	showStyleBaseId: ShowStyleBaseId | undefined,
+	showStyleBaseId: ShowStyleBaseId | null,
 	base?: Partial<Pick<DBTriggeredActions, 'triggers' | 'actions' | 'name'>>
 ) {
 	const id: TriggeredActionId = getRandomId()
@@ -44,7 +44,7 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 
 	const showStyleBaseId: ShowStyleBaseId | undefined = protectString(params.showStyleBaseId)
 
-	check(showStyleBaseId, String)
+	check(showStyleBaseId, Match.Maybe(String))
 
 	const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 
@@ -67,7 +67,7 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 			check(triggeredActions[i].name, Match.Optional(String))
 			check(triggeredActions[i].triggers, Array)
 			check(triggeredActions[i].actions, Array)
-			triggeredActions[i].showStyleBaseId = showStyleBaseId
+			triggeredActions[i].showStyleBaseId = showStyleBaseId ?? null
 			triggeredActions[i]._rundownVersionHash = ''
 		}
 
@@ -92,12 +92,7 @@ PickerGET.route('/actionTriggers/download/:showStyleBaseId?', (params, req: Inco
 
 	let content = ''
 	const triggeredActions = TriggeredActions.find({
-		showStyleBaseId:
-			showStyleBaseId === undefined
-				? {
-						$exists: false,
-				  }
-				: showStyleBaseId,
+		showStyleBaseId: showStyleBaseId === undefined ? null : showStyleBaseId,
 	}).fetch()
 	if (triggeredActions.length === 0) {
 		res.statusCode = 404
@@ -126,15 +121,15 @@ PickerGET.route('/actionTriggers/download/:showStyleBaseId?', (params, req: Inco
 /** Add RundownLayout into showStyleBase */
 function apiCreateTriggeredActions(
 	context: MethodContext,
-	showStyleBaseId: ShowStyleBaseId | undefined,
+	showStyleBaseId: ShowStyleBaseId | null,
 	base?: Partial<Pick<DBTriggeredActions, 'triggers' | 'actions' | 'name'>>
 ) {
-	check(showStyleBaseId, String)
-	check(base, Match.Optional(Object))
+	check(showStyleBaseId, Match.Maybe(String))
+	check(base, Match.Maybe(Object))
 
-	if (showStyleBaseId === undefined) {
+	if (!showStyleBaseId) {
 		const access = SystemWriteAccess.coreSystem(context)
-		if (!access) throw new Meteor.Error(404, `Core System settings not writable`)
+		if (!access) throw new Meteor.Error(403, `Core System settings not writable`)
 	} else {
 		const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 		if (!access) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
@@ -154,7 +149,7 @@ function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId
 
 class ServerTriggeredActionsAPI extends MethodContextAPI implements NewTriggeredActionsAPI {
 	async createTriggeredActions(
-		showStyleBaseId: ShowStyleBaseId | undefined,
+		showStyleBaseId: ShowStyleBaseId | null,
 		base?: Partial<Pick<DBTriggeredActions, 'triggers' | 'actions' | 'name'>>
 	) {
 		return makePromise(() => apiCreateTriggeredActions(this, showStyleBaseId, base))

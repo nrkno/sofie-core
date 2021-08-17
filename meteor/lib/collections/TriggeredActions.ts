@@ -15,8 +15,8 @@ export type DBBlueprintTrigger = SomeBlueprintTrigger & {
 
 export interface DBTriggeredActions extends ProtectedStringProperties<IBlueprintTriggeredActions, '_id'> {
 	_id: TriggeredActionId
-	/** Id of parent ShowStyleBase. If undefined, this is a system-wide triggered action */
-	showStyleBaseId: ShowStyleBaseId | undefined
+	/** Id of parent ShowStyleBase. If null, this is a system-wide triggered action */
+	showStyleBaseId: ShowStyleBaseId | null
 
 	/** Triggers, with attached device info alongside */
 	triggers: DBBlueprintTrigger[]

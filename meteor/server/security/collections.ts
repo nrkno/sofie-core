@@ -267,7 +267,9 @@ TriggeredActions.allow({
 			if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 			return rejectFields(doc, fields, ['_id'])
 		} else {
-			return false
+			const access = allowAccessToCoreSystem({ userId: userId })
+			if (!access.update) return logNotAllowed('CoreSystem', access.reason)
+			return rejectFields(doc, fields, ['_id'])
 		}
 	},
 	remove() {

@@ -5,7 +5,7 @@ import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/Rea
 import { PubSub } from '../../../../../lib/api/pubsub'
 import { ShowStyleBaseId, ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
-import { faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
+import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry } from './TriggeredActionEntry'
 import { literal, unprotectString } from '../../../../../lib/lib'
@@ -31,17 +31,18 @@ export interface PreviewContext {
 }
 
 interface IProps {
-	showStyleBaseId: ShowStyleBaseId | undefined
+	showStyleBaseId: ShowStyleBaseId | null
 }
 
 export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredActionsEditor(
 	props: IProps
 ): React.ReactElement | null {
 	const [localSorensen, setLocalSorensen] = useState<null | typeof Sorensen>(null)
+	const [systemWideCollapsed, setSystemWideCollapsed] = useState(true)
 	const [selectedTriggeredActionId, setSelectedTriggeredActionId] = useState<null | TriggeredActionId>(null)
 
 	const showStyleBase = useTracker(
-		() => (props.showStyleBaseId === undefined ? undefined : ShowStyleBases.findOne(props.showStyleBaseId)),
+		() => (props.showStyleBaseId === null ? undefined : ShowStyleBases.findOne(props.showStyleBaseId)),
 		[props.showStyleBaseId]
 	)
 
@@ -49,16 +50,14 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	const showStyleBaseSelector = {
 		$or: [
 			{
-				showStyleBaseId: {
-					$exists: false,
-				},
+				showStyleBaseId: null,
 			},
-			showStyleBaseId !== undefined
+			showStyleBaseId !== null
 				? {
 						showStyleBaseId: showStyleBaseId,
 				  }
 				: undefined,
-		],
+		].filter(Boolean),
 	}
 
 	useSubscription(PubSub.triggeredActions, showStyleBaseSelector)
@@ -69,9 +68,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	const systemTriggeredActions = useTracker(
 		() =>
 			TriggeredActions.find({
-				showStyleBaseId: {
-					$exists: false,
-				},
+				showStyleBaseId: null,
 			}).fetch(),
 		[]
 	)
@@ -100,7 +97,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			}
 		).fetch()
 		let selectedRundown: Rundown | undefined = undefined
-		if (activePlaylists) {
+		if (showStyleBaseId && activePlaylists) {
 			selectedRundown = Rundowns.findOne({
 				playlistId: {
 					$in: activePlaylists.map((playlist) => playlist._id),
@@ -108,7 +105,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				showStyleBaseId,
 			})
 		}
-		if (!selectedRundown) {
+		if (!selectedRundown && showStyleBaseId) {
 			selectedRundown = Rundowns.findOne({
 				showStyleBaseId,
 			})
@@ -196,7 +193,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	}
 
 	function onNewTriggeredAction() {
-		MeteorCall.triggeredActions.createTriggeredActions(props.showStyleBaseId).catch(console.error)
+		MeteorCall.triggeredActions.createTriggeredActions(props.showStyleBaseId ?? null).catch(console.error)
 	}
 
 	function onRemoveTriggeredAction(triggeredActionsId: TriggeredActionId) {
@@ -241,22 +238,39 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						/>
 					))}
 				</div>
-				{(systemTriggeredActions?.length ?? 0) > 0 ? <hr className="mhn" /> : null}
-				<div className="mod mhn">
-					{(systemTriggeredActions?.length ?? 0) > 0 ? <h3 className="mhn">{t('System-wide')}</h3> : null}
-					{systemTriggeredActions?.map((triggeredAction) => (
-						<TriggeredActionEntry
-							key={unprotectString(triggeredAction._id)}
-							triggeredAction={triggeredAction}
-							selected={selectedTriggeredActionId === triggeredAction._id}
-							onEdit={() => onEditEntry(triggeredAction._id)}
-							onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
-							showStyleBase={showStyleBase}
-							previewContext={rundownPlaylist ? previewContext : null}
-							onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
-						/>
-					))}
-				</div>
+				{showStyleBaseId !== null ? (
+					<>
+						<div className="mod mhn">
+							{(systemTriggeredActions?.length ?? 0) > 0 ? (
+								<h3
+									className="mhn mvs clickable disable-select"
+									onClick={() => setSystemWideCollapsed(!systemWideCollapsed)}
+									role="button"
+									tabIndex={0}
+								>
+									<span className="icon action-item">
+										<FontAwesomeIcon icon={systemWideCollapsed ? faCaretRight : faCaretDown} />
+									</span>
+									{t('System-wide')}
+								</h3>
+							) : null}
+							{!systemWideCollapsed
+								? systemTriggeredActions?.map((triggeredAction) => (
+										<TriggeredActionEntry
+											key={unprotectString(triggeredAction._id)}
+											triggeredAction={triggeredAction}
+											selected={selectedTriggeredActionId === triggeredAction._id}
+											onEdit={() => onEditEntry(triggeredAction._id)}
+											onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
+											showStyleBase={showStyleBase}
+											previewContext={rundownPlaylist ? previewContext : null}
+											onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
+										/>
+								  ))
+								: null}
+						</div>
+					</>
+				) : null}
 				<div className="mod mhs">
 					<button className="btn btn-primary" onClick={onNewTriggeredAction}>
 						<FontAwesomeIcon icon={faPlus} />
