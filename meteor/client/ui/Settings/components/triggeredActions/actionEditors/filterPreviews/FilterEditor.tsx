@@ -3,7 +3,7 @@ import classNames from 'classnames'
 import { usePopper } from 'react-popper'
 import { EditAttribute } from '../../../../../../lib/EditAttribute'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faAngleRight, faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { sameWidth } from '../../../../../../lib/popperUtils'
 
 interface IProps {
@@ -121,7 +121,11 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 							<button className="btn right btn-tight btn-primary" onClick={props.onInsertNext}>
 								<FontAwesomeIcon icon={faAngleRight} />
 							</button>
-						) : null}
+						) : (
+							<button className="btn right btn-tight btn-primary" onClick={props.onClose}>
+								<FontAwesomeIcon icon={faCheck} />
+							</button>
+						)}
 						<button className="btn btn-tight btn-secondary" onClick={props.onRemove}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>

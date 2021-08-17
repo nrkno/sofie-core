@@ -223,6 +223,7 @@ export interface IRundownPlaylistResetAction extends ITriggeredActionBase {
 export interface IRundownPlaylistResyncAction extends ITriggeredActionBase {
 	action: PlayoutActions.resyncRundownPlaylist
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink)[]
+	force?: boolean
 }
 
 export interface IShelfAction extends ITriggeredActionBase {

@@ -22,7 +22,7 @@ import { TriggerEditor } from './triggerEditors/TriggerEditor'
 import { useEffect } from 'react'
 
 interface IProps {
-	showStyleBase: ShowStyleBase
+	showStyleBase: ShowStyleBase | undefined
 	triggeredAction: TriggeredActionsObj
 	selected?: boolean
 	previewContext: PreviewContext | null
@@ -45,7 +45,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 	const previewItems = useTracker(
 		() => {
 			try {
-				if (selected) {
+				if (selected && showStyleBase) {
 					const executableActions = triggeredAction.actions.map((value) => createAction(value, showStyleBase))
 					const ctx = previewContext
 					if (ctx && ctx.rundownPlaylist) {
@@ -63,7 +63,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 		[] as IWrappedAdLib[]
 	)
 
-	const sourceLayers = normalizeArray(showStyleBase.sourceLayers, '_id')
+	const sourceLayers = showStyleBase ? normalizeArray(showStyleBase.sourceLayers, '_id') : []
 
 	function getType(sourceLayerId: string | undefined): SourceLayerType {
 		return sourceLayerId ? sourceLayers[sourceLayerId]?.type ?? SourceLayerType.UNKNOWN : SourceLayerType.UNKNOWN

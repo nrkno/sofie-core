@@ -15,9 +15,10 @@ import {
 	TriggeredActionsObj,
 } from '../../lib/collections/TriggeredActions'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from '../../lib/api/triggeredActions'
+import { SystemWriteAccess } from '../security/system'
 
 export function createTriggeredActions(
-	showStyleBaseId: ShowStyleBaseId,
+	showStyleBaseId: ShowStyleBaseId | undefined,
 	base?: Partial<Pick<DBTriggeredActions, 'triggers' | 'actions' | 'name'>>
 ) {
 	const id: TriggeredActionId = getRandomId()
@@ -125,14 +126,19 @@ PickerGET.route('/actionTriggers/download/:showStyleBaseId?', (params, req: Inco
 /** Add RundownLayout into showStyleBase */
 function apiCreateTriggeredActions(
 	context: MethodContext,
-	showStyleBaseId: ShowStyleBaseId,
+	showStyleBaseId: ShowStyleBaseId | undefined,
 	base?: Partial<Pick<DBTriggeredActions, 'triggers' | 'actions' | 'name'>>
 ) {
 	check(showStyleBaseId, String)
 	check(base, Match.Optional(Object))
 
-	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
-	if (!access) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
+	if (showStyleBaseId === undefined) {
+		const access = SystemWriteAccess.coreSystem(context)
+		if (!access) throw new Meteor.Error(404, `Core System settings not writable`)
+	} else {
+		const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+		if (!access) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
+	}
 
 	return createTriggeredActions(showStyleBaseId, base)
 }
@@ -140,7 +146,7 @@ function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId
 	check(id, String)
 
 	const access = ShowStyleContentWriteAccess.triggeredActions(context, id)
-	const triggeredActions = access === true ? access : access.triggeredActions
+	const triggeredActions = typeof access === 'boolean' ? access : access.triggeredActions
 	if (!triggeredActions) throw new Meteor.Error(404, `Action Trigger "${id}" not found`)
 
 	removeTriggeredActions(id)
@@ -148,7 +154,7 @@ function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId
 
 class ServerTriggeredActionsAPI extends MethodContextAPI implements NewTriggeredActionsAPI {
 	async createTriggeredActions(
-		showStyleBaseId: ShowStyleBaseId,
+		showStyleBaseId: ShowStyleBaseId | undefined,
 		base?: Partial<Pick<DBTriggeredActions, 'triggers' | 'actions' | 'name'>>
 	) {
 		return makePromise(() => apiCreateTriggeredActions(this, showStyleBaseId, base))

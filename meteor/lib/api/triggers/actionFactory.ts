@@ -279,6 +279,29 @@ function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean 
 	}
 }
 
+function createRundownPlaylistSoftActivateAction(
+	_filterChain: IGUIContextFilterLink[],
+	rehearsal: boolean
+): ExecutableAction {
+	return {
+		action: ClientActions.shelf,
+		execute: () => {
+			RundownViewEventBus.emit(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, {
+				rehearsal,
+			})
+		},
+	}
+}
+
+function createRundownPlaylistSoftResyncAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
+	return {
+		action: ClientActions.shelf,
+		execute: () => {
+			RundownViewEventBus.emit(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST)
+		},
+	}
+}
+
 function createUserActionWithCtx(
 	action: SomeAction,
 	userAction: UserAction,
@@ -302,9 +325,22 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		case PlayoutActions.adlib:
 			return createAdLibAction(action.filterChain, showStyleBase)
 		case PlayoutActions.activateRundownPlaylist:
-			return createUserActionWithCtx(action, UserAction.ACTIVATE_RUNDOWN_PLAYLIST, async (e, ctx) =>
-				MeteorCall.userAction.activate(e, ctx.rundownPlaylistId, !!action.rehearsal || false)
-			)
+			if (action.force) {
+				return createUserActionWithCtx(action, UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST, async (e, ctx) =>
+					MeteorCall.userAction.forceResetAndActivate(e, ctx.rundownPlaylistId, !!action.rehearsal || false)
+				)
+			} else {
+				if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+					return createRundownPlaylistSoftActivateAction(
+						action.filterChain as IGUIContextFilterLink[],
+						!!action.rehearsal
+					)
+				} else {
+					return createUserActionWithCtx(action, UserAction.ACTIVATE_RUNDOWN_PLAYLIST, async (e, ctx) =>
+						MeteorCall.userAction.activate(e, ctx.rundownPlaylistId, !!action.rehearsal || false)
+					)
+				}
+			}
 		case PlayoutActions.deactivateRundownPlaylist:
 			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ctx) =>
 				MeteorCall.userAction.deactivate(e, ctx.rundownPlaylistId)
@@ -330,11 +366,15 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				MeteorCall.userAction.moveNext(e, ctx.rundownPlaylistId, action.parts, action.segments)
 			)
 		case PlayoutActions.reloadRundownPlaylistData:
-			return createUserActionWithCtx(action, UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA, async (e, ctx) =>
-				// TODO: Needs some handling of the response. Perhaps this should switch to
-				// an event on the RundownViewEventBus, if ran on the client?
-				MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId)
-			)
+			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+				return createRundownPlaylistSoftResyncAction(action.filterChain as IGUIContextFilterLink[])
+			} else {
+				return createUserActionWithCtx(action, UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA, async (e, ctx) =>
+					// TODO: Needs some handling of the response. Perhaps this should switch to
+					// an event on the RundownViewEventBus, if ran on the client?
+					MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId)
+				)
+			}
 		case PlayoutActions.resetRundownPlaylist:
 			return createUserActionWithCtx(action, UserAction.RESET_RUNDOWN_PLAYLIST, async (e, ctx) =>
 				MeteorCall.userAction.resetRundownPlaylist(e, ctx.rundownPlaylistId)

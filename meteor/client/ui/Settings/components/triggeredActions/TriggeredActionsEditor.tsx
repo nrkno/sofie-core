@@ -18,6 +18,7 @@ import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { UploadButton } from '../../../../lib/uploadButton'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
+import Tooltip from 'rc-tooltip'
 
 export const SorensenContext = React.createContext<null | typeof Sorensen>(null)
 
@@ -30,7 +31,7 @@ export interface PreviewContext {
 }
 
 interface IProps {
-	showStyleBaseId: ShowStyleBaseId
+	showStyleBaseId: ShowStyleBaseId | undefined
 }
 
 export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredActionsEditor(
@@ -39,7 +40,10 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	const [localSorensen, setLocalSorensen] = useState<null | typeof Sorensen>(null)
 	const [selectedTriggeredActionId, setSelectedTriggeredActionId] = useState<null | TriggeredActionId>(null)
 
-	const showStyleBase = useTracker(() => ShowStyleBases.findOne(props.showStyleBaseId), [props.showStyleBaseId])
+	const showStyleBase = useTracker(
+		() => (props.showStyleBaseId === undefined ? undefined : ShowStyleBases.findOne(props.showStyleBaseId)),
+		[props.showStyleBaseId]
+	)
 
 	const { showStyleBaseId } = props
 	const showStyleBaseSelector = {
@@ -49,9 +53,11 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					$exists: false,
 				},
 			},
-			{
-				showStyleBaseId: showStyleBaseId,
-			},
+			showStyleBaseId !== undefined
+				? {
+						showStyleBaseId: showStyleBaseId,
+				  }
+				: undefined,
 		],
 	}
 
@@ -203,10 +209,10 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 	function onUploadActions() {}
 
-	return showStyleBase !== undefined ? (
+	return (
 		<div>
 			<SorensenContext.Provider value={localSorensen}>
-				{localSorensen && previewContext.rundownPlaylist && (
+				{localSorensen && previewContext.rundownPlaylist && showStyleBaseId && (
 					<ErrorBoundary>
 						<TriggersHandler
 							sorensen={localSorensen}
@@ -255,14 +261,24 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					<button className="btn btn-primary" onClick={onNewTriggeredAction}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
-					<UploadButton className="btn btn-secondary mls" onChange={onUploadActions} accept="application/json,.json">
-						<FontAwesomeIcon icon={faUpload} />
-					</UploadButton>
-					<button className="btn btn-secondary mls" onClick={onDownloadActions}>
-						<FontAwesomeIcon icon={faDownload} />
-					</button>
+					<Tooltip overlay={t('Upload stored Action Triggers')} placement="top">
+						<span className="inline-block">
+							<UploadButton
+								className="btn btn-secondary mls"
+								onChange={onUploadActions}
+								accept="application/json,.json"
+							>
+								<FontAwesomeIcon icon={faUpload} />
+							</UploadButton>
+						</span>
+					</Tooltip>
+					<Tooltip overlay={t('Download Action Triggers')} placement="top">
+						<button className="btn btn-secondary mls" onClick={onDownloadActions}>
+							<FontAwesomeIcon icon={faDownload} />
+						</button>
+					</Tooltip>
 				</div>
 			</SorensenContext.Provider>
 		</div>
-	) : null
+	)
 }

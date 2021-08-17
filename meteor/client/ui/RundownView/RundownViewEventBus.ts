@@ -11,6 +11,8 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
 
 export enum RundownViewEvents {
+	ACTIVATE_RUNDOWN_PLAYLIST = 'activateRundownPlaylist',
+	RESYNC_RUNDOWN_PLAYLIST = 'resyncRundownPlaylist',
 	REWIND_SEGMENTS = 'rundownRewindSegments',
 	GO_TO_LIVE_SEGMENT = 'goToLiveSegment',
 	GO_TO_TOP = 'goToTop',
@@ -35,6 +37,10 @@ export enum RundownViewEvents {
 
 export interface IEventContext {
 	context?: any
+}
+
+export interface ActivateRundownPlaylistEvent extends IEventContext {
+	rehearsal?: boolean
 }
 
 export interface RevealInShelfEvent extends IEventContext {
@@ -82,6 +88,8 @@ export interface BucketEvent extends IEventContext {
 }
 
 class RundownViewEventBus0 extends EventEmitter {
+	emit(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, e: ActivateRundownPlaylistEvent): boolean
+	emit(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST): boolean
 	emit(event: RundownViewEvents.REWIND_SEGMENTS): boolean
 	emit(event: RundownViewEvents.GO_TO_LIVE_SEGMENT): boolean
 	emit(event: RundownViewEvents.GO_TO_TOP): boolean
@@ -104,12 +112,15 @@ class RundownViewEventBus0 extends EventEmitter {
 		return super.emit(event, ...args)
 	}
 
+	on(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, listener: (e: ActivateRundownPlaylistEvent) => void): this
+	on(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, listener: () => void): this
 	on(event: RundownViewEvents.REWIND_SEGMENTS, listener: () => void): this
 	on(event: RundownViewEvents.GO_TO_LIVE_SEGMENT, listener: () => void): this
 	on(event: RundownViewEvents.GO_TO_TOP, listener: () => void): this
 	on(event: RundownViewEvents.SEGMENT_ZOOM_ON, listener: () => void): this
 	on(event: RundownViewEvents.SEGMENT_ZOOM_OFF, listener: () => void): this
 	on(event: RundownViewEvents.REVEAL_IN_SHELF, listener: (e: RevealInShelfEvent) => void): this
+	on(event: RundownViewEvents.SHELF_STATE, listener: (e: ShelfStateEvent) => void): this
 	on(event: RundownViewEvents.SWITCH_SHELF_TAB, listener: (e: SwitchToShelfTabEvent) => void): this
 	on(event: RundownViewEvents.GO_TO_PART, listener: (e: GoToPartEvent) => void): this
 	on(event: RundownViewEvents.GO_TO_PART_INSTANCE, listener: (e: GoToPartInstanceEvent) => void): this

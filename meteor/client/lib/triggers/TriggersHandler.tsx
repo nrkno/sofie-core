@@ -102,6 +102,10 @@ function createAction(
 			}
 		},
 		listener: (e) => {
+			e.preventDefault()
+			e.stopPropagation()
+			e.stopImmediatePropagation()
+
 			const ctx = collectContext()
 			if (ctx) {
 				executableActions.forEach((action) => action.execute(t, e, ctx))

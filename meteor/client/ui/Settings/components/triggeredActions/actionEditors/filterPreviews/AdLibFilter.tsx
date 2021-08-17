@@ -9,7 +9,7 @@ import { ShowStyleBase } from '../../../../../../../lib/collections/ShowStyleBas
 
 interface IProps {
 	link: IAdLibFilterLink
-	showStyleBase: ShowStyleBase
+	showStyleBase: ShowStyleBase | undefined
 	readonly?: boolean
 	opened: boolean
 	onChange: (newVal: IAdLibFilterLink, oldVal: IAdLibFilterLink) => void
@@ -87,7 +87,7 @@ function fieldToLabel(t: TFunction, field: IAdLibFilterLink['field']): string {
 
 function fieldToOptions(
 	t: TFunction,
-	showStyleBase: ShowStyleBase,
+	showStyleBase: ShowStyleBase | undefined,
 	field: IAdLibFilterLink['field']
 ): Record<string, any> {
 	switch (field) {
@@ -99,7 +99,7 @@ function fieldToOptions(
 		case 'tag':
 			return {}
 		case 'outputLayerId':
-			return _.object(showStyleBase.outputLayers.map((layer) => [layer.name, layer._id]))
+			return showStyleBase ? _.object(showStyleBase.outputLayers.map((layer) => [layer.name, layer._id])) : {}
 		case 'part':
 			return {
 				[t('OnAir')]: 'current',
@@ -111,7 +111,7 @@ function fieldToOptions(
 				[t('Next')]: 'next',
 			}
 		case 'sourceLayerId':
-			return _.object(showStyleBase.sourceLayers.map((layer) => [layer.name, layer._id]))
+			return showStyleBase ? _.object(showStyleBase.sourceLayers.map((layer) => [layer.name, layer._id])) : {}
 		case 'sourceLayerType':
 			return _.pick(SourceLayerType, (key) => Number.isInteger(key))
 		case 'type':
@@ -122,7 +122,7 @@ function fieldToOptions(
 	}
 }
 
-function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase, link: IAdLibFilterLink) {
+function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase | undefined, link: IAdLibFilterLink) {
 	if (link.value === undefined || (Array.isArray(link.value) && link.value.length === 0)) {
 		return ''
 	}
@@ -139,12 +139,14 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase, link
 			return String(Number(link.value ?? 0) + 1)
 		case 'outputLayerId':
 			return Array.isArray(link.value)
-				? link.value
-						.map(
-							(outputLayerId) =>
-								showStyleBase.outputLayers.find((layer) => layer._id === outputLayerId)?.name ?? outputLayerId
-						)
-						.join(', ')
+				? showStyleBase
+					? link.value
+							.map(
+								(outputLayerId) =>
+									showStyleBase.outputLayers.find((layer) => layer._id === outputLayerId)?.name ?? outputLayerId
+							)
+							.join(', ')
+					: link.value.join(', ')
 				: link.value
 		case 'part':
 			return (
@@ -162,12 +164,14 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase, link
 			)
 		case 'sourceLayerId':
 			return Array.isArray(link.value)
-				? link.value
-						.map(
-							(sourceLayerId) =>
-								showStyleBase.sourceLayers.find((layer) => layer._id === sourceLayerId)?.name ?? sourceLayerId
-						)
-						.join(', ')
+				? showStyleBase
+					? link.value
+							.map(
+								(sourceLayerId) =>
+									showStyleBase.sourceLayers.find((layer) => layer._id === sourceLayerId)?.name ?? sourceLayerId
+							)
+							.join(', ')
+					: link.value.join(', ')
 				: link.value
 		case 'sourceLayerType':
 			return Array.isArray(link.value) ? link.value.map((type) => SourceLayerType[type]).join(', ') : link.value

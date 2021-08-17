@@ -12,6 +12,7 @@ import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../../lib/Settings'
 import { isProtectedString } from '../../lib/lib'
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { SystemWriteAccess } from './system'
 
 type ShowStyleContent = { showStyleBaseId: ShowStyleBaseId }
 export namespace ShowStyleReadAccess {
@@ -89,7 +90,7 @@ export namespace ShowStyleContentWriteAccess {
 				triggeredActions: existingTriggeredAction,
 			}
 		} else {
-			return true // global triggered actions are accessible to everyone
+			return SystemWriteAccess.coreSystem(cred0)
 		}
 	}
 	/** Return credentials if writing is allowed, throw otherwise */

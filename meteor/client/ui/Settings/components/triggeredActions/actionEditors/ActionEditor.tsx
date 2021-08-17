@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next'
 
 interface IProps {
 	action: SomeAction
-	showStyleBase: ShowStyleBase
+	showStyleBase: ShowStyleBase | undefined
 	triggeredAction: TriggeredActionsObj
 	index: number
 	readonly?: boolean
@@ -163,8 +163,17 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 				) : chainLink.object === 'view' ? (
 					<ViewFilter
 						link={chainLink}
+						readonly={readonly}
 						key={index}
+						onFocus={() => {
+							setOpenFilterIndex(index)
+							if (typeof onFocus === 'function') onFocus()
+						}}
+						onClose={onClose}
+						opened={openFilterIndex === index}
 						final={action.filterChain.length === 1 && isFinal(action, chainLink)}
+						onInsertNext={() => onFilterInsertNext(index)}
+						onRemove={() => onFilterRemove(index)}
 					/>
 				) : chainLink.object === 'rundownPlaylist' ? (
 					<RundownPlaylistFilter link={chainLink} key={index} />

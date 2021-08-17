@@ -729,7 +729,7 @@ const RundownHeader = withTranslation()(
 			}
 		}
 		componentDidMount() {
-			const preventDefault = (e: Event) => {
+			/* const preventDefault = (e: Event) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
 				e.stopPropagation()
@@ -771,7 +771,7 @@ const RundownHeader = withTranslation()(
 						'RundownHeader'
 					)
 				}
-			})
+			}) */
 
 			if (typeof this.props.onRegisterHotkeys === 'function') {
 				this.props.onRegisterHotkeys(this.bindKeys)
