@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
 import { TriggerEditor } from './triggerEditors/TriggerEditor'
 import { useEffect } from 'react'
+import { EditAttribute } from '../../../../lib/EditAttribute'
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined
@@ -214,27 +215,43 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 				</button>
 			</div>
 			{selected ? (
-				<ul className="triggered-action-entry__preview">
-					{previewItems.map((item) => (
-						<li key={item._id as string}>
-							<span className={RundownUtils.getSourceLayerClassName(getType(item.sourceLayerId))}>
-								{getShortName(item.sourceLayerId)}
-							</span>
-							{typeof item.label === 'string' ? item.label : translateMessage(item.label, t)}
-						</li>
-					))}
-					{previewItems.length === 0 ? (
-						previewContext?.rundownPlaylist ? (
-							<span className="placeholder dimmed">
-								{t('No Ad-Lib matches in the current state of Rundown: "{{rundownPlaylistName}}"', {
-									rundownPlaylistName: previewContext?.rundownPlaylist?.name,
-								})}
-							</span>
-						) : (
-							<span className="placeholder dimmed">{t('No matching Rundowns available to be used for preview')}</span>
-						)
-					) : null}
-				</ul>
+				<>
+					<ul className="triggered-action-entry__preview">
+						{previewItems.map((item) => (
+							<li key={item._id as string}>
+								<span className={RundownUtils.getSourceLayerClassName(getType(item.sourceLayerId))}>
+									{getShortName(item.sourceLayerId)}
+								</span>
+								{typeof item.label === 'string' ? item.label : translateMessage(item.label, t)}
+							</li>
+						))}
+						{previewItems.length === 0 ? (
+							previewContext?.rundownPlaylist ? (
+								<span className="placeholder dimmed">
+									{t('No Ad-Lib matches in the current state of Rundown: "{{rundownPlaylistName}}"', {
+										rundownPlaylistName: previewContext?.rundownPlaylist?.name,
+									})}
+								</span>
+							) : (
+								<span className="placeholder dimmed">{t('No matching Rundowns available to be used for preview')}</span>
+							)
+						) : null}
+					</ul>
+					<label className="mas">
+						<span className="mrs">{t('Label')}</span>
+						<EditAttribute
+							type="text"
+							obj={triggeredAction}
+							collection={TriggeredActions}
+							attribute="name"
+							className="input text-input input-l pan"
+							modifiedClassName="bghl"
+							mutateDisplayValue={(val) => (typeof val === 'object' ? undefined : val)}
+							label={typeof triggeredAction.name === 'object' ? t('Multilingual description') : ''}
+						/>
+						<span className="mls text-s dimmed">{t('Optional')}</span>
+					</label>
+				</>
 			) : null}
 		</div>
 	)
