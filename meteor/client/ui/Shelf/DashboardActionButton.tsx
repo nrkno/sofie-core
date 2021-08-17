@@ -1,7 +1,8 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
 
-import { DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
+import { ActionButtonType, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 export interface IDashboardButtonProps {
 	button: DashboardLayoutActionButton
@@ -25,7 +26,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 			case ActionButtonType.KLAR_ON_AIR:
 				return {
 					rehearsal: this.props.playlist.rehearsal,
-					active: this.props.playlist.active,
+					active: !!this.props.playlist.activationId,
 				}
 			default:
 				return {}
@@ -36,7 +37,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 		const { button } = this.props
 		switch (button.type) {
 			case ActionButtonType.KLAR_ON_AIR:
-				return !!this.props.playlist.rehearsal || !!this.props.playlist.active
+				return !!this.props.playlist.rehearsal || !!this.props.playlist.activationId
 			default:
 				return false
 		}
