@@ -52,7 +52,6 @@ import {
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
-import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import {
@@ -97,7 +96,7 @@ import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
-import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
+import RundownViewEventBus, { ActivateRundownPlaylistEvent, RundownViewEvents } from './RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioPackageContainersContext from './RundownView/StudioPackageContainersContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
@@ -777,19 +776,35 @@ const RundownHeader = withTranslation()(
 				this.props.onRegisterHotkeys(this.bindKeys)
 			}
 
+			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
+			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
+
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
 
 		componentWillUnmount() {
-			this.bindKeys.forEach((k) => {
-				if (k.up) {
-					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keyup')
-					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
-				}
-				if (k.down) {
-					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
-				}
-			})
+			// this.bindKeys.forEach((k) => {
+			// 	if (k.up) {
+			// 		mousetrapHelper.unbind(k.key, 'RundownHeader', 'keyup')
+			// 		mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
+			// 	}
+			// 	if (k.down) {
+			// 		mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
+			// 	}
+			// })
+
+			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
+			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
+		}
+		eventActivate = (e: ActivateRundownPlaylistEvent) => {
+			if (e.rehearsal) {
+				this.activateRehearsal(e.context)
+			} else {
+				this.activate(e.context)
+			}
+		}
+		eventResync = (e) => {
+			this.reloadRundownPlaylist(e.context)
 		}
 		keyTake = (e: mousetrap.ExtendedKeyboardEvent) => {
 			if (e.key !== 'Enter' || e.location === 3) {

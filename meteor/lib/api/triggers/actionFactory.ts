@@ -279,14 +279,33 @@ function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean 
 	}
 }
 
+function createGoToOnAirLineAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
+	return {
+		action: ClientActions.goToOnAirLine,
+		execute: () => {
+			RundownViewEventBus.emit(RundownViewEvents.GO_TO_LIVE_SEGMENT)
+		},
+	}
+}
+
+function createRewindSegmentsAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
+	return {
+		action: ClientActions.rewindSegments,
+		execute: () => {
+			RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
+		},
+	}
+}
+
 function createRundownPlaylistSoftActivateAction(
 	_filterChain: IGUIContextFilterLink[],
 	rehearsal: boolean
 ): ExecutableAction {
 	return {
 		action: ClientActions.shelf,
-		execute: () => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, {
+				context: e,
 				rehearsal,
 			})
 		},
@@ -296,8 +315,10 @@ function createRundownPlaylistSoftActivateAction(
 function createRundownPlaylistSoftResyncAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: ClientActions.shelf,
-		execute: () => {
-			RundownViewEventBus.emit(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST)
+		execute: (_t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, {
+				context: e,
+			})
 		},
 	}
 }
@@ -322,6 +343,10 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 	switch (action.action) {
 		case ClientActions.shelf:
 			return createShelfAction(action.filterChain, action.state)
+		case ClientActions.goToOnAirLine:
+			return createGoToOnAirLineAction(action.filterChain)
+		case ClientActions.rewindSegments:
+			return createRewindSegmentsAction(action.filterChain)
 		case PlayoutActions.adlib:
 			return createAdLibAction(action.filterChain, showStyleBase)
 		case PlayoutActions.activateRundownPlaylist:
@@ -363,7 +388,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 			)
 		case PlayoutActions.moveNext:
 			return createUserActionWithCtx(action, UserAction.MOVE_NEXT, async (e, ctx) =>
-				MeteorCall.userAction.moveNext(e, ctx.rundownPlaylistId, action.parts, action.segments)
+				MeteorCall.userAction.moveNext(e, ctx.rundownPlaylistId, action.parts ?? 0, action.segments ?? 0)
 			)
 		case PlayoutActions.reloadRundownPlaylistData:
 			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {

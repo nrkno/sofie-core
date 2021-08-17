@@ -85,8 +85,7 @@ function createAction(
 	actions: SomeAction[],
 	showStyleBase: ShowStyleBase,
 	t: TFunction,
-	collectContext: () => ActionContext | null,
-	_name?: string
+	collectContext: () => ActionContext | null
 ): {
 	listener: HotkeyTriggerListener
 	preview: () => IWrappedAdLib[]
@@ -165,12 +164,16 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	const localSorensen = props.sorensen || Sorensen
 
 	function bindHotkey(id: TriggeredActionId, keys: string, up: boolean, action: HotkeyTriggerListener) {
-		localSorensen.bind(keys, action, {
-			up,
-			exclusive: true,
-			ordered: 'modifiersFirst',
-			tag: id,
-		})
+		try {
+			localSorensen.bind(keys, action, {
+				up,
+				exclusive: true,
+				ordered: 'modifiersFirst',
+				tag: id,
+			})
+		} catch (e) {
+			console.error(e)
+		}
 	}
 
 	function unbindHotkey(keys: string, listener: (e: KeyboardEvent) => void) {
@@ -231,9 +234,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				showStyleBaseId: props.showStyleBaseId,
 			},
 			{
-				showStyleBaseId: {
-					$exists: false,
-				},
+				showStyleBaseId: null,
 			},
 		],
 	})
@@ -262,9 +263,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					showStyleBaseId: props.showStyleBaseId,
 				},
 				{
-					showStyleBaseId: {
-						$exists: false,
-					},
+					showStyleBaseId: null,
 				},
 			],
 		}).fetch()
@@ -278,7 +277,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		const previewAutoruns: Tracker.Computation[] = []
 
 		triggeredActions.forEach((pair) => {
-			const action = createAction(pair._id, pair.actions, showStyleBase, t, getCurrentContext, pair.name)
+			const action = createAction(pair._id, pair.actions, showStyleBase, t, getCurrentContext)
 			if (!props.simulateTriggerBinding) {
 				createdActions.set(pair._id, action.listener)
 				pair.triggers.forEach((trigger) => {

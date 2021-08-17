@@ -11,12 +11,18 @@ import {
 	omit,
 } from '../../../lib/lib'
 import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import {
+	ShowStyleBase,
+	ShowStyleBases,
+	DBShowStyleBase,
+	ShowStyleBaseId,
+} from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
 	ConfigItemValue,
 	MigrationContextStudio as IMigrationContextStudio,
 	MigrationContextShowStyle as IMigrationContextShowStyle,
+	MigrationContextSystem as IMigrationContextSystem,
 	BlueprintMapping,
 	IOutputLayer,
 	ISourceLayer,
@@ -39,6 +45,84 @@ import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/Pe
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { Mongo } from 'meteor/mongo'
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+
+class AbstractMigrationContextWithTriggeredActions {
+	protected showStyleBaseId: ShowStyleBaseId | null = null
+	getTriggeredActionsId(triggeredActionId: string): string {
+		return getHash((this.showStyleBaseId ?? 'core') + '_' + triggeredActionId)
+	}
+	private getProtectedTriggeredActionsId(triggeredActionId: string): TriggeredActionId {
+		return protectString<TriggeredActionId>(this.getTriggeredActionsId(triggeredActionId))
+	}
+	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
+		return TriggeredActions.find({
+			showStyleBaseId: this.showStyleBaseId,
+		}).map((triggeredActions) => unprotectObject(triggeredActions))
+	}
+	private getTriggeredActionFromDb(triggeredActionsId: string): TriggeredActionsObj | undefined {
+		const triggeredAction = TriggeredActions.findOne({
+			showStyleBaseId: this.showStyleBaseId,
+			_id: this.getProtectedTriggeredActionsId(triggeredActionsId),
+		})
+		if (triggeredAction) return triggeredAction
+
+		// Assume we were given the full id
+		return TriggeredActions.findOne({
+			showStyleBaseId: this.showStyleBaseId,
+			_id: protectString(triggeredActionsId),
+		})
+	}
+	getTriggeredAction(triggeredActionsId: string): IBlueprintTriggeredActions {
+		check(triggeredActionsId, String)
+		if (!triggeredActionsId) {
+			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
+		}
+
+		return unprotectObject(this.getTriggeredActionFromDb(triggeredActionsId)) as any
+	}
+	setTriggeredAction(triggeredActions: IBlueprintTriggeredActions) {
+		check(triggeredActions, Object)
+		if (!triggeredActions) {
+			throw new Meteor.Error(500, `Triggered Actions object is invalid`)
+		}
+
+		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActions._id)
+		if (!currentTriggeredAction) {
+			TriggeredActions.insert({
+				...triggeredActions,
+				_rundownVersionHash: '',
+				showStyleBaseId: this.showStyleBaseId,
+				_id: protectString(triggeredActions._id),
+			})
+		} else {
+			TriggeredActions.update(
+				{
+					_id: currentTriggeredAction._id,
+				},
+				{
+					$set: {
+						...omit(triggeredActions, '_id'),
+					},
+				}
+			)
+		}
+	}
+	removeTriggeredAction(triggeredActionsId: string) {
+		check(triggeredActionsId, String)
+		if (!triggeredActionsId) {
+			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
+		}
+
+		TriggeredActions.remove({
+			_id: this.getProtectedTriggeredActionsId(triggeredActionsId),
+			showStyleBaseId: null,
+		})
+	}
+}
+
+export class MigrationContextSystem
+	extends AbstractMigrationContextWithTriggeredActions
+	implements IMigrationContextSystem {}
 
 export class MigrationContextStudio implements IMigrationContextStudio {
 	private studio: Studio
@@ -252,82 +336,15 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	}
 }
 
-export class MigrationContextShowStyle implements IMigrationContextShowStyle {
+export class MigrationContextShowStyle
+	extends AbstractMigrationContextWithTriggeredActions
+	implements IMigrationContextShowStyle
+{
 	private showStyleBase: ShowStyleBase
-
 	constructor(showStyleBase: ShowStyleBase) {
+		super()
+		this.showStyleBaseId = showStyleBase._id
 		this.showStyleBase = showStyleBase
-	}
-
-	getTriggeredActionsId(triggeredActionId: string): string {
-		return getHash(this.showStyleBase._id + '_' + triggeredActionId)
-	}
-	private getProtectedTriggeredActionsId(triggeredActionId: string): TriggeredActionId {
-		return protectString<TriggeredActionId>(this.getTriggeredActionsId(triggeredActionId))
-	}
-	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
-		return TriggeredActions.find({
-			showStyleBaseId: this.showStyleBase._id,
-		}).map((triggeredActions) => unprotectObject(triggeredActions))
-	}
-	private getTriggeredActionFromDb(triggeredActionsId: string): TriggeredActionsObj | undefined {
-		const triggeredAction = TriggeredActions.findOne({
-			showStyleBaseId: this.showStyleBase._id,
-			_id: this.getProtectedTriggeredActionsId(triggeredActionsId),
-		})
-		if (triggeredAction) return triggeredAction
-
-		// Assume we were given the full id
-		return TriggeredActions.findOne({
-			showStyleBaseId: this.showStyleBase._id,
-			_id: protectString(triggeredActionsId),
-		})
-	}
-	getTriggeredAction(triggeredActionsId: string): IBlueprintTriggeredActions {
-		check(triggeredActionsId, String)
-		if (!triggeredActionsId) {
-			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
-		}
-
-		return unprotectObject(this.getTriggeredActionFromDb(triggeredActionsId)) as any
-	}
-	setTriggeredAction(triggeredActions: IBlueprintTriggeredActions) {
-		check(triggeredActions, Object)
-		if (!triggeredActions) {
-			throw new Meteor.Error(500, `Triggered Actions object is invalid`)
-		}
-
-		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActions._id)
-		if (!currentTriggeredAction) {
-			TriggeredActions.insert({
-				...triggeredActions,
-				_rundownVersionHash: '',
-				showStyleBaseId: this.showStyleBase._id,
-				_id: protectString(triggeredActions._id),
-			})
-		} else {
-			TriggeredActions.update(
-				{
-					_id: currentTriggeredAction._id,
-				},
-				{
-					$set: {
-						...omit(triggeredActions, '_id'),
-					},
-				}
-			)
-		}
-	}
-	removeTriggeredAction(triggeredActionsId: string) {
-		check(triggeredActionsId, String)
-		if (!triggeredActionsId) {
-			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
-		}
-
-		TriggeredActions.remove({
-			_id: this.getProtectedTriggeredActionsId(triggeredActionsId),
-			showStyleBaseId: this.showStyleBase._id,
-		})
 	}
 
 	getAllVariants(): IBlueprintShowStyleVariant[] {

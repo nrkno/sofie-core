@@ -71,6 +71,12 @@ export interface BlueprintManifestBase {
 
 export interface SystemBlueprintManifest extends BlueprintManifestBase {
 	blueprintType: BlueprintManifestType.SYSTEM
+
+	/** A list of Migration steps related to the Core system */
+	coreMigrations: MigrationStep[]
+
+	/** Translations connected to the studio (as stringified JSON) */
+	translations?: string
 }
 
 export interface StudioBlueprintManifest extends BlueprintManifestBase {
@@ -188,9 +194,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => PartEndState
 
 	/** Called when the Rundown data changes, to be able to update any queued external messages */
-	onRundownDataChangedEvent?: (
-		context: IRundownDataChangedEventContext
-	) => Promise<IBlueprintExternalMessageQueueObj[]>
+	onRundownDataChangedEvent?: (context: IRundownDataChangedEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
 
 	/**
 	 * Called when the timing for a PartInstance or its content changes.

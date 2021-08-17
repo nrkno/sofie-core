@@ -1,4 +1,5 @@
 import { SourceLayerType } from './content'
+import { ITranslatableMessage } from './translations'
 
 export enum TriggerType {
 	hotkey = 'hotkey',
@@ -80,6 +81,8 @@ export enum PlayoutActions {
 
 export enum ClientActions {
 	'shelf' = 'shelf',
+	'goToOnAirLine' = 'goToOnAirLine',
+	'rewindSegments' = 'rewindSegments',
 	// 'moveAdLibFocus' = 'moveAdLibFocus' // TV2 is working on a feature with "focusable ad libs"
 }
 
@@ -232,6 +235,16 @@ export interface IShelfAction extends ITriggeredActionBase {
 	filterChain: IGUIContextFilterLink[]
 }
 
+export interface IGoToOnAirLineAction extends ITriggeredActionBase {
+	action: ClientActions.goToOnAirLine
+	filterChain: IGUIContextFilterLink[]
+}
+
+export interface IRewindSegmentsAction extends ITriggeredActionBase {
+	action: ClientActions.rewindSegments
+	filterChain: IGUIContextFilterLink[]
+}
+
 export type SomeAction =
 	| IAdlibPlayoutAction
 	| IRundownPlaylistActivateAction
@@ -245,11 +258,13 @@ export type SomeAction =
 	| IRundownPlaylistResetAction
 	| IRundownPlaylistResyncAction
 	| IShelfAction
+	| IGoToOnAirLineAction
+	| IRewindSegmentsAction
 
 export interface IBlueprintTriggeredActions {
 	_id: string
 	/** Optional label to specify what this triggered action is supposed to do, a comment basically */
-	name?: string
+	name?: ITranslatableMessage | string
 	/** A list of triggers that will make the list of actions in `.actions` happen */
 	triggers: SomeBlueprintTrigger[]
 	/** A list of actions to execute */

@@ -74,6 +74,10 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 				assertNever(action.state)
 			}
 			break
+		case ClientActions.goToOnAirLine:
+			break
+		case ClientActions.rewindSegments:
+			break
 		default:
 			assertNever(action)
 			return action
@@ -107,6 +111,10 @@ function hasArguments(action: SomeAction): boolean {
 			return false
 		case ClientActions.shelf:
 			return true
+		case ClientActions.goToOnAirLine:
+			return false
+		case ClientActions.rewindSegments:
+			return false
 		default:
 			assertNever(action)
 			return action
@@ -139,6 +147,10 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Resync with NRCS')
 		case ClientActions.shelf:
 			return t('Shelf')
+		case ClientActions.rewindSegments:
+			return t('Rewind Segments to start')
+		case ClientActions.goToOnAirLine:
+			return t('Go to On Air line')
 		default:
 			assertNever(action)
 			return action
@@ -310,6 +322,10 @@ function getActionParametersEditor(
 					/>
 				</div>
 			)
+		case ClientActions.goToOnAirLine:
+			return null
+		case ClientActions.rewindSegments:
+			return null
 		default:
 			assertNever(action)
 			return action

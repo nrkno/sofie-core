@@ -45,6 +45,7 @@ export interface RunMigrationResult {
 }
 export enum MigrationStepType {
 	CORE = 'core',
+	SYSTEM = 'system',
 	STUDIO = 'studio',
 	SHOWSTYLE = 'showstyle',
 }
