@@ -49,10 +49,10 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 			break
 		case PlayoutActions.moveNext:
 			if (action.segments) {
-				result.push(t('Segments: {{count}}', { count: action.segments }))
+				result.push(t('Segments: {{delta}}', { delta: (action.segments > 0 ? '+' : '') + action.segments }))
 			}
 			if (action.parts) {
-				result.push(t('Parts: {{count}}', { count: action.parts }))
+				result.push(t('Parts: {{delta}}', { delta: (action.parts > 0 ? '+' : '') + action.parts }))
 			}
 			break
 		case PlayoutActions.reloadRundownPlaylistData:

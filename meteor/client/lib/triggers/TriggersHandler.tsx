@@ -103,7 +103,6 @@ function createAction(
 		listener: (e) => {
 			e.preventDefault()
 			e.stopPropagation()
-			e.stopImmediatePropagation()
 
 			const ctx = collectContext()
 			if (ctx) {

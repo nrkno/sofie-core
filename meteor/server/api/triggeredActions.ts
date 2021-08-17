@@ -88,7 +88,7 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 PickerGET.route('/actionTriggers/download/:showStyleBaseId?', (params, req: IncomingMessage, res: ServerResponse) => {
 	const showStyleBaseId: ShowStyleBaseId | undefined = protectString(params.showStyleBaseId)
 
-	check(showStyleBaseId, String)
+	check(showStyleBaseId, Match.Maybe(String))
 
 	let content = ''
 	const triggeredActions = TriggeredActions.find({
@@ -105,7 +105,7 @@ PickerGET.route('/actionTriggers/download/:showStyleBaseId?', (params, req: Inco
 		content = JSON.stringify(triggeredActions, undefined, 2)
 		res.setHeader(
 			'Content-Disposition',
-			`attachment; filename*=UTF-8''${encodeURIComponent(unprotectString(showStyleBaseId))}.json`
+			`attachment; filename*=UTF-8''${encodeURIComponent(unprotectString(showStyleBaseId) ?? 'system-wide')}.json`
 		)
 		res.setHeader('Content-Type', 'application/json')
 		res.statusCode = 200

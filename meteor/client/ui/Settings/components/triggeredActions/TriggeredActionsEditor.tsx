@@ -201,7 +201,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	}
 
 	function onDownloadActions() {
-		window.location.replace(`/actionTriggers/download/${showStyleBaseId}`)
+		window.location.replace(`/actionTriggers/download/${showStyleBaseId ?? ''}`)
 	}
 
 	function onUploadActions() {}
