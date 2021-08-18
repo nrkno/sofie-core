@@ -12,7 +12,7 @@ import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBase
 import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { DBRundown } from '../../../lib/collections/Rundowns'
-import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { DBSegment, SegmentId, SegmentUnsyncedReason } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
@@ -584,7 +584,7 @@ export async function updateRundownFromIngestData(
 	for (const oldSegment of removedSegments) {
 		segmentChanges.segments.push({
 			...oldSegment,
-			orphaned: 'deleted',
+			orphaned: SegmentUnsyncedReason.DELETED,
 		})
 	}
 

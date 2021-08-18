@@ -529,9 +529,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					const { t } = this.props
 					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
 					// What is this supposed to do?
-					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, () =>
+					/*doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, () =>
 						MeteorCall.userAction.resyncSegment('', this.props.segmentui!.rundownId, this.props.segmentui!._id)
-					)
+					)*/
 				}
 			}
 			if (
