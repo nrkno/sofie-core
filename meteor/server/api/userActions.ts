@@ -639,9 +639,11 @@ export function resyncRundown(context: MethodContext, rundownId: RundownId) {
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundown(context, rundown._id))
 }
 export function resyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId) {
+	check(rundownId, String)
+	check(segmentId, String)
 	rundownContentAllowWrite(context.userId, { rundownId })
 	const segment = Segments.findOne(segmentId)
-	if (!segment) throw new Meteor.Error(404, `Rundown "${segmentId}" not found!`)
+	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, segment.rundownId, segmentId))
 }
