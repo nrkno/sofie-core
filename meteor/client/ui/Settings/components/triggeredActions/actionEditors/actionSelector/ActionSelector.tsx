@@ -78,6 +78,13 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 			break
 		case ClientActions.rewindSegments:
 			break
+		case ClientActions.showEntireCurrentSegment:
+			if (action.on === true) {
+				result.push(t('On'))
+			} else {
+				result.push(t('Off'))
+			}
+			break
 		default:
 			assertNever(action)
 			return action
@@ -115,6 +122,8 @@ function hasArguments(action: SomeAction): boolean {
 			return false
 		case ClientActions.rewindSegments:
 			return false
+		case ClientActions.showEntireCurrentSegment:
+			return true
 		default:
 			assertNever(action)
 			return action
@@ -151,6 +160,8 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Rewind Segments to start')
 		case ClientActions.goToOnAirLine:
 			return t('Go to On Air line')
+		case ClientActions.showEntireCurrentSegment:
+			return t('Show entire On Air Segment')
 		default:
 			assertNever(action)
 			return action
@@ -326,6 +337,25 @@ function getActionParametersEditor(
 			return null
 		case ClientActions.rewindSegments:
 			return null
+		case ClientActions.showEntireCurrentSegment:
+			return (
+				<div className="mts">
+					<EditAttribute
+						className="form-control"
+						modifiedClassName="bghl"
+						type={'toggle'}
+						label={t('On')}
+						overrideDisplayValue={action.on}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								on: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
 		default:
 			assertNever(action)
 			return action

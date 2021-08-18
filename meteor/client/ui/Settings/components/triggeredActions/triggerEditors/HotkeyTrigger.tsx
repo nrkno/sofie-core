@@ -2,8 +2,8 @@ import classNames from 'classnames'
 import React from 'react'
 import type Sorensen from 'sorensen'
 import { useContext } from 'react'
-import { SorensenContext } from '../TriggeredActionsEditor'
 import { useTranslation } from 'react-i18next'
+import { SorensenContext } from '../../../../../lib/SorensenContext'
 
 function toTitleCase(input: string): string {
 	const str = input.split(' ')

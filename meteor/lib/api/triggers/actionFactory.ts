@@ -302,8 +302,8 @@ function createRundownPlaylistSoftActivateAction(
 	rehearsal: boolean
 ): ExecutableAction {
 	return {
-		action: ClientActions.shelf,
-		execute: (_t, e) => {
+		action: PlayoutActions.activateRundownPlaylist,
+		execute: (t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, {
 				context: e,
 				rehearsal,
@@ -314,11 +314,24 @@ function createRundownPlaylistSoftActivateAction(
 
 function createRundownPlaylistSoftResyncAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
-		action: ClientActions.shelf,
-		execute: (_t, e) => {
+		action: PlayoutActions.resyncRundownPlaylist,
+		execute: (t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, {
 				context: e,
 			})
+		},
+	}
+}
+
+function createShowEntireCurrentSegmentAction(_filterChain: IGUIContextFilterLink[], on: boolean): ExecutableAction {
+	return {
+		action: ClientActions.showEntireCurrentSegment,
+		execute: () => {
+			if (on) {
+				RundownViewEventBus.emit(RundownViewEvents.SEGMENT_ZOOM_ON)
+			} else {
+				RundownViewEventBus.emit(RundownViewEvents.SEGMENT_ZOOM_OFF)
+			}
 		},
 	}
 }
@@ -408,7 +421,8 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 			return createUserActionWithCtx(action, UserAction.RESYNC_RUNDOWN_PLAYLIST, async (e, ctx) =>
 				MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId)
 			)
-		// TODO: turn this on, once all actions are implemented
+		case ClientActions.showEntireCurrentSegment:
+			return createShowEntireCurrentSegmentAction(action.filterChain, action.on)
 		default:
 			assertNever(action)
 			break

@@ -1,5 +1,4 @@
-import * as React from 'react'
-import Sorensen from 'sorensen'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../../../lib/api/pubsub'
@@ -8,8 +7,7 @@ import { TriggeredActionId, TriggeredActions } from '../../../../../lib/collecti
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry } from './TriggeredActionEntry'
-import { literal, unprotectString } from '../../../../../lib/lib'
-import { useEffect, useState } from 'react'
+import { literal, omit, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
 import { RundownPlaylist, RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../../../../lib/collections/Rundowns'
@@ -18,9 +16,8 @@ import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { UploadButton } from '../../../../lib/uploadButton'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
+import { SorensenContext } from '../../../../lib/SorensenContext'
 import Tooltip from 'rc-tooltip'
-
-export const SorensenContext = React.createContext<null | typeof Sorensen>(null)
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null
@@ -37,7 +34,6 @@ interface IProps {
 export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredActionsEditor(
 	props: IProps
 ): React.ReactElement | null {
-	const [localSorensen, setLocalSorensen] = useState<null | typeof Sorensen>(null)
 	const [systemWideCollapsed, setSystemWideCollapsed] = useState(true)
 	const [selectedTriggeredActionId, setSelectedTriggeredActionId] = useState<null | TriggeredActionId>(null)
 
@@ -172,17 +168,6 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	)
 
 	const { t } = useTranslation()
-	useEffect(() => {
-		Sorensen.init()
-			.then(() => {
-				setLocalSorensen(Sorensen)
-			})
-			.catch(console.error)
-
-		return () => {
-			Sorensen.destroy().catch(console.error)
-		}
-	}, [])
 
 	function onEditEntry(triggeredActionId: TriggeredActionId) {
 		if (selectedTriggeredActionId === triggeredActionId) {
@@ -200,6 +185,19 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		MeteorCall.triggeredActions.removeTriggeredActions(triggeredActionsId).catch(console.error)
 	}
 
+	function onDuplicateEntry(triggeredActionId: TriggeredActionId) {
+		const triggeredAction = TriggeredActions.findOne(triggeredActionId)
+		if (triggeredAction) {
+			MeteorCall.triggeredActions
+				.createTriggeredActions(
+					triggeredAction.showStyleBaseId,
+					omit({ ...triggeredAction, triggers: [] }, '_id', '_rundownVersionHash', 'showStyleBaseId')
+				)
+				.then((duplicateTriggeredActionId) => setSelectedTriggeredActionId(duplicateTriggeredActionId))
+				.catch(console.error)
+		}
+	}
+
 	function onDownloadActions() {
 		window.location.replace(`/actionTriggers/download/${showStyleBaseId ?? ''}`)
 	}
@@ -208,91 +206,97 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 	return (
 		<div>
-			<SorensenContext.Provider value={localSorensen}>
-				{localSorensen && previewContext.rundownPlaylist && showStyleBaseId && (
-					<ErrorBoundary>
-						<TriggersHandler
-							sorensen={localSorensen}
-							simulateTriggerBinding={true}
-							showStyleBaseId={showStyleBaseId}
-							rundownPlaylistId={previewContext.rundownPlaylist._id}
-							currentPartId={previewContext.currentPartId}
-							nextPartId={previewContext.nextPartId}
-							currentSegmentPartIds={previewContext.currentSegmentPartIds}
-							nextSegmentPartIds={previewContext.nextSegmentPartIds}
-						/>
-					</ErrorBoundary>
-				)}
-				<h2 className="mhn">{t('Action Triggers')}</h2>
-				<div className="mod mhn">
-					{showTriggeredActions?.map((triggeredAction) => (
-						<TriggeredActionEntry
-							key={unprotectString(triggeredAction._id)}
-							triggeredAction={triggeredAction}
-							selected={selectedTriggeredActionId === triggeredAction._id}
-							onEdit={() => onEditEntry(triggeredAction._id)}
-							onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
-							showStyleBase={showStyleBase}
-							previewContext={rundownPlaylist ? previewContext : null}
-							onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
-						/>
-					))}
-				</div>
-				{showStyleBaseId !== null ? (
+			<SorensenContext.Consumer>
+				{(sorensen) => (
 					<>
+						{sorensen && previewContext.rundownPlaylist && showStyleBaseId && (
+							<ErrorBoundary>
+								<TriggersHandler
+									sorensen={sorensen}
+									simulateTriggerBinding={true}
+									showStyleBaseId={showStyleBaseId}
+									rundownPlaylistId={previewContext.rundownPlaylist._id}
+									currentPartId={previewContext.currentPartId}
+									nextPartId={previewContext.nextPartId}
+									currentSegmentPartIds={previewContext.currentSegmentPartIds}
+									nextSegmentPartIds={previewContext.nextSegmentPartIds}
+								/>
+							</ErrorBoundary>
+						)}
+						<h2 className="mhn">{t('Action Triggers')}</h2>
 						<div className="mod mhn">
-							{(systemTriggeredActions?.length ?? 0) > 0 ? (
-								<h3
-									className="mhn mvs clickable disable-select"
-									onClick={() => setSystemWideCollapsed(!systemWideCollapsed)}
-									role="button"
-									tabIndex={0}
-								>
-									<span className="icon action-item">
-										<FontAwesomeIcon icon={systemWideCollapsed ? faCaretRight : faCaretDown} />
-									</span>
-									{t('System-wide')}
-								</h3>
-							) : null}
-							{!systemWideCollapsed
-								? systemTriggeredActions?.map((triggeredAction) => (
-										<TriggeredActionEntry
-											key={unprotectString(triggeredAction._id)}
-											triggeredAction={triggeredAction}
-											selected={selectedTriggeredActionId === triggeredAction._id}
-											onEdit={() => onEditEntry(triggeredAction._id)}
-											onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
-											showStyleBase={showStyleBase}
-											previewContext={rundownPlaylist ? previewContext : null}
-											onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
-										/>
-								  ))
-								: null}
+							{showTriggeredActions?.map((triggeredAction) => (
+								<TriggeredActionEntry
+									key={unprotectString(triggeredAction._id)}
+									triggeredAction={triggeredAction}
+									selected={selectedTriggeredActionId === triggeredAction._id}
+									onEdit={() => onEditEntry(triggeredAction._id)}
+									onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
+									onDuplicate={() => onDuplicateEntry(triggeredAction._id)}
+									showStyleBase={showStyleBase}
+									previewContext={rundownPlaylist ? previewContext : null}
+									onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
+								/>
+							))}
+						</div>
+						{showStyleBaseId !== null ? (
+							<>
+								<div className="mod mhn">
+									{(systemTriggeredActions?.length ?? 0) > 0 ? (
+										<h3
+											className="mhn mvs clickable disable-select"
+											onClick={() => setSystemWideCollapsed(!systemWideCollapsed)}
+											role="button"
+											tabIndex={0}
+										>
+											<span className="icon action-item">
+												<FontAwesomeIcon icon={systemWideCollapsed ? faCaretRight : faCaretDown} />
+											</span>
+											{t('System-wide')}
+										</h3>
+									) : null}
+									{!systemWideCollapsed
+										? systemTriggeredActions?.map((triggeredAction) => (
+												<TriggeredActionEntry
+													key={unprotectString(triggeredAction._id)}
+													triggeredAction={triggeredAction}
+													selected={selectedTriggeredActionId === triggeredAction._id}
+													onEdit={() => onEditEntry(triggeredAction._id)}
+													onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
+													onDuplicate={() => onDuplicateEntry(triggeredAction._id)}
+													showStyleBase={showStyleBase}
+													previewContext={rundownPlaylist ? previewContext : null}
+													onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
+												/>
+										  ))
+										: null}
+								</div>
+							</>
+						) : null}
+						<div className="mod mhs">
+							<button className="btn btn-primary" onClick={onNewTriggeredAction}>
+								<FontAwesomeIcon icon={faPlus} />
+							</button>
+							<Tooltip overlay={t('Upload stored Action Triggers')} placement="top">
+								<span className="inline-block">
+									<UploadButton
+										className="btn btn-secondary mls"
+										onChange={onUploadActions}
+										accept="application/json,.json"
+									>
+										<FontAwesomeIcon icon={faUpload} />
+									</UploadButton>
+								</span>
+							</Tooltip>
+							<Tooltip overlay={t('Download Action Triggers')} placement="top">
+								<button className="btn btn-secondary mls" onClick={onDownloadActions}>
+									<FontAwesomeIcon icon={faDownload} />
+								</button>
+							</Tooltip>
 						</div>
 					</>
-				) : null}
-				<div className="mod mhs">
-					<button className="btn btn-primary" onClick={onNewTriggeredAction}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
-					<Tooltip overlay={t('Upload stored Action Triggers')} placement="top">
-						<span className="inline-block">
-							<UploadButton
-								className="btn btn-secondary mls"
-								onChange={onUploadActions}
-								accept="application/json,.json"
-							>
-								<FontAwesomeIcon icon={faUpload} />
-							</UploadButton>
-						</span>
-					</Tooltip>
-					<Tooltip overlay={t('Download Action Triggers')} placement="top">
-						<button className="btn btn-secondary mls" onClick={onDownloadActions}>
-							<FontAwesomeIcon icon={faDownload} />
-						</button>
-					</Tooltip>
-				</div>
-			</SorensenContext.Provider>
+				)}
+			</SorensenContext.Consumer>
 		</div>
 	)
 }

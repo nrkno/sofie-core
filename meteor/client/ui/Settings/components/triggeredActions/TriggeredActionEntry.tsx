@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faCopy, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PlayoutActions, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
@@ -29,6 +29,7 @@ interface IProps {
 	previewContext: PreviewContext | null
 	onEdit: (e) => void
 	onRemove: (e) => void
+	onDuplicate: (e) => void
 	onFocus?: () => void
 }
 
@@ -37,7 +38,7 @@ let LAST_UP_SETTING = false
 export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEntry(
 	props: IProps
 ): React.ReactElement | null {
-	const { showStyleBase, triggeredAction, selected, previewContext, onEdit, onRemove } = props
+	const { showStyleBase, triggeredAction, selected, previewContext, onEdit, onRemove, onDuplicate } = props
 
 	const { t } = useTranslation()
 	const [selectedTrigger, setSelectedTrigger] = useState(-1)
@@ -207,6 +208,9 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 				) : null}
 			</div>
 			<div className="triggered-action-entry__modify">
+				<button className="action-btn" onClick={onDuplicate}>
+					<FontAwesomeIcon icon={faCopy} />
+				</button>
 				<button className="action-btn" onClick={onEdit}>
 					<FontAwesomeIcon icon={faPencilAlt} />
 				</button>
@@ -249,7 +253,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 							mutateDisplayValue={(val) => (typeof val === 'object' ? undefined : val)}
 							label={typeof triggeredAction.name === 'object' ? t('Multilingual description') : ''}
 						/>
-						<span className="mls text-s dimmed">{t('Optional')}</span>
+						<span className="mls text-s dimmed">{t('Optional description of the action')}</span>
 					</label>
 				</>
 			) : null}

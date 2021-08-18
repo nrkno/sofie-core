@@ -35,8 +35,6 @@ import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
 import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
-import * as mousetrap from 'mousetrap'
-import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -84,7 +82,7 @@ import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './FloatingInspectors/NoraFloatingInspector'
 import { Buckets, Bucket } from '../../lib/collections/Buckets'
-import { contextMenuHoldToDisplayTime } from '../lib/lib'
+import { contextMenuHoldToDisplayTime, isEventInInputField } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
 import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
@@ -102,6 +100,7 @@ import StudioPackageContainersContext from './RundownView/StudioPackageContainer
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
+import { SorensenContext } from '../lib/SorensenContext'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -612,166 +611,11 @@ const RundownHeader = withTranslation()(
 		constructor(props: Translated<IRundownHeaderProps>) {
 			super(props)
 
-			const { t } = props
-			if (this.props.studioMode) {
-				this.bindKeys = [
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_TAKE,
-						up: this.keyTake,
-						label: t('Take'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_TAKE2,
-						up: this.keyTake,
-						label: t('Take'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_HOLD,
-						up: this.keyHold,
-						label: t('Hold'),
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_UNDO_HOLD,
-						up: this.keyHoldUndo,
-						label: t('Undo Hold'),
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
-						up: this.keyActivate,
-						label: t('Activate (On-Air)'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE2,
-						up: this.keyActivate,
-						label: t('Activate (On-Air)'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE3,
-						up: this.keyActivate,
-						label: t('Activate (On-Air)'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_DEACTIVATE,
-						up: this.keyDeactivate,
-						label: t('Deactivate'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE_REHEARSAL,
-						up: this.keyActivateRehearsal,
-						label: t('Activate (Rehearsal)'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
-						up: this.keyResetRundown,
-						label: t('Reset Rundown'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
-						up: this.keyResetRundown,
-						label: t('Reset Rundown'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD,
-						up: this.keyMoveNextForward,
-						label: t('Move Next forwards'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_DOWN,
-						up: this.keyMoveNextDown,
-						label: t('Move Next to the following segment'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_UP,
-						up: this.keyMoveNextUp,
-						label: t('Move Next to the previous segment'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_BACK,
-						up: this.keyMoveNextBack,
-						label: t('Move Next backwards'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
-						up: this.keyDisableNextPiece,
-						label: t('Disable the next element'),
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
-						up: this.keyDisableNextPieceUndo,
-						label: t('Undo Disable the next element'),
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_LOG_ERROR,
-						up: this.keyLogError,
-						label: t('Log Error'),
-						coolDown: 1000,
-					},
-				]
-			} else {
-				this.bindKeys = []
-			}
 			this.state = {
 				isError: false,
 			}
 		}
 		componentDidMount() {
-			/* const preventDefault = (e: Event) => {
-				e.preventDefault()
-				e.stopImmediatePropagation()
-				e.stopPropagation()
-			}
-			this.bindKeys.forEach((k) => {
-				const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
-				let lastUsed = Date.now()
-				if (k.up) {
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							preventDefault(e)
-							if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
-							if (k.up) k.up(e)
-							lastUsed = Date.now()
-						},
-						'keyup',
-						'RundownHeader'
-					)
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							preventDefault(e)
-						},
-						'keydown',
-						'RundownHeader'
-					)
-				}
-				if (k.down) {
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							preventDefault(e)
-							if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
-							if (k.down) k.down(e)
-							lastUsed = Date.now()
-						},
-						'keydown',
-						'RundownHeader'
-					)
-				}
-			}) */
-
 			if (typeof this.props.onRegisterHotkeys === 'function') {
 				this.props.onRegisterHotkeys(this.bindKeys)
 			}
@@ -783,16 +627,6 @@ const RundownHeader = withTranslation()(
 		}
 
 		componentWillUnmount() {
-			// this.bindKeys.forEach((k) => {
-			// 	if (k.up) {
-			// 		mousetrapHelper.unbind(k.key, 'RundownHeader', 'keyup')
-			// 		mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
-			// 	}
-			// 	if (k.down) {
-			// 		mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
-			// 	}
-			// })
-
 			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 		}
@@ -806,58 +640,12 @@ const RundownHeader = withTranslation()(
 		eventResync = (e) => {
 			this.reloadRundownPlaylist(e.context)
 		}
-		keyTake = (e: mousetrap.ExtendedKeyboardEvent) => {
+
+		keyTake = (e: KeyboardEvent) => {
 			if (e.key !== 'Enter' || e.location === 3) {
 				// only allow the rightmost enter key
 				if (!isModalShowing()) this.take(e)
 			}
-		}
-		keyHold = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.hold(e)
-		}
-		keyHoldUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.holdUndo(e)
-		}
-		keyActivate = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.activate(e)
-		}
-		keyActivateRehearsal = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.activateRehearsal(e)
-		}
-
-		keyDeactivate = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.deactivate(e)
-		}
-		keyResetRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.resetRundown(e)
-		}
-		keyReloadRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.reloadRundownPlaylist(e)
-		}
-		keyMoveNextForward = (e: mousetrap.ExtendedKeyboardEvent) => {
-			// "forward" = to next Part
-			this.moveNext(e, 1, 0)
-		}
-		keyMoveNextBack = (e: mousetrap.ExtendedKeyboardEvent) => {
-			// "down" = to next Segment
-			this.moveNext(e, -1, 0)
-		}
-		keyMoveNextDown = (e: mousetrap.ExtendedKeyboardEvent) => {
-			// "down" = to next Segment
-			this.moveNext(e, 0, 1)
-		}
-		keyMoveNextUp = (e: mousetrap.ExtendedKeyboardEvent) => {
-			// "down" = to next Segment
-			this.moveNext(e, 0, -1)
-		}
-		keyDisableNextPiece = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.disableNextPiece(e)
-		}
-		keyDisableNextPieceUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.disableNextPieceUndo(e)
-		}
-		keyLogError = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.takeRundownSnapshot(e)
 		}
 
 		handleDisableNextPiece = (err: ClientAPI.ClientResponse<undefined>) => {
@@ -1731,45 +1519,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-		private bindKeys: Array<{
-			key: string
-			up?: (e: KeyboardEvent) => any
-			down?: (e: KeyboardEvent) => any
-			label: string
-			global?: boolean
-		}> = []
-		private _segmentZoomOn: boolean = false
 		private _hideNotificationsAfterMount: number | undefined
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 
 			const { t } = this.props
-
-			this.bindKeys = [
-				{
-					key: RundownViewKbdShortcuts.RUNDOWN_GO_TO_LIVE,
-					up: this.onGoToLiveSegment,
-					label: t('Go to On Air line'),
-					global: true,
-				},
-				{
-					key: RundownViewKbdShortcuts.RUNDOWN_REWIND_SEGMENTS,
-					up: this.onRewindSegments,
-					label: t('Rewind segments to start'),
-					global: true,
-				},
-			]
-
-			if (RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH) {
-				this.bindKeys.push({
-					key: RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH,
-					down: this.onShowCurrentSegmentFullOn,
-					up: this.onShowCurrentSegmentFullOff,
-					label: t('Show entire current segment'),
-					global: false,
-				})
-			}
 
 			const shelfLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.shelfLayoutId)
 			let isInspectorShelfExpanded = false
@@ -1786,7 +1541,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				followLiveSegments: true,
 				manualSetAsNext: false,
 				subsReady: false,
-				usedHotkeys: [...this.bindKeys].concat([
+				usedHotkeys: [
 					// Register additional hotkeys or legend entries
 					{
 						key: 'Esc',
@@ -1796,7 +1551,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						key: 'F11',
 						label: t('Change to fullscreen mode'),
 					},
-				]),
+				],
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
 				isInspectorShelfExpanded,
@@ -2067,40 +1822,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			document.body.classList.add('dark', 'vertical-overflow-only')
 
-			const preventDefault = (e) => {
-				e.preventDefault()
-				e.stopImmediatePropagation()
-				e.stopPropagation()
-			}
-			this.bindKeys.forEach((k) => {
-				const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
-				if (k.up) {
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							if (k.up) k.up(e)
-						},
-						'keyup'
-					)
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							preventDefault(e)
-						},
-						'keydown'
-					)
-				}
-				if (k.down) {
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							if (k.down) k.down(e)
-						},
-						'keydown'
-					)
-				}
-			})
-
 			rundownNotificationHandler.set(this.onRONotificationClick)
 
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_LIVE_SEGMENT, this.onGoToLiveSegment)
@@ -2243,16 +1964,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			// window.removeEventListener('scroll', this.onWindowScroll)
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
 
-			this.bindKeys.forEach((k) => {
-				if (k.up) {
-					mousetrap.unbind(k.key, 'keyup')
-					mousetrap.unbind(k.key, 'keydown')
-				}
-				if (k.down) {
-					mousetrap.unbind(k.key, 'keydown')
-				}
-			})
-
 			documentTitle.set(null)
 
 			const themeColor = document.head.querySelector('meta[name="theme-color"]')
@@ -2280,20 +1991,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		onRewindSegments = () => {
 			RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
-		}
-
-		onShowCurrentSegmentFullOn = () => {
-			if (this._segmentZoomOn === false) {
-				console.log(`Dispatching event: ${RundownViewEvents.SEGMENT_ZOOM_ON}`)
-				RundownViewEventBus.emit(RundownViewEvents.SEGMENT_ZOOM_ON)
-				this._segmentZoomOn = true
-			}
-		}
-
-		onShowCurrentSegmentFullOff = () => {
-			console.log(`Dispatching event: ${RundownViewEvents.SEGMENT_ZOOM_OFF}`)
-			RundownViewEventBus.emit(RundownViewEvents.SEGMENT_ZOOM_OFF)
-			this._segmentZoomOn = false
 		}
 
 		onTimeScaleChange = (timeScaleVal) => {
@@ -2813,6 +2510,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		isHotkeyAllowed(e: KeyboardEvent): boolean {
+			if (isModalShowing() || isEventInInputField(e)) {
+				return false
+			}
+			return true
+		}
+
 		render() {
 			const { t } = this.props
 
@@ -2865,14 +2569,24 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										/>
 									</ErrorBoundary>
 									<ErrorBoundary>
-										<TriggersHandler
-											rundownPlaylistId={this.props.rundownPlaylistId}
-											showStyleBaseId={this.props.showStyleBase._id}
-											currentPartId={this.props.currentPartInstance?.part._id || null}
-											nextPartId={this.props.nextPartInstance?.part._id || null}
-											currentSegmentPartIds={this.props.currentSegmentPartIds}
-											nextSegmentPartIds={this.props.nextSegmentPartIds}
-										/>
+										<SorensenContext.Consumer>
+											{(sorensen) =>
+												sorensen &&
+												this.props.studio &&
+												this.props.showStyleBase && (
+													<TriggersHandler
+														rundownPlaylistId={this.props.rundownPlaylistId}
+														showStyleBaseId={this.props.showStyleBase._id}
+														currentPartId={this.props.currentPartInstance?.part._id || null}
+														nextPartId={this.props.nextPartInstance?.part._id || null}
+														currentSegmentPartIds={this.props.currentSegmentPartIds}
+														nextSegmentPartIds={this.props.nextSegmentPartIds}
+														sorensen={sorensen}
+														global={this.isHotkeyAllowed}
+													/>
+												)
+											}
+										</SorensenContext.Consumer>
 									</ErrorBoundary>
 									<ErrorBoundary>
 										<VelocityReact.VelocityTransitionGroup

@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import * as mousetrap from 'mousetrap'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'
@@ -48,7 +47,7 @@ export function eventContextForLog(e: any): string {
 		str =
 			e.type + ': ' + e.currentTarget.localName + (e.currentTarget.id ? '#' + e.currentTarget.id : '') + contents
 	} else if (e.key && e.code) {
-		str = e.type + ': ' + keyboardEventToShortcut(e as mousetrap.ExtendedKeyboardEvent)
+		str = e.type + ': ' + keyboardEventToShortcut(e as KeyboardEvent)
 	} else {
 		str = e.type
 	}
@@ -61,7 +60,7 @@ export function eventContextForLog(e: any): string {
 	return str
 }
 
-function keyboardEventToShortcut(e: mousetrap.ExtendedKeyboardEvent): string {
+function keyboardEventToShortcut(e: KeyboardEvent): string {
 	const combo = _.compact([
 		e.ctrlKey ? 'ctrl' : undefined,
 		e.shiftKey ? 'shift' : undefined,

@@ -24,6 +24,7 @@ import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
+import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -37,6 +38,7 @@ interface IProps {
 
 	simulateTriggerBinding?: boolean
 	sorensen?: typeof Sorensen
+	global?: (e: KeyboardEvent) => boolean
 }
 
 function useSubscriptions(
@@ -127,6 +129,7 @@ interface MountedTrigger {
 	type: IWrappedAdLib['type']
 	targetId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | ISourceLayer['_id']
 	keys: string[]
+	name?: string | ITranslatableMessage
 }
 
 export const MountedTriggers = new Mongo.Collection<MountedTrigger>(null)
@@ -168,6 +171,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				up,
 				exclusive: true,
 				ordered: 'modifiersFirst',
+				global: props.global ?? false,
 				tag: id,
 			})
 		} catch (e) {
@@ -307,6 +311,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 								type: adLib.type,
 								triggeredActionId: pair._id,
 								keys: hotkeyTriggers,
+								name: pair.name,
 							},
 						})
 					})

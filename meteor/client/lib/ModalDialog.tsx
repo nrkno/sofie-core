@@ -3,12 +3,13 @@ import CoreIcons from '@nrk/core-icons/jsx'
 import Escape from 'react-escape'
 import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
-import { mousetrapHelper } from './mousetrapHelper'
 import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
+import type Sorensen from 'sorensen'
 import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
 import { EditAttribute, EditAttributeType, EditAttributeBase } from './EditAttribute'
+import { SorensenContext } from './SorensenContext'
 
 interface IModalDialogAttributes {
 	show?: boolean
@@ -39,7 +40,7 @@ type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
 export type ModalInputResult = { [attribute: string]: any }
 export type SomeEvent = Event | React.SyntheticEvent<object>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
-	boundKeys: Array<string> = []
+	sorensen: typeof Sorensen
 
 	private inputResult: ModalInputResult = {}
 
@@ -48,6 +49,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	}
 
 	componentDidMount() {
+		this.sorensen = this.context
 		this.bindKeys()
 	}
 
@@ -55,33 +57,38 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		this.unbindKeys()
 	}
 
-	componentDidUpdate() {
-		this.bindKeys()
+	componentDidUpdate(prevProps: IModalDialogAttributes) {
+		if (prevProps.show !== this.props.show) this.bindKeys()
 	}
 
 	bindKeys = () => {
 		if (this.props.show) {
-			if (this.boundKeys.indexOf('enter') < 0) {
-				mousetrapHelper.bind('enter', this.preventDefault, 'keydown', undefined, true)
-				mousetrapHelper.bind('enter', this.handleKey, 'keyup', undefined, true)
-				this.boundKeys.push('enter')
-			}
-			if (this.boundKeys.indexOf('esc') < 0) {
-				mousetrapHelper.bind('esc', this.preventDefault, 'keydown', undefined, true)
-				mousetrapHelper.bind('esc', this.handleKey, 'keyup', undefined, true)
-				this.boundKeys.push('esc')
-			}
+			this.sorensen.bind('Enter', this.preventDefault, {
+				up: false,
+				prepend: true,
+			})
+			this.sorensen.bind('Enter', this.handleKey, {
+				up: true,
+				prepend: true,
+			})
+			this.sorensen.bind('Escape', this.preventDefault, {
+				up: false,
+				prepend: true,
+			})
+			this.sorensen.bind('Escape', this.handleKey, {
+				up: true,
+				prepend: true,
+			})
 		} else {
 			this.unbindKeys()
 		}
 	}
 
 	unbindKeys = () => {
-		this.boundKeys.forEach((key) => {
-			mousetrapHelper.unbind(key, this.preventDefault, 'keydown')
-			mousetrapHelper.unbind(key, this.handleKey, 'keyup')
-		})
-		this.boundKeys.length = 0
+		this.sorensen.unbind('Enter', this.preventDefault)
+		this.sorensen.unbind('Enter', this.handleKey)
+		this.sorensen.unbind('Escape', this.preventDefault)
+		this.sorensen.unbind('Escape', this.handleKey)
 	}
 
 	handleKey = (e: KeyboardEvent) => {
@@ -95,6 +102,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 					this.handleDiscard(e)
 				}
 			}
+			e.preventDefault()
+			e.stopImmediatePropagation()
 		}
 	}
 
@@ -236,8 +245,11 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	private preventDefault = (e: KeyboardEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
+		e.stopImmediatePropagation()
 	}
 }
+
+ModalDialog.contextType = SorensenContext
 
 export interface ModalDialogQueueItem {
 	/** The title of the dialog box  */

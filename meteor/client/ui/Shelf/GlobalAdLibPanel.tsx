@@ -1,6 +1,4 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import * as mousetrap from 'mousetrap'
+import React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation } from 'react-i18next'
@@ -9,10 +7,6 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-
-import { RundownViewKbdShortcuts } from '../RundownView'
-
 import { Spinner } from '../../lib/Spinner'
 import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -36,7 +30,6 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
 import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { ReactiveMap } from '../../../lib/reactiveMap'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
@@ -46,12 +39,7 @@ import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
-	onToggleAdLib: (
-		piece: IAdLibListItem,
-		queue: boolean,
-		e: mousetrap.ExtendedKeyboardEvent,
-		mode?: IBlueprintActionTriggerMode
-	) => void
+	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: KeyboardEvent, mode?: IBlueprintActionTriggerMode) => void
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	searchFilter: string | undefined
@@ -265,21 +253,12 @@ interface ITrackedProps {
 	studio: Studio
 }
 
-export const GlobalAdLibHotkeyUseMap = new ReactiveMap<number>()
-
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
-	// a hash to store various indices of the used hotkey lists
-	const sourceHotKeyUse: {
-		[key: string]: number
-	} = {}
-
 	let rundownAdLibs: Array<AdLibPieceUi> = []
 	let currentRundown: Rundown | undefined = undefined
-
-	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
 	if (props.playlist) {
 		const rundowns = props.playlist.getRundowns()
@@ -370,26 +349,12 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		rundownAdLibs.forEach((uiAdLib) => {
 			// automatically assign hotkeys based on adLibItem index
 			const sourceLayer = uiAdLib.sourceLayerId && sourceLayerLookup[uiAdLib.sourceLayerId]
-			if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
-				const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-				const sourceHotKeyUseLayerId =
-					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || uiAdLib.sourceLayerId
-				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-					uiAdLib.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
-					// add one to the usage hash table
-					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
-				}
-			}
 
 			if (sourceLayer && sourceLayer.isHidden && !showHiddenSourceLayers) {
 				uiAdLib.isHidden = true
 			}
 			return uiAdLib
 		})
-	}
-
-	for (const [key, value] of Object.entries(sourceHotKeyUse)) {
-		GlobalAdLibHotkeyUseMap.set(key, value)
 	}
 
 	return {
@@ -413,8 +378,6 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		componentDidMount() {
-			this.refreshKeyboardHotkeys()
-
 			this.autorun(() => {
 				if (this.props.currentRundown) {
 					this.subscribe(PubSub.rundownBaselineAdLibPieces, {
@@ -429,107 +392,10 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 		}
 
-		componentDidUpdate(_prevProps: IProps & ITrackedProps) {
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-			this.usedHotkeys.length = 0
-
-			this.refreshKeyboardHotkeys()
-		}
-
 		componentWillUnmount() {
 			this._cleanUp()
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-
-			this.usedHotkeys.length = 0
 
 			RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
-		}
-
-		refreshKeyboardHotkeys() {
-			if (!this.props.studioMode) return
-
-			const preventDefault = (e) => {
-				e.preventDefault()
-			}
-
-			if (this.props.rundownAdLibs) {
-				this.props.rundownAdLibs.forEach((item) => {
-					if (item.hotkey) {
-						mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-						mousetrapHelper.bind(
-							item.hotkey,
-							(e: mousetrap.ExtendedKeyboardEvent) => {
-								preventDefault(e)
-								this.onToggleAdLib(item, false, e)
-							},
-							'keyup',
-							this.props.hotkeyGroup
-						)
-						this.usedHotkeys.push(item.hotkey)
-
-						const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
-						if (sourceLayer && sourceLayer.isQueueable) {
-							const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-							mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-							mousetrapHelper.bind(
-								queueHotkey,
-								(e: mousetrap.ExtendedKeyboardEvent) => {
-									preventDefault(e)
-									this.onToggleAdLib(item, true, e)
-								},
-								'keyup',
-								this.props.hotkeyGroup
-							)
-							this.usedHotkeys.push(queueHotkey)
-						}
-					}
-				})
-			}
-
-			if (this.props.sourceLayerLookup) {
-				const clearKeyboardHotkeySourceLayers: { [hotkey: string]: ISourceLayer[] } = {}
-
-				_.each(this.props.sourceLayerLookup, (sourceLayer) => {
-					if (sourceLayer.clearKeyboardHotkey) {
-						sourceLayer.clearKeyboardHotkey.split(',').forEach((hotkey) => {
-							if (!clearKeyboardHotkeySourceLayers[hotkey]) clearKeyboardHotkeySourceLayers[hotkey] = []
-							clearKeyboardHotkeySourceLayers[hotkey].push(sourceLayer)
-						})
-					}
-
-					if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
-						sourceLayer.activateStickyKeyboardHotkey.split(',').forEach((element) => {
-							mousetrapHelper.bind(element, preventDefault, 'keydown', this.props.hotkeyGroup)
-							mousetrapHelper.bind(
-								element,
-								(e: mousetrap.ExtendedKeyboardEvent) => {
-									preventDefault(e)
-									this.onToggleSticky(sourceLayer._id, e)
-								},
-								'keyup',
-								this.props.hotkeyGroup
-							)
-							this.usedHotkeys.push(element)
-						})
-					}
-				})
-
-				_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
-					mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-					mousetrapHelper.bind(
-						hotkey,
-						(e: mousetrap.ExtendedKeyboardEvent) => {
-							preventDefault(e)
-							this.onClearAllSourceLayers(sourceLayers, e)
-						},
-						'keyup',
-						this.props.hotkeyGroup
-					)
-					this.usedHotkeys.push(hotkey)
-				})
-			}
 		}
 
 		onFilterChange = (filter: string | undefined) => {

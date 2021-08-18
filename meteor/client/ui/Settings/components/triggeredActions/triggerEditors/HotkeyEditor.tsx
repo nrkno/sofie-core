@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
 import { EditAttribute } from '../../../../../lib/EditAttribute'
-import { SorensenContext } from '../TriggeredActionsEditor'
+import { SorensenContext } from '../../../../../lib/SorensenContext'
 import { codesToKeyLabels } from './HotkeyTrigger'
 
 interface IProps {
