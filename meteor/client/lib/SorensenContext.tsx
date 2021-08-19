@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import Sorensen from 'sorensen'
+import Sorensen from '@sofie-automation/sorensen'
 
 export const SorensenContext = React.createContext<typeof Sorensen | null>(null)
 

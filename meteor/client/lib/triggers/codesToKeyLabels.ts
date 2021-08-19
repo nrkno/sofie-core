@@ -1,4 +1,4 @@
-import type Sorensen from 'sorensen'
+import type { Sorensen } from '@sofie-automation/sorensen'
 
 function toTitleCase(input: string): string {
 	const str = input.split(' ')
@@ -8,7 +8,7 @@ function toTitleCase(input: string): string {
 	return str.join(' ')
 }
 
-export function codesToKeyLabels(keys: string, sorensen: typeof Sorensen) {
+export function codesToKeyLabels(keys: string, sorensen: Sorensen) {
 	return keys
 		.split(/\s+/gi)
 		.map((note) =>

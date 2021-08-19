@@ -7,7 +7,7 @@ import { assertNever } from '../../../lib/lib'
 import { FindOptions, MongoSelector } from '../../../lib/typings/meteor'
 import { useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { SorensenContext } from '../SorensenContext'
-import { MountedTrigger, MountedTriggers } from './TriggersHandler'
+import { MountedAdLibTrigger, MountedAdLibTriggers } from './TriggersHandler'
 import { codesToKeyLabels } from './codesToKeyLabels'
 
 type IProps =
@@ -56,14 +56,14 @@ export const ActionAdLibHotkeyPreview: React.FC<IProps> = function AdLibActionHo
 		}
 	}, [Sorensen])
 
-	const findOptions: FindOptions<MountedTrigger> = {
+	const findOptions: FindOptions<MountedAdLibTrigger> = {
 		fields: {
 			keys: 1,
 		},
 	}
 
 	const allKeys = useTracker(() => {
-		let selector: MongoSelector<MountedTrigger>
+		let selector: MongoSelector<MountedAdLibTrigger>
 		switch (props.type) {
 			case 'adLibAction':
 				selector = {
@@ -110,7 +110,7 @@ export const ActionAdLibHotkeyPreview: React.FC<IProps> = function AdLibActionHo
 				}
 				break
 		}
-		return MountedTriggers.find(selector, findOptions).fetch() as Pick<MountedTrigger, 'keys'>[]
+		return MountedAdLibTriggers.find(selector, findOptions).fetch() as Pick<MountedAdLibTrigger, 'keys'>[]
 	}, [props.targetId, props.type])
 
 	let hotkeys: React.ReactElement[] | null = null

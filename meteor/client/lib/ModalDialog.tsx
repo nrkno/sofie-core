@@ -5,7 +5,7 @@ import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
-import type Sorensen from 'sorensen'
+import type { Sorensen } from '@sofie-automation/sorensen'
 import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
 import { EditAttribute, EditAttributeType, EditAttributeBase } from './EditAttribute'
@@ -40,7 +40,7 @@ type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
 export type ModalInputResult = { [attribute: string]: any }
 export type SomeEvent = Event | React.SyntheticEvent<object>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
-	sorensen: typeof Sorensen
+	sorensen: Sorensen
 
 	private inputResult: ModalInputResult = {}
 

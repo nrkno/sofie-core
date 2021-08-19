@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
-import Sorensen from 'sorensen'
+import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
@@ -122,9 +122,9 @@ function getCurrentContext(): ActionContext | null {
 	return rundownPlaylistContext.get()
 }
 
-type MountedTriggerId = ProtectedString<'mountedTriggerId'>
-export interface MountedTrigger {
-	_id: MountedTriggerId
+type MountedAdLibTriggerId = ProtectedString<'mountedAdLibTriggerId'>
+export interface MountedAdLibTrigger {
+	_id: MountedAdLibTriggerId
 	triggeredActionId: TriggeredActionId
 	type: IWrappedAdLib['type']
 	targetId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | ISourceLayer['_id']
@@ -132,7 +132,16 @@ export interface MountedTrigger {
 	name?: string | ITranslatableMessage
 }
 
-export const MountedTriggers = new Mongo.Collection<MountedTrigger>(null)
+export const MountedAdLibTriggers = new Mongo.Collection<MountedAdLibTrigger>(null)
+
+type MountedGenericTriggerId = ProtectedString<'mountedGenericTriggerId'>
+export interface MountedGenericTrigger {
+	_id: MountedGenericTriggerId
+	triggeredActionId: TriggeredActionId
+	name: string | ITranslatableMessage
+}
+
+export const MountedGenericTriggers = new Mongo.Collection<MountedGenericTrigger>(null)
 
 function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker.Computation {
 	const computation = Tracker.nonreactive(() =>
@@ -310,6 +319,18 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					}
 				})
 			}
+
+			if (pair.name) {
+				const genericTriggerId = protectString(`${pair._id}`)
+				MountedGenericTriggers.upsert(genericTriggerId, {
+					$set: {
+						_id: genericTriggerId,
+						triggeredActionId: pair._id,
+						name: pair.name,
+					},
+				})
+			}
+
 			const hotkeyTriggers = pair.triggers
 				.filter((trigger) => trigger.type === TriggerType.hotkey)
 				.map((trigger) => trigger.keys)
@@ -325,7 +346,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 
 					previewAdLibs.forEach((adLib) => {
 						const triggerId = protectString(pair._id + '_' + adLib._id + '_' + adLib.type)
-						MountedTriggers.upsert(triggerId, {
+						MountedAdLibTriggers.upsert(triggerId, {
 							$set: {
 								_id: triggerId,
 								targetId: adLib._id,
@@ -338,7 +359,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					})
 
 					return () => {
-						MountedTriggers.remove({
+						MountedAdLibTriggers.remove({
 							triggeredActionId: pair._id,
 						})
 					}
@@ -357,6 +378,12 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 							}
 						})
 					}
+
+					if (pair.name) {
+						MountedGenericTriggers.remove({
+							triggeredActionId: pair._id,
+						})
+					}
 				})
 			}
 
@@ -367,4 +394,5 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	return null
 }
 
-window['MountedTriggers'] = MountedTriggers
+window['MountedAdLibTriggers'] = MountedAdLibTriggers
+window['MountedGenericTriggers'] = MountedGenericTriggers

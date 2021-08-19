@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type Sorensen from 'sorensen'
+import type { Sorensen } from '@sofie-automation/sorensen'
 import CoreIcons from '@nrk/core-icons/jsx'
 import Escape from 'react-escape'
 import { SorensenContext } from '../../../SorensenContext'
@@ -14,7 +14,7 @@ export type SomeEvent = Event | React.SyntheticEvent<object>
 
 export class Modal extends React.Component<IModalAttributes> {
 	boundKeys: Array<string> = []
-	sorensen: typeof Sorensen
+	sorensen: Sorensen
 
 	constructor(props: IModalAttributes) {
 		super(props)
