@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
 import { EditAttribute } from '../../../../../lib/EditAttribute'
 import { SorensenContext } from '../../../../../lib/SorensenContext'
-import { codesToKeyLabels } from './HotkeyTrigger'
+import { codesToKeyLabels } from '../../../../../lib/triggers/codesToKeyLabels'
 
 interface IProps {
 	trigger: DBBlueprintTrigger

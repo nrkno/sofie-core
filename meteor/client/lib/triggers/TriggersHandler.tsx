@@ -123,7 +123,7 @@ function getCurrentContext(): ActionContext | null {
 }
 
 type MountedTriggerId = ProtectedString<'mountedTriggerId'>
-interface MountedTrigger {
+export interface MountedTrigger {
 	_id: MountedTriggerId
 	triggeredActionId: TriggeredActionId
 	type: IWrappedAdLib['type']
@@ -161,7 +161,7 @@ function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker
 export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	props: IProps
 ): React.ReactElement<any, any> | null {
-	const [initialized, setInitialized] = useState(false)
+	const [initialized, setInitialized] = useState(props.sorensen ? true : false)
 	const { t } = useTranslation()
 	const localSorensen = props.sorensen || Sorensen
 
@@ -184,6 +184,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	}
 
 	useEffect(() => {
+		// if we're using a local instance of Sorensen
 		if (!props.sorensen) {
 			localSorensen
 				.init()
@@ -194,6 +195,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		}
 
 		return () => {
+			// do not destroy, if we're using a provided instance of Sorensen
 			if (!props.sorensen) {
 				localSorensen.destroy().catch(console.error)
 			}
@@ -209,6 +211,24 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			setRundownPlaylistContext(null)
 		}
 	}, [])
+
+	function poisonHotkeys() {
+		console.log('Poisoned')
+		localSorensen.poison() // cancels all pressed keys, poisons all chords, no hotkey trigger will execute
+	}
+
+	useEffect(() => {
+		if (initialized) {
+			localSorensen.bind('Escape', poisonHotkeys, {
+				exclusive: false,
+				global: true,
+			})
+		}
+
+		return () => {
+			localSorensen.unbind('Escape', poisonHotkeys)
+		}
+	}, [initialized]) // run once once Sorensen is initialized
 
 	useEffect(() => {
 		Tracker.nonreactive(() => {
@@ -271,8 +291,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			],
 		}).fetch()
 	}, [props.showStyleBaseId])
+
 	useEffect(() => {
-		if (!triggeredActions || (!initialized && !props.sorensen) || !showStyleBase || !triggerSubReady) {
+		if (!triggeredActions || !initialized || !showStyleBase || !triggerSubReady) {
 			return
 		}
 

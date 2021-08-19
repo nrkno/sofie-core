@@ -1,29 +1,8 @@
 import classNames from 'classnames'
-import React from 'react'
-import type Sorensen from 'sorensen'
-import { useContext } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SorensenContext } from '../../../../../lib/SorensenContext'
-
-function toTitleCase(input: string): string {
-	const str = input.split(' ')
-	for (let i = 0; i < str.length; i++) {
-		str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1)
-	}
-	return str.join(' ')
-}
-
-export function codesToKeyLabels(keys: string, sorensen: typeof Sorensen) {
-	return keys
-		.split(/\s+/gi)
-		.map((note) =>
-			note
-				.split(/\+/gi)
-				.map((code) => toTitleCase(sorensen.getKeyForCode(code)))
-				.join('+')
-		)
-		.join(' ')
-}
+import { codesToKeyLabels } from '../../../../../lib/triggers/codesToKeyLabels'
 
 export const HotkeyTrigger = ({
 	keys,
@@ -38,8 +17,21 @@ export const HotkeyTrigger = ({
 	selected?: boolean
 	onClick?: () => void
 }) => {
+	const [_updatedKeyboardMap, setUpdatedKeyboardMap] = useState(Symbol())
 	const Sorensen = useContext(SorensenContext)
 	const { t } = useTranslation()
+
+	function handleLayoutChange() {
+		setUpdatedKeyboardMap(Symbol())
+	}
+
+	useEffect(() => {
+		Sorensen?.addEventListener('layoutchange', handleLayoutChange)
+
+		return () => {
+			Sorensen?.removeEventListener('layoutchange', handleLayoutChange)
+		}
+	}, [Sorensen])
 
 	if (Sorensen) {
 		keys = codesToKeyLabels(keys, Sorensen)
