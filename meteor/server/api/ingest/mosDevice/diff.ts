@@ -2,7 +2,7 @@ import { IngestSegment } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { SegmentId, Segment } from '../../../../lib/collections/Segments'
+import { SegmentId, Segment, SegmentOrphanedReason } from '../../../../lib/collections/Segments'
 import { clone, deleteAllUndefinedProperties, literal, normalizeArray } from '../../../../lib/lib'
 import { Settings } from '../../../../lib/Settings'
 import { profiler } from '../../profiler'
@@ -79,7 +79,7 @@ export async function diffAndApplyChanges(
 	// We orphan it and queue for deletion. the commit phase will complete if possible
 	cache.Segments.update((s) => segmentIdsToRemove.has(s._id), {
 		$set: {
-			orphaned: 'deleted',
+			orphaned: SegmentOrphanedReason.DELETED,
 		},
 	})
 

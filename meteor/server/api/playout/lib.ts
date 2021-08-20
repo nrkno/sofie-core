@@ -20,7 +20,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { Segment, DBSegment, SegmentId, SegmentUnsyncedReason } from '../../../lib/collections/Segments'
+import { Segment, DBSegment, SegmentId, SegmentOrphanedReason } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -500,7 +500,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 							// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
 							const stillOrphanedSegments = ingestCache.Segments.findFetch(
 								(s) =>
-									s.orphaned === SegmentUnsyncedReason.DELETED && candidateSegmentIds.includes(s._id)
+									s.orphaned === SegmentOrphanedReason.DELETED && candidateSegmentIds.includes(s._id)
 							)
 
 							return {

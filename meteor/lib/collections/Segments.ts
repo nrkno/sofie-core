@@ -9,7 +9,7 @@ import { registerIndex } from '../database'
 export type SegmentId = ProtectedString<'SegmentId'>
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 
-export enum SegmentUnsyncedReason {
+export enum SegmentOrphanedReason {
 	DELETED = 'deleted',
 	CHANGED = 'changed',
 }
@@ -26,7 +26,7 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	rundownId: RundownId
 
 	/** Is the segment in an unsynced state? */
-	orphaned?: SegmentUnsyncedReason
+	orphaned?: SegmentOrphanedReason
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentNote>
