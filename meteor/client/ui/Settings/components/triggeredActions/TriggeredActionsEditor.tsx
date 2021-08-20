@@ -6,11 +6,11 @@ import { ShowStyleBaseId, ShowStyleBases } from '../../../../../lib/collections/
 import { TriggeredActionId, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { TriggeredActionEntry } from './TriggeredActionEntry'
+import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
 import { literal, omit, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
 import { RundownPlaylist, RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns } from '../../../../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../../../../lib/collections/Rundowns'
 import { PartInstances } from '../../../../../lib/collections/PartInstances'
 import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
@@ -18,9 +18,11 @@ import { UploadButton } from '../../../../lib/uploadButton'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
 import { SorensenContext } from '../../../../lib/SorensenContext'
 import Tooltip from 'rc-tooltip'
+import { useDrop } from 'react-dnd'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null
+	currentRundownId: RundownId | null
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]
 	currentPartId: PartId | null
@@ -36,6 +38,23 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 ): React.ReactElement | null {
 	const [systemWideCollapsed, setSystemWideCollapsed] = useState(true)
 	const [selectedTriggeredActionId, setSelectedTriggeredActionId] = useState<null | TriggeredActionId>(null)
+
+	const [{ isOver: _isOver }, drop] = useDrop({
+		// The type (or types) to accept - strings or symbols
+		accept: TRIGGERED_ACTION_ENTRY_DRAG_TYPE,
+		// Props to collect
+		collect: (monitor) => ({
+			isOver: monitor.isOver(),
+			canDrop: monitor.canDrop(),
+		}),
+		canDrop: (item) => (item.type === TRIGGERED_ACTION_ENTRY_DRAG_TYPE ? systemWideCollapsed : false),
+		drop: () => undefined,
+		hover: (_, monitor) => {
+			if (monitor.canDrop() && systemWideCollapsed) {
+				setSystemWideCollapsed(false)
+			}
+		},
+	})
 
 	const showStyleBase = useTracker(
 		() => (props.showStyleBaseId === null ? undefined : ShowStyleBases.findOne(props.showStyleBaseId)),
@@ -63,16 +82,30 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 	const systemTriggeredActions = useTracker(
 		() =>
-			TriggeredActions.find({
-				showStyleBaseId: null,
-			}).fetch(),
+			TriggeredActions.find(
+				{
+					showStyleBaseId: null,
+				},
+				{
+					sort: {
+						_rank: 1,
+					},
+				}
+			).fetch(),
 		[]
 	)
 	const showTriggeredActions = useTracker(
 		() =>
-			TriggeredActions.find({
-				showStyleBaseId: showStyleBaseId,
-			}).fetch(),
+			TriggeredActions.find(
+				{
+					showStyleBaseId: showStyleBaseId,
+				},
+				{
+					sort: {
+						_rank: 1,
+					},
+				}
+			).fetch(),
 		[showStyleBaseId]
 	)
 
@@ -154,6 +187,23 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				nextPartId: thisNextPart?._id ?? null,
 				currentSegmentPartIds: thisCurrentSegmentPartIds,
 				nextSegmentPartIds: thisNextSegmentPartIds,
+				currentRundownId:
+					thisCurrentPart?.rundownId ??
+					thisNextPart?.rundownId ??
+					Rundowns.findOne(
+						{
+							playlistId: rundownPlaylist?._id,
+						},
+						{
+							fields: {
+								_id: 1,
+							},
+							sort: {
+								_rank: 1,
+							},
+						}
+					)?._id ??
+					null,
 				rundownPlaylist: rundownPlaylist,
 			})
 		},
@@ -163,6 +213,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			nextPartId: null,
 			currentSegmentPartIds: [],
 			nextSegmentPartIds: [],
+			currentRundownId: null,
 			rundownPlaylist: rundownPlaylist,
 		}
 	)
@@ -178,7 +229,21 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	}
 
 	function onNewTriggeredAction() {
-		MeteorCall.triggeredActions.createTriggeredActions(props.showStyleBaseId ?? null).catch(console.error)
+		MeteorCall.triggeredActions
+			.createTriggeredActions(props.showStyleBaseId ?? null, {
+				_rank:
+					(TriggeredActions.findOne(
+						{
+							showStyleBaseId: props.showStyleBaseId ?? null,
+						},
+						{
+							sort: {
+								_rank: -1,
+							},
+						}
+					)?._rank ?? 0) + 1000,
+			})
+			.catch(console.error)
 	}
 
 	function onRemoveTriggeredAction(triggeredActionsId: TriggeredActionId) {
@@ -188,10 +253,30 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	function onDuplicateEntry(triggeredActionId: TriggeredActionId) {
 		const triggeredAction = TriggeredActions.findOne(triggeredActionId)
 		if (triggeredAction) {
+			const nextTriggeredActionRank =
+				TriggeredActions.find(
+					{
+						showStyleBaseId: triggeredAction.showStyleBaseId,
+						_rank: {
+							$gt: triggeredAction._rank,
+						},
+					},
+					{
+						sort: {
+							_rank: 1,
+						},
+						limit: 1,
+					}
+				).fetch()[0]?._rank ?? triggeredAction._rank + 1000
 			MeteorCall.triggeredActions
 				.createTriggeredActions(
 					triggeredAction.showStyleBaseId,
-					omit({ ...triggeredAction, triggers: [] }, '_id', '_rundownVersionHash', 'showStyleBaseId')
+					omit(
+						{ ...triggeredAction, triggers: [], _rank: (triggeredAction._rank + nextTriggeredActionRank) / 2 },
+						'_id',
+						'_rundownVersionHash',
+						'showStyleBaseId'
+					)
 				)
 				.then((duplicateTriggeredActionId) => setSelectedTriggeredActionId(duplicateTriggeredActionId))
 				.catch(console.error)
@@ -215,6 +300,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 									sorensen={sorensen}
 									simulateTriggerBinding={true}
 									showStyleBaseId={showStyleBaseId}
+									currentRundownId={previewContext.currentRundownId}
 									rundownPlaylistId={previewContext.rundownPlaylist._id}
 									currentPartId={previewContext.currentPartId}
 									nextPartId={previewContext.nextPartId}
@@ -248,6 +334,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 											onClick={() => setSystemWideCollapsed(!systemWideCollapsed)}
 											role="button"
 											tabIndex={0}
+											ref={drop}
 										>
 											<span className="icon action-item">
 												<FontAwesomeIcon icon={systemWideCollapsed ? faCaretRight : faCaretDown} />

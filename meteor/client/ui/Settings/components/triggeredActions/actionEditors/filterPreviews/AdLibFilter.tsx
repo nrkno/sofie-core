@@ -31,7 +31,7 @@ function typeOptionsWithLabels(t: TFunction) {
 function fieldToType(field: IAdLibFilterLink['field']) {
 	switch (field) {
 		case 'global':
-			return 'toggle'
+			return 'dropdown'
 		case 'label':
 		case 'tag':
 			return 'text'
@@ -92,6 +92,10 @@ function fieldToOptions(
 ): Record<string, any> {
 	switch (field) {
 		case 'global':
+			return {
+				[t('Not Global')]: false,
+				[t('Only Global')]: true,
+			}
 		case 'label':
 		case 'limit':
 		case 'pick':
@@ -129,7 +133,7 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase | und
 
 	switch (link.field) {
 		case 'global':
-			return link.value === true ? t('Only Global') : t('Not Global')
+			return link.value === false ? t('Not Global') : link.value === true ? t('Only Global') : ''
 		case 'label':
 		case 'limit':
 		case 'tag':
@@ -228,7 +232,6 @@ function fieldValueToEditorValue(link: IAdLibFilterLink) {
 		case 'limit':
 			return Number(link.value ?? 0)
 		case 'global':
-			return link.value === true
 		case 'outputLayerId':
 		case 'sourceLayerId':
 		case 'part':

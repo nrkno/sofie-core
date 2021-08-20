@@ -271,6 +271,8 @@ export type SomeAction =
 
 export interface IBlueprintTriggeredActions {
 	_id: string
+	/** Rank number for visually ordering the hotkeys */
+	_rank: number
 	/** Optional label to specify what this triggered action is supposed to do, a comment basically */
 	name?: ITranslatableMessage | string
 	/** A list of triggers that will make the list of actions in `.actions` happen */

@@ -21,6 +21,8 @@ import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
 import { TriggerEditor } from './triggerEditors/TriggerEditor'
 import { useEffect } from 'react'
 import { EditAttribute } from '../../../../lib/EditAttribute'
+import { iconDragHandle } from '../../../RundownList/icons'
+import { useDrag, useDrop } from 'react-dnd'
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined
@@ -35,6 +37,8 @@ interface IProps {
 
 let LAST_UP_SETTING = false
 
+export const TRIGGERED_ACTION_ENTRY_DRAG_TYPE = 'TriggeredActionEntry'
+
 export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEntry(
 	props: IProps
 ): React.ReactElement | null {
@@ -43,6 +47,76 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 	const { t } = useTranslation()
 	const [selectedTrigger, setSelectedTrigger] = useState(-1)
 	const [selectedAction, setSelectedAction] = useState(-1)
+
+	const [{ isDragging }, drag, dragPreview] = useDrag({
+		item: { id: triggeredAction._id, type: TRIGGERED_ACTION_ENTRY_DRAG_TYPE },
+		// The collect function utilizes a "monitor" instance (see the Overview for what this is)
+		// to pull important pieces of state from the DnD system.
+		collect: (monitor) => ({
+			isDragging: monitor.isDragging(),
+		}),
+		end: (_, monitor) => {
+			if (monitor.didDrop()) {
+				const dropResult = monitor.getDropResult()
+				if (dropResult) {
+					let pairRank =
+						TriggeredActions.findOne(
+							{
+								_rank: {
+									$lt: dropResult.overRank,
+								},
+							},
+							{
+								sort: {
+									_rank: -1,
+								},
+							}
+						)?._rank ?? -1000
+					if (pairRank === triggeredAction._rank) {
+						pairRank =
+							TriggeredActions.findOne(
+								{
+									_rank: {
+										$gt: dropResult.overRank,
+									},
+								},
+								{
+									sort: {
+										_rank: 1,
+									},
+								}
+							)?._rank ?? dropResult.overRank + 1000
+					}
+					const newRank = (pairRank + dropResult.overRank) / 2
+					TriggeredActions.update(triggeredAction._id, {
+						$set: {
+							_rank: newRank,
+							showStyleBaseId: dropResult.overShowStyleBaseId,
+						},
+					})
+				}
+			}
+		},
+	})
+
+	const [{ isOver }, drop] = useDrop({
+		// The type (or types) to accept - strings or symbols
+		accept: TRIGGERED_ACTION_ENTRY_DRAG_TYPE,
+		// Props to collect
+		collect: (monitor) => ({
+			isOver: monitor.isOver(),
+			canDrop: monitor.canDrop(),
+		}),
+		drop: (item) => {
+			if (item.type === TRIGGERED_ACTION_ENTRY_DRAG_TYPE) {
+				return {
+					overId: triggeredAction._id,
+					overRank: triggeredAction._rank,
+					overShowStyleBaseId: triggeredAction.showStyleBaseId,
+				}
+			}
+		},
+	})
 
 	const previewItems = useTracker(
 		() => {
@@ -161,8 +235,14 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 		<div
 			className={classNames('triggered-action-entry selectable', {
 				'selectable-selected': selected,
+				'drag-over': isOver,
+				dragged: isDragging,
 			})}
+			ref={(el) => (dragPreview(el), drop(el))}
 		>
+			<div className="triggered-action-entry__drag-handle" ref={(el) => !selected && drag(el)}>
+				{!selected && iconDragHandle()}
+			</div>
 			<div className="triggered-action-entry__triggers">
 				{triggeredAction.triggers.map((trigger, index) => (
 					<TriggerEditor

@@ -19,12 +19,13 @@ import { SystemWriteAccess } from '../security/system'
 
 export function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,
-	base?: Partial<Pick<DBTriggeredActions, 'triggers' | 'actions' | 'name'>>
+	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
 ) {
 	const id: TriggeredActionId = getRandomId()
 	TriggeredActions.insert(
 		literal<TriggeredActionsObj>({
 			_id: id,
+			_rank: base?._rank ?? 0,
 			name: base?.name,
 			showStyleBaseId,
 			_rundownVersionHash: '',
@@ -122,7 +123,7 @@ PickerGET.route('/actionTriggers/download/:showStyleBaseId?', (params, req: Inco
 function apiCreateTriggeredActions(
 	context: MethodContext,
 	showStyleBaseId: ShowStyleBaseId | null,
-	base?: Partial<Pick<DBTriggeredActions, 'triggers' | 'actions' | 'name'>>
+	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
 ) {
 	check(showStyleBaseId, Match.Maybe(String))
 	check(base, Match.Maybe(Object))
@@ -150,7 +151,7 @@ function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId
 class ServerTriggeredActionsAPI extends MethodContextAPI implements NewTriggeredActionsAPI {
 	async createTriggeredActions(
 		showStyleBaseId: ShowStyleBaseId | null,
-		base?: Partial<Pick<DBTriggeredActions, 'triggers' | 'actions' | 'name'>>
+		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
 	) {
 		return makePromise(() => apiCreateTriggeredActions(this, showStyleBaseId, base))
 	}

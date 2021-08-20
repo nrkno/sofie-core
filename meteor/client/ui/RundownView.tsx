@@ -1369,6 +1369,7 @@ interface ITrackedProps {
 	rundownPlaylistId: RundownPlaylistId
 	rundowns: Rundown[]
 	playlist?: RundownPlaylist
+	currentRundown?: Rundown
 	matchedSegments: MatchedSegment[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio?: Studio
@@ -1404,11 +1405,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let studio: Studio | undefined
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
+	let currentRundown: Rundown | undefined = undefined
 
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
 		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
+		const somePartInstance = currentPartInstance || nextPartInstance
+		if (somePartInstance) {
+			currentRundown = rundowns.find((rundown) => rundown._id === somePartInstance?.rundownId)
+		}
 	}
 
 	const params = queryStringParse(location.search)
@@ -1427,6 +1433,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	return {
 		rundownPlaylistId: playlistId,
 		rundowns,
+		currentRundown,
 		matchedSegments: playlist
 			? playlist
 					.getRundownsAndSegments({
@@ -2577,6 +2584,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													<TriggersHandler
 														rundownPlaylistId={this.props.rundownPlaylistId}
 														showStyleBaseId={this.props.showStyleBase._id}
+														currentRundownId={this.props.currentRundown?._id || null}
 														currentPartId={this.props.currentPartInstance?.part._id || null}
 														nextPartId={this.props.nextPartInstance?.part._id || null}
 														currentSegmentPartIds={this.props.currentSegmentPartIds}

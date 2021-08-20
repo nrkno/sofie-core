@@ -25,6 +25,7 @@ import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { FindOptions, MongoSelector } from '../../typings/meteor'
+import { RundownId } from '../../collections/Rundowns'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
@@ -478,6 +479,7 @@ export function compileAdLibFilter(
 	showStyleBase: ShowStyleBase
 ): (
 	rundownPlaylistId: RundownPlaylistId,
+	currentRundownId: RundownId | null,
 	currentSegmentPartIds: PartId[],
 	nextSegmentPartIds: PartId[],
 	currentPartId: PartId | null,
@@ -492,6 +494,7 @@ export function compileAdLibFilter(
 
 	return (
 		rundownPlaylistId: RundownPlaylistId,
+		currentRundownId: RundownId | null,
 		currentSegmentPartIds: PartId[],
 		nextSegmentPartIds: PartId[],
 		currentPartId: PartId | null,
@@ -557,6 +560,9 @@ export function compileAdLibFilter(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
+							...{
+								rundownId: currentRundownId,
+							},
 						} as Mongo.QueryWithModifiers<RundownBaselineAdLibItem>,
 						{
 							...adLibPieceTypeFilter.options,
@@ -571,6 +577,9 @@ export function compileAdLibFilter(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
+							...{
+								rundownId: currentRundownId,
+							},
 						} as Mongo.QueryWithModifiers<AdLibPiece>,
 						{
 							...adLibPieceTypeFilter.options,
@@ -598,11 +607,21 @@ export function compileAdLibFilter(
 			}
 
 			if (!skip) {
-				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true)
+				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true) {
+					console.log({
+						...adLibActionTypeFilter.selector,
+						...currentNextOverride,
+						...{
+							rundownId: currentRundownId,
+						},
+					})
 					rundownBaselineAdLibActions = RundownBaselineAdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
+							...{
+								rundownId: currentRundownId,
+							},
 						} as Mongo.QueryWithModifiers<RundownBaselineAdLibAction>,
 						{
 							...adLibActionTypeFilter.options,
@@ -613,11 +632,15 @@ export function compileAdLibFilter(
 							},
 						}
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
+				}
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
 					adLibActions = AdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
+							...{
+								rundownId: currentRundownId,
+							},
 						} as Mongo.QueryWithModifiers<AdLibAction>,
 						{
 							...adLibActionTypeFilter.options,

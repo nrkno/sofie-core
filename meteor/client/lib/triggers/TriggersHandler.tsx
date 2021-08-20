@@ -30,6 +30,7 @@ type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
 interface IProps {
 	rundownPlaylistId: RundownPlaylistId
+	currentRundownId: RundownId | null
 	showStyleBaseId: ShowStyleBaseId
 	currentPartId: PartId | null
 	nextPartId: PartId | null
@@ -125,6 +126,7 @@ function getCurrentContext(): ActionContext | null {
 type MountedAdLibTriggerId = ProtectedString<'mountedAdLibTriggerId'>
 export interface MountedAdLibTrigger {
 	_id: MountedAdLibTriggerId
+	_rank: number
 	triggeredActionId: TriggeredActionId
 	type: IWrappedAdLib['type']
 	targetId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | ISourceLayer['_id']
@@ -137,6 +139,7 @@ export const MountedAdLibTriggers = new Mongo.Collection<MountedAdLibTrigger>(nu
 type MountedGenericTriggerId = ProtectedString<'mountedGenericTriggerId'>
 export interface MountedGenericTrigger {
 	_id: MountedGenericTriggerId
+	_rank: number
 	triggeredActionId: TriggeredActionId
 	name: string | ITranslatableMessage
 }
@@ -241,10 +244,19 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 
 	useEffect(() => {
 		Tracker.nonreactive(() => {
-			const playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
+			const playlist = RundownPlaylists.findOne(props.rundownPlaylistId, {
+				fields: {
+					_id: 1,
+					name: 1,
+					activationId: 1,
+					nextPartInstanceId: 1,
+					currentPartInstanceId: 1,
+				},
+			})
 			if (playlist) {
 				setRundownPlaylistContext({
 					rundownPlaylist: playlist,
+					currentRundownId: props.currentRundownId,
 					currentPartId: props.currentPartId,
 					nextPartId: props.nextPartId,
 					currentSegmentPartIds: props.currentSegmentPartIds,
@@ -254,6 +266,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		})
 	}, [
 		props.rundownPlaylistId,
+		props.currentRundownId,
 		props.currentPartId,
 		props.currentSegmentPartIds,
 		props.nextPartId,
@@ -289,16 +302,24 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	useSubscriptions(props.rundownPlaylistId, rundownIds, props.showStyleBaseId)
 
 	const triggeredActions = useTracker(() => {
-		return TriggeredActions.find({
-			$or: [
-				{
-					showStyleBaseId: props.showStyleBaseId,
+		return TriggeredActions.find(
+			{
+				$or: [
+					{
+						showStyleBaseId: props.showStyleBaseId,
+					},
+					{
+						showStyleBaseId: null,
+					},
+				],
+			},
+			{
+				sort: {
+					showStyleBaseId: 1,
+					_rank: 1,
 				},
-				{
-					showStyleBaseId: null,
-				},
-			],
-		}).fetch()
+			}
+		).fetch()
 	}, [props.showStyleBaseId])
 
 	useEffect(() => {
@@ -325,6 +346,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				MountedGenericTriggers.upsert(genericTriggerId, {
 					$set: {
 						_id: genericTriggerId,
+						_rank: pair._rank,
 						triggeredActionId: pair._id,
 						name: pair.name,
 					},
@@ -349,6 +371,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 						MountedAdLibTriggers.upsert(triggerId, {
 							$set: {
 								_id: triggerId,
+								_rank: pair._rank,
 								targetId: adLib._id,
 								type: adLib.type,
 								triggeredActionId: pair._id,

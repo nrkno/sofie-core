@@ -60,6 +60,9 @@ export const ActionAdLibHotkeyPreview: React.FC<IProps> = function AdLibActionHo
 		fields: {
 			keys: 1,
 		},
+		sort: {
+			_rank: 1,
+		},
 	}
 
 	const allKeys = useTracker(() => {

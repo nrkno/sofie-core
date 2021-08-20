@@ -11,7 +11,7 @@ import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { MeteorCall } from '../methods'
-import { PartInstances } from '../../collections/PartInstances'
+import { PartInstance, PartInstances } from '../../collections/PartInstances'
 import { PartId, Parts } from '../../collections/Parts'
 import { RundownPlaylist, RundownPlaylistId } from '../../collections/RundownPlaylists'
 import { ShowStyleBase } from '../../collections/ShowStyleBases'
@@ -28,6 +28,7 @@ import {
 	IWrappedAdLib,
 } from './actionFilterChainCompilers'
 import { ClientAPI } from '../client'
+import { RundownId, Rundowns } from '../../collections/Rundowns'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
@@ -37,6 +38,7 @@ type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T
 export type ActionContext = XOR<
 	{
 		rundownPlaylist: RundownPlaylist
+		currentRundownId: RundownId | null
 		currentSegmentPartIds: PartId[]
 		nextSegmentPartIds: PartId[]
 		currentPartId: PartId | null
@@ -70,6 +72,7 @@ export function isPreviewableAction(action: ExecutableAction): action is Preview
 interface InternalActionContext {
 	rundownPlaylistId: RundownPlaylistId
 	rundownPlaylist: RundownPlaylist
+	currentRundownId: RundownId | null
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]
 	currentPartId: PartId | null
@@ -84,6 +87,7 @@ function createRundownPlaylistContext(
 		return {
 			rundownPlaylistId: context.rundownPlaylist._id,
 			rundownPlaylist: context.rundownPlaylist,
+			currentRundownId: context.currentRundownId,
 			currentPartId: context.currentPartId,
 			nextPartId: context.nextPartId,
 			currentSegmentPartIds: context.currentSegmentPartIds,
@@ -98,11 +102,13 @@ function createRundownPlaylistContext(
 		if (playlist) {
 			let currentPartId: PartId | null = null,
 				nextPartId: PartId | null = null,
+				currentPartInstance: PartInstance | null = null,
 				currentSegmentPartIds: PartId[] = [],
 				nextSegmentPartIds: PartId[] = []
 
 			if (playlist.currentPartInstanceId) {
-				const currentPart = PartInstances.findOne(playlist.currentPartInstanceId)?.part ?? null
+				currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId) ?? null
+				const currentPart = currentPartInstance?.part ?? null
 				if (currentPart) {
 					currentPartId = currentPart._id
 					currentSegmentPartIds = Parts.find({
@@ -123,6 +129,19 @@ function createRundownPlaylistContext(
 			return {
 				rundownPlaylistId: playlist?._id,
 				rundownPlaylist: playlist,
+				currentRundownId:
+					currentPartInstance?.rundownId ??
+					Rundowns.findOne(
+						{
+							playlistId: playlist._id,
+						},
+						{
+							sort: {
+								_rank: 1,
+							},
+						}
+					)?._id ??
+					null,
 				currentPartId,
 				currentSegmentPartIds,
 				nextPartId,
@@ -146,6 +165,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 				try {
 					return compiledAdLibFilter(
 						innerCtx.rundownPlaylistId,
+						innerCtx.currentRundownId,
 						innerCtx.currentSegmentPartIds || [],
 						innerCtx.nextSegmentPartIds || [],
 						innerCtx.currentPartId || null,
@@ -172,6 +192,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 			Tracker.nonreactive(() =>
 				compiledAdLibFilter(
 					innerCtx.rundownPlaylistId,
+					innerCtx.currentRundownId,
 					innerCtx.currentSegmentPartIds || [],
 					innerCtx.nextSegmentPartIds || [],
 					innerCtx.currentPartId || null,
