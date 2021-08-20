@@ -43,6 +43,7 @@ $triggered-action-color: #146985;
 
 	.triggered-action-entry__drag-handle {
 		min-width: 10px;
+		max-width: 10px;
 		display: flex;
 		cursor: grab;
 	}
