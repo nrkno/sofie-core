@@ -607,14 +607,7 @@ export function compileAdLibFilter(
 			}
 
 			if (!skip) {
-				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true) {
-					console.log({
-						...adLibActionTypeFilter.selector,
-						...currentNextOverride,
-						...{
-							rundownId: currentRundownId,
-						},
-					})
+				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true)
 					rundownBaselineAdLibActions = RundownBaselineAdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
@@ -632,7 +625,6 @@ export function compileAdLibFilter(
 							},
 						}
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
-				}
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
 					adLibActions = AdLibActions.find(
 						{
