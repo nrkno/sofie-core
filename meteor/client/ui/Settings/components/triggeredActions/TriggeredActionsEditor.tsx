@@ -19,6 +19,11 @@ import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
 import { SorensenContext } from '../../../../lib/SorensenContext'
 import Tooltip from 'rc-tooltip'
 import { useDrop } from 'react-dnd'
+import { TriggerType } from '@sofie-automation/blueprints-integration'
+import { useEffect } from 'react'
+import { useContext } from 'react'
+import { keyLabelsToCodes } from '../../../../lib/triggers/codesToKeyLabels'
+import classNames from 'classnames'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null
@@ -36,8 +41,11 @@ interface IProps {
 export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredActionsEditor(
 	props: IProps
 ): React.ReactElement | null {
+	const sorensen = useContext(SorensenContext)
 	const [systemWideCollapsed, setSystemWideCollapsed] = useState(true)
 	const [selectedTriggeredActionId, setSelectedTriggeredActionId] = useState<null | TriggeredActionId>(null)
+	const [triggerFilter, setTriggerFilter] = useState('')
+	const [parsedTriggerFilter, setParsedTriggerFilter] = useState(triggerFilter)
 
 	const [{ isOver: _isOver }, drop] = useDrop({
 		// The type (or types) to accept - strings or symbols
@@ -80,33 +88,71 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		showStyleBaseId,
 	})
 
+	useEffect(() => {
+		const debounce = setTimeout(() => {
+			if (sorensen) {
+				setParsedTriggerFilter(keyLabelsToCodes(triggerFilter, sorensen).replace(/\+/, '\\+'))
+			} else {
+				setParsedTriggerFilter(triggerFilter.replace(/\+/, '\\+'))
+			}
+		}, 150)
+
+		return () => {
+			clearTimeout(debounce)
+		}
+	}, [triggerFilter])
+
 	const systemTriggeredActions = useTracker(
 		() =>
 			TriggeredActions.find(
-				{
-					showStyleBaseId: null,
-				},
+				Object.assign(
+					{
+						showStyleBaseId: null,
+					},
+					parsedTriggerFilter
+						? {
+								triggers: {
+									$elemMatch: {
+										type: TriggerType.hotkey,
+										keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
+									},
+								},
+						  }
+						: undefined
+				),
 				{
 					sort: {
 						_rank: 1,
 					},
 				}
 			).fetch(),
-		[]
+		[parsedTriggerFilter]
 	)
 	const showTriggeredActions = useTracker(
 		() =>
 			TriggeredActions.find(
-				{
-					showStyleBaseId: showStyleBaseId,
-				},
+				Object.assign(
+					{
+						showStyleBaseId: showStyleBaseId,
+					},
+					parsedTriggerFilter
+						? {
+								triggers: {
+									$elemMatch: {
+										type: TriggerType.hotkey,
+										keys: { $regex: `${parsedTriggerFilter}`, $options: 'i' },
+									},
+								},
+						  }
+						: undefined
+				),
 				{
 					sort: {
 						_rank: 1,
 					},
 				}
 			).fetch(),
-		[showStyleBaseId]
+		[showStyleBaseId, parsedTriggerFilter]
 	)
 
 	useSubscription(PubSub.rundownPlaylists, {})
@@ -291,99 +337,106 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 	return (
 		<div>
-			<SorensenContext.Consumer>
-				{(sorensen) => (
-					<>
-						{sorensen && previewContext.rundownPlaylist && showStyleBaseId && (
-							<ErrorBoundary>
-								<TriggersHandler
-									sorensen={sorensen}
-									simulateTriggerBinding={true}
-									showStyleBaseId={showStyleBaseId}
-									currentRundownId={previewContext.currentRundownId}
-									rundownPlaylistId={previewContext.rundownPlaylist._id}
-									currentPartId={previewContext.currentPartId}
-									nextPartId={previewContext.nextPartId}
-									currentSegmentPartIds={previewContext.currentSegmentPartIds}
-									nextSegmentPartIds={previewContext.nextSegmentPartIds}
-								/>
-							</ErrorBoundary>
-						)}
-						<h2 className="mhn">{t('Action Triggers')}</h2>
-						<div className="mod mhn">
-							{showTriggeredActions?.map((triggeredAction) => (
-								<TriggeredActionEntry
-									key={unprotectString(triggeredAction._id)}
-									triggeredAction={triggeredAction}
-									selected={selectedTriggeredActionId === triggeredAction._id}
-									onEdit={() => onEditEntry(triggeredAction._id)}
-									onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
-									onDuplicate={() => onDuplicateEntry(triggeredAction._id)}
-									showStyleBase={showStyleBase}
-									previewContext={rundownPlaylist ? previewContext : null}
-									onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
-								/>
-							))}
-						</div>
-						{showStyleBaseId !== null ? (
-							<>
-								<div className="mod mhn">
-									{(systemTriggeredActions?.length ?? 0) > 0 ? (
-										<h3
-											className="mhn mvs clickable disable-select"
-											onClick={() => setSystemWideCollapsed(!systemWideCollapsed)}
-											role="button"
-											tabIndex={0}
-											ref={drop}
-										>
-											<span className="icon action-item">
-												<FontAwesomeIcon icon={systemWideCollapsed ? faCaretRight : faCaretDown} />
-											</span>
-											{t('System-wide')}
-										</h3>
-									) : null}
-									{!systemWideCollapsed
-										? systemTriggeredActions?.map((triggeredAction) => (
-												<TriggeredActionEntry
-													key={unprotectString(triggeredAction._id)}
-													triggeredAction={triggeredAction}
-													selected={selectedTriggeredActionId === triggeredAction._id}
-													onEdit={() => onEditEntry(triggeredAction._id)}
-													onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
-													onDuplicate={() => onDuplicateEntry(triggeredAction._id)}
-													showStyleBase={showStyleBase}
-													previewContext={rundownPlaylist ? previewContext : null}
-													onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
-												/>
-										  ))
-										: null}
-								</div>
-							</>
-						) : null}
-						<div className="mod mhs">
-							<button className="btn btn-primary" onClick={onNewTriggeredAction}>
-								<FontAwesomeIcon icon={faPlus} />
-							</button>
-							<Tooltip overlay={t('Upload stored Action Triggers')} placement="top">
-								<span className="inline-block">
-									<UploadButton
-										className="btn btn-secondary mls"
-										onChange={onUploadActions}
-										accept="application/json,.json"
-									>
-										<FontAwesomeIcon icon={faUpload} />
-									</UploadButton>
+			{sorensen && previewContext.rundownPlaylist && showStyleBaseId && (
+				<ErrorBoundary>
+					<TriggersHandler
+						sorensen={sorensen}
+						simulateTriggerBinding={true}
+						showStyleBaseId={showStyleBaseId}
+						currentRundownId={previewContext.currentRundownId}
+						rundownPlaylistId={previewContext.rundownPlaylist._id}
+						currentPartId={previewContext.currentPartId}
+						nextPartId={previewContext.nextPartId}
+						currentSegmentPartIds={previewContext.currentSegmentPartIds}
+						nextSegmentPartIds={previewContext.nextSegmentPartIds}
+					/>
+				</ErrorBoundary>
+			)}
+			<h2 className="mhn">{t('Action Triggers')}</h2>
+			<div className="mod mhn mvn">
+				<input
+					className="form-control input text-input input-m"
+					placeholder={t('Find trigger...')}
+					value={triggerFilter}
+					onChange={(e) => setTriggerFilter(e.target.value)}
+				/>
+			</div>
+			{showTriggeredActions?.length === 0 && systemTriggeredActions?.length === 0 ? (
+				parsedTriggerFilter ? (
+					<p className="mod mhn subtle">{t('No matching Action Trigger.')}</p>
+				) : (
+					<p className="mod mhn subtle">{t('No Action Triggers set up.')}</p>
+				)
+			) : null}
+			<div className={classNames('mod mhn', parsedTriggerFilter ? 'mbn' : undefined)}>
+				{showTriggeredActions?.map((triggeredAction) => (
+					<TriggeredActionEntry
+						key={unprotectString(triggeredAction._id)}
+						triggeredAction={triggeredAction}
+						selected={selectedTriggeredActionId === triggeredAction._id}
+						locked={!!parsedTriggerFilter}
+						onEdit={() => onEditEntry(triggeredAction._id)}
+						onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
+						onDuplicate={() => onDuplicateEntry(triggeredAction._id)}
+						showStyleBase={showStyleBase}
+						previewContext={rundownPlaylist ? previewContext : null}
+						onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
+					/>
+				))}
+			</div>
+			{showStyleBaseId !== null ? (
+				<>
+					<div className={classNames('mod mhn', parsedTriggerFilter ? 'mtn' : undefined)}>
+						{(systemTriggeredActions?.length ?? 0) > 0 && !parsedTriggerFilter ? (
+							<h3
+								className="mhn mvs clickable disable-select"
+								onClick={() => setSystemWideCollapsed(!systemWideCollapsed)}
+								role="button"
+								tabIndex={0}
+								ref={drop}
+							>
+								<span className="icon action-item">
+									<FontAwesomeIcon icon={systemWideCollapsed ? faCaretRight : faCaretDown} />
 								</span>
-							</Tooltip>
-							<Tooltip overlay={t('Download Action Triggers')} placement="top">
-								<button className="btn btn-secondary mls" onClick={onDownloadActions}>
-									<FontAwesomeIcon icon={faDownload} />
-								</button>
-							</Tooltip>
-						</div>
-					</>
-				)}
-			</SorensenContext.Consumer>
+								{t('System-wide')}
+							</h3>
+						) : null}
+						{!systemWideCollapsed || parsedTriggerFilter
+							? systemTriggeredActions?.map((triggeredAction) => (
+									<TriggeredActionEntry
+										key={unprotectString(triggeredAction._id)}
+										triggeredAction={triggeredAction}
+										selected={selectedTriggeredActionId === triggeredAction._id}
+										locked={!!parsedTriggerFilter}
+										onEdit={() => onEditEntry(triggeredAction._id)}
+										onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
+										onDuplicate={() => onDuplicateEntry(triggeredAction._id)}
+										showStyleBase={showStyleBase}
+										previewContext={rundownPlaylist ? previewContext : null}
+										onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
+									/>
+							  ))
+							: null}
+					</div>
+				</>
+			) : null}
+			<div className="mod mhs">
+				<button className="btn btn-primary" onClick={onNewTriggeredAction}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+				<Tooltip overlay={t('Upload stored Action Triggers')} placement="top">
+					<span className="inline-block">
+						<UploadButton className="btn btn-secondary mls" onChange={onUploadActions} accept="application/json,.json">
+							<FontAwesomeIcon icon={faUpload} />
+						</UploadButton>
+					</span>
+				</Tooltip>
+				<Tooltip overlay={t('Download Action Triggers')} placement="top">
+					<button className="btn btn-secondary mls" onClick={onDownloadActions}>
+						<FontAwesomeIcon icon={faDownload} />
+					</button>
+				</Tooltip>
+			</div>
 		</div>
 	)
 }

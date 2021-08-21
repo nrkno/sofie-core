@@ -46,6 +46,10 @@ $triggered-action-color: #146985;
 		max-width: 10px;
 		display: flex;
 		cursor: grab;
+
+		&.locked {
+			cursor: default;
+		}
 	}
 
 	.triggered-action-entry__triggers {

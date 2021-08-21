@@ -29,6 +29,7 @@ interface IProps {
 	triggeredAction: TriggeredActionsObj
 	selected?: boolean
 	previewContext: PreviewContext | null
+	locked?: boolean
 	onEdit: (e) => void
 	onRemove: (e) => void
 	onDuplicate: (e) => void
@@ -42,7 +43,7 @@ export const TRIGGERED_ACTION_ENTRY_DRAG_TYPE = 'TriggeredActionEntry'
 export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEntry(
 	props: IProps
 ): React.ReactElement | null {
-	const { showStyleBase, triggeredAction, selected, previewContext, onEdit, onRemove, onDuplicate } = props
+	const { showStyleBase, triggeredAction, selected, locked, previewContext, onEdit, onRemove, onDuplicate } = props
 
 	const { t } = useTranslation()
 	const [selectedTrigger, setSelectedTrigger] = useState(-1)
@@ -240,9 +241,13 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 			})}
 			ref={(el) => (dragPreview(el), drop(el))}
 		>
-			<div className="triggered-action-entry__drag-handle" ref={(el) => !selected && drag(el)}>
-				{!selected && iconDragHandle()}
-			</div>
+			{!selected && !locked ? (
+				<div className="triggered-action-entry__drag-handle" ref={drag}>
+					{!selected && iconDragHandle()}
+				</div>
+			) : (
+				<div className="triggered-action-entry__drag-handle locked"></div>
+			)}
 			<div className="triggered-action-entry__triggers">
 				{triggeredAction.triggers.map((trigger, index) => (
 					<TriggerEditor
