@@ -24,6 +24,9 @@ import { useEffect } from 'react'
 import { useContext } from 'react'
 import { keyLabelsToCodes } from '../../../../lib/triggers/codesToKeyLabels'
 import classNames from 'classnames'
+import { fetchFrom } from '../../../../lib/lib'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
+import { Meteor } from 'meteor/meteor'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null
@@ -42,6 +45,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	props: IProps
 ): React.ReactElement | null {
 	const sorensen = useContext(SorensenContext)
+	const [uploadFileKey, setUploadFileKey] = useState(Date.now())
 	const [systemWideCollapsed, setSystemWideCollapsed] = useState(true)
 	const [selectedTriggeredActionId, setSelectedTriggeredActionId] = useState<null | TriggeredActionId>(null)
 	const [triggerFilter, setTriggerFilter] = useState('')
@@ -333,7 +337,55 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		window.location.replace(`/actionTriggers/download/${showStyleBaseId ?? ''}`)
 	}
 
-	function onUploadActions() {}
+	function onUploadActions(e: React.ChangeEvent<HTMLInputElement>) {
+		const { t } = this.props
+
+		const file = e.target.files && e.target.files[0]
+		if (!file) {
+			return
+		}
+
+		const reader = new FileReader()
+		reader.onload = (e2) => {
+			// On file upload
+
+			setUploadFileKey(Date.now())
+
+			const uploadFileContents = (e2.target as any).result
+
+			if (uploadFileContents) {
+				fetchFrom(`/actionTriggers/upload/${showStyleBaseId ?? ''}`, {
+					method: 'POST',
+					body: uploadFileContents,
+					headers: {
+						'content-type': 'text/javascript',
+						authorization: 'id ' + Meteor.userId(),
+					},
+				})
+					.then(() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								t('Triggered Actions uploaded successfully.'),
+								'TriggeredActions'
+							)
+						)
+					})
+					.catch((err) => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.WARNING,
+								t('Triggered Actions failed to upload: {{errorMessage}}', { errorMessage: err + '' }),
+								'TriggeredActions'
+							)
+						)
+					})
+			}
+		}
+		reader.readAsText(file)
+	}
 
 	return (
 		<div>
@@ -356,7 +408,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			<div className="mod mhn mvn">
 				<input
 					className="form-control input text-input input-m"
-					placeholder={t('Find trigger...')}
+					placeholder={t('Find Trigger...')}
 					value={triggerFilter}
 					onChange={(e) => setTriggerFilter(e.target.value)}
 				/>
@@ -426,7 +478,12 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				</button>
 				<Tooltip overlay={t('Upload stored Action Triggers')} placement="top">
 					<span className="inline-block">
-						<UploadButton className="btn btn-secondary mls" onChange={onUploadActions} accept="application/json,.json">
+						<UploadButton
+							className="btn btn-secondary mls"
+							key={uploadFileKey}
+							onChange={onUploadActions}
+							accept="application/json,.json"
+						>
 							<FontAwesomeIcon icon={faUpload} />
 						</UploadButton>
 					</span>
