@@ -318,6 +318,17 @@ function createRewindSegmentsAction(_filterChain: IGUIContextFilterLink[]): Exec
 	}
 }
 
+function createRundownPlaylistSoftTakeAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
+	return {
+		action: PlayoutActions.take,
+		execute: (t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.TAKE, {
+				context: e,
+			})
+		},
+	}
+}
+
 function createRundownPlaylistSoftActivateAction(
 	_filterChain: IGUIContextFilterLink[],
 	rehearsal: boolean
@@ -405,9 +416,13 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				MeteorCall.userAction.deactivate(e, ctx.rundownPlaylistId)
 			)
 		case PlayoutActions.take:
-			return createUserActionWithCtx(action, UserAction.TAKE, async (e, ctx) =>
-				MeteorCall.userAction.take(e, ctx.rundownPlaylistId)
-			)
+			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+				return createRundownPlaylistSoftTakeAction(action.filterChain as IGUIContextFilterLink[])
+			} else {
+				return createUserActionWithCtx(action, UserAction.TAKE, async (e, ctx) =>
+					MeteorCall.userAction.take(e, ctx.rundownPlaylistId)
+				)
+			}
 		case PlayoutActions.hold:
 			return createUserActionWithCtx(action, UserAction.ACTIVATE_HOLD, async (e, ctx) =>
 				MeteorCall.userAction.activateHold(e, ctx.rundownPlaylistId, !!action.undo)

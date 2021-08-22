@@ -40,13 +40,7 @@ import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
-import {
-	scrollToPart,
-	scrollToPosition,
-	scrollToSegment,
-	maintainFocusOnPartInstance,
-	scrollToPartInstance,
-} from '../lib/viewPort'
+import { scrollToPosition, scrollToSegment, maintainFocusOnPartInstance, scrollToPartInstance } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
@@ -622,6 +616,7 @@ const RundownHeader = withTranslation()(
 
 			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
+			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
 
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
@@ -629,6 +624,7 @@ const RundownHeader = withTranslation()(
 		componentWillUnmount() {
 			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
+			RundownViewEventBus.off(RundownViewEvents.TAKE, this.eventTake)
 		}
 		eventActivate = (e: ActivateRundownPlaylistEvent) => {
 			if (e.rehearsal) {
@@ -639,6 +635,9 @@ const RundownHeader = withTranslation()(
 		}
 		eventResync = (e) => {
 			this.reloadRundownPlaylist(e.context)
+		}
+		eventTake = (e) => {
+			this.take(e)
 		}
 
 		keyTake = (e: KeyboardEvent) => {
@@ -748,27 +747,6 @@ const RundownHeader = withTranslation()(
 					})
 				} else {
 					doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
-				}
-			}
-		}
-
-		moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
-			const { t } = this.props
-			if (this.props.studioMode) {
-				if (this.props.playlist.activationId) {
-					doUserAction(
-						t,
-						e,
-						UserAction.MOVE_NEXT,
-						(e) => MeteorCall.userAction.moveNext(e, this.props.playlist._id, horizonalDelta, verticalDelta),
-						(err, partId) => {
-							if (!err && partId) {
-								scrollToPart(partId).catch((error) => {
-									if (!error.toString().match(/another scroll/)) console.warn(error)
-								})
-							}
-						}
-					)
 				}
 			}
 		}
@@ -1861,7 +1839,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.props.playlist &&
 					prevProps.playlist &&
 					prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
-					this.state.manualSetAsNext
+					prevProps.playlist.nextPartManual
 				) {
 					// reset followLiveSegments after a manual set as next
 					this.setState({
@@ -1903,6 +1881,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.state.followLiveSegments
 				) {
 					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.warn(error)
+					})
+				} else if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					this.props.playlist.nextPartInstanceId !== prevProps.playlist.nextPartInstanceId &&
+					this.props.playlist.currentPartInstanceId === prevProps.playlist.currentPartInstanceId &&
+					this.props.playlist.nextPartInstanceId &&
+					this.props.playlist.nextPartManual
+				) {
+					scrollToPartInstance(this.props.playlist.nextPartInstanceId, false).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
 				} else if (

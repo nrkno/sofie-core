@@ -13,6 +13,7 @@ import { Bucket } from '../../../lib/collections/Buckets'
 export enum RundownViewEvents {
 	ACTIVATE_RUNDOWN_PLAYLIST = 'activateRundownPlaylist',
 	RESYNC_RUNDOWN_PLAYLIST = 'resyncRundownPlaylist',
+	TAKE = 'take',
 	REWIND_SEGMENTS = 'rundownRewindSegments',
 	GO_TO_LIVE_SEGMENT = 'goToLiveSegment',
 	GO_TO_TOP = 'goToTop',
@@ -92,6 +93,7 @@ export interface BucketEvent extends IEventContext {
 class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, e: ActivateRundownPlaylistEvent): boolean
 	emit(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, e: BaseEvent): boolean
+	emit(event: RundownViewEvents.TAKE, e: BaseEvent): boolean
 	emit(event: RundownViewEvents.REWIND_SEGMENTS): boolean
 	emit(event: RundownViewEvents.GO_TO_LIVE_SEGMENT): boolean
 	emit(event: RundownViewEvents.GO_TO_TOP): boolean
@@ -116,6 +118,7 @@ class RundownViewEventBus0 extends EventEmitter {
 
 	on(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, listener: (e: ActivateRundownPlaylistEvent) => void): this
 	on(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, listener: (e: BaseEvent) => void): this
+	on(event: RundownViewEvents.TAKE, listener: (e: BaseEvent) => void): this
 	on(event: RundownViewEvents.REWIND_SEGMENTS, listener: () => void): this
 	on(event: RundownViewEvents.GO_TO_LIVE_SEGMENT, listener: () => void): this
 	on(event: RundownViewEvents.GO_TO_TOP, listener: () => void): this
