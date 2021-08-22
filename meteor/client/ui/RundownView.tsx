@@ -640,13 +640,6 @@ const RundownHeader = withTranslation()(
 			this.take(e)
 		}
 
-		keyTake = (e: KeyboardEvent) => {
-			if (e.key !== 'Enter' || e.location === 3) {
-				// only allow the rightmost enter key
-				if (!isModalShowing()) this.take(e)
-			}
-		}
-
 		handleDisableNextPiece = (err: ClientAPI.ClientResponse<undefined>) => {
 			if (ClientAPI.isClientResponseError(err)) {
 				const { t } = this.props
