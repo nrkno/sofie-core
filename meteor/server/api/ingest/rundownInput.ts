@@ -1475,7 +1475,7 @@ function syncChangesToPartInstances(
 					previousPartInstance: previousPartInstance,
 					playStatus: 'current',
 				})
-			if (nextPartInstance)
+			if (nextPartInstance && !nextPartInstance.part.dynamicallyInsertedAfterPartId)
 				instances.push({
 					existingPartInstance: nextPartInstance,
 					previousPartInstance: currentPartInstance,
@@ -2006,10 +2006,18 @@ export function isUpdateAllowed(
 				) {
 					// If the currently playing part is a queued part and depending on any of the parts that are to be removed:
 					const removedPartIds = partChanges.removed.map((part) => part._id)
-					if (removedPartIds.includes(currentPartInstance.part.dynamicallyInsertedAfterPartId)) {
+					const precedingPartIds: Set<PartId> = new Set()
+					let precedingPartId: PartId | undefined = currentPartInstance.part.dynamicallyInsertedAfterPartId
+					let precedingPart: Part | undefined
+					while (precedingPartId) {
+						precedingPartIds.add(precedingPartId)
+						precedingPart = cache.Parts.findOne(precedingPartId)
+						precedingPartId = precedingPart?.dynamicallyInsertedAfterPartId
+					}
+					if (removedPartIds.filter((partId) => precedingPartIds.has(partId)).length) {
 						// Don't allow removal of a part that has a currently playing queued Part
 						logger.warn(
-							`Not allowing removal of part "${currentPartInstance.part.dynamicallyInsertedAfterPartId}" ("${currentPartInstance.part.externalId}"), because currently playing (queued) part "${currentPartInstance._id}" ("${currentPartInstance.part.externalId}") is after it`
+							`Not allowing removal of part "${precedingPart?._id}" ("${precedingPart?.externalId}"), because currently playing (queued) part "${currentPartInstance._id}" ("${currentPartInstance.part.externalId}") is after it`
 						)
 						allowed = false
 					}
