@@ -294,7 +294,7 @@ body.tv2 {
 		border-radius: 0;
 		box-shadow: unset;
 	}
-	.segment-timeline-wraper--hidden .rundown-view-shelf .rundown-view-shelf__identifier {
+	.segment-timeline-wrapper--hidden .rundown-view-shelf .rundown-view-shelf__identifier {
 		display: block;
 		font-size: 1.4em;
 		font-weight: 400;
@@ -305,8 +305,8 @@ body.tv2 {
 		text-shadow: -1px -1px 0px rgba(0, 0, 0, 0.5), 1px 1px 0px rgba(0, 0, 0, 0.5), 1px -1px 0px rgba(0, 0, 0, 0.5),
 			1px -1px 0px rgba(0, 0, 0, 0.5), 0.5px 0.5px 2px rgba(0, 0, 0, 1);
 	}
-	.segment-timeline-wraper--shelf.segment-timeline-wraper--hidden
-		+ .segment-timeline-wraper--shelf.segment-timeline-wraper--hidden
+	.segment-timeline-wrapper--shelf.segment-timeline-wrapper--hidden
+		+ .segment-timeline-wrapper--shelf.segment-timeline-wrapper--hidden
 		.rundown-view-shelf.dashboard-panel {
 		margin-top: -1.5em;
 	}

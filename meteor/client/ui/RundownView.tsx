@@ -2796,8 +2796,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										<ErrorBoundary key={unprotectString(segment._id)}>
 											<VirtualElement
 												className={ClassNames({
-													'segment-timeline-wraper--hidden': segment.isHidden,
-													'segment-timeline-wraper--shelf': segment.showShelf,
+													'segment-timeline-wrapper--hidden': segment.isHidden,
+													'segment-timeline-wrapper--shelf': segment.showShelf,
 												})}
 												id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 												margin={'100% 0px 100% 0px'}
