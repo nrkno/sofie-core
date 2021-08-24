@@ -1475,7 +1475,7 @@ function syncChangesToPartInstances(
 					previousPartInstance: previousPartInstance,
 					playStatus: 'current',
 				})
-			if (nextPartInstance)
+			if (nextPartInstance && !nextPartInstance.part.dynamicallyInsertedAfterPartId)
 				instances.push({
 					existingPartInstance: nextPartInstance,
 					previousPartInstance: currentPartInstance,
