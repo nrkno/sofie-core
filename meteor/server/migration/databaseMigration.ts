@@ -268,7 +268,6 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 						sourceType: MigrationStepType.SYSTEM,
 						sourceName: 'Blueprint ' + blueprint.name + ' for system',
 						blueprintId: blueprint._id,
-						sourceId: undefined,
 						_dbVersion: parseVersion(blueprint.databaseVersion.system || '0.0.0'),
 						_targetVersion: parseVersion(bp.blueprintVersion),
 						_steps: [],
@@ -713,14 +712,14 @@ function completeMigration(chunks: Array<MigrationChunk>) {
 					`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.system}" to "${chunk._targetVersion}".`
 				)
 				m[`databaseVersion.system`] = chunk._targetVersion
-			} else if (chunk.sourceType === MigrationStepType.STUDIO) {
+			} else if (chunk.sourceType === MigrationStepType.STUDIO && chunk.sourceId !== 'system') {
 				logger.info(
 					`Updating Blueprint "${chunk.sourceName}" version, from "${
 						blueprint.databaseVersion.studio[unprotectString(chunk.sourceId)]
 					}" to "${chunk._targetVersion}".`
 				)
 				m[`databaseVersion.studio.${chunk.sourceId}`] = chunk._targetVersion
-			} else if (chunk.sourceType === MigrationStepType.SHOWSTYLE) {
+			} else if (chunk.sourceType === MigrationStepType.SHOWSTYLE && chunk.sourceId !== 'system') {
 				logger.info(
 					`Updating Blueprint "${chunk.sourceName}" version, from "${
 						blueprint.databaseVersion.showStyle[unprotectString(chunk.sourceId)]
@@ -803,6 +802,8 @@ function getMigrationStudioContext(chunk: MigrationChunk): IMigrationContextStud
 	if (chunk.sourceType !== MigrationStepType.STUDIO)
 		throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected STUDIO`)
 	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing`)
+	if (chunk.sourceId === 'system')
+		throw new Meteor.Error(500, `cunk.sourceId invalid in this context: ${chunk.sourceId}`)
 
 	const studio = Studios.findOne(chunk.sourceId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${chunk.sourceId}" not found`)
@@ -813,6 +814,8 @@ function getMigrationShowStyleContext(chunk: MigrationChunk): IMigrationContextS
 	if (chunk.sourceType !== MigrationStepType.SHOWSTYLE)
 		throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected SHOWSTYLE`)
 	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing`)
+	if (chunk.sourceId === 'system')
+		throw new Meteor.Error(500, `cunk.sourceId invalid in this context: ${chunk.sourceId}`)
 
 	const showStyleBase = ShowStyleBases.findOne(chunk.sourceId)
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${chunk.sourceId}" not found`)
