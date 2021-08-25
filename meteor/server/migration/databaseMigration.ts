@@ -267,6 +267,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 					const chunk: MigrationChunk = {
 						sourceType: MigrationStepType.SYSTEM,
 						sourceName: 'Blueprint ' + blueprint.name + ' for system',
+						sourceId: 'system',
 						blueprintId: blueprint._id,
 						_dbVersion: parseVersion(blueprint.databaseVersion.system || '0.0.0'),
 						_targetVersion: parseVersion(bp.blueprintVersion),

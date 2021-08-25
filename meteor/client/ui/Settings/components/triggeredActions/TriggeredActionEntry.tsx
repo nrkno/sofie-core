@@ -336,7 +336,12 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 							className="input text-input input-l pan"
 							modifiedClassName="bghl"
 							mutateDisplayValue={(val) => (typeof val === 'object' ? undefined : val)}
-							label={typeof triggeredAction.name === 'object' ? t('Multilingual description') : ''}
+							mutateUpdateValue={(val) =>
+								val === '' && typeof triggeredAction.name === 'object' ? triggeredAction.name : val
+							}
+							label={
+								typeof triggeredAction.name === 'object' ? t('Multilingual description, editing will overwrite') : ''
+							}
 						/>
 						<span className="mls text-s dimmed">{t('Optional description of the action')}</span>
 					</label>

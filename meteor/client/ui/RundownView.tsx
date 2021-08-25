@@ -1522,7 +1522,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				usedHotkeys: [
 					// Register additional hotkeys or legend entries
 					{
-						key: 'Esc',
+						key: 'Escape',
 						label: t('Cancel currently pressed hotkey'),
 					},
 					{

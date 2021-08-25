@@ -141,6 +141,7 @@ export interface MountedGenericTrigger {
 	_id: MountedGenericTriggerId
 	_rank: number
 	triggeredActionId: TriggeredActionId
+	keys: string[]
 	name: string | ITranslatableMessage
 }
 
@@ -342,12 +343,14 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			}
 
 			if (pair.name) {
+				const triggers = pair.triggers.filter((trigger) => trigger.type === TriggerType.hotkey)
 				const genericTriggerId = protectString(`${pair._id}`)
 				MountedGenericTriggers.upsert(genericTriggerId, {
 					$set: {
 						_id: genericTriggerId,
 						_rank: pair._rank,
 						triggeredActionId: pair._id,
+						keys: triggers.map((trigger) => trigger.keys),
 						name: pair.name,
 					},
 				})

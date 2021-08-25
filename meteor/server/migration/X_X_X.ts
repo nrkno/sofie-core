@@ -207,6 +207,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 			},
 		],
 		_rank: ++j * 1000,
+		name: t('Reset Rundown'),
 	},
 	{
 		_id: 'core_disable_next_piece',
@@ -228,6 +229,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 			},
 		],
 		_rank: ++j * 1000,
+		name: t('Disable the next element'),
 	},
 	{
 		_id: 'core_disable_next_piece_undo',
@@ -250,6 +252,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 			},
 		],
 		_rank: ++j * 1000,
+		name: t('Undo Disable the next element'),
 	},
 	{
 		_id: 'core_create_snapshot_for_debug',
@@ -271,6 +274,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 			},
 		],
 		_rank: ++j * 1000,
+		name: t('Store Snapshot'),
 	},
 	{
 		_id: 'core_move_next_part',
@@ -294,6 +298,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 			},
 		],
 		_rank: ++j * 1000,
+		name: t('Move Next forwards'),
 	},
 	{
 		_id: 'core_move_next_segment',
@@ -317,6 +322,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 			},
 		],
 		_rank: ++j * 1000,
+		name: t('Move Next to the following segment'),
 	},
 	{
 		_id: 'core_move_previous_part',
@@ -340,6 +346,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 			},
 		],
 		_rank: ++j * 1000,
+		name: t('Move Next backwards'),
 	},
 	{
 		_id: 'core_move_previous_segment',
@@ -363,6 +370,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 			},
 		],
 		_rank: ++j * 1000,
+		name: t('Move Next to the previous segment'),
 	},
 	{
 		_id: 'core_go_to_onAir_line',
@@ -383,8 +391,8 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 				up: true,
 			},
 		],
-		name: t('Go to On Air line'),
 		_rank: ++j * 1000,
+		name: t('Go to On Air line'),
 	},
 	{
 		_id: 'core_rewind_segments',
@@ -405,8 +413,8 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 				up: true,
 			},
 		],
-		name: t('Rewind segments to start'),
 		_rank: ++j * 1000,
+		name: t('Rewind segments to start'),
 	},
 ]
 
