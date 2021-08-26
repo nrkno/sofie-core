@@ -1,14 +1,22 @@
 import React from 'react'
 
 export const RightArrow = (props: React.SVGProps<SVGSVGElement>) => (
-	<svg width="8" height="10" viewBox="0 0 8 10" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-		<path d="M8 5L0.5 9.33013L0.5 0.669872L8 5Z" fill="white" />
+	<svg width="6" height="13" viewBox="0 0 6 13" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+		<path d="M1.25 2.14003L5.31629 6.5L1.25 10.86L1.25 2.14003Z" fill="black" stroke="white"/>
+	</svg> 
+)
+
+export const CenterHandle = (props: React.SVGProps<SVGSVGElement>) => (
+	<svg width="9" height="13" viewBox="0 0 9 13" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+		<line x1="8.5" x2="8.5" y2="13" stroke="black"/>
+		<line x1="4.5" x2="4.5" y2="13" stroke="black"/>
+		<line x1="0.5" x2="0.5" y2="13" stroke="black"/>
 	</svg>
 )
 
 export const LeftArrow = (props: React.SVGProps<SVGSVGElement>) => (
-	<svg width="8" height="10" viewBox="0 0 8 10" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-		<path d="M5.96244e-08 5L7.5 0.669872L7.5 9.33013L5.96244e-08 5Z" fill="white" />
+	<svg width="6" height="13" viewBox="0 0 6 13" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+		<path d="M4.75 10.86L0.683707 6.5L4.75 2.14003L4.75 10.86Z" fill="black" stroke="white"/>
 	</svg>
 )
 

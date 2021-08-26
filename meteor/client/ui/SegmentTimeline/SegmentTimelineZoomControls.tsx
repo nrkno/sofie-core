@@ -2,7 +2,7 @@ import * as React from 'react'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { onElementResize, offElementResize } from '../../lib/resizeObserver'
-import { LeftArrow, RightArrow } from '../../lib/ui/icons/segment'
+import { LeftArrow, CenterHandle, RightArrow } from '../../lib/ui/icons/segment'
 import { LIVELINE_HISTORY_SIZE } from './SegmentTimelineContainer'
 
 interface IPropsHeader {
