@@ -57,7 +57,10 @@ function getPackagePreviewUrl(
 		if (packageContainer) {
 			// Look up an accessor we can use:
 			for (const accessor of Object.values(packageContainer.container.accessors)) {
-				if (accessor.type === Accessor.AccessType.HTTP && accessor.baseUrl) {
+				if (
+					(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
+					accessor.baseUrl
+				) {
 					// TODO: add fiter for accessor.networkId ?
 					return [
 						accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
