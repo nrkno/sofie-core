@@ -18,6 +18,7 @@ import { PeripheralDeviceStatus } from '../Status/SystemStatus'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
+import { DevicePackageManagerSettings } from './DevicePackageManagerSettings'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -214,8 +215,19 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 					</div>
 
 					{this.renderSpecifics()}
+
+					{this.props.device &&
+					this.props.device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER &&
+					this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+						? this.renderPackageManagerSpecial()
+						: null}
 				</div>
 			)
+		}
+		renderPackageManagerSpecial() {
+			if (this.props.device) {
+				return <DevicePackageManagerSettings deviceId={this.props.device._id} />
+			}
 		}
 
 		render() {
