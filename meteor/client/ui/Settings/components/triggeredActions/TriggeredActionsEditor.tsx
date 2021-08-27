@@ -27,6 +27,7 @@ import classNames from 'classnames'
 import { fetchFrom } from '../../../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
 import { Meteor } from 'meteor/meteor'
+import { doModalDialog } from '../../../../lib/ModalDialog'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null
@@ -338,8 +339,6 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	}
 
 	function onUploadActions(e: React.ChangeEvent<HTMLInputElement>) {
-		const { t } = this.props
-
 		const file = e.target.files && e.target.files[0]
 		if (!file) {
 			return
@@ -354,34 +353,50 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			const uploadFileContents = (e2.target as any).result
 
 			if (uploadFileContents) {
-				fetchFrom(`/actionTriggers/upload/${showStyleBaseId ?? ''}`, {
-					method: 'POST',
-					body: uploadFileContents,
-					headers: {
-						'content-type': 'text/javascript',
-						authorization: 'id ' + Meteor.userId(),
+				function uploadStoredTriggeredActions(replace?: boolean) {
+					fetchFrom(`/actionTriggers/upload/${showStyleBaseId ?? ''}${replace ? '?replace' : ''}`, {
+						method: 'POST',
+						body: uploadFileContents,
+						headers: {
+							'content-type': 'text/javascript',
+							authorization: 'id ' + Meteor.userId(),
+						},
+					})
+						.then(() => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.NOTIFICATION,
+									t('Triggered Actions uploaded successfully.'),
+									'TriggeredActions'
+								)
+							)
+						})
+						.catch((err) => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.WARNING,
+									t('Triggered Actions failed to upload: {{errorMessage}}', { errorMessage: err + '' }),
+									'TriggeredActions'
+								)
+							)
+						})
+				}
+
+				doModalDialog({
+					title: t('Append or Replace'),
+					message: t('Do you want to append these to existing Action Triggers, or do you want to replace them?'),
+					no: t('Append'),
+					yes: t('Replace'),
+					warning: true,
+					onAccept: () => {
+						uploadStoredTriggeredActions(true)
+					},
+					onSecondary: () => {
+						uploadStoredTriggeredActions(false)
 					},
 				})
-					.then(() => {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.NOTIFICATION,
-								t('Triggered Actions uploaded successfully.'),
-								'TriggeredActions'
-							)
-						)
-					})
-					.catch((err) => {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.WARNING,
-								t('Triggered Actions failed to upload: {{errorMessage}}', { errorMessage: err + '' }),
-								'TriggeredActions'
-							)
-						)
-					})
 			}
 		}
 		reader.readAsText(file)
