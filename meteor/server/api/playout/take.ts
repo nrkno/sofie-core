@@ -29,7 +29,6 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { isAnyQueuedWorkRunning } from '../../codeControl'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { ServerRundownAPI } from '../rundown'
 
 export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	const span = profiler.startSpan('takeNextPartInner')

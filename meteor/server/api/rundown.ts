@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { PartId } from '../../lib/collections/Parts'
-import { Segments, SegmentId, SegmentOrphanedReason, Segment } from '../../lib/collections/Segments'
+import { Segments, SegmentId, Segment } from '../../lib/collections/Segments'
 import {
 	unprotectObjectArray,
 	protectString,

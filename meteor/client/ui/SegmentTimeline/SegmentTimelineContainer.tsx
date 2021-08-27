@@ -31,8 +31,6 @@ import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { Parts, PartId, Part } from '../../../lib/collections/Parts'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { MeteorCall } from '../../../lib/api/methods'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import RundownViewEventBus, {
@@ -49,6 +47,8 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { AdlibSegmentUi } from '../../lib/shelf'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
+import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
+import { getIsFilterActive } from '../../lib/rundownLayouts'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
@@ -116,6 +116,9 @@ interface IProps {
 	adLibSegmentUi?: AdlibSegmentUi
 	minishelfRegisterHotkeys?: boolean
 	studioMode: boolean
+	rundownViewLayout: RundownViewLayout | undefined
+	countdownToSegmentRequireLayers: string[] | undefined
+	fixedSegmentDuration: boolean | undefined
 }
 interface IState {
 	scrollLeft: number
@@ -144,6 +147,8 @@ interface ITrackedProps {
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
 	lastValidPartIndex: number | undefined
+	displayLiveLineCounter: boolean
+	showCountdownToSegment: boolean
 }
 export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITrackedProps>(
 	(props: IProps) => {
@@ -159,6 +164,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				hasGuestItems: false,
 				hasAlreadyPlayed: false,
 				lastValidPartIndex: undefined,
+				displayLiveLineCounter: true,
+				showCountdownToSegment: true,
 			}
 		}
 
@@ -264,6 +271,21 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		let displayLiveLineCounter: boolean = true
+		if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.requiredLayerIds) {
+			const { active } = getIsFilterActive(props.playlist, props.rundownViewLayout.liveLineProps)
+			displayLiveLineCounter = active
+		}
+
+		let showCountdownToSegment = true
+		if (props.countdownToSegmentRequireLayers?.length) {
+			const sourcelayersInSegment = o.parts
+				.map((pa) => pa.pieces.map((pi) => pi.sourceLayer?._id))
+				.flat()
+				.filter((s) => !!s) as string[]
+			showCountdownToSegment = props.countdownToSegmentRequireLayers.some((s) => sourcelayersInSegment.includes(s))
+		}
+
 		return {
 			segmentui: o.segmentExtended,
 			parts: o.parts,
@@ -272,6 +294,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			hasRemoteItems: o.hasRemoteItems,
 			hasGuestItems: o.hasGuestItems,
 			lastValidPartIndex,
+			displayLiveLineCounter,
+			showCountdownToSegment,
 		}
 	},
 	(data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
@@ -285,6 +309,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
+			!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers) ||
 			props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys
 		) {
 			return true
@@ -526,7 +551,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}
 
 				if (this.props.segmentui && this.props.segmentui.orphaned) {
-					const { t } = this.props
 					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
 					// What is this supposed to do?
 					/*doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, () =>
@@ -975,6 +999,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								lastValidPartIndex={this.props.lastValidPartIndex}
 								onHeaderNoteClick={this.props.onHeaderNoteClick}
 								budgetDuration={this.state.budgetDuration}
+								showCountdownToSegment={this.props.showCountdownToSegment}
+								fixedSegmentDuration={this.props.fixedSegmentDuration}
+								displayLiveLineCounter={this.props.displayLiveLineCounter}
 							/>
 						)}
 						{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (

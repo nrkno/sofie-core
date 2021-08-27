@@ -9,7 +9,6 @@ import {
 	IOutputLayer,
 	SourceLayerType,
 	VTContent,
-	NoraContent,
 	Accessor,
 } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -20,8 +19,6 @@ import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPre
 import { StyledTimecode } from '../../lib/StyledTimecode'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
-import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
-import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailPackageSettings } from '../../../lib/collections/ExpectedPackages'
@@ -147,8 +144,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	renderGraphics(renderThumbnail?: boolean) {
-		const adLib = this.props.piece as any as AdLibPieceUi
-
 		const thumbnailUrl = this.getThumbnailUrl()
 		return (
 			<>

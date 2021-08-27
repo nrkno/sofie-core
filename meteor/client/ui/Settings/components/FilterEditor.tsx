@@ -10,20 +10,35 @@ import {
 	RundownLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
 	RundownLayoutBase,
+	RundownLayoutColoredBox,
 	RundownLayoutElementBase,
 	RundownLayoutElementType,
+	RundownLayoutEndWords,
 	RundownLayoutExternalFrame,
 	RundownLayoutFilterBase,
+	RundownLayoutPartName,
+	RundownLayoutPartTiming,
 	RundownLayoutKeyboardPreview,
 	RundownLayoutNextInfo,
 	RundownLayoutPieceCountdown,
+	RundownLayoutPlaylistEndTimer,
+	RundownLayoutPlaylistName,
+	RundownLayoutPlaylistStartTimer,
 	RundownLayouts,
+	RundownLayoutSegmentName,
+	RundownLayoutSegmentTiming,
+	RundownLayoutShowStyleDisplay,
+	RundownLayoutStudioName,
+	RundownLayoutSytemStatus,
+	RundownLayoutTextLabel,
+	RundownLayoutTimeOfDay,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { withTranslation } from 'react-i18next'
+import { defaultColorPickerPalette } from '../../../lib/colorPicker'
 
 interface IProps {
 	item: RundownLayoutBase
@@ -612,73 +627,9 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 					{isDashboardLayout && (
 						<React.Fragment>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('X')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.x`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Y')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.y`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Width')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.width`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Height')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.height`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Scale')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.scale`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
 							<div className="mod mvs mhs">
 								<label className="field">
 									{t('Display Rank')}
@@ -694,19 +645,6 @@ export default withTranslation()(
 							</div>
 						</React.Fragment>
 					)}
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Scale')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.scale`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
 				</React.Fragment>
 			)
 		}
@@ -802,77 +740,22 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 					{isDashboardLayout && (
 						<React.Fragment>
 							<div className="mod mvs mhs">
 								<label className="field">
-									{t('X')}
+									{t('Register Shortcuts for this Panel')}
 									<EditAttribute
 										modifiedClassName="bghl"
-										attribute={`filters.${index}.x`}
+										attribute={`filters.${index}.assignHotKeys`}
 										obj={item}
-										type="int"
+										type="checkbox"
 										collection={RundownLayouts}
-										className="input text-input input-l"
+										className="mod mas"
 									/>
 								</label>
 							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Y')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.y`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Width')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.width`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Height')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.height`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							{isDashboardLayout && (
-								<React.Fragment>
-									<div className="mod mvs mhs">
-										<label className="field">
-											{t('Register Shortcuts for this Panel')}
-											<EditAttribute
-												modifiedClassName="bghl"
-												attribute={`filters.${index}.assignHotKeys`}
-												obj={item}
-												type="checkbox"
-												collection={RundownLayouts}
-												className="mod mas"
-											/>
-										</label>
-									</div>
-								</React.Fragment>
-							)}
 						</React.Fragment>
 					)}
 				</React.Fragment>
@@ -889,19 +772,6 @@ export default withTranslation()(
 			const { t } = this.props
 			return (
 				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Name')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.name`}
-								obj={item}
-								type="text"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
 					<div className="mod mvs mhs">
 						<label className="field">{t('Source Layers')}</label>
 						<EditAttribute
@@ -928,61 +798,809 @@ export default withTranslation()(
 							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 						/>
 					</div>
-					{isDashboardLayout && (
-						<React.Fragment>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('X')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.x`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Y')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.y`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Width')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.width`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Scale')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.scale`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-						</React.Fragment>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderPlaylistStartTimer(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPlaylistStartTimer,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Planned Start Text')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.plannedStartText`}
+								obj={this.props.item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+							<span className="text-s dimmed">{t('Text to show above show start time')}</span>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Diff')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideDiff`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Planned Start')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hidePlannedStart`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderPlaylistEndTimer(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPlaylistEndTimer,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Planned End text')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.plannedEndText`}
+								obj={this.props.item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+							<span className="text-s dimmed">{t('Text to show above show end time')}</span>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Planned End Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hidePlannedEndLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Diff Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideDiffLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Diff')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideDiff`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Countdown')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideCountdown`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide End Time')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hidePlannedEnd`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderEndWords(
+			item: RundownLayoutBase,
+			tab: RundownLayoutEndWords,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{this.renderRequiresActiveLayerSettings(
+						item,
+						index,
+						t('Script Source Layers'),
+						t('Source layers containing script')
+					)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderSegmentCountDown(
+			item: RundownLayoutBase,
+			tab: RundownLayoutSegmentTiming,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Type')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.timingType`}
+								obj={this.props.item}
+								options={['count_down', 'count_up']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderPartTiming(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPartTiming,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Type')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.timingType`}
+								obj={this.props.item}
+								options={['count_down', 'count_up']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderTextLabel(
+			item: RundownLayoutBase,
+			tab: RundownLayoutTextLabel,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Text')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.text`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderPlaylistName(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPlaylistName,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show Rundown Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.showCurrentRundownName`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderStudioName(
+			item: RundownLayoutBase,
+			tab: RundownLayoutStudioName,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderSegmentName(
+			item: RundownLayoutBase,
+			tab: RundownLayoutSegmentName,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Segment')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.segment`}
+								obj={this.props.item}
+								options={['current', 'next']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderPartName(
+			item: RundownLayoutBase,
+			tab: RundownLayoutPartName,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Part')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.part`}
+								obj={this.props.item}
+								options={['current', 'next']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show Piece Icon Color')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.showPieceIconColor`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+							<span className="text-s dimmed">{t('Use color of primary piece as background of panel')}</span>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderColoredBox(
+			item: RundownLayoutBase,
+			tab: RundownLayoutColoredBox,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Box color')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.iconColor`}
+								obj={item}
+								options={defaultColorPickerPalette}
+								type="colorpicker"
+								collection={RundownLayouts}
+								className="input text-input input-s"
+							></EditAttribute>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderShowStyleDisplay(
+			item: RundownLayoutBase,
+			tab: RundownLayoutShowStyleDisplay,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderSystemStatus(
+			item: RundownLayoutBase,
+			tab: RundownLayoutSytemStatus,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderTimeOfDay(
+			item: RundownLayoutBase,
+			tab: RundownLayoutTimeOfDay,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderRequiresActiveLayerSettings(
+			item: RundownLayoutBase,
+			index: number,
+			activeLayerTitle: string,
+			activeLayersLabel
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">{activeLayerTitle}</label>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`filters.${index}.requiredLayerIds`}
+							obj={item}
+							type="checkbox"
+							collection={RundownLayouts}
+							className="mod mas"
+							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+							mutateUpdateValue={() => undefined}
+						/>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`filters.${index}.requiredLayerIds`}
+							obj={item}
+							options={this.props.showStyleBase.sourceLayers.map((l) => {
+								return { name: l.name, value: l._id }
+							})}
+							type="multiselect"
+							label={t('Disabled')}
+							collection={RundownLayouts}
+							className="input text-input input-l dropdown"
+							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+						/>
+						<span className="text-s dimmed">{activeLayersLabel}</span>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">{t('Also Require Source Layers')}</label>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`filters.${index}.additionalLayers`}
+							obj={item}
+							type="checkbox"
+							collection={RundownLayouts}
+							className="mod mas"
+							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+							mutateUpdateValue={() => undefined}
+						/>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={`filters.${index}.additionalLayers`}
+							obj={item}
+							options={this.props.showStyleBase.sourceLayers.map((l) => {
+								return { name: l.name, value: l._id }
+							})}
+							type="multiselect"
+							label={t('Disabled')}
+							collection={RundownLayouts}
+							className="input text-input input-l dropdown"
+							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+						/>
+						<span className="text-s dimmed">
+							{t('Specify additional layers where at least one layer must have an active piece')}
+						</span>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Require All Additional Source Layers')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.requireAllAdditionalSourcelayers`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+							<span className="text-s dimmed">{t('All additional source layers must have active pieces')}</span>
+						</label>
+					</div>
+				</React.Fragment>
+			)
+		}
+
+		renderDashboardLayoutSettings(item: RundownLayoutBase, index: number, scalable?: boolean) {
+			const { t } = this.props
+
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('X')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.x`}
+								obj={item}
+								type="float"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Y')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.y`}
+								obj={item}
+								type="float"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Width')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.width`}
+								obj={item}
+								type="float"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Height')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.height`}
+								obj={item}
+								type="float"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{scalable && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Scale')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.scale`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+							</label>
+						</div>
 					)}
 				</React.Fragment>
 			)
@@ -1302,6 +1920,118 @@ export default withTranslation()(
 						  )
 						: RundownLayoutsAPI.isNextInfo(this.props.filter)
 						? this.renderNextInfo(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isPlaylistStartTimer(this.props.filter)
+						? this.renderPlaylistStartTimer(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isPlaylistEndTimer(this.props.filter)
+						? this.renderPlaylistEndTimer(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isEndWords(this.props.filter)
+						? this.renderEndWords(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isSegmentTiming(this.props.filter)
+						? this.renderSegmentCountDown(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isPartTiming(this.props.filter)
+						? this.renderPartTiming(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isTextLabel(this.props.filter)
+						? this.renderTextLabel(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isPlaylistName(this.props.filter)
+						? this.renderPlaylistName(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isStudioName(this.props.filter)
+						? this.renderStudioName(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isSegmentName(this.props.filter)
+						? this.renderSegmentName(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isPartName(this.props.filter)
+						? this.renderPartName(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isColoredBox(this.props.filter)
+						? this.renderColoredBox(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isTimeOfDay(this.props.filter)
+						? this.renderTimeOfDay(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isShowStyleDisplay(this.props.filter)
+						? this.renderShowStyleDisplay(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isSystemStatus(this.props.filter)
+						? this.renderSystemStatus(
 								this.props.item,
 								this.props.filter,
 								this.props.index,

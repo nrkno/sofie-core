@@ -141,7 +141,7 @@ export async function deactivateRundownPlaylist(cache: CacheForPlayout): Promise
 				showStyle,
 				rundown
 			)
-			context.wipeCache()
+			context.wipeCache().catch(logger.error)
 
 			if (result) {
 				Promise.resolve(result).catch(logger.error)

@@ -37,6 +37,8 @@ import { isModalShowing } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { Rundown } from '../../../lib/collections/Rundowns'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -49,8 +51,10 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
+	currentRundown: Rundown
 	studio: Studio
 	showStyleBase: ShowStyleBase
+	showStyleVariant: ShowStyleVariant
 	studioMode: boolean
 	hotkeys: Array<{
 		key: string
@@ -528,6 +532,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									<ShelfDashboardLayout
 										playlist={this.props.playlist}
 										showStyleBase={this.props.showStyleBase}
+										showStyleVariant={this.props.showStyleVariant}
 										// buckets={this.props.buckets}
 										studioMode={this.props.studioMode}
 										rundownLayout={this.props.rundownLayout}

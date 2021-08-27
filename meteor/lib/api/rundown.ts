@@ -1,7 +1,7 @@
 import { RundownId } from '../collections/Rundowns'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
-import { SegmentId, SegmentOrphanedReason } from '../collections/Segments'
+import { SegmentId } from '../collections/Segments'
 
 export interface RundownPlaylistValidateBlueprintConfigResult {
 	studio: string[]
