@@ -509,7 +509,7 @@ function actionToAdLibPieceUi(
 	}
 
 	return literal<AdLibPieceUi>({
-		_id: protectString(`function_${action._id}`),
+		_id: protectString(`${action._id}`),
 		name: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
