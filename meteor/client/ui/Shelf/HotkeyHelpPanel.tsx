@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import type { Sorensen } from '@sofie-automation/sorensen'
 import { useTranslation } from 'react-i18next'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { hotkeyHelper } from '../../lib/hotkeyHelper'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
@@ -100,7 +100,7 @@ export const HotkeyHelpPanel: React.FC<IProps> = function HotkeyHelpPanel({ visi
 						.map((hotkey) => (
 							<div className="adlib-panel__hotkeys__hotkey" key={hotkey.key}>
 								<div className="adlib-panel__hotkeys__hotkey__keys">
-									{mousetrapHelper.shortcutLabel(hotkey.key, _isMacLike)}
+									{hotkeyHelper.shortcutLabel(hotkey.key, _isMacLike)}
 								</div>
 								<div className="adlib-panel__hotkeys__hotkey__action">{hotkey.label}</div>
 							</div>

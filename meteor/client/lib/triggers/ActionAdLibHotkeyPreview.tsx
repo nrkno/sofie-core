@@ -121,7 +121,11 @@ export const ActionAdLibHotkeyPreview: React.FC<IProps> = function AdLibActionHo
 		hotkeys =
 			allKeys
 				?.map((item, index0) =>
-					item.keys.map((combo, index1) => <span key={`${index0}_${index1}`}>{codesToKeyLabels(combo, Sorensen)}</span>)
+					item.keys.map((combo, index1) => (
+						<span key={`${index0}_${index1}`}>
+							{codesToKeyLabels(combo, Sorensen).replace(/(?<!\+)\+/gi, '+\u200b')}
+						</span>
+					))
 				)
 				.flat(3) ?? null
 	}
