@@ -46,18 +46,26 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 	const showStyleBaseId: ShowStyleBaseId | undefined = protectString(params.showStyleBaseId)
 
 	check(showStyleBaseId, Match.Maybe(String))
-
-	const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
-
 	let content = ''
+
+	const replace: boolean = params.query === 'replace'
+
 	try {
-		if (!showStyleBase) throw new Meteor.Error(404, `ShowStylebase "${showStyleBaseId}" not found`)
+		if (showStyleBaseId) {
+			const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+			if (!showStyleBase) {
+				throw new Meteor.Error(
+					404,
+					`Restore Action Triggers: ShowStyle "${showStyleBaseId}" could not be found`
+				)
+			}
+		}
 
 		const body = req.body
-		if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
+		if (!body) throw new Meteor.Error(400, 'Restore Action Triggers: Missing request body')
 
 		if (typeof body !== 'string' || body.length < 10)
-			throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid request body')
+			throw new Meteor.Error(400, 'Restore Action Triggers: Invalid request body')
 
 		const triggeredActions = JSON.parse(body) as DBTriggeredActions[]
 		check(triggeredActions, Array)
@@ -70,6 +78,12 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 			check(triggeredActions[i].actions, Array)
 			triggeredActions[i].showStyleBaseId = showStyleBaseId ?? null
 			triggeredActions[i]._rundownVersionHash = ''
+		}
+
+		if (replace) {
+			TriggeredActions.remove({
+				showStyleBaseId: showStyleBaseId,
+			})
 		}
 
 		for (let i = 0; i < triggeredActions.length; i++) {

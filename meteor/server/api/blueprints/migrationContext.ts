@@ -92,7 +92,7 @@ class AbstractMigrationContextWithTriggeredActions {
 				...triggeredActions,
 				_rundownVersionHash: '',
 				showStyleBaseId: this.showStyleBaseId,
-				_id: protectString(triggeredActions._id),
+				_id: this.getProtectedTriggeredActionsId(triggeredActions._id),
 			})
 		} else {
 			TriggeredActions.update(
