@@ -146,7 +146,6 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	}
 	protected async wipeCache(): Promise<void> {
 		await resetStudioBlueprintConfig(this.studio)
-		await getStudioBlueprintConfig(this.getStudio(true))
 	}
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
@@ -229,7 +228,6 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	async wipeCache(): Promise<void> {
 		await super.wipeCache()
 		await resetShowStyleBlueprintConfig(this.showStyleCompound)
-		await getShowStyleBlueprintConfig(this.getShowStyleBase(true), this.getShowStyleVariant(true))
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleCompound.showStyleVariantId, configKey)
