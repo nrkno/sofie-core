@@ -39,7 +39,7 @@ export const PackageContainerPackageStatuses = createMongoCollection<
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatusDB
 >('packageContainerPackageStatuses')
-registerCollection('PackageContainerStatuses', PackageContainerPackageStatuses)
+registerCollection('PackageContainerPackageStatuses', PackageContainerPackageStatuses)
 
 registerIndex(PackageContainerPackageStatuses, {
 	studioId: 1,
