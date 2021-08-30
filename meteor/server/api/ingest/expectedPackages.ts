@@ -366,6 +366,9 @@ export function updateBaselineExpectedPackagesOnRundown(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnRundown(cache, baseline.expectedPlayoutItems)
 
+	// Fill in ids of unnamed expectedPackages
+	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
+
 	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.RundownId, baseline.expectedPackages ?? [])
 	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
 		cache.ExpectedPackages,
@@ -396,6 +399,9 @@ export function updateBaselineExpectedPackagesOnStudio(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnStudio(cache, baseline.expectedPlayoutItems)
 
+	// Fill in ids of unnamed expectedPackages
+	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
+
 	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.Studio.doc._id, baseline.expectedPackages ?? [])
 	cache.deferAfterSave(async () => {
 		await saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
@@ -413,4 +419,16 @@ export function updateBaselineExpectedPackagesOnStudio(
 			})
 		)
 	})
+}
+
+export function setDefaultIdOnExpectedPackages(expectedPackages: ExpectedPackage.Any[] | undefined): void {
+	// Fill in ids of unnamed expectedPackage
+	if (expectedPackages) {
+		for (let i = 0; i < expectedPackages.length; i++) {
+			const expectedPackage = expectedPackages[i]
+			if (!expectedPackage._id) {
+				expectedPackage._id = `__index${i}`
+			}
+		}
+	}
 }

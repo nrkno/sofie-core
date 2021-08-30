@@ -29,6 +29,7 @@ import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { CommonContext, ShowStyleContext } from './context'
 import { ReadonlyDeep } from 'type-fest'
 import { processAdLibActionITranslatableMessages } from '../../../lib/api/TranslatableMessage'
+import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
 
 /**
  *
@@ -90,6 +91,8 @@ export function postProcessPieces(
 				timelineUniqueIds
 			)
 		}
+		// Fill in ids of unnamed expectedPackages
+		setDefaultIdOnExpectedPackages(piece.expectedPackages)
 
 		return piece
 	})
@@ -193,6 +196,8 @@ export function postProcessAdLibPieces(
 				timelineUniqueIds
 			)
 		}
+		// Fill in ids of unnamed expectedPackages
+		setDefaultIdOnExpectedPackages(piece.expectedPackages)
 
 		return piece
 	})
@@ -207,8 +212,11 @@ export function postProcessGlobalAdLibActions(
 	rundownId: RundownId,
 	adlibActions: IBlueprintActionManifest[]
 ): RundownBaselineAdLibAction[] {
-	return adlibActions.map((action, i) =>
-		literal<RundownBaselineAdLibAction>({
+	return adlibActions.map((action, i) => {
+		// Fill in ids of unnamed expectedPackages
+		setDefaultIdOnExpectedPackages(action.expectedPackages)
+
+		return literal<RundownBaselineAdLibAction>({
 			...action,
 			actionId: action.actionId,
 			_id: protectString(innerContext.getHashId(`${blueprintId}_global_adlib_action_${i}`)),
@@ -216,7 +224,7 @@ export function postProcessGlobalAdLibActions(
 			partId: undefined,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
 		})
-	)
+	})
 }
 
 export function postProcessAdLibActions(
@@ -226,8 +234,11 @@ export function postProcessAdLibActions(
 	partId: PartId,
 	adlibActions: IBlueprintActionManifest[]
 ): AdLibAction[] {
-	return adlibActions.map((action, i) =>
-		literal<AdLibAction>({
+	return adlibActions.map((action, i) => {
+		// Fill in ids of unnamed expectedPackages
+		setDefaultIdOnExpectedPackages(action.expectedPackages)
+
+		return literal<AdLibAction>({
 			...action,
 			actionId: action.actionId,
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_action_${i}`)),
@@ -235,7 +246,7 @@ export function postProcessAdLibActions(
 			partId: partId,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
 		})
-	)
+	})
 }
 
 export function postProcessStudioBaselineObjects(
@@ -277,6 +288,8 @@ export function postProcessBucketAdLib(
 		importVersions,
 		_rank: rank || itemOrig._rank,
 	}
+	// Fill in ids of unnamed expectedPackages
+	setDefaultIdOnExpectedPackages(piece.expectedPackages)
 
 	if (piece.content && piece.content.timelineObjects) {
 		piece.content.timelineObjects = postProcessTimelineObjects(
@@ -314,6 +327,9 @@ export function postProcessBucketAction(
 		importVersions,
 		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
 	}
+
+	// Fill in ids of unnamed expectedPackages
+	setDefaultIdOnExpectedPackages(action.expectedPackages)
 
 	return action
 }
