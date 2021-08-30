@@ -75,7 +75,15 @@ export interface ShowStyleVariantPart {
 	// Note: if more props are added it may make sense to use Omit<> to build this type
 	name: string
 }
-export interface MigrationContextShowStyle {
+
+interface MigrationContextWithTriggeredActions {
+	getAllTriggeredActions: () => IBlueprintTriggeredActions[]
+	getTriggeredAction: (triggeredActionsId: string) => IBlueprintTriggeredActions | undefined
+	setTriggeredAction: (triggeredActions: IBlueprintTriggeredActions) => void
+	removeTriggeredAction: (triggeredActionsId: string) => void
+}
+
+export interface MigrationContextShowStyle extends MigrationContextWithTriggeredActions {
 	getAllVariants: () => IBlueprintShowStyleVariant[]
 	getVariantId: (variantId: string) => string
 	getVariant: (variantId: string) => IBlueprintShowStyleVariant | undefined
@@ -100,19 +108,9 @@ export interface MigrationContextShowStyle {
 	getVariantConfig: (variantId: string, configId: string) => ConfigItemValue | undefined
 	setVariantConfig: (variantId: string, configId: string, value: ConfigItemValue) => void
 	removeVariantConfig: (variantId: string, configId: string) => void
-
-	getAllTriggeredActions: () => IBlueprintTriggeredActions[]
-	getTriggeredAction: (triggeredActionsId: string) => IBlueprintTriggeredActions
-	setTriggeredAction: (triggeredActions: IBlueprintTriggeredActions) => void
-	removeTriggeredAction: (triggeredActionsId: string) => void
 }
 
-export interface MigrationContextSystem {
-	getAllTriggeredActions: () => IBlueprintTriggeredActions[]
-	getTriggeredAction: (triggeredActionsId: string) => IBlueprintTriggeredActions
-	setTriggeredAction: (triggeredActions: IBlueprintTriggeredActions) => void
-	removeTriggeredAction: (triggeredActionsId: string) => void
-}
+export type MigrationContextSystem = MigrationContextWithTriggeredActions
 
 export interface MigrationStepBase {
 	/** Unique id for this step */

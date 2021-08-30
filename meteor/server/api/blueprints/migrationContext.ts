@@ -39,7 +39,7 @@ import {
 	ShowStyleVariantId,
 	DBShowStyleVariant,
 } from '../../../lib/collections/ShowStyleVariants'
-import { check } from '../../../lib/check'
+import { check, Match } from '../../../lib/check'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
@@ -72,16 +72,21 @@ class AbstractMigrationContextWithTriggeredActions {
 			_id: protectString(triggeredActionsId),
 		})
 	}
-	getTriggeredAction(triggeredActionsId: string): IBlueprintTriggeredActions {
+	getTriggeredAction(triggeredActionsId: string): IBlueprintTriggeredActions | undefined {
 		check(triggeredActionsId, String)
 		if (!triggeredActionsId) {
 			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
 		}
 
-		return unprotectObject(this.getTriggeredActionFromDb(triggeredActionsId)) as any
+		return unprotectObject(this.getTriggeredActionFromDb(triggeredActionsId))
 	}
 	setTriggeredAction(triggeredActions: IBlueprintTriggeredActions) {
 		check(triggeredActions, Object)
+		check(triggeredActions._id, String)
+		check(triggeredActions._rank, Number)
+		check(triggeredActions.actions, Array)
+		check(triggeredActions.triggers, Array)
+		check(triggeredActions.name, Match.OneOf(Match.Optional(Object), Match.Optional(String)))
 		if (!triggeredActions) {
 			throw new Meteor.Error(500, `Triggered Actions object is invalid`)
 		}
