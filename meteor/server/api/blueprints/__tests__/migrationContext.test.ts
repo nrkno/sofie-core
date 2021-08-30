@@ -1656,6 +1656,20 @@ describe('Test blueprint migrationContext', () => {
 				expect(newCoreAction).toBeTruthy()
 				expect(newCoreAction?.actions[0].action).toBe(PlayoutActions.activateRundownPlaylist)
 			})
+			testInFiber('removeTriggeredAction: remove empty id', () => {
+				const ctx = getContext()
+
+				expect(() => ctx.removeTriggeredAction('')).toThrow('[500] Triggered actions Id "" is invalid')
+			})
+			testInFiber('removeTriggeredAction: remove existing id', () => {
+				const ctx = getContext()
+
+				const oldCoreAction = ctx.getTriggeredAction('mockTriggeredAction_core0')
+				expect(oldCoreAction).toBeTruthy()
+
+				ctx.removeTriggeredAction('mockTriggeredAction_core0')
+				expect(ctx.getTriggeredAction('mockTriggeredAction_core0')).toBeFalsy()
+			})
 		})
 	})
 })

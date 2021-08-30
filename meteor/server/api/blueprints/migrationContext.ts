@@ -118,10 +118,13 @@ class AbstractMigrationContextWithTriggeredActions {
 			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
 		}
 
-		TriggeredActions.remove({
-			_id: this.getProtectedTriggeredActionsId(triggeredActionsId),
-			showStyleBaseId: null,
-		})
+		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActionsId)
+		if (currentTriggeredAction) {
+			TriggeredActions.remove({
+				_id: currentTriggeredAction._id,
+				showStyleBaseId: null,
+			})
+		}
 	}
 }
 
