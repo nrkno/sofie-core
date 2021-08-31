@@ -43,15 +43,15 @@ export function removeTriggeredActions(triggeredActionId: TriggeredActionId) {
 PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
-	const showStyleBaseId: ShowStyleBaseId | undefined = protectString(params.showStyleBaseId)
+	const showStyleBaseId: ShowStyleBaseId | null = protectString(params.showStyleBaseId)
 
-	check(showStyleBaseId, Match.Maybe(String))
+	check(showStyleBaseId, Match.Optional(String))
 	let content = ''
 
 	const replace: boolean = params.query === 'replace'
 
 	try {
-		if (showStyleBaseId) {
+		if (showStyleBaseId !== undefined) {
 			const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 			if (!showStyleBase) {
 				throw new Meteor.Error(
@@ -73,7 +73,7 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 		// set new showStyleBaseId
 		for (let i = 0; i < triggeredActions.length; i++) {
 			check(triggeredActions[i]._id, String)
-			check(triggeredActions[i].name, Match.Optional(String))
+			check(triggeredActions[i].name, Match.Optional(Match.OneOf(String, Object)))
 			check(triggeredActions[i].triggers, Array)
 			check(triggeredActions[i].actions, Array)
 			triggeredActions[i].showStyleBaseId = showStyleBaseId ?? null
