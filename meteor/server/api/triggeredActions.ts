@@ -43,7 +43,9 @@ export function removeTriggeredActions(triggeredActionId: TriggeredActionId) {
 PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
-	const showStyleBaseId: ShowStyleBaseId | null = protectString(params.showStyleBaseId)
+	const showStyleBaseId: ShowStyleBaseId | undefined = protectString(params.showStyleBaseId) as
+		| ShowStyleBaseId
+		| undefined
 
 	check(showStyleBaseId, Match.Optional(String))
 	let content = ''
@@ -82,7 +84,7 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 
 		if (replace) {
 			TriggeredActions.remove({
-				showStyleBaseId: showStyleBaseId,
+				showStyleBaseId: showStyleBaseId ?? null,
 			})
 		}
 
