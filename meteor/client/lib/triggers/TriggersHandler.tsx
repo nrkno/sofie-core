@@ -226,7 +226,6 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	}, [])
 
 	function poisonHotkeys() {
-		console.log('Poisoned')
 		localSorensen.poison() // cancels all pressed keys, poisons all chords, no hotkey trigger will execute
 	}
 
@@ -275,14 +274,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	])
 
 	const triggerSubReady = useSubscription(PubSub.triggeredActions, {
-		$or: [
-			{
-				showStyleBaseId: props.showStyleBaseId,
-			},
-			{
-				showStyleBaseId: null,
-			},
-		],
+		showStyleBase: {
+			$in: [null, props.showStyleBaseId],
+		},
 	})
 
 	const rundownIds =
@@ -305,14 +299,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	const triggeredActions = useTracker(() => {
 		return TriggeredActions.find(
 			{
-				$or: [
-					{
-						showStyleBaseId: props.showStyleBaseId,
-					},
-					{
-						showStyleBaseId: null,
-					},
-				],
+				showStyleBaseId: {
+					$in: [null, props.showStyleBaseId],
+				},
 			},
 			{
 				sort: {
