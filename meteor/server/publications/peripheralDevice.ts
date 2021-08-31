@@ -15,13 +15,7 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { MappingsExtWithPackage, routeExpectedPackages, Studio, StudioId, Studios } from '../../lib/collections/Studios'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
-import {
-	ExpectedPackageDB,
-	ExpectedPackages,
-	getPreviewPackageSettings,
-	getSideEffect,
-	getThumbnailPackageSettings,
-} from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDB, ExpectedPackages, getSideEffect } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
 import {
 	ExpectedPackage,
