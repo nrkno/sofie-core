@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	DashboardLayoutPlaylistEndTimer,
 	RundownLayoutBase,
@@ -32,9 +33,9 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
 	}
 
 	render() {
-		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+		const { playlist, panel, layout } = this.props
 
-		const { playlist, panel } = this.props
+		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 
 		if (!PlaylistTiming.getExpectedDuration(playlist.timing)) {
 			return null
@@ -42,7 +43,10 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
 
 		return (
 			<div
-				className="playlist-end-time-panel timing"
+				className={ClassNames(
+					'playlist-end-time-panel timing',
+					isDashboardLayout ? (panel as DashboardLayoutPlaylistEndTimer).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? {

@@ -227,6 +227,7 @@ export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame
 	y: number
 	width: number
 	height: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
@@ -234,6 +235,7 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 	y: number
 	width: number
 	height: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
@@ -242,6 +244,7 @@ export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdo
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutPlaylistStartTimer extends RundownLayoutPlaylistStartTimer {
@@ -250,6 +253,7 @@ export interface DashboardLayoutPlaylistStartTimer extends RundownLayoutPlaylist
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutPlaylistEndTimer extends RundownLayoutPlaylistEndTimer {
@@ -258,6 +262,7 @@ export interface DashboardLayoutPlaylistEndTimer extends RundownLayoutPlaylistEn
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutEndsWords extends RundownLayoutEndWords {
@@ -266,6 +271,7 @@ export interface DashboardLayoutEndsWords extends RundownLayoutEndWords {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutSegmentCountDown extends RundownLayoutSegmentTiming {
@@ -274,6 +280,7 @@ export interface DashboardLayoutSegmentCountDown extends RundownLayoutSegmentTim
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutPartCountDown extends RundownLayoutPartTiming {
@@ -282,6 +289,7 @@ export interface DashboardLayoutPartCountDown extends RundownLayoutPartTiming {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutTextLabel extends RundownLayoutTextLabel {
@@ -290,6 +298,7 @@ export interface DashboardLayoutTextLabel extends RundownLayoutTextLabel {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutPlaylistName extends RundownLayoutPlaylistName {
@@ -298,6 +307,7 @@ export interface DashboardLayoutPlaylistName extends RundownLayoutPlaylistName {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutStudioName extends RundownLayoutStudioName {
@@ -306,6 +316,7 @@ export interface DashboardLayoutStudioName extends RundownLayoutStudioName {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutTimeOfDay extends RundownLayoutTimeOfDay {
@@ -314,6 +325,7 @@ export interface DashboardLayoutTimeOfDay extends RundownLayoutTimeOfDay {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutSystemStatus extends RundownLayoutSytemStatus {
@@ -322,6 +334,7 @@ export interface DashboardLayoutSystemStatus extends RundownLayoutSytemStatus {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutShowStyleDisplay extends RundownLayoutShowStyleDisplay {
@@ -330,6 +343,7 @@ export interface DashboardLayoutShowStyleDisplay extends RundownLayoutShowStyleD
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutSegmentName extends RundownLayoutSegmentName {
@@ -338,6 +352,7 @@ export interface DashboardLayoutSegmentName extends RundownLayoutSegmentName {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutPartName extends RundownLayoutPartName {
@@ -346,6 +361,7 @@ export interface DashboardLayoutPartName extends RundownLayoutPartName {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutColoredBox extends RundownLayoutColoredBox {
@@ -354,6 +370,7 @@ export interface DashboardLayoutColoredBox extends RundownLayoutColoredBox {
 	height: number
 	width: number
 	scale: number
+	customClasses?: string[]
 }
 
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
@@ -361,6 +378,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	y: number
 	width: number
 	height: number
+	customClasses?: string[]
 	enableSearch: boolean
 
 	buttonWidthScale: number

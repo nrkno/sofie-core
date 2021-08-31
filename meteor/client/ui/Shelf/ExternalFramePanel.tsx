@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	RundownLayoutExternalFrame,
 	RundownLayoutBase,
@@ -501,7 +502,12 @@ export const ExternalFramePanel = withTranslation()(
 			const scale = this.props.panel.scale || 1
 			return (
 				<div
-					className="external-frame-panel"
+					className={ClassNames(
+						'external-frame-panel',
+						RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+							? (this.props.panel as DashboardLayoutExternalFrame).customClasses
+							: undefined
+					)}
 					style={_.extend(
 						RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 							? dashboardElementPosition(this.props.panel as DashboardLayoutExternalFrame)

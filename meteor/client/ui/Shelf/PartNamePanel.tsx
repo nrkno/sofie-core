@@ -54,7 +54,7 @@ class PartNamePanelInner extends MeteorReactComponent<
 		return (
 			<div
 				className={ClassNames('part-name-panel', {
-					[backgroundSourceLayer || '']: !!backgroundSourceLayer,
+					[backgroundSourceLayer || 'unknown']: true,
 				})}
 				style={_.extend(
 					isDashboardLayout

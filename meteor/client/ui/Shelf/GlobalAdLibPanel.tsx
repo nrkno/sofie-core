@@ -450,6 +450,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		refreshKeyboardHotkeys() {
 			if (!this.props.studioMode) return
 
+			const { t } = this.props
+
 			const preventDefault = (e) => {
 				e.preventDefault()
 			}

@@ -1600,6 +1600,24 @@ export default withTranslation()(
 							</label>
 						</div>
 					)}
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Custom Classes')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.customClasses`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+								mutateDisplayValue={(v: string[] | undefined) => v?.join(',')}
+								mutateUpdateValue={(v: string | undefined) => v?.split(',')}
+							/>
+							<span className="text-s dimmed">
+								Add custom css classes for customization. Separate classes with a ','
+							</span>
+						</label>
+					</div>
 				</React.Fragment>
 			)
 		}

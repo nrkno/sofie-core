@@ -1,3 +1,4 @@
+import ClassNames from 'classnames'
 import React, { ReactNode } from 'react'
 import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
@@ -7,6 +8,7 @@ import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 interface ISegmentDurationProps {
 	parts: PartUi[]
 	label?: ReactNode
+	className?: string
 	/** If set, the timer will display just the played out duration */
 	countUp?: boolean
 	/** Always show planned segment duration instead of counting up/down */
@@ -38,11 +40,15 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 			<>
 				{props.label}
 				{props.fixed ? (
-					<span>{RundownUtils.formatDiffToTimecode(budget, false, false, true, false, true, '+')}</span>
+					<span className={ClassNames(props.className)}>
+						{RundownUtils.formatDiffToTimecode(budget, false, false, true, false, true, '+')}
+					</span>
 				) : props.countUp ? (
-					<span>{RundownUtils.formatDiffToTimecode(playedOut, false, false, true, false, true, '+')}</span>
+					<span className={ClassNames(props.className)}>
+						{RundownUtils.formatDiffToTimecode(playedOut, false, false, true, false, true, '+')}
+					</span>
 				) : (
-					<span className={duration < 0 ? 'negative' : undefined}>
+					<span className={ClassNames(props.className, duration < 0 ? 'negative' : undefined)}>
 						{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
 					</span>
 				)}
