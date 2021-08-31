@@ -1003,14 +1003,14 @@ svg.icon {
 
 			.segment-timeline__zoom-area__controls__selected-area {
 				position: absolute;
-				border: 2px solid #fff;
+				border: 1px solid #333;
 				top: 0;
 				bottom: 0;
 				width: 250px;
 				margin-left: -125px;
 				cursor: grab;
-				background: rgba(255, 255, 255, 0.2);
-				box-shadow: 0 0 6px rgba(255, 255, 255, 1);
+				background: #222;
+				border-radius: 15px;
 
 				.segment-timeline__zoom-area__controls__selected-area__left-arrow {
 					position: absolute;
@@ -1018,7 +1018,11 @@ svg.icon {
 					left: 3px;
 					transform: translate(0, -50%);
 				}
-
+				.segment-timeline__zoom-area__controls__selected-area__center-handle {
+					position: absolute;
+					top: 50%;
+					transform: translate(0, -50%);
+				}
 				.segment-timeline__zoom-area__controls__selected-area__right-arrow {
 					position: absolute;
 					top: 50%;
