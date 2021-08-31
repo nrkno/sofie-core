@@ -37,8 +37,14 @@ interface IProps {
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]
 
+	/** Should this component actually try to bind to the hotkeys, or should it just populate the MountedAdLibTriggers
+	 * and MountedGenericTriggers collections. */
 	simulateTriggerBinding?: boolean
+	/** Provide an external Sorensen object, if Sorensen has already been initialized */
 	sorensen?: typeof Sorensen
+	/** A function that should be executed when a trigger is fired to check if it should execute or not - such as is the
+	 * case with non-global hotkeys which should only fire when not in an Input.
+	 */
 	global?: (e: KeyboardEvent) => boolean
 }
 
@@ -124,24 +130,36 @@ function getCurrentContext(): ActionContext | null {
 }
 
 type MountedAdLibTriggerId = ProtectedString<'mountedAdLibTriggerId'>
+/** An AdLib action that will be triggered by hotkeys (can be AdLib, RundownBaselineAdLib, AdLib Action, Clear source layer, Sticky, etc.) */
 export interface MountedAdLibTrigger {
 	_id: MountedAdLibTriggerId
+	/** Rank of the Action that is mounted under `keys` */
 	_rank: number
+	/** The ID of the action that will be triggered */
 	triggeredActionId: TriggeredActionId
+	/** The type of the adLib being targeted */
 	type: IWrappedAdLib['type']
+	/** The ID in the collection specified by `type` */
 	targetId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | ISourceLayer['_id']
+	/** Keys that have a listener mounted to */
 	keys: string[]
+	/** A label of the action, if available */
 	name?: string | ITranslatableMessage
 }
 
 export const MountedAdLibTriggers = new Mongo.Collection<MountedAdLibTrigger>(null)
 
 type MountedGenericTriggerId = ProtectedString<'mountedGenericTriggerId'>
+/** A generic action that will be triggered by hotkeys (generic, i.e. non-AdLib) */
 export interface MountedGenericTrigger {
 	_id: MountedGenericTriggerId
+	/** Rank of the Action that is mounted under `keys1 */
 	_rank: number
+	/** The ID of the action that will be triggered */
 	triggeredActionId: TriggeredActionId
+	/** Keys that have a listener mounted to */
 	keys: string[]
+	/** A label of the action, if available */
 	name: string | ITranslatableMessage
 }
 
