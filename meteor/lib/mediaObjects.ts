@@ -16,6 +16,8 @@ import { NoteType } from './api/notes'
 import { PackageInfos } from './collections/PackageInfos'
 import { protectString, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
+import { getExpectedPackageId } from './collections/ExpectedPackages'
+import { PieceGeneric } from './collections/Pieces'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a
@@ -163,7 +165,7 @@ export interface ScanInfoForPackage {
 }
 
 export function checkPieceContentStatus(
-	piece: Pick<IBlueprintPieceGeneric, 'name' | 'content' | 'expectedPackages'>,
+	piece: Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>,
 	sourceLayer: ISourceLayer | undefined,
 	studio: Studio | undefined,
 	t?: i18next.TFunction
@@ -217,7 +219,7 @@ export function checkPieceContentStatus(
 						const packageOnPackageContainer = getPackageContainerPackageStatus(
 							studio._id,
 							packageContainerId,
-							expectedPackage._id
+							getExpectedPackageId(piece._id, expectedPackage._id)
 						)
 						const packageName =
 							// @ts-expect-error hack

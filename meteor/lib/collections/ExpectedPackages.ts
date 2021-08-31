@@ -1,5 +1,5 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { registerCollection, ProtectedString, hashObj, assertNever, Time, literal } from '../lib'
+import { registerCollection, ProtectedString, hashObj, assertNever, Time, literal, protectString } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { Studio, StudioId } from './Studios'
@@ -192,4 +192,19 @@ export function getSideEffect(
 		}),
 		expectedPackage.sideEffect
 	)
+}
+export function getExpectedPackageId(
+	/** _id of the owner (the piece, adlib etc..) */
+	ownerId:
+		| PieceId
+		| AdLibActionId
+		| RundownBaselineAdLibActionId
+		| BucketAdLibId
+		| BucketAdLibActionId
+		| RundownId
+		| StudioId,
+	/** The locally unique id of the expectedPackage */
+	localExpectedPackageId: ExpectedPackage.Base['_id']
+): ExpectedPackageId {
+	return protectString(`${ownerId}_${localExpectedPackageId}`)
 }

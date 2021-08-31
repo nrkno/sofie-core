@@ -50,7 +50,7 @@ registerIndex(PackageContainerPackageStatuses, {
 export function getPackageContainerPackageId(
 	studioId: StudioId,
 	containerId: string,
-	packageId: string | ExpectedPackageId
+	packageId: ExpectedPackageId
 ): PackageContainerPackageId {
 	return protectString(`${studioId}_${containerId}_${packageId}`)
 }

@@ -18,14 +18,18 @@ import {
 	ExpectedPackageDBType,
 	ExpectedPackages,
 	getContentVersionHash,
+	getExpectedPackageId,
 } from '../../../lib/collections/ExpectedPackages'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { BlueprintResultBaseline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { Meteor } from 'meteor/meteor'
 import { BucketAdLib, BucketAdLibId, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
-import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
+import {
+	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActionId,
+} from '../../../lib/collections/RundownBaselineAdLibActions'
 import {
 	updateBaselineExpectedPlayoutItemsOnRundown,
 	updateBaselineExpectedPlayoutItemsOnStudio,
@@ -288,7 +292,14 @@ function generateExpectedPackagesForBucketAdlibAction(studio: Studio, adlibActio
 }
 function generateExpectedPackageBases(
 	studio: ReadonlyDeep<Studio>,
-	ownerId: ProtectedString<any>,
+	ownerId:
+		| PieceId
+		| AdLibActionId
+		| RundownBaselineAdLibActionId
+		| BucketAdLibId
+		| BucketAdLibActionId
+		| RundownId
+		| StudioId,
 	expectedPackages: ExpectedPackage.Any[]
 ) {
 	const bases: Omit<ExpectedPackageDBBase, 'pieceId' | 'fromPieceType'>[] = []
@@ -299,7 +310,7 @@ function generateExpectedPackageBases(
 
 		bases.push({
 			...expectedPackage,
-			_id: protectString(`${ownerId}_${id}`),
+			_id: getExpectedPackageId(ownerId, id),
 			blueprintPackageId: id,
 			contentVersionHash: getContentVersionHash(expectedPackage),
 			studioId: studio._id,
