@@ -293,10 +293,9 @@ function generateExpectedPackageBases(
 ) {
 	const bases: Omit<ExpectedPackageDBBase, 'pieceId' | 'fromPieceType'>[] = []
 
-	let i = 0
-	for (const expectedPackage of expectedPackages) {
-		let id = expectedPackage._id
-		if (!id) id = '__unnamed' + i++
+	for (let i = 0; i < expectedPackages.length; i++) {
+		const expectedPackage = expectedPackages[i]
+		const id = expectedPackage._id || '__unnamed' + i
 
 		bases.push({
 			...expectedPackage,

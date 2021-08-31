@@ -19,6 +19,7 @@ import {
 	ExpectedPackageDB,
 	ExpectedPackages,
 	getPreviewPackageSettings,
+	getSideEffect,
 	getThumbnailPackageSettings,
 } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
@@ -540,20 +541,7 @@ function generateExpectedPackages(
 
 				if (combinedSources.length) {
 					if (combinedTargets.length) {
-						expectedPackage.sideEffect = deepExtend(
-							{},
-							literal<ExpectedPackage.Base['sideEffect']>({
-								previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
-								thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
-								previewPackageSettings: getPreviewPackageSettings(
-									expectedPackage as ExpectedPackage.Any
-								),
-								thumbnailPackageSettings: getThumbnailPackageSettings(
-									expectedPackage as ExpectedPackage.Any
-								),
-							}),
-							expectedPackage.sideEffect
-						)
+						expectedPackage.sideEffect = getSideEffect(expectedPackage, studio)
 
 						routedExpectedPackages.push({
 							expectedPackage: unprotectObject(expectedPackage),
