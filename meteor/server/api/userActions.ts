@@ -44,7 +44,6 @@ import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
 import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
-import { rundownContentAllowWrite } from '../security/rundown'
 import { profiler } from './profiler'
 import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
@@ -638,11 +637,7 @@ export function resyncRundown(context: MethodContext, rundownId: RundownId) {
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundown(context, rundown._id))
 }
 export function resyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId) {
-	rundownContentAllowWrite(context.userId, { rundownId })
-	const segment = Segments.findOne(segmentId)
-	if (!segment) throw new Meteor.Error(404, `Rundown "${segmentId}" not found!`)
-
-	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, segment.rundownId, segmentId))
+	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, rundownId, segmentId))
 }
 export function mediaRestartWorkflow(context: MethodContext, workflowId: MediaWorkFlowId) {
 	return ClientAPI.responseSuccess(MediaManagerAPI.restartWorkflow(context, workflowId))
