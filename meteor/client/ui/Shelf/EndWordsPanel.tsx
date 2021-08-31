@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	DashboardLayoutEndsWords,
 	RundownLayoutBase,
@@ -46,7 +47,10 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 
 		return (
 			<div
-				className="end-words-panel timing"
+				className={ClassNames(
+					'end-words-panel timing',
+					isDashboardLayout ? (panel as DashboardLayoutEndsWords).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? {

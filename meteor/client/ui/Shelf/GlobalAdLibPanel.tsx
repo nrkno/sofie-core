@@ -42,6 +42,7 @@ import { i18nTranslator } from '../i18n'
 import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { RundownViewKbdShortcuts } from '../RundownView/RundownViewKbdShortcuts'
+import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -363,7 +364,6 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					tags: action.display.tags,
 					currentPieceTags: action.display.currentPieceTags,
 					nextPieceTags: action.display.nextPieceTags,
-					uniquenessId: action.display.uniquenessId,
 					noHotKey: action.display.noHotKey,
 				})
 			})
@@ -457,6 +457,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		refreshKeyboardHotkeys() {
 			if (!this.props.studioMode) return
+
+			const { t } = this.props
 
 			const preventDefault = (e) => {
 				e.preventDefault()

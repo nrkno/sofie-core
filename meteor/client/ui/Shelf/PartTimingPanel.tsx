@@ -66,9 +66,10 @@ class PartTimingPanelInner extends MeteorReactComponent<
 								currentPartInstanceId={this.props.playlist.currentPartInstanceId}
 								speaking={getAllowSpeaking() && panel.speakCountDown}
 								heavyClassName="overtime"
+								className="part-remaining"
 							/>
 						) : (
-							<CurrentPartElapsed currentPartId={this.props.livePart?.part._id} />
+							<CurrentPartElapsed currentPartId={this.props.livePart?.part._id} className="part-elapsed" />
 						))}
 				</span>
 			</div>

@@ -7,6 +7,7 @@
 	text-align: center;
 	isolation: isolate;
 	padding: 1vw 1vh;
+	overflow: hidden;
 
 	@include item-type-colors();
 

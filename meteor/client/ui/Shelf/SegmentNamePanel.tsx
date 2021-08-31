@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	DashboardLayoutSegmentName,
 	RundownLayoutBase,
@@ -40,7 +41,10 @@ class SegmentNamePanelInner extends MeteorReactComponent<
 
 		return (
 			<div
-				className="segment-name-panel"
+				className={ClassNames(
+					'segment-name-panel',
+					isDashboardLayout ? (panel as DashboardLayoutSegmentName).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? {

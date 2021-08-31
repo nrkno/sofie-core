@@ -45,10 +45,10 @@ export class ColoredBoxPanelInner extends MeteorReactComponent<
 						? {
 								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutColoredBox) }),
 								fontSize: ((panel as DashboardLayoutColoredBox).scale || 1) * 1.5 + 'em',
-								'background-color': this.props.panel.iconColor ?? 'transparent',
+								backgroundColor: this.props.panel.iconColor ?? 'transparent',
 						  }
 						: {
-								'background-color': this.props.panel.iconColor ?? 'transparent',
+								backgroundColor: this.props.panel.iconColor ?? 'transparent',
 						  }
 				)}
 			>

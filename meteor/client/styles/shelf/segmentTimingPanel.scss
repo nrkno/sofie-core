@@ -1,5 +1,6 @@
 .segment-timing-panel {
     position: absolute;
+    overflow: hidden;
 
     .negative {
         color: var(--general-late-color);

@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	DashboardLayoutPlaylistStartTimer,
 	RundownLayoutBase,
@@ -41,7 +42,10 @@ export class PlaylistStartTimerPanelInner extends MeteorReactComponent<
 
 		return (
 			<div
-				className="playlist-start-time-panel timing"
+				className={ClassNames(
+					'playlist-start-time-panel timing',
+					isDashboardLayout ? (this.props.panel as DashboardLayoutPlaylistStartTimer).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? {

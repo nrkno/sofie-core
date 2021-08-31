@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	DashboardLayoutSegmentCountDown,
 	RundownLayoutBase,
@@ -50,7 +51,10 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 
 		return (
 			<div
-				className="segment-timing-panel timing"
+				className={ClassNames(
+					'segment-timing-panel timing',
+					isDashboardLayout ? (panel as DashboardLayoutSegmentCountDown).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? {
@@ -67,7 +71,12 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 						</span>
 					)}
 					{this.props.active && this.props.parts && (
-						<SegmentDuration parts={this.props.parts} countUp={panel.timingType === 'count_up'} />
+						<SegmentDuration
+							parts={this.props.parts}
+							countUp={panel.timingType === 'count_up'}
+							playedOutDuration={0}
+							className="segment-duration"
+						/>
 					)}
 				</span>
 			</div>

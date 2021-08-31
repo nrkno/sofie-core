@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	RundownLayoutBase,
 	DashboardLayoutNextInfo,
@@ -44,7 +45,10 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 		}
 		return (
 			<div
-				className="next-info-panel"
+				className={ClassNames(
+					'next-info-panel',
+					isDashboardLayout ? (this.props.panel as DashboardLayoutNextInfo).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? dashboardElementPosition({ ...(this.props.panel as DashboardLayoutNextInfo), height: 1 })
