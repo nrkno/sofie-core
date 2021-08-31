@@ -57,6 +57,7 @@ import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/R
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
@@ -130,6 +131,7 @@ interface SystemSnapshot {
 	showStyleVariants: Array<ShowStyleVariant>
 	blueprints?: Array<Blueprint> // optional, to be backwards compatible
 	rundownLayouts?: Array<RundownLayoutBase> // optional, to be backwards compatible
+	triggeredActions?: Array<DBTriggeredActions> // optional, to be backwards compatible
 	devices: Array<PeripheralDevice>
 	deviceCommands: Array<PeripheralDeviceCommand>
 	coreSystem: ICoreSystem
@@ -261,6 +263,7 @@ async function createSystemSnapshot(
 	let queryShowStyleBases: MongoQuery<ShowStyleBase> = {}
 	let queryShowStyleVariants: MongoQuery<ShowStyleVariant> = {}
 	let queryRundownLayouts: MongoQuery<RundownLayoutBase> = {}
+	let queryTriggeredActions: MongoQuery<DBTriggeredActions> = {}
 	let queryDevices: MongoQuery<PeripheralDevice> = {}
 	let queryBlueprints: MongoQuery<Blueprint> = {}
 
@@ -285,14 +288,16 @@ async function createSystemSnapshot(
 
 	queryShowStyleVariants = { showStyleBaseId: { $in: showStyleBaseIds } }
 	queryRundownLayouts = { showStyleBaseId: { $in: showStyleBaseIds } }
+	queryTriggeredActions = { showStyleBaseIds: { $in: [null, ...showStyleBaseIds] } }
 
 	if (studioId) queryDevices = { studioId: studioId }
 	else if (organizationId) queryDevices = { organizationId: organizationId }
 
-	const [showStyleVariants, rundownLayouts, devices] = await Promise.all([
+	const [showStyleVariants, rundownLayouts, devices, triggeredActions] = await Promise.all([
 		ShowStyleVariants.findFetchAsync(queryShowStyleVariants),
 		RundownLayouts.findFetchAsync(queryRundownLayouts),
 		PeripheralDevices.findFetchAsync(queryDevices),
+		TriggeredActions.findFetchAsync(queryTriggeredActions),
 	])
 
 	if (studioId) {
@@ -331,6 +336,7 @@ async function createSystemSnapshot(
 		showStyleVariants,
 		blueprints,
 		rundownLayouts,
+		triggeredActions,
 		devices,
 		coreSystem,
 		deviceCommands: deviceCommands,
@@ -830,6 +836,7 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 			saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
 			snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null,
 			snapshot.rundownLayouts ? saveIntoDb(RundownLayouts, {}, snapshot.rundownLayouts) : null,
+			snapshot.triggeredActions ? saveIntoDb(TriggeredActions, {}, snapshot.triggeredActions) : null,
 			saveIntoDb(PeripheralDevices, studioId ? { studioId: studioId } : {}, snapshot.devices),
 			saveIntoDb(CoreSystem, {}, [snapshot.coreSystem]),
 		]))
