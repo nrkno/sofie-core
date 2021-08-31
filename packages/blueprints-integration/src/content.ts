@@ -78,6 +78,11 @@ export interface RemoteContent extends BaseContent {
 	switcherInput: number | string
 }
 
+export interface EvsContent extends BaseContent {
+	studioLabel: string
+	switcherInput: number | string
+}
+
 export interface ScriptContent extends BaseContent {
 	firstWords: string
 	lastWords: string
