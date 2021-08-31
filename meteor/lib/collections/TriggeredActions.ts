@@ -30,7 +30,6 @@ registerCollection('TriggeredActions', TriggeredActions)
 
 registerIndex(TriggeredActions, {
 	showStyleBaseId: 1,
-	_rank: 1,
 })
 
 Meteor.startup(() => {
