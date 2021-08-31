@@ -8509,10 +8509,10 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@6.2.0-nightly-test-release37-mse-testing-20210830-082240-d01c95bfb.0:
-  version "6.2.0-nightly-test-release37-mse-testing-20210830-082240-d01c95bfb.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-nightly-test-release37-mse-testing-20210830-082240-d01c95bfb.0.tgz#a47aa44b4e5525009c9d52ac95ff33cd13d442c0"
-  integrity sha512-ydyVmbt5NRHQT50AMQoQgmifsDQ0loD5kUz5LuDmsLi/gdw3kg9TQ19o/D1LdmFOY6iMFC7AVcvkzTOeq01tiQ==
+timeline-state-resolver-types@6.2.0-nightly-test-release37-mse-testing-20210831-084834-5473627dc.0:
+  version "6.2.0-nightly-test-release37-mse-testing-20210831-084834-5473627dc.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-nightly-test-release37-mse-testing-20210831-084834-5473627dc.0.tgz#8ead1adb8361afa8c3e441700eb03a0ffe46c1c4"
+  integrity sha512-d5LaVI1+HNQHfwzcHnh8tHCjORStcM/h0j+Xke7VNERMHPLRUmzDxaSbYPn7gUImsCeAadAVvZu9NC87j0HsVg==
   dependencies:
     tslib "^2.1.0"
 
@@ -8523,10 +8523,10 @@ timeline-state-resolver-types@^6.1.0-release36.0:
   dependencies:
     tslib "^2.1.0"
 
-timeline-state-resolver@6.2.0-nightly-test-release37-mse-testing-20210830-082240-d01c95bfb.0:
-  version "6.2.0-nightly-test-release37-mse-testing-20210830-082240-d01c95bfb.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-test-release37-mse-testing-20210830-082240-d01c95bfb.0.tgz#8607e2592d9e21585d4ada4aec8fffbdf06a026e"
-  integrity sha512-kH4a45wPFvyLO5b4Sxf4C31CgkyeLXUPKj2QkSc0pQuXklXhNEvzq0QTDueXQUQF84+jJGfJvRwIeQZtxeZ7QQ==
+timeline-state-resolver@6.2.0-nightly-test-release37-mse-testing-20210831-084834-5473627dc.0:
+  version "6.2.0-nightly-test-release37-mse-testing-20210831-084834-5473627dc.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-test-release37-mse-testing-20210831-084834-5473627dc.0.tgz#d1cff3e6e02e82d3bbda48c50739cd5cd9ce1c8a"
+  integrity sha512-ml6J7vTHQGVSg6C+2twMStIJib0sTz0vhVyXmWcsDoikWbV2xu9PYhXB+XLXLW73k0EsbbqyTDaAPgTQWPnEFA==
   dependencies:
     atem-connection "^2.3.0"
     atem-state "^0.12.1"
@@ -8547,7 +8547,7 @@ timeline-state-resolver@6.2.0-nightly-test-release37-mse-testing-20210830-082240
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.2.0-nightly-test-release37-mse-testing-20210830-082240-d01c95bfb.0"
+    timeline-state-resolver-types "6.2.0-nightly-test-release37-mse-testing-20210831-084834-5473627dc.0"
     tslib "^2.1.0"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
