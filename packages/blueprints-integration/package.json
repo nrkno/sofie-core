@@ -40,7 +40,7 @@
 	],
 	"dependencies": {
 		"moment": "2.29.1",
-		"tv2media/timeline-state-resolver-types": "1.0.0-release37",
+		"@tv2media/timeline-state-resolver-types": "1.0.0-release37",
 		"tslib": "^2.1.0",
 		"underscore": "1.13.1"
 	},
