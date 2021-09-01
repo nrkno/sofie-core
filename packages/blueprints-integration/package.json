@@ -1,5 +1,5 @@
 {
-	"name": "@sofie-automation/blueprints-integration",
+	"name": "@tv2media/blueprints-integration",
 	"version": "1.37.0-in-development",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
@@ -7,13 +7,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
 		"directory": "packages/blueprints-integration"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/tv2/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/blueprints-integration#readme",
+	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/blueprints-integration#readme",
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
