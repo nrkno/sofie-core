@@ -29,6 +29,7 @@ import { RundownId } from '../../collections/Rundowns'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
+/** This is a compiled Filter type, targetting a particular MongoCollection */
 type CompiledFilter<T> = {
 	selector: MongoSelector<T>
 	options: FindOptions<T>
@@ -56,6 +57,8 @@ interface IWrappedAdLibType<T extends SomeAdLib, typeName extends string> {
 	expectedDuration?: number | PieceLifespan
 	item: T
 }
+
+/** What follows are utility functions to wrap various AdLib objects to IWrappedAdLib */
 
 function wrapAdLibAction(adLib: AdLibAction, type: 'adLibAction'): IWrappedAdLib {
 	return {
@@ -127,6 +130,9 @@ export type IWrappedAdLib =
 			expectedDuration: undefined
 			item: ISourceLayer
 	  }
+
+/** What follows are methods to compile a filterChain to a CompiledFilter (a MongoSelector with options and some
+ * additional flags, used for performance optimization ) */
 
 function sharedSourceLayerFilterCompiler(
 	filterChain: IAdLibFilterLink[],

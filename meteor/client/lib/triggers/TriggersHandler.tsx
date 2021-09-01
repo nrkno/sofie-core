@@ -184,6 +184,7 @@ function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker
 }
 
 /**
+ * This is a component that handles all Client-side triggers for Action Triggers.
  * Note: there can only be a single TriggersHandler in the node tree.
  *
  * @param {IProps} props

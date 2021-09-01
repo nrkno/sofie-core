@@ -52,11 +52,24 @@ export type ActionContext = XOR<
 
 type ActionExecutor = (t: TFunction, e: any, ctx: ActionContext) => void
 
+/**
+ * An action compiled down to a single function that can be executed
+ *
+ * @interface ExecutableAction
+ */
 interface ExecutableAction {
 	action: ITriggeredActionBase['action']
+	/** Execute the action */
 	execute: ActionExecutor
 }
 
+/**
+ * Optionally, the ExecutableAction can support a preview. Currently this is only implemented for AdLib actions.
+ * This will then return a list of the targeted AdLibs using the normalized form of `IWrappedAdLib`
+ *
+ * @interface PreviewableAction
+ * @extends {ExecutableAction}
+ */
 interface PreviewableAction extends ExecutableAction {
 	preview: (ctx: ActionContext) => IWrappedAdLib[]
 }
@@ -153,6 +166,14 @@ function createRundownPlaylistContext(
 	}
 }
 
+/**
+ * The big one. This compiles the AdLib filter chain and then executes appropriate UserAction's, depending on a
+ * particular AdLib type
+ *
+ * @param {AdLibFilterChainLink[]} filterChain
+ * @param {ShowStyleBase} showStyleBase
+ * @return {*}  {ExecutableAdLibAction}
+ */
 function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: ShowStyleBase): ExecutableAdLibAction {
 	const compiledAdLibFilter = compileAdLibFilter(filterChain, showStyleBase)
 
@@ -368,6 +389,15 @@ function createShowEntireCurrentSegmentAction(_filterChain: IGUIContextFilterLin
 	}
 }
 
+/**
+ * A utility method to create an ExecutableAction wrapping a simple UserAction call that takes some variables from
+ * InternalActionContext as input
+ *
+ * @param {SomeAction} action
+ * @param {UserAction} userAction
+ * @param {(e: string, ctx: InternalActionContext) => Promise<ClientAPI.ClientResponse<any>>} userActionExec
+ * @return {*}  {ExecutableAction}
+ */
 function createUserActionWithCtx(
 	action: SomeAction,
 	userAction: UserAction,
@@ -384,6 +414,12 @@ function createUserActionWithCtx(
 	}
 }
 
+/**
+ * This is a factory method to create the ExecutableAction from a SomeAction-type description
+ * @param action
+ * @param showStyleBase
+ * @returns
+ */
 export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): ExecutableAction {
 	switch (action.action) {
 		case ClientActions.shelf:

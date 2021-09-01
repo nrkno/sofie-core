@@ -40,6 +40,7 @@ type IProps =
 			targetId: ISourceLayer['_id']
 	  }
 
+/** This is a utility component that provides a preview of keys that will trigger an AdLib with the given Id */
 export const ActionAdLibHotkeyPreview: React.FC<IProps> = function AdLibActionHotkeyPreview(props: IProps) {
 	const [_updatedKeyboardMap, setUpdatedKeyboardMap] = useState(Symbol())
 	const Sorensen = useContext(SorensenContext)
