@@ -1616,7 +1616,7 @@ export default withTranslation()(
 								mutateUpdateValue={(v: string | undefined) => v?.split(',')}
 							/>
 							<span className="text-s dimmed">
-								Add custom css classes for customization. Separate classes with a ','
+								Add custom css classes for customization. Separate classes with a &lsquo;,&rsquo;
 							</span>
 						</label>
 					</div>
