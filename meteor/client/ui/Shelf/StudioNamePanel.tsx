@@ -54,7 +54,7 @@ export class StudioNamePanelInner extends MeteorReactComponent<
 				)}
 			>
 				<div className="wrapper">
-					<span className="studio-name-title">{t('Studio Name')}</span>
+					<span className="studio-name-title">{t('Gallery')}</span>
 					<span className="studio-name">{this.props.studio.name}</span>
 				</div>
 			</div>

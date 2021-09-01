@@ -471,19 +471,24 @@ body.tv2 {
 	.presenter-screen {
 		.dashboard {
 			background-color: var(--presenter-clock-background-color);
+			--text-label-color: #f0f0f0;
 
 			.part-timing-panel {
 				background-color: var(--presenter-clock-panel-background-color-neutral);
 				text-align: center;
 
 				> .timing-clock {
-					margin-top: 1.1em;
+					margin-top: 1.5em;
 					margin-right: 0;
 					width: 100%;
 
 					> .timing-clock-label {
 						width: 100%;
 						text-align: center;
+						font-weight: 400;
+						top: -1.2em;
+						font-size: 0.5em;
+						color: var(--text-label-color);
 					}
 
 					> .part-remaining, > .part-elapsed {
@@ -500,17 +505,21 @@ body.tv2 {
 				}
 
 				> .wrapper {
-					margin-top: 1em;
+					margin-top: 1.1em;
+					margin-right: 0;
 
 					> .part-name-title {
 						width: 100%;
 						text-align: center;
+						font-weight: 400;
+						top: -1.2em;
 					}
 
 					> .part-name {
 						display: block;
 						width: 100%;
 						text-align: center;
+						font-weight: 400;
 					}
 				}
 			}
@@ -526,6 +535,8 @@ body.tv2 {
 					> .timing-clock-label {
 						width: 100%;
 						text-align: center;
+						color: var(--text-label-color);
+						font-weight: 400;
 					}
 
 					> .segment-duration {
@@ -546,12 +557,15 @@ body.tv2 {
 					.segment-name-title {
 						width: 100%;
 						text-align: center;
+						color: var(--text-label-color);
+						font-weight: 400;
 					}
 
 					.segment-name {
 						display: block;
 						width: 100%;
 						text-align: center;
+						font-weight: 400;
 					}
 				}
 			}
@@ -570,6 +584,98 @@ body.tv2 {
 					height: 100%;
 					margin: 0;
 					padding: 6vh 0 0;
+				}
+			}
+
+			.text-label-panel {
+				.wrapper {
+					.text {
+						color: var(--text-label-color);
+						font-weight: 400;
+					}
+				}
+
+				&.playlist_name, &.expected_end, &.local_time {
+					.wrapper {
+						.text {
+							color: var(--text-label-color);
+							font-weight: 600;
+						}
+					}
+				}
+			}
+
+			.studio-name-panel.rundown_studio_name {
+				.wrapper {
+					width: 100%;
+					margin-right: 0;
+
+					.studio-name {
+						display: block;
+						width: 100%;
+						text-align: center;
+						color: var(--text-label-color);
+						font-weight: 400;
+						font-size: 1em;
+					}
+
+					.studio-name-title {
+						width: 100%;
+						text-align: center;
+						color: var(--text-label-color);
+						font-size: 0.6em;
+					}
+				}
+			}
+
+			.playlist-name-panel.rundown_studio_name {
+				overflow: hidden;
+
+				.wrapper {
+					width: 100%;
+					margin-right: 0;
+
+					.playlist-name {
+						display: block;
+						width: 100%;
+						text-align: center;
+						color: var(--text-label-color);
+						font-weight: 400;
+						font-size: 1em;
+						top: unset;
+						position: relative;
+					}
+				}
+			}
+
+			.time-of-day-panel {
+				overflow: hidden;
+				> .timing-clock {
+					width: 100%;
+					margin-right: 0;
+
+					> .timing-clock-label {
+						display: none;
+					}
+
+					> .timing-clock {
+						display: block;
+						width: 100%;
+						position: relative;
+						top: unset;
+						left: unset;
+						color: var(--text-label-color);
+						font-weight: 400;
+					}
+				}
+			}
+
+			.playlist-end-time-panel.expected_end {
+				overflow: hidden;
+				> .timing-clock {
+					width: 100%;
+					color: var(--text-label-color);
+					font-weight: 400;
 				}
 			}
 		}
