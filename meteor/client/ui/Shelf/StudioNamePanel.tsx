@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	DashboardLayoutStudioName,
 	RundownLayoutBase,
@@ -39,7 +40,10 @@ export class StudioNamePanelInner extends MeteorReactComponent<
 
 		return (
 			<div
-				className="studio-name-panel"
+				className={ClassNames(
+					'studio-name-panel',
+					isDashboardLayout ? (panel as DashboardLayoutStudioName).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? {

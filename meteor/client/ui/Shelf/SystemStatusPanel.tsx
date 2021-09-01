@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	DashboardLayoutSystemStatus,
 	RundownLayoutBase,
@@ -43,7 +44,10 @@ class SystemStatusPanelInner extends MeteorReactComponent<
 
 		return (
 			<div
-				className="system-status-panel timing"
+				className={ClassNames(
+					'system-status-panel timing',
+					isDashboardLayout ? (panel as DashboardLayoutSystemStatus).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? {
