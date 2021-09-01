@@ -2390,15 +2390,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		onResyncSegment = (segment: SegmentUi, e: any) => {
-			const { t } = this.props
-			if (this.state.studioMode && this.props.rundownPlaylistId) {
-				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) =>
-					MeteorCall.userAction.resyncSegment(e, segment.rundownId, segment._id)
-				)
-			}
-		}
-
 		onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 			const { t } = this.props
 			if (
@@ -2923,7 +2914,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											playlist={this.props.playlist}
 											onSetNext={this.onSetNext}
 											onSetNextSegment={this.onSetNextSegment}
-											onResyncSegment={this.onResyncSegment}
 											studioMode={this.state.studioMode}
 											enablePlayFromAnywhere={!!this.props.studio.settings.enablePlayFromAnywhere}
 										/>

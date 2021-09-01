@@ -636,9 +636,6 @@ export function resyncRundown(context: MethodContext, rundownId: RundownId) {
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundown(context, rundown._id))
 }
-export function resyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId) {
-	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, rundownId, segmentId))
-}
 export function mediaRestartWorkflow(context: MethodContext, workflowId: MediaWorkFlowId) {
 	return ClientAPI.responseSuccess(MediaManagerAPI.restartWorkflow(context, workflowId))
 }
@@ -1121,9 +1118,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	async resyncRundown(_userEvent: string, rundownId: RundownId) {
 		return traceAction(UserActionAPIMethods.resyncRundown, resyncRundown, this, rundownId)
-	}
-	async resyncSegment(_userEvent: string, rundownId: RundownId, segmentId: SegmentId) {
-		return traceAction(UserActionAPIMethods.resyncSegment, resyncSegment, this, rundownId, segmentId)
 	}
 	async mediaRestartWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaRestartWorkflow(this, workflowId))

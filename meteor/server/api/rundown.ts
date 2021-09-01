@@ -368,23 +368,6 @@ export namespace ServerRundownAPI {
 		return innerResyncRundown(access.rundown)
 	}
 
-	export function resyncSegment(
-		context: MethodContext,
-		rundownId: RundownId,
-		segmentId: SegmentId
-	): TriggerReloadDataResponse {
-		check(rundownId, String)
-		check(segmentId, String)
-		
-		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
-		logger.info('resyncSegment ' + segmentId)
-		const segment = Segments.findOne(segmentId)
-		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
-
-		// Orphaned flag will be reset by the response update
-		return IngestActions.reloadSegment(access.rundown, segment)
-	}
-
 	export function innerResyncRundown(rundown: Rundown): TriggerReloadDataResponse {
 		logger.info('resyncRundown ' + rundown._id)
 
@@ -537,9 +520,6 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	}
 	async resyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.resyncRundown(this, rundownId))
-	}
-	async resyncSegment(rundownId: RundownId, segmentId: SegmentId) {
-		return makePromise(() => ServerRundownAPI.resyncSegment(this, rundownId, segmentId))
 	}
 	async unsyncRundown(rundownId: RundownId) {
 		return ServerRundownAPI.unsyncRundown(this, rundownId)
