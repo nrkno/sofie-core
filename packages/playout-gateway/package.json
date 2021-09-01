@@ -59,7 +59,7 @@
 		"@sofie-automation/blueprints-integration": "1.36.0-in-testing.9",
 		"@sofie-automation/server-core-integration": "1.36.0-in-testing.9",
 		"fast-clone": "^1.5.13",
-		"@tv2media/timeline-state-resolver": "1.0.0-release37",
+		"timeline-state-resolver": "npm:@tv2media/timeline-state-resolver@1.0.0-release37",
 		"tslib": "^2.1.0",
 		"underscore": "^1.12.1",
 		"winston": "^2.4.2"
