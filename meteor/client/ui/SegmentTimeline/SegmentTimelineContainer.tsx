@@ -510,15 +510,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					this.onRewindSegment()
 					this.onShowEntireSegment()
 				}
-
-				if (this.props.segmentui && this.props.segmentui.orphaned) {
-					const { t } = this.props
-					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
-					// What is this supposed to do?
-					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, () =>
-						MeteorCall.userAction.resyncSegment('', this.props.segmentui!.rundownId, this.props.segmentui!._id)
-					)
-				}
 			}
 			if (
 				// the segment isn't live, is next, and the nextPartId has changed
