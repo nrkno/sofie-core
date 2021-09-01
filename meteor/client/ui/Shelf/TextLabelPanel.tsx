@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	DashboardLayoutTextLabel,
 	RundownLayoutBase,
@@ -30,7 +31,10 @@ export class TextLabelPanel extends MeteorReactComponent<ITextLabelPanelProps, I
 
 		return (
 			<div
-				className="text-label-panel"
+				className={ClassNames(
+					'text-label-panel',
+					isDashboardLayout ? (panel as DashboardLayoutTextLabel).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? {
