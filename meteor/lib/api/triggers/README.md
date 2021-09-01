@@ -22,7 +22,7 @@ to be fully reactive within a given context.
 
 ## actionFilterChainCompilers
 
-In order for an Action description (`DBTriggeredActions.action[]`) can be executed, it needs to be converted into an
+In order for an Action description (`DBTriggeredActions.action[]`) to be executed, it needs to be converted into an
 `ExecutableAction` object. The action depends on the context it is going to be running in and a `filterChain[]`
 description of what particular objects a given action should target. This filter chain generally needs to be compiled
 into a simple reactive function that registers a minimal amount of observers on collections and/or does a minimal amount
