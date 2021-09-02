@@ -1,10 +1,15 @@
 import * as _ from 'underscore'
 import { DBPart } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import {
+	DBPartInstance,
+	PartInstance,
+	PartInstanceId,
+	wrapPartToTemporaryInstance,
+} from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartsAndSegments, selectNextPart } from './lib'
+import { PartsAndSegments } from './lib'
 import { saveIntoCache } from '../../cache/lib'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
@@ -28,6 +33,7 @@ import { CacheForIngest } from '../ingest/cache'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { DBSegment } from '../../../lib/collections/Segments'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -35,37 +41,27 @@ export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
 /**
  * We can only continue adlib onEnd infinites if we go forwards in the rundown. Any distance backwards will clear them.
  * */
-function canContinueAdlibOnEndInfinites(
+export function canContinueAdlibOnEndInfinites(
 	playlist: ReadonlyDeep<RundownPlaylist>,
-	orderedPartsAndSegments: PartsAndSegments,
+	orderedSegments: DBSegment[],
 	previousPartInstance: PartInstance | undefined,
-	part: DBPart
+	candidateInstance: DBPartInstance
 ): boolean {
 	if (previousPartInstance && playlist) {
-		const span = profiler.startSpan('canContinueAdlibOnEndInfinites')
-		// TODO - if we don't have an index for previousPartInstance, what should we do?
-
-		const expectedNextPart = selectNextPart(playlist, previousPartInstance, orderedPartsAndSegments)
-		if (expectedNextPart) {
-			if (expectedNextPart.part._id === part._id) {
-				// Next part is what we expect, so take it
-				return true
-			} else {
-				const partIndex = orderedPartsAndSegments.parts.findIndex((p) => p._id === part._id)
-				if (partIndex >= expectedNextPart.index) {
-					if (span) span.end()
-					// Somewhere after the auto-next part, so we can use that
-					return true
-				} else {
-					if (span) span.end()
-					// It isnt ahead, so we cant take it
-					return false
-				}
-			}
+		// When in the same segment, we can rely on the ranks to be in order. This is to handle orphaned parts, but is also valid for normal parts
+		if (candidateInstance.segmentId === previousPartInstance.segmentId) {
+			return candidateInstance.part._rank > previousPartInstance.part._rank
 		} else {
-			if (span) span.end()
-			// selectNextPart gave nothing, so we must be at the end?
-			return false
+			// Check if the segment is after the other
+			const previousSegmentIndex = orderedSegments.findIndex((s) => s._id === previousPartInstance.segmentId)
+			const candidateSegmentIndex = orderedSegments.findIndex((s) => s._id === candidateInstance.segmentId)
+
+			if (previousSegmentIndex === -1 || candidateSegmentIndex === -1) {
+				// Should never happen, as orphaned segments are kept around
+				return false
+			}
+
+			return candidateSegmentIndex >= previousSegmentIndex
 		}
 	} else {
 		// There won't be anything to continue anyway..
@@ -195,9 +191,9 @@ export async function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPl
 
 		const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
 			playlist,
-			orderedPartsAndSegments,
+			orderedPartsAndSegments.segments,
 			currentPartInstance,
-			nextPartInstance.part
+			nextPartInstance
 		)
 		const playingPieceInstances = cache.PieceInstances.findFetch(
 			(p) => p.partInstanceId === currentPartInstance._id
@@ -267,9 +263,9 @@ export function getPieceInstancesForPart(
 
 	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
 		playlist,
-		orderedPartsAndSegments,
+		orderedPartsAndSegments.segments,
 		playingPartInstance,
-		part
+		wrapPartToTemporaryInstance(playlist.activationId, part)
 	)
 
 	const rundownIdsToShowstyleIds = getShowStyleIdsRundownMappingFromCache(cache)
