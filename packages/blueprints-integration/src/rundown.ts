@@ -149,6 +149,9 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	/** Should we block a transition at the out of this Part */
 	disableOutTransition?: boolean
 
+	/** How long to keep this part alive after taken out */
+	outTransitionDuration?: number | null
+
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
 
@@ -360,6 +363,7 @@ export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGen
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string // TODO - is this useful to define from the blueprints?
 	isTransition?: boolean
+	isOutTransition?: boolean
 	extendOnHold?: boolean
 }
 export interface IBlueprintPieceDB<TMetadata = unknown> extends IBlueprintPiece<TMetadata> {

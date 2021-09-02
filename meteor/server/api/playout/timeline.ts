@@ -664,7 +664,7 @@ function buildTimelineObjsForRundown(
 		}
 
 		const groupClasses: string[] = ['current_part']
-		const transProps = getTransformTransitionProps(partInstancesInfo.current.partInstance)
+		const transProps = getTransformTransitionProps(partInstancesInfo.current.partInstance, undefined)
 		timelineObjs.push(
 			currentPartGroup,
 			createPartGroupFirstObject(
@@ -682,7 +682,9 @@ function buildTimelineObjsForRundown(
 				partInstancesInfo.current.nowInPart,
 				false,
 				transProps,
-				activePlaylist.holdState
+				activePlaylist.holdState,
+				undefined,
+				partInstancesInfo.previous?.partInstance.part.outTransitionDuration
 			)
 		)
 
@@ -826,7 +828,7 @@ export function hasPieceInstanceDefinitelyEnded(
 	nowInPart: number
 ): boolean {
 	if (nowInPart <= 0) return false
-	if (pieceInstance.piece.hasSideEffects) return false
+	if (pieceInstance.piece.hasSideEffects || pieceInstance.piece.isOutTransition) return false
 
 	let relativeEnd: number | undefined
 	if (typeof pieceInstance.resolvedEndCap === 'number') {
@@ -865,7 +867,8 @@ function transformPartIntoTimeline(
 	isAbsoluteInfinitePartGroup: boolean,
 	transitionProps?: TransformTransitionProps,
 	holdState?: RundownHoldState,
-	showHoldExcept?: boolean
+	showHoldExcept?: boolean,
+	outTransitionDuration?: number | null
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const span = profiler.startSpan('transformPartIntoTimeline')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
@@ -914,7 +917,9 @@ function transformPartIntoTimeline(
 		} else {
 			pieceEnable.start = pieceInstance.piece.enable.start
 
-			if (pieceEnable.start === 0 && !isInfiniteContinuation) {
+			if (pieceInstance.piece.isOutTransition) {
+				pieceEnable.start = `#${partGroup.id}.end - ${pieceEnable.duration || 0}`
+			} else if (pieceEnable.start === 0 && !isInfiniteContinuation) {
 				// If timed absolute and there is a transition delay, then apply delay
 				if (
 					!pieceInstance.piece.isTransition &&
@@ -925,6 +930,12 @@ function transformPartIntoTimeline(
 					const transitionContentsDelayStr =
 						transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
 					pieceEnable.start = `#${getPieceGroupId(transition)}.start ${transitionContentsDelayStr}`
+				} else if (
+					!pieceInstance.piece.isTransition &&
+					allowTransition &&
+					outTransitionDuration &&
+					!pieceInstance.adLibSourceId) {
+						pieceEnable.start = `${outTransitionDuration}`
 				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
 					pieceEnable.start = Math.max(0, transitionPieceDelay)
 				}
@@ -979,6 +990,10 @@ function calcPartKeepaliveDuration(fromPart: Part, toPart: Part, relativeToFrom:
 		return fromPart.autoNextOverlap || 0
 	}
 
+	if (fromPart.outTransitionDuration) {
+		return fromPart.outTransitionDuration
+	}
+
 	if (relativeToFrom) {
 		// TODO remove
 		if (toPart.transitionKeepaliveDuration === undefined || toPart.transitionKeepaliveDuration === null) {
@@ -1022,10 +1037,14 @@ function calcPartTargetDuration(prevPart: Part | undefined, currentPart: Part): 
 	return rawExpectedDuration + prerollDuration
 }
 function calcPartOverlapDuration(fromPart: Part, toPart: Part): number {
-	const allowTransition: boolean = !fromPart.disableOutTransition
 	let overlapDuration: number = toPart.prerollDuration || 0
-	if (allowTransition && toPart.transitionPrerollDuration) {
-		overlapDuration = calcPartKeepaliveDuration(fromPart, toPart, true)
+	if (fromPart.outTransitionDuration) {
+		overlapDuration = fromPart.outTransitionDuration
+	} else {
+		const allowTransition: boolean = !fromPart.disableOutTransition
+		if (allowTransition && toPart.transitionPrerollDuration) {
+			overlapDuration = calcPartKeepaliveDuration(fromPart, toPart, true)
+		}
 	}
 
 	if (fromPart.autoNext) {
