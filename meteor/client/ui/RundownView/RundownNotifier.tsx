@@ -55,6 +55,19 @@ export interface RONotificationEvent {
 const BACKEND_POLL_INTERVAL = 10 * 1000
 const SEGMENT_DELIMITER = ' • '
 
+function getNoticeLevelForNoteType(type: NoteType): NoticeLevel {
+	switch (type) {
+		case NoteType.ERROR:
+			return NoticeLevel.CRITICAL
+		case NoteType.WARNING:
+			return NoticeLevel.WARNING
+		case NoteType.INFO:
+			return NoticeLevel.NOTIFICATION
+		default:
+			return NoticeLevel.WARNING // this conforms with pre-existing behavior where anything that weren't an error was a warning
+	}
+}
+
 class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierHandle
@@ -242,7 +255,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
 							const notificationFromNote = new Notification(
 								rundownNoteId,
-								note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+								getNoticeLevelForNoteType(note.type),
 								note.message,
 								'Rundown',
 								getCurrentTime(),
@@ -427,7 +440,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 				const newNotification = new Notification(
 					notificationId,
-					itemType === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+					getNoticeLevelForNoteType(itemType),
 					(
 						<>
 							{name || segmentName ? (
