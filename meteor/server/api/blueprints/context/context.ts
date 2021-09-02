@@ -204,6 +204,20 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 			})
 		}
 	}
+
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.INFO,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
 }
 
 /** Show Style Variant */
@@ -260,6 +274,20 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 		} else {
 			this.notes.push({
 				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.INFO,
 				message: {
 					key: message,
 					args: params,
@@ -348,6 +376,17 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 	notifyUserWarning(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
 		this.notes.push({
 			type: NoteType.WARNING,
+			message: {
+				key: message,
+				args: params,
+			},
+			partExternalId: partExternalId,
+		})
+	}
+
+	notifyUserInfo(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
+		this.notes.push({
+			type: NoteType.INFO,
 			message: {
 				key: message,
 				args: params,

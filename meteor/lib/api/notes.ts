@@ -7,6 +7,7 @@ import { ITranslatableMessage } from './TranslatableMessage'
 export enum NoteType {
 	WARNING = 1,
 	ERROR = 2,
+	INFO = 3,
 }
 export interface INoteBase {
 	type: NoteType
