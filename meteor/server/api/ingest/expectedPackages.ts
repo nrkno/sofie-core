@@ -1,7 +1,6 @@
 import { check } from '../../../lib/check'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, ProtectedString } from '../../../lib/lib'
 import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import {
