@@ -73,16 +73,16 @@ export namespace MOSDeviceActions {
 					rundown,
 					newPlayingPartExternalId,
 					MOS.IMOSObjectStatus.PLAY
-				).catch((e) => logger.error('Error in setStoryStatus', e))
+				).catch((e) => logger.error('Error in setStoryStatus play', e))
 			}
-			if (oldPlayingPartExternalId) {
-				setStoryStatus(
-					peripheralDevice._id,
-					rundown,
-					oldPlayingPartExternalId,
-					MOS.IMOSObjectStatus.STOP
-				).catch((e) => logger.error('Error in setStoryStatus', e))
-			}
+			// if (oldPlayingPartExternalId) {
+			// 	setStoryStatus(
+			// 		peripheralDevice._id,
+			// 		rundown,
+			// 		oldPlayingPartExternalId,
+			// 		MOS.IMOSObjectStatus.STOP
+			// 	).catch((e) => logger.error('Error in setStoryStatus stop', e))
+			// }
 		}
 	}
 	async function setStoryStatus(
