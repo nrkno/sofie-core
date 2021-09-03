@@ -18,6 +18,7 @@ export enum SourceLayerType {
 	TRANSITION = 13,
 	// LIGHTS = 14,
 	LOCAL = 15,
+	EVS = 16,
 }
 
 export type WithTimeline<T extends BaseContent> = T & {
@@ -81,6 +82,7 @@ export interface RemoteContent extends BaseContent {
 export interface EvsContent extends BaseContent {
 	studioLabel: string
 	switcherInput: number | string
+	evsChannel: string
 }
 
 export interface ScriptContent extends BaseContent {
