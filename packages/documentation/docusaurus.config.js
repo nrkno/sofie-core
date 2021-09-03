@@ -63,7 +63,7 @@ module.exports = {
 					items: [
 						{
 							label: 'Slack',
-							href: 'http://google.com/TODO',
+							href: 'https://join.slack.com/t/sofietv/shared_invite/enQtNTk2Mzc3MTQ1NzAzLTJkZjMyMDg3OGM0YWU3MmU4YzBhZDAyZWI1YmJmNmRiYWQ1OTZjYTkzOTkzMTA2YTE1YjgxMmVkM2U1OGZlNWI',
 						},
 					],
 				},
