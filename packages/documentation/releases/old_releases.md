@@ -11,8 +11,6 @@ description: >-
 
 | Release | Status |
 | :--- | :--- |
-| [Release 33](releases.md#release-33) | In Testing |
-| [Release 32](releases.md#release-32) | Released 2021-05-05 _**Current stable version**_ |
 | [Release 31](releases.md#release-31) | Released 2021-05-05 |
 | [Release 30](releases.md#release-30) | _Released 2021-03-22_ |
 | [Release 29](releases.md#release-29) | _Released 2021-02-08_ |

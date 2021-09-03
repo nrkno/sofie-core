@@ -4,14 +4,14 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
 	title: 'Sofie Automation',
-	tagline: 'Dinosaurs are cool',
-	url: 'https://julusian.github.io',
+	tagline: '',
+	url: 'https://nrkno.github.io',
 	baseUrl: '/tv-automation-server-core/',
 	onBrokenLinks: 'warn',
 	onBrokenMarkdownLinks: 'warn',
 	favicon: 'img/favicon.ico',
-	organizationName: 'nrkno', // Usually your GitHub org/user name.
-	projectName: 'tv-automation-server-core', // Usually your repo name.
+	organizationName: 'nrkno',
+	projectName: 'tv-automation-server-core',
 	themeConfig: {
 		navbar: {
 			title: 'Sofie Automation',
@@ -23,7 +23,7 @@ module.exports = {
 				{ to: '/docs/getting-started/intro', label: 'Getting Started', position: 'left' },
 				{ to: '/docs/main/intro', label: 'Docs', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-				{ href: 'https://julusian.github.io/tv-automation-server-core/typedoc', label: 'API Docs' }, // external link to typedoc
+				{ href: 'https://nrkno.github.io/tv-automation-server-core/typedoc', label: 'API Docs' }, // external link to typedoc
 				{ to: '/releases', label: 'Releases', position: 'left' },
 				// {to: '/blog', label: 'Blog', position: 'left'},
 

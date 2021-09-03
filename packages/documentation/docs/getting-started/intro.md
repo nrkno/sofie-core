@@ -1,3 +1,9 @@
+---
+sidebar_label: Introduction
+sidebar_position: 1
+title: Getting Started
+---
+
 # Getting Started
 
 _Sofie_ can be installed in many different ways, depending on which platforms, needs, and features you desire. If this is your first time working with _Sofie_, we recommend you start with the [Installation and Setup](installation/) portion of this guide. It will walk you through all the required steps to get _Sofie_ running on your local machine as well as provide the resources to attach additional hardware \(vision mixers, audio mixes, etcetera\) if necessary.

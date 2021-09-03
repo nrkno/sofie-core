@@ -1,3 +1,9 @@
+---
+sidebar_label: Introduction
+sidebar_position: 1
+title: For Developers
+---
+
 # For developers
 
 The pages below are intended for developers of any of the Sofie-related repos, or blueprints.
