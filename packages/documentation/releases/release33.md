@@ -1,10 +1,10 @@
 ---
-sidebar_label: v1.33 (Unreleased)
+sidebar_label: v1.33 (2021-06-16)
 sidebar_position: 1000
 title: Release 33
 ---
 
-Not released yet, target version: 1.33
+Release date: 2021-06-16 \(1.33.0\)
 
 ### Main Features
 
