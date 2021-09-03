@@ -284,7 +284,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -318,7 +318,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -337,17 +337,11 @@ jobs:
         env:
           CI: true
 
-  typedoc-libs:
-    name: Publish Libs Typedoc
+  publish-docs:
+    name: Publish Docs
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
-
-    # only run for release tags
-    # TODO - we should only do this if the latest release
-    if: contains(github.ref, 'refs/tags/')
-
-    needs: release-libs
 
     steps:
       - uses: actions/checkout@v2
@@ -359,19 +353,28 @@ jobs:
         run: |
           cd packages 
           yarn install
+          yarn build
         env:
           CI: true
-      - name: Run typecheck and linter
+      - name: Run docusaurus
+        run: |
+          cd packages/documentation
+          yarn docs:build
+        env:
+          CI: true
+      - name: Run typedoc
         run: |
           cd packages
-          yarn docs
+          yarn docs:typedoc
+          cp docs documentation/build/typedoc -R
         env:
           CI: true
       - name: Publish
+        if: github.ref == 'refs/heads/master' # always publish for just the master branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./packages/docs
+          publish_dir: ./packages/documentation/build
 
   prerelease-libs:
     name: Prerelease Lib
@@ -410,7 +413,7 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -513,7 +516,7 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -559,7 +562,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
