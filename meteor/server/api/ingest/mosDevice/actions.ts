@@ -70,21 +70,35 @@ export namespace MOSDeviceActions {
 		newPlayingPartExternalId: string | null
 	) {
 		if (oldPlayingPartExternalId !== newPlayingPartExternalId) {
-			if (oldPlayingPartExternalId) {
-				setStoryStatus(
-					peripheralDevice._id,
-					rundown,
-					oldPlayingPartExternalId,
-					MOS.IMOSObjectStatus.STOP
-				).catch((e) => logger.error('Error in setStoryStatus', e))
-			}
+			// Note: We send the PLAY first, since that seems to give us _slightly_ better responsiveness in ENPS.
+
 			if (newPlayingPartExternalId) {
-				setStoryStatus(
-					peripheralDevice._id,
-					rundown,
-					newPlayingPartExternalId,
-					MOS.IMOSObjectStatus.PLAY
-				).catch((e) => logger.error('Error in setStoryStatus', e))
+				try {
+					waitForPromise(
+						setStoryStatus(
+							peripheralDevice._id,
+							rundown,
+							newPlayingPartExternalId,
+							MOS.IMOSObjectStatus.PLAY
+						)
+					)
+				} catch (error) {
+					logger.error('Error in setStoryStatus PLAY', error)
+				}
+			}
+			if (oldPlayingPartExternalId) {
+				try {
+					waitForPromise(
+						setStoryStatus(
+							peripheralDevice._id,
+							rundown,
+							oldPlayingPartExternalId,
+							MOS.IMOSObjectStatus.STOP
+						)
+					)
+				} catch (error) {
+					logger.error('Error in setStoryStatus STOP', error)
+				}
 			}
 		}
 	}
