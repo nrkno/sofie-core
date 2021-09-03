@@ -10,7 +10,7 @@ import {
 	ExpectedPackageWorkStatuses,
 	ExpectedPackageWorkStatusId,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { assertNever, getCurrentTime, literal } from '../../../lib/lib'
+import { assertNever, getCurrentTime, literal, protectString } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,
@@ -172,7 +172,11 @@ export namespace PackageManagerIntegration {
 			check(change.containerId, String)
 			check(change.packageId, String)
 
-			const id = getPackageContainerPackageId(peripheralDevice.studioId, change.containerId, change.packageId)
+			const id = getPackageContainerPackageId(
+				peripheralDevice.studioId,
+				change.containerId,
+				protectString(change.packageId)
+			)
 
 			if (change.type === 'delete') {
 				removedIds.push(id)
