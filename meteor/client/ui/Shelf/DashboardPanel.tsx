@@ -690,11 +690,12 @@ export class DashboardPanelInner extends MeteorReactComponent<
 export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
-	if (playlist.currentPartInstanceId) {
+	if (playlist.activationId && playlist.currentPartInstanceId) {
 		prospectivePieces = PieceInstances.find({
 			startedPlayback: {
 				$exists: true,
 			},
+			playlistActivationId: playlist.activationId,
 			$and: [
 				{
 					$or: [
@@ -770,8 +771,9 @@ export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist) {
 
 export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
-	if (playlist.nextPartInstanceId) {
+	if (playlist.activationId && playlist.nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
+			playlistActivationId: playlist.activationId,
 			partInstanceId: playlist.nextPartInstanceId,
 			$and: [
 				{
