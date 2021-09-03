@@ -1877,7 +1877,9 @@ const StudioPackageManagerSettings = withTranslation()(
 															collection={Studios}
 															className="input text-input input-l"
 														></EditAttribute>
-														<span className="text-s dimmed">{t('URLs to the ISAs (in order of importance)')}</span>
+														<span className="text-s dimmed">
+															{t('URLs to the ISAs, in order of importance (comma separated)')}
+														</span>
 													</label>
 												</div>
 												<div className="mod mvs mhs">

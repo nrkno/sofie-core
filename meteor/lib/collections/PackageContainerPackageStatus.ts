@@ -39,7 +39,7 @@ export const PackageContainerPackageStatuses = createMongoCollection<
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatusDB
 >('packageContainerPackageStatuses')
-registerCollection('PackageContainerStatuses', PackageContainerPackageStatuses)
+registerCollection('PackageContainerPackageStatuses', PackageContainerPackageStatuses)
 
 registerIndex(PackageContainerPackageStatuses, {
 	studioId: 1,
@@ -50,7 +50,7 @@ registerIndex(PackageContainerPackageStatuses, {
 export function getPackageContainerPackageId(
 	studioId: StudioId,
 	containerId: string,
-	packageId: string | ExpectedPackageId
+	packageId: ExpectedPackageId
 ): PackageContainerPackageId {
 	return protectString(`${studioId}_${containerId}_${packageId}`)
 }

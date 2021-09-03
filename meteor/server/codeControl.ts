@@ -156,11 +156,11 @@ function evaluateFunctions() {
 				const waitTime = nextFcn.started - nextFcn.queueTime
 				if (waitTime > ACCEPTABLE_WAIT_TIME) {
 					logger.warn(
-						`syncFunction ${nextFcn.id} "${
-							nextFcn.name
-						}" waited ${waitTime} ms for other functions to complete before starting: [${nextFcn.waitingOnFunctions.join(
-							', '
-						)}]`
+						`syncFunction ${nextFcn.id} "${nextFcn.name}" waited ${waitTime} ms for ${
+							nextFcn.waitingOnFunctions.length
+						} other functions to complete before starting: [${nextFcn.waitingOnFunctions
+							.slice(0, 10)
+							.join(', ')}]`
 					)
 				}
 				Meteor.setTimeout(() => {

@@ -10,7 +10,7 @@ import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { StyledTimecode } from '../../lib/StyledTimecode'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
-import { getPreviewPackageSettings } from '../../../lib/collections/ExpectedPackages'
+import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 
@@ -30,30 +30,27 @@ interface IProps {
 
 	contentPackageInfos: ScanInfoForPackages | undefined
 	expectedPackages: ExpectedPackage.Any[] | undefined
-	studioPackageContainers: Studio['packageContainers'] | undefined
+	studio: Studio | undefined
 	displayOn?: 'document' | 'viewport'
 }
 
-function getPackagePreviewUrl(
-	expectedPackages: ExpectedPackage.Any[],
-	studioPackageContainers: Studio['packageContainers']
-): string | undefined {
+function getPackagePreviewUrl(expectedPackages: ExpectedPackage.Any[], studio: Studio): string | undefined {
 	// use Expected packages:
 	// Just use the first one we find.
 	// TODO: support multiple expected packages?
 	let packagePreviewPath: string | undefined
 	let previewContainerId: string | undefined
 	for (const expectedPackage of expectedPackages) {
-		const sideEffect = expectedPackage.sideEffect.previewPackageSettings || getPreviewPackageSettings(expectedPackage)
-		packagePreviewPath = sideEffect?.path
-		previewContainerId = expectedPackage.sideEffect.previewContainerId
+		const sideEffect = getSideEffect(expectedPackage, studio)
+		packagePreviewPath = sideEffect.previewPackageSettings?.path
+		previewContainerId = sideEffect.previewContainerId
 
 		if (packagePreviewPath && previewContainerId) {
 			break // don't look further
 		}
 	}
 	if (packagePreviewPath && previewContainerId) {
-		const packageContainer = studioPackageContainers[previewContainerId]
+		const packageContainer = studio.packageContainers[previewContainerId]
 		if (packageContainer) {
 			// Look up an accessor we can use:
 			for (const accessor of Object.values(packageContainer.container.accessors)) {
@@ -135,8 +132,8 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 	const showFrameMarker = offsetTimePosition === 0 || offsetTimePosition >= itemDuration
 
 	const previewUrl: string | undefined = props.contentPackageInfos
-		? props.expectedPackages && props.studioPackageContainers
-			? getPackagePreviewUrl(props.expectedPackages, props.studioPackageContainers)
+		? props.expectedPackages && props.studio
+			? getPackagePreviewUrl(props.expectedPackages, props.studio)
 			: undefined
 		: getMediaPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) // Fallback, media objects
 
