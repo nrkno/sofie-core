@@ -611,6 +611,9 @@ export function checkPieceContentStatus(
 						}
 					}
 					break
+				// Note: If adding another type here, make sure it is also handled in:
+				// getMediaObjectMediaId()
+				// * withMediaObjectStatus.tsx (updateMediaObjectSubscription)
 			}
 		}
 	}

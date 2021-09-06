@@ -4,7 +4,7 @@ import { Tracker } from 'meteor/tracker'
 import { PieceUi } from './SegmentTimelineContainer'
 import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { SourceLayerType, VTContent, LiveSpeakContent, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { SourceLayerType, VTContent, LiveSpeakContent, ISourceLayer, GraphicsContent } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
@@ -58,6 +58,9 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 							break
 						case SourceLayerType.LIVE_SPEAK:
 							objId = piece.content ? (piece.content as LiveSpeakContent).fileName?.toUpperCase() : undefined
+							break
+						case SourceLayerType.GRAPHICS:
+							objId = piece.content ? (piece.content as GraphicsContent).fileName?.toUpperCase() : undefined
 							break
 					}
 
