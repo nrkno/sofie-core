@@ -34,12 +34,6 @@ export class PlaylistStartTimerPanelInner extends MeteorReactComponent<
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
-		const { playlist } = this.props
-
-		if (!PlaylistTiming.getExpectedDuration(playlist.timing)) {
-			return null
-		}
-
 		return (
 			<div
 				className={ClassNames(

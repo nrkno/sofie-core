@@ -37,10 +37,6 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
 
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 
-		if (!PlaylistTiming.getExpectedDuration(playlist.timing)) {
-			return null
-		}
-
 		return (
 			<div
 				className={ClassNames(
