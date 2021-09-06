@@ -37,10 +37,18 @@ body.tv2 {
 	--presenter-clock-panel-border-color: #ffffff;
 
 	.rundown-view {
-		padding-top: 60px;
+		padding-top: 80px;
 
 		.badge.mod {
 			margin: 20px 20px 0px 20px;
+		}
+
+		.header.rundown {
+			height: 80px;
+
+			.row.first-row {
+				height: 60px;
+			}
 		}
 
 		.header.rundown .close {
@@ -683,14 +691,14 @@ body.tv2 {
 
 	.rundown-view {
 		.status-bar {
-			top: 3.375rem;
+			top: 4rem;
 		}
 		.notification-center-panel {
-			top: 3.375rem;
+			top: 4rem;
 		}
 	}
 	.rundown-view + .notification-pop-ups {
-		top: 3.375rem;
+		top: 4rem;
 	}
 
 	.notification-pop-ups {
