@@ -132,6 +132,7 @@ export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase 
 
 export interface RundownLayoutEndWords extends RundownLayoutElementBase, RequiresActiveLayers {
 	type: RundownLayoutElementType.PLAYLIST_END_TIMER
+	hideLabel: boolean
 }
 
 export interface RundownLayoutSegmentTiming extends RundownLayoutElementBase, RequiresActiveLayers {

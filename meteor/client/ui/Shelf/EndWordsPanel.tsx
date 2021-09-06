@@ -61,7 +61,7 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 				)}
 			>
 				<div className="timing-clock left">
-					<span className="timing-clock-label">{t('End Words')}</span>
+					{!this.props.panel.hideLabel && <span className="timing-clock-label">{t('End Words')}</span>}
 					<span className="text">&lrm;{endOfScript}&lrm;</span>
 				</div>
 			</div>

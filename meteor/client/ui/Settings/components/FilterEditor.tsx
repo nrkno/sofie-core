@@ -998,6 +998,19 @@ export default withTranslation()(
 								className="input text-input input-l"
 							/>
 						</label>
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Hide Label')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.hideLabel`}
+									obj={item}
+									type="checkbox"
+									collection={RundownLayouts}
+									className="mod mas"
+								/>
+							</label>
+						</div>
 					</div>
 					{this.renderRequiresActiveLayerSettings(
 						item,
