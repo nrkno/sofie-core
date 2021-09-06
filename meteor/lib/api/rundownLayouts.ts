@@ -206,6 +206,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.TIME_OF_DAY,
 			RundownLayoutElementType.SHOWSTYLE_DISPLAY,
 			RundownLayoutElementType.SYSTEM_STATUS,
+			RundownLayoutElementType.COLORED_BOX,
 		],
 	})
 	registry.registerPresenterViewLayout(RundownLayoutType.CLOCK_PRESENTER_VIEW_LAYOUT, {
