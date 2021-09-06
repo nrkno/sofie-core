@@ -237,9 +237,11 @@ const TimingDisplay = withTranslation()(
 				const expectedEnd = PlaylistTiming.getExpectedEnd(rundownPlaylist.timing)
 				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
 				const showEndTiming =
-					this.props.timingDurations.rundownsBeforeNextBreak?.length &&
-					(!this.props.layout?.hideExpectedEndBeforeBreak ||
-						(this.props.timingDurations.breakIsLastRundown && this.props.layout?.lastRundownIsNotBreak))
+					!this.props.timingDurations.rundownsBeforeNextBreak ||
+					!this.props.layout?.showNextBreakTiming ||
+					(this.props.timingDurations.rundownsBeforeNextBreak.length > 0 &&
+						(!this.props.layout?.hideExpectedEndBeforeBreak ||
+							(this.props.timingDurations.breakIsLastRundown && this.props.layout?.lastRundownIsNotBreak)))
 				const showNextBreakTiming =
 					rundownPlaylist.startedPlayback &&
 					this.props.timingDurations.rundownsBeforeNextBreak?.length &&
