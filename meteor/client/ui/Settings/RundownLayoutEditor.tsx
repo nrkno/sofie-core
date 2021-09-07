@@ -402,7 +402,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											<Link
 												target="_blank"
 												className="pill-link"
-												to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}
+												to={this.props.customRegion.navigationLink(studio._id, item._id)}
 											>
 												{studio.name}
 											</Link>

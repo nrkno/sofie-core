@@ -39,6 +39,7 @@ import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
 import { literal } from '../lib'
 import { TFunction } from 'i18next'
+import { StudioId } from '../collections/Studios'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout(
@@ -64,6 +65,7 @@ export interface CustomizableRegionSettingsManifest {
 	_id: string
 	title: string
 	layouts: Array<CustomizableRegionLayout>
+	navigationLink: (studioId: StudioId, layoutId: RundownLayoutId) => string
 }
 
 export interface CustomizableRegionLayout {
@@ -138,26 +140,31 @@ class RundownLayoutsRegistry {
 				_id: CustomizableRegions.RundownView,
 				title: t('Rundown View Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?rundownViewLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.Shelf,
 				title: t('Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}/shelf?layout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.MiniShelf,
 				title: t('Mini Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?miniShelfLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.RundownHeader,
 				title: t('Rundown Header Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?rundownHeaderLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.PresenterView,
 				title: t('Presenter View Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts),
+				navigationLink: (studioId, layoutId) => `/countdowns/${studioId}/presenter?presenterLayout=${layoutId}`,
 			},
 		]
 	}
