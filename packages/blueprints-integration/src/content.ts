@@ -83,6 +83,7 @@ export interface EvsContent extends BaseContent {
 	studioLabel: string
 	switcherInput: number | string
 	evsChannel: string
+	uiColorCode?: string
 }
 
 export interface ScriptContent extends BaseContent {
