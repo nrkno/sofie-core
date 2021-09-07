@@ -798,12 +798,12 @@ export const DashboardPanel = translateWithTracker<
 	(props: Translated<IAdLibPanelProps>) => {
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
 			(
-				currentPartInstanceId: PartInstanceId | null,
-				nextPartInstanceId: PartInstanceId | null,
+				_currentPartInstanceId: PartInstanceId | null,
+				_nextPartInstanceId: PartInstanceId | null,
 				showStyleBase: ShowStyleBase
 			) => {
-				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(currentPartInstanceId)
-				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(showStyleBase, nextPartInstanceId)
+				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(showStyleBase, props.playlist)
 				return {
 					unfinishedAdLibIds,
 					unfinishedTags,

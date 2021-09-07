@@ -110,7 +110,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 
 export const PieceCountdownPanel = withTracker<IPieceCountdownPanelProps, IState, IPieceCountdownPanelTrackedProps>(
 	(props: IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps) => {
-		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
+		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist)
 		const livePieceInstance: PieceInstance | undefined =
 			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
 				? _.flatten(Object.values(unfinishedPieces)).find((piece: PieceInstance) => {

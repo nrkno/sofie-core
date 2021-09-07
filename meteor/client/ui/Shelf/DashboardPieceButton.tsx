@@ -21,7 +21,7 @@ import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { getThumbnailPackageSettings } from '../../../lib/collections/ExpectedPackages'
+import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
 import { ensureHasTrailingSlash, isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
 
@@ -93,30 +93,33 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	getThumbnailUrl = (): string | undefined => {
-		const { piece } = this.props
+	getThumbnailUrl = (piece: IAdLibListItem, studio: Studio): string | undefined => {
 		if (piece.expectedPackages) {
 			// use Expected packages:
 			// Just use the first one we find.
 			// TODO: support multiple expected packages?
+
 			let thumbnailContainerId: string | undefined
 			let packageThumbnailPath: string | undefined
 			for (const expectedPackage of piece.expectedPackages) {
-				const sideEffect =
-					expectedPackage.sideEffect.thumbnailPackageSettings || getThumbnailPackageSettings(expectedPackage)
-				packageThumbnailPath = sideEffect?.path
-				thumbnailContainerId = expectedPackage.sideEffect.thumbnailContainerId
+				const sideEffect = getSideEffect(expectedPackage, studio)
+
+				packageThumbnailPath = sideEffect.thumbnailPackageSettings?.path
+				thumbnailContainerId = sideEffect.thumbnailContainerId
 
 				if (packageThumbnailPath && thumbnailContainerId) {
 					break // don't look further
 				}
 			}
 			if (packageThumbnailPath && thumbnailContainerId) {
-				const packageContainer = this.props.studio?.packageContainers[thumbnailContainerId]
+				const packageContainer = studio.packageContainers[thumbnailContainerId]
 				if (packageContainer) {
 					// Look up an accessor we can use:
 					for (const accessor of Object.values(packageContainer.container.accessors)) {
-						if (accessor.type === Accessor.AccessType.HTTP && accessor.baseUrl) {
+						if (
+							(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
+							accessor.baseUrl
+						) {
 							// TODO: add fiter for accessor.networkId ?
 							return [
 								accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
@@ -144,7 +147,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	renderGraphics(renderThumbnail?: boolean) {
-		const thumbnailUrl = this.getThumbnailUrl()
+		const thumbnailUrl = this.getThumbnailUrl(this.props.piece, this.props.studio)
 		return (
 			<>
 				{thumbnailUrl && renderThumbnail && (
@@ -160,8 +163,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		let thumbnailUrl: string | undefined
 		let sourceDuration: number | undefined
 		const adLib = this.props.piece as any as AdLibPieceUi
-		if (this.props.piece.content) {
-			thumbnailUrl = this.getThumbnailUrl()
+		if (this.props.piece.content && this.props.studio) {
+			thumbnailUrl = this.getThumbnailUrl(this.props.piece, this.props.studio!)
 			const vtContent = adLib.content as VTContent | undefined
 			sourceDuration = vtContent?.sourceDuration
 		}
@@ -194,7 +197,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
 					expectedPackages={this.props.piece.expectedPackages}
-					studioPackageContainers={this.props.studio?.packageContainers}
+					studio={this.props.studio}
 					displayOn="viewport"
 				/>
 				{thumbnailUrl && renderThumbnail && (

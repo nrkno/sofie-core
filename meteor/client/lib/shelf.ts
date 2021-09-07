@@ -1,10 +1,11 @@
 import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { AdLibAction } from '../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
-import { PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
+import { PartInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { getCurrentTime } from '../../lib/lib'
@@ -56,14 +57,12 @@ export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: 
 	return false
 }
 
-export function getNextPiecesReactive(
-	showsStyleBase: ShowStyleBase,
-	nextPartInstanceId: PartInstanceId | null
-): PieceInstance[] {
+export function getNextPiecesReactive(showsStyleBase: ShowStyleBase, playlist: RundownPlaylist): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
-	if (nextPartInstanceId) {
+	if (playlist.activationId && playlist.nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
-			partInstanceId: nextPartInstanceId,
+			playlistActivationId: playlist.activationId,
+			partInstanceId: playlist.nextPartInstanceId,
 			$and: [
 				{
 					piece: {
@@ -95,13 +94,13 @@ export function getNextPiecesReactive(
 
 export function getNextPieceInstancesGrouped(
 	showStyleBase: ShowStyleBase,
-	nextPartInstanceId: PartInstanceId | null
+	playlist: RundownPlaylist
 ): {
 	nextAdLibIds: PieceId[]
 	nextTags: string[]
 	nextPieceInstances: PieceInstance[]
 } {
-	const nextPieceInstances = getNextPiecesReactive(showStyleBase, nextPartInstanceId)
+	const nextPieceInstances = getNextPiecesReactive(showStyleBase, playlist)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -114,14 +113,15 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartInstanceId | null) {
+export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
-	if (currentPartInstanceId) {
+	if (playlist.activationId && playlist.currentPartInstanceId) {
 		prospectivePieces = PieceInstances.find({
 			startedPlayback: {
 				$exists: true,
 			},
+			playlistActivationId: playlist.activationId,
 			$and: [
 				{
 					$or: [
@@ -195,12 +195,12 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	return prospectivePieces
 }
 
-export function getUnfinishedPieceInstancesGrouped(currentPartInstanceId: PartInstanceId | null): {
+export function getUnfinishedPieceInstancesGrouped(playlist: RundownPlaylist): {
 	unfinishedPieceInstances: PieceInstance[]
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 } {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)

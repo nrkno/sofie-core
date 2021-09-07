@@ -3,13 +3,24 @@ import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { PieceUi } from './SegmentTimelineContainer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import {
+	SourceLayerType,
+	VTContent,
+	LiveSpeakContent,
+	ISourceLayer,
+	GraphicsContent,
+} from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
+import { literal, protectString } from '../../../lib/lib'
+import { ExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
+import * as _ from 'underscore'
+import { MongoSelector } from '../../../lib/typings/meteor'
+import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { AdLibPieceUi } from '../../lib/shelf'
 
 type AnyPiece = {
@@ -35,6 +46,9 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 			private destroyed: boolean
 			private subscription: Meteor.SubscriptionHandle | undefined
 
+			private expectedPackageIds: ExpectedPackageId[] = []
+			private subPackageInfos: Meteor.SubscriptionHandle | undefined
+
 			private updateMediaObjectSubscription() {
 				if (this.destroyed) return
 
@@ -42,7 +56,21 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 				if (this.props.piece && layer) {
 					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
-					const objId: string | undefined = getMediaObjectMediaId(piece, layer)
+					let objId: string | undefined = getMediaObjectMediaId(piece, layer)
+
+					switch (layer.type) {
+						case SourceLayerType.VT:
+							objId = piece.content ? (piece.content as VTContent).fileName?.toUpperCase() : undefined
+							break
+						case SourceLayerType.LIVE_SPEAK:
+							objId = piece.content ? (piece.content as LiveSpeakContent).fileName?.toUpperCase() : undefined
+							break
+						case SourceLayerType.GRAPHICS:
+							objId = piece.content ? (piece.content as GraphicsContent).fileName?.toUpperCase() : undefined
+							break
+						case SourceLayerType.TRANSITION:
+							objId = piece.content ? (piece.content as VTContent).fileName?.toUpperCase() : undefined
+					}
 
 					if (objId && objId !== this.objId && this.props.studio) {
 						if (this.subscription) this.subscription.stop()
@@ -50,6 +78,39 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 						this.subscription = this.subscribe(PubSub.mediaObjects, this.props.studio._id, {
 							mediaId: this.objId,
 						})
+					}
+				}
+
+				if (this.props.piece) {
+					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
+
+					const expectedPackageIds: ExpectedPackageId[] = []
+					if (piece.expectedPackages) {
+						for (let i = 0; i < piece.expectedPackages.length; i++) {
+							const expectedPackage = piece.expectedPackages[i]
+							const id = expectedPackage._id || '__unnamed' + i
+
+							expectedPackageIds.push(protectString(`${piece._id}_${id}`))
+						}
+					}
+					if (this.props.studio) {
+						if (!_.isEqual(this.expectedPackageIds, expectedPackageIds)) {
+							this.expectedPackageIds = expectedPackageIds
+
+							if (this.subPackageInfos) {
+								this.subPackageInfos.stop()
+								delete this.subPackageInfos
+							}
+							if (this.expectedPackageIds.length) {
+								this.subPackageInfos = this.subscribe(
+									PubSub.packageInfos,
+									literal<MongoSelector<PackageInfoDB>>({
+										studioId: this.props.studio._id,
+										packageId: { $in: this.expectedPackageIds },
+									})
+								)
+							}
+						}
 					}
 				}
 			}
@@ -170,6 +231,14 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 			componentWillUnmount() {
 				this.destroyed = true
+				if (this.subscription) {
+					this.subscription.stop()
+					delete this.subscription
+				}
+				if (this.subPackageInfos) {
+					this.subPackageInfos.stop()
+					delete this.subPackageInfos
+				}
 				super.componentWillUnmount()
 			}
 

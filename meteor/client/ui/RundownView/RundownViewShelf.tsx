@@ -313,9 +313,9 @@ export const RundownViewShelf = translateWithTracker<
 		const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
-			(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null) => {
-				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(currentPartInstanceId)
-				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.showStyleBase, nextPartInstanceId)
+			(_currentPartInstanceId: PartInstanceId | null, _nextPartInstanceId: PartInstanceId | null) => {
+				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.showStyleBase, props.playlist)
 				return {
 					unfinishedAdLibIds,
 					unfinishedTags,
