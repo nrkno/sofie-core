@@ -30,6 +30,7 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 	let budget = 0
 	let playedOut = 0
 	if (props.budgetDuration !== undefined) {
+		budget = props.budgetDuration
 		duration = props.budgetDuration - props.playedOutDuration
 	} else if (props.parts && props.timingDurations.partPlayed) {
 		const { partPlayed } = props.timingDurations
