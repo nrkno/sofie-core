@@ -357,6 +357,8 @@ const SourceLayerSettings = withTranslation()(
 				// 	return t('Lights')
 				case SourceLayerType.LOCAL:
 					return t('Local')
+				case SourceLayerType.EVS:
+					return t('EVS')
 				default:
 					assertNever(type)
 					return SourceLayerType[type]
