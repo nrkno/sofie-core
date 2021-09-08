@@ -596,9 +596,3 @@ jobs:
           yarn validate:dependencies
         env:
           CI: true
-      - name: Validate dev dependencies
-        run: |
-          cd packages
-          yarn validate:dev-dependencies
-        env:
-          CI: true
