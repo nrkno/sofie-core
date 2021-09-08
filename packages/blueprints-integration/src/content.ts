@@ -52,6 +52,7 @@ export type SomeContent =
 	| TransitionContent
 	| GraphicsContent
 	| UnknownContent
+	| EvsContent
 export type SomeTimelineContent = WithTimeline<SomeContent>
 
 export type UnknownContent = BaseContent

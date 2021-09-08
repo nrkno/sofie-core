@@ -20,6 +20,7 @@ import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { Studio } from '../../../lib/collections/Studios'
+import { EvsLayerItemRenderer } from './Renderers/EvsLayerItemRenderer'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -639,6 +640,19 @@ export const SourceLayerItem = withTranslation()(
 				case SourceLayerType.TRANSITION:
 					return (
 						<TransitionSourceRenderer
+							key={unprotectString(this.props.piece.instance._id)}
+							typeClass={typeClass}
+							getItemDuration={this.getItemDuration}
+							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							{...this.props}
+							{...this.state}
+						/>
+					)
+				case SourceLayerType.EVS:
+					return (
+						<EvsLayerItemRenderer
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}

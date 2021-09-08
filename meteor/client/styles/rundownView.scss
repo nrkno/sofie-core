@@ -2101,6 +2101,11 @@ svg.icon {
 					object-position: center center;
 					margin-left: 0.5em;
 				}
+
+				.segment-timeline__piece__label__colored-mark {
+					font-size: 500%;
+					line-height: 24px;
+				}
 			}
 
 			// Layer-item appendages are parts of a layer item going beyond the layer (usually, across the entire timeline)
