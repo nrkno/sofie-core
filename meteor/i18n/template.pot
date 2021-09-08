@@ -335,7 +335,7 @@ msgstr ""
 msgid "Documentation is available at"
 msgstr ""
 
-msgid "Use ENPS order"
+msgid "Use {{nrcsName}} order"
 msgstr ""
 
 msgid "Using ENPS order"
