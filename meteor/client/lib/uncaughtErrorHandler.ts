@@ -7,6 +7,7 @@ import { MeteorCall } from '../../lib/api/methods'
 interface LoggedError {
 	location: string
 	content: any
+	stringContent: string
 	added: Time
 }
 
@@ -21,7 +22,7 @@ try {
 
 function sendErrorToCore(errorLog: LoggedError) {
 	MeteorCall.client
-		.clientErrorReport(errorLog.added, errorLog.content, errorLog.location)
+		.clientErrorReport(errorLog.added, errorLog.content, errorLog.stringContent, errorLog.location)
 		.then(() => {
 			const sentIdx = errorCache.indexOf(errorLog)
 			if (sentIdx >= 0) {
@@ -36,9 +37,17 @@ function sendErrorToCore(errorLog: LoggedError) {
 }
 
 function uncaughtErrorHandler(errorObj: any) {
-	const errorLog = {
+	if (!errorObj) return // Nothing to report..
+
+	// To get the textual content of Error('my Error')
+	let stringContent: string = `${errorObj}`
+	if (Array.isArray(errorObj)) {
+		stringContent = errorObj.map(err => `${err?.stack ? err.stack : err}`).join(',')
+	}
+	const errorLog: LoggedError = {
 		location: window.location.href,
 		content: errorObj,
+		stringContent: stringContent,
 		added: getCurrentTime(),
 	}
 
@@ -50,6 +59,7 @@ function uncaughtErrorHandler(errorObj: any) {
 
 	localStorage.setItem('errorCache', JSON.stringify(errorCache))
 
+	// Send the error to the server, for logging:
 	if (Meteor.status().connected) {
 		sendErrorToCore(errorLog)
 	}
@@ -78,16 +88,20 @@ window.onerror = (event, source, line, col, error) => {
 		if (ignored) return
 	}
 
+	const errorObj: any = {
+		type: 'window.onerror',
+		event,
+		source,
+		line,
+		col,
+		error,
+	}
+
 	try {
-		uncaughtErrorHandler({
-			event,
-			source,
-			line,
-			col,
-			error,
-		})
+		uncaughtErrorHandler(errorObj)
 	} catch (e) {
-		// ell, we can't do much then...
+		// well, we can't do much if THAT goes wrong...
+		console.log('Error when trying to report an error', e, 'Original error', errorObj)
 	}
 	if (originalOnError) {
 		originalOnError(event, source, line, col, error)
