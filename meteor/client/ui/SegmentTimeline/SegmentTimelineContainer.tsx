@@ -760,8 +760,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const currentLivePart = currentLivePartInstance.part
 
 				const partOffset =
-					this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] -
-						this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
+					(this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] || 0) -
+					(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] || 0)
 
 				let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
 				const lastTake = currentLivePartInstance.timings?.take
@@ -770,7 +770,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const virtualStartedPlayback =
 					(lastTake || 0) > (lastStartedPlayback || -1)
 						? lastTake
-						: lastStartedPlayback
+						: lastStartedPlayback !== undefined
 						? lastStartedPlayback - lastTakeOffset
 						: undefined
 
@@ -799,10 +799,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			} else {
 				this.isVisible = true
 			}
-		}
-
-		convertTimeToPixels = (time: number) => {
-			return Math.round(this.props.timeScale * time)
 		}
 
 		startLive = () => {

@@ -284,7 +284,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -318,7 +318,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -351,7 +351,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn build
         env:
@@ -408,7 +408,7 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -511,7 +511,7 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -557,7 +557,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -594,11 +594,5 @@ jobs:
         run: |
           cd packages
           yarn validate:dependencies
-        env:
-          CI: true
-      - name: Validate dev dependencies
-        run: |
-          cd packages
-          yarn validate:dev-dependencies
         env:
           CI: true

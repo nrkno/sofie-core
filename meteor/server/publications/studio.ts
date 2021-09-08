@@ -23,6 +23,7 @@ import {
 	PackageContainerPackageStatusDB,
 } from '../../lib/collections/PackageContainerPackageStatus'
 import { Match } from 'meteor/check'
+import { PackageInfos } from '../../lib/collections/PackageInfos'
 
 meteorPublish(PubSub.studios, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
@@ -99,6 +100,16 @@ meteorPublish(PubSub.expectedPackageWorkStatuses, function (selector, token) {
 	}
 	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
 		return ExpectedPackageWorkStatuses.find(selector, modifier)
+	}
+	return null
+})
+meteorPublish(PubSub.packageInfos, function (selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
+		fields: {},
+	}
+	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+		return PackageInfos.find(selector, modifier)
 	}
 	return null
 })

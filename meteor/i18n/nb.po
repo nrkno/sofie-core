@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-04-26T13:33:57.514Z\n"
-"PO-Revision-Date: 2021-04-30 10:53+0200\n"
+"POT-Creation-Date: 2021-08-25T12:50:08.421Z\n"
+"PO-Revision-Date: 2021-08-25 15:00+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 3.0\n"
 
 msgid "Account Page"
 msgstr "Brukerkontoside"
@@ -142,6 +142,9 @@ msgstr ""
 msgid "Your name"
 msgstr "Ditt navn"
 
+msgid "Save message"
+msgstr "Lagre melding"
+
 msgid "Save message and Deactivate Rundown"
 msgstr "Send evalueringen og deaktiver kjøreplanen"
 
@@ -239,11 +242,14 @@ msgstr "Til neste kjøreplan"
 msgid "Until end of rundown"
 msgstr "Til slutten av kjøreplanen"
 
+msgid "Until end of showstyle"
+msgstr "Til slutten av showstyle"
+
 msgid "Script is empty"
 msgstr "Manuset er tomt"
 
-msgid "File name"
-msgstr "Filnavn"
+msgid "Clip:"
+msgstr "Klipp:"
 
 msgid "Home"
 msgstr "Hjem"
@@ -299,11 +305,23 @@ msgstr "Showstyle"
 msgid "On Air Start Time"
 msgstr "Sendestart"
 
-msgid "Last Updated"
+msgid "Last updated"
 msgstr "Sist oppdatert"
 
-msgid "Shelf Layout"
-msgstr "Layouter for skuffen"
+msgid "View Layout"
+msgstr "Vis layout"
+
+msgid "Today"
+msgstr "I dag"
+
+msgid "Yesterday"
+msgstr "I går"
+
+msgid "Tomorrow"
+msgstr "I morgen"
+
+msgid "Last"
+msgstr "Forrige"
 
 msgid "Getting Started"
 msgstr "Kom i gang"
@@ -327,18 +345,6 @@ msgstr "Migrering"
 
 msgid "Documentation is available at"
 msgstr "Dokumentasjon er tilgjengelig på"
-
-msgid "Today"
-msgstr "I dag"
-
-msgid "Yesterday"
-msgstr "I går"
-
-msgid "Tomorrow"
-msgstr "I morgen"
-
-msgid "Last"
-msgstr "Forrige"
 
 msgid "Use ENPS order"
 msgstr "Bruk rekkefølge fra ENPS"
@@ -470,6 +476,9 @@ msgstr "Planlagt slutt"
 
 msgid "Diff"
 msgstr "Forskjell"
+
+msgid "Next Loop at"
+msgstr "Neste loop starter"
 
 msgid "Expected End"
 msgstr "Forventet slutt"
@@ -883,14 +892,14 @@ msgstr "Synkroniser tittel på nytt"
 msgid "On Air"
 msgstr "On Air"
 
+msgid "On Air At"
+msgstr "On Air klokken"
+
 msgid "On Air In"
 msgstr "On Air om"
 
 msgid "Unsynced"
 msgstr "Ikke synkronisert med MOS"
-
-msgid "Invalid"
-msgstr "Ugyldig"
 
 msgid "Auto"
 msgstr "Auto"
@@ -900,6 +909,11 @@ msgstr "Sendeslutt"
 
 msgid "Loops to top"
 msgstr "Looper til toppen"
+
+#, fuzzy
+#| msgid "Planned Duration"
+msgid "Parts Duration"
+msgstr "Planlagt varighet"
 
 msgid "Unknown"
 msgstr "Ukjent"
@@ -1088,6 +1102,9 @@ msgstr "Blueprint-id"
 msgid "Blueprint Version"
 msgstr "Blueprintversjon"
 
+msgid "Disable version check"
+msgstr "Deaktiver versjonsjekk"
+
 msgid "Upload Blueprints"
 msgstr "Last opp blueprints"
 
@@ -1113,6 +1130,120 @@ msgstr ""
 msgid "Waiting for gateway to generate URL..."
 msgstr "Venter på at gateway genererer url..."
 
+msgid "Only Match Global AdLibs"
+msgstr "Vis kun globale adliber"
+
+msgid "Name"
+msgstr "Navn"
+
+msgid "Display Style"
+msgstr "Visningsstil"
+
+msgid "Show thumbnails next to list items"
+msgstr "Vis miniatyrbilder ved siden av listeelementer"
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Width"
+msgstr "Bredde"
+
+msgid "Height"
+msgstr "Høyde"
+
+msgid "Button width scale factor"
+msgstr "Breddeskala for knapp"
+
+msgid "Button height scale factor"
+msgstr "Høydeskala for knapp"
+
+msgid "Display Rank"
+msgstr "Rangering for visning"
+
+msgid "Only Display AdLibs from Current Segment"
+msgstr "Vis kun adliber fra gjeldende segment"
+
+msgid "Include Global AdLibs"
+msgstr "Inkluder globale adliber"
+
+msgid "Filter Disabled"
+msgstr "Filter deaktivert"
+
+msgid "Include Clear Source Layer in Ad-Libs"
+msgstr "Ta med\"Tøm kildelag\" i adliber"
+
+msgid "Source Layer Types"
+msgstr "Kildelagstyper"
+
+msgid "Filter disabled"
+msgstr "Filter deaktivert"
+
+msgid "Label contains"
+msgstr "Etikett inneholder"
+
+msgid "Tags must contain"
+msgstr "Tagger må inneholde"
+
+msgid "Register Shortcuts for this Panel"
+msgstr "Legg til snarveier for dette panelet"
+
+msgid "Hide Panel from view"
+msgstr "Ikke vis dette panelet"
+
+msgid "Show panel as a timeline"
+msgstr "Vis panel som en tidslinje"
+
+msgid "Enable search toolbar"
+msgstr "Aktiver søkeverktøy"
+
+msgid "Overflow horizontally"
+msgstr "Horisontal overflyt"
+
+msgid "Display Take buttons"
+msgstr "Vis Take-knapp"
+
+msgid "Queue all adlibs"
+msgstr "Cue alle adliber"
+
+msgid "Toggle AdLibs on single mouse click"
+msgstr "Veksle mellom adliber med enkelt museklikk"
+
+msgid "Current part can contain next pieces"
+msgstr ""
+
+msgid "Indicate only one next piece per source layer"
+msgstr ""
+
+msgid "Hide duplicated AdLibs"
+msgstr "Skjul dupliserte adliber"
+
+msgid ""
+"Picks the first instance of an adLib per rundown, identified by uniqueness Id"
+msgstr ""
+"Velger den første forekomsten av en adlib i hver kjøreplan, identifisert av "
+"unik id"
+
+msgid "URL"
+msgstr "Adresse (url)"
+
+msgid "Scale"
+msgstr "Skala"
+
+msgid "Role"
+msgstr "Rolle"
+
+msgid "Adlib Rank"
+msgstr "Adlib-rang"
+
+msgid "Place label below panel"
+msgstr "Plasser etikett under panel"
+
+msgid "Disabled"
+msgstr "Deaktivert"
+
 msgid "Device ID"
 msgstr "Enhets-id"
 
@@ -1127,6 +1258,30 @@ msgstr "Er du sikker på at du vil fjerne enheten {{type}} \"{{deviceId}}\"?"
 
 msgid "Attached Subdevices"
 msgstr "Tilkoblede underenheter"
+
+msgid "End of Show Text"
+msgstr ""
+
+msgid "Expose as user selectable layout"
+msgstr "Gjør tilgjengelig som brukervalgt layout"
+
+msgid "Shelf Layout"
+msgstr "Layouter for skuffen"
+
+msgid "Mini Shelf Layout"
+msgstr "Layouter for miniskuff"
+
+msgid "Rundown Header Layout"
+msgstr ""
+
+msgid "Expose layout as a standalone page"
+msgstr "Gjør layout tilgjengelig som en selvstendig side"
+
+msgid "Open shelf by default"
+msgstr "Åpne skuff som standard"
+
+msgid "Default shelf height"
+msgstr "Standard høyde for skuff"
 
 msgid "Failed to update config: {{errorMessage}}"
 msgstr "Oppdatering av konfigurasjon feilet: {{errorMessage}}"
@@ -1191,6 +1346,10 @@ msgstr "Er du sikker på at du vil starte denne enheten på nytt?"
 msgid "Restart this Device?"
 msgstr "Start denne enheten på nytt?"
 
+msgid ""
+"Check the console for troubleshooting data from device \"{{deviceName}}\"!"
+msgstr "Sjekk konsollen for feilsøkingsdata fra enheten \"{{deviceName}}\"!"
+
 msgid "Generic Properties"
 msgstr "Generelle egenskaper"
 
@@ -1199,6 +1358,9 @@ msgstr "Enhetsnavn"
 
 msgid "Restart Device"
 msgstr "Start enheten på nytt"
+
+msgid "Troubleshoot"
+msgstr "Feilsøk"
 
 msgid "Reset Database Version"
 msgstr "Nullstill databaseversjon"
@@ -1292,14 +1454,8 @@ msgstr "Ny layout"
 msgid "Button"
 msgstr "Knapp"
 
-msgid "New Tab"
-msgstr "Ny fane"
-
-msgid "New Panel"
-msgstr "Nytt panel"
-
-msgid "New Item"
-msgstr "Nytt element"
+msgid "New Filter"
+msgstr "Nytt filter"
 
 msgid "Delete layout?"
 msgstr "Slett layout?"
@@ -1313,137 +1469,14 @@ msgstr "Handlingsknapper"
 msgid "Label"
 msgstr "Etikett"
 
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Width"
-msgstr "Bredde"
-
-msgid "Height"
-msgstr "Høyde"
-
-msgid "Only Match Global AdLibs"
-msgstr "Vis kun globale adliber"
-
-msgid "Name"
-msgstr "Navn"
-
-msgid "Display Style"
-msgstr "Visningsstil"
-
-msgid "Show thumbnails next to list items"
-msgstr "Vis miniatyrbilder ved siden av listeelementer"
-
-msgid "Button width scale factor"
-msgstr "Breddeskala for knapp"
-
-msgid "Button height scale factor"
-msgstr "Høydeskala for knapp"
-
-msgid "Display Rank"
-msgstr "Rangering for visning"
-
-msgid "Only Display AdLibs from Current Segment"
-msgstr "Vis kun adliber fra gjeldende segment"
-
-msgid "Include Global AdLibs"
-msgstr "Inkluder globale adliber"
-
-msgid "Filter Disabled"
-msgstr "Filter deaktivert"
-
-msgid "Include Clear Source Layer in Ad-Libs"
-msgstr "Ta med\"Tøm kildelag\" i adliber"
-
-msgid "Source Layer Types"
-msgstr "Kildelagstyper"
-
-msgid "Filter disabled"
-msgstr "Filter deaktivert"
-
-msgid "Label contains"
-msgstr "Etikett inneholder"
-
-msgid "Tags must contain"
-msgstr "Tagger må inneholde"
-
-msgid "Register Shortcuts for this Panel"
-msgstr "Legg til snarveier for dette panelet"
-
-msgid "Hide Panel from view"
-msgstr "Ikke vis dette panelet"
-
-msgid "Show panel as a timeline"
-msgstr "Vis panel som en tidslinje"
-
-msgid "Enable search toolbar"
-msgstr "Aktiver søkeverktøy"
-
-msgid "Overflow horizontally"
-msgstr "Horisontal overflyt"
-
-msgid "Display Take buttons"
-msgstr "Vis Take-knapp"
-
-msgid "Queue all adlibs"
-msgstr "Cue alle adliber"
-
-msgid "Toggle AdLibs on single mouse click"
-msgstr "Veksle mellom adliber med enkelt museklikk"
-
-msgid "Hide duplicated AdLibs"
-msgstr "Skjul dupliserte adliber"
-
-msgid ""
-"Picks the first instance of an adLib per rundown, identified by uniqueness Id"
-msgstr ""
-"Velger den første forekomsten av en adlib i hver kjøreplan, identifisert av "
-"unik id"
-
-msgid "URL"
-msgstr "Adresse (url)"
-
-msgid "Scale"
-msgstr "Skala"
-
-msgid "Role"
-msgstr "Rolle"
-
-msgid "Adlib Rank"
-msgstr "Adlib-rang"
-
-msgid "Place label below panel"
-msgstr "Plasser etikett under panel"
-
-msgid "Disabled"
-msgstr "Deaktivert"
-
-msgid "Expose layout as a standalone page"
-msgstr "Eksponer layout som en selvstendig side"
-
-msgid "Expose as a layout for the shelf"
-msgstr "Eksponer som en layout for skuffen"
-
 msgid "Icon"
 msgstr "Ikon"
 
 msgid "Icon color"
 msgstr "Ikonfarge"
 
-msgid "Open shelf by default"
-msgstr "Åpne skuff som standard"
-
-msgid "Default shelf height"
-msgstr "Standard høyde for skuff"
-
-msgid "Tabs"
-msgstr "Faner"
-
-msgid "Panels"
-msgstr "Paneler"
+msgid "Filters"
+msgstr "Filtre"
 
 msgid "There are no filters set up yet"
 msgstr "Det er ikke satt opp noen filtre ennå"
@@ -1451,11 +1484,11 @@ msgstr "Det er ikke satt opp noen filtre ennå"
 msgid "Default Layout"
 msgstr "Standardlayout"
 
-msgid "Add tab"
-msgstr "Legg til fane"
+msgid "Add {{filtersTitle}}"
+msgstr "Legg til {{filtersTitle}}"
 
-msgid "Add panel"
-msgstr "Legg til panel"
+msgid "Add filter"
+msgstr "Legg til filter"
 
 msgid "Add button"
 msgstr "Legg til knapp"
@@ -1478,9 +1511,6 @@ msgstr "Opplastingen av layout for skuff var vellykket."
 
 msgid "Failed to upload shelf layout: {{errorMessage}}"
 msgstr "Opplasting av layout feilet: {{errorMessage}}"
-
-msgid "Shelf Layouts"
-msgstr "Layouter for skuffen"
 
 msgid "Show Style Base Name"
 msgstr "Showstylenavn"
@@ -1964,25 +1994,13 @@ msgstr ""
 "(Valgfri) Dette kan være navnet til datamaskinen som den lokale mappen er på"
 
 msgid "Base URL"
-msgstr ""
+msgstr "Base-url"
 
 msgid "Base url to the resource (example: http://myserver/folder)"
-msgstr ""
-
-msgid "Default request method"
-msgstr ""
-
-msgid "get, post etc..."
-msgstr ""
-
-msgid "Defaults request headers"
-msgstr ""
-
-msgid "Defaults request body"
-msgstr ""
+msgstr "Base-url for ressursen (eksempel: http://minserver/mappe)"
 
 msgid "Network Id"
-msgstr ""
+msgstr "Nettverk-id"
 
 msgid ""
 "(Optional) A name/identifier of the local network where the share is "
@@ -2028,6 +2046,7 @@ msgstr "Server-id"
 
 msgid "Server id (Can be omitted for sources, as clip-searches are zone-wide.)"
 msgstr ""
+"Server-id (Kan droppes for kilder, siden klippsøk skjer i heile sonen.)"
 
 msgid "Allow Read access"
 msgstr "Tillat lesing"
@@ -2178,7 +2197,7 @@ msgid "Cron jobs"
 msgstr "Cron-jobber"
 
 msgid "Enable CasparCG restart job"
-msgstr ""
+msgstr "Aktiver CasparCG restartjobber"
 
 msgid "Cleanup"
 msgstr "Opprydding"
@@ -2312,15 +2331,6 @@ msgstr "Brukernavn"
 msgid "Answers"
 msgstr "Svar"
 
-msgid "Abort"
-msgstr "Avbryt"
-
-msgid "Package Status"
-msgstr "Pakkestatus"
-
-msgid "Restart All"
-msgstr "Start alle på nytt"
-
 msgid "Message Queue"
 msgstr "Meldingskø"
 
@@ -2393,6 +2403,9 @@ msgstr "Minimer"
 msgid "Details"
 msgstr "Detaljer"
 
+msgid "Abort"
+msgstr "Avbryt"
+
 msgid "Prioritize"
 msgstr "Prioriter"
 
@@ -2401,6 +2414,45 @@ msgstr "Status for medieoverføringer"
 
 msgid "Abort All"
 msgstr "Avbryt alle"
+
+msgid "Restart All"
+msgstr "Start alle på nytt"
+
+msgid "Unknown Package \"{{packageId}}\""
+msgstr "Ukjent pakke \"{{packageId}}\""
+
+msgid "Package Status"
+msgstr "Pakkestatus"
+
+msgid "Created"
+msgstr "Opprettet"
+
+msgid "Info"
+msgstr "Info"
+
+msgid "Ready"
+msgstr "Klar"
+
+msgid "The progress of steps required for playout"
+msgstr "Fremdrift for steg som er nødvendige for avspilling"
+
+msgid "The progress of all steps"
+msgstr "Fremdrift for alle steg"
+
+msgid "This step is required for playout"
+msgstr "Dette steget er nødvendig for avspilling"
+
+msgid "Work description"
+msgstr ""
+
+msgid "Work status"
+msgstr ""
+
+msgid "Work status reason"
+msgstr ""
+
+msgid "Technical reason: {{reason}}"
+msgstr ""
 
 msgid "Do you want to restart CasparCG Server?"
 msgstr "Er du sikker på at du vil restarte CasparCG?"
@@ -2606,6 +2658,9 @@ msgstr "fryst(e)"
 msgid "{{sourceLayer}} is being ingested"
 msgstr "{{sourceLayer}} blir prosessert"
 
+msgid "Source is missing"
+msgstr "Kilde mangler"
+
 msgid "Segment no longer exists in {{nrcs}}"
 msgstr "Segmenet eksisterer ikke lenger i {{nrcs}}"
 
@@ -2652,6 +2707,39 @@ msgstr "{{frames}} {{type}} frames oppdaget inne i klippet°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
+
+#~ msgid "File name"
+#~ msgstr "Filnavn"
+
+#~ msgid "Last Updated"
+#~ msgstr "Sist oppdatert"
+
+#~ msgid "Invalid"
+#~ msgstr "Ugyldig"
+
+#~ msgid "New Tab"
+#~ msgstr "Ny fane"
+
+#~ msgid "New Panel"
+#~ msgstr "Nytt panel"
+
+#~ msgid "Expose as a layout for the shelf"
+#~ msgstr "Eksponer som en layout for skuffen"
+
+#~ msgid "Tabs"
+#~ msgstr "Faner"
+
+#~ msgid "Panels"
+#~ msgstr "Paneler"
+
+#~ msgid "Add tab"
+#~ msgstr "Legg til fane"
+
+#~ msgid "Add panel"
+#~ msgstr "Legg til panel"
+
+#~ msgid "Shelf Layouts"
+#~ msgstr "Layouter for skuffen"
 
 #~ msgid "Show style"
 #~ msgstr "Showstyle"
@@ -2800,9 +2888,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 #~ msgid "Check system status messages."
 #~ msgstr "Kontroller systemstatusmeldinger."
 
-#~ msgid "Created"
-#~ msgstr "Opprettet"
-
 #~ msgid "Air Status"
 #~ msgstr "Sendingsstatus"
 
@@ -2865,9 +2950,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 #~ msgid "A required setting is not configured"
 #~ msgstr "En obligatorisk innstilling er ikke konfigurert"
 
-#~ msgid "Ready"
-#~ msgstr "Klar"
-
 #~ msgid "Are you sure you want to delete recording \"{{name}}\"?"
 #~ msgstr "Er du sikker på at du vil slette opptaket \"{{name}}\"?"
 
@@ -2916,9 +2998,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 
 #~ msgid "Source is not set"
 #~ msgstr "Kilde er ikke definert"
-
-#~ msgid "Source is missing"
-#~ msgstr "Kilde mangler"
 
 #~ msgid "{{displayName}}: {{messages}}"
 #~ msgstr "{{displayName}}: {{messages}}"
@@ -3275,9 +3354,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 #~ msgid "System version"
 #~ msgstr "System version"
 
-#~ msgid "Database version"
-#~ msgstr "Database version"
-
 #~ msgid "Take debug snapshot"
 #~ msgstr "Take debug snapshot"
 
@@ -3380,9 +3456,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 
 #~ msgid "Connected to Sofie Automation Server."
 #~ msgstr "Koblet til Sofie-serveren."
-
-#~ msgid "Core status"
-#~ msgstr "Sofie-status"
 
 #~ msgid "MOS Devices"
 #~ msgstr "MOS Devices"

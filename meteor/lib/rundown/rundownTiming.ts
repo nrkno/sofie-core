@@ -1,3 +1,16 @@
+/**
+ * A GENERAL COMMENT ON THIS MODULE
+ * ==
+ *
+ * During the lifecycle of a Rundown, it, along with all of it's Parts & PartInstances undergoes thousands of mutations
+ * on it's timing properties. Because of that, it's very difficult to accurately simulate what's going on in one for the
+ * purposes of automated testing. It also means that debugging any bugs here is very time consuming and difficult.
+ *
+ * Please be very cautious when introducing changes here and make sure to try and exhaustively explain any changes made
+ * here by answering both How and Why of a particular change, since it may not be clearly evident to the next person,
+ * without knowing what particular case you are trying to solve.
+ */
+
 import {
 	PlaylistTimingBackTime,
 	PlaylistTimingForwardTime,
@@ -26,16 +39,27 @@ interface BreakProps {
 	breakIsLastRundown
 }
 
+/**
+ * This is a class for calculating timings in a Rundown playlist used by RundownTimingProvider.
+ *
+ * @export
+ * @class RundownTimingCalculator
+ */
 export class RundownTimingCalculator {
 	private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
 
 	private linearParts: Array<[PartId, number | null]> = []
 
 	// this.previousPartInstanceId is used to check if the previousPart has changed since last iteration.
+	// this is used to track takes and simulate the take timing for the previousPart
 	private previousPartInstanceId: PartInstanceId | null = null
+	// this is the "simulated" take time of previousPartInstanceId (or real one, if available)
 	private lastTakeAt: number | undefined = undefined
 
 	// look at the comments on RundownTimingContext to understand what these do
+	// Note, that these objects are created when an instance is created and are reused for the lifetime
+	// of the component. This is to avoid GC running all the time on discarded objects.
+	// Only the RundownTimingContext object is unique for a call to `updateDurations`.
 	private partDurations: Record<string, number> = {}
 	private partExpectedDurations: Record<string, number> = {}
 	private partPlayed: Record<string, number> = {}
@@ -49,6 +73,20 @@ export class RundownTimingCalculator {
 		state: string | undefined
 	} = { props: undefined, state: undefined }
 
+	/**
+	 * Returns a RundownTimingContext for a given point in time.
+	 *
+	 * @param {number} now
+	 * @param {boolean} isLowResolution
+	 * @param {(RundownPlaylist | undefined)} playlist
+	 * @param {Rundown[]} rundowns
+	 * @param {(Rundown | undefined)} currentRundown
+	 * @param {Part[]} parts
+	 * @param {Map<PartId, PartInstance>} partInstancesMap
+	 * @param {number} [defaultDuration]
+	 * @return {*}  {RundownTimingContext}
+	 * @memberof RundownTimingCalculator
+	 */
 	updateDurations(
 		now: number,
 		isLowResolution: boolean,
@@ -59,7 +97,7 @@ export class RundownTimingCalculator {
 		partInstancesMap: Map<PartId, PartInstance>,
 		/** Fallback duration for Parts that have no as-played duration of their own. */
 		defaultDuration?: number
-	) {
+	): RundownTimingContext {
 		let totalRundownDuration = 0
 		let remainingRundownDuration = 0
 		let asPlayedRundownDuration = 0
@@ -272,6 +310,28 @@ export class RundownTimingCalculator {
 					this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 						this.displayDurationGroups[partInstance.part.displayDurationGroup] - partDisplayDuration
 				}
+
+				// specially handle the previous part as it is being taken out
+				if (playlist.previousPartInstanceId === partInstance._id) {
+					if (this.previousPartInstanceId !== playlist.previousPartInstanceId) {
+						// it is possible that this.previousPartInstanceId !== playlist.previousPartInstanceId, because
+						// this is in fact the first iteration. If that's the case, it's more than likely that the
+						// previous part has already good "lastTake" information that we can use, either in "takeOut",
+						// if the part was taken out manually, or stoppedPlayback, if there was no User Action.
+						// Finally, if both of those are undefined, we use "now", since what has happened
+						// is that user has taken out this part, but we're still waiting for timing and "now"
+						// is the best approximation of the take time we have.
+						this.lastTakeAt = partInstance.timings?.takeOut || partInstance.timings?.stoppedPlayback || now
+						this.previousPartInstanceId = playlist.previousPartInstanceId
+					}
+					// a simulated display duration, created using the "lastTakeAt" value
+					const virtualDuration =
+						this.lastTakeAt && lastStartedPlayback
+							? this.lastTakeAt - lastStartedPlayback
+							: partDisplayDuration
+					partDisplayDuration = virtualDuration
+				}
+
 				const partInstancePartId = unprotectString(partInstance.part._id)
 				this.partExpectedDurations[partInstancePartId] = partExpectedDuration
 				this.partStartsAt[partInstancePartId] = startsAtAccumulator
@@ -280,21 +340,7 @@ export class RundownTimingCalculator {
 				this.partDisplayDurations[partInstancePartId] = partDisplayDuration
 				this.partDisplayDurationsNoPlayback[partInstancePartId] = partDisplayDurationNoPlayback
 				startsAtAccumulator += this.partDurations[partInstancePartId]
-
-				if (playlist.previousPartInstanceId !== partInstance._id) {
-					displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId]
-				} else {
-					if (this.previousPartInstanceId !== playlist.previousPartInstanceId) {
-						this.lastTakeAt = now
-						this.previousPartInstanceId = playlist.previousPartInstanceId || ''
-					}
-					const durationToTake =
-						this.lastTakeAt && lastStartedPlayback
-							? this.lastTakeAt - lastStartedPlayback
-							: this.partDisplayDurations[partInstancePartId]
-					this.partDisplayDurations[partInstancePartId] = durationToTake
-					displayStartsAtAccumulator += durationToTake
-				}
+				displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId]
 
 				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
