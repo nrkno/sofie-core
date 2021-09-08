@@ -433,7 +433,7 @@ export namespace ServerPlayoutAPI {
 
 			// find the allowable segment ids
 			const allowedSegments =
-				segmentDelta < 0
+				segmentDelta > 0
 					? considerSegments.slice(targetSegmentIndex)
 					: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
 			// const allowedSegmentIds = new Set(allowedSegments.map((s) => s._id))
