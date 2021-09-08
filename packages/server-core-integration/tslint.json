@@ -13,5 +13,6 @@
         "SwitchCase": 1
       }
     ],
+    "trailing-comma": false
   }
 }
