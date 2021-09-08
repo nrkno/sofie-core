@@ -331,6 +331,7 @@ export const RundownPlaylistUi = DropTarget(
 								{getAllowStudio() ? (
 									<PlaylistRankMethodToggle
 										manualSortingActive={playlist.rundownRanksAreSetInSofie === true}
+										nrcsName={(playlist.rundowns[0] && playlist.rundowns[0].externalNRCSName) || 'NRCS'}
 										toggleCallbackHandler={() => {
 											this.handleResetRundownOrderClick()
 										}}
