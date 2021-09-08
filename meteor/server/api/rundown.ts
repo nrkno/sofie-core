@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { PartId } from '../../lib/collections/Parts'
-import { Segments, SegmentId } from '../../lib/collections/Segments'
+import { SegmentId } from '../../lib/collections/Segments'
 import {
 	unprotectObjectArray,
 	protectString,
@@ -35,7 +35,6 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
-import { rundownContentAllowWrite } from '../security/rundown'
 import { handleRemovedRundownByRundown } from './ingest/rundownInput'
 import {
 	moveRundownIntoPlaylist,
@@ -369,24 +368,6 @@ export namespace ServerRundownAPI {
 		return innerResyncRundown(access.rundown)
 	}
 
-	export function resyncSegment(
-		context: MethodContext,
-		rundownId: RundownId,
-		segmentId: SegmentId
-	): TriggerReloadDataResponse {
-		check(segmentId, String)
-		rundownContentAllowWrite(context.userId, { rundownId })
-		logger.info('resyncSegment ' + segmentId)
-		const segment = Segments.findOne(segmentId)
-		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
-
-		const rundown = Rundowns.findOne({ _id: segment.rundownId })
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${segment.rundownId}" not found!`)
-
-		// Orphaned flag will be reset by the response update
-		return IngestActions.reloadSegment(rundown, segment)
-	}
-
 	export function innerResyncRundown(rundown: Rundown): TriggerReloadDataResponse {
 		logger.info('resyncRundown ' + rundown._id)
 
@@ -539,9 +520,6 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	}
 	async resyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.resyncRundown(this, rundownId))
-	}
-	async resyncSegment(rundownId: RundownId, segmentId: SegmentId) {
-		return makePromise(() => ServerRundownAPI.resyncSegment(this, rundownId, segmentId))
 	}
 	async unsyncRundown(rundownId: RundownId) {
 		return ServerRundownAPI.unsyncRundown(this, rundownId)
