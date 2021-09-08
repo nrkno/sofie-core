@@ -726,6 +726,10 @@ body.tv2 {
 		}
 
 		ul.rundown-playlists {
+			.rundown-playlist__sorting-origin-toggle {
+				display: none;
+			}
+
 			.draghandle {
 				display: none;
 			}
