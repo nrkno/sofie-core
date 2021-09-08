@@ -42,7 +42,7 @@ function uncaughtErrorHandler(errorObj: any) {
 	// To get the textual content of Error('my Error')
 	let stringContent: string = `${errorObj}`
 	if (Array.isArray(errorObj)) {
-		stringContent = errorObj.map(err => `${err?.stack ? err.stack : err}`).join(',')
+		stringContent = errorObj.map((err) => `${err?.stack ? err.stack : err}`).join(',')
 	}
 	const errorLog: LoggedError = {
 		location: window.location.href,

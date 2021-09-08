@@ -38,7 +38,6 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
-import PlaylistRankMethodToggle from '../RundownList/PlaylistRankMethodToggle'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 interface IState {
