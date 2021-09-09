@@ -1,7 +1,6 @@
 import { check } from '../../../lib/check'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, ProtectedString } from '../../../lib/lib'
 import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
 import {
@@ -18,14 +17,18 @@ import {
 	ExpectedPackageDBType,
 	ExpectedPackages,
 	getContentVersionHash,
+	getExpectedPackageId,
 } from '../../../lib/collections/ExpectedPackages'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { BlueprintResultBaseline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { BucketAdLibAction, BucketAdLibActionId, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { Meteor } from 'meteor/meteor'
 import { BucketAdLib, BucketAdLibId, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
-import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
+import {
+	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActionId,
+} from '../../../lib/collections/RundownBaselineAdLibActions'
 import {
 	updateBaselineExpectedPlayoutItemsOnRundown,
 	updateBaselineExpectedPlayoutItemsOnStudio,
@@ -288,19 +291,25 @@ function generateExpectedPackagesForBucketAdlibAction(studio: Studio, adlibActio
 }
 function generateExpectedPackageBases(
 	studio: ReadonlyDeep<Studio>,
-	ownerId: ProtectedString<any>,
+	ownerId:
+		| PieceId
+		| AdLibActionId
+		| RundownBaselineAdLibActionId
+		| BucketAdLibId
+		| BucketAdLibActionId
+		| RundownId
+		| StudioId,
 	expectedPackages: ExpectedPackage.Any[]
 ) {
 	const bases: Omit<ExpectedPackageDBBase, 'pieceId' | 'fromPieceType'>[] = []
 
-	let i = 0
-	for (const expectedPackage of expectedPackages) {
-		let id = expectedPackage._id
-		if (!id) id = '__unnamed' + i++
+	for (let i = 0; i < expectedPackages.length; i++) {
+		const expectedPackage = expectedPackages[i]
+		const id = expectedPackage._id || '__unnamed' + i
 
 		bases.push({
 			...expectedPackage,
-			_id: protectString(`${ownerId}_${id}`),
+			_id: getExpectedPackageId(ownerId, id),
 			blueprintPackageId: id,
 			contentVersionHash: getContentVersionHash(expectedPackage),
 			studioId: studio._id,
@@ -366,6 +375,9 @@ export function updateBaselineExpectedPackagesOnRundown(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnRundown(cache, baseline.expectedPlayoutItems)
 
+	// Fill in ids of unnamed expectedPackages
+	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
+
 	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.RundownId, baseline.expectedPackages ?? [])
 	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
 		cache.ExpectedPackages,
@@ -396,6 +408,9 @@ export function updateBaselineExpectedPackagesOnStudio(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnStudio(cache, baseline.expectedPlayoutItems)
 
+	// Fill in ids of unnamed expectedPackages
+	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
+
 	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.Studio.doc._id, baseline.expectedPackages ?? [])
 	cache.deferAfterSave(async () => {
 		await saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
@@ -413,4 +428,16 @@ export function updateBaselineExpectedPackagesOnStudio(
 			})
 		)
 	})
+}
+
+export function setDefaultIdOnExpectedPackages(expectedPackages: ExpectedPackage.Any[] | undefined): void {
+	// Fill in ids of unnamed expectedPackage
+	if (expectedPackages) {
+		for (let i = 0; i < expectedPackages.length; i++) {
+			const expectedPackage = expectedPackages[i]
+			if (!expectedPackage._id) {
+				expectedPackage._id = `__index${i}`
+			}
+		}
+	}
 }

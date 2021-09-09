@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-04-26T13:33:57.514Z\n"
-"PO-Revision-Date: 2021-04-26T13:33:57.514Z\n"
+"POT-Creation-Date: 2021-08-25T12:50:08.421Z\n"
+"PO-Revision-Date: 2021-08-25T12:50:08.421Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -136,6 +136,9 @@ msgstr ""
 msgid "Your name"
 msgstr ""
 
+msgid "Save message"
+msgstr ""
+
 msgid "Save message and Deactivate Rundown"
 msgstr ""
 
@@ -228,10 +231,13 @@ msgstr ""
 msgid "Until end of rundown"
 msgstr ""
 
+msgid "Until end of showstyle"
+msgstr ""
+
 msgid "Script is empty"
 msgstr ""
 
-msgid "File name"
+msgid "Clip:"
 msgstr ""
 
 msgid "Home"
@@ -288,10 +294,22 @@ msgstr ""
 msgid "On Air Start Time"
 msgstr ""
 
-msgid "Last Updated"
+msgid "Last updated"
 msgstr ""
 
-msgid "Shelf Layout"
+msgid "View Layout"
+msgstr ""
+
+msgid "Today"
+msgstr ""
+
+msgid "Yesterday"
+msgstr ""
+
+msgid "Tomorrow"
+msgstr ""
+
+msgid "Last"
 msgstr ""
 
 msgid "Getting Started"
@@ -317,19 +335,7 @@ msgstr ""
 msgid "Documentation is available at"
 msgstr ""
 
-msgid "Today"
-msgstr ""
-
-msgid "Yesterday"
-msgstr ""
-
-msgid "Tomorrow"
-msgstr ""
-
-msgid "Last"
-msgstr ""
-
-msgid "Use ENPS order"
+msgid "Use {{nrcsName}} order"
 msgstr ""
 
 msgid "Using ENPS order"
@@ -452,6 +458,9 @@ msgid "Planned End"
 msgstr ""
 
 msgid "Diff"
+msgstr ""
+
+msgid "Next Loop at"
 msgstr ""
 
 msgid "Expected End"
@@ -838,13 +847,13 @@ msgstr ""
 msgid "On Air"
 msgstr ""
 
+msgid "On Air At"
+msgstr ""
+
 msgid "On Air In"
 msgstr ""
 
 msgid "Unsynced"
-msgstr ""
-
-msgid "Invalid"
 msgstr ""
 
 msgid "Auto"
@@ -854,6 +863,9 @@ msgid "Show End"
 msgstr ""
 
 msgid "Loops to top"
+msgstr ""
+
+msgid "Parts Duration"
 msgstr ""
 
 msgid "Unknown"
@@ -1039,6 +1051,9 @@ msgstr ""
 msgid "Blueprint Version"
 msgstr ""
 
+msgid "Disable version check"
+msgstr ""
+
 msgid "Upload Blueprints"
 msgstr ""
 
@@ -1062,6 +1077,119 @@ msgstr ""
 msgid "Waiting for gateway to generate URL..."
 msgstr ""
 
+msgid "Only Match Global AdLibs"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Display Style"
+msgstr ""
+
+msgid "Show thumbnails next to list items"
+msgstr ""
+
+msgid "X"
+msgstr ""
+
+msgid "Y"
+msgstr ""
+
+msgid "Width"
+msgstr ""
+
+msgid "Height"
+msgstr ""
+
+msgid "Button width scale factor"
+msgstr ""
+
+msgid "Button height scale factor"
+msgstr ""
+
+msgid "Display Rank"
+msgstr ""
+
+msgid "Only Display AdLibs from Current Segment"
+msgstr ""
+
+msgid "Include Global AdLibs"
+msgstr ""
+
+msgid "Filter Disabled"
+msgstr ""
+
+msgid "Include Clear Source Layer in Ad-Libs"
+msgstr ""
+
+msgid "Source Layer Types"
+msgstr ""
+
+msgid "Filter disabled"
+msgstr ""
+
+msgid "Label contains"
+msgstr ""
+
+msgid "Tags must contain"
+msgstr ""
+
+msgid "Register Shortcuts for this Panel"
+msgstr ""
+
+msgid "Hide Panel from view"
+msgstr ""
+
+msgid "Show panel as a timeline"
+msgstr ""
+
+msgid "Enable search toolbar"
+msgstr ""
+
+msgid "Overflow horizontally"
+msgstr ""
+
+msgid "Display Take buttons"
+msgstr ""
+
+msgid "Queue all adlibs"
+msgstr ""
+
+msgid "Toggle AdLibs on single mouse click"
+msgstr ""
+
+msgid "Current part can contain next pieces"
+msgstr ""
+
+msgid "Indicate only one next piece per source layer"
+msgstr ""
+
+msgid "Hide duplicated AdLibs"
+msgstr ""
+
+msgid ""
+"Picks the first instance of an adLib per rundown, identified by uniqueness "
+"Id"
+msgstr ""
+
+msgid "URL"
+msgstr ""
+
+msgid "Scale"
+msgstr ""
+
+msgid "Role"
+msgstr ""
+
+msgid "Adlib Rank"
+msgstr ""
+
+msgid "Place label below panel"
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
 msgid "Device ID"
 msgstr ""
 
@@ -1075,6 +1203,30 @@ msgid "Are you sure you want to remove {{type}} \"{{deviceId}}\"?"
 msgstr ""
 
 msgid "Attached Subdevices"
+msgstr ""
+
+msgid "End of Show Text"
+msgstr ""
+
+msgid "Expose as user selectable layout"
+msgstr ""
+
+msgid "Shelf Layout"
+msgstr ""
+
+msgid "Mini Shelf Layout"
+msgstr ""
+
+msgid "Rundown Header Layout"
+msgstr ""
+
+msgid "Expose layout as a standalone page"
+msgstr ""
+
+msgid "Open shelf by default"
+msgstr ""
+
+msgid "Default shelf height"
 msgstr ""
 
 msgid "Failed to update config: {{errorMessage}}"
@@ -1136,6 +1288,9 @@ msgstr ""
 msgid "Restart this Device?"
 msgstr ""
 
+msgid "Check the console for troubleshooting data from device \"{{deviceName}}\"!"
+msgstr ""
+
 msgid "Generic Properties"
 msgstr ""
 
@@ -1143,6 +1298,9 @@ msgid "Device Name"
 msgstr ""
 
 msgid "Restart Device"
+msgstr ""
+
+msgid "Troubleshoot"
 msgstr ""
 
 msgid "Reset Database Version"
@@ -1228,13 +1386,7 @@ msgstr ""
 msgid "Button"
 msgstr ""
 
-msgid "New Tab"
-msgstr ""
-
-msgid "New Panel"
-msgstr ""
-
-msgid "New Item"
+msgid "New Filter"
 msgstr ""
 
 msgid "Delete layout?"
@@ -1249,135 +1401,13 @@ msgstr ""
 msgid "Label"
 msgstr ""
 
-msgid "X"
-msgstr ""
-
-msgid "Y"
-msgstr ""
-
-msgid "Width"
-msgstr ""
-
-msgid "Height"
-msgstr ""
-
-msgid "Only Match Global AdLibs"
-msgstr ""
-
-msgid "Name"
-msgstr ""
-
-msgid "Display Style"
-msgstr ""
-
-msgid "Show thumbnails next to list items"
-msgstr ""
-
-msgid "Button width scale factor"
-msgstr ""
-
-msgid "Button height scale factor"
-msgstr ""
-
-msgid "Display Rank"
-msgstr ""
-
-msgid "Only Display AdLibs from Current Segment"
-msgstr ""
-
-msgid "Include Global AdLibs"
-msgstr ""
-
-msgid "Filter Disabled"
-msgstr ""
-
-msgid "Include Clear Source Layer in Ad-Libs"
-msgstr ""
-
-msgid "Source Layer Types"
-msgstr ""
-
-msgid "Filter disabled"
-msgstr ""
-
-msgid "Label contains"
-msgstr ""
-
-msgid "Tags must contain"
-msgstr ""
-
-msgid "Register Shortcuts for this Panel"
-msgstr ""
-
-msgid "Hide Panel from view"
-msgstr ""
-
-msgid "Show panel as a timeline"
-msgstr ""
-
-msgid "Enable search toolbar"
-msgstr ""
-
-msgid "Overflow horizontally"
-msgstr ""
-
-msgid "Display Take buttons"
-msgstr ""
-
-msgid "Queue all adlibs"
-msgstr ""
-
-msgid "Toggle AdLibs on single mouse click"
-msgstr ""
-
-msgid "Hide duplicated AdLibs"
-msgstr ""
-
-msgid ""
-"Picks the first instance of an adLib per rundown, identified by uniqueness "
-"Id"
-msgstr ""
-
-msgid "URL"
-msgstr ""
-
-msgid "Scale"
-msgstr ""
-
-msgid "Role"
-msgstr ""
-
-msgid "Adlib Rank"
-msgstr ""
-
-msgid "Place label below panel"
-msgstr ""
-
-msgid "Disabled"
-msgstr ""
-
-msgid "Expose layout as a standalone page"
-msgstr ""
-
-msgid "Expose as a layout for the shelf"
-msgstr ""
-
 msgid "Icon"
 msgstr ""
 
 msgid "Icon color"
 msgstr ""
 
-msgid "Open shelf by default"
-msgstr ""
-
-msgid "Default shelf height"
-msgstr ""
-
-msgid "Tabs"
-msgstr ""
-
-msgid "Panels"
+msgid "Filters"
 msgstr ""
 
 msgid "There are no filters set up yet"
@@ -1386,10 +1416,10 @@ msgstr ""
 msgid "Default Layout"
 msgstr ""
 
-msgid "Add tab"
+msgid "Add {{filtersTitle}}"
 msgstr ""
 
-msgid "Add panel"
+msgid "Add filter"
 msgstr ""
 
 msgid "Add button"
@@ -1410,9 +1440,6 @@ msgid "Shelf layout uploaded successfully."
 msgstr ""
 
 msgid "Failed to upload shelf layout: {{errorMessage}}"
-msgstr ""
-
-msgid "Shelf Layouts"
 msgstr ""
 
 msgid "Show Style Base Name"
@@ -1878,18 +1905,6 @@ msgstr ""
 msgid "Base url to the resource (example: http://myserver/folder)"
 msgstr ""
 
-msgid "Default request method"
-msgstr ""
-
-msgid "get, post etc..."
-msgstr ""
-
-msgid "Defaults request headers"
-msgstr ""
-
-msgid "Defaults request body"
-msgstr ""
-
 msgid "Network Id"
 msgstr ""
 
@@ -2213,15 +2228,6 @@ msgstr ""
 msgid "Answers"
 msgstr ""
 
-msgid "Abort"
-msgstr ""
-
-msgid "Package Status"
-msgstr ""
-
-msgid "Restart All"
-msgstr ""
-
 msgid "Message Queue"
 msgstr ""
 
@@ -2294,6 +2300,9 @@ msgstr ""
 msgid "Details"
 msgstr ""
 
+msgid "Abort"
+msgstr ""
+
 msgid "Prioritize"
 msgstr ""
 
@@ -2301,6 +2310,45 @@ msgid "Media Transfer Status"
 msgstr ""
 
 msgid "Abort All"
+msgstr ""
+
+msgid "Restart All"
+msgstr ""
+
+msgid "Unknown Package \"{{packageId}}\""
+msgstr ""
+
+msgid "Package Status"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Info"
+msgstr ""
+
+msgid "Ready"
+msgstr ""
+
+msgid "The progress of steps required for playout"
+msgstr ""
+
+msgid "The progress of all steps"
+msgstr ""
+
+msgid "This step is required for playout"
+msgstr ""
+
+msgid "Work description"
+msgstr ""
+
+msgid "Work status"
+msgstr ""
+
+msgid "Work status reason"
+msgstr ""
+
+msgid "Technical reason: {{reason}}"
 msgstr ""
 
 msgid "Do you want to restart CasparCG Server?"
@@ -2498,6 +2546,9 @@ msgid "freeze"
 msgstr ""
 
 msgid "{{sourceLayer}} is being ingested"
+msgstr ""
+
+msgid "Source is missing"
 msgstr ""
 
 msgid "Segment no longer exists in {{nrcs}}"

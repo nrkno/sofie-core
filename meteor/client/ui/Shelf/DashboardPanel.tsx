@@ -38,6 +38,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 interface IState {
 	outputLayers: {
@@ -685,14 +686,15 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartInstanceId | null) {
+export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
-	if (currentPartInstanceId) {
+	if (playlist.activationId && playlist.currentPartInstanceId) {
 		prospectivePieces = PieceInstances.find({
 			startedPlayback: {
 				$exists: true,
 			},
+			playlistActivationId: playlist.activationId,
 			$and: [
 				{
 					$or: [
@@ -766,11 +768,12 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	return prospectivePieces
 }
 
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): PieceInstance[] {
+export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
-	if (nextPartInstanceId) {
+	if (playlist.activationId && playlist.nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
-			partInstanceId: nextPartInstanceId,
+			playlistActivationId: playlist.activationId,
+			partInstanceId: playlist.nextPartInstanceId,
 			$and: [
 				{
 					piece: {
@@ -799,9 +802,9 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 }
 
 export function getUnfinishedPieceInstancesGrouped(
-	currentPartInstanceId: PartInstanceId | null
+	playlist: RundownPlaylist
 ): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -818,9 +821,9 @@ export function getUnfinishedPieceInstancesGrouped(
 }
 
 export function getNextPieceInstancesGrouped(
-	nextPartInstanceId: PartInstanceId | null
+	playlist: RundownPlaylist
 ): Pick<IDashboardPanelTrackedProps, 'nextAdLibIds' | 'nextTags'> & { nextPieceInstances: PieceInstance[] } {
-	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
+	const nextPieceInstances = getNextPiecesReactive(playlist)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -907,10 +910,8 @@ export const DashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
-		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),

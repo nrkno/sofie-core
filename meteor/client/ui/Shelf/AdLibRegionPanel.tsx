@@ -182,10 +182,8 @@ export const AdLibRegionPanel = translateWithTracker<
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
-		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		return Object.assign({}, fetchAndFilter(props), {
 			studio: studio,
 			unfinishedAdLibIds,

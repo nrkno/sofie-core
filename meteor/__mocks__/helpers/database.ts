@@ -479,7 +479,7 @@ export function setupDefaultRundown(
 		_rank: 0,
 
 		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
+		externalId: 'MOCK_RUNDOWN_' + rundownId,
 		name: 'Default Rundown',
 
 		created: getCurrentTime(),

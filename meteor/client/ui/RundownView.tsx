@@ -99,7 +99,7 @@ import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../lib/ui/icons/looping'
-import StudioPackageContainersContext from './RundownView/StudioPackageContainersContext'
+import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
 
@@ -2390,15 +2390,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		onResyncSegment = (segment: SegmentUi, e: any) => {
-			const { t } = this.props
-			if (this.state.studioMode && this.props.rundownPlaylistId) {
-				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) =>
-					MeteorCall.userAction.resyncSegment(e, segment.rundownId, segment._id)
-				)
-			}
-		}
-
 		onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 			const { t } = this.props
 			if (
@@ -2785,7 +2776,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 					return (
 						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
-							<StudioPackageContainersContext.Provider value={this.props.studio.packageContainers}>
+							<StudioContext.Provider value={this.props.studio}>
 								<div
 									className={ClassNames('rundown-view', {
 										'notification-center-open': this.state.isNotificationsCenterOpen !== undefined,
@@ -2923,7 +2914,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											playlist={this.props.playlist}
 											onSetNext={this.onSetNext}
 											onSetNextSegment={this.onSetNextSegment}
-											onResyncSegment={this.onResyncSegment}
 											studioMode={this.state.studioMode}
 											enablePlayFromAnywhere={!!this.props.studio.settings.enablePlayFromAnywhere}
 										/>
@@ -3006,7 +2996,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						}}>
 						</div> */
 								}
-							</StudioPackageContainersContext.Provider>
+							</StudioContext.Provider>
 						</RundownTimingProvider>
 					)
 				} else if (this.props.playlist && this.props.studio && this.props.showStyleBase && this.props.onlyShelf) {
