@@ -35,7 +35,7 @@ import { handleRundownReloadResponse } from '../RundownView'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
-import { RankedNote, IMediaObjectIssue } from '../../../lib/api/rundownNotifications'
+import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '../../../lib/api/TranslatableMessage'
 import { getAllowStudio } from '../../lib/localStorage'
 
@@ -52,7 +52,6 @@ export interface RONotificationEvent {
 	}
 }
 
-const BACKEND_POLL_INTERVAL = 10 * 1000
 const SEGMENT_DELIMITER = ' • '
 
 class RundownViewNotifier extends WithManagedTracker {
@@ -379,7 +378,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private reactivePartNotes(playlistId: RundownPlaylistId) {
 		let allNotesPollInterval: number
 		let allNotesPollLock: boolean = false
-		const NOTES_POLL_INTERVAL = BACKEND_POLL_INTERVAL
+		const NOTES_POLL_INTERVAL = MEDIASTATUS_POLL_INTERVAL
 
 		const rRundowns = reactiveData.getRRundowns(playlistId, {
 			fields: {
@@ -479,7 +478,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private reactiveMediaStatus(playlistId: RundownPlaylistId, showStyleBase: ShowStyleBase, studio: Studio) {
 		let mediaObjectsPollInterval: number
 		let mediaObjectsPollLock: boolean = false
-		const MEDIAOBJECTS_POLL_INTERVAL = BACKEND_POLL_INTERVAL
+		const MEDIAOBJECTS_POLL_INTERVAL = MEDIASTATUS_POLL_INTERVAL
 
 		const fullMediaStatus: ReactiveVar<IMediaObjectIssue[]> = new ReactiveVar([], _.isEqual)
 		const localMediaStatus: ReactiveVar<IMediaObjectIssue[]> = new ReactiveVar([], _.isEqual)
