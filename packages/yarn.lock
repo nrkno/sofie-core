@@ -8509,10 +8509,10 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@6.2.0-nightly-release37-20210813-070919-91cf76a47.0:
-  version "6.2.0-nightly-release37-20210813-070919-91cf76a47.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-nightly-release37-20210813-070919-91cf76a47.0.tgz#f8832517d6983a15ec67b8bf12c3589558754a40"
-  integrity sha512-aaYu7erHXMDas8ULQcs5XiTaulw0ggC6TaIEcXpsIAZDKtTOGWdu+Kg7auYcO5o56k+t+YZxmlIsLZPgouUfSA==
+timeline-state-resolver-types@6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0:
+  version "6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0.tgz#8ca67ddc6e9a9f9b9f116507bc9a6ad37f39a774"
+  integrity sha512-M4HuHxZFYJqu2ZZbh76Z+jEF7vMxGMpq/OPojRcdl/n96+cYtUOgc5YE2+VpX+VLJNz9nb2YudeNO8SKdd2Q0A==
   dependencies:
     tslib "^2.1.0"
 
@@ -8523,10 +8523,10 @@ timeline-state-resolver-types@^6.1.0-release36.0:
   dependencies:
     tslib "^2.1.0"
 
-timeline-state-resolver@6.2.0-nightly-release37-20210813-070919-91cf76a47.0:
-  version "6.2.0-nightly-release37-20210813-070919-91cf76a47.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-release37-20210813-070919-91cf76a47.0.tgz#9a0d0b6f58f3311396d85f9915d76d0138892897"
-  integrity sha512-/BTIG64iUU7ZE3oJosnjmBkvkZ9nPA/Qew3DY1sRHZpXTW4w6GoD3UKt5tfeF22geJd0G54rVamN//M9CXUEqg==
+timeline-state-resolver@6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0:
+  version "6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0.tgz#754f1613f2b1b3b66bd5126c1077b9f42785153d"
+  integrity sha512-iJHZh5eXiM2cqCYpaNw/iwTr3y4cJo9d+NwOYfI9TDLwIxWZSlL7TzCybQB9H9wvK7yMl0HLrz37wrTdT0cn9w==
   dependencies:
     atem-connection "^2.3.0"
     atem-state "^0.12.1"
@@ -8547,7 +8547,7 @@ timeline-state-resolver@6.2.0-nightly-release37-20210813-070919-91cf76a47.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.2.0-nightly-release37-20210813-070919-91cf76a47.0"
+    timeline-state-resolver-types "6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0"
     tslib "^2.1.0"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
@@ -9021,9 +9021,9 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-"v-connection@git+https://github.com/olzzon/v-connection#v20210604_1":
+"v-connection@git+https://github.com/olzzon/v-connection.git#v20210604_1":
   version "0.0.1"
-  resolved "git+https://github.com/olzzon/v-connection#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
+  resolved "git+https://github.com/olzzon/v-connection.git#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"

@@ -17,6 +17,8 @@ import {
 	MediaObject,
 	ExpectedPlayoutItem,
 	ExpectedPlayoutItemContent,
+	SlowSentCommandInfo,
+	SlowFulfilledCommandInfo,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
 import clone = require('fast-clone')
@@ -623,8 +625,33 @@ export class TSRHandler {
 					}
 				}
 			}
-			const onSlowCommand = (commandInfo: string) => {
-				this.logger.warn(commandInfo)
+			const onSlowSentCommand = (info: SlowSentCommandInfo) => {
+				// If the internalDelay is too large, it should be logged as an error
+				if (info.internalDelay > 100) {
+					this.logger.error('slowSentCommand', {
+						deviceName: device.deviceName,
+						...info,
+					})
+				} else {
+					this.logger.warn('slowSentCommand', {
+						deviceName: device.deviceName,
+						...info,
+					})
+				}
+			}
+			const onSlowFulfilledCommand = (info: SlowFulfilledCommandInfo) => {
+				// If the fulfilledDelay is too large, it should be logged as an error
+				if (info.fulfilledDelay > 200) {
+					this.logger.error('slowFulfilledCommand', {
+						deviceName: device.deviceName,
+						...info,
+					})
+				} else {
+					this.logger.warn('slowFulfilledCommand', {
+						deviceName: device.deviceName,
+						...info,
+					})
+				}
 			}
 			/*const onCommandError = (error: Error, context: CommandWithContext) => {
 				if (this._errorReporting) {
@@ -709,7 +736,9 @@ export class TSRHandler {
 				)
 			}
 			await device.device.on('connectionChanged', onDeviceStatusChanged)
-			await device.device.on('slowCommand', onSlowCommand)
+			// await device.device.on('slowCommand', onSlowCommand)
+			await device.device.on('slowSentCommand', onSlowSentCommand)
+			await device.device.on('slowFulfilledCommand', onSlowFulfilledCommand)
 			await device.device.on('commandError', onCommandError)
 			await device.device.on('commandReport', onCommandReport)
 			await device.device.on('updateMediaObject', onUpdateMediaObject)
