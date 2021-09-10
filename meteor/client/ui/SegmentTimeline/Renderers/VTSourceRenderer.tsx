@@ -644,6 +644,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					noticeMessage={this.props.piece.message || ''}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
+					pieceId={this.props.piece.instance.piece._id}
 					expectedPackages={this.props.piece.instance.piece.expectedPackages}
 					studio={this.props.studio}
 				/>

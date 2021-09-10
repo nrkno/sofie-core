@@ -130,6 +130,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					}
 					mediaPreviewUrl={props.mediaPreviewUrl}
 					contentPackageInfos={props.packageInfos}
+					pieceId={props.adLibListItem._id}
 					expectedPackages={props.adLibListItem.expectedPackages}
 					studio={props.studio}
 				/>
