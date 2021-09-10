@@ -18,9 +18,8 @@ import { Studio } from '../../../lib/collections/Studios'
 import { getExpectedPackageId, getSideEffect } from '../../../lib/collections/ExpectedPackages'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
 import { getPackageContainerPackageStatus } from '../../../lib/globalStores'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { PieceId } from '../../../lib/collections/Pieces'
 
 interface IProps {
 	status: RundownAPI.PieceStatusCode
