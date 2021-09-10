@@ -40,7 +40,6 @@ import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 
 interface IProps {
 	id: string
@@ -1094,6 +1093,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
 							<SegmentDuration
+								segmentId={this.props.segment._id}
 								parts={this.props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								budgetDuration={this.props.budgetDuration}
