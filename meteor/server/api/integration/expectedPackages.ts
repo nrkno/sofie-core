@@ -198,6 +198,7 @@ export namespace PackageManagerIntegration {
 									_id: id,
 									studioId: studioId,
 									containerId: change.containerId,
+									deviceId: peripheralDevice._id,
 									packageId: change.packageId,
 									status: change.status,
 									modified: getCurrentTime(),
@@ -211,9 +212,25 @@ export namespace PackageManagerIntegration {
 			}
 		}
 		if (removedIds.length) {
-			ps.push(PackageContainerPackageStatuses.removeAsync({ _id: { $in: removedIds } }))
+			ps.push(
+				PackageContainerPackageStatuses.removeAsync({
+					deviceId: peripheralDevice._id,
+					_id: { $in: removedIds },
+				})
+			)
 		}
 		await Promise.all(ps)
+	}
+	export async function removeAllPackageContainerPackageStatusesOfDevice(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string
+	): Promise<void> {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+
+		await PackageContainerPackageStatuses.removeAsync({
+			deviceId: peripheralDevice._id,
+		})
 	}
 	export async function fetchPackageInfoMetadata(
 		context: MethodContext,

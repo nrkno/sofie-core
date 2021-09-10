@@ -82,27 +82,6 @@ jobs:
           meteor npm run validate:prod-dependencies
         env:
           CI: true
-  validate-all-dependencies-core:
-    name: Validate all Core dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/setup-meteor
-      - name: restore node_modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-      - name: Validate all dependencies for vulnerabilities
-        run: |
-          yarn
-          cd meteor
-          meteor npm run validate:all-dependencies
-        env:
-          CI: true
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
     name: Build Core and publish docker image

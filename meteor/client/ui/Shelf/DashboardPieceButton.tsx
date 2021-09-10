@@ -211,6 +211,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
+					pieceId={this.props.piece._id}
 					expectedPackages={this.props.piece.expectedPackages}
 					studio={this.props.studio}
 					displayOn="viewport"

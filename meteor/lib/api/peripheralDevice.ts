@@ -320,6 +320,7 @@ export interface NewPeripheralDeviceAPI {
 			  }
 		)[]
 	): Promise<void>
+	removeAllPackageContainerPackageStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
 	fetchPackageInfoMetadata(
 		deviceId: PeripheralDeviceId,
@@ -423,6 +424,8 @@ export enum PeripheralDeviceAPIMethods {
 	'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
 
 	'updatePackageContainerPackageStatuses' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatuses',
+	'removeAllPackageContainerPackageStatusesOfDevice' = 'peripheralDevice.packageManager.removeAllPackageContainerPackageStatusesOfDevice',
+
 	'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
 	'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
 	'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',

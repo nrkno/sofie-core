@@ -62,6 +62,12 @@ export const PackageStatus = withTranslation()(
 		componentDidUpdate(): void {
 			this.updateWorkingState()
 		}
+		componentWillUnmount(): void {
+			if (this.updateWorkingStateTimeout) {
+				clearTimeout(this.updateWorkingStateTimeout)
+				this.updateWorkingStateTimeout = null
+			}
+		}
 		updateWorkingState(): void {
 			const requiredProgress = this.getProgress(true)
 			const allProgress = this.getProgress(false)
