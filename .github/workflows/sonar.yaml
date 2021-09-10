@@ -11,7 +11,7 @@ name: SonarCloud
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
-    if: ${{ secrets.SONAR_TOKEN }}
+    if: ${{ github.repository_owner == 'nrkno' }}
       
     steps:
     - uses: actions/checkout@v2
