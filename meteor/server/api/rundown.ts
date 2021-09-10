@@ -333,7 +333,7 @@ export namespace ServerRundownAPI {
 			if (!rundown.orphaned) {
 				cache.Rundown.update({
 					$set: {
-						orphaned: 'deleted',
+						orphaned: 'manual',
 					},
 				})
 			} else {
