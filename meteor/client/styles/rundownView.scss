@@ -27,6 +27,8 @@ $segment-item-disabled-color: #c9c9c9;
 $segment-nextline-shade-width: 1.875rem;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
 
+$segment-editorialline-color: rgba(255, 255, 255, 0.25);
+
 $rundown-divider-color: #000000;
 $rundown-divider-background-color: #dddddd;
 
@@ -1220,6 +1222,14 @@ svg.icon {
 		}
 	}
 
+	.segment-timeline__editorialline {
+		border-left: 2px dashed $segment-editorialline-color;
+		position: absolute;
+		top: calc(2.3em - 13px);
+		left: 0;
+		bottom: 1.2em;
+	}
+
 	/** This is a child element of the .segment-timeline__timeline-container.
 	    This is the parent of all segment items
 	*/
@@ -1333,7 +1343,7 @@ svg.icon {
 				background: $segment-background-color;
 				height: 100%;
 				top: 0;
-				min-width: 200%;
+				min-width: 100vw;
 				z-index: 0;
 			}
 
@@ -1512,6 +1522,11 @@ svg.icon {
 				.segment-timeline__piece {
 					display: none;
 				}
+			}
+
+			&.budget-gap {
+				flex: 1;
+				z-index: -1;
 			}
 
 			&:not(.live) {
@@ -2152,6 +2167,12 @@ svg.icon {
 				background-color: $part-identifier;
 				border-radius: 0 10px 10px 0;
 				color: $part-identifier-text;
+			}
+
+			&.gap {
+				.segment-timeline__layer {
+					border-bottom: none;
+				}
 			}
 		}
 	}

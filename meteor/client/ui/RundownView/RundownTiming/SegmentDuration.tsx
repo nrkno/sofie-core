@@ -7,6 +7,8 @@ import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 
 interface ISegmentDurationProps {
 	parts: PartUi[]
+	budgetDuration?: number
+	playedOutDuration: number
 	label?: ReactNode
 	className?: string
 	/** If set, the timer will display just the played out duration */
@@ -24,18 +26,24 @@ interface ISegmentDurationProps {
 export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function SegmentDuration(
 	props: WithTiming<ISegmentDurationProps>
 ) {
-	if (props.parts && props.timingDurations.partPlayed) {
+	let duration: number | undefined = undefined
+	let budget = 0
+	let playedOut = 0
+	if (props.budgetDuration !== undefined) {
+		budget = props.budgetDuration
+		duration = props.budgetDuration - props.playedOutDuration
+	} else if (props.parts && props.timingDurations.partPlayed) {
 		const { partPlayed } = props.timingDurations
 
-		let budget = 0
-		let playedOut = 0
 		props.parts.forEach((part) => {
 			budget += part.instance.orphaned || part.instance.part.untimed ? 0 : part.instance.part.expectedDuration || 0
 			playedOut += (!part.instance.part.untimed ? partPlayed[unprotectString(part.instance.part._id)] : 0) || 0
 		})
 
-		const duration = budget - playedOut
+		duration = budget - playedOut
+	}
 
+	if (duration !== undefined) {
 		return (
 			<>
 				{props.label}

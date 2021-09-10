@@ -130,6 +130,8 @@ interface IState {
 	currentLivePart: PartUi | undefined
 	currentNextPart: PartUi | undefined
 	autoNextPart: boolean
+	budgetDuration: number | undefined
+	budgetGap: number
 	timeScale: number
 	maxTimeScale: number
 	showingAllSegment: boolean
@@ -381,6 +383,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				autoNextPart: false,
 				currentLivePart: undefined,
 				currentNextPart: undefined,
+				budgetDuration: undefined,
+				budgetGap: 0,
 				timeScale: props.timeScale,
 				maxTimeScale: props.timeScale,
 				showingAllSegment: true,
@@ -607,6 +611,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.pastInfinitesComp.invalidate()
 			}
 
+			const budgetDuration = this.getSegmentBudgetDuration()
+
 			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
 				this.updateMaxTimeScale().catch(console.error)
 			}
@@ -621,6 +627,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				currentLivePart,
 				currentNextPart,
 				autoNextPart,
+				budgetDuration,
 			})
 		}
 
@@ -640,6 +647,21 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART, this.onGoToPart)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
 			window.removeEventListener('resize', this.onWindowResize)
+		}
+
+		private getSegmentBudgetDuration(): number | undefined {
+			let duration = 0
+			let anyBudgetDurations = false
+			for (const part of this.props.parts) {
+				if (part.instance.part.budgetDuration !== undefined) {
+					anyBudgetDurations = true
+					duration += part.instance.part.budgetDuration
+				}
+			}
+			if (anyBudgetDurations) {
+				return duration
+			}
+			return undefined
 		}
 
 		private partInstanceSub: Meteor.SubscriptionHandle | undefined
@@ -821,11 +843,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
 						: partOffset + lastTakeOffset
 
+				const budgetDuration = this.getSegmentBudgetDuration()
+
 				this.setState({
 					livePosition: newLivePosition,
 					scrollLeft: this.state.followLiveLine
 						? Math.max(newLivePosition - LIVELINE_HISTORY_SIZE / this.state.timeScale, 0)
 						: this.state.scrollLeft,
+					budgetDuration,
 				})
 			}
 		}
@@ -965,6 +990,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						onHeaderNoteClick={this.props.onHeaderNoteClick}
 						showCountdownToSegment={this.props.showCountdownToSegment}
 						fixedSegmentDuration={this.props.fixedSegmentDuration}
+						budgetDuration={this.state.budgetDuration}
 					/>
 				)) ||
 				null
