@@ -4,7 +4,15 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, getRandomId, applyToArray, stringifyObjects } from '../../lib/lib'
+import {
+	getCurrentTime,
+	protectString,
+	makePromise,
+	getRandomId,
+	applyToArray,
+	stringifyObjects,
+	waitForPromise,
+} from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
@@ -46,6 +54,7 @@ import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { profiler } from './profiler'
+import { removeOwnedByPeripheralDevices } from './cleanup'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 
@@ -578,13 +587,9 @@ export namespace ServerPeripheralDeviceAPI {
 		logger.info(`Removing PeripheralDevice ${peripheralDevice._id}`)
 
 		PeripheralDevices.remove(peripheralDevice._id)
-		PeripheralDevices.remove({
-			parentDeviceId: peripheralDevice._id,
-		})
-		PeripheralDeviceCommands.remove({
-			deviceId: peripheralDevice._id,
-		})
-		// TODO: add others here (MediaWorkflows, etc?)
+
+		// Remove old data:
+		waitForPromise(removeOwnedByPeripheralDevices())
 	}
 	export async function reportResolveDone(
 		context: MethodContext,
