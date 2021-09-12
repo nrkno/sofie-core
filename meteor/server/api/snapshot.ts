@@ -32,6 +32,7 @@ import {
 	makePromise,
 	ProtectedString,
 	protectStringArray,
+	literal,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -77,8 +78,17 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
-import { saveIntoDb, sumChanges } from '../lib/database'
+import { Changes, saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
+import {
+	ExpectedPackageWorkStatus,
+	ExpectedPackageWorkStatuses,
+} from '../../lib/collections/ExpectedPackageWorkStatuses'
+import {
+	PackageContainerPackageStatusDB,
+	PackageContainerPackageStatuses,
+} from '../../lib/collections/PackageContainerPackageStatus'
+import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -120,6 +130,10 @@ interface RundownPlaylistSnapshot {
 	expectedMediaItems: Array<ExpectedMediaItem>
 	expectedPlayoutItems: Array<ExpectedPlayoutItem>
 	expectedPackages: Array<ExpectedPackageDB>
+
+	expectedPackageWorkStatuses: Array<ExpectedPackageWorkStatus>
+	packageContainerPackageStatuses: Array<PackageContainerPackageStatusDB>
+	packageInfos: Array<PackageInfoDB>
 }
 interface SystemSnapshot {
 	version: string
@@ -203,6 +217,16 @@ async function createRundownPlaylistSnapshot(
 	const expectedPackages = await ExpectedPackages.findFetchAsync({ rundownId: { $in: rundownIds } })
 	const baselineObjs = await RundownBaselineObjs.findFetchAsync({ rundownId: { $in: rundownIds } })
 
+	const expectedPackageWorkStatuses = await ExpectedPackageWorkStatuses.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+	const packageContainerPackageStatuses = await PackageContainerPackageStatuses.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+	const packageInfos = await PackageInfos.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
@@ -235,6 +259,9 @@ async function createRundownPlaylistSnapshot(
 		expectedMediaItems,
 		expectedPlayoutItems,
 		expectedPackages,
+		expectedPackageWorkStatuses,
+		packageContainerPackageStatuses,
+		packageInfos,
 	}
 }
 
@@ -798,6 +825,15 @@ export async function restoreFromRundownPlaylistSnapshot(
 			ExpectedPackages,
 			{ rundownId: { $in: rundownIds } },
 			updateItemIds(snapshot.expectedPackages || [], true)
+		),
+		ExpectedPackageWorkStatuses.upsertManyAsync(snapshot.expectedPackageWorkStatuses).then((result) =>
+			literal<Changes>({ added: result.insertedIds.length, updated: result.numberAffected, removed: 0 })
+		),
+		PackageContainerPackageStatuses.upsertManyAsync(snapshot.packageContainerPackageStatuses).then((result) =>
+			literal<Changes>({ added: result.insertedIds.length, updated: result.numberAffected, removed: 0 })
+		),
+		PackageInfos.upsertManyAsync(snapshot.packageInfos).then((result) =>
+			literal<Changes>({ added: result.insertedIds.length, updated: result.numberAffected, removed: 0 })
 		),
 	])
 
