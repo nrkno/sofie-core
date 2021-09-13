@@ -33,6 +33,7 @@ import {
 	ProtectedString,
 	protectStringArray,
 	literal,
+	assertNever,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -51,7 +52,13 @@ import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Bluepr
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { ExpectedPackageDB, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import {
+	ExpectedPackageDB,
+	ExpectedPackageDBType,
+	ExpectedPackageId,
+	ExpectedPackages,
+	getExpectedPackageId,
+} from '../../lib/collections/ExpectedPackages'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
@@ -72,10 +79,11 @@ import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { getPartId, getSegmentId } from './ingest/lib'
 import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
-import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
+import { AdLibActions, AdLibAction, AdLibActionId } from '../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActionId,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { Changes, saveIntoDb, sumChanges } from '../lib/database'
@@ -85,10 +93,13 @@ import {
 	ExpectedPackageWorkStatuses,
 } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import {
+	getPackageContainerPackageId,
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatuses,
 } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
+import { BucketAdLibId } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLibActionId } from '../../lib/collections/BucketAdlibActions'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -712,6 +723,13 @@ export async function restoreFromRundownPlaylistSnapshot(
 		piece.startSegmentId = segmentIdMap[unprotectString(piece.startSegmentId)]
 		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
 	})
+	_.each(snapshot.adLibPieces, (piece) => {
+		const oldId = piece._id
+		piece.rundownId = rundownIdMap[unprotectString(piece.rundownId)]
+		if (piece.partId) piece.partId = partIdMap[unprotectString(piece.partId)]
+		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
+	})
+
 	const pieceInstanceIdMap: { [key: string]: PieceInstanceId } = {}
 	_.each(snapshot.pieceInstances, (pieceInstance) => {
 		const oldId = pieceInstance._id
@@ -737,6 +755,82 @@ export async function restoreFromRundownPlaylistSnapshot(
 			partInstanceIdMap[unprotectString(snapshot.playlist.previousPartInstanceId)] ||
 			snapshot.playlist.previousPartInstanceId
 	}
+
+	const expectedPackageIdMap = new Map<ExpectedPackageId, ExpectedPackageId>()
+	_.each(snapshot.expectedPackages, (expectedPackage) => {
+		const oldId = expectedPackage._id
+
+		let ownerId:
+			| PieceId
+			| AdLibActionId
+			| RundownBaselineAdLibActionId
+			| BucketAdLibId
+			| BucketAdLibActionId
+			| RundownId
+			| StudioId
+			| undefined = undefined
+
+		switch (expectedPackage.fromPieceType) {
+			case ExpectedPackageDBType.PIECE:
+			case ExpectedPackageDBType.ADLIB_PIECE:
+			case ExpectedPackageDBType.ADLIB_ACTION: {
+				expectedPackage.pieceId = pieceIdMap[unprotectString(expectedPackage.pieceId)]
+				expectedPackage.rundownId = rundownIdMap[unprotectString(expectedPackage.rundownId)]
+				expectedPackage.segmentId = segmentIdMap[unprotectString(expectedPackage.segmentId)]
+				ownerId = expectedPackage.pieceId
+				break
+			}
+			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
+			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION: {
+				expectedPackage.pieceId = pieceIdMap[unprotectString(expectedPackage.pieceId)]
+				expectedPackage.rundownId = rundownIdMap[unprotectString(expectedPackage.rundownId)]
+				ownerId = expectedPackage.pieceId
+				break
+			}
+			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
+				expectedPackage.rundownId = rundownIdMap[unprotectString(expectedPackage.rundownId)]
+				ownerId = expectedPackage.rundownId
+				break
+			}
+			case ExpectedPackageDBType.BUCKET_ADLIB:
+			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION: {
+				expectedPackage.pieceId = pieceIdMap[unprotectString(expectedPackage.pieceId)]
+				ownerId = expectedPackage.pieceId
+				break
+			}
+			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
+				ownerId = expectedPackage.studioId
+				break
+
+			default:
+				assertNever(expectedPackage)
+		}
+		const localExpectedPackageId = unprotectString(expectedPackage._id).match(/[^_]_(.*)/)?.[1]
+		if (ownerId && localExpectedPackageId) {
+			expectedPackage._id = getExpectedPackageId(ownerId, localExpectedPackageId)
+		}
+
+		expectedPackageIdMap.set(oldId, expectedPackage._id)
+	})
+	_.each(snapshot.expectedPackageWorkStatuses, (expectedPackageWorkStatus) => {
+		_.each(expectedPackageWorkStatus.fromPackages, (fromPackage) => {
+			fromPackage.id = expectedPackageIdMap.get(fromPackage.id) || protectString('N/A')
+		})
+		expectedPackageWorkStatus._id = getRandomId()
+	})
+	_.each(snapshot.packageContainerPackageStatuses, (packageContainerPackageStatus) => {
+		packageContainerPackageStatus.packageId =
+			expectedPackageIdMap.get(packageContainerPackageStatus.packageId) || protectString('N/A')
+
+		packageContainerPackageStatus._id = getPackageContainerPackageId(
+			packageContainerPackageStatus.studioId,
+			packageContainerPackageStatus.containerId,
+			packageContainerPackageStatus.packageId
+		)
+	})
+	_.each(snapshot.packageInfos, (packageInfo) => {
+		packageInfo.packageId = expectedPackageIdMap.get(packageInfo.packageId) || protectString('N/A')
+	})
 
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
 
@@ -819,12 +913,10 @@ export async function restoreFromRundownPlaylistSnapshot(
 		saveIntoDb(
 			ExpectedPlayoutItems,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPlayoutItems || [], true)
+			updateItemIds(snapshot.expectedPlayoutItems || [], false)
 		),
-		saveIntoDb(
-			ExpectedPackages,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPackages || [], true)
+		ExpectedPackages.upsertManyAsync(snapshot.expectedPackages).then((result) =>
+			literal<Changes>({ added: result.insertedIds.length, updated: result.numberAffected, removed: 0 })
 		),
 		ExpectedPackageWorkStatuses.upsertManyAsync(snapshot.expectedPackageWorkStatuses).then((result) =>
 			literal<Changes>({ added: result.insertedIds.length, updated: result.numberAffected, removed: 0 })
