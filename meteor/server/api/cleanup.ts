@@ -37,6 +37,10 @@ import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { isAnyQueuedWorkRunning } from '../codeControl'
 import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
+import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageWorkStatuses'
+import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
+import { PackageInfos } from '../../lib/collections/PackageInfos'
 
 export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
 	if (actuallyCleanup) {
@@ -177,6 +181,10 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 
 	// Going Through data and removing old data: --------------------------------------------------
+	// CoreSystem:
+	{
+		addToResult('CoreSystem', 0) // Do nothing
+	}
 	// AdLibActions
 	{
 		ownedByRundownId('AdLibActions', AdLibActions)
@@ -245,6 +253,15 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 			})
 		}
 	}
+	// ExpectedPackages
+	{
+		ownedByStudioId('ExpectedPackages', ExpectedPackages)
+	}
+	// ExpectedPackageWorkStatuses
+	{
+		ownedByStudioId('ExpectedPackageWorkStatuses', ExpectedPackageWorkStatuses)
+		ownedByDeviceId('ExpectedPackageWorkStatuses', ExpectedPackageWorkStatuses)
+	}
 	// ExpectedPlayoutItems
 	{
 		ownedByRundownIdOrStudioId('ExpectedPlayoutItems', ExpectedPlayoutItems)
@@ -278,6 +295,15 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	{
 		addToResult('Organizations', 0) // Do nothing
 	}
+	// PackageContainerPackageStatuses
+	{
+		ownedByStudioId('PackageContainerPackageStatuses', PackageContainerPackageStatuses)
+		ownedByDeviceId('PackageContainerPackageStatuses', PackageContainerPackageStatuses)
+	}
+	// PackageInfos
+	{
+		ownedByStudioId('PackageInfos', PackageInfos)
+		ownedByDeviceId('PackageInfos', PackageInfos)
 	}
 	// Parts
 	{
