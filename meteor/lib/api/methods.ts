@@ -19,6 +19,7 @@ import { SystemAPIMethods, SystemAPI } from './system'
 import { UserId } from '../typings/meteor'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 import { Meteor } from 'meteor/meteor'
+import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from './triggeredActions'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -35,6 +36,7 @@ interface IMeteorCall {
 	rundownLayout: NewRundownLayoutsAPI
 	snapshot: NewSnapshotAPI
 	showstyles: NewShowStylesAPI
+	triggeredActions: NewTriggeredActionsAPI
 	studio: NewStudiosAPI
 	systemStatus: NewSystemStatusAPI
 	user: NewUserAPI
@@ -54,6 +56,7 @@ export const MeteorCall: IMeteorCall = {
 	rundownLayout: makeMethods(RundownLayoutsAPIMethods),
 	snapshot: makeMethods(SnapshotAPIMethods),
 	showstyles: makeMethods(ShowStylesAPIMethods),
+	triggeredActions: makeMethods(TriggeredActionsAPIMethods),
 	studio: makeMethods(StudiosAPIMethods),
 	systemStatus: makeMethods(SystemStatusAPIMethods),
 	user: makeMethods(UserAPIMethods),

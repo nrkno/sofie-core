@@ -8,6 +8,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorCall } from '../../../lib/api/methods'
 import * as _ from 'underscore'
 import { languageAnd } from '../../lib/language'
+import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 
 interface IProps {}
 
@@ -190,6 +191,12 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								<span className="mdfx"></span>
 							</div>
 						</label>
+
+						<div className="row">
+							<div className="col c12 r1-c12">
+								<TriggeredActionsEditor showStyleBaseId={null} />
+							</div>
+						</div>
 
 						<h2 className="mhn">{t('Application Performance Monitoring')}</h2>
 						<div className="field">

@@ -1,6 +1,5 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import * as mousetrap from 'mousetrap'
+import React from 'react'
+import _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation, withTranslation } from 'react-i18next'
@@ -11,14 +10,12 @@ import { PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
@@ -57,7 +54,6 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
@@ -69,12 +65,7 @@ import { getShowHiddenSourceLayers } from '../../lib/localStorage'
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
 	onSelectAdLib: (piece: IAdLibListItem) => void
-	onToggleAdLib: (
-		piece: IAdLibListItem,
-		queue: boolean,
-		e: mousetrap.ExtendedKeyboardEvent,
-		mode?: IBlueprintActionTriggerMode
-	) => void
+	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: KeyboardEvent, mode?: IBlueprintActionTriggerMode) => void
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	searchFilter: string | undefined
@@ -444,7 +435,6 @@ export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
 }
 
 export interface AdLibPieceUi extends AdLibPiece {
-	hotkey?: string
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	isGlobal?: boolean
@@ -519,7 +509,7 @@ function actionToAdLibPieceUi(
 	}
 
 	return literal<AdLibPieceUi>({
-		_id: protectString(`function_${action._id}`),
+		_id: protectString(`${action._id}`),
 		name: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
@@ -546,9 +536,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
-	// a hash to store various indices of the used hotkey lists
-	const sourceHotKeyUse: { [key: string]: number } = GlobalAdLibHotkeyUseMap.getAll()
-
 	if (!props.playlist || !props.showStyleBase) {
 		return {
 			uiSegments: [],
@@ -557,8 +544,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 			rundownBaselineAdLibs: [],
 		}
 	}
-
-	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
 	const segments = props.playlist.getSegments()
 
@@ -711,30 +696,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		segment.pieces = segment.pieces.sort((a, b) => a._rank - b._rank)
 	})
 
-	if (liveSegment) {
-		liveSegment.pieces = liveSegment.pieces.map((piece) => {
-			const sourceLayer = piece.sourceLayerId && sourceLayerLookup[piece.sourceLayerId]
-
-			if (sourceLayer && sourceLayer.activateKeyboardHotkeys) {
-				const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-				const sourceHotKeyUseLayerId =
-					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || piece.sourceLayerId
-				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-					// clone the AdLibPieceUi object, so that it doesn't affect any memoized autoruns that may have
-					// inserted pieces to this list
-					piece = {
-						...piece,
-						hotkey: keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0],
-					}
-					// add one to the usage hash table
-					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
-				}
-			}
-
-			return piece
-		})
-	}
-
 	let currentRundown: Rundown | undefined = undefined
 	let rundownBaselineAdLibs: Array<AdLibPieceUi> = []
 	if (
@@ -766,12 +727,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 			// memoizedIsolatedAutorun
 
 			rundownBaselineAdLibs = memoizedIsolatedAutorun(
-				(
-					currentRundownId: RundownId,
-					sourceLayerLookup: SourceLayerLookup,
-					sourceLayers: ISourceLayer[],
-					sourceHotKeyUse: { [key: string]: number }
-				) => {
+				(currentRundownId: RundownId, sourceLayerLookup: SourceLayerLookup) => {
 					const rundownAdLibItems: RundownBaselineAdLibItem[] = RundownBaselineAdLibPieces.find(
 						{
 							rundownId: currentRundownId,
@@ -787,7 +743,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 							.map((layer) =>
 								literal<AdLibPieceUi>({
 									_id: protectString(`sticky_${layer._id}`),
-									hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 									name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
 									status: RundownAPI.PieceStatusCode.UNKNOWN,
 									isSticky: true,
@@ -839,16 +794,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 							const sourceLayer = (uiAdLib.sourceLayer =
 								(item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]) || undefined)
 							uiAdLib.outputLayer = (item.outputLayerId && outputLayerLookup[item.outputLayerId]) || undefined
-							if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
-								const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-								const sourceHotKeyUseLayerId =
-									sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
-								if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-									uiAdLib.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
-									// add one to the usage hash table
-									sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
-								}
-							}
 
 							if (sourceLayer && sourceLayer.isHidden && !showHiddenSourceLayers) {
 								uiAdLib.isHidden = true
@@ -862,9 +807,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 				},
 				'rundownBaselineAdLibs',
 				currentRundown._id,
-				sourceLayerLookup,
-				props.showStyleBase.sourceLayers,
-				sourceHotKeyUse
+				sourceLayerLookup
 			)
 		}
 
@@ -877,7 +820,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 						.map((layer) =>
 							literal<AdLibPieceUi>({
 								_id: protectString(`clear_${layer._id}`),
-								hotkey: layer.clearKeyboardHotkey ? layer.clearKeyboardHotkey.split(',')[0] : '',
 								name: t('Clear {{layerName}}', { layerName: layer.abbreviation || layer.name }),
 								status: RundownAPI.PieceStatusCode.UNKNOWN,
 								isSticky: false,
@@ -943,14 +885,10 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 				})
 			}
 
-			this.refreshKeyboardHotkeys()
-
 			RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 		}
 
 		componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps) {
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 			this.usedHotkeys.length = 0
 
 			if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
@@ -958,61 +896,14 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 					selectedSegment: this.props.liveSegment,
 				})
 			}
-
-			this.refreshKeyboardHotkeys()
 		}
 
 		componentWillUnmount() {
 			this._cleanUp()
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
 			this.usedHotkeys.length = 0
 
 			RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
-		}
-
-		refreshKeyboardHotkeys() {
-			if (!this.props.studioMode) return
-			if (!this.props.registerHotkeys) return
-
-			const preventDefault = (e) => {
-				e.preventDefault()
-			}
-
-			if (this.props.liveSegment && this.props.liveSegment.pieces) {
-				this.props.liveSegment.pieces.forEach((item) => {
-					if (item.hotkey) {
-						mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-						mousetrapHelper.bind(
-							item.hotkey,
-							(e: mousetrap.ExtendedKeyboardEvent) => {
-								preventDefault(e)
-								this.onToggleAdLib(item, false, e)
-							},
-							'keyup',
-							this.props.hotkeyGroup
-						)
-						this.usedHotkeys.push(item.hotkey)
-
-						const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
-						if (sourceLayer && sourceLayer.isQueueable) {
-							const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-							mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-							mousetrapHelper.bind(
-								queueHotkey,
-								(e: mousetrap.ExtendedKeyboardEvent) => {
-									preventDefault(e)
-									this.onToggleAdLib(item, true, e)
-								},
-								'keyup',
-								this.props.hotkeyGroup
-							)
-							this.usedHotkeys.push(queueHotkey)
-						}
-					}
-				})
-			}
 		}
 
 		onRevealInShelf = (e: RevealInShelfEvent) => {

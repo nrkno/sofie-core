@@ -45,6 +45,7 @@ export interface RunMigrationResult {
 }
 export enum MigrationStepType {
 	CORE = 'core',
+	SYSTEM = 'system',
 	STUDIO = 'studio',
 	SHOWSTYLE = 'showstyle',
 }
@@ -52,7 +53,7 @@ export interface MigrationChunk {
 	sourceType: MigrationStepType
 	sourceName: string
 	blueprintId?: BlueprintId // blueprint id
-	sourceId?: ShowStyleBaseId | StudioId // id in blueprint databaseVersions
+	sourceId?: ShowStyleBaseId | StudioId | 'system' // id in blueprint databaseVersions
 	_dbVersion: string // database version
 	_targetVersion: string // target version
 	_steps: Array<string> // ref to step that use it

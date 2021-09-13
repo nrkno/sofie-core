@@ -28,6 +28,7 @@ export enum PubSub {
 	segments = 'segments',
 	showStyleBases = 'showStyleBases',
 	showStyleVariants = 'showStyleVariants',
+	triggeredActions = 'triggeredActions',
 	snapshots = 'snapshots',
 	studios = 'studios',
 	studioOfDevice = 'studioOfDevice',
