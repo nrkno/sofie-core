@@ -140,8 +140,9 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					}
 					mediaPreviewUrl={props.mediaPreviewUrl}
 					contentPackageInfos={props.packageInfos}
+					pieceId={props.adLibListItem._id}
 					expectedPackages={props.adLibListItem.expectedPackages}
-					studioPackageContainers={props.studioPackageContainers}
+					studio={props.studio}
 				/>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">

@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+### [1.35.1-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.35.1-3) (2021-09-07)
+
+
+### Bug Fixes
+
+* orphaned parts unable to continue adlib onEnd infinites ([c38a3a1](https://github.com/nrkno/tv-automation-server-core/commit/c38a3a12c98019baf79ec4167e34b29b66bf6dfb))
+
+### [1.35.1-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.35.1-2) (2021-08-10)
+
+
+### Bug Fixes
+
+* **Presenter screen:** getSelectedPartInstances on undefined crashes view ([d050844](https://github.com/nrkno/tv-automation-server-core/commit/d0508440e5ed805100780980e958b97d02356116))
+
+## [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.7...v1.36.0-in-testing.8) (2021-08-10)
+
 ## [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.6...v1.36.0-in-testing.7) (2021-07-20)
 
 

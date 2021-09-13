@@ -1170,6 +1170,9 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	): Promise<void> {
 		await PackageManagerIntegration.updatePackageContainerPackageStatuses(this, deviceId, deviceToken, changes)
 	}
+	async removeAllPackageContainerPackageStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
+		await PackageManagerIntegration.removeAllPackageContainerPackageStatusesOfDevice(this, deviceId, deviceToken)
+	}
 	async fetchPackageInfoMetadata(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,

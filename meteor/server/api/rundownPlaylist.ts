@@ -45,7 +45,7 @@ import { WrappedStudioBlueprint } from './blueprints/cache'
 import { StudioUserContext } from './blueprints/context'
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 import { Meteor } from 'meteor/meteor'
-import { BlueprintResultOrderedRundowns } from '@sofie-automation/blueprints-integration'
+import { BlueprintResultOrderedRundowns, IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 import { MethodContext } from '../../lib/api/methods'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
@@ -190,7 +190,7 @@ export function produceRundownPlaylistInfoFromRundown(
 	}
 
 	// If no order is provided, fall back to default sorting:
-	const order = playlistInfo?.order ?? _.object(rundownsInDefaultOrder.map((i, index) => [i._id, index + 1]))
+	const order = playlistInfo?.order ?? _.object(rundownsInDefaultOrder.map((i, index) => [i.externalId, index + 1]))
 
 	return {
 		rundownPlaylist: newPlaylist,
@@ -198,7 +198,7 @@ export function produceRundownPlaylistInfoFromRundown(
 	}
 }
 function defaultPlaylistForRundown(
-	rundown: ReadonlyDeep<DBRundown>,
+	rundown: ReadonlyDeep<IBlueprintRundown>,
 	studio: ReadonlyDeep<Studio>,
 	existingPlaylist?: ReadonlyDeep<RundownPlaylist>
 ): Omit<DBRundownPlaylist, '_id' | 'externalId'> {
@@ -249,7 +249,7 @@ export function updateRundownsInPlaylist(
 	const orderedUnrankedRundowns = sortDefaultRundownInPlaylistOrder(unrankedRundowns)
 
 	orderedUnrankedRundowns.forEach((rundown) => {
-		rundownCollection.update(rundown._id, { $set: { _rank: ++maxRank } })
+		rundownCollection.update({ externalId: rundown.externalId }, { $set: { _rank: ++maxRank } })
 	})
 }
 /** Move a rundown manually (by a user in Sofie)  */
@@ -497,10 +497,13 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 	)
 }
 
-function sortDefaultRundownInPlaylistOrder(rundowns: ReadonlyDeep<Array<DBRundown>>): ReadonlyDeep<Array<DBRundown>> {
+function sortDefaultRundownInPlaylistOrder(
+	rundowns: ReadonlyDeep<Array<DBRundown>>
+): ReadonlyDeep<Array<IBlueprintRundown>> {
 	return mongoFindOptions<ReadonlyDeep<DBRundown>, ReadonlyDeep<DBRundown>>(rundowns, {
 		sort: {
 			name: 1,
+			externalId: 1,
 			_id: 1,
 		},
 	}).sort(PlaylistTiming.sortTiminings)

@@ -18,6 +18,7 @@ import {
 	MappingSisyfosType,
 	QuantelControlMode,
 	MappingVMixType,
+	MappingOBSType,
 } from 'timeline-state-resolver'
 
 const PLAYOUT_SUBDEVICE_COMMON: SubDeviceConfigManifestEntry[] = [
@@ -47,7 +48,10 @@ const PLAYOUT_SUBDEVICE_HOST_PORT = [
 		type: ConfigManifestEntryType.INT,
 	},
 ]
-const PLAYOUT_SUBDEVICE_CONFIG: SubDeviceConfigManifest['config'] = {
+
+type ImplementedSubDeviceConfig = Pick<SubDeviceConfigManifest['config'], TSRDeviceType>
+
+const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 	[TSRDeviceType.ABSTRACT]: [...PLAYOUT_SUBDEVICE_COMMON],
 	[TSRDeviceType.CASPARCG]: [
 		...PLAYOUT_SUBDEVICE_COMMON,
@@ -400,6 +404,23 @@ const PLAYOUT_SUBDEVICE_CONFIG: SubDeviceConfigManifest['config'] = {
 	],
 	[TSRDeviceType.SHOTOKU]: [...PLAYOUT_SUBDEVICE_COMMON, ...PLAYOUT_SUBDEVICE_HOST_PORT],
 	[TSRDeviceType.VMIX]: [...PLAYOUT_SUBDEVICE_COMMON, ...PLAYOUT_SUBDEVICE_HOST_PORT],
+	[TSRDeviceType.SINGULAR_LIVE]: [
+		...PLAYOUT_SUBDEVICE_COMMON,
+		{
+			id: 'options.accessToken',
+			name: 'Access Token',
+			type: ConfigManifestEntryType.STRING,
+		},
+	],
+	[TSRDeviceType.OBS]: [
+		...PLAYOUT_SUBDEVICE_COMMON,
+		...PLAYOUT_SUBDEVICE_HOST_PORT,
+		{
+			id: 'options.password',
+			name: 'Password',
+			type: ConfigManifestEntryType.STRING,
+		},
+	],
 }
 
 // TODO: should come from types
@@ -414,7 +435,20 @@ enum EmberParameterType {
 	Octets = 'OCTETS',
 }
 
-const MAPPING_MANIFEST: MappingsManifest = {
+// If a device has no specific settings for a mapping, it should be added to this list
+type NoMappingSettingsDeviceTypes =
+	| TSRDeviceType.ABSTRACT
+	| TSRDeviceType.HTTPSEND
+	| TSRDeviceType.TCPSEND
+	| TSRDeviceType.PHAROS
+	| TSRDeviceType.OSC
+	| TSRDeviceType.HTTPWATCHER
+	| TSRDeviceType.VIZMSE
+	| TSRDeviceType.SHOTOKU
+
+type ImplementedMappingsManifest = Pick<MappingsManifest, Exclude<TSRDeviceType, NoMappingSettingsDeviceTypes>>
+
+const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 	[TSRDeviceType.ATEM]: [
 		{
 			id: 'mappingType',
@@ -560,6 +594,29 @@ const MAPPING_MANIFEST: MappingsManifest = {
 			id: 'inputLayer',
 			type: ConfigManifestEntryType.STRING,
 			name: 'Input Layer',
+			includeInSummary: true,
+			optional: true,
+		},
+	],
+	[TSRDeviceType.OBS]: [
+		{
+			id: 'mappingType',
+			type: ConfigManifestEntryType.ENUM,
+			values: MappingOBSType,
+			name: 'Mapping Type',
+			includeInSummary: true,
+		},
+		{
+			id: 'source',
+			type: ConfigManifestEntryType.STRING,
+			name: 'Source',
+			includeInSummary: true,
+			optional: true,
+		},
+		{
+			id: 'sceneName',
+			type: ConfigManifestEntryType.STRING,
+			name: 'Scene Name',
 			includeInSummary: true,
 			optional: true,
 		},

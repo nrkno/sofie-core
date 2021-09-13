@@ -1,3 +1,4 @@
+import { ExpectedPackageId } from './collections/ExpectedPackages'
 import {
 	PackageContainerPackageId,
 	PackageContainerPackageStatusDB,
@@ -16,7 +17,7 @@ const storePackageContainerPackageStatuses = new ReactiveStore<
 export const getPackageContainerPackageStatus = (
 	studioId: StudioId,
 	packageContainerId: string,
-	expectedPackageId: string
+	expectedPackageId: ExpectedPackageId
 ) => {
 	const id = getPackageContainerPackageId(studioId, packageContainerId, expectedPackageId)
 

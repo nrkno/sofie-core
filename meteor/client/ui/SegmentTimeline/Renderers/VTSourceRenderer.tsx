@@ -21,11 +21,11 @@ import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
 import { clone } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
-import StudioPackageContainersContext from '../../RundownView/StudioPackageContainersContext'
+import StudioContext from '../../RundownView/StudioContext'
 import { Studio } from '../../../../lib/collections/Studios'
 
 interface IProps extends ICustomLayerItemProps {
-	studioPackageContainers: Studio['packageContainers'] | undefined
+	studio: Studio | undefined
 }
 interface IState {
 	scenes?: Array<number>
@@ -644,8 +644,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					noticeMessage={this.props.piece.message || ''}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
+					pieceId={this.props.piece.instance.piece._id}
 					expectedPackages={this.props.piece.instance.piece.expectedPackages}
-					studioPackageContainers={this.props.studioPackageContainers}
+					studio={this.props.studio}
 				/>
 			</React.Fragment>
 		)
@@ -654,11 +655,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 export const VTSourceRenderer = withTranslation()(
 	// withStudioPackageContainers<IProps & WithTranslation, {}>()(VTSourceRendererBase)
-	(props: Omit<IProps, 'studioPackageContainers'> & WithTranslation) => (
-		<StudioPackageContainersContext.Consumer>
-			{(studioPackageContainers) => (
-				<VTSourceRendererBase {...props} studioPackageContainers={studioPackageContainers} />
-			)}
-		</StudioPackageContainersContext.Consumer>
+	(props: Omit<IProps, 'studio'> & WithTranslation) => (
+		<StudioContext.Consumer>{(studio) => <VTSourceRendererBase {...props} studio={studio} />}</StudioContext.Consumer>
 	)
 )
