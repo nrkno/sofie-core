@@ -28,7 +28,7 @@ export interface PackageContainerPackageStatusDB {
 	containerId: string
 
 	/** The Package this status is for */
-	packageId: string
+	packageId: ExpectedPackageId
 
 	/** Which PeripheralDevice this update came from */
 	deviceId: PeripheralDeviceId
