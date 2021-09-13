@@ -49,7 +49,7 @@ function getPackagePreviewUrl(
 ): string | undefined {
 	// use Expected packages:
 	// Just use the first one we find.
-	console.log('expectedPackages', expectedPackages)
+
 	// TODO: support multiple expected packages?
 	let packagePreviewPath: string | undefined
 	let previewContainerId: string | undefined
@@ -64,7 +64,6 @@ function getPackagePreviewUrl(
 			break // don't look further
 		}
 	}
-	console.log('previewContainerId', previewContainerId)
 	if (packagePreviewPath && previewContainerId && expectedPackage) {
 		const packageContainer = studio.packageContainers[previewContainerId]
 		if (!packageContainer) return
