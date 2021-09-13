@@ -8,6 +8,8 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorCall } from '../../../lib/api/methods'
 import * as _ from 'underscore'
 import { languageAnd } from '../../lib/language'
+import { TFunction } from 'i18next'
+import { Meteor } from 'meteor/meteor'
 
 interface IProps {}
 
@@ -55,74 +57,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								.catch(console.error)
 						},
 					})
-				})
-				.catch(console.error)
-		}
-		cleanUpOldData(): void {
-			const { t } = this.props
-			MeteorCall.system
-				.cleanupOldData(false)
-				.then((results) => {
-					console.log(results)
-					if (_.isString(results)) {
-						doModalDialog({
-							title: t('Error'),
-							message: results,
-							acceptOnly: true,
-							onAccept: () => {
-								// nothing
-							},
-						})
-					} else {
-						let count = 0
-						const affectedCollections: string[] = []
-						_.each(results, (result) => {
-							count += result.docsToRemove
-							if (result.docsToRemove > 0) {
-								affectedCollections.push(result.collectionName)
-							}
-						})
-						doModalDialog({
-							title: t('Remove old data'),
-							message: t(
-								'There are {{count}} documents in {{collections}} that can be removed, do you want to continue?',
-								{
-									count: count,
-									collections: languageAnd(t, affectedCollections),
-								}
-							),
-							yes: t('Yes'),
-							no: t('No'),
-							onAccept: () => {
-								MeteorCall.system
-									.cleanupOldData(true)
-									.then((results) => {
-										console.log(results)
-
-										if (_.isString(results)) {
-											doModalDialog({
-												title: t('Error'),
-												message: results,
-												acceptOnly: true,
-												onAccept: () => {
-													// nothing
-												},
-											})
-										} else {
-											doModalDialog({
-												title: t('Remove old data'),
-												message: t('The old data was removed.'),
-												acceptOnly: true,
-												onAccept: () => {
-													// nothing
-												},
-											})
-										}
-									})
-									.catch(console.error)
-							},
-						})
-					}
 				})
 				.catch(console.error)
 		}
@@ -272,7 +206,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 							</button>
 						</div>
 						<div>
-							<button className="btn btn-default" onClick={() => this.cleanUpOldData()}>
+							<button className="btn btn-default" onClick={() => checkForOldDataAndCleanUp(t)}>
 								{t('Cleanup old data')}
 							</button>
 						</div>
@@ -282,3 +216,102 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 		}
 	}
 )
+
+export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0): void {
+	MeteorCall.system
+		.cleanupOldData(false)
+		.then((results) => {
+			console.log(results)
+			if (typeof results === 'string') {
+				if (retriesLeft <= 0) {
+					doModalDialog({
+						title: t('Error when checking for cleaning up'),
+						message: results,
+						acceptOnly: true,
+						onAccept: () => {
+							// nothing
+						},
+					})
+				} else {
+					// Try again:
+					Meteor.setTimeout(() => {
+						checkForOldDataAndCleanUp(t, retriesLeft - 1)
+					}, 300)
+				}
+			} else {
+				const collections = Object.values(results).filter((o) => o.docsToRemove > 0)
+				collections.sort((a, b) => {
+					return a.docsToRemove - b.docsToRemove
+				})
+
+				let totalCount = collections.reduce((memo: number, o) => {
+					return memo + o.docsToRemove
+				}, 0)
+
+				const affectedCollections: string[] = []
+				_.each(results, (result) => {
+					totalCount += result.docsToRemove
+					if (result.docsToRemove > 0) {
+						affectedCollections.push(result.collectionName)
+					}
+				})
+				if (totalCount) {
+					doModalDialog({
+						title: t('Remove old data from database'),
+						message: (
+							<React.Fragment>
+								<div>
+									{t('There are {{count}} documents that can be removed, do you want to continue?', {
+										count: totalCount,
+										collections: languageAnd(t, affectedCollections),
+									})}
+								</div>
+								<div>
+									{t('Documents to be removed:')}
+									{collections.map((o, index) => {
+										return (
+											<div key={index}>
+												{o.collectionName}: {o.docsToRemove}
+											</div>
+										)
+									})}
+								</div>
+							</React.Fragment>
+						),
+
+						yes: t('Yes'),
+						no: t('No'),
+						onAccept: () => {
+							MeteorCall.system
+								.cleanupOldData(true)
+								.then((results) => {
+									console.log(results)
+
+									if (_.isString(results)) {
+										doModalDialog({
+											title: t('Error'),
+											message: results,
+											acceptOnly: true,
+											onAccept: () => {
+												// nothing
+											},
+										})
+									} else {
+										doModalDialog({
+											title: t('Remove old data'),
+											message: t('The old data was removed.'),
+											acceptOnly: true,
+											onAccept: () => {
+												// nothing
+											},
+										})
+									}
+								})
+								.catch(console.error)
+						},
+					})
+				}
+			}
+		})
+		.catch(console.error)
+}

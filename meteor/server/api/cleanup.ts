@@ -38,7 +38,7 @@ import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { isAnyQueuedWorkRunning } from '../codeControl'
 import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 
-export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult[] | string {
+export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
 	if (actuallyCleanup) {
 		const notAllowedReason = isAllowedToRunCleanup()
 		if (notAllowedReason) return `Could not run the cleanup function due to: ${notAllowedReason}`
@@ -47,7 +47,16 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	/** Clean up stuff that are older than this: */
 	const MAXIMUM_AGE = 1000 * 60 * 60 * 24 * 100 // 100 days
 
-	const results: CollectionCleanupResult[] = []
+	const result: CollectionCleanupResult = {}
+	const addToResult = (collectionName: string, docsToRemove: number) => {
+		if (!result[collectionName]) {
+			result[collectionName] = {
+				collectionName: collectionName,
+				docsToRemove: 0,
+			}
+		}
+		result[collectionName].docsToRemove += docsToRemove
+	}
 
 	// Preparations: ------------------------------------------------------------------------------
 	const getAllIdsInCollection = <Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
@@ -71,28 +80,25 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	const playlistIds = getAllIdsInCollection(RundownPlaylists)
 
 	const removeByQuery = <Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-		collectionName,
+		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>,
 		query: MongoQuery<DBInterface>
-	): CollectionCleanupResult => {
+	): void => {
 		const count = collection.find(query).count()
 		if (actuallyCleanup) {
 			collection.remove(query)
 		}
-		return {
-			collectionName: collectionName,
-			docsToRemove: count,
-		}
+		addToResult(collectionName, count)
 	}
 
 	const ownedByRundownId = <
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; rundownId: RundownId }
 	>(
-		collectionName,
+		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
-	): CollectionCleanupResult => {
-		return removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+	): void => {
+		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
 			rundownId: { $nin: rundownIds },
 		})
 	}
@@ -100,10 +106,10 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; playlistId: RundownPlaylistId }
 	>(
-		collectionName,
+		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
-	): CollectionCleanupResult => {
-		return removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+	): void => {
+		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
 			playlistId: { $nin: playlistIds },
 		})
 	}
@@ -111,10 +117,10 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; studioId: StudioId }
 	>(
-		collectionName,
+		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
-	): CollectionCleanupResult => {
-		return removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+	): void => {
+		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
 			studioId: { $nin: studioIds },
 		})
 	}
@@ -122,10 +128,10 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; rundownId?: RundownId; studioId: StudioId }
 	>(
-		collectionName,
+		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
-	): CollectionCleanupResult => {
-		return removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+	): void => {
+		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
 			$or: [
 				{
 					rundownId: { $exists: true, $nin: rundownIds },
@@ -141,10 +147,10 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; organizationId: OrganizationId | null | undefined }
 	>(
-		collectionName,
+		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
-	): CollectionCleanupResult => {
-		return removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+	): void => {
+		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
 			$and: [
 				{
 					organizationId: { $nin: [organizationIds] },
@@ -162,10 +168,10 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; deviceId: PeripheralDeviceId }
 	>(
-		collectionName,
+		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
-	): CollectionCleanupResult => {
-		return removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+	): void => {
+		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
 			deviceId: { $nin: deviceIds },
 		})
 	}
@@ -173,39 +179,33 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	// Going Through data and removing old data: --------------------------------------------------
 	// AdLibActions
 	{
-		results.push(ownedByRundownId('AdLibActions', AdLibActions))
+		ownedByRundownId('AdLibActions', AdLibActions)
 	}
 	// AdLibPieces
 	{
-		results.push(ownedByRundownId('AdLibPieces', AdLibPieces))
+		ownedByRundownId('AdLibPieces', AdLibPieces)
 	}
 	// Blueprints
 	{
-		results.push(ownedByOrganizationId('Blueprints', Blueprints))
+		ownedByOrganizationId('Blueprints', Blueprints)
 	}
 	// BucketAdLibs
 	{
-		results.push(ownedByStudioId('BucketAdLibs', BucketAdLibs))
+		ownedByStudioId('BucketAdLibs', BucketAdLibs)
 	}
 	// BucketAdLibActions
 	{
-		results.push(ownedByStudioId('BucketAdLibActions', BucketAdLibActions))
+		ownedByStudioId('BucketAdLibActions', BucketAdLibActions)
 	}
 	// Buckets
 	{
-		results.push(ownedByStudioId('Buckets', Buckets))
-	}
-	// CoreSystem
-	{
-		// nothing to clean up (?)
+		ownedByStudioId('Buckets', Buckets)
 	}
 	// Evaluations
 	{
-		results.push(
-			removeByQuery('Evaluations', Evaluations, {
-				timestamp: { $lt: getCurrentTime() - MAXIMUM_AGE },
-			})
-		)
+		removeByQuery('Evaluations', Evaluations, {
+			timestamp: { $lt: getCurrentTime() - MAXIMUM_AGE },
+		})
 	}
 	// ExpectedMediaItems
 	{
@@ -237,10 +237,8 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 			},
 			{ fields: { _id: 1 } }
 		).fetch()
-		results.push({
-			collectionName: 'ExpectedMediaItems',
-			docsToRemove: emiFromBuckets.length + emiFromRundowns.length,
-		})
+		addToResult('ExpectedMediaItems', emiFromBuckets.length)
+		addToResult('ExpectedMediaItems', emiFromRundowns.length)
 		if (actuallyCleanup) {
 			ExpectedMediaItems.remove({
 				_id: { $in: [...emiFromBuckets, ...emiFromRundowns].map((o) => o._id) },
@@ -249,56 +247,53 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 	// ExpectedPlayoutItems
 	{
-		results.push(ownedByRundownIdOrStudioId('ExpectedPlayoutItems', ExpectedPlayoutItems))
+		ownedByRundownIdOrStudioId('ExpectedPlayoutItems', ExpectedPlayoutItems)
 	}
 	// ExternalMessageQueue
 	{
-		results.push(
-			removeByQuery('ExternalMessageQueue', ExternalMessageQueue, {
-				created: { $lt: getCurrentTime() - MAXIMUM_AGE },
-			})
-		)
+		removeByQuery('ExternalMessageQueue', ExternalMessageQueue, {
+			created: { $lt: getCurrentTime() - MAXIMUM_AGE },
+		})
 	}
 	// IngestDataCache
 	{
-		results.push(ownedByRundownId('IngestDataCache', IngestDataCache))
+		ownedByRundownId('IngestDataCache', IngestDataCache)
 	}
 	// MediaObjects
 	{
 		// TODO: Shouldn't this be owned by a device?
-		results.push(ownedByStudioId('MediaObjects', MediaObjects))
+		ownedByStudioId('MediaObjects', MediaObjects)
 	}
 	// MediaWorkFlows
 	{
-		results.push(ownedByDeviceId('MediaWorkFlows', MediaWorkFlows))
+		ownedByDeviceId('MediaWorkFlows', MediaWorkFlows)
 	}
 	// MediaWorkFlowSteps
 	{
-		results.push(
-			removeByQuery('MediaWorkFlowSteps', MediaWorkFlowSteps, {
-				workFlowId: { $nin: getAllIdsInCollection(MediaWorkFlows) },
-			})
-		)
+		removeByQuery('MediaWorkFlowSteps', MediaWorkFlowSteps, {
+			workFlowId: { $nin: getAllIdsInCollection(MediaWorkFlows) },
+		})
 	}
 	// Organizations
 	{
-		// Nothing
+		addToResult('Organizations', 0) // Do nothing
+	}
 	}
 	// Parts
 	{
-		results.push(ownedByRundownId('Parts', Parts))
+		ownedByRundownId('Parts', Parts)
 	}
 	// PartInstances
 	{
-		results.push(ownedByRundownId('PartInstances', PartInstances))
+		ownedByRundownId('PartInstances', PartInstances)
 	}
 	// PeripheralDeviceCommands
 	{
-		results.push(ownedByDeviceId('PeripheralDeviceCommands', PeripheralDeviceCommands))
+		ownedByDeviceId('PeripheralDeviceCommands', PeripheralDeviceCommands)
 	}
 	// PeripheralDevices
 	{
-		results.push(ownedByOrganizationId('PeripheralDevices', PeripheralDevices))
+		ownedByOrganizationId('PeripheralDevices', PeripheralDevices)
 	}
 	// Pieces
 	{
@@ -314,82 +309,72 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 	// RundownBaselineAdLibActions
 	{
-		results.push(ownedByRundownId('RundownBaselineAdLibActions', RundownBaselineAdLibActions))
+		ownedByRundownId('RundownBaselineAdLibActions', RundownBaselineAdLibActions)
 	}
 	// RundownBaselineAdLibPieces
 	{
-		results.push(ownedByRundownId('RundownBaselineAdLibPieces', RundownBaselineAdLibPieces))
+		ownedByRundownId('RundownBaselineAdLibPieces', RundownBaselineAdLibPieces)
 	}
 	// RundownBaselineObjs
 	{
-		results.push(ownedByRundownId('RundownBaselineObjs', RundownBaselineObjs))
+		ownedByRundownId('RundownBaselineObjs', RundownBaselineObjs)
 	}
 	// RundownLayouts
 	{
-		results.push(
-			removeByQuery('RundownLayouts', RundownLayouts, {
-				showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
-			})
-		)
+		removeByQuery('RundownLayouts', RundownLayouts, {
+			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
+		})
 	}
 	// RundownPlaylists
 	{
-		results.push(ownedByStudioId('RundownPlaylists', RundownPlaylists))
+		ownedByStudioId('RundownPlaylists', RundownPlaylists)
 	}
 	// Rundowns
 	{
-		results.push(ownedByRundownPlaylistId('Rundowns', Rundowns))
+		ownedByRundownPlaylistId('Rundowns', Rundowns)
 	}
 	// Segments
 	{
-		results.push(ownedByRundownId('Segments', Segments))
+		ownedByRundownId('Segments', Segments)
 	}
 	// ShowStyleBases
 	{
-		results.push(ownedByOrganizationId('ShowStyleBases', ShowStyleBases))
+		ownedByOrganizationId('ShowStyleBases', ShowStyleBases)
 	}
 	// ShowStyleVariants
 	{
-		results.push(
-			removeByQuery('ShowStyleVariants', ShowStyleVariants, {
-				showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
-			})
-		)
+		removeByQuery('ShowStyleVariants', ShowStyleVariants, {
+			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
+		})
 	}
 	// Snapshots
 	{
-		results.push(
-			removeByQuery('Snapshots', Snapshots, {
-				created: { $lt: getCurrentTime() - MAXIMUM_AGE },
-			})
-		)
+		removeByQuery('Snapshots', Snapshots, {
+			created: { $lt: getCurrentTime() - MAXIMUM_AGE },
+		})
 	}
 	// Studios
 	{
-		results.push(ownedByOrganizationId('Studios', Studios))
+		ownedByOrganizationId('Studios', Studios)
 	}
 	// Timeline
 	{
-		results.push(
-			removeByQuery('Timeline', Timeline, {
-				_id: { $nin: studioIds },
-			})
-		)
+		removeByQuery('Timeline', Timeline, {
+			_id: { $nin: studioIds },
+		})
 	}
 	// UserActionsLog
 	{
-		results.push(
-			removeByQuery('UserActionsLog', UserActionsLog, {
-				timestamp: { $lt: getCurrentTime() - MAXIMUM_AGE },
-			})
-		)
+		removeByQuery('UserActionsLog', UserActionsLog, {
+			timestamp: { $lt: getCurrentTime() - MAXIMUM_AGE },
+		})
 	}
 	// Users
 	{
-		// nothing?
+		addToResult('Users', 0) // Do nothing
 	}
 
-	return results
+	return result
 }
 function isAllowedToRunCleanup(): string | void {
 	if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`

@@ -97,7 +97,7 @@ export function cleanupIndexes(context: MethodContext, actuallyRemoveOldIndexes:
 export function cleanupOldData(
 	context: MethodContext,
 	actuallyRemoveOldData: boolean
-): string | CollectionCleanupResult[] {
+): string | CollectionCleanupResult {
 	check(actuallyRemoveOldData, Boolean)
 	SystemWriteAccess.coreSystem(context)
 
