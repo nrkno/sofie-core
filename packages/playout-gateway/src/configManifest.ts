@@ -570,6 +570,14 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			zeroBased: true,
 		},
 		{
+			id: 'label',
+			type: ConfigManifestEntryType.STRING,
+			name: 'Label',
+			optional: true,
+			includeInSummary: true,
+			hint: 'Identify the channel by label (does not set the label in Sisyfos)'
+		},
+		{
 			id: 'setLabelToLayerName',
 			type: ConfigManifestEntryType.BOOLEAN,
 			name: 'Set channel label to layer name',
