@@ -293,8 +293,10 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0)
 											message: results,
 											acceptOnly: true,
 											onAccept: () => {
-												// nothing
+												checkForOldDataAndCleanUp(t, retriesLeft)
 											},
+											yes: t('Retry'),
+											no: t('Cancel'),
 										})
 									} else {
 										doModalDialog({
