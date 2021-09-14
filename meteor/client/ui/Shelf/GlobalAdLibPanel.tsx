@@ -117,7 +117,6 @@ const AdLibListView = withTranslation()(
 								.map((layer) =>
 									literal<IAdLibListItem & { souceLayer?: ISourceLayer; isSticky: boolean }>({
 										_id: protectString(layer._id),
-										hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 										name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
 										status: RundownAPI.PieceStatusCode.UNKNOWN,
 										sourceLayer: layer,

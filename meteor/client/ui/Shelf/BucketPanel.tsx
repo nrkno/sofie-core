@@ -509,10 +509,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								)
 							)
 						} else {
-							if (
-								!this.isAdLibOnAir(piece as any as AdLibPieceUi) ||
-								!(sourceLayer && sourceLayer.clearKeyboardHotkey)
-							) {
+							if (!this.isAdLibOnAir(piece as any as AdLibPieceUi) || !(sourceLayer && sourceLayer.isClearable)) {
 								const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 								doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
@@ -525,7 +522,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									)
 								)
 							} else {
-								if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+								if (sourceLayer && sourceLayer.isClearable) {
 									this.onClearAllSourceLayer(sourceLayer, e)
 								}
 							}

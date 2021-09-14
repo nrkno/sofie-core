@@ -14,6 +14,7 @@ import {
 import { logger } from '../logging'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 let j = 0
 
@@ -419,6 +420,60 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 
 // Release 37
 export const addSteps = addMigrationSteps('1.37.0', [
+	{
+		id: 'ShowStyleBase.sourceLayers.clearKeyboardHotkey',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const outdatedShowStyleBases = ShowStyleBases.find(
+				{
+					sourceLayers: {
+						$elemMatch: {
+							clearKeyboardHotkey: {
+								$exists: true,
+							},
+						},
+					},
+				},
+				{
+					fields: {
+						name: 1,
+					},
+				}
+			).map((showStyleBase) => showStyleBase._id)
+
+			if (outdatedShowStyleBases.length > 0) {
+				return `Show Styles: ${outdatedShowStyleBases
+					.map((name) => `"${name}"`)
+					.join(', ')} need to have their Source Layers clearable settings migrated.`
+			}
+
+			return false
+		},
+		migrate: () => {
+			ShowStyleBases.find({
+				sourceLayers: {
+					$elemMatch: {
+						clearKeyboardHotkey: {
+							$exists: true,
+						},
+					},
+				},
+			}).forEach((showStyleBase) => {
+				ShowStyleBases.update(showStyleBase._id, {
+					$set: {
+						sourceLayers: showStyleBase.sourceLayers.map((sourceLayer) => {
+							sourceLayer.isClearable = !!sourceLayer['clearKeyboardHotkey']
+							delete sourceLayer['clearKeyboardHotkey']
+							delete sourceLayer['activateKeyboardHotkeys']
+							delete sourceLayer['assignHotkeysToGlobalAdlibs']
+							delete sourceLayer['activateStickyKeyboardHotkey']
+							return sourceLayer
+						}),
+					},
+				})
+			})
+		},
+	},
 	{
 		id: 'TriggeredActions.core',
 		canBeRunAutomatically: true,

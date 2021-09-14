@@ -312,7 +312,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.isClearable)) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
 					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
@@ -349,7 +349,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					this.onToggleSticky(adlibPiece.sourceLayerId, e)
 				}
 			} else {
-				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+				if (sourceLayer && sourceLayer.isClearable) {
 					this.onClearAllSourceLayers([sourceLayer], e)
 				}
 			}
@@ -393,7 +393,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			const piece = this.state.selectedAdLib
 			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.isClearable)) {
 					if (piece.isAction && piece.adlibAction) {
 						const action = piece.adlibAction
 						doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
@@ -437,7 +437,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
 			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
-			if (sourceLayer && (sourceLayer.clearKeyboardHotkey || outButton)) {
+			if (sourceLayer && (sourceLayer.isClearable || outButton)) {
 				this.onClearAllSourceLayers([sourceLayer], e)
 			}
 		}
