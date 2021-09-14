@@ -805,9 +805,8 @@ export async function restoreFromRundownPlaylistSnapshot(
 			default:
 				assertNever(expectedPackage)
 		}
-		const localExpectedPackageId = unprotectString(expectedPackage._id).match(/[^_]_(.*)/)?.[1]
-		if (ownerId && localExpectedPackageId) {
-			expectedPackage._id = getExpectedPackageId(ownerId, localExpectedPackageId)
+		if (ownerId && expectedPackage.blueprintPackageId) {
+			expectedPackage._id = getExpectedPackageId(ownerId, expectedPackage.blueprintPackageId)
 		}
 
 		expectedPackageIdMap.set(oldId, expectedPackage._id)
@@ -828,9 +827,14 @@ export async function restoreFromRundownPlaylistSnapshot(
 			packageContainerPackageStatus.packageId
 		)
 	})
+	snapshot.packageContainerPackageStatuses = snapshot.packageContainerPackageStatuses.filter(
+		(p) => p.packageId !== protectString('N/A')
+	)
+
 	_.each(snapshot.packageInfos, (packageInfo) => {
 		packageInfo.packageId = expectedPackageIdMap.get(packageInfo.packageId) || protectString('N/A')
 	})
+	snapshot.packageInfos = snapshot.packageInfos.filter((p) => p.packageId !== protectString('N/A'))
 
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
 
