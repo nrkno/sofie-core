@@ -450,22 +450,15 @@ export const addSteps = addMigrationSteps('1.37.0', [
 			return false
 		},
 		migrate: () => {
-			ShowStyleBases.find(
-				{
-					sourceLayers: {
-						$elemMatch: {
-							clearKeyboardHotkey: {
-								$exists: true,
-							},
+			ShowStyleBases.find({
+				sourceLayers: {
+					$elemMatch: {
+						clearKeyboardHotkey: {
+							$exists: true,
 						},
 					},
 				},
-				{
-					fields: {
-						name: 1,
-					},
-				}
-			).forEach((showStyleBase) => {
+			}).forEach((showStyleBase) => {
 				ShowStyleBases.update(showStyleBase._id, {
 					$set: {
 						sourceLayers: showStyleBase.sourceLayers.map((sourceLayer) => {
