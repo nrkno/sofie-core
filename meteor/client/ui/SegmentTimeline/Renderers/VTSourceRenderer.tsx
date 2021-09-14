@@ -109,7 +109,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 					newState.rightLabelIsAppendage = true
 				} else {
-					this.rightLabelContainer?.remove()
+					try {
+						this.rightLabelContainer?.remove()
+					} catch (err) {
+						console.error('Error in VTSourceRendererBase.mountRightLabelContainer 1', err)
+					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
 				}
@@ -119,7 +123,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 					newState.rightLabelIsAppendage = true
 				} else if (itemDuration !== Number.POSITIVE_INFINITY && this.state.rightLabelIsAppendage === true) {
-					this.rightLabelContainer?.remove()
+					try {
+						this.rightLabelContainer?.remove()
+					} catch (err) {
+						console.error('Error in VTSourceRendererBase.mountRightLabelContainer 2', err)
+					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
 				}
@@ -156,7 +164,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			this.state.sourceEndCountdownAppendage &&
 			!(!relativeRendering && isLiveLine && !outputLayer.collapsed && itemElement)
 		) {
-			this.countdownContainer.remove()
+			try {
+				this.countdownContainer.remove()
+			} catch (err) {
+				console.error('Error in VTSourceRendererBase.mountSourceEndedCountdownContainer 1', err)
+			}
 			newState.sourceEndCountdownAppendage = false
 		}
 
@@ -271,12 +283,20 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 
 		if (this.rightLabelContainer) {
-			this.rightLabelContainer.remove()
+			try {
+				this.rightLabelContainer.remove()
+			} catch (err) {
+				console.error('Error in VTSourceRendererBase.componentWillUnmount 1', err)
+			}
 			this.rightLabelContainer = null
 		}
 
 		if (this.countdownContainer) {
-			this.countdownContainer.remove()
+			try {
+				this.countdownContainer.remove()
+			} catch (err) {
+				console.error('Error in VTSourceRendererBase.componentWillUnmount 2', err)
+			}
 			this.countdownContainer = null
 		}
 	}
