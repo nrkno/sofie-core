@@ -93,6 +93,20 @@ export class SyncIngestUpdateToPartInstanceContext
 		}
 	}
 
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.INFO,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+
 	applyChangesToCache(cache: CacheForPlayout) {
 		if (this._partInstanceCache.isModified() || this._pieceInstanceCache.isModified()) {
 			this.logInfo(`Found ingest changes to apply to PartInstance`)
