@@ -41,15 +41,13 @@ import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfos } from '../../lib/collections/PackageInfos'
+import { Settings } from '../../lib/Settings'
 
 export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
 	if (actuallyCleanup) {
 		const notAllowedReason = isAllowedToRunCleanup()
 		if (notAllowedReason) return `Could not run the cleanup function due to: ${notAllowedReason}`
 	}
-
-	/** Clean up stuff that are older than this: */
-	const MAXIMUM_AGE = 1000 * 60 * 60 * 24 * 100 // 100 days
 
 	const result: CollectionCleanupResult = {}
 	const addToResult = (collectionName: string, docsToRemove: number) => {
@@ -212,7 +210,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	// Evaluations
 	{
 		removeByQuery('Evaluations', Evaluations, {
-			timestamp: { $lt: getCurrentTime() - MAXIMUM_AGE },
+			timestamp: { $lt: getCurrentTime() - Settings.maximumDataAge },
 		})
 	}
 	// ExpectedMediaItems
@@ -269,7 +267,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	// ExternalMessageQueue
 	{
 		removeByQuery('ExternalMessageQueue', ExternalMessageQueue, {
-			created: { $lt: getCurrentTime() - MAXIMUM_AGE },
+			created: { $lt: getCurrentTime() - Settings.maximumDataAge },
 		})
 	}
 	// IngestDataCache
@@ -376,7 +374,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	// Snapshots
 	{
 		removeByQuery('Snapshots', Snapshots, {
-			created: { $lt: getCurrentTime() - MAXIMUM_AGE },
+			created: { $lt: getCurrentTime() - Settings.maximumDataAge },
 		})
 	}
 	// Studios
@@ -392,7 +390,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	// UserActionsLog
 	{
 		removeByQuery('UserActionsLog', UserActionsLog, {
-			timestamp: { $lt: getCurrentTime() - MAXIMUM_AGE },
+			timestamp: { $lt: getCurrentTime() - Settings.maximumDataAge },
 		})
 	}
 	// Users
