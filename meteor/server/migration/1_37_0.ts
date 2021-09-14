@@ -471,6 +471,9 @@ export const addSteps = addMigrationSteps('1.37.0', [
 						sourceLayers: showStyleBase.sourceLayers.map((sourceLayer) => {
 							sourceLayer.isClearable = !!sourceLayer['clearKeyboardHotkey']
 							delete sourceLayer['clearKeyboardHotkey']
+							delete sourceLayer['activateKeyboardHotkeys']
+							delete sourceLayer['assignHotkeysToGlobalAdlibs']
+							delete sourceLayer['activateStickyKeyboardHotkey']
 							return sourceLayer
 						}),
 					},

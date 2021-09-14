@@ -616,19 +616,6 @@ const SourceLayerSettings = withTranslation()(
 											</div>
 											<div className="mod mvs mhs">
 												<label className="field">
-													{t('Activate Sticky Piece Shortcut')}
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.activateStickyKeyboardHotkey'}
-														obj={this.props.showStyleBase}
-														type="text"
-														collection={ShowStyleBases}
-														className="input text-input input-l"
-													></EditAttribute>
-												</label>
-											</div>
-											<div className="mod mvs mhs">
-												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={'sourceLayers.' + item.index + '.allowDisable'}
