@@ -341,14 +341,14 @@ jobs:
           yarn docs
         env:
           CI: true
-      - name: Publish
-        # only run for release tags
-        # TODO - we should only do this if the latest release
-        if: contains(github.ref, 'refs/tags/')
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./packages/docs
+      # - name: Publish
+      #   # only run for release tags
+      #   # TODO - we should only do this if the latest release
+      #   if: contains(github.ref, 'refs/tags/')
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./packages/docs
 
   prerelease-libs:
     name: Prerelease Lib
