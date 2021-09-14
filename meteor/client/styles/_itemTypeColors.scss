@@ -13,13 +13,11 @@ $segment-layer-background-remote: #e80064;
 $segment-layer-background-remote--second: darken($segment-layer-background-remote, 10%);
 $segment-layer-background-vt: #0a20ed;
 $segment-layer-background-vt--second: darken($segment-layer-background-vt, 10%);
-$segment-layer-background-local: #8d1010;
-$segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
 $segment-layer-background-script: #003600;
 $segment-layer-background-mic: #1e6820;
 $segment-layer-background-guest: #008a92;
-$segment-layer-background-evs: #ba00e8;
-$segment-layer-background-evs--second: darken($segment-layer-background-evs, 10%);
+$segment-layer-background-local: #ba00e8;
+$segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
 
 @mixin item-type-text-outline($selectors) {
 	&.camera {
@@ -133,24 +131,6 @@ $segment-layer-background-evs--second: darken($segment-layer-background-evs, 10%
 		}
 	}
 
-	&.evs {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-evs),
-				-1px 1px 1px var(--segment-layer-background-evs), -1px -1px 1px var(--segment-layer-background-evs),
-				1px 1px 1px var(--segment-layer-background-evs), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-
-		&.second {
-			#{$selectors} {
-				text-shadow: 1px -1px 1px var(--segment-layer-background-remote--second),
-					-1px 1px 1px var(--segment-layer-background-remote--second),
-					-1px -1px 1px var(--segment-layer-background-remote--second),
-					1px 1px 1px var(--segment-layer-background-remote--second), 1px 1px 3px rgba(0, 0, 0, 1),
-					1px 1px 8px rgba(0, 0, 0, 1);
-			}
-		}
-	}
-
 	&.local {
 		#{$selectors} {
 			text-shadow: 1px -1px 1px var(--segment-layer-background-local),
@@ -243,14 +223,6 @@ $segment-layer-background-evs--second: darken($segment-layer-background-evs, 10%
 		}
 	}
 
-	&.evs {
-		background: var(--segment-layer-background-evs);
-
-		&.second {
-			background: var(--segment-layer-background-evs--second);
-		}
-	}
-
 	&.local {
 		background: var(--segment-layer-background-local);
 
@@ -297,10 +269,6 @@ $segment-layer-background-evs--second: darken($segment-layer-background-evs, 10%
 		border-color: var(--segment-layer-background-remote);
 	}
 
-	&.evs {
-		border-color: var(--segment-layer-background-evs);
-	}
-
 	&.local {
 		border-color: var(--segment-layer-background-local);
 	}
@@ -341,10 +309,6 @@ $segment-layer-background-evs--second: darken($segment-layer-background-evs, 10%
 
 	&.remote::before {
 		background: var(--segment-layer-background-remote);
-	}
-
-	&.evs::before {
-		background: var(--segment-layer-background-evs);
 	}
 
 	&.script::before {
@@ -398,14 +362,6 @@ $segment-layer-background-evs--second: darken($segment-layer-background-evs, 10%
 
 		&.second {
 			fill: var(--segment-layer-background-remote--second);
-		}
-	}
-
-	&.evs {
-		fill: var(--segment-layer-background-evs);
-
-		&.second {
-			fill: var(--segment-layer-background-evs--second);
 		}
 	}
 

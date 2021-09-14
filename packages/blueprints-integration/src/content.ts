@@ -18,7 +18,6 @@ export enum SourceLayerType {
 	TRANSITION = 13,
 	// LIGHTS = 14,
 	LOCAL = 15,
-	EVS = 16,
 }
 
 export type WithTimeline<T extends BaseContent> = T & {

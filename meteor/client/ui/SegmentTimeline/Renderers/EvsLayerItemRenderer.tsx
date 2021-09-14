@@ -6,7 +6,7 @@ import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerIte
 type IProps = ICustomLayerItemProps
 interface IState { }
 
-export class EvsLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {
+export class LocalLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLSpanElement | null
 	rightLabel: HTMLSpanElement | null
 
@@ -45,8 +45,7 @@ export class EvsLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState
 
 	render() {
 		const innerPiece = this.props.piece.instance.piece
-		const evsContent = innerPiece.content as EvsContent
-		const { uiColorCode } = evsContent
+		const { uiColorCode } = innerPiece.content as EvsContent
 
 		return (
 			!this.props.isTooSmallForText && (
@@ -57,12 +56,14 @@ export class EvsLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState
 						style={this.getItemLabelOffsetLeft()}
 					>
 						<span className="segment-timeline__piece__label">
-							<span
-								style={{ color: uiColorCode }}
-								className="segment-timeline__piece__label segment-timeline__piece__label__colored-mark"
-							>
-								·
-							</span>
+							{uiColorCode && (
+								<span
+									style={{ color: uiColorCode }}
+									className="segment-timeline__piece__label segment-timeline__piece__label__colored-mark"
+								>
+									·
+								</span>
+							)}
 							<span className="segment-timeline__piece__label">{this.props.piece.instance.piece.name}</span>
 						</span>
 					</span>

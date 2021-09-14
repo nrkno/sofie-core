@@ -12,6 +12,7 @@ import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
+import { LocalLayerItemRenderer } from './Renderers/EvsLayerItemRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
@@ -20,7 +21,6 @@ import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { Studio } from '../../../lib/collections/Studios'
-import { EvsLayerItemRenderer } from './Renderers/EvsLayerItemRenderer'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -650,9 +650,9 @@ export const SourceLayerItem = withTranslation()(
 							{...this.state}
 						/>
 					)
-				case SourceLayerType.EVS:
+				case SourceLayerType.LOCAL:
 					return (
-						<EvsLayerItemRenderer
+						<LocalLayerItemRenderer
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
