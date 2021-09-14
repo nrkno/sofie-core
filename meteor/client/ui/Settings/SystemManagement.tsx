@@ -260,22 +260,24 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0)
 						title: t('Remove old data from database'),
 						message: (
 							<React.Fragment>
-								<div>
+								<p>
 									{t('There are {{count}} documents that can be removed, do you want to continue?', {
 										count: totalCount,
 										collections: languageAnd(t, affectedCollections),
 									})}
-								</div>
-								<div>
+								</p>
+								<p>
 									{t('Documents to be removed:')}
-									{collections.map((o, index) => {
-										return (
-											<div key={index}>
-												{o.collectionName}: {o.docsToRemove}
-											</div>
-										)
-									})}
-								</div>
+									<ul>
+										{collections.map((o, index) => {
+											return (
+												<li key={index}>
+													{o.collectionName}: {o.docsToRemove}
+												</li>
+											)
+										})}
+									</ul>
+								</p>
 							</React.Fragment>
 						),
 
