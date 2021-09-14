@@ -1,5 +1,5 @@
 :root {
-	// Set to force single-click to toggle adlibs	
+	// Set to force single-click to toggle adlibs
 	--pointer: 'no-pointer';
 }
 
@@ -44,7 +44,18 @@ body.tv2 {
 		}
 
 		.header.rundown {
-			height: 80px;
+			height: 88px;
+			background: rgb(37, 38, 39);
+			background: linear-gradient(
+				180deg,
+				rgba(37, 38, 39, 1) 0%,
+				rgba(37, 38, 39, 1) 92%,
+				rgba(37, 38, 39, 0.027048319327731107) 100%
+			);
+
+			.colored-box-panel {
+				bottom: 12px !important;
+			}
 
 			.row.first-row {
 				height: 60px;
@@ -286,8 +297,10 @@ body.tv2 {
 
 			&.live-speak {
 				background: linear-gradient(
-					180deg
-					,var(--segment-layer-background-vt) 50%,var(--segment-layer-background-camera) 50.0001%) !important;
+					180deg,
+					var(--segment-layer-background-vt) 50%,
+					var(--segment-layer-background-camera) 50.0001%
+				) !important;
 			}
 		}
 	}
@@ -449,8 +462,10 @@ body.tv2 {
 
 		&.live-speak {
 			background: linear-gradient(
-				180deg
-				,var(--segment-layer-background-vt) 50%,var(--segment-layer-background-camera) 50.0001%) !important;
+				180deg,
+				var(--segment-layer-background-vt) 50%,
+				var(--segment-layer-background-camera) 50.0001%
+			) !important;
 		}
 
 		&.piece-tag--no_next_highlight.selected {
@@ -499,7 +514,8 @@ body.tv2 {
 						color: var(--text-label-color);
 					}
 
-					> .part-remaining, > .part-elapsed {
+					> .part-remaining,
+					> .part-elapsed {
 						display: block;
 						width: 100%;
 						text-align: center;
@@ -603,7 +619,9 @@ body.tv2 {
 					}
 				}
 
-				&.playlist_name, &.expected_end, &.local_time {
+				&.playlist_name,
+				&.expected_end,
+				&.local_time {
 					.wrapper {
 						.text {
 							color: var(--text-label-color);
