@@ -78,28 +78,32 @@ export const ExpectedPackagesStatus = translateWithTracker<{}, {}, IIExpectedPac
 			for (const id of Object.keys(packagesWithWorkStatuses)) {
 				packagesWithWorkStatuses[id].statuses.sort(compareWorkStatus)
 			}
-
-			// sort:
-			const keys: { packageId: string; order: number; created: number }[] = []
+			// sort, so that incompleted packages are put first:
+			const keys: { packageId: string; incompleteRank: number; created: number }[] = []
 			Object.keys(packagesWithWorkStatuses).forEach((packageId) => {
 				const p = packagesWithWorkStatuses[packageId]
 
-				let order = 0
+				let incompleteRank = 999
 				for (const status of p.statuses) {
 					if (status.status !== 'fulfilled') {
-						order = 1
+						if (status.requiredForPlayout) {
+							incompleteRank = Math.min(incompleteRank, 0)
+						} else {
+							incompleteRank = Math.min(incompleteRank, 1)
+						}
 					}
 				}
 				keys.push({
 					packageId,
 					created: p.package?.created ?? 0,
-					order,
+					incompleteRank,
 				})
 			})
+
 			keys.sort((a, b) => {
 				// Incomplete first:
-				if (a.order < b.order) return 1
-				if (a.order > b.order) return -1
+				if (a.incompleteRank > b.incompleteRank) return 1
+				if (a.incompleteRank < b.incompleteRank) return -1
 
 				if (a.created < b.created) return 1
 				if (a.created > b.created) return -1

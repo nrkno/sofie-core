@@ -21,6 +21,7 @@ export namespace ServerClientAPI {
 		methodContext: MethodContext,
 		timestamp: Time,
 		errorObject: any,
+		errorString: string,
 		location: string
 	): void {
 		check(timestamp, Number)
@@ -28,7 +29,7 @@ export namespace ServerClientAPI {
 		logger.error(
 			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
 				methodContext.connection ? methodContext.connection.clientAddress : 'N/A'
-			}"\n  at ${new Date(timestamp).toISOString()}:\n${JSON.stringify(errorObject)}`
+			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
 		)
 	}
 
@@ -228,8 +229,8 @@ export namespace ServerClientAPI {
 }
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
-	async clientErrorReport(timestamp: Time, errorObject: any, location: string) {
-		return makePromise(() => ServerClientAPI.clientErrorReport(this, timestamp, errorObject, location))
+	async clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string) {
+		return makePromise(() => ServerClientAPI.clientErrorReport(this, timestamp, errorObject, errorString, location))
 	}
 	async callPeripheralDeviceFunction(
 		context: string,

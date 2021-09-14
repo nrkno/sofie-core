@@ -19,7 +19,7 @@ export interface ILayerItemRendererProps {
 	metadata?: MediaObject | null
 	mediaPreviewUrl: string | undefined
 	packageInfos: ScanInfoForPackages | undefined
-	studioPackageContainers: Studio['packageContainers'] | undefined
+	studio: Studio | undefined
 }
 
 export default function renderItem(props: ILayerItemRendererProps): JSX.Element {

@@ -20,7 +20,7 @@ import { findHighestRank } from './StudioSettings'
 import { literal, unprotectString, ProtectedString, assertNever } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { withTranslation } from 'react-i18next'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { hotkeyHelper } from '../../lib/hotkeyHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import {
 	ISourceLayer,
@@ -37,6 +37,7 @@ import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 
 interface IProps {
 	match: {
@@ -217,6 +218,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</div>
 						<div className="col c12 rl-c6">
 							<OutputSettings showStyleBase={showStyleBase} />
+						</div>
+					</div>
+					<div className="row">
+						<div className="col c12 r1-c12">
+							<TriggeredActionsEditor showStyleBaseId={showStyleBase._id} />
 						</div>
 					</div>
 					<div className="row">
@@ -1080,9 +1086,7 @@ const HotkeyLegendSettings = withTranslation()(
 								hl: this.isItemEdited(item),
 							})}
 						>
-							<th className="settings-studio-custom-config-table__name c2">
-								{mousetrapHelper.shortcutLabel(item.key)}
-							</th>
+							<th className="settings-studio-custom-config-table__name c2">{hotkeyHelper.shortcutLabel(item.key)}</th>
 							<td className="settings-studio-custom-config-table__value c3">{item.label}</td>
 							<td className="settings-studio-custom-config-table__actions table-item-actions c3">
 								<button className="action-btn" onClick={() => this.editItem(item)}>

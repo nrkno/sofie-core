@@ -183,7 +183,7 @@ export function actionToAdLibPieceUi(
 	}
 
 	return literal<BucketAdLibActionUi>({
-		_id: protectString(`function_${action._id}`),
+		_id: protectString(`${action._id}`),
 		name: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
@@ -295,10 +295,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			})
 		}
 
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
-		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		const bucketAdLibPieces = BucketAdLibs.find({
 			bucketId: props.bucket._id,
 		}).fetch()

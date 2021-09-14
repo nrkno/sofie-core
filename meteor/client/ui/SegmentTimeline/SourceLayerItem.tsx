@@ -632,7 +632,7 @@ export const SourceLayerItem = withTranslation()(
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
-							studioPackageContainers={this.props.studio?.packageContainers}
+							studio={this.props.studio}
 						/>
 					)
 

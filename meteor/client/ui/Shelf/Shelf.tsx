@@ -2,8 +2,6 @@ import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import * as mousetrap from 'mousetrap'
-import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -11,7 +9,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
@@ -102,14 +99,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 	private _mouseDown: number
 
-	private bindKeys: Array<{
-		key: string
-		up?: (e: KeyboardEvent) => any
-		down?: (e: KeyboardEvent) => any
-		label: string
-		global?: boolean
-	}> = []
-
 	constructor(props: Translated<IShelfProps>) {
 		super(props)
 
@@ -130,66 +119,17 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			selectedPiece: undefined,
 			localStorageName,
 		}
-
-		const { t } = props
-
-		this.bindKeys = [
-			{
-				key: RundownViewKbdShortcuts.RUNDOWN_TOGGLE_SHELF,
-				up: this.keyToggleShelf,
-				label: t('Toggle Shelf'),
-			},
-			// {
-			// 	key: RundownViewKbdShortcuts.RUNDOWN_RESET_FOCUS,
-			// 	up: this.keyBlurActiveElement,
-			// 	label: t('Escape from filter search'),
-			// 	global: true
-			// }
-		]
 	}
 
 	componentDidMount() {
-		const preventDefault = (e) => {
-			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
-		}
-		this.bindKeys.forEach((k) => {
-			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
-			if (k.up) {
-				method(
-					k.key,
-					(e: KeyboardEvent) => {
-						preventDefault(e)
-						if (k.up) k.up(e)
-					},
-					'keyup'
-				)
-				method(
-					k.key,
-					(e: KeyboardEvent) => {
-						preventDefault(e)
-					},
-					'keydown'
-				)
-			}
-			if (k.down) {
-				method(
-					k.key,
-					(e: KeyboardEvent) => {
-						preventDefault(e)
-						if (k.down) k.down(e)
-					},
-					'keydown'
-				)
-			}
-		})
-
-		this.props.onRegisterHotkeys(this.bindKeys)
 		this.restoreDefaultTab()
 
 		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
+		RundownViewEventBus.on(RundownViewEvents.SHELF_STATE, (e) => {
+			this.blurActiveElement()
+			this.props.onChangeExpanded(e.state === 'toggle' ? !this.props.isExpanded : e.state)
+		})
 
 		document.body.addEventListener('wheel', this.preventWheelPropagation, {
 			passive: false,
@@ -197,16 +137,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	componentWillUnmount() {
-		this.bindKeys.forEach((k) => {
-			if (k.up) {
-				mousetrap.unbind(k.key, 'keyup')
-				mousetrap.unbind(k.key, 'keydown')
-			}
-			if (k.down) {
-				mousetrap.unbind(k.key, 'keydown')
-			}
-		})
-
 		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 

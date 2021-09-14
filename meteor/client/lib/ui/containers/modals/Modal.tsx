@@ -1,7 +1,8 @@
 import * as React from 'react'
+import type { Sorensen } from '@sofie-automation/sorensen'
 import CoreIcons from '@nrk/core-icons/jsx'
 import Escape from 'react-escape'
-import { mousetrapHelper } from '../../../mousetrapHelper'
+import { SorensenContext } from '../../../SorensenContext'
 
 export interface IModalAttributes {
 	show?: boolean
@@ -13,12 +14,14 @@ export type SomeEvent = Event | React.SyntheticEvent<object>
 
 export class Modal extends React.Component<IModalAttributes> {
 	boundKeys: Array<string> = []
+	sorensen: Sorensen
 
 	constructor(props: IModalAttributes) {
 		super(props)
 	}
 
 	componentDidMount() {
+		this.sorensen = this.context
 		this.bindKeys()
 	}
 
@@ -26,33 +29,38 @@ export class Modal extends React.Component<IModalAttributes> {
 		this.unbindKeys()
 	}
 
-	componentDidUpdate() {
-		this.bindKeys()
+	componentDidUpdate(prevProps: IModalAttributes) {
+		if (prevProps.show !== this.props.show) this.bindKeys()
 	}
 
 	bindKeys = () => {
 		if (this.props.show) {
-			if (this.boundKeys.indexOf('enter') < 0) {
-				mousetrapHelper.bind('enter', this.preventDefault, 'keydown', undefined, true)
-				mousetrapHelper.bind('enter', this.handleKey, 'keyup', undefined, true)
-				this.boundKeys.push('enter')
-			}
-			if (this.boundKeys.indexOf('esc') < 0) {
-				mousetrapHelper.bind('esc', this.preventDefault, 'keydown', undefined, true)
-				mousetrapHelper.bind('esc', this.handleKey, 'keyup', undefined, true)
-				this.boundKeys.push('esc')
-			}
+			this.sorensen.bind('Enter', this.preventDefault, {
+				up: false,
+				prepend: true,
+			})
+			this.sorensen.bind('Enter', this.handleKey, {
+				up: true,
+				prepend: true,
+			})
+			this.sorensen.bind('Escape', this.preventDefault, {
+				up: false,
+				prepend: true,
+			})
+			this.sorensen.bind('Escape', this.handleKey, {
+				up: true,
+				prepend: true,
+			})
 		} else {
 			this.unbindKeys()
 		}
 	}
 
 	unbindKeys = () => {
-		this.boundKeys.forEach((key) => {
-			mousetrapHelper.unbind(key, this.preventDefault, 'keydown')
-			mousetrapHelper.unbind(key, this.handleKey, 'keyup')
-		})
-		this.boundKeys.length = 0
+		this.sorensen.unbind('Enter', this.preventDefault)
+		this.sorensen.unbind('Enter', this.handleKey)
+		this.sorensen.unbind('Escape', this.preventDefault)
+		this.sorensen.unbind('Escape', this.handleKey)
 	}
 
 	handleKey = (e: KeyboardEvent) => {
@@ -60,6 +68,8 @@ export class Modal extends React.Component<IModalAttributes> {
 			if (e.code === 'Escape') {
 				this.handleDiscard(e)
 			}
+			e.preventDefault()
+			e.stopImmediatePropagation()
 		}
 	}
 
@@ -107,5 +117,8 @@ export class Modal extends React.Component<IModalAttributes> {
 	private preventDefault(e: KeyboardEvent) {
 		e.preventDefault()
 		e.stopPropagation()
+		e.stopImmediatePropagation()
 	}
 }
+
+Modal.contextType = SorensenContext
