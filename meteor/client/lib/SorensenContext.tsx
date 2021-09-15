@@ -28,7 +28,11 @@ export const SorensenContextProvider: React.FC = function SorensenContextProvide
 				global: true,
 			})
 			// block default F3 behavior (opening search)
-			Sorensen.bind('F3', preventDefault, {
+			Sorensen.bind(['F3', 'Control+KeyF'], preventDefault, {
+				global: true,
+			})
+			// block default F3 behavior (opening search)
+			Sorensen.bind('F12', preventDefault, {
 				global: true,
 			})
 			// block default Space behavior (scroll page down)
