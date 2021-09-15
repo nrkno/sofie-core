@@ -738,7 +738,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					).fetch()
 					rundownBaselineAdLibs = rundownAdLibItems.concat(
 						props.showStyleBase.sourceLayers
-							.filter((i) => i.isSticky && i.activateStickyKeyboardHotkey)
+							.filter((i) => i.isSticky)
 							.sort((a, b) => a._rank - b._rank)
 							.map((layer) =>
 								literal<AdLibPieceUi>({
@@ -815,7 +815,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun(
 				(sourceLayers: ISourceLayer[]) => {
 					return sourceLayers
-						.filter((i) => !!i.clearKeyboardHotkey)
+						.filter((i) => !!i.isClearable)
 						.sort((a, b) => a._rank - b._rank)
 						.map((layer) =>
 							literal<AdLibPieceUi>({

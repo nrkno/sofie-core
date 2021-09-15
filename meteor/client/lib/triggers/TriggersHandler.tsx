@@ -203,6 +203,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				up,
 				exclusive: true,
 				ordered: 'modifiersFirst',
+				preventDefaultPartials: false,
 				global: props.global ?? false,
 				tag: id,
 			})

@@ -103,7 +103,9 @@ function fieldToOptions(
 		case 'tag':
 			return {}
 		case 'outputLayerId':
-			return showStyleBase ? _.object(showStyleBase.outputLayers.map((layer) => [layer.name, layer._id])) : {}
+			return showStyleBase
+				? showStyleBase.outputLayers.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
+				: []
 		case 'part':
 			return {
 				[t('OnAir')]: 'current',
@@ -115,7 +117,9 @@ function fieldToOptions(
 				[t('Next')]: 'next',
 			}
 		case 'sourceLayerId':
-			return showStyleBase ? _.object(showStyleBase.sourceLayers.map((layer) => [layer.name, layer._id])) : {}
+			return showStyleBase
+				? showStyleBase.sourceLayers.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
+				: []
 		case 'sourceLayerType':
 			return _.pick(SourceLayerType, (key) => Number.isInteger(key))
 		case 'type':

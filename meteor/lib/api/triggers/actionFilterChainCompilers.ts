@@ -220,8 +220,7 @@ function compileAndRunClearFilter(filterChain: IAdLibFilterLink[], showStyleBase
 		result = showStyleBase.sourceLayers
 			.filter(
 				(sourceLayer) =>
-					(sourceLayerIds ? sourceLayerIds.includes(sourceLayer._id) : true) &&
-					sourceLayer.clearKeyboardHotkey !== undefined
+					(sourceLayerIds ? sourceLayerIds.includes(sourceLayer._id) : true) && sourceLayer.isClearable
 			)
 			.map((sourceLayer) => {
 				return {
