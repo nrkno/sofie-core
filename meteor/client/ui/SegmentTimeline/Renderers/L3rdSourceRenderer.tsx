@@ -2,8 +2,9 @@ import * as React from 'react'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { NoraContent } from '@sofie-automation/blueprints-integration'
+import { NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
+import { RundownUtils } from '../../../lib/rundown'
 
 type IProps = ICustomLayerItemProps
 interface IState {}
@@ -87,6 +88,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 				)}
 				<L3rdFloatingInspector
 					content={noraContent}
+					typeClass={this.props.typeClass || RundownUtils.getSourceLayerClassName(SourceLayerType.LOWER_THIRD)}
 					itemElement={this.props.itemElement}
 					piece={this.props.piece.instance.piece}
 					showMiniInspector={this.props.showMiniInspector}

@@ -707,6 +707,8 @@ export const SourceLayerItem = withTranslation()(
 								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth,
 
 							infinite: piece.instance.userDuration === undefined && innerPiece.lifespan !== PieceLifespan.WithinPart, // 0 is a special value
+							'infinite-starts': piece.instance.piece.startPartId === this.props.part.partId,
+
 							'next-is-touching': this.props.piece.cropped,
 
 							'source-missing':
