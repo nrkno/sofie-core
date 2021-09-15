@@ -68,7 +68,7 @@ export function useMouseContext(props: ISourceLayerPropsBase) {
 			}
 
 			return ctx
-		}, [props.segment, props.part, props.timeScale, props.startsAt, mousePosition]),
+		}, [props.segment, props.part, props.timeScale, props.startsAt, props.onContextMenu, mousePosition]),
 		onMouseUp: (e: React.MouseEvent<HTMLDivElement>) => {
 			setMousePosition({ left: e.pageX, top: e.pageY })
 		},
