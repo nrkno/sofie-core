@@ -392,13 +392,14 @@ export async function pieceTakeNow(
 	})
 	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
-	const showStyleBase = rundown.getShowStyleBase()
-	const sourceLayerId = pieceToCopy.sourceLayerId
-	const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-	if (sourceL && (sourceL.type !== SourceLayerType.LOWER_THIRD || sourceL.exclusiveGroup))
-		return ClientAPI.responseError(
-			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a LOWER_THIRD piece!`
-		)
+	if (!pieceToCopy.allowDirectPlay) {
+		// Not explicitly allowed, use legacy route
+		const showStyleBase = rundown.getShowStyleBase()
+		const sourceLayerId = pieceToCopy.sourceLayerId
+		const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
+		if (sourceL && (sourceL.type !== SourceLayerType.LOWER_THIRD || sourceL.exclusiveGroup))
+			return ClientAPI.responseError(`PieceInstance or Piece "${pieceToCopy.name}" cannot be direct played!`)
+	}
 
 	return ClientAPI.responseSuccess(
 		await ServerPlayoutAPI.pieceTakeNow(access, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
