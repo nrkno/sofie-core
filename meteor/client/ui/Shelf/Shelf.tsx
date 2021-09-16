@@ -376,13 +376,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			if (scrollSink instanceof HTMLElement) {
 				if (e.deltaY < 0 && scrollSink.scrollTop <= 0) {
 					e.preventDefault()
-					console.debug('preventDefault', this.element)
 				} else if (
 					e.deltaY > 0 &&
 					Math.round(scrollSink.scrollTop) >= scrollSink.scrollHeight - scrollSink.clientHeight
 				) {
 					e.preventDefault()
-					console.debug('preventDefault', this.element)
 				}
 			}
 		}
