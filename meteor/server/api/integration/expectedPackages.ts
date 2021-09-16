@@ -20,6 +20,12 @@ import {
 import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
 import { BulkWriteOperation } from 'mongodb'
 import { onUpdatedPackageInfo } from '../ingest/packageInfo'
+import {
+	getPackageContainerId,
+	PackageContainerId,
+	PackageContainerStatusDB,
+	PackageContainerStatuses,
+} from '../../../lib/collections/PackageContainerStatus'
 
 export namespace PackageManagerIntegration {
 	export async function updateExpectedPackageWorkStatuses(
@@ -138,7 +144,11 @@ export namespace PackageManagerIntegration {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		await ExpectedPackageWorkStatuses.removeAsync({
-			deviceId: peripheralDevice._id,
+			$or: [
+				{ deviceId: peripheralDevice._id },
+				// Since we only have one PM in a studio, we can remove everything in the studio:
+				{ studioId: peripheralDevice.studioId },
+			],
 		})
 	}
 
@@ -229,9 +239,101 @@ export namespace PackageManagerIntegration {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		await PackageContainerPackageStatuses.removeAsync({
-			deviceId: peripheralDevice._id,
+			$or: [
+				{ deviceId: peripheralDevice._id },
+				// Since we only have one PM in a studio, we can remove everything in the studio:
+				{ studioId: peripheralDevice.studioId },
+			],
 		})
 	}
+
+	export async function updatePackageContainerStatuses(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		changes: (
+			| {
+					containerId: string
+					type: 'delete'
+			  }
+			| {
+					containerId: string
+					type: 'update'
+					status: ExpectedPackageStatusAPI.PackageContainerStatus
+			  }
+		)[]
+	): Promise<void> {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		if (!peripheralDevice.studioId)
+			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
+
+		const studioId = peripheralDevice.studioId
+
+		const removedIds: PackageContainerId[] = []
+		const ps: Promise<unknown>[] = []
+		for (const change of changes) {
+			check(change.containerId, String)
+
+			const id = getPackageContainerId(peripheralDevice.studioId, change.containerId)
+
+			if (change.type === 'delete') {
+				removedIds.push(id)
+			} else if (change.type === 'update') {
+				ps.push(
+					Promise.resolve().then(async () => {
+						const updateCount = await PackageContainerStatuses.updateAsync(id, {
+							$set: {
+								status: change.status,
+								modified: getCurrentTime(),
+							},
+						})
+						if (updateCount === 0) {
+							// The PackageContainerStatus doesn't exist
+							// Create it on the fly:
+
+							await PackageContainerStatuses.upsertAsync(id, {
+								$set: literal<PackageContainerStatusDB>({
+									_id: id,
+									studioId: studioId,
+									containerId: change.containerId,
+									deviceId: peripheralDevice._id,
+									status: change.status,
+									modified: getCurrentTime(),
+								}),
+							})
+						}
+					})
+				)
+			} else {
+				assertNever(change)
+			}
+		}
+		if (removedIds.length) {
+			ps.push(
+				PackageContainerStatuses.removeAsync({
+					deviceId: peripheralDevice._id,
+					_id: { $in: removedIds },
+				})
+			)
+		}
+		await Promise.all(ps)
+	}
+	export async function removeAllPackageContainerStatusesOfDevice(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string
+	): Promise<void> {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+
+		await PackageContainerStatuses.removeAsync({
+			$or: [
+				{ deviceId: peripheralDevice._id },
+				// Since we only have one PM in a studio, we can remove everything in the studio:
+				{ studioId: peripheralDevice.studioId },
+			],
+		})
+	}
+
 	export async function fetchPackageInfoMetadata(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,

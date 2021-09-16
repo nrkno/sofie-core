@@ -136,6 +136,59 @@
 			}
 		}
 	}
+
+	.packageContainer-status-list {
+		width: 100%;
+
+		.packageContainer-status__header {
+			background-color: #898989;
+			color: #fff;
+
+			> th {
+				padding: 0.25em 0.5em 0.25em 0.5em;
+			}
+		}
+
+		.packageContainer {
+			> td {
+				padding: 0.5em 0.5em 0.5em 0.5em;
+				background-color: #f6f6f6;
+				vertical-align: middle;
+
+				border-bottom: 1px solid #bbbbbb;
+
+				cursor: pointer;
+
+				&:first-child {
+				}
+				&:nth-child(2) {
+					padding-left: 0;
+					width: 7em;
+				}
+			}
+		}
+		.packageContainer-monitor {
+			> td {
+				padding: 0.5em 0.5em 0.5em 0em;
+				background-color: #c6c6c6;
+				vertical-align: middle;
+				border-bottom: 1px solid #919191;
+				cursor: pointer;
+
+				font-size: 90%;
+				position: relative;
+
+				&:first-child {
+					width: 2em;
+					background-color: transparent;
+					border-bottom: none;
+				}
+				&:nth-child(2) {
+					padding-left: 1em;
+				}
+			}
+		}
+	}
 }
 .job-status-icon {
 	display: inline-block;

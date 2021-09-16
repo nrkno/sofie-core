@@ -13,30 +13,64 @@ import { doUserAction, UserAction } from '../../../lib/userAction'
 import { Studios } from '../../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { PackageStatus } from './PackageStatus'
+import { PackageContainerStatusDB, PackageContainerStatuses } from '../../../../lib/collections/PackageContainerStatus'
+import { PackageContainerStatus } from './PackageContainerStatus'
+import { Spinner } from '../../../lib/Spinner'
 
 interface IIExpectedPackagesStatusTrackedProps {
 	expectedPackageWorkStatuses: ExpectedPackageWorkStatus[]
 	expectedPackages: ExpectedPackageDB[]
+	packageContainerStatuses: PackageContainerStatusDB[]
+}
+interface IIExpectedPackagesStatusState {
+	allSubsReady: boolean
 }
 
 export const ExpectedPackagesStatus = translateWithTracker<{}, {}, IIExpectedPackagesStatusTrackedProps>(() => {
 	return {
 		expectedPackageWorkStatuses: ExpectedPackageWorkStatuses.find({}).fetch(),
 		expectedPackages: ExpectedPackages.find({}).fetch(),
+		packageContainerStatuses: PackageContainerStatuses.find().fetch(),
 	}
 })(
-	class PackageManagerStatus extends MeteorReactComponent<Translated<IIExpectedPackagesStatusTrackedProps>, {}> {
+	class PackageManagerStatus extends MeteorReactComponent<
+		Translated<IIExpectedPackagesStatusTrackedProps>,
+		IIExpectedPackagesStatusState
+	> {
 		constructor(props) {
 			super(props)
+			this.state = {
+				allSubsReady: false,
+			}
 		}
 
 		componentDidMount() {
 			// Subscribe to data:
-			this.subscribe(PubSub.expectedPackageWorkStatuses, {
-				studioId: 'studio0', // hack
-			})
-			this.subscribe(PubSub.expectedPackages, {
-				studioId: 'studio0', // hack
+			this.autorun(() => {
+				// Hack: We should add a studio selector in the GUI instead
+				const studioIds = Studios.find()
+					.fetch()
+					.map((studio) => studio._id)
+
+				console.log('studioIds', studioIds)
+				const subs = [
+					this.subscribe(PubSub.expectedPackageWorkStatuses, {
+						studioId: { $in: studioIds },
+					}),
+					this.subscribe(PubSub.expectedPackages, {
+						studioId: { $in: studioIds },
+					}),
+					this.subscribe(PubSub.packageContainerStatuses, {
+						studioId: { $in: studioIds },
+					}),
+				]
+
+				this.autorun(() => {
+					const allSubsReady = subs.reduce((memo, sub) => {
+						return memo && sub.ready()
+					}, true)
+					this.setState({ allSubsReady: studioIds.length > 0 && allSubsReady })
+				})
 			})
 		}
 		restartAllExpectations(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
@@ -126,6 +160,16 @@ export const ExpectedPackagesStatus = translateWithTracker<{}, {}, IIExpectedPac
 				)
 			})
 		}
+		renderPackageContainerStatuses() {
+			return this.props.packageContainerStatuses.map((packageContainerStatus) => {
+				return (
+					<PackageContainerStatus
+						key={unprotectString(packageContainerStatus._id)}
+						packageContainerStatus={packageContainerStatus}
+					/>
+				)
+			})
+		}
 		render() {
 			const { t } = this.props
 
@@ -134,26 +178,55 @@ export const ExpectedPackagesStatus = translateWithTracker<{}, {}, IIExpectedPac
 					<header className="mbs">
 						<h1>{t('Package Status')}</h1>
 					</header>
-					<div className="mod mvl alright">
-						<button className="btn btn-secondary mls" onClick={(e) => this.restartAllExpectations(e)}>
-							{t('Restart All')}
-						</button>
-					</div>
 
-					<table className="mod mvl package-status-list">
-						<tbody>
-							<tr className="package-status__header">
-								<th colSpan={2}>{t('Status')}</th>
-								<th>{t('Name')}</th>
-								<th>{t('Created')}</th>
-								<th></th>
-								{/* <th>{t('Info')}</th> */}
-							</tr>
-							{this.renderExpectedPackageStatuses()}
-						</tbody>
-					</table>
+					{this.state.allSubsReady ? (
+						<>
+							<div className="row">
+								<div className="col c12 rl-c6">
+									<header className="mbs">
+										<h2>{t('Package container status')}</h2>
+									</header>
+								</div>
+							</div>
+							<table className="mod mvl packageContainer-status-list">
+								<tbody>
+									<tr className="packageContainer-status__header">
+										<th colSpan={2}>{t('Id')}</th>
+										<th colSpan={2}>{t('Status')}</th>
+										<th></th>
+									</tr>
+									{this.renderPackageContainerStatuses()}
+								</tbody>
+							</table>
 
-					<div></div>
+							<div className="row">
+								<div className="col c12 rl-c6">
+									<header className="mbs">
+										<h2>{t('Work status')}</h2>
+									</header>
+								</div>
+								<div className="col c12 rl-c6 alright">
+									<button className="btn btn-secondary mls" onClick={(e) => this.restartAllExpectations(e)}>
+										{t('Restart All jobs')}
+									</button>
+								</div>
+							</div>
+
+							<table className="mod mvl package-status-list">
+								<tbody>
+									<tr className="package-status__header">
+										<th colSpan={2}>{t('Status')}</th>
+										<th>{t('Name')}</th>
+										<th>{t('Created')}</th>
+										<th></th>
+									</tr>
+									{this.renderExpectedPackageStatuses()}
+								</tbody>
+							</table>
+						</>
+					) : (
+						<Spinner />
+					)}
 				</div>
 			)
 		}

@@ -45,4 +45,15 @@ export namespace PackageManagerAPI {
 			})
 		)
 	}
+	export function restartPackageContainer(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		containerId: string
+	): any {
+		check(deviceId, String)
+		check(containerId, String)
+		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
+
+		waitForPromise(PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartPackageContainer', containerId))
+	}
 }

@@ -164,6 +164,11 @@ export interface NewUserActionAPI extends MethodContext {
 		deviceId: PeripheralDeviceId,
 		workId: string
 	): Promise<ClientAPI.ClientResponse<void>>
+	packageManagerRestartPackageContainer(
+		userEvent: string,
+		deviceId: PeripheralDeviceId,
+		containerId: string
+	): Promise<ClientAPI.ClientResponse<void>>
 	regenerateRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	generateRestartToken(userEvent: string): Promise<ClientAPI.ClientResponse<string>>
 	restartCore(userEvent: string, token: string): Promise<ClientAPI.ClientResponse<string>>
@@ -274,6 +279,7 @@ export enum UserActionAPIMethods {
 	'packageManagerRestartExpectation' = 'userAction.packagemanager.restartExpectation',
 	'packageManagerRestartAllExpectations' = 'userAction.packagemanager.restartAllExpectations',
 	'packageManagerAbortExpectation' = 'userAction.packagemanager.abortExpectation',
+	'packageManagerRestartPackageContainer' = 'userAction.packagemanager.restartPackageContainer',
 
 	'regenerateRundownPlaylist' = 'userAction.ingest.regenerateRundownPlaylist',
 

@@ -662,6 +662,13 @@ export function packageManagerRestartAllExpectations(context: MethodContext, stu
 export function packageManagerAbortExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
 	return ClientAPI.responseSuccess(PackageManagerAPI.abortExpectation(context, deviceId, workId))
 }
+export function packageManagerRestartPackageContainer(
+	context: MethodContext,
+	deviceId: PeripheralDeviceId,
+	containerId: string
+) {
+	return ClientAPI.responseSuccess(PackageManagerAPI.restartPackageContainer(context, deviceId, containerId))
+}
 export async function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
 	check(id, String)
 
@@ -1142,6 +1149,9 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	async packageManagerAbortExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
 		return makePromise(() => packageManagerAbortExpectation(this, deviceId, workId))
+	}
+	async packageManagerRestartPackageContainer(_userEvent: string, deviceId: PeripheralDeviceId, containerId: string) {
+		return makePromise(() => packageManagerRestartPackageContainer(this, deviceId, containerId))
 	}
 	async regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.regenerateRundownPlaylist, regenerateRundownPlaylist, this, playlistId)
