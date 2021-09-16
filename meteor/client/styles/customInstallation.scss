@@ -44,7 +44,18 @@ body.tv2 {
 		}
 
 		.header.rundown {
-			height: 80px;
+			height: 88px;
+			background: rgb(37, 38, 39);
+			background: linear-gradient(
+				180deg,
+				rgba(37, 38, 39, 1) 0%,
+				rgba(37, 38, 39, 1) 92%,
+				rgba(37, 38, 39, 0.027048319327731107) 100%
+			);
+
+			.colored-box-panel {
+				bottom: 12px !important;
+			}
 
 			.row.first-row {
 				height: 60px;
