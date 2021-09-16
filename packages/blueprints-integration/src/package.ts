@@ -4,6 +4,9 @@
  * Example: A piece uses a media file for playout in CasparCG. The media file will then be an ExpectedPackage, which the Package Manager
  *   will fetch from a MAM and copy to the media-folder of CasparCG.
  */
+
+import { StatusCode } from './status'
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ExpectedPackage {
 	export type Any = ExpectedPackageMediaFile | ExpectedPackageQuantelClip
@@ -382,6 +385,22 @@ export namespace ExpectedPackageStatusAPI {
 		/** All good, the package is in place and ready to play*/
 		READY = 'ready',
 	}
+
+	export interface PackageContainerStatus {
+		status: StatusCode
+		statusReason: Reason
+		statusChanged: number
+
+		monitors: {
+			[monitorId: string]: PackageContainerMonitorStatus
+		}
+	}
+	export interface PackageContainerMonitorStatus {
+		label: string
+		status: StatusCode
+		statusReason: Reason
+	}
+
 	/** Contains textual descriptions for statuses. */
 	export interface Reason {
 		/** User-readable reason (to be displayed in GUI:s, to regular humans ) */

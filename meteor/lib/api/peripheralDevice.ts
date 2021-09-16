@@ -3,7 +3,12 @@ import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
-import { ExpectedPackageStatusAPI, IngestPlaylist, TSR } from '@sofie-automation/blueprints-integration'
+import {
+	ExpectedPackageStatusAPI,
+	IngestPlaylist,
+	TSR,
+	StatusCode as BPStatusCode,
+} from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
@@ -457,19 +462,12 @@ export interface MediaWorkFlowStepRevision {
 	_rev: string
 }
 export namespace PeripheralDeviceAPI {
-	export enum StatusCode {
-		UNKNOWN = 0, // Status unknown
-		GOOD = 1, // All good and green
-		WARNING_MINOR = 2, // Everything is not OK, operation is not affected
-		WARNING_MAJOR = 3, // Everything is not OK, operation might be affected
-		BAD = 4, // Operation affected, possible to recover
-		FATAL = 5, // Operation affected, not possible to recover without manual interference
-	}
+	export const StatusCode = BPStatusCode
 
 	// Note The actual type of a device is determined by the Category, Type and SubType
 
 	export interface StatusObject {
-		statusCode: StatusCode
+		statusCode: BPStatusCode
 		messages?: Array<string>
 	}
 	// Note The actual type of a device is determined by the Category, Type and SubType
