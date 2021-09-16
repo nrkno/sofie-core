@@ -368,6 +368,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 	private preventWheelPropagation = (e: WheelEvent) => {
 		const composedPath = e.composedPath()
+
 		if (this.element && composedPath.includes(this.element)) {
 			const scrollSink = composedPath.find(
 				(element) => element instanceof HTMLElement && element.classList.contains('scroll-sink')
@@ -375,11 +376,13 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			if (scrollSink instanceof HTMLElement) {
 				if (e.deltaY < 0 && scrollSink.scrollTop <= 0) {
 					e.preventDefault()
+					console.debug('preventDefault', this.element)
 				} else if (
 					e.deltaY > 0 &&
 					Math.round(scrollSink.scrollTop) >= scrollSink.scrollHeight - scrollSink.clientHeight
 				) {
 					e.preventDefault()
+					console.debug('preventDefault', this.element)
 				}
 			}
 		}
@@ -389,7 +392,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		const { fullViewport } = this.props
 		return (
 			<div
-				className={ClassNames('rundown-view__shelf dark scroll-sink', {
+				className={ClassNames('rundown-view__shelf dark', {
+					'scroll-sink': !fullViewport,
 					'full-viewport': fullViewport,
 					moving: this.state.moving,
 				})}
