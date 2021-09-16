@@ -31,7 +31,7 @@ export const SorensenContextProvider: React.FC = function SorensenContextProvide
 			Sorensen.bind(['F3', 'Control+KeyF'], preventDefault, {
 				global: true,
 			})
-			// block default F3 behavior (opening search)
+			// block default F12 behavior (opening Inspector)
 			Sorensen.bind('F12', preventDefault, {
 				global: true,
 			})
