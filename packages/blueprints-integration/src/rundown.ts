@@ -361,6 +361,9 @@ export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGen
 	continuesRefId?: string // TODO - is this useful to define from the blueprints?
 	isTransition?: boolean
 	extendOnHold?: boolean
+
+	/** Whether the piece affects the output of the Studio or is describing an invisible state within the Studio */
+	notInVision?: boolean
 }
 export interface IBlueprintPieceDB<TMetadata = unknown> extends IBlueprintPiece<TMetadata> {
 	_id: string

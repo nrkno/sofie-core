@@ -64,27 +64,32 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 	}
 
 	&.infinite {
-		&:not(.infinite-starts) {
-			@each $layer-type in $layer-types {
-				&.#{$layer-type} {
-					background: none;
-					background-image: linear-gradient(
-						to bottom,
-						var(--segment-layer-background-#{$layer-type}),
-						var(--segment-layer-background-#{$layer-type}) var(--infinite-piece-background-line-height, 4px),
-						transparent calc(var(--infinite-piece-background-line-height, 4px) + 1px)
-					);
-					background-size: 1px var(--segment-layer-height);
-					background-repeat: repeat-x;
+		@each $layer-type in $layer-types {
+			&.#{$layer-type} {
+				--infinite-piece-background-image: linear-gradient(
+					to bottom,
+					var(--segment-layer-background-#{$layer-type}),
+					var(--segment-layer-background-#{$layer-type}) var(--infinite-piece-background-line-height, 4px),
+					transparent var(--infinite-piece-background-line-height, 4px)
+				);
+				--infinite-piece-background-image--second: linear-gradient(
+					to bottom,
+					var(--segment-layer-background-#{$layer-type}--second),
+					var(--segment-layer-background-#{$layer-type}--second) var(--infinite-piece-background-line-height, 4px),
+					transparent var(--infinite-piece-background-line-height, 4px)
+				);
 
-					&.second {
-						background-image: linear-gradient(
-							to bottom,
-							var(--segment-layer-background-#{$layer-type}--second),
-							var(--segment-layer-background-#{$layer-type}--second) var(--infinite-piece-background-line-height, 4px),
-							transparent calc(var(--infinite-piece-background-line-height, 4px) + 1px)
-						);
-					}
+				background: none;
+				background-image: var(--infinite-piece-background-image);
+				background-size: 1px var(--segment-layer-height), 0 0;
+				background-repeat: repeat-x, no-repeat;
+				background-position: 0 0, 0 0;
+
+				&.second {
+					background-image: var(--infinite-piece-background-image--second);
+					background-size: 1px var(--segment-layer-height), 0 0;
+					background-repeat: repeat-x, no-repeat;
+					background-position: 0 0, 0 0;
 				}
 			}
 		}
@@ -94,40 +99,80 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 
 			@each $layer-type in $layer-types {
 				&.#{$layer-type} {
+					--infinite-piece-starts-background-image: linear-gradient(
+						135deg,
+						var(--segment-layer-background-#{$layer-type}),
+						var(--segment-layer-background-#{$layer-type}) calc(var(--segment-layer-height) / 2),
+						transparent calc(var(--segment-layer-height) / 2)
+					);
+
 					background: none;
-					background-image: linear-gradient(
-							to bottom,
-							var(--segment-layer-background-#{$layer-type}),
-							var(--segment-layer-background-#{$layer-type}) var(--infinite-piece-background-line-height, 4px),
-							transparent calc(var(--infinite-piece-background-line-height, 4px) + 1px)
-						),
-						linear-gradient(
-							135deg,
-							var(--segment-layer-background-#{$layer-type}),
-							var(--segment-layer-background-#{$layer-type}) calc(var(--segment-layer-height) / 2),
-							transparent calc(var(--segment-layer-height) / 2 + 1px)
-						);
+					background-image: var(--infinite-piece-background-image), var(--infinite-piece-starts-background-image);
 					background-size: 1px var(--segment-layer-height), var(--segment-layer-height) var(--segment-layer-height);
 					background-repeat: repeat-x, no-repeat;
-					background-position: 0 0, 0 0;
 
 					&.second {
-						background-image: linear-gradient(
-								to bottom,
-								var(--segment-layer-background-#{$layer-type}--second),
-								var(--segment-layer-background-#{$layer-type}--second)
-									var(--infinite-piece-background-line-height, 4px),
-								transparent calc(var(--infinite-piece-background-line-height, 4px) + 1px)
-							),
-							linear-gradient(
-								135deg,
-								var(--segment-layer-background-#{$layer-type}--second),
-								var(--segment-layer-background-#{$layer-type}--second) calc(var(--segment-layer-height) / 2),
-								transparent calc(var(--segment-layer-height) / 2 + 1px)
-							);
+						--infinite-piece-starts-background-image: linear-gradient(
+							135deg,
+							var(--segment-layer-background-#{$layer-type}--second),
+							var(--segment-layer-background-#{$layer-type}--second) calc(var(--segment-layer-height) / 2),
+							transparent calc(var(--segment-layer-height) / 2)
+						);
+
+						background-image: var(--infinite-piece-background-image--second),
+							var(--infinite-piece-starts-background-image);
 						background-size: 1px var(--segment-layer-height), var(--segment-layer-height) var(--segment-layer-height);
 						background-repeat: repeat-x, no-repeat;
-						background-position: 0 0, 0 0;
+					}
+				}
+			}
+		}
+
+		&.not-in-vision {
+			--not-in-vision-image: linear-gradient(
+				to right,
+				transparent,
+				transparent 2px,
+				#{$segment-timeline-background-color} 2px,
+				#{$segment-timeline-background-color} 10px
+			);
+			opacity: 0.8;
+
+			@each $layer-type in $layer-types {
+				&.#{$layer-type} {
+					background-image: var(--not-in-vision-image), none, var(--infinite-piece-background-image);
+					background-size: 10px var(--infinite-piece-background-line-height, 4px), 0 0, 1px var(--segment-layer-height);
+					background-repeat: repeat-x, no-repeat, repeat-x;
+					background-position: 0 0, 0 0, 0 0;
+
+					&.second {
+						background-image: var(--not-in-vision-image), none, var(--infinite-piece-background-image--second);
+						background-size: 10px var(--infinite-piece-background-line-height, 4px), 0 0,
+							1px var(--segment-layer-height);
+						background-repeat: repeat-x, no-repeat, repeat-x;
+						background-position: 0 0, 0 0, 0 0;
+					}
+				}
+			}
+
+			&.infinite-starts {
+				padding-left: calc(var(--segment-layer-height) / 2);
+
+				@each $layer-type in $layer-types {
+					&.#{$layer-type} {
+						background-image: var(--not-in-vision-image), var(--infinite-piece-starts-background-image),
+							var(--infinite-piece-background-image);
+						background-size: 10px var(--infinite-piece-background-line-height, 4px),
+							var(--segment-layer-height) var(--segment-layer-height), 1px var(--segment-layer-height);
+						background-repeat: repeat-x, no-repeat, repeat-x;
+
+						&.second {
+							background-image: var(--not-in-vision-image), var(--infinite-piece-starts-background-image),
+								var(--infinite-piece-background-image--second);
+							background-size: 10px var(--infinite-piece-background-line-height, 4px),
+								var(--segment-layer-height) var(--segment-layer-height), 1px var(--segment-layer-height);
+							background-repeat: repeat-x, no-repeat, repeat-x;
+						}
 					}
 				}
 			}

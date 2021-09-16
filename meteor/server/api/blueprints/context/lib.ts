@@ -11,6 +11,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	virtual: false,
 	continuesRefId: '',
 	isTransition: false,
+	notInVision: false,
 	extendOnHold: false,
 	name: '',
 	metaData: {},

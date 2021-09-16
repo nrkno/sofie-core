@@ -709,6 +709,8 @@ export const SourceLayerItem = withTranslation()(
 							infinite: piece.instance.userDuration === undefined && innerPiece.lifespan !== PieceLifespan.WithinPart, // 0 is a special value
 							'infinite-starts': piece.instance.piece.startPartId === this.props.part.partId,
 
+							'not-in-vision': piece.instance.piece.notInVision,
+
 							'next-is-touching': this.props.piece.cropped,
 
 							'source-missing':
