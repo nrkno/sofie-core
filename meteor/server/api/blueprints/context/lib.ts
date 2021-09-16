@@ -28,6 +28,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	tags: [],
 	expectedPackages: [],
 	hasSideEffects: false,
+	allowDirectPlay: { type: 'adlib' },
 }
 // Compile a list of the keys which are allowed to be set
 export const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>
