@@ -441,7 +441,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							  (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined,
 				}}
-				onClickCapture={this.handleClick}
+				onClick={this.handleClick}
 				onDoubleClick={this.handleDoubleClick}
 				ref={this.setRef}
 				onMouseDown={this.handleOnMouseDown}
