@@ -62,6 +62,7 @@ export type SomeContent =
 	| TransitionContent
 	| GraphicsContent
 	| UnknownContent
+	| EvsContent
 export type SomeTimelineContent = WithTimeline<SomeContent>
 
 export type UnknownContent = BaseContent
@@ -87,6 +88,17 @@ export interface CameraContent extends BaseContent {
 export interface RemoteContent extends BaseContent {
 	studioLabel: string
 	switcherInput: number | string
+}
+
+/** Content description for the EVS variant of a LOCAL source */
+export interface EvsContent extends BaseContent {
+	studioLabel: string
+	/** Switcher input for the EVS channel */
+	switcherInput: number | string
+	/** Name of the EVS channel as used in the studio */
+	channelName: string
+	/** Color code used to represent the EVS channel in 24 bit hex format (fx ff0000) */
+	color?: string
 }
 
 export interface ScriptContent extends BaseContent {
