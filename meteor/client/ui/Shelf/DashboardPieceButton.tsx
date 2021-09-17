@@ -336,9 +336,19 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		const { toggleOnSingleClick } = this.props
-		if (toggleOnSingleClick) {
-			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-		} else {
+		if (e.button === 0) {
+			// this is a main-button-click
+			if (toggleOnSingleClick) {
+				this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+			} else {
+				this.props.onSelectAdLib(this.props.piece, e)
+			}
+		}
+	}
+
+	private handleOnMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (e.button) {
+			// this is some other button, main button is 0
 			this.props.onSelectAdLib(this.props.piece, e)
 		}
 	}
@@ -431,9 +441,10 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							  (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined,
 				}}
-				onClick={this.handleClick}
+				onClickCapture={this.handleClick}
 				onDoubleClick={this.handleDoubleClick}
 				ref={this.setRef}
+				onMouseDown={this.handleOnMouseDown}
 				onMouseEnter={this.handleOnMouseEnter}
 				onMouseLeave={this.handleOnMouseLeave}
 				onMouseMove={this.handleOnMouseMove}
