@@ -7,12 +7,12 @@ import {
 	IBlueprintPieceGeneric,
 	ExpectedPackageStatusAPI,
 	PackageInfo,
+	NoteType,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
-import { NoteType } from './api/notes'
 import { PackageInfos } from './collections/PackageInfos'
 import { protectString, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'

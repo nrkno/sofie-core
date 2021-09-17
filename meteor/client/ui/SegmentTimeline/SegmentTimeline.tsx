@@ -22,7 +22,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { NoteType, SegmentNote } from '../../../lib/api/notes'
+import { SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
@@ -39,6 +39,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+import { NoteType } from '@sofie-automation/blueprints-integration'
 
 interface IProps {
 	id: string

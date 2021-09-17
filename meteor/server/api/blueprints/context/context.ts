@@ -38,6 +38,7 @@ import {
 	PackageInfo,
 	IStudioBaselineContext,
 	IShowStyleUserContext,
+	NoteType,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -49,7 +50,7 @@ import {
 } from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
-import { NoteType, INoteBase } from '../../../../lib/api/notes'
+import { INoteBase } from '../../../../lib/api/notes'
 import { RundownPlaylistId, ABSessionInfo, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	PieceInstances,

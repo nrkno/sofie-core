@@ -6,6 +6,7 @@ import {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	ISyncIngestUpdateToPartInstanceContext,
+	NoteType,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
@@ -29,7 +30,7 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../cache/CacheCollection'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
-import { INoteBase, NoteType } from '../../../../lib/api/notes'
+import { INoteBase } from '../../../../lib/api/notes'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'

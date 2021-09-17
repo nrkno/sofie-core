@@ -5,6 +5,7 @@ import { SomeTimelineContent } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
 import { ActionUserData } from './action'
+import { NoteType } from './lib'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -202,12 +203,15 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 *
 	 * @type {{
 	 * 		message: ITranslatableMessage,
+	 *      level?: NoteType
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
 		message: ITranslatableMessage
+		/** Set the severity of the displayed invalid part note */
+		level?: NoteType
 		color?: string
 	}
 

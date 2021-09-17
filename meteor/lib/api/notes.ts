@@ -3,12 +3,8 @@ import { SegmentId } from '../collections/Segments'
 import { PartId } from '../collections/Parts'
 import { PieceId } from '../collections/Pieces'
 import { ITranslatableMessage } from './TranslatableMessage'
+import { NoteType } from '@sofie-automation/blueprints-integration'
 
-export enum NoteType {
-	WARNING = 1,
-	ERROR = 2,
-	INFO = 3,
-}
 export interface INoteBase {
 	type: NoteType
 	message: ITranslatableMessage
