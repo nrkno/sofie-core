@@ -79,11 +79,15 @@ export interface RemoteContent extends BaseContent {
 	switcherInput: number | string
 }
 
+/** Content description for the EVS variant of a LOCAL source */
 export interface EvsContent extends BaseContent {
 	studioLabel: string
+	/** Switcher input for the EVS channel */
 	switcherInput: number | string
-	evsChannel: string
-	uiColorCode?: string
+	/** Name of the EVS channel as used in the studio */
+	channelName: string
+	/** Color code used to represent the EVS channel in 24 bit hex format (fx ff0000) */
+	color?: string
 }
 
 export interface ScriptContent extends BaseContent {

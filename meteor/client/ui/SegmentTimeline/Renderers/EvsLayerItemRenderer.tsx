@@ -45,7 +45,7 @@ export class LocalLayerItemRenderer extends CustomLayerItemRenderer<IProps, ISta
 
 	render() {
 		const innerPiece = this.props.piece.instance.piece
-		const { uiColorCode } = innerPiece.content as EvsContent
+		const { color } = innerPiece.content as EvsContent
 
 		return (
 			!this.props.isTooSmallForText && (
@@ -56,9 +56,9 @@ export class LocalLayerItemRenderer extends CustomLayerItemRenderer<IProps, ISta
 						style={this.getItemLabelOffsetLeft()}
 					>
 						<span className="segment-timeline__piece__label">
-							{uiColorCode && (
+							{color && (
 								<span
-									style={{ color: uiColorCode }}
+									style={{ color: color.startsWith('#') ? color : `#${color}` }}
 									className="segment-timeline__piece__label segment-timeline__piece__label__colored-mark"
 								>
 									·
