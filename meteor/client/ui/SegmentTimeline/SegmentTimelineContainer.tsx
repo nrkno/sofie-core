@@ -109,6 +109,7 @@ interface IProps {
 	isLastSegment: boolean
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
+	isFollowingOnAirSegment: boolean
 }
 interface IState {
 	scrollLeft: number
@@ -201,6 +202,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			// otherwise, trigger the updates in a window of 500-2500 ms from change
 			props.playlist.activationId === undefined || props.ownCurrentPartInstance || props.ownNextPartInstance
 				? 0
+				: props.isFollowingOnAirSegment
+				? 150
 				: Math.random() * 2000 + 500
 		)
 
@@ -275,6 +278,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
+			props.isFollowingOnAirSegment !== nextProps.isFollowingOnAirSegment ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore)
 		) {
 			return true
@@ -301,7 +305,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 			props.playlist.activationId !== nextProps.playlist.activationId ||
 			PlaylistTiming.getExpectedStart(props.playlist.timing) !==
-				PlaylistTiming.getExpectedStart(nextProps.playlist.timing)
+				PlaylistTiming.getExpectedStart(nextProps.playlist.timing) ||
+			props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
+			props.ownNextPartInstance !== nextProps.ownNextPartInstance
 		) {
 			return true
 		}
