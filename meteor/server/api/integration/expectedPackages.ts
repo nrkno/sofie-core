@@ -10,7 +10,7 @@ import {
 	ExpectedPackageWorkStatuses,
 	ExpectedPackageWorkStatusId,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { assertNever, getCurrentTime, literal } from '../../../lib/lib'
+import { assertNever, getCurrentTime, literal, protectString } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,
@@ -172,7 +172,11 @@ export namespace PackageManagerIntegration {
 			check(change.containerId, String)
 			check(change.packageId, String)
 
-			const id = getPackageContainerPackageId(peripheralDevice.studioId, change.containerId, change.packageId)
+			const id = getPackageContainerPackageId(
+				peripheralDevice.studioId,
+				change.containerId,
+				protectString(change.packageId)
+			)
 
 			if (change.type === 'delete') {
 				removedIds.push(id)
@@ -194,7 +198,8 @@ export namespace PackageManagerIntegration {
 									_id: id,
 									studioId: studioId,
 									containerId: change.containerId,
-									packageId: change.packageId,
+									deviceId: peripheralDevice._id,
+									packageId: protectString<ExpectedPackageId>(change.packageId),
 									status: change.status,
 									modified: getCurrentTime(),
 								}),
@@ -207,9 +212,25 @@ export namespace PackageManagerIntegration {
 			}
 		}
 		if (removedIds.length) {
-			ps.push(PackageContainerPackageStatuses.removeAsync({ _id: { $in: removedIds } }))
+			ps.push(
+				PackageContainerPackageStatuses.removeAsync({
+					deviceId: peripheralDevice._id,
+					_id: { $in: removedIds },
+				})
+			)
 		}
 		await Promise.all(ps)
+	}
+	export async function removeAllPackageContainerPackageStatusesOfDevice(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string
+	): Promise<void> {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+
+		await PackageContainerPackageStatuses.removeAsync({
+			deviceId: peripheralDevice._id,
+		})
 	}
 	export async function fetchPackageInfoMetadata(
 		context: MethodContext,

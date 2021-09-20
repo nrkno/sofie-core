@@ -137,7 +137,11 @@ export const MicSourceRenderer = withTranslation()(
 			// Move the line element
 			if (this.itemElement !== this.props.itemElement) {
 				if (this.itemElement) {
-					this.lineItem.remove()
+					try {
+						this.lineItem.remove()
+					} catch (err) {
+						console.error('Error in MicSourceRenderer.componentDidUpdate', err)
+					}
 				}
 				this.itemElement = this.props.itemElement
 				if (this.itemElement) {
@@ -163,8 +167,12 @@ export const MicSourceRenderer = withTranslation()(
 		}
 
 		componentWillUnmount() {
-			// Remove the line element
-			this.lineItem.remove()
+			try {
+				// Remove the line element
+				this.lineItem.remove()
+			} catch (err) {
+				console.error('Error in MicSourceRenderer.componentWillUnmount', err)
+			}
 		}
 
 		render() {

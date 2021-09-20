@@ -11,6 +11,7 @@ import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { Random } from 'meteor/random'
 import { assertNever } from '../../lib/lib'
+import classNames from 'classnames'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -21,6 +22,7 @@ export type EditAttributeType =
 	| 'int'
 	| 'float'
 	| 'checkbox'
+	| 'toggle'
 	| 'dropdown'
 	| 'dropdowntext'
 	| 'switch'
@@ -43,6 +45,8 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeCheckbox {...this.props} />
 		} else if (this.props.type === 'switch') {
 			return <EditAttributeSwitch {...this.props} />
+		} else if (this.props.type === 'toggle') {
+			return <EditAttributeToggle {...this.props} />
 		} else if (this.props.type === 'dropdown') {
 			return <EditAttributeDropdown {...this.props} />
 		} else if (this.props.type === 'dropdowntext') {
@@ -158,7 +162,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 	}
 	getAttribute() {
 		let v = null
-		if (this.props.overrideDisplayValue) {
+		if (this.props.overrideDisplayValue !== undefined) {
 			v = this.props.overrideDisplayValue
 		} else {
 			v = this.deepAttribute(this.props.myObject, this.props.attribute)
@@ -446,7 +450,52 @@ const EditAttributeCheckbox = wrapEditAttribute(
 		}
 	}
 )
-
+const EditAttributeToggle = wrapEditAttribute(
+	class EditAttributeToggle extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+		}
+		isChecked() {
+			return !!this.getEditAttribute()
+		}
+		handleChange = () => {
+			this.handleUpdate(!this.state.value)
+		}
+		handleClick = () => {
+			this.handleChange()
+		}
+		render() {
+			return (
+				<div className="mvs">
+					<a
+						className={classNames(
+							'switch-button',
+							'mrs',
+							this.props.className,
+							this.state.editing ? this.props.modifiedClassName : undefined,
+							this.props.disabled ? 'disabled' : '',
+							{
+								'sb-on': this.isChecked(),
+							}
+						)}
+						role="button"
+						onClick={this.handleClick}
+						tabIndex={0}
+					>
+						<div className="sb-content">
+							<div className="sb-label">
+								<span className="mls">&nbsp;</span>
+								<span className="mrs right">&nbsp;</span>
+							</div>
+							<div className="sb-switch"></div>
+						</div>
+					</a>
+					<span>{this.props.label}</span>
+				</div>
+			)
+		}
+	}
+)
 const EditAttributeSwitch = wrapEditAttribute(
 	class EditAttributeSwitch extends EditAttributeBase {
 		constructor(props) {

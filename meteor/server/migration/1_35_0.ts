@@ -1,5 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import * as semver from 'semver'
 import {
@@ -10,32 +9,8 @@ import { MongoSelector } from '../../lib/typings/meteor'
 import { literal } from '../../lib/lib'
 import { dropDeprecatedDatabase, getDeprecatedDatabase } from './deprecatedDatabases/1_35_0'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
-// Release X
-export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
-	//                     ^--- To be set to an absolute version number when doing the release
-	// add steps here:
-	// {
-	// 	id: 'my fancy step',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		//
-	// 	}
-	// },
-	//
-	//
-
+// Release 35
+export const addSteps = addMigrationSteps('1.35.0', [
 	{
 		id: 'Fix badly named collection PackageContainerStatuses',
 		canBeRunAutomatically: true,

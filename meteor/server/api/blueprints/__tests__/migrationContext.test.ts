@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
-import { literal, getRandomId, protectString } from '../../../../lib/lib'
+import { literal, getRandomId, protectString, unprotectString } from '../../../../lib/lib'
 import {
 	LookaheadMode,
 	BlueprintMapping,
@@ -12,13 +12,18 @@ import {
 	TSR,
 	IBlueprintShowStyleVariant,
 	IBlueprintConfig,
+	TriggerType,
+	ClientActions,
+	PlayoutActions,
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
-import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
+import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import { CoreSystem } from '../../../../lib/collections/CoreSystem'
+import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {
@@ -1503,6 +1508,167 @@ describe('Test blueprint migrationContext', () => {
 				// VariantConfig should have changed
 				delete initialVariantConfig['conf1']
 				expect(getAllVariantConfigFromDb(ctx, 'configVariant')).toEqual(initialVariantConfig)
+			})
+		})
+	})
+
+	describe('MigrationContextSystem', () => {
+		function getContext() {
+			const coreSystem = CoreSystem.findOne()
+			expect(coreSystem).toBeTruthy()
+			return new MigrationContextSystem()
+		}
+		function getSystemTriggeredActions() {
+			const systemTriggeredActions = TriggeredActions.find({
+				showStyleBaseId: null,
+			}).fetch()
+			expect(systemTriggeredActions).toHaveLength(3)
+			return systemTriggeredActions
+		}
+		describe('triggeredActions', () => {
+			testInFiber('getAllTriggeredActions: return all triggeredActions', () => {
+				const ctx = getContext()
+
+				// default studio environment should have 3 core-level actions
+				expect(ctx.getAllTriggeredActions()).toHaveLength(3)
+			})
+			testInFiber('getTriggeredAction: no id', () => {
+				const ctx = getContext()
+
+				expect(() => ctx.getTriggeredAction('')).toThrow('[500] Triggered actions Id "" is invalid')
+			})
+			testInFiber('getTriggeredAction: missing id', () => {
+				const ctx = getContext()
+
+				expect(ctx.getTriggeredAction('abc')).toBeFalsy()
+			})
+			testInFiber('getTriggeredAction: existing id', () => {
+				const ctx = getContext()
+
+				const existingTriggeredActions = getSystemTriggeredActions()[0]
+				expect(existingTriggeredActions).toBeTruthy()
+				expect(ctx.getTriggeredAction(unprotectString(existingTriggeredActions._id))).toMatchObject(
+					existingTriggeredActions
+				)
+			})
+			testInFiber('setTriggeredAction: set undefined', () => {
+				const ctx = getContext()
+
+				expect(() => ctx.setTriggeredAction(undefined as any)).toThrow(/Match error/)
+			})
+			testInFiber('setTriggeredAction: set without id', () => {
+				const ctx = getContext()
+
+				expect(() =>
+					ctx.setTriggeredAction({
+						_rank: 0,
+						actions: [],
+						triggers: [],
+					} as any)
+				).toThrow(/Match error/)
+			})
+			testInFiber('setTriggeredAction: set without actions', () => {
+				const ctx = getContext()
+
+				expect(() =>
+					ctx.setTriggeredAction({
+						_id: 'test1',
+						_rank: 0,
+						triggers: [],
+					} as any)
+				).toThrow(/Match error/)
+			})
+			testInFiber('setTriggeredAction: set with null as name', () => {
+				const ctx = getContext()
+
+				expect(() =>
+					ctx.setTriggeredAction({
+						_id: 'test1',
+						_rank: 0,
+						actions: [],
+						triggers: [],
+						name: null,
+					} as any)
+				).toThrow(/Match error/)
+			})
+			testInFiber('setTriggeredAction: set non-existing id', () => {
+				const ctx = getContext()
+
+				const blueprintLocalId = 'test0'
+
+				ctx.setTriggeredAction({
+					_id: blueprintLocalId,
+					_rank: 1001,
+					actions: [
+						{
+							action: ClientActions.shelf,
+							filterChain: [
+								{
+									object: 'view',
+								},
+							],
+							state: 'toggle',
+						},
+					],
+					triggers: [
+						{
+							type: TriggerType.hotkey,
+							keys: 'Digit1',
+						},
+					],
+				})
+				const insertedTriggeredAction = ctx.getTriggeredAction(blueprintLocalId)
+				expect(insertedTriggeredAction).toBeTruthy()
+				// the actual id in the database should not be the same as the one provided
+				// in the setTriggeredAction method
+				expect(insertedTriggeredAction?._id !== blueprintLocalId).toBe(true)
+			})
+			testInFiber('setTriggeredAction: set existing id', () => {
+				const ctx = getContext()
+
+				const oldCoreAction = ctx.getTriggeredAction('mockTriggeredAction_core0')
+				expect(oldCoreAction).toBeTruthy()
+				expect(oldCoreAction?.actions[0].action).toBe(PlayoutActions.adlib)
+
+				ctx.setTriggeredAction({
+					_id: 'mockTriggeredAction_core0',
+					_rank: 0,
+					actions: [
+						{
+							action: PlayoutActions.activateRundownPlaylist,
+							rehearsal: false,
+							filterChain: [
+								{
+									object: 'view',
+								},
+							],
+						},
+					],
+					triggers: [
+						{
+							type: TriggerType.hotkey,
+							keys: 'Control+Shift+Enter',
+						},
+					],
+				})
+
+				const newCoreAction = ctx.getTriggeredAction('mockTriggeredAction_core0')
+				expect(newCoreAction).toBeTruthy()
+				expect(newCoreAction?.actions[0].action).toBe(PlayoutActions.activateRundownPlaylist)
+			})
+			testInFiber('removeTriggeredAction: remove empty id', () => {
+				const ctx = getContext()
+
+				expect(() => ctx.removeTriggeredAction('')).toThrow('[500] Triggered actions Id "" is invalid')
+			})
+			testInFiber('removeTriggeredAction: remove existing id', () => {
+				const ctx = getContext()
+
+				const oldCoreAction = ctx.getTriggeredAction('mockTriggeredAction_core0')
+				expect(oldCoreAction).toBeTruthy()
+
+				ctx.removeTriggeredAction('mockTriggeredAction_core0')
+				expect(ctx.getTriggeredAction('mockTriggeredAction_core0')).toBeFalsy()
 			})
 		})
 	})

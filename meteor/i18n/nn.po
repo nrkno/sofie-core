@@ -346,11 +346,11 @@ msgstr "Migrering"
 msgid "Documentation is available at"
 msgstr "Dokumentasjon er tilgjengelig på"
 
-msgid "Use ENPS order"
-msgstr "Nytt rekkefølgje frå ENPS"
+msgid "Use {{nrcsName}} order"
+msgstr "Nytt rekkefølgje frå {{nrcsName}}"
 
-msgid "Using ENPS order"
-msgstr "Nytter rekkefølgje frå ENPS"
+msgid "Using {{nrcsName}} order"
+msgstr "Nytter rekkefølgje frå {{nrcsName}}"
 
 msgid "Using local Sofie order"
 msgstr "Rekkefølgje satt i Sofie"

@@ -19,7 +19,7 @@ import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../../lib/collections/Segments'
 import { Studio, Studios, StudioRouteSet } from '../../lib/collections/Studios'
-import { Part, Parts } from '../../lib/collections/Parts'
+import { Part, PartId, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
@@ -35,24 +35,15 @@ import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
 import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
 
-import * as mousetrap from 'mousetrap'
-import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
-import {
-	scrollToPart,
-	scrollToPosition,
-	scrollToSegment,
-	maintainFocusOnPartInstance,
-	scrollToPartInstance,
-} from '../lib/viewPort'
+import { scrollToPosition, scrollToSegment, maintainFocusOnPartInstance, scrollToPartInstance } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
-import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import {
@@ -85,7 +76,7 @@ import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './FloatingInspectors/NoraFloatingInspector'
 import { Buckets, Bucket } from '../../lib/collections/Buckets'
-import { contextMenuHoldToDisplayTime } from '../lib/lib'
+import { contextMenuHoldToDisplayTime, isEventInInputField } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
 import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
@@ -97,11 +88,13 @@ import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
-import RundownViewEventBus, { RundownViewEvents } from './RundownView/RundownViewEventBus'
+import RundownViewEventBus, { ActivateRundownPlaylistEvent, RundownViewEvents } from './RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../lib/ui/icons/looping'
-import StudioPackageContainersContext from './RundownView/StudioPackageContainersContext'
+import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
+import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
+import { SorensenContext } from '../lib/SorensenContext'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -612,236 +605,39 @@ const RundownHeader = withTranslation()(
 		constructor(props: Translated<IRundownHeaderProps>) {
 			super(props)
 
-			const { t } = props
-			if (this.props.studioMode) {
-				this.bindKeys = [
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_TAKE,
-						up: this.keyTake,
-						label: t('Take'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_TAKE2,
-						up: this.keyTake,
-						label: t('Take'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_HOLD,
-						up: this.keyHold,
-						label: t('Hold'),
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_UNDO_HOLD,
-						up: this.keyHoldUndo,
-						label: t('Undo Hold'),
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE,
-						up: this.keyActivate,
-						label: t('Activate (On-Air)'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE2,
-						up: this.keyActivate,
-						label: t('Activate (On-Air)'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE3,
-						up: this.keyActivate,
-						label: t('Activate (On-Air)'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_DEACTIVATE,
-						up: this.keyDeactivate,
-						label: t('Deactivate'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_ACTIVATE_REHEARSAL,
-						up: this.keyActivateRehearsal,
-						label: t('Activate (Rehearsal)'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN,
-						up: this.keyResetRundown,
-						label: t('Reset Rundown'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_RESET_RUNDOWN2,
-						up: this.keyResetRundown,
-						label: t('Reset Rundown'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD,
-						up: this.keyMoveNextForward,
-						label: t('Move Next forwards'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_DOWN,
-						up: this.keyMoveNextDown,
-						label: t('Move Next to the following segment'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_UP,
-						up: this.keyMoveNextUp,
-						label: t('Move Next to the previous segment'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_NEXT_BACK,
-						up: this.keyMoveNextBack,
-						label: t('Move Next backwards'),
-						global: true,
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_DISABLE_NEXT_ELEMENT,
-						up: this.keyDisableNextPiece,
-						label: t('Disable the next element'),
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT,
-						up: this.keyDisableNextPieceUndo,
-						label: t('Undo Disable the next element'),
-					},
-					{
-						key: RundownViewKbdShortcuts.RUNDOWN_LOG_ERROR,
-						up: this.keyLogError,
-						label: t('Log Error'),
-						coolDown: 1000,
-					},
-				]
-			} else {
-				this.bindKeys = []
-			}
 			this.state = {
 				isError: false,
 			}
 		}
 		componentDidMount() {
-			const preventDefault = (e: Event) => {
-				e.preventDefault()
-				e.stopImmediatePropagation()
-				e.stopPropagation()
-			}
-			this.bindKeys.forEach((k) => {
-				const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
-				let lastUsed = Date.now()
-				if (k.up) {
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							preventDefault(e)
-							if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
-							if (k.up) k.up(e)
-							lastUsed = Date.now()
-						},
-						'keyup',
-						'RundownHeader'
-					)
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							preventDefault(e)
-						},
-						'keydown',
-						'RundownHeader'
-					)
-				}
-				if (k.down) {
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							preventDefault(e)
-							if (k.coolDown && lastUsed > Date.now() - k.coolDown) return
-							if (k.down) k.down(e)
-							lastUsed = Date.now()
-						},
-						'keydown',
-						'RundownHeader'
-					)
-				}
-			})
-
 			if (typeof this.props.onRegisterHotkeys === 'function') {
 				this.props.onRegisterHotkeys(this.bindKeys)
 			}
+
+			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
+			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
+			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
 
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
 
 		componentWillUnmount() {
-			this.bindKeys.forEach((k) => {
-				if (k.up) {
-					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keyup')
-					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
-				}
-				if (k.down) {
-					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
-				}
-			})
+			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
+			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
+			RundownViewEventBus.off(RundownViewEvents.TAKE, this.eventTake)
 		}
-		keyTake = (e: mousetrap.ExtendedKeyboardEvent) => {
-			if (e.key !== 'Enter' || e.location === 3) {
-				// only allow the rightmost enter key
-				if (!isModalShowing()) this.take(e)
+		eventActivate = (e: ActivateRundownPlaylistEvent) => {
+			if (e.rehearsal) {
+				this.activateRehearsal(e.context)
+			} else {
+				this.activate(e.context)
 			}
 		}
-		keyHold = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.hold(e)
+		eventResync = (e) => {
+			this.reloadRundownPlaylist(e.context)
 		}
-		keyHoldUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.holdUndo(e)
-		}
-		keyActivate = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.activate(e)
-		}
-		keyActivateRehearsal = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.activateRehearsal(e)
-		}
-
-		keyDeactivate = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.deactivate(e)
-		}
-		keyResetRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.resetRundown(e)
-		}
-		keyReloadRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.reloadRundownPlaylist(e)
-		}
-		keyMoveNextForward = (e: mousetrap.ExtendedKeyboardEvent) => {
-			// "forward" = to next Part
-			this.moveNext(e, 1, 0)
-		}
-		keyMoveNextBack = (e: mousetrap.ExtendedKeyboardEvent) => {
-			// "down" = to next Segment
-			this.moveNext(e, -1, 0)
-		}
-		keyMoveNextDown = (e: mousetrap.ExtendedKeyboardEvent) => {
-			// "down" = to next Segment
-			this.moveNext(e, 0, 1)
-		}
-		keyMoveNextUp = (e: mousetrap.ExtendedKeyboardEvent) => {
-			// "down" = to next Segment
-			this.moveNext(e, 0, -1)
-		}
-		keyDisableNextPiece = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.disableNextPiece(e)
-		}
-		keyDisableNextPieceUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.disableNextPieceUndo(e)
-		}
-		keyLogError = (e: mousetrap.ExtendedKeyboardEvent) => {
-			this.takeRundownSnapshot(e)
+		eventTake = (e) => {
+			this.take(e)
 		}
 
 		handleDisableNextPiece = (err: ClientAPI.ClientResponse<undefined>) => {
@@ -944,27 +740,6 @@ const RundownHeader = withTranslation()(
 					})
 				} else {
 					doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
-				}
-			}
-		}
-
-		moveNext = (e: any, horizonalDelta: number, verticalDelta: number) => {
-			const { t } = this.props
-			if (this.props.studioMode) {
-				if (this.props.playlist.activationId) {
-					doUserAction(
-						t,
-						e,
-						UserAction.MOVE_NEXT,
-						(e) => MeteorCall.userAction.moveNext(e, this.props.playlist._id, horizonalDelta, verticalDelta),
-						(err, partId) => {
-							if (!err && partId) {
-								scrollToPart(partId).catch((error) => {
-									if (!error.toString().match(/another scroll/)) console.warn(error)
-								})
-							}
-						}
-					)
 				}
 			}
 		}
@@ -1565,6 +1340,7 @@ interface ITrackedProps {
 	rundownPlaylistId: RundownPlaylistId
 	rundowns: Rundown[]
 	playlist?: RundownPlaylist
+	currentRundown?: Rundown
 	matchedSegments: MatchedSegment[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio?: Studio
@@ -1584,6 +1360,8 @@ interface ITrackedProps {
 	bucketDisplayFilter: number[] | undefined
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
+	currentSegmentPartIds: PartId[]
+	nextSegmentPartIds: PartId[]
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let playlistId
@@ -1598,11 +1376,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let studio: Studio | undefined
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
+	let currentRundown: Rundown | undefined = undefined
 
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
 		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
+		const somePartInstance = currentPartInstance || nextPartInstance
+		if (somePartInstance) {
+			currentRundown = rundowns.find((rundown) => rundown._id === somePartInstance?.rundownId)
+		}
 	}
 
 	const params = queryStringParse(location.search)
@@ -1621,6 +1404,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	return {
 		rundownPlaylistId: playlistId,
 		rundowns,
+		currentRundown,
 		matchedSegments: playlist
 			? playlist
 					.getRundownsAndSegments({
@@ -1686,48 +1470,39 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		bucketDisplayFilter,
 		currentPartInstance,
 		nextPartInstance,
+		currentSegmentPartIds: currentPartInstance
+			? Parts.find(
+					{
+						segmentId: currentPartInstance?.part.segmentId,
+					},
+					{
+						fields: {
+							_id: 1,
+						},
+					}
+			  ).map((part) => part._id)
+			: [],
+		nextSegmentPartIds: nextPartInstance
+			? Parts.find(
+					{
+						segmentId: nextPartInstance?.part.segmentId,
+					},
+					{
+						fields: {
+							_id: 1,
+						},
+					}
+			  ).map((part) => part._id)
+			: [],
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-		private bindKeys: Array<{
-			key: string
-			up?: (e: KeyboardEvent) => any
-			down?: (e: KeyboardEvent) => any
-			label: string
-			global?: boolean
-		}> = []
-		private _segmentZoomOn: boolean = false
 		private _hideNotificationsAfterMount: number | undefined
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 
 			const { t } = this.props
-
-			this.bindKeys = [
-				{
-					key: RundownViewKbdShortcuts.RUNDOWN_GO_TO_LIVE,
-					up: this.onGoToLiveSegment,
-					label: t('Go to On Air line'),
-					global: true,
-				},
-				{
-					key: RundownViewKbdShortcuts.RUNDOWN_REWIND_SEGMENTS,
-					up: this.onRewindSegments,
-					label: t('Rewind segments to start'),
-					global: true,
-				},
-			]
-
-			if (RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH) {
-				this.bindKeys.push({
-					key: RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH,
-					down: this.onShowCurrentSegmentFullOn,
-					up: this.onShowCurrentSegmentFullOff,
-					label: t('Show entire current segment'),
-					global: false,
-				})
-			}
 
 			const shelfLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.shelfLayoutId)
 			let isInspectorShelfExpanded = false
@@ -1744,17 +1519,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				followLiveSegments: true,
 				manualSetAsNext: false,
 				subsReady: false,
-				usedHotkeys: [...this.bindKeys].concat([
+				usedHotkeys: [
 					// Register additional hotkeys or legend entries
 					{
-						key: 'Esc',
+						key: 'Escape',
 						label: t('Cancel currently pressed hotkey'),
 					},
 					{
 						key: 'F11',
 						label: t('Change to fullscreen mode'),
 					},
-				]),
+				],
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
 				isInspectorShelfExpanded,
@@ -2025,40 +1800,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			document.body.classList.add('dark', 'vertical-overflow-only')
 
-			const preventDefault = (e) => {
-				e.preventDefault()
-				e.stopImmediatePropagation()
-				e.stopPropagation()
-			}
-			this.bindKeys.forEach((k) => {
-				const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
-				if (k.up) {
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							if (k.up) k.up(e)
-						},
-						'keyup'
-					)
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							preventDefault(e)
-						},
-						'keydown'
-					)
-				}
-				if (k.down) {
-					method(
-						k.key,
-						(e: KeyboardEvent) => {
-							if (k.down) k.down(e)
-						},
-						'keydown'
-					)
-				}
-			})
-
 			rundownNotificationHandler.set(this.onRONotificationClick)
 
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_LIVE_SEGMENT, this.onGoToLiveSegment)
@@ -2091,7 +1832,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.props.playlist &&
 					prevProps.playlist &&
 					prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
-					this.state.manualSetAsNext
+					prevProps.playlist.nextPartManual
 				) {
 					// reset followLiveSegments after a manual set as next
 					this.setState({
@@ -2133,6 +1874,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.state.followLiveSegments
 				) {
 					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.warn(error)
+					})
+				} else if (
+					this.props.playlist &&
+					prevProps.playlist &&
+					this.props.playlist.nextPartInstanceId !== prevProps.playlist.nextPartInstanceId &&
+					this.props.playlist.currentPartInstanceId === prevProps.playlist.currentPartInstanceId &&
+					this.props.playlist.nextPartInstanceId &&
+					this.props.playlist.nextPartManual
+				) {
+					scrollToPartInstance(this.props.playlist.nextPartInstanceId, false).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
 				} else if (
@@ -2201,16 +1953,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			// window.removeEventListener('scroll', this.onWindowScroll)
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
 
-			this.bindKeys.forEach((k) => {
-				if (k.up) {
-					mousetrap.unbind(k.key, 'keyup')
-					mousetrap.unbind(k.key, 'keydown')
-				}
-				if (k.down) {
-					mousetrap.unbind(k.key, 'keydown')
-				}
-			})
-
 			documentTitle.set(null)
 
 			const themeColor = document.head.querySelector('meta[name="theme-color"]')
@@ -2238,20 +1980,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		onRewindSegments = () => {
 			RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
-		}
-
-		onShowCurrentSegmentFullOn = () => {
-			if (this._segmentZoomOn === false) {
-				console.log(`Dispatching event: ${RundownViewEvents.SEGMENT_ZOOM_ON}`)
-				RundownViewEventBus.emit(RundownViewEvents.SEGMENT_ZOOM_ON)
-				this._segmentZoomOn = true
-			}
-		}
-
-		onShowCurrentSegmentFullOff = () => {
-			console.log(`Dispatching event: ${RundownViewEvents.SEGMENT_ZOOM_OFF}`)
-			RundownViewEventBus.emit(RundownViewEvents.SEGMENT_ZOOM_OFF)
-			this._segmentZoomOn = false
 		}
 
 		onTimeScaleChange = (timeScaleVal) => {
@@ -2386,15 +2114,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							manualSetAsNext: true,
 						})
 					}
-				)
-			}
-		}
-
-		onResyncSegment = (segment: SegmentUi, e: any) => {
-			const { t } = this.props
-			if (this.state.studioMode && this.props.rundownPlaylistId) {
-				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) =>
-					MeteorCall.userAction.resyncSegment(e, segment.rundownId, segment._id)
 				)
 			}
 		}
@@ -2771,6 +2490,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		isHotkeyAllowed(e: KeyboardEvent): boolean {
+			if (isModalShowing() || isEventInInputField(e)) {
+				return false
+			}
+			return true
+		}
+
 		render() {
 			const { t } = this.props
 
@@ -2785,7 +2511,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 					return (
 						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
-							<StudioPackageContainersContext.Provider value={this.props.studio.packageContainers}>
+							<StudioContext.Provider value={this.props.studio}>
 								<div
 									className={ClassNames('rundown-view', {
 										'notification-center-open': this.state.isNotificationsCenterOpen !== undefined,
@@ -2821,6 +2547,27 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											studioRouteSetExclusivityGroups={this.props.studio.routeSetExclusivityGroups}
 											onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 										/>
+									</ErrorBoundary>
+									<ErrorBoundary>
+										<SorensenContext.Consumer>
+											{(sorensen) =>
+												sorensen &&
+												this.props.studio &&
+												this.props.showStyleBase && (
+													<TriggersHandler
+														rundownPlaylistId={this.props.rundownPlaylistId}
+														showStyleBaseId={this.props.showStyleBase._id}
+														currentRundownId={this.props.currentRundown?._id || null}
+														currentPartId={this.props.currentPartInstance?.part._id || null}
+														nextPartId={this.props.nextPartInstance?.part._id || null}
+														currentSegmentPartIds={this.props.currentSegmentPartIds}
+														nextSegmentPartIds={this.props.nextSegmentPartIds}
+														sorensen={sorensen}
+														global={this.isHotkeyAllowed}
+													/>
+												)
+											}
+										</SorensenContext.Consumer>
 									</ErrorBoundary>
 									<ErrorBoundary>
 										<VelocityReact.VelocityTransitionGroup
@@ -2923,7 +2670,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											playlist={this.props.playlist}
 											onSetNext={this.onSetNext}
 											onSetNextSegment={this.onSetNextSegment}
-											onResyncSegment={this.onResyncSegment}
 											studioMode={this.state.studioMode}
 											enablePlayFromAnywhere={!!this.props.studio.settings.enablePlayFromAnywhere}
 										/>
@@ -3006,7 +2752,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						}}>
 						</div> */
 								}
-							</StudioPackageContainersContext.Provider>
+							</StudioContext.Provider>
 						</RundownTimingProvider>
 					)
 				} else if (this.props.playlist && this.props.studio && this.props.showStyleBase && this.props.onlyShelf) {

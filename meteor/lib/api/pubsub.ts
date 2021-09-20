@@ -28,6 +28,7 @@ export enum PubSub {
 	segments = 'segments',
 	showStyleBases = 'showStyleBases',
 	showStyleVariants = 'showStyleVariants',
+	triggeredActions = 'triggeredActions',
 	snapshots = 'snapshots',
 	studios = 'studios',
 	studioOfDevice = 'studioOfDevice',
@@ -48,6 +49,7 @@ export enum PubSub {
 	expectedPackages = 'expectedPackages',
 	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
 	packageContainerPackageStatuses = 'packageContainerStatuses',
+	packageInfos = 'packageInfos',
 	// custom publications:
 	mappingsForDevice = 'mappingsForDevice',
 	timelineForDevice = 'timelineForDevice',

@@ -2,6 +2,7 @@ import { DeviceOptionsAny } from 'timeline-state-resolver-types'
 import { ConfigItemValue } from './common'
 import { OmitId } from './lib'
 import { IBlueprintShowStyleVariant, IOutputLayer, ISourceLayer } from './showStyle'
+import { IBlueprintTriggeredActions } from './triggers'
 import { BlueprintMapping } from './studio'
 
 export interface MigrationStepInput {
@@ -23,25 +24,36 @@ export interface MigrationStepInputFilteredResult {
 }
 
 export type ValidateFunctionCore = (afterMigration: boolean) => boolean | string
+export type ValidateFunctionSystem = (context: MigrationContextSystem, afterMigration: boolean) => boolean | string
 export type ValidateFunctionStudio = (context: MigrationContextStudio, afterMigration: boolean) => boolean | string
 export type ValidateFunctionShowStyle = (
 	context: MigrationContextShowStyle,
 	afterMigration: boolean
 ) => boolean | string
-export type ValidateFunction = ValidateFunctionStudio | ValidateFunctionShowStyle | ValidateFunctionCore
+export type ValidateFunction =
+	| ValidateFunctionStudio
+	| ValidateFunctionShowStyle
+	| ValidateFunctionSystem
+	| ValidateFunctionCore
 
 export type MigrateFunctionCore = (input: MigrationStepInputFilteredResult) => void
+export type MigrateFunctionSystem = (context: MigrationContextSystem, input: MigrationStepInputFilteredResult) => void
 export type MigrateFunctionStudio = (context: MigrationContextStudio, input: MigrationStepInputFilteredResult) => void
 export type MigrateFunctionShowStyle = (
 	context: MigrationContextShowStyle,
 	input: MigrationStepInputFilteredResult
 ) => void
-export type MigrateFunction = MigrateFunctionStudio | MigrateFunctionShowStyle | MigrateFunctionCore
+export type MigrateFunction =
+	| MigrateFunctionStudio
+	| MigrateFunctionShowStyle
+	| MigrateFunctionSystem
+	| MigrateFunctionCore
 
 export type InputFunctionCore = () => MigrationStepInput[]
+export type InputFunctionSystem = (context: MigrationContextSystem) => MigrationStepInput[]
 export type InputFunctionStudio = (context: MigrationContextStudio) => MigrationStepInput[]
 export type InputFunctionShowStyle = (context: MigrationContextShowStyle) => MigrationStepInput[]
-export type InputFunction = InputFunctionStudio | InputFunctionShowStyle | InputFunctionCore
+export type InputFunction = InputFunctionStudio | InputFunctionShowStyle | InputFunctionSystem | InputFunctionCore
 
 export interface MigrationContextStudio {
 	getMapping: (mappingId: string) => BlueprintMapping | undefined
@@ -63,7 +75,15 @@ export interface ShowStyleVariantPart {
 	// Note: if more props are added it may make sense to use Omit<> to build this type
 	name: string
 }
-export interface MigrationContextShowStyle {
+
+interface MigrationContextWithTriggeredActions {
+	getAllTriggeredActions: () => IBlueprintTriggeredActions[]
+	getTriggeredAction: (triggeredActionsId: string) => IBlueprintTriggeredActions | undefined
+	setTriggeredAction: (triggeredActions: IBlueprintTriggeredActions) => void
+	removeTriggeredAction: (triggeredActionsId: string) => void
+}
+
+export interface MigrationContextShowStyle extends MigrationContextWithTriggeredActions {
 	getAllVariants: () => IBlueprintShowStyleVariant[]
 	getVariantId: (variantId: string) => string
 	getVariant: (variantId: string) => IBlueprintShowStyleVariant | undefined
@@ -89,6 +109,8 @@ export interface MigrationContextShowStyle {
 	setVariantConfig: (variantId: string, configId: string, value: ConfigItemValue) => void
 	removeVariantConfig: (variantId: string, configId: string) => void
 }
+
+export type MigrationContextSystem = MigrationContextWithTriggeredActions
 
 export interface MigrationStepBase {
 	/** Unique id for this step */
@@ -128,6 +150,11 @@ export interface MigrationStepCore extends MigrationStep {
 	validate: ValidateFunctionCore
 	migrate?: MigrateFunctionCore
 	input?: MigrationStepInput[] | InputFunctionCore
+}
+export interface MigrationStepSystem extends MigrationStep {
+	validate: ValidateFunctionSystem
+	migrate?: MigrateFunctionSystem
+	input?: MigrationStepInput[] | InputFunctionSystem
 }
 export interface MigrationStepStudio extends MigrationStep {
 	validate: ValidateFunctionStudio

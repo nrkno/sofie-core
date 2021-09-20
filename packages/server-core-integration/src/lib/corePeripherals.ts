@@ -160,6 +160,8 @@ export namespace PeripheralDeviceAPI {
 		'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
 
 		'updatePackageContainerPackageStatuses' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatuses',
+		'removeAllPackageContainerPackageStatusesOfDevice' = 'peripheralDevice.packageManager.removeAllPackageContainerPackageStatusesOfDevice',
+
 		'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
 		'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
 		'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',

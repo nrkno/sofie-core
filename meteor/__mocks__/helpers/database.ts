@@ -22,6 +22,8 @@ import {
 	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
+	TriggerType,
+	PlayoutActions,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -56,6 +58,7 @@ import {
 import { OrganizationId } from '../../lib/collections/Organization'
 import { StatusCode } from '../../lib/api/systemStatus'
 import { PackageInfo } from '../../server/coreSystem'
+import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -143,6 +146,49 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 	CoreSystem.remove(SYSTEM_ID)
 	CoreSystem.insert(coreSystem)
 	return coreSystem
+}
+export function setupMockTriggeredActions(
+	showStyleBaseId: ShowStyleBaseId | null = null,
+	num: number = 3,
+	doc?: Partial<DBTriggeredActions>
+): DBTriggeredActions[] {
+	doc = doc || {}
+	const mocks: DBTriggeredActions[] = []
+	for (let i = 0; i < num; i++) {
+		const mock: DBTriggeredActions = {
+			_id: protectString(`mockTriggeredAction_${showStyleBaseId ?? 'core'}` + i),
+			_rank: i * 1000,
+			_rundownVersionHash: 'asdf',
+			showStyleBaseId,
+			actions: [
+				{
+					action: PlayoutActions.adlib,
+					filterChain: [
+						{
+							object: 'adLib',
+							field: 'global',
+							value: true,
+						},
+						{
+							object: 'adLib',
+							field: 'pick',
+							value: i,
+						},
+					],
+				},
+			],
+			triggers: [
+				{
+					type: TriggerType.hotkey,
+					keys: `Key${String.fromCharCode(65 + i)}`, // KeyA and so on
+				},
+			],
+			...doc,
+		}
+		mocks.push(mock)
+		TriggeredActions.insert(mock)
+	}
+	return mocks
 }
 export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 	doc = doc || {}
@@ -389,9 +435,11 @@ export interface DefaultEnvironment {
 	studioBlueprint: Blueprint
 	showStyleBlueprint: Blueprint
 	showStyleBase: ShowStyleBase
+	triggeredActions: DBTriggeredActions[]
 	showStyleVariant: ShowStyleVariant
 	studio: Studio
 	core: ICoreSystem
+	systemTriggeredActions: DBTriggeredActions[]
 
 	ingestDevice: PeripheralDevice
 }
@@ -399,6 +447,7 @@ export async function setupDefaultStudioEnvironment(
 	organizationId: OrganizationId | null = null
 ): Promise<DefaultEnvironment> {
 	const core = setupMockCore({})
+	const systemTriggeredActions = setupMockTriggeredActions()
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
 	const showStyleVariantId: ShowStyleVariantId = getRandomId()
@@ -410,6 +459,7 @@ export async function setupDefaultStudioEnvironment(
 		_id: showStyleBaseId,
 		organizationId: organizationId,
 	})
+	const triggeredActions = setupMockTriggeredActions(showStyleBase._id)
 	const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
 
 	const studio = setupMockStudio({
@@ -431,9 +481,11 @@ export async function setupDefaultStudioEnvironment(
 		studioBlueprint,
 		showStyleBlueprint,
 		showStyleBase,
+		triggeredActions,
 		showStyleVariant,
 		studio,
 		core,
+		systemTriggeredActions: systemTriggeredActions,
 		ingestDevice,
 	}
 }
@@ -479,7 +531,7 @@ export function setupDefaultRundown(
 		_rank: 0,
 
 		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
+		externalId: 'MOCK_RUNDOWN_' + rundownId,
 		name: 'Default Rundown',
 
 		created: getCurrentTime(),

@@ -82,27 +82,6 @@ jobs:
           meteor npm run validate:prod-dependencies
         env:
           CI: true
-  validate-all-dependencies-core:
-    name: Validate all Core dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/setup-meteor
-      - name: restore node_modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-      - name: Validate all dependencies for vulnerabilities
-        run: |
-          yarn
-          cd meteor
-          meteor npm run validate:all-dependencies
-        env:
-          CI: true
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
     name: Build Core and publish docker image
@@ -284,7 +263,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -318,7 +297,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -351,7 +330,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn build
         env:
@@ -362,14 +341,14 @@ jobs:
           yarn docs
         env:
           CI: true
-      - name: Publish
-        # only run for release tags
-        # TODO - we should only do this if the latest release
-        if: contains(github.ref, 'refs/tags/')
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./packages/docs
+      # - name: Publish
+      #   # only run for release tags
+      #   # TODO - we should only do this if the latest release
+      #   if: contains(github.ref, 'refs/tags/')
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./packages/docs
 
   prerelease-libs:
     name: Prerelease Lib
@@ -408,7 +387,7 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -511,7 +490,7 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -557,7 +536,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -594,11 +573,5 @@ jobs:
         run: |
           cd packages
           yarn validate:dependencies
-        env:
-          CI: true
-      - name: Validate dev dependencies
-        run: |
-          cd packages
-          yarn validate:dev-dependencies
         env:
           CI: true

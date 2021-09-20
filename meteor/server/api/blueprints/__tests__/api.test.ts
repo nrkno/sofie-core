@@ -57,6 +57,7 @@ describe('Test blueprint management api', () => {
 				databaseVersion: {
 					showStyle: {},
 					studio: {},
+					system: undefined,
 				},
 
 				blueprintVersion: '',

@@ -288,6 +288,7 @@ export const addSteps = addMigrationSteps('0.19.0', [
 				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) {
 					Blueprints.update(blueprint._id, {
 						$set: {
+							// @ts-ignore Outdated datastructure
 							databaseVersion: {
 								showStyle: {},
 								studio: {},
