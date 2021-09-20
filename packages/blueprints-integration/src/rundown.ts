@@ -138,9 +138,9 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	autoNext?: boolean
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
-	/** How long to before this part is ready to take over from the previous */
+	/** How long until this part is ready to take over from the previous */
 	prerollDuration?: number
-	/** How long to before this part is ready to take over from the previous (during transition) */
+	/** How long until this part is ready to take over from the previous (during transition) */
 	transitionPrerollDuration?: number | null
 	/** How long to keep the old part alive during the transition */
 	transitionKeepaliveDuration?: number | null

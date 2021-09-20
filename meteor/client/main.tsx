@@ -15,7 +15,6 @@ import '../lib/main'
 
 // Import files that call Meteor.startup:
 import './lib/currentTimeReactive'
-import './lib/SorensenContext'
 import './lib/uncaughtErrorHandler'
 import './lib/dev'
 

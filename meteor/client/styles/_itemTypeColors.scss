@@ -13,11 +13,11 @@ $segment-layer-background-remote: #e80064;
 $segment-layer-background-remote--second: darken($segment-layer-background-remote, 10%);
 $segment-layer-background-vt: #0a20ed;
 $segment-layer-background-vt--second: darken($segment-layer-background-vt, 10%);
-$segment-layer-background-local: #8d1010;
-$segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
 $segment-layer-background-script: #003600;
 $segment-layer-background-mic: #1e6820;
 $segment-layer-background-guest: #008a92;
+$segment-layer-background-local: #ba00e8;
+$segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
 
 $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'remote', 'vt', 'local', 'script', 'mic',
 	'guest';
