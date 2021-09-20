@@ -367,6 +367,11 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{
+			id: 'options.purgeUnknownElements',
+			name: 'Purge unknown/unused element from Viz Rundown upon activate',
+			type: ConfigManifestEntryType.BOOLEAN,
+		},
+		{
 			id: 'options.autoLoadInternalElements',
 			name: 'Automatically load internal elements when added',
 			type: ConfigManifestEntryType.BOOLEAN,
