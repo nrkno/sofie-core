@@ -23,23 +23,27 @@ export const SorensenContextProvider: React.FC = function SorensenContextProvide
 
 	useEffect(() => {
 		if (initializedSorensen) {
-			// block default F1 behavior (opening help)
+			// block default system+Chromium F1 behavior (opening help)
 			Sorensen.bind('F1', preventDefault, {
 				global: true,
 			})
-			// block default F3 behavior (opening search)
+			// block default Chromium F3 behavior (opening search)
 			Sorensen.bind(['F3', 'Control+KeyF'], preventDefault, {
 				global: true,
 			})
-			// block default F12 behavior (opening Inspector)
+			// block default Chromium F10 behavior (focus Window Menu)
+			Sorensen.bind('F10', preventDefault, {
+				global: true,
+			})
+			// block default Chromium F12 behavior (opening Inspector)
 			Sorensen.bind('F12', preventDefault, {
 				global: true,
 			})
-			// block default Space behavior (scroll page down)
+			// block default system Space behavior (scroll page down)
 			Sorensen.bind('Space', preventDefault, {
 				global: false,
 			})
-			// block default Alt behavior (focus Window Menu)
+			// block default system Alt behavior (focus Window Menu)
 			Sorensen.bind('Alt', preventDefault, {
 				global: true,
 				up: true,
