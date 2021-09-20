@@ -199,7 +199,7 @@ export namespace PackageManagerIntegration {
 									studioId: studioId,
 									containerId: change.containerId,
 									deviceId: peripheralDevice._id,
-									packageId: change.packageId,
+									packageId: protectString<ExpectedPackageId>(change.packageId),
 									status: change.status,
 									modified: getCurrentTime(),
 								}),
