@@ -1,7 +1,7 @@
 import ClassNames from 'classnames'
 import React, { ReactNode } from 'react'
 import { withTiming, WithTiming } from './withTiming'
-import { unprotectString } from '../../../../lib/lib'
+import { getCurrentTime, unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { SegmentId } from '../../../../lib/collections/Segments'
@@ -9,7 +9,6 @@ import { SegmentId } from '../../../../lib/collections/Segments'
 interface ISegmentDurationProps {
 	segmentId: SegmentId
 	parts: PartUi[]
-	playedOutDuration?: number
 	label?: ReactNode
 	className?: string
 	/** If set, the timer will display just the played out duration */
@@ -27,28 +26,28 @@ interface ISegmentDurationProps {
 export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function SegmentDuration(
 	props: WithTiming<ISegmentDurationProps>
 ) {
+	const { timingDurations } = props
 	let duration: number | undefined = undefined
 	let budget = 0
 	let playedOut = 0
 
-	const segmentBudgetDuration =
-		props.timingDurations.segmentBudgetDurations &&
-		props.timingDurations.segmentBudgetDurations[unprotectString(props.segmentId)]
-
-	if (segmentBudgetDuration !== undefined) {
-		budget = segmentBudgetDuration
-		if (props.playedOutDuration !== undefined) {
-			playedOut = props.playedOutDuration
-		}
-	}
-	if (props.parts && props.timingDurations.partPlayed) {
-		const { partPlayed } = props.timingDurations
-		if (segmentBudgetDuration === undefined) {
+	if (props.parts && timingDurations.partPlayed) {
+		const { partPlayed } = timingDurations
+		const segmentBudgetDuration =
+			timingDurations.segmentBudgetDurations && timingDurations.segmentBudgetDurations[unprotectString(props.segmentId)]
+		if (segmentBudgetDuration !== undefined) {
+			budget = segmentBudgetDuration
+			const segmentStartedPlayback =
+				timingDurations.segmentStartedPlayback &&
+				timingDurations.segmentStartedPlayback[unprotectString(props.segmentId)]
+			playedOut =
+				segmentStartedPlayback !== undefined
+					? (timingDurations.currentTime ?? getCurrentTime()) - segmentStartedPlayback
+					: 0
+		} else {
 			props.parts.forEach((part) => {
 				budget += part.instance.orphaned || part.instance.part.untimed ? 0 : part.instance.part.expectedDuration || 0
 			})
-		}
-		if (props.playedOutDuration === undefined) {
 			props.parts.forEach((part) => {
 				playedOut += (!part.instance.part.untimed ? partPlayed[unprotectString(part.instance.part._id)] : 0) || 0
 			})

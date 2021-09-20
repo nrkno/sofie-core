@@ -1779,6 +1779,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							| 'nextPartInstanceId'
 							| 'previousPartInstanceId'
 							| 'getRundownUnorderedIDs'
+							| 'getSelectedPartInstances'
 					  >
 					| undefined
 				if (playlist) {
@@ -1801,6 +1802,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							$ne: true,
 						},
 					})
+					const { previousPartInstance, currentPartInstance } = playlist.getSelectedPartInstances()
+					if (previousPartInstance) {
+						Meteor.subscribe(PubSub.partInstancesForSegmentPlayout, {
+							rundownId: previousPartInstance.rundownId,
+							segmentPlayoutId: previousPartInstance.segmentPlayoutId,
+						})
+					}
+					if (currentPartInstance) {
+						Meteor.subscribe(PubSub.partInstancesForSegmentPlayout, {
+							rundownId: currentPartInstance.rundownId,
+							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
+						})
+					}
 				}
 			})
 			this.autorun(() => {

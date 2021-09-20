@@ -1095,7 +1095,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							<SegmentDuration
 								segmentId={this.props.segment._id}
 								parts={this.props.parts}
-								playedOutDuration={this.props.isLiveSegment ? this.props.livePosition : 0}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={this.props.fixedSegmentDuration}
 							/>
