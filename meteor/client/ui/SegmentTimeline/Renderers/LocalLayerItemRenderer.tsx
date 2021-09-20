@@ -4,7 +4,7 @@ import { EvsContent } from '@sofie-automation/blueprints-integration'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 type IProps = ICustomLayerItemProps
-interface IState { }
+interface IState {}
 
 export class LocalLayerItemRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLSpanElement | null

@@ -2201,6 +2201,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				let globalIndex = 0
 				const rundowns = this.props.matchedSegments.map((m) => m.rundown._id)
 				return this.props.matchedSegments.map((rundownAndSegments, rundownIndex, rundownArray) => {
+					let currentSegmentIndex = -1
 					const rundownIdsBefore = rundowns.slice(0, rundownIndex)
 					return (
 						<React.Fragment key={unprotectString(rundownAndSegments.rundown._id)}>
@@ -2213,6 +2214,26 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							)}
 							{rundownAndSegments.segments.map((segment, segmentIndex, segmentArray) => {
 								if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
+									const ownCurrentPartInstance =
+										// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
+										// is a part of the segment
+										(this.props.currentPartInstance && this.props.currentPartInstance.segmentId === segment._id) ||
+										// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
+										(this.props.nextPartInstance &&
+											this.props.nextPartInstance.segmentId === segment._id &&
+											this.props.currentPartInstance &&
+											this.props.currentPartInstance.part.autoNext)
+											? this.props.currentPartInstance
+											: undefined
+									const ownNextPartInstance =
+										this.props.nextPartInstance && this.props.nextPartInstance.segmentId === segment._id
+											? this.props.nextPartInstance
+											: undefined
+
+									if (ownCurrentPartInstance) {
+										currentSegmentIndex = segmentIndex
+									}
+
 									return (
 										<ErrorBoundary key={unprotectString(segment._id)}>
 											<VirtualElement
@@ -2244,24 +2265,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													onPieceClick={this.onSelectPiece}
 													onPieceDoubleClick={this.onPieceDoubleClick}
 													onHeaderNoteClick={this.onHeaderNoteClick}
-													ownCurrentPartInstance={
-														// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
-														// is a part of the segment
-														(this.props.currentPartInstance &&
-															this.props.currentPartInstance.segmentId === segment._id) ||
-														// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
-														(this.props.nextPartInstance &&
-															this.props.nextPartInstance.segmentId === segment._id &&
-															this.props.currentPartInstance &&
-															this.props.currentPartInstance.part.autoNext)
-															? this.props.currentPartInstance
-															: undefined
-													}
-													ownNextPartInstance={
-														this.props.nextPartInstance && this.props.nextPartInstance.segmentId === segment._id
-															? this.props.nextPartInstance
-															: undefined
-													}
+													ownCurrentPartInstance={ownCurrentPartInstance}
+													ownNextPartInstance={ownNextPartInstance}
+													isFollowingOnAirSegment={segmentIndex === currentSegmentIndex + 1}
 												/>
 											</VirtualElement>
 										</ErrorBoundary>
