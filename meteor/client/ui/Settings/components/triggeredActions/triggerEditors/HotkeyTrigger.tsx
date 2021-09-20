@@ -48,7 +48,7 @@ export const HotkeyTrigger = ({
 			role="button"
 		>
 			{keys ? keys : <i className="subtle">{t('Empty')}</i>}
-			{up ? '⇪' : ''}
+			{up ? '\u00A0↥' : ''}
 		</div>
 	)
 }
