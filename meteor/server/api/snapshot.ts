@@ -32,8 +32,6 @@ import {
 	makePromise,
 	ProtectedString,
 	protectStringArray,
-	literal,
-	assertNever,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -52,13 +50,7 @@ import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Bluepr
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import {
-	ExpectedPackageDB,
-	ExpectedPackageDBType,
-	ExpectedPackageId,
-	ExpectedPackages,
-	getExpectedPackageId,
-} from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDB, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
@@ -79,27 +71,23 @@ import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { getPartId, getSegmentId } from './ingest/lib'
 import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
-import { AdLibActions, AdLibAction, AdLibActionId } from '../../lib/collections/AdLibActions'
+import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
-	RundownBaselineAdLibActionId,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
-import { Changes, saveIntoDb, sumChanges } from '../lib/database'
+import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
 } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import {
-	getPackageContainerPackageId,
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatuses,
 } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
-import { BucketAdLibId } from '../../lib/collections/BucketAdlibs'
-import { BucketAdLibActionId } from '../../lib/collections/BucketAdlibActions'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -756,86 +744,6 @@ export async function restoreFromRundownPlaylistSnapshot(
 			snapshot.playlist.previousPartInstanceId
 	}
 
-	const expectedPackageIdMap = new Map<ExpectedPackageId, ExpectedPackageId>()
-	_.each(snapshot.expectedPackages, (expectedPackage) => {
-		const oldId = expectedPackage._id
-
-		let ownerId:
-			| PieceId
-			| AdLibActionId
-			| RundownBaselineAdLibActionId
-			| BucketAdLibId
-			| BucketAdLibActionId
-			| RundownId
-			| StudioId
-			| undefined = undefined
-
-		switch (expectedPackage.fromPieceType) {
-			case ExpectedPackageDBType.PIECE:
-			case ExpectedPackageDBType.ADLIB_PIECE:
-			case ExpectedPackageDBType.ADLIB_ACTION: {
-				expectedPackage.pieceId = pieceIdMap[unprotectString(expectedPackage.pieceId)]
-				expectedPackage.rundownId = rundownIdMap[unprotectString(expectedPackage.rundownId)]
-				expectedPackage.segmentId = segmentIdMap[unprotectString(expectedPackage.segmentId)]
-				ownerId = expectedPackage.pieceId
-				break
-			}
-			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
-			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION: {
-				expectedPackage.pieceId = pieceIdMap[unprotectString(expectedPackage.pieceId)]
-				expectedPackage.rundownId = rundownIdMap[unprotectString(expectedPackage.rundownId)]
-				ownerId = expectedPackage.pieceId
-				break
-			}
-			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
-				expectedPackage.rundownId = rundownIdMap[unprotectString(expectedPackage.rundownId)]
-				ownerId = expectedPackage.rundownId
-				break
-			}
-			case ExpectedPackageDBType.BUCKET_ADLIB:
-			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION: {
-				expectedPackage.pieceId = pieceIdMap[unprotectString(expectedPackage.pieceId)]
-				ownerId = expectedPackage.pieceId
-				break
-			}
-			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
-				ownerId = expectedPackage.studioId
-				break
-
-			default:
-				assertNever(expectedPackage)
-		}
-		if (ownerId && expectedPackage.blueprintPackageId) {
-			expectedPackage._id = getExpectedPackageId(ownerId, expectedPackage.blueprintPackageId)
-		}
-
-		expectedPackageIdMap.set(oldId, expectedPackage._id)
-	})
-	_.each(snapshot.expectedPackageWorkStatuses, (expectedPackageWorkStatus) => {
-		_.each(expectedPackageWorkStatus.fromPackages, (fromPackage) => {
-			fromPackage.id = expectedPackageIdMap.get(fromPackage.id) || protectString('N/A')
-		})
-		expectedPackageWorkStatus._id = getRandomId()
-	})
-	_.each(snapshot.packageContainerPackageStatuses, (packageContainerPackageStatus) => {
-		packageContainerPackageStatus.packageId =
-			expectedPackageIdMap.get(packageContainerPackageStatus.packageId) || protectString('N/A')
-
-		packageContainerPackageStatus._id = getPackageContainerPackageId(
-			packageContainerPackageStatus.studioId,
-			packageContainerPackageStatus.containerId,
-			packageContainerPackageStatus.packageId
-		)
-	})
-	snapshot.packageContainerPackageStatuses = snapshot.packageContainerPackageStatuses.filter(
-		(p) => p.packageId !== protectString('N/A')
-	)
-
-	_.each(snapshot.packageInfos, (packageInfo) => {
-		packageInfo.packageId = expectedPackageIdMap.get(packageInfo.packageId) || protectString('N/A')
-	})
-	snapshot.packageInfos = snapshot.packageInfos.filter((p) => p.packageId !== protectString('N/A'))
-
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
 
 	// Apply the updates of any properties to any document
@@ -918,18 +826,6 @@ export async function restoreFromRundownPlaylistSnapshot(
 			ExpectedPlayoutItems,
 			{ rundownId: { $in: rundownIds } },
 			updateItemIds(snapshot.expectedPlayoutItems || [], false)
-		),
-		ExpectedPackages.upsertManyAsync(snapshot.expectedPackages).then((result) =>
-			literal<Changes>({ added: result.insertedIds.length, updated: result.numberAffected, removed: 0 })
-		),
-		ExpectedPackageWorkStatuses.upsertManyAsync(snapshot.expectedPackageWorkStatuses).then((result) =>
-			literal<Changes>({ added: result.insertedIds.length, updated: result.numberAffected, removed: 0 })
-		),
-		PackageContainerPackageStatuses.upsertManyAsync(snapshot.packageContainerPackageStatuses).then((result) =>
-			literal<Changes>({ added: result.insertedIds.length, updated: result.numberAffected, removed: 0 })
-		),
-		PackageInfos.upsertManyAsync(snapshot.packageInfos).then((result) =>
-			literal<Changes>({ added: result.insertedIds.length, updated: result.numberAffected, removed: 0 })
 		),
 	])
 
