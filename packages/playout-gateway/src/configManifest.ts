@@ -575,7 +575,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			name: 'Label',
 			optional: true,
 			includeInSummary: true,
-			hint: 'Identify the channel by label (does not set the label in Sisyfos)'
+			hint: 'Identify the channel by label (does not set the label in Sisyfos)',
 		},
 		{
 			id: 'setLabelToLayerName',
