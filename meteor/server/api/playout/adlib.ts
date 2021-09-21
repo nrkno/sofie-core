@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { SourceLayerType, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { SourceLayerType, PieceLifespan, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
 import {
 	getCurrentTime,
 	literal,
@@ -113,7 +113,7 @@ export namespace ServerPlayoutAdLibAPI {
 					await pieceTakeNowAsAdlib(cache, showStyleBase, partInstance, pieceToCopy, pieceInstanceToCopy)
 				} else {
 					switch (pieceToCopy.allowDirectPlay.type) {
-						case 'adlib':
+						case IBlueprintDirectPlayType.AdLibPiece:
 							await pieceTakeNowAsAdlib(
 								cache,
 								showStyleBase,
@@ -122,7 +122,7 @@ export namespace ServerPlayoutAdLibAPI {
 								pieceInstanceToCopy
 							)
 							break
-						case 'action': {
+						case IBlueprintDirectPlayType.AdLibAction: {
 							const executeProps = pieceToCopy.allowDirectPlay
 							await ServerPlayoutAPI.executeActionInner(
 								cache,

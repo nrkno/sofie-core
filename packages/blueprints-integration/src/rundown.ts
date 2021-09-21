@@ -284,17 +284,24 @@ export interface PieceTransition {
 	duration: number
 }
 
-export interface IBlueprintDirectPlayAdLibPiece {
-	type: 'adlib'
+export enum IBlueprintDirectPlayType {
+	AdLibPiece = 'adlib',
+	AdLibAction = 'action',
 }
-export interface IBlueprintDirectPlayAdLibAction {
-	type: 'action'
+export interface IBlueprintDirectPlayBase {
+	type: IBlueprintDirectPlayType
+}
+export interface IBlueprintDirectPlayAdLibPiece extends IBlueprintDirectPlayBase {
+	type: IBlueprintDirectPlayType.AdLibPiece
+}
+export interface IBlueprintDirectPlayAdLibAction extends IBlueprintDirectPlayBase {
+	type: IBlueprintDirectPlayType.AdLibAction
 	/** Id of the action */
 	actionId: string
 	/** Properties defining the action behaviour */
 	userData: ActionUserData
 }
-export type IBlueprintSomeDirectPlay = IBlueprintDirectPlayAdLibPiece | IBlueprintDirectPlayAdLibAction
+export type IBlueprintDirectPlay = IBlueprintDirectPlayAdLibPiece | IBlueprintDirectPlayAdLibAction
 
 export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** ID of the source object in the gateway */
@@ -340,7 +347,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	tags?: string[]
 
 	/** Allow this part to be direct played (eg, by double clicking in the rundown timeline view) */
-	allowDirectPlay?: IBlueprintSomeDirectPlay
+	allowDirectPlay?: IBlueprintDirectPlay
 
 	/**
 	 * An array of which Packages this Piece uses. This is used by a Package Manager to ensure that the Package is in place for playout.
