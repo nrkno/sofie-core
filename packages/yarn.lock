@@ -8512,10 +8512,10 @@ timeline-state-resolver-types@6.2.0-release37.1:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-release37.1:
-  version "6.2.0-release37.1"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.1.tgz#b095f275f7b1af291ab461ccb7d4c3b5ddf359dc"
-  integrity sha512-rMG98VNuMVRuIlhiPBU6t+tluyndc9PhfOGLO+CpTW73esTukxD6hYKA66HCGwIAq9xuiI1u6vEhT/9Y6Azq/A==
+timeline-state-resolver@6.2.0-release37.2:
+  version "6.2.0-release37.2"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.2.tgz#3482e05c19b178c3668605e86c04fcb3c0afbcb0"
+  integrity sha512-2Qvyyvr2T0JK8AzJnfRygVMZw6VXUuCXAEw4G9GA4lWmjRd3b/+KU3ZevgJbfWaRmGYSOzt8OVEk2A+eox4Q1w==
   dependencies:
     "@tv2media/v-connection" "^5.1.0"
     atem-connection "^2.3.0"
