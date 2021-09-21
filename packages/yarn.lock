@@ -1368,71 +1368,76 @@
   dependencies:
     "@octokit/openapi-types" "^7.3.2"
 
-"@serialport/binding-abstract@^8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@serialport/binding-abstract/-/binding-abstract-8.0.6.tgz#78e6d7995a95c46d480445303e6f32ca4d53edcd"
-  integrity sha512-1swwUVoRyQ9ubxrkJ8JPppykohUpTAP4jkGr36e9NjbVocSPfqeX6tFZFwl/IdUlwJwxGdbKDqq7FvXniCQUMw==
+"@serialport/binding-abstract@^9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/binding-abstract/-/binding-abstract-9.0.7.tgz#d2c7ecea0f100bdf20187bfc0d34ba90f5504e1e"
+  integrity sha512-g1ncCMIG9rMsxo/28ObYmXZcHThlvtZygsCANmyMUuFS7SwXY4+PhcEnt2+ZcMkEDNRiOklT+ngtIVx5GGpt/A==
   dependencies:
-    debug "^4.1.1"
+    debug "^4.3.1"
 
-"@serialport/binding-mock@^8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@serialport/binding-mock/-/binding-mock-8.0.6.tgz#41a8f827269c6a0e58546513a274e12023134155"
-  integrity sha512-BIbY5/PsDDo0QWDNCCxDgpowAdks+aZR8BOsEtK2GoASTTcJCy1fBwPIfH870o7rnbH901wY3C+yuTfdOvSO9A==
+"@serialport/binding-mock@9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/binding-mock/-/binding-mock-9.0.7.tgz#2fda427adc113320461f33f7426dfca73e8ad1de"
+  integrity sha512-aR8H+htZwwZZkVb1MdbnNvGWw8eXVRqQ2qPhkbKyx0N/LY5aVIgCgT98Kt1YylLsG7SzNG+Jbhd4wzwEuPVT5Q==
   dependencies:
-    "@serialport/binding-abstract" "^8.0.6"
-    debug "^4.1.1"
+    "@serialport/binding-abstract" "^9.0.7"
+    debug "^4.3.1"
 
-"@serialport/bindings@^8.0.6":
-  version "8.0.8"
-  resolved "https://registry.yarnpkg.com/@serialport/bindings/-/bindings-8.0.8.tgz#e03927a4b689eeee7ca1ed8262ab35ec46e3a158"
-  integrity sha512-xMJHr7CyOPq+wwC/S2RNI+tY+WZW4gXY3tE8QUOIRp0K7lSyLYOzKdyGUtk2uI0ohDMV3OcB+TEhhffT2S2DHQ==
+"@serialport/bindings@^9.2.0":
+  version "9.2.1"
+  resolved "https://registry.yarnpkg.com/@serialport/bindings/-/bindings-9.2.1.tgz#5e6b83222821f9b849512abdc8637386a6675355"
+  integrity sha512-e1CvbvkuMptSjCKc/YwIGjEsSod7kGRpS5TciACQMOi2QQTD8XwVPim0izqVCBZko4n4b0dC6sG3EBkTkQIwnw==
   dependencies:
-    "@serialport/binding-abstract" "^8.0.6"
-    "@serialport/parser-readline" "^8.0.6"
+    "@serialport/binding-abstract" "^9.0.7"
+    "@serialport/parser-readline" "^9.0.7"
     bindings "^1.5.0"
-    debug "^4.1.1"
-    nan "^2.14.0"
-    prebuild-install "^5.3.0"
+    debug "^4.3.1"
+    nan "^2.14.2"
+    prebuild-install "^6.0.1"
 
-"@serialport/parser-byte-length@^8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@serialport/parser-byte-length/-/parser-byte-length-8.0.6.tgz#efb6195692b1088e6c095fd43bae196fc30674d0"
-  integrity sha512-92mrFxFEvq3gRvSM7ANK/jfbmHslz91a5oYJy/nbSn4H/MCRXjxR2YOkQgVXuN+zLt+iyDoW3pcOP4Sc1nWdqQ==
+"@serialport/parser-byte-length@9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/parser-byte-length/-/parser-byte-length-9.0.7.tgz#9e362bba70eeffcd2eb0804afeca4bb1dee59d5f"
+  integrity sha512-evf7oOOSBMBn2AZZbgBFMRIyEzlsyQkhqaPm7IBCPTxMDXRf4tKkFYJHYZB0/6d1W4eI0meH079UqmSsh/uoDA==
 
-"@serialport/parser-cctalk@^8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@serialport/parser-cctalk/-/parser-cctalk-8.0.6.tgz#4134a3c479d465df3b152a21e16b8ecf1bc818c3"
-  integrity sha512-pqtCYQPgxnxHygiXUPCfgX7sEx+fdR/ObjpscidynEULUq2fFrC5kBkrxRbTfHRtTaU2ii9DyjFq0JVRCbhI0Q==
+"@serialport/parser-cctalk@9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/parser-cctalk/-/parser-cctalk-9.0.7.tgz#fa0e1539f067aced22a5ef7d64fdac14f1a6a4d3"
+  integrity sha512-ert5jhMkeiTfr44TkbdySC09J8UwAsf/RxBucVN5Mz5enG509RggnkfFi4mfj3UCG2vZ7qsmM6gtZ62DshY02Q==
 
-"@serialport/parser-delimiter@^8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@serialport/parser-delimiter/-/parser-delimiter-8.0.6.tgz#0e467cb07a40bd3006835c48e488666bd7de22cc"
-  integrity sha512-ogKOcPisPMlVtirkuDu3SFTF0+xT0ijxoH7XjpZiYL41EVi367MwuCnEmXG+dEKKnF0j9EPqOyD2LGSJxaFmhQ==
+"@serialport/parser-delimiter@9.0.7", "@serialport/parser-delimiter@^9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/parser-delimiter/-/parser-delimiter-9.0.7.tgz#7bef2447d4282dd00dc659719b310edeb30ff294"
+  integrity sha512-Vb2NPeXPZ/28M4m5x4OAHFd8jRAeddNCgvL+Q+H/hqFPY1w47JcMLchC7pigRW8Cnt1fklmzfwdNQ8Fb+kMkxQ==
 
-"@serialport/parser-readline@^8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@serialport/parser-readline/-/parser-readline-8.0.6.tgz#8a6a296a1bec08a4855bf7a62bc6335d52972e4a"
-  integrity sha512-OYBT2mpczh9QUI3MTw8j0A0tIlPVjpVipvuVnjRkYwxrxPeq04RaLFhaDpuRzua5rTKMt89c1y3btYeoDXMjAA==
+"@serialport/parser-inter-byte-timeout@9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/parser-inter-byte-timeout/-/parser-inter-byte-timeout-9.0.7.tgz#55b315b49d8ad37f981ba69bb9443f25c96aec17"
+  integrity sha512-lUZ3cwgUluBvJ1jf+0LQsqoiPYAokDO6+fRCw9HCfnrF/OS60Gm4rxuyo2uQIueqZkJ7NIFP+ibKsULrA47AEA==
+
+"@serialport/parser-readline@9.0.7", "@serialport/parser-readline@^9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/parser-readline/-/parser-readline-9.0.7.tgz#8b096028170fb2644bcf0f997d534a344cfd00e6"
+  integrity sha512-ydoLbgVQQPxWrwbe3Fhh4XnZexbkEQAC6M/qgRTzjnKvTjrD61CJNxLc3vyDaAPI9bJIhTiI7eTX3JB5jJv8Hg==
   dependencies:
-    "@serialport/parser-delimiter" "^8.0.6"
+    "@serialport/parser-delimiter" "^9.0.7"
 
-"@serialport/parser-ready@^8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@serialport/parser-ready/-/parser-ready-8.0.6.tgz#d6e95e53ee70d298ae0b4147995007f4ba62651c"
-  integrity sha512-xcEqv4rc119WR5JzAuu8UeJOlAwET2PTdNb6aIrrLlmTxhvuBbuRFcsnF3BpH9jUL30Kh7a6QiNXIwVG+WR/1Q==
+"@serialport/parser-ready@9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/parser-ready/-/parser-ready-9.0.7.tgz#d9eb9801c6003fdb1450c557f3e256a188a9f3be"
+  integrity sha512-3qYhI4cNUPAYqVYvdwV57Y+PVRl4dJf1fPBtMoWtwDgwopsAXTR93WCs49WuUq9JCyNW+8Hrfqv8x8eNAD5Dqg==
 
-"@serialport/parser-regex@^8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@serialport/parser-regex/-/parser-regex-8.0.6.tgz#70aa1abe31899d1b986f44cfb6777a76e26755bf"
-  integrity sha512-J8KY75Azz5ZyExmyM5YfUxbXOWBkZCytKgCCmZ966ttwZS0bUZOuoCaZj2Zp4VILJAiLuxHoqc0foi67Fri5+g==
+"@serialport/parser-regex@9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/parser-regex/-/parser-regex-9.0.7.tgz#d8a02e3a169faa2f6604e8293832cc676b865f48"
+  integrity sha512-5XF+FXbhqQ/5bVKM4NaGs1m+E9KjfmeCx/obwsKaUZognQF67jwoTfjJJWNP/21jKfxdl8XoCYjZjASl3XKRAw==
 
-"@serialport/stream@^8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@serialport/stream/-/stream-8.0.6.tgz#3395dbac788c00797c2435c61c2ecb4e99fbf41d"
-  integrity sha512-ym1PwM0rwLrj90vRBB66I1hwMXbuMw9wGTxqns75U3N/tuNFOH85mxXaYVF2TpI66aM849NoI1jMm50fl9equg==
+"@serialport/stream@9.0.7":
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/@serialport/stream/-/stream-9.0.7.tgz#0bf023eb0233a714fcc5a86de09e381e466d9882"
+  integrity sha512-c/h7HPAeFiryD9iTGlaSvPqHFHSZ0NMQHxC4rcmKS2Vu3qJuEtkBdTLABwsMp7iWEiSnI4KC3s7bHapaXP06FQ==
   dependencies:
-    debug "^4.1.1"
+    debug "^4.3.1"
 
 "@sindresorhus/is@^4.0.0":
   version "4.0.1"
@@ -1496,6 +1501,17 @@
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
+
+"@tv2media/v-connection@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-5.1.0.tgz#683b55ca80ed5c076b4af6f580e883c613f05190"
+  integrity sha512-Kg9drmAllMtzoJ6dgXxSCKjSzQyp6jUOxvwkP4PxAZE9Ifa2KHV/IhjPfwG7QXSTOrUFDRac15HQMMO6tFIltA==
+  dependencies:
+    request "^2.88.2"
+    request-promise-native "^1.0.9"
+    uuid "^8.3.2"
+    ws "^7.4.6"
+    xml2js "^0.4.23"
 
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
   version "7.1.14"
@@ -6150,10 +6166,10 @@ mute-stream@0.0.8, mute-stream@~0.0.4:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-nan@^2.14.0:
-  version "2.14.2"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.2.tgz#f5376400695168f4cc694ac9393d0c9585eeea19"
-  integrity sha512-M2ufzIiINKCuDfBSAUr1vWQ+vuVcA9kqx8JJUsbQi6yf1uGRyb7HfpdfUr5qLXf3B/t8dPvcjhKMmlfnP47EzQ==
+nan@^2.14.2:
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.15.0.tgz#3f34a473ff18e15c1b5626b62903b5ad6e665fee"
+  integrity sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==
 
 nanomatch@^1.2.9:
   version "1.2.13"
@@ -6213,10 +6229,10 @@ nlf@^1.4.2:
     glob-all "3.1.0  "
     read-installed "4.0.3"
 
-node-abi@^2.7.0:
-  version "2.30.0"
-  resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-2.30.0.tgz#8be53bf3e7945a34eea10e0fc9a5982776cf550b"
-  integrity sha512-g6bZh3YCKQRdwuO/tSZZYJAw622SjsRfJ2X0Iy4sSOHZ34/sPPdVBn8fev2tj7njzLwuqPw9uMtGsGkO5kIQvg==
+node-abi@^2.21.0:
+  version "2.30.1"
+  resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-2.30.1.tgz#c437d4b1fe0e285aaf290d45b45d4d7afedac4cf"
+  integrity sha512-/2D0wOQPgaUWzVSVgRMx+trKJRC2UG4SUc4oCJoXx9Uxjtp0Vy3/kt7zcbxHF8+Z/pK3UloLWzBISg72brfy1w==
   dependencies:
     semver "^5.4.1"
 
@@ -6309,11 +6325,6 @@ noms@0.0.0:
   dependencies:
     inherits "^2.0.1"
     readable-stream "~1.0.31"
-
-noop-logger@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/noop-logger/-/noop-logger-0.1.1.tgz#94a2b1633c4f1317553007d8966fd0e841b6a4c2"
-  integrity sha1-lKKxYzxPExdVMAfYlm/Q6EG2pMI=
 
 nopt@^4.0.1:
   version "4.0.3"
@@ -6559,10 +6570,10 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-obs-websocket-js@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/obs-websocket-js/-/obs-websocket-js-4.0.2.tgz#b0dc6df1141f14878e04f927d12379f9ab234d52"
-  integrity sha512-e+tGp0DQNXSnitc5lfuzEC1dG3VdWy7VLePUVb6aq7bC33Sgjoi695k0eOg4UPTIQI71Z9aJ+yn3nvBX9dQkEg==
+obs-websocket-js@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/obs-websocket-js/-/obs-websocket-js-4.0.3.tgz#7f1933d591d8d5304733901c845eaa452b5a1280"
+  integrity sha512-28L5VHlrn9gT9uMeasR5VJkVTc+Xj6eWqZxSQWVsnzznRNJWrHJK5ldK6DMtnWOMTZarPznq8dp0ko4R+svqdg==
   dependencies:
     debug "^4.1.0"
     isomorphic-ws "^4.0.1"
@@ -6655,17 +6666,17 @@ os-tmpdir@^1.0.0, os-tmpdir@~1.0.2:
   resolved "https://registry.yarnpkg.com/os-tmpdir/-/os-tmpdir-1.0.2.tgz#bbe67406c79aa85c5cfec766fe5734555dfa1274"
   integrity sha1-u+Z0BseaqFxc/sdm/lc0VV36EnQ=
 
-osc@^2.4.0:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/osc/-/osc-2.4.1.tgz#b75f13024190e9b77fbad62391aeb22fc9de8e73"
-  integrity sha512-3ZJjyqCoHh3J7K5jvXa+RKHHx6qML9hwqWhVk/YON9344QyjpRYdi+ljP8KMsFNTnVfoP82QNIiOkpL9J7mbzA==
+osc@^2.4.2:
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/osc/-/osc-2.4.2.tgz#cc21a006b41ca9631ded7a214ba92866f54ced2d"
+  integrity sha512-ks3WB7GFa0va0XncZRribnauL53Lmd0GzflAg5M+YKC19ERUeJfdzzAy2VKg4mhIxtGJs1UK9qL4UOupRRFT8Q==
   dependencies:
     long "4.0.0"
     slip "1.0.2"
     wolfy87-eventemitter "5.2.9"
-    ws "7.2.1"
+    ws "7.5.3"
   optionalDependencies:
-    serialport "8.0.6"
+    serialport "9.2.0"
 
 osenv@^0.1.4:
   version "0.1.5"
@@ -7023,10 +7034,10 @@ posix-character-classes@^0.1.0:
   resolved "https://registry.yarnpkg.com/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
   integrity sha1-AerA/jta9xoqbAL+q7jB/vfgDqs=
 
-prebuild-install@^5.3.0:
-  version "5.3.6"
-  resolved "https://registry.yarnpkg.com/prebuild-install/-/prebuild-install-5.3.6.tgz#7c225568d864c71d89d07f8796042733a3f54291"
-  integrity sha512-s8Aai8++QQGi4sSbs/M1Qku62PFK49Jm1CbgXklGz4nmHveDq0wzJkg7Na5QbnO1uNH8K7iqx2EQ/mV0MZEmOg==
+prebuild-install@^6.0.1:
+  version "6.1.4"
+  resolved "https://registry.yarnpkg.com/prebuild-install/-/prebuild-install-6.1.4.tgz#ae3c0142ad611d58570b89af4986088a4937e00f"
+  integrity sha512-Z4vpywnK1lBg+zdPCVCsKq0xO66eEV9rWo2zrROGGiRS4JtueBOdlB1FnY8lcy7JsUud/Q3ijUxyWN26Ika0vQ==
   dependencies:
     detect-libc "^1.0.3"
     expand-template "^2.0.3"
@@ -7034,15 +7045,13 @@ prebuild-install@^5.3.0:
     minimist "^1.2.3"
     mkdirp-classic "^0.5.3"
     napi-build-utils "^1.0.1"
-    node-abi "^2.7.0"
-    noop-logger "^0.1.1"
+    node-abi "^2.21.0"
     npmlog "^4.0.1"
     pump "^3.0.0"
     rc "^1.2.7"
     simple-get "^3.0.3"
     tar-fs "^2.0.0"
     tunnel-agent "^0.6.0"
-    which-pm-runs "^1.0.0"
 
 prelude-ls@^1.2.1:
   version "1.2.1"
@@ -7688,21 +7697,22 @@ semver@^6.0.0, semver@^6.1.0, semver@^6.3.0:
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.0.tgz#ee0a64c8af5e8ceea67687b133761e1becbd1d3d"
   integrity sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==
 
-serialport@8.0.6:
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/serialport/-/serialport-8.0.6.tgz#9cf7ae80c443f1d327c2894a77445e56ef64ca88"
-  integrity sha512-TDdP374kZ4+iYKqZbx47eSnJEMoQQfZwztAikWFjZORU1HokOSc3KVuyACy1yX2cVK6u+3C7PmBK3N31CLxMWg==
+serialport@9.2.0:
+  version "9.2.0"
+  resolved "https://registry.yarnpkg.com/serialport/-/serialport-9.2.0.tgz#17a8364979f3c06a54a7bf4e8cbb8ebc91e54511"
+  integrity sha512-C6AQ4jD4mre3tn3QA+atn++mEZDh4r40CIeh1sKhskKE+Q4eiIr/nzVMOiPxHb8gskrSNxujH+Br49tl3i9s9g==
   dependencies:
-    "@serialport/binding-mock" "^8.0.6"
-    "@serialport/bindings" "^8.0.6"
-    "@serialport/parser-byte-length" "^8.0.6"
-    "@serialport/parser-cctalk" "^8.0.6"
-    "@serialport/parser-delimiter" "^8.0.6"
-    "@serialport/parser-readline" "^8.0.6"
-    "@serialport/parser-ready" "^8.0.6"
-    "@serialport/parser-regex" "^8.0.6"
-    "@serialport/stream" "^8.0.6"
-    debug "^4.1.1"
+    "@serialport/binding-mock" "9.0.7"
+    "@serialport/bindings" "^9.2.0"
+    "@serialport/parser-byte-length" "9.0.7"
+    "@serialport/parser-cctalk" "9.0.7"
+    "@serialport/parser-delimiter" "9.0.7"
+    "@serialport/parser-inter-byte-timeout" "9.0.7"
+    "@serialport/parser-readline" "9.0.7"
+    "@serialport/parser-ready" "9.0.7"
+    "@serialport/parser-regex" "9.0.7"
+    "@serialport/stream" "9.0.7"
+    debug "^4.3.1"
 
 set-blocking@^2.0.0, set-blocking@~2.0.0:
   version "2.0.0"
@@ -8509,12 +8519,12 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0:
-  version "6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0.tgz#8ca67ddc6e9a9f9b9f116507bc9a6ad37f39a774"
-  integrity sha512-M4HuHxZFYJqu2ZZbh76Z+jEF7vMxGMpq/OPojRcdl/n96+cYtUOgc5YE2+VpX+VLJNz9nb2YudeNO8SKdd2Q0A==
+timeline-state-resolver-types@6.2.0-release37.1:
+  version "6.2.0-release37.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-release37.1.tgz#fafe37c2547301c3ec0c528822368c7e88fd8302"
+  integrity sha512-YrSCbfz7ZPs6icpJpT61IjFxx1T3334DK0bWpCjgRAHz7C+eb28POtXTgblh/Umq77qoweowmp529ZX/0eB2AQ==
   dependencies:
-    tslib "^2.1.0"
+    tslib "^2.3.1"
 
 timeline-state-resolver-types@^6.1.0-release36.0:
   version "6.1.0-release36.0"
@@ -8523,11 +8533,12 @@ timeline-state-resolver-types@^6.1.0-release36.0:
   dependencies:
     tslib "^2.1.0"
 
-timeline-state-resolver@6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0:
-  version "6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0.tgz#754f1613f2b1b3b66bd5126c1077b9f42785153d"
-  integrity sha512-iJHZh5eXiM2cqCYpaNw/iwTr3y4cJo9d+NwOYfI9TDLwIxWZSlL7TzCybQB9H9wvK7yMl0HLrz37wrTdT0cn9w==
+timeline-state-resolver@6.2.0-release37.2:
+  version "6.2.0-release37.2"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.2.tgz#3482e05c19b178c3668605e86c04fcb3c0afbcb0"
+  integrity sha512-2Qvyyvr2T0JK8AzJnfRygVMZw6VXUuCXAEw4G9GA4lWmjRd3b/+KU3ZevgJbfWaRmGYSOzt8OVEk2A+eox4Q1w==
   dependencies:
+    "@tv2media/v-connection" "^5.1.0"
     atem-connection "^2.3.0"
     atem-state "^0.12.1"
     casparcg-connection "^5.1.0"
@@ -8538,8 +8549,8 @@ timeline-state-resolver@6.2.0-nightly-feat-detailed-slow-command-emits-20210910-
     eventemitter3 "^4.0.7"
     got "^11.8.2"
     hyperdeck-connection "^0.4.3"
-    obs-websocket-js "^4.0.2"
-    osc "^2.4.0"
+    obs-websocket-js "^4.0.3"
+    osc "^2.4.2"
     p-all "^3.0.0"
     p-queue "^6.4.0"
     p-timeout "^3.2.0"
@@ -8547,14 +8558,13 @@ timeline-state-resolver@6.2.0-nightly-feat-detailed-slow-command-emits-20210910-
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.2.0-nightly-feat-detailed-slow-command-emits-20210910-131139-91bda43cf.0"
-    tslib "^2.1.0"
+    timeline-state-resolver-types "6.2.0-release37.1"
+    tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
     underscore-deep-extend "^1.1.5"
     utf-8-validate "^5.0.2"
-    v-connection "git+https://github.com/olzzon/v-connection#v20210604_1"
-    ws "^7.4.6"
+    ws "^7.5.5"
     xml-js "^1.6.11"
 
 tmp@^0.0.33:
@@ -8688,6 +8698,11 @@ tslib@^2.0.3, tslib@^2.1.0, tslib@^2.2.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.0.tgz#803b8cdab3e12ba581a4ca41c8839bbb0dacb09e"
   integrity sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==
+
+tslib@^2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.1.tgz#e8a335add5ceae51aa261d32a490158ef042ef01"
+  integrity sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==
 
 tslint-config-standard@^9.0.0:
   version "9.0.0"
@@ -9021,16 +9036,6 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-"v-connection@git+https://github.com/olzzon/v-connection.git#v20210604_1":
-  version "0.0.1"
-  resolved "git+https://github.com/olzzon/v-connection.git#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
-  dependencies:
-    request "^2.88.2"
-    request-promise-native "^1.0.9"
-    uuid "^8.3.2"
-    ws "^7.4.6"
-    xml2js "^0.4.23"
-
 v8-compile-cache@^2.0.3:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/v8-compile-cache/-/v8-compile-cache-2.3.0.tgz#2de19618c66dc247dcfb6f99338035d8245a2cee"
@@ -9322,7 +9327,7 @@ write-pkg@^4.0.0:
     type-fest "^0.4.1"
     write-json-file "^3.2.0"
 
-ws@7.2.1, ws@^7.2.0, ws@^7.4.5, ws@^7.4.6:
+ws@7.5.3, ws@^7.2.0, ws@^7.4.5, ws@^7.4.6, ws@^7.5.5:
   version "7.4.6"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
