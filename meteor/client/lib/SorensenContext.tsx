@@ -30,6 +30,8 @@ export const SorensenContextProvider: React.FC = function SorensenContextProvide
 			// block default Chromium F3 behavior (opening search)
 			Sorensen.bind(['F3', 'Control+KeyF'], preventDefault, {
 				global: true,
+				preventDefaultPartials: false,
+				ordered: 'modifiersFirst',
 			})
 			// block default Chromium F10 behavior (focus Window Menu)
 			Sorensen.bind('F10', preventDefault, {
