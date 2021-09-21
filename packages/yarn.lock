@@ -1536,6 +1536,17 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
+"@tv2media/v-connection@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-5.1.0.tgz#683b55ca80ed5c076b4af6f580e883c613f05190"
+  integrity sha512-Kg9drmAllMtzoJ6dgXxSCKjSzQyp6jUOxvwkP4PxAZE9Ifa2KHV/IhjPfwG7QXSTOrUFDRac15HQMMO6tFIltA==
+  dependencies:
+    request "^2.88.2"
+    request-promise-native "^1.0.9"
+    uuid "^8.3.2"
+    ws "^7.4.6"
+    xml2js "^0.4.23"
+
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
   version "7.1.16"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.16.tgz#bc12c74b7d65e82d29876b5d0baf5c625ac58702"
@@ -5985,12 +5996,7 @@ minimist-options@4.1.0, minimist-options@^4.0.2:
     is-plain-obj "^1.1.0"
     kind-of "^6.0.3"
 
-minimist@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.1.0.tgz#99df657a52574c21c9057497df742790b2b4c0de"
-  integrity sha1-md9lelJXTCHJBXSX33QnkLK0wN4=
-
-minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
+minimist@^0.1.0, minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
@@ -8499,11 +8505,19 @@ timeline-state-resolver-types@6.2.0-nightly-release37-20210920-094335-6d1ddb522.
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-nightly-release37-20210920-094335-6d1ddb522.0:
-  version "6.2.0-nightly-release37-20210920-094335-6d1ddb522.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-release37-20210920-094335-6d1ddb522.0.tgz#963d9b21b8ee83c31aacd84250946b691a40c254"
-  integrity sha512-7sRWKlIYW8YgozZgsW8o5F+DR48QzmR7gtpB4gFLBZ58s8sOTKnIipVskVtsodUtD3XzBXG2TBPCwnSlbpryKg==
+timeline-state-resolver-types@6.2.0-release37.1:
+  version "6.2.0-release37.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-release37.1.tgz#fafe37c2547301c3ec0c528822368c7e88fd8302"
+  integrity sha512-YrSCbfz7ZPs6icpJpT61IjFxx1T3334DK0bWpCjgRAHz7C+eb28POtXTgblh/Umq77qoweowmp529ZX/0eB2AQ==
   dependencies:
+    tslib "^2.3.1"
+
+timeline-state-resolver@6.2.0-release37.1:
+  version "6.2.0-release37.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.1.tgz#b095f275f7b1af291ab461ccb7d4c3b5ddf359dc"
+  integrity sha512-rMG98VNuMVRuIlhiPBU6t+tluyndc9PhfOGLO+CpTW73esTukxD6hYKA66HCGwIAq9xuiI1u6vEhT/9Y6Azq/A==
+  dependencies:
+    "@tv2media/v-connection" "^5.1.0"
     atem-connection "^2.3.0"
     atem-state "^0.12.1"
     casparcg-connection "^5.1.0"
@@ -8523,13 +8537,12 @@ timeline-state-resolver@6.2.0-nightly-release37-20210920-094335-6d1ddb522.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.2.0-nightly-release37-20210920-094335-6d1ddb522.0"
+    timeline-state-resolver-types "6.2.0-release37.1"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
     underscore-deep-extend "^1.1.5"
     utf-8-validate "^5.0.2"
-    v-connection "git+https://github.com/olzzon/v-connection#v20210604_1"
     ws "^7.5.5"
     xml-js "^1.6.11"
 
@@ -8624,7 +8637,7 @@ trim-newlines@^3.0.0:
   resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-3.0.1.tgz#260a5d962d8b752425b32f3a7db0dcacd176c144"
   integrity sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==
 
-trim-newlines@^4.0.2:
+trim-newlines@^4.0.1, trim-newlines@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-4.0.2.tgz#d6aaaf6a0df1b4b536d183879a6b939489808c7c"
   integrity sha512-GJtWyq9InR/2HRiLZgpIKv+ufIKrVrvjQWEj7PxAXNc5dwbNJkqhAUoAGgzRmULAnoOM5EIpveYd3J2VeSAIew==
@@ -8982,16 +8995,6 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
-
-"v-connection@git+https://github.com/olzzon/v-connection#v20210604_1":
-  version "0.0.1"
-  resolved "git+https://github.com/olzzon/v-connection#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
-  dependencies:
-    request "^2.88.2"
-    request-promise-native "^1.0.9"
-    uuid "^8.3.2"
-    ws "^7.4.6"
-    xml2js "^0.4.23"
 
 v8-compile-cache@^2.0.3:
   version "2.3.0"
