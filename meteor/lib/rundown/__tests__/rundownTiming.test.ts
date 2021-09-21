@@ -110,6 +110,8 @@ describe('rundown Timing Calculator', () => {
 				partStartsAt: {},
 				remainingPlaylistDuration: 0,
 				totalPlaylistDuration: 0,
+				segmentBudgetDurations: {},
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -200,6 +202,8 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 4000,
 				totalPlaylistDuration: 4000,
+				segmentBudgetDurations: {},
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -290,6 +294,8 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 4000,
 				totalPlaylistDuration: 4000,
+				segmentBudgetDurations: {},
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -384,6 +390,8 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 4000,
 				totalPlaylistDuration: 4000,
+				segmentBudgetDurations: {},
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -498,6 +506,8 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 4000,
 				totalPlaylistDuration: 4000,
+				segmentBudgetDurations: {},
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -603,6 +613,11 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 4000,
 				totalPlaylistDuration: 4000,
+				segmentBudgetDurations: {
+					segment1: 5000,
+					segment2: 3000,
+				},
+				segmentStartedPlayback: {},
 			})
 		)
 	})
