@@ -626,7 +626,9 @@ export class TSRHandler {
 				}
 			}
 			const onSlowSentCommand = (info: SlowSentCommandInfo) => {
-				// If the internalDelay is too large, it should be logged as an error
+				// If the internalDelay is too large, it should be logged as an error,
+				// since something took too long internally.
+
 				if (info.internalDelay > 100) {
 					this.logger.error('slowSentCommand', {
 						deviceName: device.deviceName,
@@ -640,18 +642,13 @@ export class TSRHandler {
 				}
 			}
 			const onSlowFulfilledCommand = (info: SlowFulfilledCommandInfo) => {
-				// If the fulfilledDelay is too large, it should be logged as an error
-				if (info.fulfilledDelay > 200) {
-					this.logger.error('slowFulfilledCommand', {
-						deviceName: device.deviceName,
-						...info,
-					})
-				} else {
-					this.logger.warn('slowFulfilledCommand', {
-						deviceName: device.deviceName,
-						...info,
-					})
-				}
+				// Note: we don't emit slow fulfilled commands as error, since
+				// the fullfillement of them lies on the device being controlled, not on us.
+
+				this.logger.warn('slowFulfilledCommand', {
+					deviceName: device.deviceName,
+					...info,
+				})
 			}
 			/*const onCommandError = (error: Error, context: CommandWithContext) => {
 				if (this._errorReporting) {
