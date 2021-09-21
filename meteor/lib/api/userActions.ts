@@ -89,7 +89,7 @@ export interface NewUserActionAPI extends MethodContext {
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
-	): Promise<ClientAPI.ClientResponse<void>>
+	): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }>>
 	segmentAdLibPieceStart(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
@@ -138,7 +138,8 @@ export interface NewUserActionAPI extends MethodContext {
 	storeRundownSnapshot(
 		userEvent: string,
 		playlistId: RundownPlaylistId,
-		reason: string
+		reason: string,
+		full?: boolean
 	): Promise<ClientAPI.ClientResponse<SnapshotId>>
 	removeRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundownPlaylist(

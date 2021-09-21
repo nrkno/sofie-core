@@ -8,6 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
+import { doModalDialog } from '../../lib/ModalDialog'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]
@@ -19,9 +20,9 @@ export interface IDashboardButtonGroupProps {
 
 export const DashboardActionButtonGroup = withTranslation()(
 	class DashboardActionButtonGroup extends React.Component<Translated<IDashboardButtonGroupProps>> {
-		take = (e: any) => {
-			const { t } = this.props
+		private take = (e: any) => {
 			if (this.props.studioMode) {
+				const { t } = this.props
 				doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
 			}
 		}
@@ -56,7 +57,30 @@ export const DashboardActionButtonGroup = withTranslation()(
 			}
 		}
 
-		onButtonUp = (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => {
+		klarOnAir = (e: any) => {
+			const { t } = this.props
+			if (this.props.studioMode) {
+				if (this.props.playlist.activationId) {
+					doModalDialog({
+						title: this.props.playlist.name,
+						message: t('Are you sure you want to deactivate this Rundown\n(This will clear the outputs)'),
+						warning: true,
+						onAccept: () => {
+							doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
+								MeteorCall.userAction.deactivate(e, this.props.playlist._id)
+							)
+						},
+					})
+				} else {
+					doUserAction(t, e, UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST, (e) =>
+						MeteorCall.userAction.resetAndActivate(e, this.props.playlist._id)
+					)
+					doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+				}
+			}
+		}
+
+		private onButtonUp = (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => {
 			switch (button.type) {
 				case ActionButtonType.TAKE:
 					this.take(e)
@@ -79,6 +103,9 @@ export const DashboardActionButtonGroup = withTranslation()(
 				case ActionButtonType.HOLD:
 					this.hold(e)
 					break
+				case ActionButtonType.KLAR_ON_AIR:
+					this.klarOnAir(e)
+					break
 			}
 		}
 
@@ -86,9 +113,11 @@ export const DashboardActionButtonGroup = withTranslation()(
 			return this.props.buttons.map((button: DashboardLayoutActionButton) => (
 				<DashboardActionButton
 					key={button._id}
+					playlist={this.props.playlist}
 					onButtonDown={this.onButtonDown}
 					onButtonUp={this.onButtonUp}
 					button={button}
+					studioMode={this.props.studioMode}
 				/>
 			))
 		}

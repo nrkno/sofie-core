@@ -12,7 +12,7 @@ export enum SourceLayerType {
 	SPLITS = 6,
 	AUDIO = 7,
 	// CAMERA_MOVEMENT = 8,
-	// METADATA = 9,
+	METADATA = 9,
 	LOWER_THIRD = 10,
 	LIVE_SPEAK = 11,
 	TRANSITION = 13,
@@ -29,6 +29,8 @@ export interface BaseContent {
 
 	sourceDuration?: number
 	ignoreMediaObjectStatus?: boolean
+	ignoreBlackFrames?: boolean
+	ignoreFreezeFrame?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -59,13 +61,20 @@ export interface VTContent extends BaseContent {
 	fileName: string
 	path: string
 	loop?: boolean
+	/** Frame that media manager should grab for thumbnail preview */
+	previewFrame?: number
 	mediaFlowIds?: string[]
 	seek?: number
 	editable?: VTEditableParameters
+	ignoreMediaObjectStatus?: boolean
 }
 
 export interface GraphicsContent extends BaseContent {
 	fileName: string
+	path: string
+	mediaFlowIds?: string[]
+	thumbnail?: string
+	templateData?: Record<string, any>
 }
 
 export interface CameraContent extends BaseContent {
@@ -140,7 +149,10 @@ export interface SplitsContentBoxProperties {
 		}
 	}
 }
-export type SplitsContentBoxContent = Omit<VTContent | CameraContent | RemoteContent | NoraContent, 'timelineObjects'>
+export type SplitsContentBoxContent = Omit<
+	VTContent | CameraContent | RemoteContent | NoraContent | GraphicsContent,
+	'timelineObjects'
+>
 export interface SplitsContent extends BaseContent {
 	/** Array of contents, 0 is towards the rear */
 	boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]

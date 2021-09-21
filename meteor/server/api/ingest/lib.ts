@@ -21,6 +21,7 @@ import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { CacheForIngest } from './cache'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -71,6 +72,16 @@ export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio 
 
 	span?.end()
 	return studio
+}
+export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
+	const span = profiler.startSpan('mosDevice.lib.getRundownPlaylist')
+
+	const playlist = RundownPlaylists.findOne(rundown.playlistId)
+	if (!playlist)
+		throw new Meteor.Error(500, `Rundown playlist "${rundown.playlistId}" of rundown "${rundown._id}" not found!`)
+
+	span?.end()
+	return playlist
 }
 export function getRundown(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
 	const rundown = cache.Rundown.doc

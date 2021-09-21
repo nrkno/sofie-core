@@ -180,8 +180,9 @@ export function forceClearAllBlueprintConfigCaches() {
 }
 
 export async function resetStudioBlueprintConfig(studio: ReadonlyDeep<Studio>): Promise<void> {
-	for (const map of studioBlueprintConfigCache.values()) {
+	for (const [id, map] of studioBlueprintConfigCache.entries()) {
 		map.delete(studio._id)
+		studioBlueprintConfigCache.set(id, map)
 	}
 	await getStudioBlueprintConfig(studio)
 }

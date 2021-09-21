@@ -20,7 +20,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { Segment, DBSegment, SegmentId, SegmentOrphanedReason } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -298,12 +298,15 @@ export async function setNextPart(
 			cache.Playlist.doc.previousPartInstanceId,
 		])
 		// reset any previous instances of this part
+		const partInstanceIdsToReset = cache.PartInstances.findFetch({
+			_id: { $nin: selectedPartInstanceIds },
+			rundownId: nextPart.rundownId,
+			'part._id': nextPart._id,
+			reset: { $ne: true },
+		}).map((pi) => pi._id)
 		cache.PartInstances.update(
 			{
-				_id: { $nin: selectedPartInstanceIds },
-				rundownId: nextPart.rundownId,
-				'part._id': nextPart._id,
-				reset: { $ne: true },
+				_id: { $in: partInstanceIdsToReset },
 			},
 			{
 				$set: {
@@ -496,7 +499,8 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 							// Find the segments that are still orphaned (in case they have resynced before this executes)
 							// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
 							const stillOrphanedSegments = ingestCache.Segments.findFetch(
-								(s) => s.orphaned === 'deleted' && candidateSegmentIds.includes(s._id)
+								(s) =>
+									s.orphaned === SegmentOrphanedReason.DELETED && candidateSegmentIds.includes(s._id)
 							)
 
 							return {

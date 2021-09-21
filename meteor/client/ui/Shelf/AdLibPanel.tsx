@@ -6,9 +6,9 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { useTranslation, withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -18,7 +18,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
@@ -43,7 +42,6 @@ import { literal, normalizeArray, unprotectString, protectString } from '../../.
 import { RundownAPI } from '../../../lib/api/rundown'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import {
-	PartInstance,
 	PartInstances,
 	PartInstanceId,
 	findPartInstanceOrWrapToTemporary,
@@ -52,6 +50,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibActions, AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
+import { registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { ShelfTabs } from './Shelf'
 import {
 	RundownBaselineAdLibActions,
@@ -61,10 +60,11 @@ import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
-import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
+import { RundownViewKbdShortcuts } from '../RundownView/RundownViewKbdShortcuts'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -93,6 +93,7 @@ interface IListViewStateHeader {
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
+	liveSegment?: AdlibSegmentUi
 }
 
 /**
@@ -107,20 +108,19 @@ interface IListViewStateHeader {
 export function matchFilter(
 	item: AdLibPieceUi,
 	showStyleBase: ShowStyleBase,
-	uiSegments: Array<AdlibSegmentUi>,
+	liveSegment?: AdlibSegmentUi,
 	filter?: RundownLayoutFilterBase,
 	searchFilter?: string,
 	uniquenessIds?: Set<string>
 ) {
 	if (!searchFilter && !filter) return true
-	const liveSegment = uiSegments.find((i) => i.isLive === true)
 	const uppercaseLabel = item.name.toUpperCase()
 	if (filter) {
 		// Filter currentSegment only
 		if (
 			filter.currentSegment === true &&
 			item.partId &&
-			((liveSegment && liveSegment.parts.find((i) => item.partId === i.part._id) === undefined) || !liveSegment)
+			((liveSegment && liveSegment._id !== item.segmentId) || !liveSegment)
 		) {
 			return false
 		}
@@ -222,6 +222,8 @@ const AdLibListView = withTranslation()(
 				[key: string]: ISourceLayer
 			} = {}
 
+			const liveSegment = props.uiSegments.find((i) => i.isLive === true)
+
 			if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
 				props.showStyleBase.outputLayers.forEach((outputLayer) => {
 					tOLayers[outputLayer._id] = outputLayer
@@ -233,9 +235,10 @@ const AdLibListView = withTranslation()(
 				return {
 					outputLayers: tOLayers,
 					sourceLayers: tSLayers,
+					liveSegment,
 				}
 			}
-			return null
+			return { liveSegment }
 		}
 
 		scrollToCurrentSegment() {
@@ -273,7 +276,7 @@ const AdLibListView = withTranslation()(
 									matchFilter(
 										item,
 										this.props.showStyleBase,
-										this.props.uiSegments,
+										this.state.liveSegment,
 										this.props.filter,
 										this.props.searchFilter,
 										uniquenessIds
@@ -329,7 +332,7 @@ const AdLibListView = withTranslation()(
 										matchFilter(
 											item,
 											this.props.showStyleBase,
-											this.props.uiSegments,
+											this.state.liveSegment,
 											this.props.filter,
 											this.props.searchFilter,
 											uniquenessIds
@@ -443,29 +446,6 @@ export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
 	)
 }
 
-export interface AdLibPieceUi extends AdLibPiece {
-	hotkey?: string
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	isGlobal?: boolean
-	isHidden?: boolean
-	isSticky?: boolean
-	isAction?: boolean
-	isClearSourceLayer?: boolean
-	adlibAction?: AdLibAction | RundownBaselineAdLibAction
-	contentMetaData?: any
-	contentPackageInfos?: ScanInfoForPackages
-	message?: string | null
-}
-
-export interface AdlibSegmentUi extends DBSegment {
-	/** Pieces belonging to this part */
-	parts: Array<PartInstance>
-	pieces: Array<AdLibPieceUi>
-	isLive: boolean
-	isNext: boolean
-}
-
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
@@ -488,10 +468,11 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-type SourceLayerLookup = { [id: string]: ISourceLayer }
+export type SourceLayerLookup = { [id: string]: ISourceLayer }
 
 export interface AdLibFetchAndFilterProps {
 	uiSegments: Array<AdlibSegmentUi>
+	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	liveSegment: AdlibSegmentUi | undefined
 	sourceLayerLookup: SourceLayerLookup
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
@@ -501,7 +482,7 @@ interface IAdLibPanelTrackedProps extends AdLibFetchAndFilterProps {
 	studio: Studio
 }
 
-function actionToAdLibPieceUi(
+export function actionToAdLibPieceUi(
 	action: AdLibAction | RundownBaselineAdLibAction,
 	sourceLayers: _.Dictionary<ISourceLayer>,
 	outputLayers: _.Dictionary<IOutputLayer>
@@ -537,8 +518,9 @@ function actionToAdLibPieceUi(
 		tags: action.display.tags,
 		currentPieceTags: action.display.currentPieceTags,
 		nextPieceTags: action.display.nextPieceTags,
-		lifespan: PieceLifespan.WithinPart, // value doesn't matter
 		uniquenessId: action.display.uniquenessId,
+		lifespan: PieceLifespan.WithinPart, // value doesn't matter
+		noHotKey: action.display.noHotKey,
 	})
 }
 
@@ -552,6 +534,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	if (!props.playlist || !props.showStyleBase) {
 		return {
 			uiSegments: [],
+			uiSegmentMap: new Map(),
 			liveSegment: undefined,
 			sourceLayerLookup,
 			rundownBaselineAdLibs: [],
@@ -562,7 +545,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	const segments = props.playlist.getSegments()
 
-	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
+	const { uiSegments, uiSegmentMap, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
 		(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, segments: Segment[]) => {
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
@@ -570,6 +553,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 			if (!segments) {
 				return {
 					uiSegments: [],
+					uiSegmentMap: new Map(),
 					liveSegment: undefined,
 					uiPartSegmentMap,
 				}
@@ -632,6 +616,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 			return {
 				uiSegments,
+				uiSegmentMap,
 				liveSegment,
 				uiPartSegmentMap,
 			}
@@ -642,7 +627,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		segments
 	)
 
-	uiSegments.forEach((segment) => (segment.pieces.length = 0))
+	uiSegments.forEach((segment) => (segment.pieces = []))
 
 	const rundownIds = props.playlist.getRundownIDs()
 	const partIds = Array.from(uiPartSegmentMap.keys())
@@ -669,6 +654,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					...piece,
 					sourceLayer: sourceLayerLookup[piece.sourceLayerId],
 					outputLayer: outputLayerLookup[piece.outputLayerId],
+					segmentId: segment._id,
 				})
 			}
 		})
@@ -703,7 +689,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		const segment = uiPartSegmentMap.get(action[0])
 
 		if (segment) {
-			segment.pieces.push(action[1])
+			segment.pieces.push({ ...action[1], segmentId: segment._id })
 		}
 	})
 
@@ -802,6 +788,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 									outputLayerId: '',
 									_rank: 0,
 									content: { timelineObjects: [] },
+									noHotKey: false,
 								})
 							)
 					)
@@ -843,7 +830,11 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 								const keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 								const sourceHotKeyUseLayerId =
 									sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
-								if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+								if (
+									!uiAdLib.isSticky &&
+									(sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length &&
+									!item.noHotKey
+								) {
 									uiAdLib.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
 									// add one to the usage hash table
 									sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
@@ -893,6 +884,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 								outputLayerId: '',
 								_rank: 0,
 								content: { timelineObjects: [] },
+								noHotKey: false,
 							})
 						)
 				},
@@ -905,6 +897,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	return {
 		uiSegments: props.filter && props.filter.rundownBaseline === 'only' ? [] : uiSegments,
+		uiSegmentMap: props.filter && props.filter.rundownBaseline === 'only' ? new Map() : uiSegmentMap,
 		liveSegment,
 		sourceLayerLookup,
 		rundownBaselineAdLibs,
@@ -951,7 +944,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps) {
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-			this.usedHotkeys.length = 0
+			this.usedHotkeys = []
 
 			if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
 				this.setState({
@@ -967,7 +960,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
-			this.usedHotkeys.length = 0
+			this.usedHotkeys = []
 
 			RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 		}
@@ -994,6 +987,19 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 							this.props.hotkeyGroup
 						)
 						this.usedHotkeys.push(item.hotkey)
+
+						if (this.props.sourceLayerLookup[item.sourceLayerId]) {
+							registerHotkey(
+								item.hotkey,
+								item.name,
+								HotkeyAssignmentType.ADLIB,
+								this.props.sourceLayerLookup[item.sourceLayerId],
+								item.toBeQueued || false,
+								this.onToggleAdLib,
+								[item, false],
+								this.props.hotkeyGroup
+							)
+						}
 
 						const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 						if (sourceLayer && sourceLayer.isQueueable) {
@@ -1092,7 +1098,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 				!this.props.sourceLayerLookup[adlibPiece.sourceLayerId].isQueueable
 			) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
-				return
+				queue = false
 			}
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId

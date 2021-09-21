@@ -17,6 +17,7 @@ import {
 	DashboardLayoutActionButton,
 	RundownLayoutElementType,
 	RundownLayoutId,
+	CustomizableRegions,
 } from '../../../lib/collections/RundownLayouts'
 import {
 	CustomizableRegionLayout,
@@ -61,6 +62,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	const rundownLayouts = RundownLayouts.find({
 		showStyleBaseId: props.showStyleBase._id,
 		userId: { $exists: false },
+		type: { $in: layoutTypes },
+		regionId: props.customRegion._id as CustomizableRegions,
 	}).fetch()
 
 	return {
@@ -104,6 +107,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						y: 0,
 						width: 3,
 						height: 3,
+						labelToggled: '',
 					}),
 				},
 			})
@@ -217,6 +221,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										<EditAttribute
 											modifiedClassName="bghl"
 											attribute={`actionButtons.${index}.label`}
+											obj={item}
+											type="text"
+											collection={RundownLayouts}
+											className="input text-input input-l"
+										/>
+									</label>
+								</div>
+								<div className="mod mvs mhs">
+									<label className="field">
+										{t('Toggled Label')}
+										<EditAttribute
+											modifiedClassName="bghl"
+											attribute={`actionButtons.${index}.labelToggled`}
 											obj={item}
 											type="text"
 											collection={RundownLayouts}
@@ -385,7 +402,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											<Link
 												target="_blank"
 												className="pill-link"
-												to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}
+												to={this.props.customRegion.navigationLink(studio._id, item._id)}
 											>
 												{studio.name}
 											</Link>

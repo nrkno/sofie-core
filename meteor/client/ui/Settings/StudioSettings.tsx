@@ -716,6 +716,7 @@ const StudioRoutings = withTranslation()(
 				mappedLayer: '',
 				outputMappedLayer: '',
 				remapping: {},
+				routeType: StudioRouteType.REROUTE,
 			}
 			const setObject = {}
 			setObject['routeSets.' + routeId + '.routes'] = newRoute
@@ -830,9 +831,12 @@ const StudioRoutings = withTranslation()(
 						const deviceTypeFromMappedLayer: TSR.DeviceType | undefined = route.mappedLayer
 							? this.props.studio.mappings[route.mappedLayer]?.device
 							: undefined
-						const routeDeviceType: TSR.DeviceType | undefined = route.mappedLayer
-							? deviceTypeFromMappedLayer
-							: route.deviceType
+						const routeDeviceType: TSR.DeviceType | undefined =
+							route.routeType === StudioRouteType.REMAP
+								? route.deviceType
+								: route.mappedLayer
+								? deviceTypeFromMappedLayer
+								: route.deviceType
 						return (
 							<div className="route-sets-editor mod pan mas" key={index}>
 								<button
@@ -871,8 +875,27 @@ const StudioRoutings = withTranslation()(
 										</label>
 									</div>
 									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Route Type')}
+											{!route.mappedLayer ? (
+												<span className="mls">REMAP</span>
+											) : (
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeSetId}.routes.${index}.routeType`}
+													obj={this.props.studio}
+													type="dropdown"
+													options={StudioRouteType}
+													optionsAreNumbers={true}
+													collection={Studios}
+													className="input text-input input-l"
+												></EditAttribute>
+											)}
+										</label>
+									</div>
+									<div className="mod mvs mhs">
 										{t('Device Type')}
-										{route.mappedLayer ? (
+										{route.routeType === StudioRouteType.REROUTE && route.mappedLayer ? (
 											deviceTypeFromMappedLayer !== undefined ? (
 												<span className="mls">{TSR.DeviceType[deviceTypeFromMappedLayer]}</span>
 											) : (
@@ -891,7 +914,8 @@ const StudioRoutings = withTranslation()(
 											></EditAttribute>
 										)}
 									</div>
-									{routeDeviceType !== undefined && route.remapping !== undefined ? (
+									{route.routeType === StudioRouteType.REMAP ||
+									(routeDeviceType !== undefined && route.remapping !== undefined) ? (
 										<>
 											<div className="mod mvs mhs">
 												<label className="field">
@@ -1751,6 +1775,43 @@ const StudioPackageManagerSettings = withTranslation()(
 													</label>
 												</div>
 											</>
+										) : accessor.type === Accessor.AccessType.HTTP_PROXY ? (
+											<>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Base URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">
+															{t('Base url to the resource (example: http://myserver/folder)')}
+														</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Network Id')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">
+															{t(
+																'(Optional) A name/identifier of the local network where the share is located, leave empty if globally accessible'
+															)}
+														</span>
+													</label>
+												</div>
+											</>
 										) : accessor.type === Accessor.AccessType.FILE_SHARE ? (
 											<>
 												<div className="mod mvs mhs">
@@ -1840,7 +1901,9 @@ const StudioPackageManagerSettings = withTranslation()(
 															collection={Studios}
 															className="input text-input input-l"
 														></EditAttribute>
-														<span className="text-s dimmed">{t('URLs to the ISAs (in order of importance)')}</span>
+														<span className="text-s dimmed">
+															{t('URLs to the ISAs, in order of importance (comma separated)')}
+														</span>
 													</label>
 												</div>
 												<div className="mod mvs mhs">
@@ -1871,6 +1934,21 @@ const StudioPackageManagerSettings = withTranslation()(
 														<span className="text-s dimmed">
 															{t('Server id (Can be omitted for sources, as clip-searches are zone-wide.)')}
 														</span>
+													</label>
+												</div>
+
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel transformer URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.transformerURL`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('URL to the Quantel HTTP transformer')}</span>
 													</label>
 												</div>
 											</>
@@ -1929,7 +2007,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			for (const [containerId, packageContainer] of Object.entries(this.props.studio.packageContainers)) {
 				let hasHttpAccessor = false
 				for (const accessor of Object.values(packageContainer.container.accessors)) {
-					if (accessor.type === Accessor.AccessType.HTTP) {
+					if (accessor.type === Accessor.AccessType.HTTP_PROXY) {
 						hasHttpAccessor = true
 						break
 					}

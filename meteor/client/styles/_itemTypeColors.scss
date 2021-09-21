@@ -239,6 +239,10 @@ $segment-layer-background-guest: #008a92;
 		background: var(--segment-layer-background-guest);
 	}
 
+	&.transition {
+		background: var(--segment-layer-background-unknown);
+	}
+
 	&.unknown {
 		background: var(--segment-layer-background-unknown);
 	}
@@ -281,6 +285,10 @@ $segment-layer-background-guest: #008a92;
 		border-color: var(--segment-layer-background-mic);
 	}
 
+	&.transition {
+		border-color: var(--segment-layer-background-unknown);
+	}
+
 	&.unknown {
 		border-color: var(--segment-layer-background-unknown);
 	}
@@ -319,6 +327,10 @@ $segment-layer-background-guest: #008a92;
 		background: var(--segment-layer-background-mic);
 	}
 
+	&.transition::before {
+		background: var(--segment-layer-background-unknown);
+	}
+
 	&.unknown::before {
 		background: var(--segment-layer-background-unknown);
 	}
@@ -355,6 +367,10 @@ $segment-layer-background-guest: #008a92;
 		&.second {
 			fill: var(--segment-layer-background-vt--second);
 		}
+	}
+
+	&.transition {
+		fill: var(--segment-layer-background-unknown);
 	}
 
 	&.remote {

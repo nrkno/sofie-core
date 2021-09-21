@@ -11,7 +11,6 @@ import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
 import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
-import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
@@ -345,7 +344,9 @@ export const SourceLayerItem = withTranslation()(
 
 			if (
 				(innerPiece.lifespan !== PieceLifespan.WithinPart ||
-					(innerPiece.enable.start !== undefined && innerPiece.enable.duration === undefined)) &&
+					(innerPiece.enable.start !== undefined &&
+						innerPiece.enable.duration === undefined &&
+						piece.instance.userDuration?.end === undefined)) &&
 				!piece.cropped &&
 				piece.renderedDuration === null &&
 				piece.instance.userDuration === undefined
@@ -601,7 +602,6 @@ export const SourceLayerItem = withTranslation()(
 							{...this.state}
 						/>
 					)
-				case SourceLayerType.GRAPHICS:
 				case SourceLayerType.LOWER_THIRD:
 					return (
 						<L3rdSourceRenderer
@@ -641,13 +641,14 @@ export const SourceLayerItem = withTranslation()(
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
-							studioPackageContainers={this.props.studio?.packageContainers}
+							studio={this.props.studio}
 						/>
 					)
 
 				case SourceLayerType.TRANSITION:
+				case SourceLayerType.GRAPHICS:
 					return (
-						<TransitionSourceRenderer
+						<VTSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}

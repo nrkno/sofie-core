@@ -425,7 +425,7 @@ export namespace ServerPlayoutAPI {
 
 			// find the allowable segment ids
 			const allowedSegments =
-				segmentDelta < 0
+				segmentDelta > 0
 					? considerSegments.slice(targetSegmentIndex)
 					: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
 			// const allowedSegmentIds = new Set(allowedSegments.map((s) => s._id))
@@ -1149,7 +1149,7 @@ export namespace ServerPlayoutAPI {
 			rundown: Rundown,
 			currentPartInstance: PartInstance
 		) => Promise<void>
-	): Promise<void> {
+	): Promise<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }> {
 		const now = getCurrentTime()
 
 		return runPlayoutOperationWithCache(
@@ -1216,14 +1216,31 @@ export namespace ServerPlayoutAPI {
 
 				if (actionContext.takeAfterExecute) {
 					await ServerPlayoutAPI.callTakeWithCache(cache, now)
+					return {
+						queuedPartInstanceId: actionContext.queuedPartInstanceId,
+						taken: true,
+					}
 				} else {
 					if (
 						actionContext.currentPartState !== ActionPartChange.NONE ||
 						actionContext.nextPartState !== ActionPartChange.NONE
 					) {
 						await updateTimeline(cache)
+						return {
+							queuedPartInstanceId: actionContext.queuedPartInstanceId,
+						}
+					}
+
+					if (actionContext.nextPartState !== ActionPartChange.NONE && actionContext.queuedPartInstanceId) {
+						return {
+							queuedPartInstanceId: actionContext.queuedPartInstanceId,
+						}
+					} else {
+						return {}
 					}
 				}
+
+				return {}
 			}
 		)
 	}

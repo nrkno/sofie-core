@@ -115,7 +115,10 @@ export class PartInstance implements DBPartInstance {
 			this[key] = document[key]
 		})
 		this.isTemporary = isTemporary === true
-		this.part = new Part(document.part)
+		if (document.part) {
+			// allows skipping the part field when fetching
+			this.part = new Part(document.part)
+		}
 	}
 }
 

@@ -1453,6 +1453,16 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
+"@sofie-automation/blueprints-integration@1.36.0-in-testing.9":
+  version "1.36.0-in-testing.9"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/blueprints-integration/-/blueprints-integration-1.36.0-in-testing.9.tgz#fab5a9459ad9048953874353c9ffafe5cc427a2f"
+  integrity sha512-CImFBU4Wc7ACR5cJKe19ikvZ07NxW1RmCqj6cYlB+VxRr+lsH8eZs1FvfmQDQfL1DYBX57dCasWRo9Ct+jXNFA==
+  dependencies:
+    moment "2.29.1"
+    timeline-state-resolver-types "^6.1.0-release36.0"
+    tslib "^2.1.0"
+    underscore "1.13.1"
+
 "@sofie-automation/code-standard-preset@^0.4.1":
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-0.4.1.tgz#3c2677c18becb11b33326059d7acd34081d2177b"
@@ -1472,6 +1482,18 @@
     prettier "^2.3.0"
     read-pkg-up "^8.0.0"
     shelljs "^0.8.4"
+
+"@sofie-automation/server-core-integration@1.36.0-in-testing.9":
+  version "1.36.0-in-testing.9"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/server-core-integration/-/server-core-integration-1.36.0-in-testing.9.tgz#efaa44d8df5bc8e8d836ddd007ffca20e4c52718"
+  integrity sha512-ipd+E7elshnE94a2UwebvRkAjkTsSuvaNCDXFX+JXObuB1ura75u76E0ALD17WJ3tGgcLYHk73LfXlqTb0bg0Q==
+  dependencies:
+    data-store "^4.0.3"
+    ejson "^2.2.0"
+    faye-websocket "^0.11.4"
+    got "^11.8.2"
+    tslib "^2.0.3"
+    underscore "^1.12.1"
 
 "@strictsoftware/typedoc-plugin-monorepo@^0.4.2":
   version "0.4.2"
@@ -8509,13 +8531,6 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@6.2.0-nightly-release37-20210813-070919-91cf76a47.0:
-  version "6.2.0-nightly-release37-20210813-070919-91cf76a47.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-nightly-release37-20210813-070919-91cf76a47.0.tgz#f8832517d6983a15ec67b8bf12c3589558754a40"
-  integrity sha512-aaYu7erHXMDas8ULQcs5XiTaulw0ggC6TaIEcXpsIAZDKtTOGWdu+Kg7auYcO5o56k+t+YZxmlIsLZPgouUfSA==
-  dependencies:
-    tslib "^2.1.0"
-
 timeline-state-resolver-types@^6.1.0-release36.0:
   version "6.1.0-release36.0"
   resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.1.0-release36.0.tgz#64ccf4e10365b8038ff613ed299606744182d40c"
@@ -8523,10 +8538,17 @@ timeline-state-resolver-types@^6.1.0-release36.0:
   dependencies:
     tslib "^2.1.0"
 
-timeline-state-resolver@6.2.0-nightly-release37-20210813-070919-91cf76a47.0:
-  version "6.2.0-nightly-release37-20210813-070919-91cf76a47.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-release37-20210813-070919-91cf76a47.0.tgz#9a0d0b6f58f3311396d85f9915d76d0138892897"
-  integrity sha512-/BTIG64iUU7ZE3oJosnjmBkvkZ9nPA/Qew3DY1sRHZpXTW4w6GoD3UKt5tfeF22geJd0G54rVamN//M9CXUEqg==
+"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.0.0-release37":
+  version "1.0.0-release37"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.0.0-release37.tgz#3271b202cd0c4e03ae418c76019276238eede7db"
+  integrity sha512-HdCWUQ0EJ7LwlaH9eRtURwzXknIvo3U8kInzus9Vx0M0HoUixYgfV5Z80w/PVSYdUk0L95kW2oLZB4ECB1M7Pg==
+  dependencies:
+    tslib "^2.1.0"
+
+"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@1.0.0-release37":
+  version "1.0.0-release37"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-1.0.0-release37.tgz#b1346ed316f329a5fdcdfd544d9cd3b1b6329c1e"
+  integrity sha512-WcoTeN7yieaTxbm3trtXNpK7j7wO4F1M48Ec/FhAWKg5CBF83hsmpwMaJcy7OWzYckMcxA/0jCz9izcVb7MdlQ==
   dependencies:
     atem-connection "^2.3.0"
     atem-state "^0.12.1"
@@ -8547,13 +8569,13 @@ timeline-state-resolver@6.2.0-nightly-release37-20210813-070919-91cf76a47.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.2.0-nightly-release37-20210813-070919-91cf76a47.0"
+    timeline-state-resolver-types "^6.1.0-release36.0"
     tslib "^2.1.0"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
     underscore-deep-extend "^1.1.5"
     utf-8-validate "^5.0.2"
-    v-connection "git+https://github.com/olzzon/v-connection#v20210604_1"
+    v-connection "git+https://github.com/tv2/v-connection#v20210604_1"
     ws "^7.4.6"
     xml-js "^1.6.11"
 
@@ -9021,9 +9043,9 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-"v-connection@git+https://github.com/olzzon/v-connection#v20210604_1":
+"v-connection@git+https://github.com/tv2/v-connection#v20210604_1":
   version "0.0.1"
-  resolved "git+https://github.com/olzzon/v-connection#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
+  resolved "git+https://github.com/tv2/v-connection#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"

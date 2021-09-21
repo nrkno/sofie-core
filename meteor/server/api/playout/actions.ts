@@ -5,7 +5,7 @@ import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Ru
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, makePromise } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { RundownEventContext } from '../blueprints/context'
+import { RundownContext, RundownEventContext } from '../blueprints/context'
 import { setNextPart, onPartHasStoppedPlaying, selectNextPart, LOW_PRIO_DEFER_TIME, resetRundownPlaylist } from './lib'
 import { updateStudioTimeline, updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
@@ -17,7 +17,6 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 	logger.info('Activating rundown ' + cache.Playlist.doc._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
-	// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
 
 	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
 		cache.Studio.doc._id,
@@ -114,10 +113,38 @@ export async function deactivateRundownPlaylist(cache: CacheForPlayout): Promise
 		if (rundown) {
 			const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
 			const { blueprint } = await loadShowStyleBlueprint(showStyle)
+			let result: Promise<void> | undefined
 			if (blueprint.onRundownDeActivate) {
-				Promise.resolve(
-					blueprint.onRundownDeActivate(new RundownEventContext(cache.Studio.doc, showStyle, rundown))
-				).catch(logger.error)
+				result = blueprint.onRundownDeActivate(
+					new RundownContext(
+						{
+							name: `${cache.Playlist.doc.name}`,
+							identifier: `playlist=${cache.Playlist.doc._id},currentPartInstance=${
+								cache.Playlist.doc.currentPartInstanceId
+							},execution=${getRandomId()}`,
+						},
+						cache.Studio.doc,
+						showStyle,
+						rundown
+					)
+				)
+			}
+
+			const context = new RundownContext(
+				{
+					name: `${cache.Playlist.doc.name}`,
+					identifier: `playlist=${cache.Playlist.doc._id},currentPartInstance=${
+						cache.Playlist.doc.currentPartInstanceId
+					},execution=${getRandomId()}`,
+				},
+				cache.Studio.doc,
+				showStyle,
+				rundown
+			)
+			context.wipeCache().catch(logger.error)
+
+			if (result) {
+				Promise.resolve(result).catch(logger.error)
 			}
 		}
 	})
@@ -158,6 +185,7 @@ export async function deactivateRundownPlaylistInner(cache: CacheForPlayout): Pr
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
+			activeInstanceId: undefined,
 		},
 		$unset: {
 			activationId: 1,

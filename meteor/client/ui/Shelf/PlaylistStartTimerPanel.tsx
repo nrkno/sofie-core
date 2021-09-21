@@ -13,7 +13,6 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTranslation } from 'react-i18next'
 import { PlaylistStartTiming } from '../RundownView/RundownTiming/PlaylistStartTiming'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IPlaylistStartTimerPanelProps {
 	layout: RundownLayoutBase

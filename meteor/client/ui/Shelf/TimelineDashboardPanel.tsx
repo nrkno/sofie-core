@@ -9,22 +9,20 @@ import {
 	IAdLibPanelProps,
 	AdLibFetchAndFilterProps,
 	fetchAndFilter,
-	AdLibPieceUi,
 	matchFilter,
 	AdLibPanelToolbar,
 } from './AdLibPanel'
 import { DashboardPieceButton } from './DashboardPieceButton'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import {
 	DashboardPanelInner,
 	dashboardElementPosition,
 	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
+import { AdLibPieceUi, getNextPieceInstancesGrouped, getUnfinishedPieceInstancesGrouped } from '../../lib/shelf'
 
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
@@ -32,10 +30,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
-		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.showStyleBase, props.playlist)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),
@@ -52,10 +48,28 @@ export const TimelineDashboardPanel = translateWithTracker<
 	class TimelineDashboardPanel extends DashboardPanelInner {
 		liveLine: HTMLDivElement
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
-		setRef = (el: HTMLDivElement) => {
-			this.liveLine = el
-			super.setRef(el)
+
+		constructor(props) {
+			super(props)
+		}
+
+		setRef = (ref: HTMLDivElement) => {
+			this.liveLine = ref
 			this.ensureLiveLineVisible()
+
+			const _panel = ref
+			if (_panel) {
+				const style = window.getComputedStyle(_panel)
+				// check if a special variable is set through CSS to indicate that we shouldn't expect
+				// double clicks to trigger AdLibs
+				const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+				const shouldBeSingleClick = !!value.match(UserAgentPointer.NO_POINTER)
+				if (this.state.singleClickMode !== shouldBeSingleClick) {
+					this.setState({
+						singleClickMode: shouldBeSingleClick,
+					})
+				}
+			}
 		}
 		componentDidUpdate(prevProps, prevState) {
 			super.componentDidUpdate(prevProps, prevState)
@@ -78,6 +92,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 			if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 				const filter = this.props.filter as DashboardLayoutFilter
 				const uniquenessIds = new Set<string>()
+				const liveSegment = this.props.uiSegments.find((i) => i.isLive)
 				if (!this.props.uiSegments || !this.props.playlist) {
 					return <Spinner />
 				} else {
@@ -85,7 +100,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 						matchFilter(
 							item,
 							this.props.showStyleBase,
-							this.props.uiSegments,
+							liveSegment,
 							this.props.filter,
 							this.state.searchFilter,
 							uniquenessIds
@@ -146,7 +161,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 												matchFilter(
 													item,
 													this.props.showStyleBase,
-													this.props.uiSegments,
+													liveSegment,
 													this.props.filter,
 													this.state.searchFilter,
 													uniquenessIds
@@ -190,10 +205,12 @@ export const TimelineDashboardPanel = translateWithTracker<
 																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 																: ''
 														}
-														displayStyle={PieceDisplayStyle.BUTTONS}
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
 														showThumbnailsInList={filter.showThumbnailsInList}
+														canOverflowHorizontally={filter.overflowHorizontally}
+														displayStyle={filter.displayStyle}
+														toggleOnSingleClick={this.state.singleClickMode}
 													>
 														{adLibListItem.name}
 													</DashboardPieceButton>

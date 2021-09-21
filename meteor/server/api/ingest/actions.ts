@@ -22,7 +22,7 @@ import { removeRundownsFromDb } from '../rundownPlaylist'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 
 /*
-This file contains actions that can be performed on an ingest-device (MOS-device)
+This file contains actions that can be performed on an ingest-device
 */
 export namespace IngestActions {
 	/**
@@ -72,6 +72,8 @@ export namespace IngestActions {
 		if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
 		if (playlist.rehearsal) currentPlayingPart = null
 
+		const previousPlayingPartExternalId: string | null = rundown.notifiedCurrentPlayingPartExternalId || null
+
 		const currentPlayingPartExternalId: string | null = currentPlayingPart ? currentPlayingPart.externalId : null
 		if (currentPlayingPartExternalId) {
 			Rundowns.update(this._id, {
@@ -83,7 +85,7 @@ export namespace IngestActions {
 		} else {
 			Rundowns.update(this._id, {
 				$unset: {
-					currentPlayingStoryStatus: 1,
+					notifiedCurrentPlayingPartExternalId: 1,
 				},
 			})
 			delete rundown.notifiedCurrentPlayingPartExternalId
@@ -96,7 +98,7 @@ export namespace IngestActions {
 			MOSDeviceActions.notifyCurrentPlayingPart(
 				device,
 				rundown,
-				rundown.notifiedCurrentPlayingPartExternalId || null,
+				previousPlayingPartExternalId,
 				currentPlayingPartExternalId
 			)
 		}

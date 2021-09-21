@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { KeyboardLayouts } from './keyboardLayout'
 
 /**
  * This is an object specifying installation-wide, User Interface settings.
@@ -19,6 +20,8 @@ export interface ISettings {
 	autoRewindLeavingSegment: boolean
 	/** Disable blur border in RundownView */
 	disableBlurBorder: boolean
+	/** Disable blur border in the standalone Shelf */
+	disableBlurBorderInShelf: boolean
 	/** Default time scale zooming for the UI. Default: 1  */
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
@@ -33,6 +36,10 @@ export interface ISettings {
 	defaultDisplayDuration: number
 	/** If true, allows creation of new playlists in the Lobby Gui (rundown list). If false; only pre-existing playlists are allowed. */
 	allowMultiplePlaylistsInGUI: boolean
+	// Show keyboard map in AdLib Shelf
+	showKeyboardMap: boolean
+	// Keyboard map layout (what physical layout to use for the keyboard)
+	keyboardMapLayout: KeyboardLayouts.Names
 	/** How many segments of history to show when scrolling back in time (0 = show current segment only) */
 	followOnAirSegmentsHistory: number
 }
@@ -46,6 +53,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	frameRate: 25,
 	autoRewindLeavingSegment: true,
 	disableBlurBorder: false,
+	disableBlurBorderInShelf: true,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	enableUserAccounts: false,
@@ -53,6 +61,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
 	allowMultiplePlaylistsInGUI: false,
+	showKeyboardMap: true,
+	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	followOnAirSegmentsHistory: 0,
 }
 

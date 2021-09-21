@@ -71,6 +71,7 @@ import _ from 'underscore'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Meteor } from 'meteor/meteor'
 import { WatchedPackagesHelper } from './watchedPackages'
+import { MediaObjects } from '../../../../lib/collections/MediaObjects'
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
 	name: string
@@ -166,6 +167,11 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 
 	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
 		return this.watchedPackages.getPackageInfo(packageId)
+	}
+
+	hackGetMediaObjectDuration(mediaId: string): number | undefined {
+		return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+			?.mediainfo?.format?.duration
 	}
 }
 
@@ -271,6 +277,11 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
+
+	hackGetMediaObjectDuration(mediaId: string): number | undefined {
+		return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+			?.mediainfo?.format?.duration
+	}
 }
 
 /** Rundown */
@@ -358,6 +369,11 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 
 	getPackageInfo(packageId): Readonly<Array<PackageInfo.Any>> {
 		return this.watchedPackages.getPackageInfo(packageId)
+	}
+
+	hackGetMediaObjectDuration(mediaId: string): number | undefined {
+		return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+			?.mediainfo?.format?.duration
 	}
 }
 

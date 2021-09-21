@@ -7,7 +7,7 @@ import { getRundown } from './lib'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { CommitIngestData } from './lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
-import { SegmentId } from '../../../lib/collections/Segments'
+import { SegmentId, SegmentOrphanedReason } from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
 import { isTooCloseToAutonext, LOW_PRIO_DEFER_TIME } from '../playout/lib'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -212,7 +212,7 @@ export async function CommitIngestOperation(
 						if (orphanSegmentIds.size) {
 							ingestCache.Segments.update((s) => orphanSegmentIds.has(s._id), {
 								$set: {
-									orphaned: 'deleted',
+									orphaned: SegmentOrphanedReason.DELETED,
 								},
 							})
 						}
@@ -378,9 +378,8 @@ async function generatePlaylistAndRundownsCollectionInner(
 		// Update the ranks of the rundowns
 		if (!newPlaylist.rundownRanksAreSetInSofie) {
 			// Update the rundown ranks
-			for (const [id, rank] of Object.entries(newRundownOrder)) {
-				const id2 = protectString(id)
-				rundownsCollection.update(id2, { $set: { _rank: rank } })
+			for (const [externalId, rank] of Object.entries(newRundownOrder)) {
+				rundownsCollection.update({ externalId: externalId }, { $set: { _rank: rank } })
 			}
 		} else if (changedRundownId) {
 			// This rundown is new, so push to the end of the manually ordered playlist

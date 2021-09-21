@@ -64,7 +64,7 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.37.0-in-development",
+		"@sofie-automation/server-core-integration": "1.36.0-in-testing.9",
 		"mos-connection": "^1.0.3",
 		"tslib": "^2.1.0",
 		"underscore": "^1.12.1",

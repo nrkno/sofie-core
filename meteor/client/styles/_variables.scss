@@ -7,6 +7,8 @@ $browser-context: 16px; // Default browser font size in pixels
 
 $inspector-shelf-tabs-height: 2.3em;
 
+$segment-background-color: #000;
+
 @function rem($pixels, $context: $browser-context) {
 	@return #{$pixels/$context}rem;
 }

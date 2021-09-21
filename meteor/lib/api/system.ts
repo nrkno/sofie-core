@@ -31,6 +31,7 @@ export interface SystemAPI {
 export enum SystemAPIMethods {
 	'cleanupIndexes' = 'system.cleanupIndexes',
 	'cleanupOldData' = 'system.cleanupOldData',
+	'runCronjob' = 'system.runCronjob',
 	'doSystemBenchmark' = 'system.doSystemBenchmark',
 	'getTranslationBundle' = 'system.getTranslationBundle',
 }

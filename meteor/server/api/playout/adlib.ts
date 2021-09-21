@@ -197,11 +197,22 @@ export namespace ServerPlayoutAdLibAPI {
 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 
+				// Rundows that share the same showstyle variant as the current rundown, so adlibs from these rundowns are safe to play
+				const safeRundownIds = cache.Rundowns.findFetch(
+					{ showStyleVariantId: rundown.showStyleVariantId },
+					{ fields: { _id: 1 } }
+				).map((r) => r._id)
+
 				const adLibPiece = AdLibPieces.findOne({
 					_id: adLibPieceId,
-					rundownId: partInstance.rundownId,
 				})
 				if (!adLibPiece) throw new Meteor.Error(404, `Part Ad Lib Item "${adLibPieceId}" not found!`)
+				if (!safeRundownIds.includes(adLibPiece.rundownId)) {
+					throw new Meteor.Error(
+						403,
+						`Cannot take Part Ad Lib Item "${adLibPieceId}", it does not share a showstyle with the current rundown!`
+					)
+				}
 				if (adLibPiece.invalid)
 					throw new Meteor.Error(404, `Cannot take invalid Part Ad Lib Item "${adLibPieceId}"!`)
 				if (adLibPiece.floated)
@@ -248,12 +259,23 @@ export namespace ServerPlayoutAdLibAPI {
 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 
+				// Rundows that share the same showstyle variant as the current rundown, so adlibs from these rundowns are safe to play
+				const safeRundownIds = cache.Rundowns.findFetch(
+					{ showStyleVariantId: rundown.showStyleVariantId },
+					{ fields: { _id: 1 } }
+				).map((r) => r._id)
+
 				const adLibPiece = RundownBaselineAdLibPieces.findOne({
 					_id: baselineAdLibPieceId,
-					rundownId: partInstance.rundownId,
 				})
 				if (!adLibPiece)
 					throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
+				if (!safeRundownIds.includes(adLibPiece.rundownId)) {
+					throw new Meteor.Error(
+						403,
+						`Cannot take Baseline AdLib-piece "${baselineAdLibPieceId}", it does not share a showstyle with the current rundown!`
+					)
+				}
 
 				await innerStartOrQueueAdLibPiece(cache, rundown, queue, partInstance, adLibPiece)
 			}
@@ -270,6 +292,7 @@ export namespace ServerPlayoutAdLibAPI {
 		if (!playlist.activationId) throw new Meteor.Error(500, 'RundownPlaylist is not active')
 
 		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
+		let queuedPartInstanceId: PartInstanceId | undefined
 		if (queue || adLibPiece.toBeQueued) {
 			const newPartInstance = new PartInstance({
 				_id: getRandomId(),
@@ -289,6 +312,10 @@ export namespace ServerPlayoutAdLibAPI {
 					title: adLibPiece.name,
 					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
+					autoNext: adLibPiece.adlibAutoNext,
+					autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
+					disableOutTransition: adLibPiece.adlibDisableOutTransition,
+					transitionKeepaliveDuration: adLibPiece.adlibTransitionKeepAlive,
 				}),
 			})
 			const newPieceInstance = convertAdLibToPieceInstance(
@@ -298,6 +325,7 @@ export namespace ServerPlayoutAdLibAPI {
 				queue
 			)
 			await innerStartQueuedAdLib(cache, rundown, currentPartInstance, newPartInstance, [newPieceInstance])
+			queuedPartInstanceId = newPartInstance._id
 
 			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 		} else {
@@ -315,6 +343,7 @@ export namespace ServerPlayoutAdLibAPI {
 		await updateTimeline(cache)
 
 		if (span) span.end()
+		return queuedPartInstanceId
 	}
 
 	export async function sourceLayerStickyPieceStart(

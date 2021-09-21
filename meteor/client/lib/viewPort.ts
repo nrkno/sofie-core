@@ -86,7 +86,7 @@ export async function scrollToPart(
 
 const FALLBACK_HEADER_HEIGHT = 65
 let HEADER_HEIGHT: number | undefined = undefined
-export const HEADER_MARGIN = 24
+export const HEADER_MARGIN = 15 // NRK uses: 25
 
 export function getHeaderHeight(): number {
 	if (HEADER_HEIGHT === undefined) {

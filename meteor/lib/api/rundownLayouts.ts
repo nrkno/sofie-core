@@ -26,6 +26,9 @@ import {
 	RundownLayoutSytemStatus,
 	RundownLayoutShowStyleDisplay,
 	RundownLayoutWithFilters,
+	DashboardLayoutFilter,
+	RundownLayoutKeyboardPreview,
+	RundownLayoutNextInfo,
 	RundownLayoutPresenterView,
 	RundownLayoutStudioName,
 	RundownLayoutSegmentName,
@@ -36,6 +39,7 @@ import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
 import { literal } from '../lib'
 import { TFunction } from 'i18next'
+import { StudioId } from '../collections/Studios'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout(
@@ -61,6 +65,7 @@ export interface CustomizableRegionSettingsManifest {
 	_id: string
 	title: string
 	layouts: Array<CustomizableRegionLayout>
+	navigationLink: (studioId: StudioId, layoutId: RundownLayoutId) => string
 }
 
 export interface CustomizableRegionLayout {
@@ -135,26 +140,31 @@ class RundownLayoutsRegistry {
 				_id: CustomizableRegions.RundownView,
 				title: t('Rundown View Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?rundownViewLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.Shelf,
 				title: t('Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}/shelf?layout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.MiniShelf,
 				title: t('Mini Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?miniShelfLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.RundownHeader,
 				title: t('Rundown Header Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?rundownHeaderLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.PresenterView,
 				title: t('Presenter View Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts),
+				navigationLink: (studioId, layoutId) => `/countdowns/${studioId}/presenter?presenterLayout=${layoutId}`,
 			},
 		]
 	}
@@ -181,10 +191,10 @@ export namespace RundownLayoutsAPI {
 		],
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
-		supportedFilters: [],
+		supportedFilters: [RundownLayoutElementType.FILTER],
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
-		supportedFilters: [],
+		supportedFilters: [RundownLayoutElementType.FILTER],
 	})
 	registry.registerRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
 		supportedFilters: [],
@@ -286,6 +296,18 @@ export namespace RundownLayoutsAPI {
 
 	export function isPieceCountdown(element: RundownLayoutElementBase): element is RundownLayoutPieceCountdown {
 		return element.type === RundownLayoutElementType.PIECE_COUNTDOWN
+	}
+
+	export function isDashboardLayoutFilter(element: RundownLayoutElementBase): element is DashboardLayoutFilter {
+		return element.type === RundownLayoutElementType.FILTER
+	}
+
+	export function isKeyboardMap(element: RundownLayoutElementBase): element is RundownLayoutKeyboardPreview {
+		return element.type === RundownLayoutElementType.KEYBOARD_PREVIEW
+	}
+
+	export function isNextInfo(element: RundownLayoutElementBase): element is RundownLayoutNextInfo {
+		return element.type === RundownLayoutElementType.NEXT_INFO
 	}
 
 	export function isPlaylistStartTimer(

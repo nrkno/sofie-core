@@ -7,7 +7,6 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
 import { IOutputLayer, ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -18,7 +17,6 @@ import {
 	IAdLibPanelProps,
 	AdLibFetchAndFilterProps,
 	fetchAndFilter,
-	AdLibPieceUi,
 	matchFilter,
 	AdLibPanelToolbar,
 } from './AdLibPanel'
@@ -31,13 +29,23 @@ import {
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
-import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
+import {
+	AdLibPieceUi,
+	getNextPieceInstancesGrouped,
+	getUnfinishedPieceInstancesGrouped,
+	isAdLibDisplayedAsOnAir,
+	isAdLibNext,
+	isAdLibOnAir,
+} from '../../lib/shelf'
+import { RundownViewKbdShortcuts } from '../RundownView/RundownViewKbdShortcuts'
+import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IState {
 	outputLayers: {
@@ -52,6 +60,8 @@ interface IState {
 }
 
 export interface IDashboardPanelProps {
+	searchFilter?: string | undefined
+	mediaPreviewUrl?: string
 	shouldQueue: boolean
 	hotkeyGroup: string
 }
@@ -69,6 +79,7 @@ interface DashboardPositionableElement {
 	y: number
 	width: number
 	height: number
+	scale?: number
 }
 
 type AdLibPieceUiWithNext = AdLibPieceUi & { isNext: boolean }
@@ -107,6 +118,8 @@ export function dashboardElementPosition(el: DashboardPositionableElement): Reac
 				: el.height < 0
 				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
 				: undefined,
+		// @ts-ignore
+		'--dashboard-panel-scale': el.scale || undefined,
 	}
 }
 
@@ -205,6 +218,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		const { selectedAdLib } = this.state
 		const { selectedPiece } = this.props
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 		this.usedHotkeys.length = 0
 
 		const newState: Partial<IState> = {}
@@ -249,6 +263,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
+		RegisteredHotkeys.remove({
+			tag: this.props.hotkeyGroup,
+		})
+
 		this.usedHotkeys.length = 0
 	}
 
@@ -257,15 +275,20 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		state: IState,
 		uniquenessIds?: Set<string>
 	): AdLibPieceUi[] {
+		const liveSegment = props.uiSegments.find((i) => i.isLive === true)
 		return props.rundownBaselineAdLibs
 			.concat(props.uiSegments.map((seg) => seg.pieces).flat())
 			.filter((item) =>
-				matchFilter(item, props.showStyleBase, props.uiSegments, props.filter, state.searchFilter, uniquenessIds)
+				matchFilter(item, props.showStyleBase, liveSegment, props.filter, state.searchFilter, uniquenessIds)
 			)
 	}
 
 	protected isAdLibOnAir(adLib: AdLibPieceUi) {
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
+	}
+
+	protected isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
+		return isAdLibDisplayedAsOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
 	protected findNext(adLibs: AdLibPieceUi[]): AdLibPieceUiWithNext[] {
@@ -281,6 +304,12 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	protected refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
+
+		// Unregister even when "registerHotkeys" is false, in the case that it has just been toggled off.
+		RegisteredHotkeys.remove({
+			tag: this.props.hotkeyGroup,
+		})
+
 		if (!this.props.registerHotkeys) return
 
 		const preventDefault = (e) => {
@@ -301,6 +330,17 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						this.props.hotkeyGroup
 					)
 					this.usedHotkeys.push(item.hotkey)
+
+					registerHotkey(
+						item.hotkey,
+						item.name,
+						HotkeyAssignmentType.ADLIB,
+						this.props.sourceLayerLookup[item.sourceLayerId],
+						item.toBeQueued || false,
+						this.onToggleAdLib,
+						[item, false],
+						this.props.hotkeyGroup
+					)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
@@ -336,6 +376,17 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					)
 					this.usedHotkeys.push(item.hotkey)
 
+					registerHotkey(
+						item.hotkey,
+						item.name,
+						HotkeyAssignmentType.ADLIB,
+						this.props.sourceLayerLookup[item.sourceLayerId],
+						item.toBeQueued || false,
+						this.onToggleAdLib,
+						[item, false],
+						this.props.hotkeyGroup
+					)
+
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
@@ -357,6 +408,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 		if (this.props.sourceLayerLookup) {
 			const clearKeyboardHotkeySourceLayers: { [hotkey: string]: ISourceLayer[] } = {}
+			const { t } = this.props
 
 			_.each(this.props.sourceLayerLookup, (sourceLayer) => {
 				if (sourceLayer.clearKeyboardHotkey) {
@@ -379,6 +431,19 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					this.props.hotkeyGroup
 				)
 				this.usedHotkeys.push(hotkey)
+
+				registerHotkey(
+					hotkey,
+					t('Clear {{layerNames}}', {
+						layerNames: _.unique(sourceLayers.map((sourceLayer) => sourceLayer.name)).join(', '),
+					}),
+					HotkeyAssignmentType.GLOBAL_ADLIB,
+					undefined,
+					false,
+					this.onClearAllSourceLayers,
+					[sourceLayers],
+					this.props.hotkeyGroup
+				)
 			})
 		}
 	}
@@ -429,7 +494,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
-			return
+			queue = false
 		}
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -637,7 +702,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											onToggleAdLib={this.onToggleOrSelectAdLib}
 											onSelectAdLib={this.onSelectAdLib}
 											playlist={this.props.playlist}
-											isOnAir={this.isAdLibOnAir(adLibPiece)}
+											isOnAir={this.isAdLibDisplayedAsOnAir(adLibPiece)}
 											isNext={adLibPiece.isNext}
 											mediaPreviewUrl={
 												this.props.studio
@@ -683,101 +748,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 		return null
 	}
-}
-
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): PieceInstance[] {
-	let prospectivePieceInstances: PieceInstance[] = []
-	if (nextPartInstanceId) {
-		prospectivePieceInstances = PieceInstances.find({
-			partInstanceId: nextPartInstanceId,
-			$and: [
-				{
-					piece: {
-						$exists: true,
-					},
-				},
-				{
-					$or: [
-						{
-							adLibSourceId: {
-								$exists: true,
-							},
-						},
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
-			],
-		}).fetch()
-	}
-
-	return prospectivePieceInstances
-}
-
-export function getUnfinishedPieceInstancesGrouped(
-	currentPartInstanceId: PartInstanceId | null
-): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
-
-	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.adLibSourceId)
-		.map((piece) => piece.adLibSourceId!)
-	const unfinishedTags: string[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
-
-	return {
-		unfinishedAdLibIds,
-		unfinishedTags,
-	}
-}
-
-export function getNextPieceInstancesGrouped(
-	nextPartInstanceId: PartInstanceId | null
-): Pick<IDashboardPanelTrackedProps, 'nextAdLibIds' | 'nextTags'> & { nextPieceInstances: PieceInstance[] } {
-	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
-
-	const nextAdLibIds: PieceId[] = nextPieceInstances
-		.filter((piece) => !!piece.adLibSourceId)
-		.map((piece) => piece.adLibSourceId!)
-	const nextTags: string[] = nextPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
-
-	return { nextAdLibIds, nextTags, nextPieceInstances }
-}
-
-export function isAdLibOnAir(
-	unfinishedAdLibIds: IDashboardPanelTrackedProps['unfinishedAdLibIds'],
-	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
-	adLib: AdLibPieceUi
-) {
-	if (
-		unfinishedAdLibIds.includes(adLib._id) ||
-		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
-}
-
-export function isAdLibNext(
-	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
-	nextTags: IDashboardPanelTrackedProps['nextTags'],
-	adLib: AdLibPieceUi
-) {
-	if (
-		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
 }
 
 export function findNext(
@@ -826,10 +796,27 @@ export const DashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
+		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
+			(
+				_currentPartInstanceId: PartInstanceId | null,
+				_nextPartInstanceId: PartInstanceId | null,
+				showStyleBase: ShowStyleBase
+			) => {
+				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(showStyleBase, props.playlist)
+				return {
+					unfinishedAdLibIds,
+					unfinishedTags,
+					nextAdLibIds,
+					nextTags,
+				}
+			},
+			'unfinishedAndNextAdLibsAndTags',
+			props.playlist.currentPartInstanceId,
+			props.playlist.nextPartInstanceId,
+			props.showStyleBase
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),

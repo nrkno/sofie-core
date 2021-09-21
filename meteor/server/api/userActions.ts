@@ -460,7 +460,7 @@ export async function executeAction(
 	actionId: string,
 	userData: any,
 	triggerMode?: string
-): Promise<ClientAPI.ClientResponse<void>> {
+): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }>> {
 	check(rundownPlaylistId, String)
 	check(actionDocId, String)
 	check(actionId, String)
@@ -613,9 +613,10 @@ export function userSaveEvaluation(context: MethodContext, evaluation: Evaluatio
 export async function userStoreRundownSnapshot(
 	context: MethodContext,
 	playlistId: RundownPlaylistId,
-	reason: string
+	reason: string,
+	full?: boolean
 ): Promise<ClientAPI.ClientResponse<SnapshotId>> {
-	return ClientAPI.responseSuccess(await storeRundownPlaylistSnapshot(context, playlistId, reason))
+	return ClientAPI.responseSuccess(await storeRundownPlaylistSnapshot(context, playlistId, reason, full))
 }
 export async function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
@@ -638,9 +639,11 @@ export function resyncRundown(context: MethodContext, rundownId: RundownId) {
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundown(context, rundown._id))
 }
 export function resyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId) {
+	check(rundownId, String)
+	check(segmentId, String)
 	rundownContentAllowWrite(context.userId, { rundownId })
 	const segment = Segments.findOne(segmentId)
-	if (!segment) throw new Meteor.Error(404, `Rundown "${segmentId}" not found!`)
+	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, segment.rundownId, segmentId))
 }
@@ -1106,13 +1109,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	async saveEvaluation(_userEvent: string, evaluation: EvaluationBase) {
 		return makePromise(() => userSaveEvaluation(this, evaluation))
 	}
-	async storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
+	async storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string, full?: boolean) {
 		return traceAction(
 			UserActionAPIMethods.storeRundownSnapshot,
 			userStoreRundownSnapshot,
 			this,
 			playlistId,
-			reason
+			reason,
+			full
 		)
 	}
 	async removeRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {

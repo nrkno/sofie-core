@@ -6,7 +6,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { OverflowingContainer } from './OverflowingContainer'
 import ClassNames from 'classnames'
 import { ShelfTabs, DEFAULT_TAB as SHELF_DEFAULT_TAB } from './Shelf'
-import { AdLibPanel, AdLibPieceUi } from './AdLibPanel'
+import { AdLibPanel } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -16,6 +16,7 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withTranslation } from 'react-i18next'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IShelfRundownLayoutProps {
 	rundownLayout: RundownLayout | undefined

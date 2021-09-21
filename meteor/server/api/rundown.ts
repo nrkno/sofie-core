@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { PartId } from '../../lib/collections/Parts'
-import { Segments, SegmentId } from '../../lib/collections/Segments'
+import { Segments, SegmentId, Segment } from '../../lib/collections/Segments'
 import {
 	unprotectObjectArray,
 	protectString,
@@ -376,15 +376,14 @@ export namespace ServerRundownAPI {
 	): TriggerReloadDataResponse {
 		check(segmentId, String)
 		rundownContentAllowWrite(context.userId, { rundownId })
-		logger.info('resyncSegment ' + segmentId)
-		const segment = Segments.findOne(segmentId)
+		const segment = Segments.findOne({ _id: segmentId })
 		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
 		const rundown = Rundowns.findOne({ _id: segment.rundownId })
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${segment.rundownId}" not found!`)
 
 		// Orphaned flag will be reset by the response update
-		return IngestActions.reloadSegment(rundown, segment)
+		return innerResyncSegment(rundown, segment)
 	}
 
 	export function innerResyncRundown(rundown: Rundown): TriggerReloadDataResponse {
@@ -394,6 +393,13 @@ export namespace ServerRundownAPI {
 
 		// Orphaned flag will be reset by the response update
 		return IngestActions.reloadRundown(rundown)
+	}
+
+	export function innerResyncSegment(rundown: Rundown, segment: Segment) {
+		logger.info('resyncSegment ' + segment._id)
+
+		// Orphaned flag will be reset by the response update
+		return IngestActions.reloadSegment(rundown, segment)
 	}
 }
 export namespace ClientRundownAPI {

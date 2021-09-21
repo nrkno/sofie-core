@@ -11,6 +11,7 @@ import {
 	waitForPromise,
 	UnprotectedStringProperties,
 	clone,
+	waitTime,
 } from '../../../../lib/lib'
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
@@ -43,6 +44,9 @@ import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
 import { WatchedPackagesHelper } from './watchedPackages'
+import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { MediaObjects } from '../../../../lib/collections/MediaObjects'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -60,6 +64,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the next partInstance */
 	public nextPartState: ActionPartChange = ActionPartChange.NONE
 	public takeAfterExecute: boolean
+	public queuedPartInstanceId: PartInstanceId | undefined = undefined
 
 	constructor(
 		contextInfo: UserContextInfo,
@@ -407,6 +412,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		)
 
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
+		this.queuedPartInstanceId = newPartInstance._id
 
 		return clone(unprotectObject(newPartInstance))
 	}
@@ -498,12 +504,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return unprotectStringArray(pieceInstances.map((p) => p._id))
 	}
 
-	takeAfterExecuteAction(take: boolean): boolean {
-		this.takeAfterExecute = take
-
-		return this.takeAfterExecute
-	}
-
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {
 		if (!this._cache.Playlist.doc.currentPartInstanceId) {
 			return []
@@ -526,5 +526,29 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		return unprotectStringArray(stoppedIds)
+	}
+	takeAfterExecuteAction(take: boolean): boolean {
+		this.takeAfterExecute = take
+
+		return this.takeAfterExecute
+	}
+	/** Temporary hack: to allow adlib actions to call a function on PeripheralDevices */
+	hackCallPeripheralDeviceFunction(selector: any, functionName, args: any[]) {
+		PeripheralDevices.find(selector).forEach((device) => {
+			PeripheralDeviceAPI.executeFunction(
+				device._id,
+				(err, _result) => {
+					if (err) logger.error(err)
+				},
+				functionName,
+				...args
+			)
+			waitTime(10)
+		})
+	}
+
+	hackGetMediaObjectDuration(mediaId: string): number | undefined {
+		return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+			?.mediainfo?.format?.duration
 	}
 }

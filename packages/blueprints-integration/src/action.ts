@@ -34,6 +34,10 @@ export interface IBlueprintActionManifestDisplay {
 	nextPieceTags?: string[]
 	/** String that can be used to identify adlibs that are equivalent to each other */
 	uniquenessId?: string
+	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
+	invertOnAirState?: boolean
+	/** Do not assign a hotkey to this adlib */
+	noHotKey?: boolean
 }
 
 export interface IBlueprintActionManifestDisplayContent extends IBlueprintActionManifestDisplay {

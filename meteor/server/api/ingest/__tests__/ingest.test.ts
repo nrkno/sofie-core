@@ -66,6 +66,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 		)
 	})
 
+	afterEach(() => {
+		Settings.allowUnsyncedSegments = false
+	})
+
 	testInFiber('dataRundownCreate', () => {
 		// setLoggerLevel('debug')
 

@@ -16,6 +16,8 @@ import { NoteType } from './api/notes'
 import { PackageInfos } from './collections/PackageInfos'
 import { protectString, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
+import { getExpectedPackageId } from './collections/ExpectedPackages'
+import { PieceGeneric } from './collections/Pieces'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a
@@ -163,7 +165,7 @@ export interface ScanInfoForPackage {
 }
 
 export function checkPieceContentStatus(
-	piece: Pick<IBlueprintPieceGeneric, 'name' | 'content' | 'expectedPackages'>,
+	piece: Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>,
 	sourceLayer: ISourceLayer | undefined,
 	studio: Studio | undefined,
 	t?: i18next.TFunction
@@ -217,7 +219,7 @@ export function checkPieceContentStatus(
 						const packageOnPackageContainer = getPackageContainerPackageStatus(
 							studio._id,
 							packageContainerId,
-							expectedPackage._id
+							getExpectedPackageId(piece._id, expectedPackage._id)
 						)
 						const packageName =
 							// @ts-expect-error hack
@@ -406,10 +408,10 @@ export function checkPieceContentStatus(
 									)
 								}
 							}
-							if (deepScan?.blacks) {
+							if (deepScan?.blacks?.length) {
 								addFrameWarning(deepScan.blacks, 'black', t)
 							}
-							if (deepScan?.freezes) {
+							if (deepScan?.freezes?.length) {
 								addFrameWarning(deepScan.freezes, 'freeze', t)
 							}
 						}
@@ -433,6 +435,7 @@ export function checkPieceContentStatus(
 			switch (sourceLayer.type) {
 				case SourceLayerType.VT:
 				case SourceLayerType.LIVE_SPEAK:
+				case SourceLayerType.TRANSITION:
 					// If the fileName is not set...
 					if (!fileName) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
@@ -567,10 +570,10 @@ export function checkPieceContentStatus(
 												)
 											}
 										}
-										if (mediaObject.mediainfo.blacks) {
+										if (!piece.content.ignoreBlackFrames && mediaObject.mediainfo.blacks?.length) {
 											addFrameWarning(mediaObject.mediainfo.blacks, t('black'), t)
 										}
-										if (mediaObject.mediainfo.freezes) {
+										if (!piece.content.ignoreFreezeFrame && mediaObject.mediainfo.freezes?.length) {
 											addFrameWarning(mediaObject.mediainfo.freezes, t('freeze'), t)
 										}
 									}
@@ -609,6 +612,9 @@ export function checkPieceContentStatus(
 						}
 					}
 					break
+				// Note: If adding another type here, make sure it is also handled in:
+				// getMediaObjectMediaId()
+				// * withMediaObjectStatus.tsx (updateMediaObjectSubscription)
 			}
 		}
 	}

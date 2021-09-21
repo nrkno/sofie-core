@@ -7,6 +7,7 @@ import { fas, faChevronUp, IconName, IconPack, IconDefinition } from '@fortaweso
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
 
 library.add(fas)
 
@@ -110,10 +111,10 @@ export const IconPicker = withTranslation()(
 					)}
 				>
 					<div className={ClassNames('expco-title focusable-main')} onClick={this.toggleExpco}>
-						{this.state.selectedValue && <FontAwesomeIcon icon={this.state.selectedValue} />}
+						{this.state.selectedValue && <FontAwesomeIcon icon={this.state.selectedValue as IconProp} />}
 					</div>
 					<a className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
-						<FontAwesomeIcon icon={faChevronUp} />
+						<FontAwesomeIcon icon={faChevronUp as IconProp} />
 					</a>
 					<div className="expco-body bd">
 						<input
@@ -135,7 +136,7 @@ export const IconPicker = withTranslation()(
 									return (
 										<div className="expco-item" key={key}>
 											<label className="action-btn" title={value.iconName} onClick={() => this.handleChange(value)}>
-												<FontAwesomeIcon icon={value.iconName} />
+												<FontAwesomeIcon icon={value.iconName as IconProp} />
 											</label>
 										</div>
 									)

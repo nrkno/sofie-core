@@ -8,12 +8,13 @@ import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
+import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceCountdownPanel } from './PieceCountdownPanel'
+import { NextInfoPanel } from './NextInfoPanel'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from './AdLibPanel'
 import { PlaylistStartTimerPanel } from './PlaylistStartTimerPanel'
 import { EndWordsPanel } from './EndWordsPanel'
 import { PlaylistEndTimerPanel } from './PlaylistEndTimerPanel'
@@ -29,6 +30,7 @@ import { StudioNamePanel } from './StudioNamePanel'
 import { SegmentNamePanel } from './SegmentNamePanel'
 import { PartNamePanel } from './PartNamePanel'
 import { ColoredBoxPanel } from './ColoredBoxPanel'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -147,6 +149,55 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								playlist={props.playlist}
 								layout={rundownLayout}
 								panel={panel}
+							/>
+						) : RundownLayoutsAPI.isExternalFrame(panel) ? (
+							<ExternalFramePanel
+								key={panel._id}
+								panel={panel}
+								layout={rundownLayout}
+								visible={true}
+								playlist={props.playlist}
+							/>
+						) : RundownLayoutsAPI.isAdLibRegion(panel) ? (
+							<AdLibRegionPanel
+								key={panel._id}
+								includeGlobalAdLibs={true}
+								filter={RundownLayoutsAPI.adLibRegionToFilter(panel)}
+								panel={panel}
+								adlibRank={panel.adlibRank}
+								layout={rundownLayout}
+								visible={true}
+								playlist={props.playlist}
+								showStyleBase={props.showStyleBase}
+								studioMode={props.studioMode}
+								selectedPiece={props.selectedPiece}
+								onSelectPiece={props.onSelectPiece}
+								studio={props.studio}
+								hotkeyGroup={panel.name.replace(/\W/, '_')}
+							/>
+						) : RundownLayoutsAPI.isKeyboardMap(panel) ? (
+							<KeyboardPreviewPanel
+								key={panel._id}
+								visible={true}
+								showStyleBase={props.showStyleBase}
+								layout={rundownLayout}
+								panel={panel}
+							/>
+						) : RundownLayoutsAPI.isPieceCountdown(panel) ? (
+							<PieceCountdownPanel
+								key={panel._id}
+								panel={panel}
+								layout={rundownLayout}
+								playlist={props.playlist}
+								visible={true}
+							/>
+						) : RundownLayoutsAPI.isNextInfo(panel) ? (
+							<NextInfoPanel
+								key={panel._id}
+								panel={panel}
+								layout={rundownLayout}
+								playlist={props.playlist}
+								visible={true}
 							/>
 						) : RundownLayoutsAPI.isSegmentName(panel) ? (
 							<SegmentNamePanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />

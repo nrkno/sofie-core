@@ -11,7 +11,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
@@ -33,6 +32,11 @@ import RundownViewEventBus, {
 } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
+import { RundownViewKbdShortcuts } from '../RundownView/RundownViewKbdShortcuts'
+import { isModalShowing } from '../../lib/ModalDialog'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { MeteorCall } from '../../../lib/api/methods'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 
@@ -41,6 +45,7 @@ export enum ShelfTabs {
 	ADLIB_LAYOUT_FILTER = 'adlib_layout_filter',
 	GLOBAL_ADLIB = 'global_adlib',
 	SYSTEM_HOTKEYS = 'system_hotkeys',
+	KEYBOARD = 'keyboard_preview',
 }
 export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
@@ -63,6 +68,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 		inspector: boolean
 	}
 	bucketDisplayFilter: number[] | undefined
+	showBuckets: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onRegisterHotkeys: (
@@ -139,6 +145,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		this.bindKeys = [
 			{
+				key: RundownViewKbdShortcuts.RUNDOWN_TAKE,
+				up: this.keyTake,
+				label: t('Take'),
+				global: true,
+			},
+			{
 				key: RundownViewKbdShortcuts.RUNDOWN_TOGGLE_SHELF,
 				up: this.keyToggleShelf,
 				label: t('Toggle Shelf'),
@@ -152,14 +164,23 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		]
 	}
 
+	keyTake = (e: mousetrap.ExtendedKeyboardEvent) => {
+		if (!isModalShowing()) this.take(e)
+	}
+
+	take = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode) {
+			doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+		}
+	}
+
 	componentDidMount() {
 		const preventDefault = (e) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 		this.bindKeys.forEach((k) => {
-			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
+			const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
 			if (k.up) {
 				method(
 					k.key,
@@ -167,14 +188,16 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 						preventDefault(e)
 						if (k.up) k.up(e)
 					},
-					'keyup'
+					'keyup',
+					'Shelf'
 				)
 				method(
 					k.key,
 					(e: KeyboardEvent) => {
 						preventDefault(e)
 					},
-					'keydown'
+					'keydown',
+					'Shelf'
 				)
 			}
 			if (k.down) {
@@ -184,7 +207,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 						preventDefault(e)
 						if (k.down) k.down(e)
 					},
-					'keydown'
+					'keydown',
+					'Shelf'
 				)
 			}
 		})
@@ -203,11 +227,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	componentWillUnmount() {
 		this.bindKeys.forEach((k) => {
 			if (k.up) {
-				mousetrap.unbind(k.key, 'keyup')
-				mousetrap.unbind(k.key, 'keydown')
+				mousetrapHelper.unbind(k.key, 'Shelf', 'keyup')
+				mousetrapHelper.unbind(k.key, 'Shelf', 'keydown')
 			}
 			if (k.down) {
-				mousetrap.unbind(k.key, 'keydown')
+				mousetrapHelper.unbind(k.key, 'Shelf', 'keydown')
 			}
 		})
 
@@ -470,7 +494,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				style={fullViewport ? undefined : this.getStyle()}
 				ref={this.setRef}
 			>
-				<ShelfContextMenu />
+				{!this.props.rundownLayout?.disableContextMenu && <ShelfContextMenu />}
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"
@@ -536,7 +560,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							</ErrorBoundary>
 						</ContextMenuTrigger>
 					) : null}
-					{!this.props.fullViewport || this.props.shelfDisplayOptions.buckets ? (
+					{(!this.props.fullViewport || this.props.shelfDisplayOptions.buckets) &&
+					(!this.props.rundownLayout || this.props.rundownLayout.showBuckets) ? (
 						<ErrorBoundary>
 							<RundownViewBuckets
 								buckets={this.props.buckets}

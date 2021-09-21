@@ -46,7 +46,7 @@ export function AfterBroadcastForm(props: IProps) {
 			})
 		}
 
-		if (answers.q0 !== 'nothing') {
+		if (answers.q0 !== 'nothing' || answers.q1.trim() !== '') {
 			doUserAction(
 				t,
 				e,
