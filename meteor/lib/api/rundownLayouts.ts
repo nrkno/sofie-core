@@ -199,7 +199,7 @@ export namespace RundownLayoutsAPI {
 
 	export function isDashboardLayout(layout: RundownLayoutBase): layout is DashboardLayout {
 		// we need to check if filters are defined, because DashboardLayout is a RundownLayoutWithFilters, and RundownLayoutBase doesn't require it
-		return layout.type === RundownLayoutType.DASHBOARD_LAYOUT && (layout as RundownLayout).filters !== undefined
+		return layout.type === RundownLayoutType.DASHBOARD_LAYOUT && (layout as DashboardLayout).filters !== undefined
 	}
 
 	export function isRundownHeaderLayout(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
