@@ -118,13 +118,15 @@ class RundownLayoutsRegistry {
 	}
 
 	private wrapToCustomizableRegionLayout(
-		layouts: Map<RundownLayoutType, LayoutDescriptor>
+		layouts: Map<RundownLayoutType, LayoutDescriptor>,
+		t: TFunction
 	): CustomizableRegionLayout[] {
 		return Array.from(layouts.entries()).map(([layoutType, descriptor]) => {
 			return literal<CustomizableRegionLayout>({
 				_id: layoutType,
 				type: layoutType,
 				...descriptor,
+				filtersTitle: descriptor.filtersTitle ? t(descriptor.filtersTitle) : undefined,
 			})
 		})
 	}
@@ -134,27 +136,27 @@ class RundownLayoutsRegistry {
 			{
 				_id: CustomizableRegions.RundownView,
 				title: t('Rundown View Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts, t),
 			},
 			{
 				_id: CustomizableRegions.Shelf,
 				title: t('Shelf Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts, t),
 			},
 			{
 				_id: CustomizableRegions.MiniShelf,
 				title: t('Mini Shelf Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts, t),
 			},
 			{
 				_id: CustomizableRegions.RundownHeader,
 				title: t('Rundown Header Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts, t),
 			},
 			{
 				_id: CustomizableRegions.PresenterView,
 				title: t('Presenter View Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts, t),
 			},
 		]
 	}
