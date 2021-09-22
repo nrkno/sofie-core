@@ -65,7 +65,7 @@ export default withTranslation()(
 			})
 		}
 
-		renderFilter(
+		renderRundownLayoutFilter(
 			item: RundownLayoutBase,
 			tab: RundownLayoutFilterBase,
 			index: number,
@@ -1023,7 +1023,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderSegmentCountDown(
+		renderSegmentTiming(
 			item: RundownLayoutBase,
 			tab: RundownLayoutSegmentTiming,
 			index: number,
@@ -1635,6 +1635,52 @@ export default withTranslation()(
 			)
 		}
 
+		renderFilter(
+			item: RundownLayoutBase,
+			filter: RundownLayoutElementBase,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			if (RundownLayoutsAPI.isFilter(filter)) {
+				return this.renderRundownLayoutFilter(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isExternalFrame(filter)) {
+				return this.renderFrame(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isAdLibRegion(filter)) {
+				return this.renderAdLibRegion(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPieceCountdown(filter)) {
+				return this.renderPieceCountdown(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPlaylistStartTimer(filter)) {
+				return this.renderPlaylistStartTimer(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPlaylistEndTimer(filter)) {
+				return this.renderPlaylistEndTimer(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isEndWords(filter)) {
+				return this.renderEndWords(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isSegmentTiming(filter)) {
+				return this.renderSegmentTiming(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPartTiming(filter)) {
+				return this.renderPartTiming(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isTextLabel(filter)) {
+				return this.renderTextLabel(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPlaylistName(filter)) {
+				return this.renderPlaylistName(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isStudioName(filter)) {
+				return this.renderStudioName(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isSegmentName(filter)) {
+				return this.renderSegmentName(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPartName(filter)) {
+				return this.renderPartName(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isColoredBox(filter)) {
+				return this.renderColoredBox(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isTimeOfDay(filter)) {
+				return this.renderTimeOfDay(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isShowStyleDisplay(filter)) {
+				return this.renderShowStyleDisplay(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isSystemStatus(filter)) {
+				return this.renderSystemStatus(item, filter, index, isRundownLayout, isDashboardLayout)
+			}
+		}
+
 		render() {
 			const { t } = this.props
 
@@ -1682,145 +1728,7 @@ export default withTranslation()(
 							</label>
 						</div>
 					</div>
-					{RundownLayoutsAPI.isFilter(this.props.filter)
-						? this.renderFilter(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isExternalFrame(this.props.filter)
-						? this.renderFrame(this.props.item, this.props.filter, this.props.index, isRundownLayout, isDashboardLayout)
-						: RundownLayoutsAPI.isAdLibRegion(this.props.filter)
-						? this.renderAdLibRegion(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPieceCountdown(this.props.filter)
-						? this.renderPieceCountdown(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPlaylistStartTimer(this.props.filter)
-						? this.renderPlaylistStartTimer(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPlaylistEndTimer(this.props.filter)
-						? this.renderPlaylistEndTimer(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isEndWords(this.props.filter)
-						? this.renderEndWords(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isSegmentTiming(this.props.filter)
-						? this.renderSegmentCountDown(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPartTiming(this.props.filter)
-						? this.renderPartTiming(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isTextLabel(this.props.filter)
-						? this.renderTextLabel(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPlaylistName(this.props.filter)
-						? this.renderPlaylistName(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isStudioName(this.props.filter)
-						? this.renderStudioName(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isSegmentName(this.props.filter)
-						? this.renderSegmentName(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPartName(this.props.filter)
-						? this.renderPartName(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isColoredBox(this.props.filter)
-						? this.renderColoredBox(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isTimeOfDay(this.props.filter)
-						? this.renderTimeOfDay(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isShowStyleDisplay(this.props.filter)
-						? this.renderShowStyleDisplay(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isSystemStatus(this.props.filter)
-						? this.renderSystemStatus(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: undefined}
+					{this.renderFilter(this.props.item, this.props.filter, this.props.index, isRundownLayout, isDashboardLayout)}
 				</div>
 			)
 		}
