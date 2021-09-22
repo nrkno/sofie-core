@@ -34,7 +34,7 @@ interface IAdLibRegionPanelProps {
 
 type IAdLibRegionPanelTrackedProps = IDashboardPanelTrackedProps
 
-export class AdLibRegionPanelInner extends MeteorReactComponent<
+class AdLibRegionPanelInner extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
 	IState
 > {

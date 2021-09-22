@@ -29,7 +29,7 @@ interface IEndsWordsPanelTrackedProps {
 
 interface IState {}
 
-export class EndWordsPanelInner extends MeteorReactComponent<
+class EndWordsPanelInner extends MeteorReactComponent<
 	Translated<IEndsWordsPanelProps & IEndsWordsPanelTrackedProps>,
 	IState
 > {

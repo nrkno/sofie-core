@@ -26,7 +26,7 @@ interface IState {}
 
 interface IStudioNamePanelTrackedProps {}
 
-export class StudioNamePanelInner extends MeteorReactComponent<
+class StudioNamePanelInner extends MeteorReactComponent<
 	Translated<IStudioNamePanelProps & IStudioNamePanelTrackedProps>,
 	IState
 > {

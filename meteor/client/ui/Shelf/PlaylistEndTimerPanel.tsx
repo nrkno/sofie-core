@@ -24,10 +24,7 @@ interface IPlaylistStartTimerPanelProps {
 
 interface IState {}
 
-export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
-	Translated<IPlaylistStartTimerPanelProps>,
-	IState
-> {
+class PlaylistEndTimerPanelInner extends MeteorReactComponent<Translated<IPlaylistStartTimerPanelProps>, IState> {
 	constructor(props) {
 		super(props)
 	}
