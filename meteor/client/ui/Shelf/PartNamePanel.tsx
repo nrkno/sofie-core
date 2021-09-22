@@ -15,7 +15,7 @@ import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { findPieceInstanceToShowFromInstances, IFoundPieceInstance } from '../PieceIcons/utils'
 import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { RundownUtils } from '../../lib/rundown'
 
 interface IPartNamePanelProps {
 	visible?: boolean
@@ -45,7 +45,7 @@ class PartNamePanelInner extends MeteorReactComponent<
 		const { t, panel } = this.props
 
 		const sourceLayerType = this.props.instanceToShow?.sourceLayer?.type
-		let backgroundSourceLayer = sourceLayerType ? sourceLayerTypeToString(sourceLayerType) : undefined
+		let backgroundSourceLayer = sourceLayerType ? RundownUtils.getSourceLayerClassName(sourceLayerType) : undefined
 
 		if (!backgroundSourceLayer) {
 			backgroundSourceLayer = ''
@@ -66,25 +66,6 @@ class PartNamePanelInner extends MeteorReactComponent<
 				</div>
 			</div>
 		)
-	}
-}
-
-function sourceLayerTypeToString(sourceLayerType: SourceLayerType) {
-	if (!sourceLayerType) return
-
-	switch (sourceLayerType) {
-		case SourceLayerType.GRAPHICS:
-			return 'graphics'
-		case SourceLayerType.LIVE_SPEAK:
-			return 'live-speak'
-		case SourceLayerType.REMOTE:
-			return 'remote'
-		case SourceLayerType.SPLITS:
-			return 'splits'
-		case SourceLayerType.VT:
-			return 'vt'
-		case SourceLayerType.CAMERA:
-			return 'camera'
 	}
 }
 
