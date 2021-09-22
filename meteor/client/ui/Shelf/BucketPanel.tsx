@@ -184,7 +184,10 @@ export function actionToAdLibPieceUi(
 
 	return literal<BucketAdLibActionUi>({
 		_id: protectString(`${action._id}`),
-		name: translateMessage(action.display.label, i18nTranslator),
+		name:
+			typeof action.display.label === 'string'
+				? action.display.label
+				: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
@@ -458,8 +461,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						)
 					}
 				}
-
-				onSelectAdLib = (_piece: BucketAdLibItem, _e: any) => {}
 
 				onToggleAdLib = (piece: BucketAdLibItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
@@ -799,7 +800,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
 													outputLayer={this.props.outputLayers[adlib.outputLayerId]}
 													onToggleAdLib={this.onToggleAdLib as any}
-													onSelectAdLib={this.onSelectAdLib as any}
+													onSelectAdLib={this.props.onSelectAdlib}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir(adlib as any as AdLibPieceUi)}
 													mediaPreviewUrl={

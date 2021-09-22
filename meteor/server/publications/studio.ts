@@ -13,7 +13,7 @@ import { FindOptions, MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
-import { ExpectedPackageDBBase, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDBBase, ExpectedPackageId, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
@@ -115,7 +115,7 @@ meteorPublish(PubSub.packageInfos, function (selector, token) {
 })
 meteorPublish(
 	PubSub.packageContainerPackageStatuses,
-	function (studioId: StudioId, containerId?: string, packageId?: string) {
+	function (studioId: StudioId, containerId?: string, packageId?: ExpectedPackageId) {
 		if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
 
 		check(studioId, String)

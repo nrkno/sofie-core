@@ -17,8 +17,8 @@ import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
-import { literal, protectString } from '../../../lib/lib'
-import { ExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
+import { literal } from '../../../lib/lib'
+import { ExpectedPackageId, getExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
 import * as _ from 'underscore'
 import { MongoSelector } from '../../../lib/typings/meteor'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
@@ -88,7 +88,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 							const expectedPackage = piece.expectedPackages[i]
 							const id = expectedPackage._id || '__unnamed' + i
 
-							expectedPackageIds.push(protectString(`${piece._id}_${id}`))
+							expectedPackageIds.push(getExpectedPackageId(piece._id, id))
 						}
 					}
 					if (this.props.studio) {

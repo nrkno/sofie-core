@@ -80,6 +80,15 @@ import {
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
+import {
+	ExpectedPackageWorkStatus,
+	ExpectedPackageWorkStatuses,
+} from '../../lib/collections/ExpectedPackageWorkStatuses'
+import {
+	PackageContainerPackageStatusDB,
+	PackageContainerPackageStatuses,
+} from '../../lib/collections/PackageContainerPackageStatus'
+import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -121,6 +130,10 @@ interface RundownPlaylistSnapshot {
 	expectedMediaItems: Array<ExpectedMediaItem>
 	expectedPlayoutItems: Array<ExpectedPlayoutItem>
 	expectedPackages: Array<ExpectedPackageDB>
+
+	expectedPackageWorkStatuses: Array<ExpectedPackageWorkStatus>
+	packageContainerPackageStatuses: Array<PackageContainerPackageStatusDB>
+	packageInfos: Array<PackageInfoDB>
 }
 interface SystemSnapshot {
 	version: string
@@ -205,6 +218,16 @@ async function createRundownPlaylistSnapshot(
 	const expectedPackages = await ExpectedPackages.findFetchAsync({ rundownId: { $in: rundownIds } })
 	const baselineObjs = await RundownBaselineObjs.findFetchAsync({ rundownId: { $in: rundownIds } })
 
+	const expectedPackageWorkStatuses = await ExpectedPackageWorkStatuses.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+	const packageContainerPackageStatuses = await PackageContainerPackageStatuses.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+	const packageInfos = await PackageInfos.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
@@ -237,6 +260,9 @@ async function createRundownPlaylistSnapshot(
 		expectedMediaItems,
 		expectedPlayoutItems,
 		expectedPackages,
+		expectedPackageWorkStatuses,
+		packageContainerPackageStatuses,
+		packageInfos,
 	}
 }
 
@@ -691,6 +717,13 @@ export async function restoreFromRundownPlaylistSnapshot(
 		piece.startSegmentId = segmentIdMap[unprotectString(piece.startSegmentId)]
 		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
 	})
+	_.each(snapshot.adLibPieces, (piece) => {
+		const oldId = piece._id
+		piece.rundownId = rundownIdMap[unprotectString(piece.rundownId)]
+		if (piece.partId) piece.partId = partIdMap[unprotectString(piece.partId)]
+		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
+	})
+
 	const pieceInstanceIdMap: { [key: string]: PieceInstanceId } = {}
 	_.each(snapshot.pieceInstances, (pieceInstance) => {
 		const oldId = pieceInstance._id
@@ -798,12 +831,7 @@ export async function restoreFromRundownPlaylistSnapshot(
 		saveIntoDb(
 			ExpectedPlayoutItems,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPlayoutItems || [], true)
-		),
-		saveIntoDb(
-			ExpectedPackages,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPackages || [], true)
+			updateItemIds(snapshot.expectedPlayoutItems || [], false)
 		),
 	])
 
