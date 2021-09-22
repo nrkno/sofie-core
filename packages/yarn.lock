@@ -1536,6 +1536,17 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
+"@tv2media/v-connection@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-5.1.0.tgz#683b55ca80ed5c076b4af6f580e883c613f05190"
+  integrity sha512-Kg9drmAllMtzoJ6dgXxSCKjSzQyp6jUOxvwkP4PxAZE9Ifa2KHV/IhjPfwG7QXSTOrUFDRac15HQMMO6tFIltA==
+  dependencies:
+    request "^2.88.2"
+    request-promise-native "^1.0.9"
+    uuid "^8.3.2"
+    ws "^7.4.6"
+    xml2js "^0.4.23"
+
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
   version "7.1.16"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.16.tgz#bc12c74b7d65e82d29876b5d0baf5c625ac58702"
@@ -8487,18 +8498,26 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@6.2.0-release37.0:
-  version "6.2.0-release37.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-release37.0.tgz#204330255d99118819953adb8e954ca8bc1793fe"
-  integrity sha512-fqAX7WRfJu/VODGhoVzfgXr6q4Zwx3UBPnVRYzA4OPAdFe8WRG5T8XGJnuzg+5YfBjU/dOy+Fn5xoI5x7zzpMA==
+timeline-state-resolver-types@6.2.0-nightly-release37-20210920-094335-6d1ddb522.0:
+  version "6.2.0-nightly-release37-20210920-094335-6d1ddb522.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-nightly-release37-20210920-094335-6d1ddb522.0.tgz#bc1979d7a41a6734b5ad007894d760306a874f0b"
+  integrity sha512-6Vy5A0nYD7zYiW2W7OmG3bz+UNkyzKh9EUYOgyfCgLJV69Cq1Ofg8TYMyYQqAQvQCNUJHcLYk2woBgV6pefg+g==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-release37.0:
-  version "6.2.0-release37.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.0.tgz#b9d73842aebd128c90d0efabfb8d3bc9adc063e7"
-  integrity sha512-mH269CqowSygI2Yj3HPIeu6OeONOwbw1St/tygsS7K2OT4lpwx4mBG0yWm0JgqA4mLcQu1NSVNj6LWGb/AL9ZA==
+timeline-state-resolver-types@6.2.0-release37.1:
+  version "6.2.0-release37.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-release37.1.tgz#fafe37c2547301c3ec0c528822368c7e88fd8302"
+  integrity sha512-YrSCbfz7ZPs6icpJpT61IjFxx1T3334DK0bWpCjgRAHz7C+eb28POtXTgblh/Umq77qoweowmp529ZX/0eB2AQ==
   dependencies:
+    tslib "^2.3.1"
+
+timeline-state-resolver@6.2.0-release37.2:
+  version "6.2.0-release37.2"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.2.tgz#3482e05c19b178c3668605e86c04fcb3c0afbcb0"
+  integrity sha512-2Qvyyvr2T0JK8AzJnfRygVMZw6VXUuCXAEw4G9GA4lWmjRd3b/+KU3ZevgJbfWaRmGYSOzt8OVEk2A+eox4Q1w==
+  dependencies:
+    "@tv2media/v-connection" "^5.1.0"
     atem-connection "^2.3.0"
     atem-state "^0.12.1"
     casparcg-connection "^5.1.0"
@@ -8518,13 +8537,12 @@ timeline-state-resolver@6.2.0-release37.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.2.0-release37.0"
+    timeline-state-resolver-types "6.2.0-release37.1"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^1.0.12"
     underscore "^1.12.0"
     underscore-deep-extend "^1.1.5"
     utf-8-validate "^5.0.2"
-    v-connection "git+https://github.com/olzzon/v-connection#v20210604_1"
     ws "^7.5.5"
     xml-js "^1.6.11"
 
@@ -8977,16 +8995,6 @@ uuid@^8.0.0, uuid@^8.3.0, uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
-
-"v-connection@git+https://github.com/olzzon/v-connection#v20210604_1":
-  version "0.0.1"
-  resolved "git+https://github.com/olzzon/v-connection#fce072ef2e8df663cea64eefa85c3d4c5e27c329"
-  dependencies:
-    request "^2.88.2"
-    request-promise-native "^1.0.9"
-    uuid "^8.3.2"
-    ws "^7.4.6"
-    xml2js "^0.4.23"
 
 v8-compile-cache@^2.0.3:
   version "2.3.0"
