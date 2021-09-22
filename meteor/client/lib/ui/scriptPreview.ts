@@ -7,7 +7,7 @@ interface ScriptPreview {
 	breakScript: boolean
 }
 
-export function GetScriptPreview(fullScript: string): ScriptPreview {
+export function getScriptPreview(fullScript: string): ScriptPreview {
 	let startOfScript = fullScript
 	let cutLength = startOfScript.length
 	if (startOfScript.length > SCRIPT_PART_LENGTH) {

@@ -13,7 +13,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { GetScriptPreview } from '../scriptPreview'
+import { getScriptPreview } from '../../lib/ui/scriptPreview'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 
 interface IEndsWordsPanelProps {
@@ -43,7 +43,7 @@ class EndWordsPanelInner extends MeteorReactComponent<
 		const { t, livePieceInstance, panel } = this.props
 		const content = livePieceInstance?.piece.content as Partial<ScriptContent> | undefined
 
-		const { endOfScript } = GetScriptPreview(content?.fullScript || '')
+		const { endOfScript } = getScriptPreview(content?.fullScript || '')
 
 		return (
 			<div
