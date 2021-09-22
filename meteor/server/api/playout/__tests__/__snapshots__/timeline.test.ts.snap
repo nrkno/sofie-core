@@ -1,5 +1,129 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Timeline Basic inTransition 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio11",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint7",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9021",
+  },
+]
+`;
+
+exports[`Timeline Basic inTransition with planned pieces 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio17",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint13",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9021",
+  },
+]
+`;
+
+exports[`Timeline Basic inTransition with transitionPreroll + preroll 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio35",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint31",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9021",
+  },
+]
+`;
+
+exports[`Timeline Basic inTransition with transitionPreroll 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio29",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint25",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9021",
+  },
+]
+`;
+
 exports[`Timeline Basic rundown 1`] = `
 Array [
   Object {
@@ -244,6 +368,161 @@ Array [
       },
     ],
     "timelineHash": "randomId9025",
+  },
+]
+`;
+
+exports[`Timeline Preroll 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio23",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint19",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9021",
+  },
+]
+`;
+
+exports[`Timeline inTransition disabled 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio59",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint55",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9021",
+  },
+]
+`;
+
+exports[`Timeline inTransition is disabled during hold 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio53",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint49",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9024",
+  },
+]
+`;
+
+exports[`Timeline inTransition with existing infinites 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio41",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint37",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9023",
+  },
+]
+`;
+
+exports[`Timeline inTransition with new infinite 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio47",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint43",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9022",
   },
 ]
 `;
