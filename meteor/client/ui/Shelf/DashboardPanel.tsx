@@ -697,7 +697,6 @@ export function isAdLibOnAir(
 	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
 	adLib: AdLibPieceUi
 ) {
-	console.log('isAdLibOnAir', adLib.name, adLib._id, adLib.currentPieceTags, unfinishedTags)
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
 		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
