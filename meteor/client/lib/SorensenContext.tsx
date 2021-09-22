@@ -3,7 +3,7 @@ import Sorensen from '@sofie-automation/sorensen'
 
 export const SorensenContext = React.createContext<typeof Sorensen | null>(null)
 
-function preventDefault(e: KeyboardEvent) {
+export function preventDefault(e: KeyboardEvent) {
 	e.preventDefault()
 }
 
@@ -28,10 +28,8 @@ export const SorensenContextProvider: React.FC = function SorensenContextProvide
 				global: true,
 			})
 			// block default Chromium F3 behavior (opening search)
-			Sorensen.bind(['F3', 'Control+KeyF'], preventDefault, {
+			Sorensen.bind('F3', preventDefault, {
 				global: true,
-				preventDefaultPartials: false,
-				ordered: 'modifiersFirst',
 			})
 			// block default Chromium F10 behavior (focus Window Menu)
 			Sorensen.bind('F10', preventDefault, {
