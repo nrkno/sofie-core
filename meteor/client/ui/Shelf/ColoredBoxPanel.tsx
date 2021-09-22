@@ -21,14 +21,7 @@ interface IColoredBoxPanelProps {
 
 interface IState {}
 
-interface IColoredBoxPanelTrackedProps {
-	name?: string
-}
-
-class ColoredBoxPanelInner extends MeteorReactComponent<
-	Translated<IColoredBoxPanelProps & IColoredBoxPanelTrackedProps>,
-	IState
-> {
+class ColoredBoxPanelInner extends MeteorReactComponent<Translated<IColoredBoxPanelProps>, IState> {
 	constructor(props) {
 		super(props)
 	}
