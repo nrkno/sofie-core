@@ -31,11 +31,13 @@ import { PieceId } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { Rundowns } from '../../../lib/collections/Rundowns'
 
 interface IState {
 	outputLayers: {
@@ -568,79 +570,53 @@ export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
 	if (playlist.activationId && playlist.currentPartInstanceId) {
-		prospectivePieces = PieceInstances.find({
-			startedPlayback: {
-				$exists: true,
-			},
-			playlistActivationId: playlist.activationId,
-			$and: [
-				{
-					$or: [
-						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
-						},
-						{
-							stoppedPlayback: {
-								$exists: false,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							adLibSourceId: {
-								$exists: true,
-							},
-						},
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							userDuration: {
-								$exists: false,
-							},
-						},
-						{
-							'userDuration.end': {
-								$exists: false,
-							},
-						},
-					],
-				},
-			],
-		}).fetch()
+		const partInstance = PartInstances.findOne(playlist.currentPartInstanceId)
 
-		let nearestEnd = Number.POSITIVE_INFINITY
-		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-			const piece = pieceInstance.piece
-			const end: number | undefined =
-				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
-					? pieceInstance.userDuration.end
-					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + pieceInstance.startedPlayback!
-					: undefined
+		if (partInstance) {
+			const rundown = Rundowns.findOne(partInstance.rundownId)
+			if (rundown) {
+				const showStyle = rundown.getShowStyleBase()
 
-			if (end !== undefined) {
-				if (end > now) {
-					nearestEnd = nearestEnd > end ? end : nearestEnd
+				prospectivePieces = PieceInstances.find({
+					partInstanceId: playlist.currentPartInstanceId,
+					playlistActivationId: playlist.activationId,
+				}).fetch()
+
+				const nowInPart = partInstance.timings?.startedPlayback ? now - partInstance.timings.startedPlayback : 0
+				prospectivePieces = processAndPrunePieceInstanceTimings(showStyle, prospectivePieces, nowInPart)
+
+				let nearestEnd = Number.POSITIVE_INFINITY
+				prospectivePieces = prospectivePieces.filter((pieceInstance) => {
+					const piece = pieceInstance.piece
+
+					if (!pieceInstance.adLibSourceId && !piece.tags) {
+						// No effect on the data, so ignore
+						return false
+					}
+
+					let end: number | undefined
+					if (pieceInstance.stoppedPlayback) {
+						end = pieceInstance.stoppedPlayback
+					} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
+						end = pieceInstance.userDuration.end
+					} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
+						end = piece.enable.duration + pieceInstance.startedPlayback
+					}
+
+					if (end !== undefined) {
+						if (end > now) {
+							nearestEnd = Math.min(nearestEnd, end)
+							return true
+						} else {
+							return false
+						}
+					}
 					return true
-				} else {
-					return false
-				}
-			}
-			return true
-		})
+				})
 
-		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
+				if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
+			}
+		}
 	}
 
 	return prospectivePieces
@@ -687,10 +663,12 @@ export function getUnfinishedPieceInstancesGrouped(
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
 		.map((piece) => piece.adLibSourceId!)
-	const unfinishedTags: string[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
+	const unfinishedTags: string[] = _.uniq(
+		unfinishedPieceInstances
+			.filter((piece) => !!piece.piece.tags)
+			.map((piece) => piece.piece.tags!)
+			.reduce((a, b) => a.concat(b), [])
+	)
 
 	return {
 		unfinishedAdLibIds,
@@ -719,6 +697,7 @@ export function isAdLibOnAir(
 	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
 	adLib: AdLibPieceUi
 ) {
+	console.log('isAdLibOnAir', adLib.name, adLib._id, adLib.currentPieceTags, unfinishedTags)
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
 		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
