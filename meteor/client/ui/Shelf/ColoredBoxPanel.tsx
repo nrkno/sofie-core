@@ -7,7 +7,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { withTranslation } from 'react-i18next'
@@ -40,17 +40,10 @@ export class ColoredBoxPanelInner extends MeteorReactComponent<
 		return (
 			<div
 				className="colored-box-panel"
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutColoredBox) }),
-								fontSize: ((panel as DashboardLayoutColoredBox).scale || 1) * 1.5 + 'em',
-								backgroundColor: this.props.panel.iconColor ?? 'transparent',
-						  }
-						: {
-								backgroundColor: this.props.panel.iconColor ?? 'transparent',
-						  }
-				)}
+				style={{
+					backgroundColor: this.props.panel.iconColor ?? 'transparent',
+					...(isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutColoredBox) : {}),
+				}}
 			>
 				<div className="wrapper"></div>
 			</div>

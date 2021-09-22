@@ -8,7 +8,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Segment } from '../../../lib/collections/Segments'
@@ -45,14 +45,7 @@ class SegmentNamePanelInner extends MeteorReactComponent<
 					'segment-name-panel',
 					isDashboardLayout ? (panel as DashboardLayoutSegmentName).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutSegmentName) }),
-								fontSize: ((panel as DashboardLayoutSegmentName).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutSegmentName) : {}}
 			>
 				<div className="wrapper">
 					<span className="segment-name-title">

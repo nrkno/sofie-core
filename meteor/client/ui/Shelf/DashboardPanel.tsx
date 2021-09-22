@@ -69,11 +69,12 @@ interface DashboardPositionableElement {
 	y: number
 	width: number
 	height: number
+	scale?: number
 }
 
 type AdLibPieceUiWithNext = AdLibPieceUi & { isNext: boolean }
 
-export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
+export function dashboardElementStyle(el: DashboardPositionableElement): React.CSSProperties {
 	return {
 		width:
 			el.width >= 0
@@ -107,6 +108,7 @@ export function dashboardElementPosition(el: DashboardPositionableElement): Reac
 				: el.height < 0
 				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
 				: undefined,
+		fontSize: (el.scale || 1) * 1.5 + 'em',
 	}
 }
 
@@ -601,7 +603,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							'dashboard-panel--take': filter.displayTakeButtons,
 						})}
 						ref={this.setRef}
-						style={dashboardElementPosition(filter)}
+						style={dashboardElementStyle(filter)}
 					>
 						<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
 						{filter.enableSearch && (

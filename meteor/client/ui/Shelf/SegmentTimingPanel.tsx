@@ -17,7 +17,7 @@ import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveD
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 
@@ -55,14 +55,7 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 					'segment-timing-panel timing',
 					isDashboardLayout ? (panel as DashboardLayoutSegmentCountDown).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutSegmentCountDown) }),
-								fontSize: ((panel as DashboardLayoutSegmentCountDown).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutSegmentCountDown) : {}}
 			>
 				<span className="timing-clock left">
 					{!panel.hideLabel && (

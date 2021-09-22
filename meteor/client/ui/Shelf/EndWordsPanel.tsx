@@ -7,7 +7,7 @@ import {
 	RundownLayoutEndWords,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -51,14 +51,7 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 					'end-words-panel timing',
 					isDashboardLayout ? (panel as DashboardLayoutEndsWords).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutEndsWords) }),
-								fontSize: ((panel as DashboardLayoutEndsWords).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutEndsWords) : {}}
 			>
 				<div className="timing-clock left">
 					{!this.props.panel.hideLabel && <span className="timing-clock-label">{t('End Words')}</span>}

@@ -8,7 +8,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import {
-	dashboardElementPosition,
+	dashboardElementStyle,
 	IDashboardPanelTrackedProps,
 	getUnfinishedPieceInstancesGrouped,
 	getNextPieceInstancesGrouped,
@@ -143,14 +143,12 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 		return (
 			<div
 				className="adlib-region-panel"
-				style={_.extend(
-					RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-						? dashboardElementPosition(this.props.panel as DashboardLayoutAdLibRegion)
-						: {},
-					{
-						visibility: this.props.visible ? 'visible' : 'hidden',
-					}
-				)}
+				style={{
+					visibility: this.props.visible ? 'visible' : 'hidden',
+					...(RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+						? dashboardElementStyle(this.props.panel as DashboardLayoutAdLibRegion)
+						: {}),
+				}}
 			>
 				<div
 					className={ClassNames('adlib-region-panel__image-container', {

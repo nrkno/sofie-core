@@ -8,7 +8,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
@@ -56,14 +56,7 @@ class PartNamePanelInner extends MeteorReactComponent<
 				className={ClassNames('part-name-panel', {
 					[backgroundSourceLayer || 'unknown']: true,
 				})}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPartName) }),
-								fontSize: ((panel as DashboardLayoutPartName).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutPartName) : {}}
 			>
 				<div className="wrapper">
 					<span className="part-name-title">

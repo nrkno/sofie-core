@@ -7,7 +7,7 @@ import {
 	RundownLayoutPlaylistEndTimer,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -43,14 +43,7 @@ export class PlaylistEndTimerPanelInner extends MeteorReactComponent<
 					'playlist-end-time-panel timing',
 					isDashboardLayout ? (panel as DashboardLayoutPlaylistEndTimer).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(panel as DashboardLayoutPlaylistEndTimer) }),
-								fontSize: ((panel as DashboardLayoutPlaylistEndTimer).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(panel as DashboardLayoutPlaylistEndTimer) : {}}
 			>
 				<PlaylistEndTiming
 					rundownPlaylist={this.props.playlist}

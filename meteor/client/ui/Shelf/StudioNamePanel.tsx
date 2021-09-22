@@ -8,7 +8,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Studio } from '../../../lib/collections/Studios'
 import { withTranslation } from 'react-i18next'
@@ -44,14 +44,7 @@ export class StudioNamePanelInner extends MeteorReactComponent<
 					'studio-name-panel',
 					isDashboardLayout ? (panel as DashboardLayoutStudioName).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutStudioName) }),
-								fontSize: ((panel as DashboardLayoutStudioName).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutStudioName) : {}}
 			>
 				<div className="wrapper">
 					<span className="studio-name-title">{t('Studio Name')}</span>

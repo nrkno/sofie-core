@@ -9,7 +9,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/Reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
@@ -45,14 +45,7 @@ class PartTimingPanelInner extends MeteorReactComponent<
 		return (
 			<div
 				className="part-timing-panel timing"
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPartCountDown) }),
-								fontSize: ((panel as DashboardLayoutPartCountDown).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutPartCountDown) : {}}
 			>
 				<span className="timing-clock left">
 					{!panel.hideLabel && (

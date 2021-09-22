@@ -9,7 +9,7 @@ import {
 	DashboardLayoutExternalFrame,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { literal, protectString } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
@@ -508,14 +508,12 @@ export const ExternalFramePanel = withTranslation()(
 							? (this.props.panel as DashboardLayoutExternalFrame).customClasses
 							: undefined
 					)}
-					style={_.extend(
-						RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-							? dashboardElementPosition(this.props.panel as DashboardLayoutExternalFrame)
-							: {},
-						{
-							visibility: this.props.visible ? 'visible' : 'hidden',
-						}
-					)}
+					style={{
+						visibility: this.props.visible ? 'visible' : 'hidden',
+						...(RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+							? dashboardElementStyle(this.props.panel as DashboardLayoutExternalFrame)
+							: {}),
+					}}
 				>
 					<iframe
 						ref={this.setElement}

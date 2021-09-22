@@ -9,7 +9,7 @@ import {
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { RundownSystemStatus } from '../RundownView/RundownSystemStatus'
 import { DBStudio } from '../../../lib/collections/Studios'
@@ -48,14 +48,7 @@ class SystemStatusPanelInner extends MeteorReactComponent<
 					'system-status-panel timing',
 					isDashboardLayout ? (panel as DashboardLayoutSystemStatus).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutSystemStatus) }),
-								fontSize: ((panel as DashboardLayoutSystemStatus).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutSystemStatus) : {}}
 			>
 				<span className="timing-clock left">
 					<span className="timing-clock-label">{t('System Status')}</span>

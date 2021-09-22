@@ -8,7 +8,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -44,14 +44,7 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 					'playlist-name-panel',
 					isDashboardLayout ? (panel as DashboardLayoutPlaylistName).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPlaylistName) }),
-								fontSize: ((panel as DashboardLayoutPlaylistName).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutPlaylistName) : {}}
 			>
 				<div className="wrapper">
 					<span className="playlist-name">{this.props.playlist.name}</span>
