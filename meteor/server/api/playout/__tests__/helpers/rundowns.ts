@@ -14,11 +14,12 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../.
 import { AdLibPiece, AdLibPieces } from '../../../../../lib/collections/AdLibPieces'
 import { DefaultEnvironment, LAYER_IDS } from '../../../../../__mocks__/helpers/database'
 
-export function setupRundownWithPreroll(
+export function setupRundownBase (
 	env: DefaultEnvironment,
 	playlistId: RundownPlaylistId,
-	rundownId: RundownId
-): RundownId {
+	rundownId: RundownId,
+	partPropsOverride: Partial<DBPart> = {}
+) {
 	const rundown: DBRundown = {
 		peripheralDeviceId: env.ingestDevice._id,
 		organizationId: null,
@@ -68,6 +69,8 @@ export function setupRundownWithPreroll(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
+
+		...partPropsOverride
 	}
 	Parts.insert(part00)
 
@@ -112,6 +115,16 @@ export function setupRundownWithPreroll(
 		},
 	}
 	Pieces.insert(piece001)
+
+	return { rundown, segment0, part00 }
+}
+
+export function setupRundownWithPreroll(
+	env: DefaultEnvironment,
+	playlistId: RundownPlaylistId,
+	rundownId: RundownId
+): RundownId {
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -154,99 +167,7 @@ export function setupRundownWithInTransition(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
-		organizationId: null,
-		studioId: env.studio._id,
-		showStyleBaseId: env.showStyleBase._id,
-		showStyleVariantId: env.showStyleVariant._id,
-		timing: {
-			type: 'none' as any,
-		},
-
-		playlistId: playlistId,
-		_rank: 0,
-
-		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
-		name: 'Default Rundown',
-
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
-		importVersions: {
-			studio: '',
-			showStyleBase: '',
-			showStyleVariant: '',
-			blueprint: '',
-			core: '',
-		},
-
-		externalNRCSName: 'mock',
-	}
-	Rundowns.insert(rundown)
-
-	const segment0: DBSegment = {
-		_id: protectString(rundownId + '_segment0'),
-		_rank: 0,
-		externalId: 'MOCK_SEGMENT_0',
-		rundownId: rundown._id,
-		name: 'Segment 0',
-		externalModified: 1,
-	}
-	Segments.insert(segment0)
-	/* tslint:disable:ter-indent*/
-	//
-	const part00: DBPart = {
-		_id: protectString(rundownId + '_part0_0'),
-		segmentId: segment0._id,
-		rundownId: rundown._id,
-		_rank: 0,
-		externalId: 'MOCK_PART_0_0',
-		title: 'Part 0 0',
-	}
-	Parts.insert(part00)
-
-	const piece000: Piece = {
-		_id: protectString(rundownId + '_piece000'),
-		externalId: 'MOCK_PIECE_000',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece000)
-
-	const piece001: Piece = {
-		_id: protectString(rundownId + '_piece001'),
-		externalId: 'MOCK_PIECE_001',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 001',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece001)
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -291,99 +212,7 @@ export function setupRundownWithInTransitionPlannedPiece(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
-		organizationId: null,
-		studioId: env.studio._id,
-		showStyleBaseId: env.showStyleBase._id,
-		showStyleVariantId: env.showStyleVariant._id,
-		timing: {
-			type: 'none' as any,
-		},
-
-		playlistId: playlistId,
-		_rank: 0,
-
-		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
-		name: 'Default Rundown',
-
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
-		importVersions: {
-			studio: '',
-			showStyleBase: '',
-			showStyleVariant: '',
-			blueprint: '',
-			core: '',
-		},
-
-		externalNRCSName: 'mock',
-	}
-	Rundowns.insert(rundown)
-
-	const segment0: DBSegment = {
-		_id: protectString(rundownId + '_segment0'),
-		_rank: 0,
-		externalId: 'MOCK_SEGMENT_0',
-		rundownId: rundown._id,
-		name: 'Segment 0',
-		externalModified: 1,
-	}
-	Segments.insert(segment0)
-	/* tslint:disable:ter-indent*/
-	//
-	const part00: DBPart = {
-		_id: protectString(rundownId + '_part0_0'),
-		segmentId: segment0._id,
-		rundownId: rundown._id,
-		_rank: 0,
-		externalId: 'MOCK_PART_0_0',
-		title: 'Part 0 0',
-	}
-	Parts.insert(part00)
-
-	const piece000: Piece = {
-		_id: protectString(rundownId + '_piece000'),
-		externalId: 'MOCK_PIECE_000',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece000)
-
-	const piece001: Piece = {
-		_id: protectString(rundownId + '_piece001'),
-		externalId: 'MOCK_PIECE_001',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 001',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece001)
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -473,99 +302,7 @@ export function setupRundownWithInTransitionPreroll(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
-		organizationId: null,
-		studioId: env.studio._id,
-		showStyleBaseId: env.showStyleBase._id,
-		showStyleVariantId: env.showStyleVariant._id,
-		timing: {
-			type: 'none' as any,
-		},
-
-		playlistId: playlistId,
-		_rank: 0,
-
-		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
-		name: 'Default Rundown',
-
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
-		importVersions: {
-			studio: '',
-			showStyleBase: '',
-			showStyleVariant: '',
-			blueprint: '',
-			core: '',
-		},
-
-		externalNRCSName: 'mock',
-	}
-	Rundowns.insert(rundown)
-
-	const segment0: DBSegment = {
-		_id: protectString(rundownId + '_segment0'),
-		_rank: 0,
-		externalId: 'MOCK_SEGMENT_0',
-		rundownId: rundown._id,
-		name: 'Segment 0',
-		externalModified: 1,
-	}
-	Segments.insert(segment0)
-	/* tslint:disable:ter-indent*/
-	//
-	const part00: DBPart = {
-		_id: protectString(rundownId + '_part0_0'),
-		segmentId: segment0._id,
-		rundownId: rundown._id,
-		_rank: 0,
-		externalId: 'MOCK_PART_0_0',
-		title: 'Part 0 0',
-	}
-	Parts.insert(part00)
-
-	const piece000: Piece = {
-		_id: protectString(rundownId + '_piece000'),
-		externalId: 'MOCK_PIECE_000',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece000)
-
-	const piece001: Piece = {
-		_id: protectString(rundownId + '_piece001'),
-		externalId: 'MOCK_PIECE_001',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 001',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece001)
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -632,99 +369,7 @@ export function setupRundownWithInTransitionPrerollAndPreroll(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
-		organizationId: null,
-		studioId: env.studio._id,
-		showStyleBaseId: env.showStyleBase._id,
-		showStyleVariantId: env.showStyleVariant._id,
-		timing: {
-			type: 'none' as any,
-		},
-
-		playlistId: playlistId,
-		_rank: 0,
-
-		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
-		name: 'Default Rundown',
-
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
-		importVersions: {
-			studio: '',
-			showStyleBase: '',
-			showStyleVariant: '',
-			blueprint: '',
-			core: '',
-		},
-
-		externalNRCSName: 'mock',
-	}
-	Rundowns.insert(rundown)
-
-	const segment0: DBSegment = {
-		_id: protectString(rundownId + '_segment0'),
-		_rank: 0,
-		externalId: 'MOCK_SEGMENT_0',
-		rundownId: rundown._id,
-		name: 'Segment 0',
-		externalModified: 1,
-	}
-	Segments.insert(segment0)
-	/* tslint:disable:ter-indent*/
-	//
-	const part00: DBPart = {
-		_id: protectString(rundownId + '_part0_0'),
-		segmentId: segment0._id,
-		rundownId: rundown._id,
-		_rank: 0,
-		externalId: 'MOCK_PART_0_0',
-		title: 'Part 0 0',
-	}
-	Parts.insert(part00)
-
-	const piece000: Piece = {
-		_id: protectString(rundownId + '_piece000'),
-		externalId: 'MOCK_PIECE_000',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece000)
-
-	const piece001: Piece = {
-		_id: protectString(rundownId + '_piece001'),
-		externalId: 'MOCK_PIECE_001',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 001',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece001)
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -792,86 +437,15 @@ export function setupRundownWithInTransitionExistingInfinite(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
-		organizationId: null,
-		studioId: env.studio._id,
-		showStyleBaseId: env.showStyleBase._id,
-		showStyleVariantId: env.showStyleVariant._id,
-		timing: {
-			type: 'none' as any,
-		},
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
 
-		playlistId: playlistId,
-		_rank: 0,
-
-		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
-		name: 'Default Rundown',
-
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
-		importVersions: {
-			studio: '',
-			showStyleBase: '',
-			showStyleVariant: '',
-			blueprint: '',
-			core: '',
-		},
-
-		externalNRCSName: 'mock',
-	}
-	Rundowns.insert(rundown)
-
-	const segment0: DBSegment = {
-		_id: protectString(rundownId + '_segment0'),
-		_rank: 0,
-		externalId: 'MOCK_SEGMENT_0',
-		rundownId: rundown._id,
-		name: 'Segment 0',
-		externalModified: 1,
-	}
-	Segments.insert(segment0)
-	/* tslint:disable:ter-indent*/
-	//
-	const part00: DBPart = {
-		_id: protectString(rundownId + '_part0_0'),
-		segmentId: segment0._id,
-		rundownId: rundown._id,
-		_rank: 0,
-		externalId: 'MOCK_PART_0_0',
-		title: 'Part 0 0',
-	}
-	Parts.insert(part00)
-
-	const piece000: Piece = {
-		_id: protectString(rundownId + '_piece000'),
-		externalId: 'MOCK_PIECE_000',
+	const piece002: Piece = {
+		_id: protectString(rundownId + '_piece002'),
+		externalId: 'MOCK_PIECE_002',
 		startRundownId: rundown._id,
 		startSegmentId: part00.segmentId,
 		startPartId: part00._id,
-		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece000)
-
-	const piece001: Piece = {
-		_id: protectString(rundownId + '_piece001'),
-		externalId: 'MOCK_PIECE_001',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 001',
+		name: 'Piece 002',
 		status: RundownAPI.PieceStatusCode.OK,
 		enable: {
 			start: 0,
@@ -884,7 +458,7 @@ export function setupRundownWithInTransitionExistingInfinite(
 			timelineObjects: [],
 		},
 	}
-	Pieces.insert(piece001)
+	Pieces.insert(piece002)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -951,78 +525,7 @@ export function setupRundownWithInTransitionNewInfinite(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
-		organizationId: null,
-		studioId: env.studio._id,
-		showStyleBaseId: env.showStyleBase._id,
-		showStyleVariantId: env.showStyleVariant._id,
-		timing: {
-			type: 'none' as any,
-		},
-
-		playlistId: playlistId,
-		_rank: 0,
-
-		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
-		name: 'Default Rundown',
-
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
-		importVersions: {
-			studio: '',
-			showStyleBase: '',
-			showStyleVariant: '',
-			blueprint: '',
-			core: '',
-		},
-
-		externalNRCSName: 'mock',
-	}
-	Rundowns.insert(rundown)
-
-	const segment0: DBSegment = {
-		_id: protectString(rundownId + '_segment0'),
-		_rank: 0,
-		externalId: 'MOCK_SEGMENT_0',
-		rundownId: rundown._id,
-		name: 'Segment 0',
-		externalModified: 1,
-	}
-	Segments.insert(segment0)
-	/* tslint:disable:ter-indent*/
-	//
-	const part00: DBPart = {
-		_id: protectString(rundownId + '_part0_0'),
-		segmentId: segment0._id,
-		rundownId: rundown._id,
-		_rank: 0,
-		externalId: 'MOCK_PART_0_0',
-		title: 'Part 0 0',
-	}
-	Parts.insert(part00)
-
-	const piece000: Piece = {
-		_id: protectString(rundownId + '_piece000'),
-		externalId: 'MOCK_PIECE_000',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece000)
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -1111,100 +614,7 @@ export function setupRundownWithInTransitionEnableHold(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = {
-		peripheralDeviceId: env.ingestDevice._id,
-		organizationId: null,
-		studioId: env.studio._id,
-		showStyleBaseId: env.showStyleBase._id,
-		showStyleVariantId: env.showStyleVariant._id,
-		timing: {
-			type: 'none' as any,
-		},
-
-		playlistId: playlistId,
-		_rank: 0,
-
-		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
-		name: 'Default Rundown',
-
-		created: getCurrentTime(),
-		modified: getCurrentTime(),
-		importVersions: {
-			studio: '',
-			showStyleBase: '',
-			showStyleVariant: '',
-			blueprint: '',
-			core: '',
-		},
-
-		externalNRCSName: 'mock',
-	}
-	Rundowns.insert(rundown)
-
-	const segment0: DBSegment = {
-		_id: protectString(rundownId + '_segment0'),
-		_rank: 0,
-		externalId: 'MOCK_SEGMENT_0',
-		rundownId: rundown._id,
-		name: 'Segment 0',
-		externalModified: 1,
-	}
-	Segments.insert(segment0)
-	/* tslint:disable:ter-indent*/
-	//
-	const part00: DBPart = {
-		_id: protectString(rundownId + '_part0_0'),
-		segmentId: segment0._id,
-		rundownId: rundown._id,
-		_rank: 0,
-		externalId: 'MOCK_PART_0_0',
-		title: 'Part 0 0',
-		holdMode: PartHoldMode.FROM
-	}
-	Parts.insert(part00)
-
-	const piece000: Piece = {
-		_id: protectString(rundownId + '_piece000'),
-		externalId: 'MOCK_PIECE_000',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece000)
-
-	const piece001: Piece = {
-		_id: protectString(rundownId + '_piece001'),
-		externalId: 'MOCK_PIECE_001',
-		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
-		name: 'Piece 001',
-		status: RundownAPI.PieceStatusCode.OK,
-		enable: {
-			start: 0,
-		},
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		lifespan: PieceLifespan.WithinPart,
-		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
-	}
-	Pieces.insert(piece001)
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, { holdMode: PartHoldMode.FROM })
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),

@@ -355,7 +355,7 @@ describe('Timeline', () => {
 			// console.log(JSON.stringify(timeline, undefined, 2))
 			// looking for: part_group_randomId9002_part0_1_randomId9012_randomId9002_piece001_infinite
 			const infPieceTlObj = timeline?.timeline.find(
-				(tlObj) => tlObj.id === 'part_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece001_infinite'
+				(tlObj) => tlObj.id === 'part_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece002_infinite'
 			)
 			expect(infPieceTlObj).toBeTruthy()
 			expect(infPieceTlObj?.enable).toMatchObject({
