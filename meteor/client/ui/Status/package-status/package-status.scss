@@ -146,6 +146,11 @@
 
 			> th {
 				padding: 0.25em 0.5em 0.25em 0.5em;
+
+				&.indent {
+					padding: 0;
+					width: 0.5em;
+				}
 			}
 		}
 
@@ -159,17 +164,16 @@
 
 				cursor: pointer;
 
-				&:first-child {
-				}
-				&:nth-child(2) {
-					padding-left: 0;
-					width: 7em;
+				width: 7em;
+				&.indent {
+					padding: 0;
+					width: 0.5em;
 				}
 			}
 		}
 		.packageContainer-monitor {
 			> td {
-				padding: 0.5em 0.5em 0.5em 0em;
+				padding: 0.5em 0.5em 0.5em 0.5em;
 				background-color: #c6c6c6;
 				vertical-align: middle;
 				border-bottom: 1px solid #919191;
@@ -178,13 +182,11 @@
 				font-size: 90%;
 				position: relative;
 
-				&:first-child {
-					width: 2em;
+				&.indent {
+					padding: 0;
+					width: 0.5em;
 					background-color: transparent;
 					border-bottom: none;
-				}
-				&:nth-child(2) {
-					padding-left: 1em;
 				}
 			}
 		}
