@@ -655,7 +655,8 @@ export namespace RundownUtils {
 						const sortedItems = layerItems.sort(
 							(a, b) =>
 								(a.renderedInPoint || 0) - (b.renderedInPoint || 0) ||
-								a.instance.priority - b.instance.priority
+								a.instance.priority - b.instance.priority ||
+								(a.sourceLayer?._rank || 0) - (b.sourceLayer?._rank || 0)
 						)
 						for (let i = 1; i < sortedItems.length; i++) {
 							const currentItem = sortedItems[i]
