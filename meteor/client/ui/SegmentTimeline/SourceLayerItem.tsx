@@ -720,8 +720,12 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0 &&
 								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth,
 
-							infinite: piece.instance.userDuration === undefined && innerPiece.lifespan !== PieceLifespan.WithinPart, // 0 is a special value
-							'infinite-starts': piece.instance.piece.startPartId === this.props.part.partId,
+							infinite:
+								this.props.layer.type !== SourceLayerType.SCRIPT && innerPiece.lifespan !== PieceLifespan.WithinPart,
+							'infinite-starts':
+								this.props.layer.type !== SourceLayerType.SCRIPT &&
+								innerPiece.lifespan !== PieceLifespan.WithinPart &&
+								piece.instance.piece.startPartId === this.props.part.partId,
 
 							'not-in-vision': piece.instance.piece.notInVision,
 

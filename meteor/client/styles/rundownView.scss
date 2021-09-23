@@ -1669,6 +1669,7 @@ svg.icon {
 				min-height: $segment-layer-height;
 				border-bottom: 0px solid $segment-layer-separator-color;
 				transform-style: preserve-3d;
+				overflow: hidden;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
 
@@ -1678,6 +1679,7 @@ svg.icon {
 					line-height: $segment-layer-height;
 					border-bottom: 2px solid $segment-layer-separator-color;
 					transform-style: preserve-3d;
+					overflow: hidden;
 
 					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 						$output-layer-group-collapse-animation-duration border ease-in-out;
@@ -1688,7 +1690,6 @@ svg.icon {
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
 						transform-style: preserve-3d;
-						overflow: hidden;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
@@ -1705,6 +1706,10 @@ svg.icon {
 						}
 						&.next-is-touching {
 							border-right: 1px solid $segment-timeline-background-color;
+							overflow: hidden;
+						}
+						&.infinite {
+							overflow: hidden;
 						}
 
 						&.next-is-touching:hover {
@@ -2024,7 +2029,6 @@ svg.icon {
 					padding: 0 0.3em;
 					overflow: hidden;
 					text-overflow: clip;
-					background: inherit;
 
 					> * {
 						position: relative;
@@ -2110,6 +2114,10 @@ svg.icon {
 					line-height: 23px;
 					width: 25px;
 				}
+			}
+
+			.segment-timeline__piece:not(.infinite) .segment-timeline__piece__label.right-side {
+				background: inherit;
 			}
 
 			// Layer-item appendages are parts of a layer item going beyond the layer (usually, across the entire timeline)
