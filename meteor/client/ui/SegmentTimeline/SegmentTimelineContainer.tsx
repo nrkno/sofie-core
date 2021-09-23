@@ -336,7 +336,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		timelineDiv: HTMLDivElement
 		intersectionObserver: IntersectionObserver | undefined
 		mountedTime: number
-		nextPartDisplayStartsAt: number
+		nextPartOffset: number
 
 		private pastInfinitesComp: Tracker.Computation | undefined
 
@@ -518,21 +518,25 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 
 			// Setting the correct scroll position on parts when setting is next
-			const nextPartIdHasChanged =
+			const nextPartDisplayStartsAt =
+				currentNextPart &&
+				this.context.durations?.partDisplayStartsAt &&
+				this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
+			const partOffset =
+				nextPartDisplayStartsAt -
+					this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
+			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
 				this.props.playlist.nextPartInstanceId &&
 				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
-					this.nextPartDisplayStartsAt !==
-						(this.context.durations?.partDisplayStartsAt &&
-							this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]))
+					this.nextPartOffset !== partOffset)
 			const isBecomingNextSegment = this.state.isNextSegment === false
-			if (!isLiveSegment && isNextSegment && currentNextPart && (nextPartIdHasChanged || isBecomingNextSegment)) {
-				const nextPartDisplayStartsAt =
-					this.context.durations?.partDisplayStartsAt &&
-					this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
-				const partOffset =
-					nextPartDisplayStartsAt -
-						this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
+			if (
+				!isLiveSegment &&
+				isNextSegment &&
+				currentNextPart &&
+				(nextPartIdOrOffsetHasChanged || isBecomingNextSegment)
+			) {
 				const timelineWidth = getElementWidth(this.timelineDiv)
 				// If part is not within viewport scroll to its start
 				if (
@@ -543,7 +547,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						scrollLeft: partOffset,
 					})
 				}
-				this.nextPartDisplayStartsAt = nextPartDisplayStartsAt
+				this.nextPartOffset = partOffset
 			}
 
 			// rewind all scrollLeft's to 0 on rundown activate
