@@ -48,7 +48,7 @@ export enum PubSub {
 	bucketAdLibActions = 'bucketAdLibActions',
 	expectedPackages = 'expectedPackages',
 	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
-	packageContainerPackageStatuses = 'packageContainerStatuses',
+	packageContainerPackageStatuses = 'packageContainerPackageStatuses',
 	packageContainerStatuses = 'packageContainerStatuses',
 	packageInfos = 'packageInfos',
 	// custom publications:
