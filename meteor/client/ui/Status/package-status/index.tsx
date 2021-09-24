@@ -42,9 +42,9 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 			studioIds && studioIds.length > 0,
 		].reduce((memo, value) => memo && value, true) || false
 
-	const expectedPackageWorkStatuses = useTracker(() => ExpectedPackageWorkStatuses.find({}).fetch(), []) || []
-	const expectedPackages = useTracker(() => ExpectedPackages.find({}).fetch(), []) || []
-	const packageContainerStatuses = useTracker(() => PackageContainerStatuses.find().fetch(), []) || []
+	const expectedPackageWorkStatuses = useTracker(() => ExpectedPackageWorkStatuses.find({}).fetch(), [], [])
+	const expectedPackages = useTracker(() => ExpectedPackages.find({}).fetch(), [], [])
+	const packageContainerStatuses = useTracker(() => PackageContainerStatuses.find().fetch(), [], [])
 
 	function restartAllExpectations(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		const studio = Studios.findOne()
