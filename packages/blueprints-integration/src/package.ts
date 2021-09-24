@@ -335,8 +335,14 @@ export namespace ExpectedPackageStatusAPI {
 		/** The reason as to why the status is what it is */
 		statusReason: Reason
 
+		/** Previous reasons, for each state. */
+		prevStatusReasons?: { [status: string]: Reason }
+
 		/** Timestamp when the status was (actually) last changed. Just minor changes in the statusReason doesn't count. */
 		statusChanged: number
+
+		/** The priority Package Manager has set (lower value = higher priority) */
+		priority: number
 
 		/** Progress, 0-1 */
 		progress?: number

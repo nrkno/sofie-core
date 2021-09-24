@@ -129,10 +129,37 @@ export const PackageWorkStatus = withTranslation()(
 											</td>
 										</tr>
 										<tr>
+											<td>{t('Previous work status reasons')}</td>
+											<td>
+												<ul>
+													{status.prevStatusReasons &&
+														Object.entries(status.prevStatusReasons).map(([key, reason]) => {
+															return (
+																<li key={key}>
+																	{key}:
+																	<Tooltip
+																		overlay={t('Technical reason: {{reason}}', {
+																			reason: reason.tech,
+																		})}
+																		placement="bottom"
+																	>
+																		<span>{reason.user ?? reason?.toString()}</span>
+																	</Tooltip>
+																</li>
+															)
+														})}
+												</ul>
+											</td>
+										</tr>
+										<tr>
 											<td>{t('Last updated')}</td>
 											<td>
 												<DisplayFormattedTime displayTimestamp={status.modified} t={t} />
 											</td>
+										</tr>
+										<tr>
+											<td>{t('Priority')}</td>
+											<td>{status.priority}</td>
 										</tr>
 									</tbody>
 								</table>
