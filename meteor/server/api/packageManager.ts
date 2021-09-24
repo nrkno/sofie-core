@@ -11,18 +11,18 @@ export namespace PackageManagerAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		workId: string
-	): Promise<any> {
+	): Promise<void> {
 		check(deviceId, String)
 		check(workId, String)
 		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
 
-		return PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartExpectation', workId)
+		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartExpectation', workId)
 	}
-	export async function restartAllExpectations(context: MethodContext, deviceId: PeripheralDeviceId): Promise<any> {
+	export async function restartAllExpectations(context: MethodContext, deviceId: PeripheralDeviceId): Promise<void> {
 		check(deviceId, String)
 		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
 
-		return PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartAllExpectations')
+		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartAllExpectations')
 	}
 	export async function abortExpectation(
 		context: MethodContext,
@@ -33,9 +33,9 @@ export namespace PackageManagerAPI {
 		check(workId, String)
 		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
 
-		return PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'abortExpectation', workId)
+		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'abortExpectation', workId)
 	}
-	export async function restartAllExpectationsInStudio(context: MethodContext, studioId: StudioId): Promise<any> {
+	export async function restartAllExpectationsInStudio(context: MethodContext, studioId: StudioId): Promise<void> {
 		check(studioId, String)
 		StudioContentWriteAccess.anyContent(context, studioId)
 
@@ -46,7 +46,7 @@ export namespace PackageManagerAPI {
 			subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 		}).fetch()
 
-		return Promise.all(
+		await Promise.all(
 			packageManagerDevices.map(async (packageManagerDevice) => {
 				return restartAllExpectations(context, packageManagerDevice._id)
 			})
@@ -56,11 +56,11 @@ export namespace PackageManagerAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		containerId: string
-	): Promise<any> {
+	): Promise<void> {
 		check(deviceId, String)
 		check(containerId, String)
 		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
 
-		return PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartPackageContainer', containerId)
+		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartPackageContainer', containerId)
 	}
 }
