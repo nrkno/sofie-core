@@ -72,6 +72,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Aborting all Media Workflows')
 		case UserAction.PACKAGE_MANAGER_RESTART_WORK:
 			return t('Package Manager: Restart work')
+		case UserAction.PACKAGE_MANAGER_RESTART_PACKAGE_CONTAINER:
+			return t('Package Manager: Restart Package Container')
 		case UserAction.GENERATE_RESTART_TOKEN:
 			return t('Generating restart token')
 		case UserAction.RESTART_CORE:

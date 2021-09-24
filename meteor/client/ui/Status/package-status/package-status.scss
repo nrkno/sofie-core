@@ -21,11 +21,14 @@
 
 				cursor: pointer;
 
-				&:first-child {
+				&.indent {
+					padding: 0;
+					width: 0.5em;
 				}
-				&:nth-child(2) {
+				&.status {
 					padding-left: 0;
 					width: 7em;
+					white-space: nowrap;
 				}
 			}
 
@@ -132,6 +135,61 @@
 							}
 						}
 					}
+				}
+			}
+		}
+	}
+
+	.packageContainer-status-list {
+		width: 100%;
+
+		.packageContainer-status__header {
+			background-color: #898989;
+			color: #fff;
+
+			> th {
+				padding: 0.25em 0.5em 0.25em 0.5em;
+
+				&.indent {
+					padding: 0;
+					width: 0.5em;
+				}
+			}
+		}
+
+		.packageContainer {
+			> td {
+				padding: 0.5em 0.5em 0.5em 0.5em;
+				background-color: #f6f6f6;
+				vertical-align: middle;
+
+				border-bottom: 1px solid #bbbbbb;
+
+				cursor: pointer;
+
+				width: 7em;
+				&.indent {
+					padding: 0;
+					width: 0.5em;
+				}
+			}
+		}
+		.packageContainer-monitor {
+			> td {
+				padding: 0.5em 0.5em 0.5em 0.5em;
+				background-color: #c6c6c6;
+				vertical-align: middle;
+				border-bottom: 1px solid #919191;
+				cursor: pointer;
+
+				font-size: 90%;
+				position: relative;
+
+				&.indent {
+					padding: 0;
+					width: 0.5em;
+					background-color: transparent;
+					border-bottom: none;
 				}
 			}
 		}

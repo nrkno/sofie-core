@@ -336,7 +336,7 @@ export function useTracker<T, K extends undefined | T = undefined>(
  * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
  * 		renders so that it isn't torn down and created for every render.
  */
-export function useSubscription(sub: PubSub, ...args: any[]) {
+export function useSubscription(sub: PubSub, ...args: any[]): boolean {
 	const [ready, setReady] = useState<boolean>(false)
 
 	useEffect(() => {

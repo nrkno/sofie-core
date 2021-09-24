@@ -49,6 +49,7 @@ export enum PubSub {
 	expectedPackages = 'expectedPackages',
 	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
 	packageContainerPackageStatuses = 'packageContainerStatuses',
+	packageContainerStatuses = 'packageContainerStatuses',
 	packageInfos = 'packageInfos',
 	// custom publications:
 	mappingsForDevice = 'mappingsForDevice',
