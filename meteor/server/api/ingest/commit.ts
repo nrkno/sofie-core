@@ -39,7 +39,7 @@ import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/ru
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { Studio } from '../../../lib/collections/Studios'
-import { NoteType } from '@sofie-automation/blueprints-integration'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -119,7 +119,7 @@ export async function CommitIngestOperation(
 								notes: [
 									...clone<RundownNote[]>(rundown.notes ?? []),
 									{
-										type: NoteType.WARNING,
+										type: NoteSeverity.WARNING,
 										message: getTranslatedMessage(
 											ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN
 										),

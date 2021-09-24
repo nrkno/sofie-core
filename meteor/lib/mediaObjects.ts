@@ -7,7 +7,7 @@ import {
 	IBlueprintPieceGeneric,
 	ExpectedPackageStatusAPI,
 	PackageInfo,
-	NoteType,
+	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
@@ -627,12 +627,12 @@ export function checkPieceContentStatus(
 	}
 }
 
-export function getNoteTypeForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoteType | null {
+export function getNoteSeverityForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoteSeverity | null {
 	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
 		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-			? NoteType.ERROR
+			? NoteSeverity.ERROR
 			: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
 			  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
-			  NoteType.WARNING
+			  NoteSeverity.WARNING
 		: null
 }

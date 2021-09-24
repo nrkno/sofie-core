@@ -38,7 +38,7 @@ import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '../../../lib/api/TranslatableMessage'
 import { getAllowStudio } from '../../lib/localStorage'
-import { NoteType } from '@sofie-automation/blueprints-integration'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -55,13 +55,13 @@ export interface RONotificationEvent {
 
 const SEGMENT_DELIMITER = ' • '
 
-function getNoticeLevelForNoteType(type: NoteType): NoticeLevel {
+function getNoticeLevelForNoteSeverity(type: NoteSeverity): NoticeLevel {
 	switch (type) {
-		case NoteType.ERROR:
+		case NoteSeverity.ERROR:
 			return NoticeLevel.CRITICAL
-		case NoteType.WARNING:
+		case NoteSeverity.WARNING:
 			return NoticeLevel.WARNING
-		case NoteType.INFO:
+		case NoteSeverity.INFO:
 			return NoticeLevel.NOTIFICATION
 		default:
 			return NoticeLevel.WARNING // this conforms with pre-existing behavior where anything that weren't an error was a warning
@@ -259,7 +259,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
 							const notificationFromNote = new Notification(
 								rundownNoteId,
-								getNoticeLevelForNoteType(note.type),
+								getNoticeLevelForNoteSeverity(note.type),
 								note.message,
 								'Rundown',
 								getCurrentTime(),
@@ -443,7 +443,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 				const newNotification = new Notification(
 					notificationId,
-					getNoticeLevelForNoteType(itemType),
+					getNoticeLevelForNoteSeverity(itemType),
 					(
 						<>
 							{name || segmentName ? (

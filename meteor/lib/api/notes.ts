@@ -3,10 +3,10 @@ import { SegmentId } from '../collections/Segments'
 import { PartId } from '../collections/Parts'
 import { PieceId } from '../collections/Pieces'
 import { ITranslatableMessage } from './TranslatableMessage'
-import { NoteType } from '@sofie-automation/blueprints-integration'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export interface INoteBase {
-	type: NoteType
+	type: NoteSeverity
 	message: ITranslatableMessage
 }
 

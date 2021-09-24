@@ -1,7 +1,7 @@
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { IBlueprintPartDB, NoteType, PartHoldMode } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPartDB, NoteSeverity, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -14,7 +14,7 @@ export type PartId = ProtectedString<'PartId'>
 
 export interface PartInvalidReason {
 	message: ITranslatableMessage
-	level?: NoteType
+	level?: NoteSeverity
 	color?: string
 }
 export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {

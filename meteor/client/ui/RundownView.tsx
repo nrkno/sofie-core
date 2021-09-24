@@ -3,7 +3,7 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { VTContent, TSR, NoteType } from '@sofie-automation/blueprints-integration'
+import { VTContent, TSR, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import CoreIcon from '@nrk/core-icons/jsx'
@@ -2158,17 +2158,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			}
 		}
-		onHeaderNoteClick = (segmentId: SegmentId, level: NoteType) => {
+		onHeaderNoteClick = (segmentId: SegmentId, level: NoteSeverity) => {
 			NotificationCenter.snoozeAll()
 			const isOpen = this.state.isNotificationsCenterOpen
 			this.setState({
-				isNotificationsCenterOpen: level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+				isNotificationsCenterOpen: level === NoteSeverity.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
 			})
 			setTimeout(
 				function () {
 					NotificationCenter.highlightSource(
 						segmentId,
-						level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING
+						level === NoteSeverity.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING
 					)
 				},
 				isOpen ? 1 : 1000

@@ -6,7 +6,7 @@ import {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	ISyncIngestUpdateToPartInstanceContext,
-	NoteType,
+	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
@@ -72,7 +72,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.ERROR,
+				type: NoteSeverity.ERROR,
 				message: {
 					key: message,
 					args: params,
@@ -85,7 +85,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.WARNING,
+				type: NoteSeverity.WARNING,
 				message: {
 					key: message,
 					args: params,
@@ -99,7 +99,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.INFO,
+				type: NoteSeverity.INFO,
 				message: {
 					key: message,
 					args: params,

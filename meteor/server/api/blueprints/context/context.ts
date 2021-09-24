@@ -38,7 +38,7 @@ import {
 	PackageInfo,
 	IStudioBaselineContext,
 	IShowStyleUserContext,
-	NoteType,
+	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -184,7 +184,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.ERROR,
+				type: NoteSeverity.ERROR,
 				message: {
 					key: message,
 					args: params,
@@ -197,7 +197,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.WARNING,
+				type: NoteSeverity.WARNING,
 				message: {
 					key: message,
 					args: params,
@@ -211,7 +211,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.INFO,
+				type: NoteSeverity.INFO,
 				message: {
 					key: message,
 					args: params,
@@ -261,7 +261,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.ERROR,
+				type: NoteSeverity.ERROR,
 				message: {
 					key: message,
 					args: params,
@@ -274,7 +274,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.WARNING,
+				type: NoteSeverity.WARNING,
 				message: {
 					key: message,
 					args: params,
@@ -288,7 +288,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.INFO,
+				type: NoteSeverity.INFO,
 				message: {
 					key: message,
 					args: params,
@@ -366,7 +366,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 
 	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
 		this.notes.push({
-			type: NoteType.ERROR,
+			type: NoteSeverity.ERROR,
 			message: {
 				key: message,
 				args: params,
@@ -376,7 +376,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 	}
 	notifyUserWarning(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
 		this.notes.push({
-			type: NoteType.WARNING,
+			type: NoteSeverity.WARNING,
 			message: {
 				key: message,
 				args: params,
@@ -387,7 +387,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 
 	notifyUserInfo(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
 		this.notes.push({
-			type: NoteType.INFO,
+			type: NoteSeverity.INFO,
 			message: {
 				key: message,
 				args: params,

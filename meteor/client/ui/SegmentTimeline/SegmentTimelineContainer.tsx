@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import { NoteType, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
@@ -39,7 +39,7 @@ import RundownViewEventBus, {
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
-import { checkPieceContentStatus, getNoteTypeForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { checkPieceContentStatus, getNoteSeverityForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
@@ -103,7 +103,7 @@ interface IProps {
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
-	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
@@ -966,7 +966,7 @@ function getMinimumReactivePieceNotesForPart(
 			const st = checkPieceContentStatus(piece, part, studio)
 			if (st.status !== RundownAPI.PieceStatusCode.OK && st.status !== RundownAPI.PieceStatusCode.UNKNOWN) {
 				notes.push({
-					type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,
+					type: getNoteSeverityForPieceStatus(st.status) || NoteSeverity.WARNING,
 					origin: {
 						name: 'Media Check',
 						pieceId: piece._id,
