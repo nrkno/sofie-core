@@ -301,6 +301,13 @@ body.tv2 {
 					,var(--segment-layer-background-vt) 50%,var(--segment-layer-background-camera) 50.0001%) !important;
 			}
 		}
+
+		&.time-of-day-countdowns {
+			.segment-timeline__duration {
+				color: unset;
+			}
+		}
+	
 	}
 	.segment-timeline.next,
 	.segment-timeline.live {
