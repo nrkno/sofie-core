@@ -449,7 +449,7 @@ export async function pieceSetInOutPoints(
 		) // MOS data is in seconds
 		return ClientAPI.responseSuccess(undefined)
 	} catch (error) {
-		return ClientAPI.responseError(error)
+		return ClientAPI.responseError(error as any)
 	}
 }
 export async function executeAction(
@@ -653,21 +653,29 @@ export function mediaAbortAllWorkflows(context: MethodContext) {
 	const access = OrganizationContentWriteAccess.anyContent(context)
 	return ClientAPI.responseSuccess(MediaManagerAPI.abortAllWorkflows(context, access.organizationId))
 }
-export function packageManagerRestartExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
-	return ClientAPI.responseSuccess(PackageManagerAPI.restartExpectation(context, deviceId, workId))
+export async function packageManagerRestartExpectation(
+	context: MethodContext,
+	deviceId: PeripheralDeviceId,
+	workId: string
+) {
+	return ClientAPI.responseSuccess(await PackageManagerAPI.restartExpectation(context, deviceId, workId))
 }
-export function packageManagerRestartAllExpectations(context: MethodContext, studioId: StudioId) {
-	return ClientAPI.responseSuccess(PackageManagerAPI.restartAllExpectationsInStudio(context, studioId))
+export async function packageManagerRestartAllExpectations(context: MethodContext, studioId: StudioId) {
+	return ClientAPI.responseSuccess(await PackageManagerAPI.restartAllExpectationsInStudio(context, studioId))
 }
-export function packageManagerAbortExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
-	return ClientAPI.responseSuccess(PackageManagerAPI.abortExpectation(context, deviceId, workId))
+export async function packageManagerAbortExpectation(
+	context: MethodContext,
+	deviceId: PeripheralDeviceId,
+	workId: string
+) {
+	return ClientAPI.responseSuccess(await PackageManagerAPI.abortExpectation(context, deviceId, workId))
 }
-export function packageManagerRestartPackageContainer(
+export async function packageManagerRestartPackageContainer(
 	context: MethodContext,
 	deviceId: PeripheralDeviceId,
 	containerId: string
 ) {
-	return ClientAPI.responseSuccess(PackageManagerAPI.restartPackageContainer(context, deviceId, containerId))
+	return ClientAPI.responseSuccess(await PackageManagerAPI.restartPackageContainer(context, deviceId, containerId))
 }
 export async function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
 	check(id, String)
@@ -1142,16 +1150,16 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return makePromise(() => mediaAbortAllWorkflows(this))
 	}
 	async packageManagerRestartExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
-		return makePromise(() => packageManagerRestartExpectation(this, deviceId, workId))
+		return packageManagerRestartExpectation(this, deviceId, workId)
 	}
 	async packageManagerRestartAllExpectations(_userEvent: string, studioId: StudioId) {
-		return makePromise(() => packageManagerRestartAllExpectations(this, studioId))
+		return packageManagerRestartAllExpectations(this, studioId)
 	}
 	async packageManagerAbortExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
-		return makePromise(() => packageManagerAbortExpectation(this, deviceId, workId))
+		return packageManagerAbortExpectation(this, deviceId, workId)
 	}
 	async packageManagerRestartPackageContainer(_userEvent: string, deviceId: PeripheralDeviceId, containerId: string) {
-		return makePromise(() => packageManagerRestartPackageContainer(this, deviceId, containerId))
+		return packageManagerRestartPackageContainer(this, deviceId, containerId)
 	}
 	async regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.regenerateRundownPlaylist, regenerateRundownPlaylist, this, playlistId)
