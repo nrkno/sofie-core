@@ -37,7 +37,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '../../../lib/api/TranslatableMessage'
-import { getAllowStudio } from '../../lib/localStorage'
+import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -511,63 +511,66 @@ class RundownViewNotifier extends WithManagedTracker {
 			this.mediaObjectsPollInterval = Meteor.setInterval(() => {
 				if (mediaObjectsPollLock) return
 				mediaObjectsPollLock = true
-
-				MeteorCall.rundownNotifications
-					.getMediaObjectIssues(rundownIds)
-					.then((result) => {
-						fullMediaStatus.set(result)
-						mediaObjectsPollLock = false
-					})
-					.catch((e) => console.error(e))
+				if (!getIgnorePieceContentStatus()) {
+					MeteorCall.rundownNotifications
+						.getMediaObjectIssues(rundownIds)
+						.then((result) => {
+							fullMediaStatus.set(result)
+							mediaObjectsPollLock = false
+						})
+						.catch((e) => console.error(e))
+				}
 			}, MEDIAOBJECTS_POLL_INTERVAL)
 		})
 		this.autorun(() => {
 			const localStatus: IMediaObjectIssue[] = []
-			const pieces = rPieces.get()
-			pieces.forEach((piece) => {
-				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
-				const part = Parts.findOne(piece.startPartId, {
-					fields: {
-						_rank: 1,
-						segmentId: 1,
-						rundownId: 1,
-					},
-				}) as Pick<Part, '_id' | '_rank' | 'segmentId' | 'rundownId'> | undefined
-				const segment = part
-					? (Segments.findOne(part.segmentId, {
-							fields: {
-								_rank: 1,
-								name: 1,
-							},
-					  }) as Pick<Segment, '_id' | '_rank' | 'name'> | undefined)
-					: undefined
-				if (segment && sourceLayer && part) {
-					// we don't want this to be in a non-reactive context, so we manage this computation manually
-					this._mediaStatusComps[unprotectString(piece._id)] = Tracker.autorun(() => {
-						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
-						if (mediaId) {
-							this.subscribe(PubSub.mediaObjects, studio._id, {
-								mediaId: mediaId.toUpperCase(),
-							})
-						}
-						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
-						if (status !== RundownAPI.PieceStatusCode.UNKNOWN || message) {
-							localStatus.push({
-								name: piece.name,
-								rundownId: part.rundownId,
-								pieceId: piece._id,
-								partId: part._id,
-								segmentId: segment._id,
-								segmentRank: segment._rank,
-								segmentName: segment.name,
-								partRank: part._rank,
-								status,
-								message,
-							})
-						}
-					})
-				}
-			})
+			if (!getIgnorePieceContentStatus()) {
+				const pieces = rPieces.get()
+				pieces.forEach((piece) => {
+					const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
+					const part = Parts.findOne(piece.startPartId, {
+						fields: {
+							_rank: 1,
+							segmentId: 1,
+							rundownId: 1,
+						},
+					}) as Pick<Part, '_id' | '_rank' | 'segmentId' | 'rundownId'> | undefined
+					const segment = part
+						? (Segments.findOne(part.segmentId, {
+								fields: {
+									_rank: 1,
+									name: 1,
+								},
+						  }) as Pick<Segment, '_id' | '_rank' | 'name'> | undefined)
+						: undefined
+					if (segment && sourceLayer && part) {
+						// we don't want this to be in a non-reactive context, so we manage this computation manually
+						this._mediaStatusComps[unprotectString(piece._id)] = Tracker.autorun(() => {
+							const mediaId = getMediaObjectMediaId(piece, sourceLayer)
+							if (mediaId) {
+								this.subscribe(PubSub.mediaObjects, studio._id, {
+									mediaId: mediaId.toUpperCase(),
+								})
+							}
+							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
+							if (status !== RundownAPI.PieceStatusCode.UNKNOWN || message) {
+								localStatus.push({
+									name: piece.name,
+									rundownId: part.rundownId,
+									pieceId: piece._id,
+									partId: part._id,
+									segmentId: segment._id,
+									segmentRank: segment._rank,
+									segmentName: segment.name,
+									partRank: part._rank,
+									status,
+									message,
+								})
+							}
+						})
+					}
+				})
+			}
 
 			localMediaStatus.set(localStatus)
 		})
