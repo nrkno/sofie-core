@@ -70,6 +70,7 @@ export class RundownTimingCalculator {
 	private partDisplayDurationsNoPlayback: Record<string, number> = {}
 	private displayDurationGroups: Record<string, number> = {}
 	private segmentBudgetDurations: Record<string, number> = {}
+	private segmentStartedPlayback: Record<string, number> = {}
 	private breakProps: {
 		props: BreakProps | undefined
 		state: string | undefined
@@ -98,7 +99,8 @@ export class RundownTimingCalculator {
 		parts: Part[],
 		partInstancesMap: Map<PartId, PartInstance>,
 		/** Fallback duration for Parts that have no as-played duration of their own. */
-		defaultDuration?: number
+		defaultDuration?: number,
+		segmentEntryPartInstances?: PartInstance[]
 	): RundownTimingContext {
 		let totalRundownDuration = 0
 		let remainingRundownDuration = 0
@@ -119,6 +121,7 @@ export class RundownTimingCalculator {
 
 		Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 		Object.keys(this.segmentBudgetDurations).forEach((key) => delete this.segmentBudgetDurations[key])
+		Object.keys(this.segmentStartedPlayback).forEach((key) => delete this.segmentStartedPlayback[key])
 		this.linearParts.length = 0
 
 		let nextAIndex = -1
@@ -490,6 +493,12 @@ export class RundownTimingCalculator {
 			)
 		}
 
+		segmentEntryPartInstances?.forEach((partInstance) => {
+			if (partInstance.timings?.startedPlayback !== undefined)
+				this.segmentStartedPlayback[unprotectString(partInstance.segmentId)] =
+					partInstance.timings?.startedPlayback
+		})
+
 		return literal<RundownTimingContext>({
 			totalPlaylistDuration: totalRundownDuration,
 			remainingPlaylistDuration: remainingRundownDuration,
@@ -505,6 +514,7 @@ export class RundownTimingCalculator {
 			partExpectedDurations: this.partExpectedDurations,
 			partDisplayDurations: this.partDisplayDurations,
 			segmentBudgetDurations: this.segmentBudgetDurations,
+			segmentStartedPlayback: this.segmentStartedPlayback,
 			currentTime: now,
 			remainingTimeOnCurrentPart,
 			currentPartWillAutoNext,
@@ -613,6 +623,8 @@ export interface RundownTimingContext {
 	partExpectedDurations?: Record<string, number>
 	/** Budget durations of segments (sum of parts budget durations). */
 	segmentBudgetDurations?: Record<string, number>
+	/** Time when selected segments started playback. Contains only the current segment and the segment before, if we've just entered a new one */
+	segmentStartedPlayback?: Record<string, number>
 	/** Remaining time on current part */
 	remainingTimeOnCurrentPart?: number | undefined
 	/** Current part will autoNext */

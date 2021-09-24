@@ -149,7 +149,7 @@ export function findPartInstanceInMapOrWrapToTemporary<T extends Partial<PartIns
 }
 
 export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance>>(
-	partInstances: { [partId: string]: T | undefined } | Map<PartId, T>,
+	partInstances: { [partId: string]: T | undefined },
 	part: DBPart
 ): T {
 	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(protectString(''), part) as T)
