@@ -22,7 +22,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { NoteType, SegmentNote } from '../../../lib/api/notes'
+import { SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
@@ -39,6 +39,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 interface IProps {
 	id: string
@@ -75,7 +76,7 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
@@ -900,11 +901,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		const { t } = this.props
 
 		const criticalNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteType.ERROR) return ++prev
+			if (item.type === NoteSeverity.ERROR) return ++prev
 			return prev
 		}, 0)
 		const warningNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteType.WARNING) return ++prev
+			if (item.type === NoteSeverity.WARNING) return ++prev
 			return prev
 		}, 0)
 
@@ -978,7 +979,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
 									onClick={() =>
-										this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(this.props.segment._id, NoteType.ERROR)
+										this.props.onHeaderNoteClick &&
+										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.ERROR)
 									}
 								>
 									<CriticalIconSmall />
@@ -990,7 +992,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
 									onClick={() =>
 										this.props.onHeaderNoteClick &&
-										this.props.onHeaderNoteClick(this.props.segment._id, NoteType.WARNING)
+										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.WARNING)
 									}
 								>
 									<WarningIconSmall />
