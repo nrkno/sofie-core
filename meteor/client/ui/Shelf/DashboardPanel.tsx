@@ -37,7 +37,7 @@ import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IState {
 	outputLayers: {
@@ -566,56 +566,51 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist) {
+export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: DBShowStyleBase) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
 	if (playlist.activationId && playlist.currentPartInstanceId) {
 		const partInstance = PartInstances.findOne(playlist.currentPartInstanceId)
 
 		if (partInstance) {
-			const rundown = Rundowns.findOne(partInstance.rundownId)
-			if (rundown) {
-				const showStyle = rundown.getShowStyleBase()
+			prospectivePieces = PieceInstances.find({
+				partInstanceId: playlist.currentPartInstanceId,
+				playlistActivationId: playlist.activationId,
+			}).fetch()
 
-				prospectivePieces = PieceInstances.find({
-					partInstanceId: playlist.currentPartInstanceId,
-					playlistActivationId: playlist.activationId,
-				}).fetch()
+			const nowInPart = partInstance.timings?.startedPlayback ? now - partInstance.timings.startedPlayback : 0
+			prospectivePieces = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieces, nowInPart)
 
-				const nowInPart = partInstance.timings?.startedPlayback ? now - partInstance.timings.startedPlayback : 0
-				prospectivePieces = processAndPrunePieceInstanceTimings(showStyle, prospectivePieces, nowInPart)
+			let nearestEnd = Number.POSITIVE_INFINITY
+			prospectivePieces = prospectivePieces.filter((pieceInstance) => {
+				const piece = pieceInstance.piece
 
-				let nearestEnd = Number.POSITIVE_INFINITY
-				prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-					const piece = pieceInstance.piece
+				if (!pieceInstance.adLibSourceId && !piece.tags) {
+					// No effect on the data, so ignore
+					return false
+				}
 
-					if (!pieceInstance.adLibSourceId && !piece.tags) {
-						// No effect on the data, so ignore
+				let end: number | undefined
+				if (pieceInstance.stoppedPlayback) {
+					end = pieceInstance.stoppedPlayback
+				} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
+					end = pieceInstance.userDuration.end
+				} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
+					end = piece.enable.duration + pieceInstance.startedPlayback
+				}
+
+				if (end !== undefined) {
+					if (end > now) {
+						nearestEnd = Math.min(nearestEnd, end)
+						return true
+					} else {
 						return false
 					}
+				}
+				return true
+			})
 
-					let end: number | undefined
-					if (pieceInstance.stoppedPlayback) {
-						end = pieceInstance.stoppedPlayback
-					} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
-						end = pieceInstance.userDuration.end
-					} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
-						end = piece.enable.duration + pieceInstance.startedPlayback
-					}
-
-					if (end !== undefined) {
-						if (end > now) {
-							nearestEnd = Math.min(nearestEnd, end)
-							return true
-						} else {
-							return false
-						}
-					}
-					return true
-				})
-
-				if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
-			}
+			if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
 		}
 	}
 
@@ -656,9 +651,10 @@ export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[
 }
 
 export function getUnfinishedPieceInstancesGrouped(
-	playlist: RundownPlaylist
+	playlist: RundownPlaylist,
+	showStyleBase: DBShowStyleBase
 ): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist)
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -766,7 +762,10 @@ export const DashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+			props.playlist,
+			props.showStyleBase
+		)
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		return {
 			...fetchAndFilter(props),
