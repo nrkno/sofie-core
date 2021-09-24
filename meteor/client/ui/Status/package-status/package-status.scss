@@ -21,11 +21,14 @@
 
 				cursor: pointer;
 
-				&:first-child {
+				&.indent {
+					padding: 0;
+					width: 0.5em;
 				}
-				&:nth-child(2) {
+				&.status {
 					padding-left: 0;
 					width: 7em;
+					white-space: nowrap;
 				}
 			}
 

@@ -185,7 +185,8 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 					<table className="mod mvl package-status-list">
 						<tbody>
 							<tr className="package-status__header">
-								<th colSpan={2}>{t('Status')}</th>
+								<th className="indent"></th>
+								<th>{t('Status')}</th>
 								<th>{t('Name')}</th>
 								<th>{t('Created')}</th>
 								<th></th>

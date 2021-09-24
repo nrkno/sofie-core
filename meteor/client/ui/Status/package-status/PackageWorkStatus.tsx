@@ -57,7 +57,7 @@ export const PackageWorkStatus = withTranslation()(
 							this.toggleOpen()
 						}}
 					>
-						<td></td>
+						<td className="indent"></td>
 						<td colSpan={2}>
 							<span className="package-job__required">
 								{status.requiredForPlayout ? (
