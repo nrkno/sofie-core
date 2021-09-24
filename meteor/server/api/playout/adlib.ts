@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { SourceLayerType, PieceLifespan, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
 import {
 	getCurrentTime,
 	literal,
@@ -102,15 +102,10 @@ export namespace ServerPlayoutAdLibAPI {
 
 				const showStyleBase = rundown.getShowStyleBase() // todo: database
 				if (!pieceToCopy.allowDirectPlay) {
-					// Not explicitly allowed, use legacy route
-					const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-					if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
-						throw new Meteor.Error(
-							403,
-							`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" cannot be direct played!`
-						)
-
-					await pieceTakeNowAsAdlib(cache, showStyleBase, partInstance, pieceToCopy, pieceInstanceToCopy)
+					throw new Meteor.Error(
+						403,
+						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" cannot be direct played!`
+					)
 				} else {
 					switch (pieceToCopy.allowDirectPlay.type) {
 						case IBlueprintDirectPlayType.AdLibPiece:
