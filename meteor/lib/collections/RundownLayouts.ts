@@ -481,6 +481,8 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	countdownToSegmentRequireLayers: string[]
 	/** Always show planned segment duration instead of counting up/down when the segment is live */
 	fixedSegmentDuration: boolean
+	/** SourceLayer ids for which a piece duration label should be shown */
+	showDurationSourceLayers: string[]
 }
 
 export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {

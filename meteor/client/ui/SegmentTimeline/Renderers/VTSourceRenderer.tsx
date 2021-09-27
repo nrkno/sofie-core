@@ -466,11 +466,13 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 				<span
-					className={ClassNames('segment-timeline__piece__label', {
+					className={ClassNames('segment-timeline__piece__label', 'with-duration', {
 						'overflow-label': end !== '',
+						'swap-duration': this.shouldSwapDurationLabel(),
 					})}
 				>
-					{begin}
+					<span>{begin}</span>
+					{this.renderDuration()}
 				</span>
 				{begin && end === '' && vtContent && vtContent.loop && (
 					<div className="segment-timeline__piece__label label-icon label-loop-icon">

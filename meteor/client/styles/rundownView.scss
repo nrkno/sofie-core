@@ -2266,6 +2266,27 @@ svg.icon {
 					object-position: center center;
 					margin-left: 0.5em;
 				}
+
+				&.with-duration {
+					display: inline-flex;					
+					flex-direction: row;
+
+					.segment-timeline__piece__label__duration {
+						font-weight: 300;
+						font-size: 0.9em;
+						margin-left: 0.2em;
+
+					}
+
+					&.swap-duration {
+						.segment-timeline__piece__label__duration
+						{
+						   order: -1;
+						   margin-left: 0;
+						   margin-right: 0.2em;
+						}
+					}
+				}
 			}
 
 			// Layer-item appendages are parts of a layer item going beyond the layer (usually, across the entire timeline)

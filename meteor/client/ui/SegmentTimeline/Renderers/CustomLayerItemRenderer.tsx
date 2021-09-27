@@ -38,6 +38,8 @@ export interface ICustomLayerItemProps {
 	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: (returnInfinite?: boolean) => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
+	shouldSwapDurationLabel?: () => boolean
+	showDurationSourceLayers?: Set<string>
 }
 export interface ISourceLayerItemState {}
 
@@ -45,6 +47,14 @@ export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
 > extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
+	shouldSwapDurationLabel(): boolean {
+		return !!(
+			this.props.shouldSwapDurationLabel &&
+			typeof this.props.shouldSwapDurationLabel === 'function' &&
+			this.props.shouldSwapDurationLabel()
+		)
+	}
+
 	getItemLabelOffsetLeft(): React.CSSProperties {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
@@ -180,6 +190,23 @@ export class CustomLayerItemRenderer<
 				<FontAwesomeIcon icon={faCut} />
 			</div>
 		) : null
+	}
+
+	renderDuration() {
+		const uiPiece = this.props.piece
+		const innerPiece = uiPiece.instance.piece
+		const content = innerPiece.content
+		const duration = content && content.sourceDuration
+		if (duration && this.props.showDurationSourceLayers?.has(innerPiece.sourceLayerId)) {
+			return (
+				<span className="segment-timeline__piece__label__duration">{`(${RundownUtils.formatDiffToTimecode(
+					duration,
+					false,
+					false,
+					true
+				)})`}</span>
+			)
+		}
 	}
 
 	render() {

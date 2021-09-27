@@ -1,4 +1,5 @@
 import * as React from 'react'
+import ClassNames from 'classnames'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
@@ -43,26 +44,32 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 	}
 
 	render() {
+		if (this.props.isTooSmallForText) return
 		return (
-			!this.props.isTooSmallForText && (
-				<>
+			<>
+				<span
+					className="segment-timeline__piece__label"
+					ref={this.setLeftLabelRef}
+					style={this.getItemLabelOffsetLeft()}
+				>
 					<span
-						className="segment-timeline__piece__label"
-						ref={this.setLeftLabelRef}
-						style={this.getItemLabelOffsetLeft()}
+						className={ClassNames('segment-timeline__piece__label', 'with-duration', {
+							'swap-duration': this.shouldSwapDurationLabel(),
+						})}
 					>
-						<span className="segment-timeline__piece__label">{this.props.piece.instance.piece.name}</span>
+						<span>{this.props.piece.instance.piece.name}</span>
+						{this.renderDuration()}
 					</span>
-					<span
-						className="segment-timeline__piece__label right-side"
-						ref={this.setRightLabelRef}
-						style={this.getItemLabelOffsetRight()}
-					>
-						{this.renderInfiniteIcon()}
-						{this.renderOverflowTimeLabel()}
-					</span>
-				</>
-			)
+				</span>
+				<span
+					className="segment-timeline__piece__label right-side"
+					ref={this.setRightLabelRef}
+					style={this.getItemLabelOffsetRight()}
+				>
+					{this.renderInfiniteIcon()}
+					{this.renderOverflowTimeLabel()}
+				</span>
+			</>
 		)
 	}
 }
