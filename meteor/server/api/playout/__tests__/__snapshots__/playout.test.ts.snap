@@ -113,7 +113,7 @@ Object {
   "_id": "randomId9002",
   "_rank": 0,
   "created": 0,
-  "externalId": "MOCK_RUNDOWN",
+  "externalId": "MOCK_RUNDOWN_randomId9002",
   "externalNRCSName": "mock",
   "importVersions": Object {
     "blueprint": "",
@@ -194,7 +194,7 @@ Object {
   "_id": "randomId9002",
   "_rank": 0,
   "created": 0,
-  "externalId": "MOCK_RUNDOWN",
+  "externalId": "MOCK_RUNDOWN_randomId9002",
   "externalNRCSName": "mock",
   "importVersions": Object {
     "blueprint": "",

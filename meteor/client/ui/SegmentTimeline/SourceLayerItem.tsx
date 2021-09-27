@@ -12,6 +12,7 @@ import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
+import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
@@ -632,13 +633,26 @@ export const SourceLayerItem = withTranslation()(
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
-							studioPackageContainers={this.props.studio?.packageContainers}
+							studio={this.props.studio}
 						/>
 					)
 
 				case SourceLayerType.TRANSITION:
 					return (
 						<TransitionSourceRenderer
+							key={unprotectString(this.props.piece.instance._id)}
+							typeClass={typeClass}
+							getItemDuration={this.getItemDuration}
+							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							{...this.props}
+							{...this.state}
+						/>
+					)
+				case SourceLayerType.LOCAL:
+					return (
+						<LocalLayerItemRenderer
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}

@@ -4,6 +4,7 @@ import { ExpectedPackage } from './package'
 import { SomeTimelineContent } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
+import { ActionUserData } from './action'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -138,9 +139,9 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	autoNext?: boolean
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
-	/** How long to before this part is ready to take over from the previous */
+	/** How long until this part is ready to take over from the previous */
 	prerollDuration?: number
-	/** How long to before this part is ready to take over from the previous (during transition) */
+	/** How long until this part is ready to take over from the previous (during transition) */
 	transitionPrerollDuration?: number | null
 	/** How long to keep the old part alive during the transition */
 	transitionKeepaliveDuration?: number | null
@@ -283,6 +284,25 @@ export interface PieceTransition {
 	duration: number
 }
 
+export enum IBlueprintDirectPlayType {
+	AdLibPiece = 'adlib',
+	AdLibAction = 'action',
+}
+export interface IBlueprintDirectPlayBase {
+	type: IBlueprintDirectPlayType
+}
+export interface IBlueprintDirectPlayAdLibPiece extends IBlueprintDirectPlayBase {
+	type: IBlueprintDirectPlayType.AdLibPiece
+}
+export interface IBlueprintDirectPlayAdLibAction extends IBlueprintDirectPlayBase {
+	type: IBlueprintDirectPlayType.AdLibAction
+	/** Id of the action */
+	actionId: string
+	/** Properties defining the action behaviour */
+	userData: ActionUserData
+}
+export type IBlueprintDirectPlay = IBlueprintDirectPlayAdLibPiece | IBlueprintDirectPlayAdLibAction
+
 export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** ID of the source object in the gateway */
 	externalId: string
@@ -325,6 +345,9 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
+
+	/** Allow this part to be direct played (eg, by double clicking in the rundown timeline view) */
+	allowDirectPlay?: IBlueprintDirectPlay
 
 	/**
 	 * An array of which Packages this Piece uses. This is used by a Package Manager to ensure that the Package is in place for playout.

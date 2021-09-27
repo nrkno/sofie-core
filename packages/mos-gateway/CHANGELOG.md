@@ -3,99 +3,95 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.6...v1.36.0-in-testing.7) (2021-07-20)
+# [1.37.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
+
+### Bug Fixes
+
+- MOS-Gateway: update mos-connection version (to fix whitespace-issue when messages are being split in several packages) ([c949f9f](https://github.com/nrkno/tv-automation-server-core/commit/c949f9fd523a545f4cb3459f4a993a569a7fab78))
+
+# [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+
+# [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
+
+# [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
+
+# [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
+
+# [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
+
+# [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
+
+# [1.36.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
+
+# [1.36.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
+
+# [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
+
+### Features
+
+- rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
+
+# [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+
+## [1.35.1-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.35.1-3) (2021-09-07)
 
 **Note:** Version bump only for package mos-gateway
 
+## [1.35.1-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.35.1-2) (2021-08-10)
 
+**Note:** Version bump only for package mos-gateway
 
+# [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.7...v1.36.0-in-testing.8) (2021-08-10)
 
+**Note:** Version bump only for package mos-gateway
+
+# [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.6...v1.36.0-in-testing.7) (2021-07-20)
+
+**Note:** Version bump only for package mos-gateway
 
 # [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.36.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.5) (2021-07-14)
 
 **Note:** Version bump only for package mos-gateway
-
-
-
-
 
 # [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
 
 **Note:** Version bump only for package mos-gateway
-
-
-
-
 
 # [1.36.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.36.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
-
 
 ### Features
 
-* rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
-
-
-
-
+- rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
 
 ## [1.35.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.0...v1.35.1-0) (2021-07-12)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.35.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.34.0...v1.35.0) (2021-07-07)
-
-
 
 # [1.35.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.3...v1.35.0-in-testing.1) (2021-06-10)
 
-
-
 # [1.35.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.3-0...v1.35.0-in-testing.0) (2021-06-09)
-
 
 ### Features
 
-* require node 12.20 for all packages ([776e0d5](https://github.com/nrkno/tv-automation-server-core/commit/776e0d5c3e402b394990aafea8e7be4f44f8753f))
-
-
-
-
+- require node 12.20 for all packages ([776e0d5](https://github.com/nrkno/tv-automation-server-core/commit/776e0d5c3e402b394990aafea8e7be4f44f8753f))
 
 # [1.35.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.0-in-testing.0...v1.35.0-in-testing.1) (2021-06-10)
 

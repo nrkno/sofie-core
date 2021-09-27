@@ -31,8 +31,6 @@ import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { Parts, PartId, Part } from '../../../lib/collections/Parts'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { MeteorCall } from '../../../lib/api/methods'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import RundownViewEventBus, {
@@ -113,6 +111,7 @@ interface IProps {
 	isLastSegment: boolean
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
+	isFollowingOnAirSegment: boolean
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined
 	fixedSegmentDuration: boolean | undefined
@@ -212,6 +211,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			// otherwise, trigger the updates in a window of 500-2500 ms from change
 			props.playlist.activationId === undefined || props.ownCurrentPartInstance || props.ownNextPartInstance
 				? 0
+				: props.isFollowingOnAirSegment
+				? 150
 				: Math.random() * 2000 + 500
 		)
 
@@ -303,6 +304,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
+			props.isFollowingOnAirSegment !== nextProps.isFollowingOnAirSegment ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
 			!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers)
 		) {
@@ -330,7 +332,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 			props.playlist.activationId !== nextProps.playlist.activationId ||
 			PlaylistTiming.getExpectedStart(props.playlist.timing) !==
-				PlaylistTiming.getExpectedStart(nextProps.playlist.timing)
+				PlaylistTiming.getExpectedStart(nextProps.playlist.timing) ||
+			props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
+			props.ownNextPartInstance !== nextProps.ownNextPartInstance
 		) {
 			return true
 		}
@@ -536,15 +540,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				if (Settings.autoRewindLeavingSegment) {
 					this.onRewindSegment()
 					this.onShowEntireSegment()
-				}
-
-				if (this.props.segmentui && this.props.segmentui.orphaned) {
-					const { t } = this.props
-					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
-					// What is this supposed to do?
-					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, () =>
-						MeteorCall.userAction.resyncSegment('', this.props.segmentui!.rundownId, this.props.segmentui!._id)
-					)
 				}
 			}
 			if (
@@ -798,8 +793,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const currentLivePart = currentLivePartInstance.part
 
 				const partOffset =
-					this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] -
-						this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
+					(this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] || 0) -
+					(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] || 0)
 
 				let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
 				const lastTake = currentLivePartInstance.timings?.take
@@ -808,7 +803,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const virtualStartedPlayback =
 					(lastTake || 0) > (lastStartedPlayback || -1)
 						? lastTake
-						: lastStartedPlayback
+						: lastStartedPlayback !== undefined
 						? lastStartedPlayback - lastTakeOffset
 						: undefined
 
@@ -837,10 +832,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			} else {
 				this.isVisible = true
 			}
-		}
-
-		convertTimeToPixels = (time: number) => {
-			return Math.round(this.props.timeScale * time)
 		}
 
 		startLive = () => {

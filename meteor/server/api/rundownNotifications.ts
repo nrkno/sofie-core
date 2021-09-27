@@ -3,11 +3,12 @@ import {
 	RundownNotificationsAPI,
 	IMediaObjectIssue,
 	RundownNotificationsAPIMethods,
+	MEDIASTATUS_POLL_INTERVAL,
 } from '../../lib/api/rundownNotifications'
 import { registerClassToMeteorMethods } from '../methods'
 import { RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { PartNote } from '../../lib/api/notes'
-import { makePromise, normalizeArrayToMap } from '../../lib/lib'
+import { cacheResultAsync, makePromise, normalizeArrayToMap } from '../../lib/lib'
 import { getSegmentPartNotes } from '../../lib/rundownNotifications'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { RundownReadAccess } from '../security/rundown'
@@ -111,12 +112,19 @@ class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownN
 	}
 	async getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()
-		rundownIds.forEach((rundownId) => {
-			if (!RundownReadAccess.rundownContent({ rundownId }, this)) {
-				throw new Meteor.Error(401, 'Invalid access creditials for Media Object Issues')
-			}
-		})
-		return getMediaObjectIssues.apply(this, [rundownIds])
+
+		return cacheResultAsync(
+			`getMediaObjectIssues${rundownIds.join(',')}`,
+			async () => {
+				rundownIds.forEach((rundownId) => {
+					if (!RundownReadAccess.rundownContent({ rundownId }, this)) {
+						throw new Meteor.Error(401, 'Invalid access creditials for Media Object Issues')
+					}
+				})
+				return getMediaObjectIssues.apply(this, [rundownIds])
+			},
+			MEDIASTATUS_POLL_INTERVAL
+		)
 	}
 }
 registerClassToMeteorMethods(RundownNotificationsAPIMethods, ServerRundownNotificationsAPI, false)

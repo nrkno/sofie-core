@@ -8,7 +8,7 @@ export default class SplitInputIcon extends React.Component<{
 	piece?: PieceGeneric
 	hideLabel?: boolean
 }> {
-	getCameraLabel(piece: PieceGeneric | undefined) {
+	private getCameraLabel(piece: PieceGeneric | undefined) {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const camera = c.boxSourceConfiguration.find((i) => i.type === SourceLayerType.CAMERA)
@@ -28,7 +28,7 @@ export default class SplitInputIcon extends React.Component<{
 		}
 	}
 
-	getLeftSourceType(piece: PieceGeneric | undefined): string {
+	private getLeftSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const left = (c.boxSourceConfiguration && c.boxSourceConfiguration[0])?.type || SourceLayerType.CAMERA
@@ -37,7 +37,7 @@ export default class SplitInputIcon extends React.Component<{
 		return 'camera'
 	}
 
-	getRightSourceType(piece: PieceGeneric | undefined): string {
+	private getRightSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const right = (c.boxSourceConfiguration && c.boxSourceConfiguration[1])?.type || SourceLayerType.REMOTE

@@ -13,7 +13,7 @@ interface IProps {
 class BreakSegmentInner extends MeteorReactComponent<Translated<WithTiming<IProps>>> {
 	render() {
 		const { t } = this.props
-		let displayTimecode =
+		const displayTimecode =
 			this.props.breakTime && this.props.timingDurations.currentTime
 				? this.props.breakTime - this.props.timingDurations.currentTime
 				: undefined

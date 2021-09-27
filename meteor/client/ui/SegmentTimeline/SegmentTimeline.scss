@@ -44,11 +44,12 @@ $timeline-layer-height: 1em;
 	position: relative;
 	overflow: hidden;
 	contain: content style;
+	touch-action: pan-y;
 
 	&.segment-timeline__timeline-container--grabbable {
 		cursor: ew-resize;
 		cursor: url(/images/cursor_zoom_area_move.png), ew-resize;
-		cursor: url(/images/cursor_zoom_area_move.png) 28 16, ew-resize;
+		cursor: url(/images/cursor_zoom_area_move.png) 15 8, ew-resize; 
 	}
 
 	.segment-timeline__timeline {

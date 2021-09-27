@@ -20,6 +20,7 @@ import {
 import { IStudioSettings, Studio } from '../collections/Studios'
 import { RundownAPI } from '../api/rundown'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
+import { PieceGeneric } from '../collections/Pieces'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {
@@ -233,7 +234,9 @@ describe('lib/mediaObjects', () => {
 			})
 		)
 
-		const piece1 = literal<IBlueprintPieceGeneric>({
+		const piece1 = literal<PieceGeneric>({
+			_id: protectString('piece1'),
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			name: 'Test_file',
 			adlibPreroll: 0,
 			externalId: '',
@@ -319,7 +322,9 @@ describe('lib/mediaObjects', () => {
 			})
 		)
 
-		const piece2 = literal<IBlueprintPieceGeneric>({
+		const piece2 = literal<PieceGeneric>({
+			_id: protectString('piece2'),
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			name: 'Test_file_2',
 			adlibPreroll: 0,
 			externalId: '',
@@ -334,7 +339,9 @@ describe('lib/mediaObjects', () => {
 			}),
 		})
 
-		const piece3 = literal<IBlueprintPieceGeneric>({
+		const piece3 = literal<PieceGeneric>({
+			_id: protectString('piece3'),
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			name: 'Test_file_3',
 			adlibPreroll: 0,
 			externalId: '',

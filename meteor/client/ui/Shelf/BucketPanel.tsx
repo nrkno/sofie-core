@@ -183,8 +183,11 @@ export function actionToAdLibPieceUi(
 	}
 
 	return literal<BucketAdLibActionUi>({
-		_id: protectString(`function_${action._id}`),
-		name: translateMessage(action.display.label, i18nTranslator),
+		_id: protectString(`${action._id}`),
+		name:
+			typeof action.display.label === 'string'
+				? action.display.label
+				: translateMessage(action.display.label, i18nTranslator),
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
@@ -295,10 +298,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			})
 		}
 
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
-		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		const bucketAdLibPieces = BucketAdLibs.find({
 			bucketId: props.bucket._id,
 		}).fetch()
@@ -461,8 +462,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
-				onSelectAdLib = (_piece: BucketAdLibItem, _e: any) => {}
-
 				onToggleAdLib = (piece: BucketAdLibItem, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
 					const { t } = this.props
 
@@ -511,10 +510,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								)
 							)
 						} else {
-							if (
-								!this.isAdLibOnAir(piece as any as AdLibPieceUi) ||
-								!(sourceLayer && sourceLayer.clearKeyboardHotkey)
-							) {
+							if (!this.isAdLibOnAir(piece as any as AdLibPieceUi) || !(sourceLayer && sourceLayer.isClearable)) {
 								const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 								doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
@@ -527,7 +523,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									)
 								)
 							} else {
-								if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+								if (sourceLayer && sourceLayer.isClearable) {
 									this.onClearAllSourceLayer(sourceLayer, e)
 								}
 							}
@@ -804,7 +800,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
 													outputLayer={this.props.outputLayers[adlib.outputLayerId]}
 													onToggleAdLib={this.onToggleAdLib as any}
-													onSelectAdLib={this.onSelectAdLib as any}
+													onSelectAdLib={this.props.onSelectAdlib}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir(adlib as any as AdLibPieceUi)}
 													mediaPreviewUrl={

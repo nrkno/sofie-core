@@ -6,7 +6,7 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
-import { PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
 
 const globalTrackerQueue: Array<Function> = []
@@ -305,14 +305,19 @@ export type Translated<T> = T & WithTranslation
  *
  * @export
  * @template T
+ * @template K
  * @param {() => T} autorun The autorun function to be run.
- * @param {(React.DependencyList | undefined)} [deps] An optional list of dependenices to limit the tracker re-running
- * 		for each render. Optional, but highly recommended, due to the heavy nature of Meteor.Trackers and high frequency
- * 		of React renders.
- * @return {*}  {(T | undefined)}
+ * @param {React.DependencyList} [deps] A required list of dependenices to limit the tracker re-running. Can be left empty, if tracker
+ * 		has no external dependencies and should only be rerun when it's invalidated.
+ * @param {K} [initial] An optional, initial state of the tracker. If not provided, the tracker may return undefined.
+ * @return {*}  {(T | K)}
  */
-export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | undefined): T | undefined {
-	const [meteorData, setMeteorData] = useState<T | undefined>(undefined)
+export function useTracker<T, K extends undefined | T = undefined>(
+	autorun: () => T,
+	deps: React.DependencyList,
+	initial?: K
+): T | K {
+	const [meteorData, setMeteorData] = useState<T | K>(initial as K)
 
 	useEffect(() => {
 		const computation = Tracker.nonreactive(() => Tracker.autorun(() => setMeteorData(autorun())))
@@ -331,13 +336,19 @@ export function useTracker<T>(autorun: () => T, deps?: React.DependencyList | un
  * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
  * 		renders so that it isn't torn down and created for every render.
  */
-export function useSubscription(sub: PubSub, ...args: any[]) {
+export function useSubscription(sub: PubSub, ...args: any[]): boolean {
+	const [ready, setReady] = useState<boolean>(false)
+
 	useEffect(() => {
-		const subscription = Meteor.subscribe(sub, ...args)
+		const subscription = Tracker.nonreactive(() => meteorSubscribe(sub, ...args))
+		const isReadyComp = Tracker.nonreactive(() => Tracker.autorun(() => setReady(subscription.ready())))
 		return () => {
+			isReadyComp.stop()
 			setTimeout(() => {
 				subscription.stop()
 			}, 100)
 		}
 	}, [stringifyObjects(args)])
+
+	return ready
 }

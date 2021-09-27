@@ -74,10 +74,11 @@ import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../stud
 import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDBBase, ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { profiler } from '../profiler'
+import { MongoQuery } from '../../../lib/typings/meteor'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -425,7 +426,7 @@ export namespace ServerPlayoutAPI {
 
 			// find the allowable segment ids
 			const allowedSegments =
-				segmentDelta < 0
+				segmentDelta > 0
 					? considerSegments.slice(targetSegmentIndex)
 					: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
 			// const allowedSegmentIds = new Set(allowedSegments.map((s) => s._id))
@@ -1124,34 +1125,6 @@ export namespace ServerPlayoutAPI {
 		check(userData, Match.Any)
 		check(triggerMode, Match.Maybe(String))
 
-		return executeActionInner(access, rundownPlaylistId, actionDocId, async (actionContext, _cache, _rundown) => {
-			const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
-			if (!blueprint.blueprint.executeAction) {
-				throw new Meteor.Error(
-					400,
-					`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
-				)
-			}
-
-			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
-
-			blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
-		})
-	}
-
-	export async function executeActionInner(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
-		func: (
-			context: ActionExecutionContext,
-			cache: CacheForPlayout,
-			rundown: Rundown,
-			currentPartInstance: PartInstance
-		) => Promise<void>
-	): Promise<void> {
-		const now = getCurrentTime()
-
 		return runPlayoutOperationWithCache(
 			access,
 			'executeActionInner',
@@ -1166,66 +1139,91 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(400, `A part needs to be active to execute an action`)
 			},
 			async (cache) => {
-				const playlist = cache.Playlist.doc
-
-				const currentPartInstance = playlist.currentPartInstanceId
-					? cache.PartInstances.findOne(playlist.currentPartInstanceId)
-					: undefined
-				if (!currentPartInstance)
-					throw new Meteor.Error(
-						501,
-						`Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`
-					)
-
-				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
-				if (!rundown)
-					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
-
-				const [showStyle, watchedPackages] = await Promise.all([
-					cache.activationCache.getShowStyleCompound(rundown),
-					WatchedPackagesHelper.create(cache.Studio.doc._id, {
+				return executeActionInner(
+					cache,
+					{
 						pieceId: actionDocId,
 						fromPieceType: {
 							$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
 						},
-					}),
-				])
-				const actionContext = new ActionExecutionContext(
-					{
-						name: `${rundown.name}(${playlist.name})`,
-						identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-							currentPartInstance._id
-						},execution=${getRandomId()}`,
-						tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
 					},
-					cache,
-					showStyle,
-					rundown,
-					watchedPackages
-				)
+					async (actionContext, _rundown) => {
+						const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
+						if (!blueprint.blueprint.executeAction) {
+							throw new Meteor.Error(
+								400,
+								`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
+							)
+						}
 
-				// If any action cannot be done due to timings, that needs to be rejected by the context
-				await func(actionContext, cache, rundown, currentPartInstance)
+						logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-				if (
-					actionContext.currentPartState !== ActionPartChange.NONE ||
-					actionContext.nextPartState !== ActionPartChange.NONE
-				) {
-					await syncPlayheadInfinitesForNextPartInstance(cache)
-				}
-
-				if (actionContext.takeAfterExecute) {
-					await ServerPlayoutAPI.callTakeWithCache(cache, now)
-				} else {
-					if (
-						actionContext.currentPartState !== ActionPartChange.NONE ||
-						actionContext.nextPartState !== ActionPartChange.NONE
-					) {
-						await updateTimeline(cache)
+						blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
 					}
-				}
+				)
 			}
 		)
+	}
+
+	export async function executeActionInner(
+		cache: CacheForPlayout,
+		watchedPackagesFilter: MongoQuery<Omit<ExpectedPackageDBBase, 'studioId'>> | null,
+		func: (context: ActionExecutionContext, rundown: Rundown, currentPartInstance: PartInstance) => Promise<void>
+	): Promise<void> {
+		const now = getCurrentTime()
+
+		const playlist = cache.Playlist.doc
+
+		const currentPartInstance = playlist.currentPartInstanceId
+			? cache.PartInstances.findOne(playlist.currentPartInstanceId)
+			: undefined
+		if (!currentPartInstance)
+			throw new Meteor.Error(501, `Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
+
+		const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+		if (!rundown)
+			throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
+
+		const [showStyle, watchedPackages] = await Promise.all([
+			cache.activationCache.getShowStyleCompound(rundown),
+			watchedPackagesFilter
+				? WatchedPackagesHelper.create(cache.Studio.doc._id, watchedPackagesFilter)
+				: WatchedPackagesHelper.empty(),
+		])
+		const actionContext = new ActionExecutionContext(
+			{
+				name: `${rundown.name}(${playlist.name})`,
+				identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+					currentPartInstance._id
+				},execution=${getRandomId()}`,
+				tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+			},
+			cache,
+			showStyle,
+			rundown,
+			watchedPackages
+		)
+
+		// If any action cannot be done due to timings, that needs to be rejected by the context
+		await func(actionContext, rundown, currentPartInstance)
+
+		if (
+			actionContext.currentPartState !== ActionPartChange.NONE ||
+			actionContext.nextPartState !== ActionPartChange.NONE
+		) {
+			await syncPlayheadInfinitesForNextPartInstance(cache)
+		}
+
+		if (actionContext.takeAfterExecute) {
+			await ServerPlayoutAPI.callTakeWithCache(cache, now)
+		} else {
+			if (
+				actionContext.currentPartState !== ActionPartChange.NONE ||
+				actionContext.nextPartState !== ActionPartChange.NONE
+			) {
+				await updateTimeline(cache)
+			}
+		}
 	}
 	/**
 	 * This exists for the purpose of mocking this call for testing.
