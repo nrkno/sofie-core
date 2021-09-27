@@ -81,10 +81,10 @@ interface IProps {
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
-	budgetDuration?: number
 	showCountdownToSegment: boolean
 	fixedSegmentDuration: boolean | undefined
 	showDurationSourceLayers?: Set<string>
+	budgetDuration?: number
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -1098,8 +1098,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								segmentId={this.props.segment._id}
 								parts={this.props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
-								budgetDuration={this.props.budgetDuration}
-								playedOutDuration={this.props.isLiveSegment ? this.props.livePosition : 0}
 								fixed={this.props.fixedSegmentDuration}
 							/>
 						)}

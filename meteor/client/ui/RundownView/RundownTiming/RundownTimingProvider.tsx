@@ -10,6 +10,7 @@ import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { RundownTimingCalculator, RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
 import { Rundown } from '../../../../lib/collections/Rundowns'
+import _ from 'underscore'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
@@ -41,6 +42,7 @@ interface IRundownTimingProviderTrackedProps {
 	currentRundown: Rundown | undefined
 	parts: Array<Part>
 	partInstancesMap: Map<PartId, PartInstance>
+	segmentEntryPartInstances: PartInstance[]
 }
 
 /**
@@ -58,6 +60,7 @@ export const RundownTimingProvider = withTracker<
 	let parts: Array<Part> = []
 	const partInstancesMap = new Map<PartId, PartInstance>()
 	let currentRundown: Rundown | undefined
+	const segmentEntryPartInstances: PartInstance[] = []
 	if (props.playlist) {
 		rundowns = props.playlist.getRundowns()
 		const { parts: incomingParts } = props.playlist.getSegmentsAndPartsSync()
@@ -65,7 +68,23 @@ export const RundownTimingProvider = withTracker<
 		const partInstances = props.playlist.getActivePartInstances()
 
 		const currentPartInstance = partInstances.find((p) => p._id === props.playlist!.currentPartInstanceId)
+		const previousPartInstance = partInstances.find((p) => p._id === props.playlist!.previousPartInstanceId)
 		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
+		segmentEntryPartInstances.push(
+			..._.compact([
+				currentPartInstance &&
+					props.playlist.getPartInstancesForSegmentPlayout(
+						currentPartInstance.rundownId,
+						currentPartInstance.segmentPlayoutId
+					)[0],
+				previousPartInstance &&
+					previousPartInstance.segmentPlayoutId !== currentPartInstance?.segmentPlayoutId &&
+					props.playlist.getPartInstancesForSegmentPlayout(
+						previousPartInstance.rundownId,
+						previousPartInstance.segmentPlayoutId
+					)[0],
+			])
+		)
 
 		partInstances.forEach((partInstance) => {
 			partInstancesMap.set(partInstance.part._id, partInstance)
@@ -110,6 +129,7 @@ export const RundownTimingProvider = withTracker<
 		currentRundown,
 		parts,
 		partInstancesMap,
+		segmentEntryPartInstances,
 	}
 })(
 	class RundownTimingProvider
@@ -210,7 +230,7 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isLowResolution: boolean) {
-			const { playlist, rundowns, currentRundown, parts, partInstancesMap } = this.props
+			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segmentEntryPartInstances } = this.props
 			this.durations = Object.assign(
 				this.durations,
 				this.timingCalculator.updateDurations(
@@ -221,7 +241,8 @@ export const RundownTimingProvider = withTracker<
 					currentRundown,
 					parts,
 					partInstancesMap,
-					this.props.defaultDuration
+					this.props.defaultDuration,
+					segmentEntryPartInstances
 				)
 			)
 		}
