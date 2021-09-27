@@ -232,6 +232,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 								scrollWidth={this.props.scrollWidth}
 								layerIndex={this.props.layerIndex}
 								isPreview={this.props.isPreview}
+								showDurationSourceLayers={this.props.showDurationSourceLayers}
 							/>
 						)
 					})
@@ -366,6 +367,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						onPieceClick={this.props.onPieceClick}
 						onPieceDoubleClick={this.props.onPieceDoubleClick}
 						isPreview={this.props.isPreview}
+						showDurationSourceLayers={this.props.showDurationSourceLayers}
 					/>
 				)
 			}
