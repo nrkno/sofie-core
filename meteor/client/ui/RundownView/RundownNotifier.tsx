@@ -28,7 +28,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
-import { NoteType, TrackedNote } from '../../../lib/api/notes'
+import { TrackedNote } from '../../../lib/api/notes'
 import { PieceId, Piece } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
@@ -38,6 +38,7 @@ import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '../../../lib/api/TranslatableMessage'
 import { getAllowStudio } from '../../lib/localStorage'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -53,6 +54,19 @@ export interface RONotificationEvent {
 }
 
 const SEGMENT_DELIMITER = ' • '
+
+function getNoticeLevelForNoteSeverity(type: NoteSeverity): NoticeLevel {
+	switch (type) {
+		case NoteSeverity.ERROR:
+			return NoticeLevel.CRITICAL
+		case NoteSeverity.WARNING:
+			return NoticeLevel.WARNING
+		case NoteSeverity.INFO:
+			return NoticeLevel.NOTIFICATION
+		default:
+			return NoticeLevel.WARNING // this conforms with pre-existing behavior where anything that weren't an error was a warning
+	}
+}
 
 class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -245,7 +259,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
 							const notificationFromNote = new Notification(
 								rundownNoteId,
-								note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+								getNoticeLevelForNoteSeverity(note.type),
 								note.message,
 								'Rundown',
 								getCurrentTime(),
@@ -429,7 +443,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 				const newNotification = new Notification(
 					notificationId,
-					itemType === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+					getNoticeLevelForNoteSeverity(itemType),
 					(
 						<>
 							{name || segmentName ? (

@@ -11,7 +11,7 @@ import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { StudioId } from '../../lib/collections/Studios'
 import { Pieces, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
+import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -393,12 +393,7 @@ export async function pieceTakeNow(
 	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
 	if (!pieceToCopy.allowDirectPlay) {
-		// Not explicitly allowed, use legacy route
-		const showStyleBase = rundown.getShowStyleBase()
-		const sourceLayerId = pieceToCopy.sourceLayerId
-		const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-		if (sourceL && (sourceL.type !== SourceLayerType.LOWER_THIRD || sourceL.exclusiveGroup))
-			return ClientAPI.responseError(`PieceInstance or Piece "${pieceToCopy.name}" cannot be direct played!`)
+		return ClientAPI.responseError(`PieceInstance or Piece "${pieceToCopy.name}" cannot be direct played!`)
 	}
 
 	return ClientAPI.responseSuccess(
