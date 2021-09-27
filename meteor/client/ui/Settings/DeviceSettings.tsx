@@ -14,7 +14,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { PeripheralDeviceStatus } from '../Status/SystemStatus'
+import { StatusCodePill } from '../Status/StatusCodePill'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
@@ -171,7 +171,11 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 								</button>
 							</div>
 							<div className="mbs">
-								<PeripheralDeviceStatus device={device} />
+								<StatusCodePill
+									connected={device.connected}
+									statusCode={device.status?.statusCode}
+									messages={device.status?.messages}
+								/>
 							</div>
 							{device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER ? (
 								<div className="mbs">

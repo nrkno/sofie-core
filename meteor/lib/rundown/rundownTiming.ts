@@ -516,7 +516,7 @@ export class RundownTimingCalculator {
 
 		this.breakProps.props = {
 			rundownsBeforeNextBreak: orderedRundowns.slice(currentRundownIndex, nextBreakIndex + 1),
-			breakIsLastRundown: nextBreakIndex === orderedRundowns.length,
+			breakIsLastRundown: nextBreakIndex === orderedRundowns.length - 1,
 		}
 	}
 }

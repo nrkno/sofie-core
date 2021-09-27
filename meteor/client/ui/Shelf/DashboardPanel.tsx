@@ -10,7 +10,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
-import { unprotectString, getCurrentTime } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import {
 	IAdLibPanelProps,
 	AdLibFetchAndFilterProps,
@@ -28,13 +28,13 @@ import {
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
-import { invalidateAt } from '../../lib/invalidatingTime'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
+import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 interface IState {
@@ -67,11 +67,12 @@ interface DashboardPositionableElement {
 	y: number
 	width: number
 	height: number
+	scale?: number
 }
 
 type AdLibPieceUiWithNext = AdLibPieceUi & { isNext: boolean }
 
-export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
+export function dashboardElementStyle(el: DashboardPositionableElement): React.CSSProperties {
 	return {
 		width:
 			el.width >= 0
@@ -105,6 +106,7 @@ export function dashboardElementPosition(el: DashboardPositionableElement): Reac
 				: el.height < 0
 				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
 				: undefined,
+		fontSize: (el.scale || 1) * 1.5 + 'em',
 	}
 }
 
@@ -480,7 +482,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							'dashboard-panel--take': filter.displayTakeButtons,
 						})}
 						ref={this.setRef}
-						style={dashboardElementPosition(filter)}
+						style={dashboardElementStyle(filter)}
 					>
 						<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
 						{filter.enableSearch && (
@@ -564,88 +566,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist) {
-	let prospectivePieces: PieceInstance[] = []
-	const now = getCurrentTime()
-	if (playlist.activationId && playlist.currentPartInstanceId) {
-		prospectivePieces = PieceInstances.find({
-			startedPlayback: {
-				$exists: true,
-			},
-			playlistActivationId: playlist.activationId,
-			$and: [
-				{
-					$or: [
-						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
-						},
-						{
-							stoppedPlayback: {
-								$exists: false,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							adLibSourceId: {
-								$exists: true,
-							},
-						},
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							userDuration: {
-								$exists: false,
-							},
-						},
-						{
-							'userDuration.end': {
-								$exists: false,
-							},
-						},
-					],
-				},
-			],
-		}).fetch()
-
-		let nearestEnd = Number.POSITIVE_INFINITY
-		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-			const piece = pieceInstance.piece
-			const end: number | undefined =
-				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
-					? pieceInstance.userDuration.end
-					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + pieceInstance.startedPlayback!
-					: undefined
-
-			if (end !== undefined) {
-				if (end > now) {
-					nearestEnd = nearestEnd > end ? end : nearestEnd
-					return true
-				} else {
-					return false
-				}
-			}
-			return true
-		})
-
-		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
-	}
-
-	return prospectivePieces
-}
-
 export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (playlist.activationId && playlist.nextPartInstanceId) {
@@ -682,7 +602,7 @@ export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[
 export function getUnfinishedPieceInstancesGrouped(
 	playlist: RundownPlaylist
 ): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist)
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, false)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)

@@ -35,6 +35,7 @@ import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifica
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
+import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -68,6 +69,7 @@ interface IProps {
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number
+	displayLiveLineCounter: boolean
 	autoNextPart: boolean
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
@@ -80,6 +82,8 @@ interface IProps {
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
+	showCountdownToSegment: boolean
+	fixedSegmentDuration: boolean | undefined
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -701,11 +705,13 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						{t('On Air')}
 					</div>
 					<div className="segment-timeline__liveline__timecode">
-						<CurrentPartRemaining
-							currentPartInstanceId={this.props.playlist.currentPartInstanceId}
-							speaking={getAllowSpeaking()}
-							heavyClassName="overtime"
-						/>
+						{this.props.displayLiveLineCounter && (
+							<CurrentPartRemaining
+								currentPartInstanceId={this.props.playlist.currentPartInstanceId}
+								speaking={getAllowSpeaking()}
+								heavyClassName="overtime"
+							/>
+						)}
 						{this.props.autoNextPart ? (
 							<div className="rundown-view__part__icon rundown-view__part__icon--auto-next"></div>
 						) : (
@@ -1023,25 +1029,29 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							<SegmentDuration
 								parts={this.props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+								fixed={this.props.fixedSegmentDuration}
 							/>
 						)}
 				</div>
 				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
-					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
-						<PartCountdown
-							partId={countdownToPartId}
-							hideOnZero={!useTimeOfDayCountdowns}
-							useWallClock={useTimeOfDayCountdowns}
-							playlist={this.props.playlist}
-							label={
-								useTimeOfDayCountdowns ? (
-									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-								) : (
-									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-								)
-							}
-						/>
-					)}
+					{this.props.playlist &&
+						this.props.parts &&
+						this.props.parts.length > 0 &&
+						this.props.showCountdownToSegment && (
+							<PartCountdown
+								partId={countdownToPartId}
+								hideOnZero={!useTimeOfDayCountdowns}
+								useWallClock={useTimeOfDayCountdowns}
+								playlist={this.props.playlist}
+								label={
+									useTimeOfDayCountdowns ? (
+										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+									) : (
+										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+									)
+								}
+							/>
+						)}
 					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}

@@ -265,12 +265,20 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					ordered: 'modifiersFirst',
 					preventDefaultPartials: false,
 				})
+				localSorensen.bind(['F5', 'Control+F5'], preventDefault, {
+					global: true,
+					exclusive: true,
+					ordered: false,
+					preventDefaultPartials: false,
+				})
 			}
 		}
 
 		return () => {
 			localSorensen.unbind('Escape', poisonHotkeys)
 			localSorensen.unbind('Control+KeyF', preventDefault)
+			localSorensen.unbind('F5', preventDefault)
+			localSorensen.unbind('Control+F5', preventDefault)
 		}
 	}, [initialized]) // run once once Sorensen is initialized
 
