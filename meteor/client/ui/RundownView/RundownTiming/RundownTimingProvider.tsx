@@ -196,7 +196,7 @@ export const RundownTimingProvider = withTracker<
 				Meteor.clearInterval(this.refreshTimer)
 				this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			}
-			if (prevProps.parts !== this.props.parts) {
+			if (prevProps.parts !== this.props.parts || prevProps.playlist?.nextPartInstanceId !== this.props.playlist?.nextPartInstanceId || prevProps.playlist?.currentPartInstanceId !== this.props.playlist?.currentPartInstanceId) {
 				// empty the temporary Part Instances cache
 				this.timingCalculator.clearTempPartInstances()
 				this.onRefreshTimer()

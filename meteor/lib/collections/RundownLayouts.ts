@@ -52,6 +52,7 @@ export enum RundownLayoutElementType {
 	NEXT_INFO = 'next_info',
 	PLAYLIST_START_TIMER = 'playlist_start_timer',
 	PLAYLIST_END_TIMER = 'playlist_end_timer',
+	NEXT_BREAK_TIMING = 'next_break_timing',
 	END_WORDS = 'end_words',
 	SEGMENT_TIMING = 'segment_timing',
 	PART_TIMING = 'part_timing',
@@ -148,6 +149,10 @@ export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase 
 	hideCountdown: boolean
 	hideDiff: boolean
 	hidePlannedEnd: boolean
+}
+
+export interface RundownLayoutNextBreakTiming extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.NEXT_BREAK_TIMING
 }
 
 export interface RundownLayoutEndWords extends RundownLayoutElementBase, RequiresActiveLayers {
