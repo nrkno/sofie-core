@@ -130,17 +130,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			this.blurActiveElement()
 			this.props.onChangeExpanded(e.state === 'toggle' ? !this.props.isExpanded : e.state)
 		})
-
-		document.body.addEventListener('wheel', this.preventWheelPropagation, {
-			passive: false,
-		})
 	}
 
 	componentWillUnmount() {
 		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
-
-		document.body.removeEventListener('wheel', this.preventWheelPropagation)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -364,26 +358,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.setState({
 			shouldQueue,
 		})
-	}
-
-	private preventWheelPropagation = (e: WheelEvent) => {
-		const composedPath = e.composedPath()
-
-		if (this.element && composedPath.includes(this.element)) {
-			const scrollSink = composedPath.find(
-				(element) => element instanceof HTMLElement && element.classList.contains('scroll-sink')
-			)
-			if (scrollSink instanceof HTMLElement) {
-				if (e.deltaY < 0 && scrollSink.scrollTop <= 0) {
-					e.preventDefault()
-				} else if (
-					e.deltaY > 0 &&
-					Math.round(scrollSink.scrollTop) >= scrollSink.scrollHeight - scrollSink.clientHeight
-				) {
-					e.preventDefault()
-				}
-			}
-		}
 	}
 
 	render() {
