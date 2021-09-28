@@ -185,26 +185,23 @@ export namespace ServerPlayoutAdLibAPI {
 			)
 		}
 
-		// Disable the original piece if from the same Part
-		if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
+		// Disable the original piece if from the same Part, and it hasnt finished playback
+		if (
+			pieceInstanceToCopy &&
+			pieceInstanceToCopy.partInstanceId === partInstance._id &&
+			!pieceInstanceToCopy.stoppedPlayback
+		) {
 			// Ensure the piece being copied isnt currently live
-			if (pieceInstanceToCopy.startedPlayback && pieceInstanceToCopy.startedPlayback <= getCurrentTime()) {
-				const resolvedPieces = getResolvedPieces(cache, showStyleBase, partInstance)
-				const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
-
-				if (
-					resolvedPieceBeingCopied &&
-					resolvedPieceBeingCopied.resolvedDuration !== undefined &&
-					(resolvedPieceBeingCopied.infinite ||
-						resolvedPieceBeingCopied.resolvedStart + resolvedPieceBeingCopied.resolvedDuration >=
-							getCurrentTime())
-				) {
-					// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
-					throw new Meteor.Error(
-						409,
-						`PieceInstance "${pieceInstanceToCopy._id}" is currently live and cannot be used as an ad-lib`
-					)
-				}
+			if (
+				pieceInstanceToCopy.startedPlayback &&
+				pieceInstanceToCopy.startedPlayback <= getCurrentTime() &&
+				!pieceInstanceToCopy.stoppedPlayback
+			) {
+				// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
+				throw new Meteor.Error(
+					409,
+					`PieceInstance "${pieceInstanceToCopy._id}" is currently live and cannot be used as an ad-lib`
+				)
 			}
 
 			cache.PieceInstances.update(pieceInstanceToCopy._id, {
