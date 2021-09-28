@@ -38,6 +38,7 @@ import {
 	PackageInfo,
 	IStudioBaselineContext,
 	IShowStyleUserContext,
+	IBlueprintSegmentRundown,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -288,7 +289,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 
 export class RundownContext extends ShowStyleContext implements IRundownContext {
 	readonly rundownId: string
-	readonly rundown: Readonly<IBlueprintRundownDB>
+	readonly rundown: Readonly<IBlueprintSegmentRundown>
 	readonly _rundown: ReadonlyDeep<Rundown>
 	readonly playlistId: RundownPlaylistId
 
@@ -301,7 +302,7 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		super(contextInfo, studio, showStyleCompound)
 
 		this.rundownId = unprotectString(rundown._id)
-		this.rundown = unprotectObject(rundown)
+		this.rundown = rundownToSegmentRundown(rundown)
 		this._rundown = rundown
 		this.playlistId = rundown.playlistId
 	}
@@ -733,5 +734,12 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 				rundownId: this._rundown._id,
 			})
 		)
+	}
+}
+
+function rundownToSegmentRundown(rundown: ReadonlyDeep<Rundown>): IBlueprintSegmentRundown {
+	return {
+		externalId: rundown.externalId,
+		metaData: rundown.metaData,
 	}
 }

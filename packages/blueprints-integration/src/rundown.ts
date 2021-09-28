@@ -112,6 +112,13 @@ export interface IBlueprintRundownDBData {
 	airStatus?: string
 }
 
+export interface IBlueprintSegmentRundown<TMetadata = unknown> {
+	externalId: string
+
+	/** Arbitrary data storage for plugins */
+	metaData?: TMetadata
+}
+
 /** The Segment generated from Blueprint */
 export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-presentable name (Slug) for the Title */
