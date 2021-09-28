@@ -562,37 +562,38 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			
 			// TODO: Fix this part (AFJO)
 			// Setting the correct scroll position on parts when setting is next
-			// const nextPartDisplayStartsAt =
-			// 	currentNextPart &&
-			// 	this.context.durations?.partDisplayStartsAt &&
-			// 	this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
-			// const partOffset =
-			// 	nextPartDisplayStartsAt -
-			// 		this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
-			// const nextPartIdOrOffsetHasChanged =
-			// 	currentNextPart &&
-			// 	this.props.playlist.nextPartInstanceId &&
-			// 	(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
-			// 		this.nextPartOffset !== partOffset)
-			// const isBecomingNextSegment = this.state.isNextSegment === false
-			// if (
-			// 	!isLiveSegment &&
-			// 	isNextSegment &&
-			// 	currentNextPart &&
-			// 	(nextPartIdOrOffsetHasChanged || isBecomingNextSegment)
-			// ) {
-			// 	const timelineWidth = getElementWidth(this.timelineDiv)
-			// 	// If part is not within viewport scroll to its start
-			// 	if (
-			// 		this.state.scrollLeft > partOffset ||
-			// 		this.state.scrollLeft * this.state.timeScale + timelineWidth < partOffset * this.state.timeScale
-			// 	) {
-			// 		this.setState({
-			// 			scrollLeft: partOffset,
-			// 		})
-			// 	}
-			// 	this.nextPartOffset = partOffset
-			// }
+			const nextPartDisplayStartsAt =
+				currentNextPart &&
+				this.context.durations?.partDisplayStartsAt &&
+				this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
+			const partOffset =
+				nextPartDisplayStartsAt -
+					(this.props.parts.length > 0 ? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] : 0)
+			const nextPartIdOrOffsetHasChanged =
+				currentNextPart &&
+				this.props.playlist.nextPartInstanceId &&
+				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
+					this.nextPartOffset !== partOffset)
+			const isBecomingNextSegment = this.state.isNextSegment === false
+			if (
+				!isLiveSegment &&
+				isNextSegment &&
+				currentNextPart &&
+				(nextPartIdOrOffsetHasChanged || isBecomingNextSegment)
+			) {
+				console.log('scroll into view')
+				const timelineWidth = getElementWidth(this.timelineDiv)
+				// If part is not within viewport scroll to its start
+				if (
+					this.state.scrollLeft > partOffset ||
+					this.state.scrollLeft * this.state.timeScale + timelineWidth < partOffset * this.state.timeScale
+				) {
+					this.setState({
+						scrollLeft: partOffset,
+					})
+				}
+				this.nextPartOffset = partOffset
+			}
 
 
 			// rewind all scrollLeft's to 0 on rundown activate
