@@ -23,6 +23,7 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 import { Studio } from '../../../lib/collections/Studios'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
+const MARGINAL_ANCHORED_WIDTH = 5
 
 export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
@@ -558,9 +559,10 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		setAnchoredElsWidths = (leftAnchoredWidth: number, rightAnchoredWidth: number) => {
+			// anchored labels will sometimes errorneously report some width. Discard if it's marginal.
 			this.setState({
-				leftAnchoredWidth: leftAnchoredWidth,
-				rightAnchoredWidth: rightAnchoredWidth,
+				leftAnchoredWidth: leftAnchoredWidth > MARGINAL_ANCHORED_WIDTH ? leftAnchoredWidth : 0,
+				rightAnchoredWidth: rightAnchoredWidth > MARGINAL_ANCHORED_WIDTH ? rightAnchoredWidth : 0,
 			})
 		}
 
