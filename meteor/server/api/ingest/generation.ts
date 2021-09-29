@@ -506,33 +506,11 @@ export async function updateRundownFromIngestData(
 
 	// TODO - store notes from rundownNotesContext
 
-	const segmentChanges = await calculateSegmentsFromIngestData(
+	const { segmentChanges, removedSegments } = await resolveSegmentChangesForUpdatedRundown(
 		cache,
-		ingestRundown.segments,
+		ingestRundown,
 		allRundownWatchedPackages
 	)
-
-	/** Don't remove segments for now, orphan them instead. The 'commit' phase will clean them up if possible */
-	const removedSegments = cache.Segments.findFetch({ _id: { $nin: segmentChanges.segments.map((s) => s._id) } })
-	for (const oldSegment of removedSegments) {
-		segmentChanges.segments.push({
-			...oldSegment,
-			orphaned: SegmentOrphanedReason.DELETED,
-		})
-	}
-
-	if (Settings.preserveUnsyncedPlayingSegmentContents && removedSegments.length > 0) {
-		// Preserve any old content, unless the part is referenced in another segment
-		const retainSegments = new Set(removedSegments.map((s) => s._id))
-		const newPartIds = new Set(segmentChanges.parts.map((p) => p._id))
-		const oldParts = cache.Parts.findFetch((p) => retainSegments.has(p.segmentId) && !newPartIds.has(p._id))
-		segmentChanges.parts.push(...oldParts)
-
-		const oldPartIds = new Set(oldParts.map((p) => p._id))
-		segmentChanges.pieces.push(...cache.Pieces.findFetch((p) => oldPartIds.has(p.startPartId)))
-		segmentChanges.adlibPieces.push(...cache.AdLibPieces.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
-		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
-	}
 
 	updateBaselineExpectedPackagesOnRundown(cache, rundownRes.baseline)
 
@@ -705,4 +683,40 @@ export async function saveChangesForRundown(
 	}
 
 	return dbRundown
+}
+
+export async function resolveSegmentChangesForUpdatedRundown(
+	cache: CacheForIngest,
+	ingestRundown: LocalIngestRundown,
+	allRundownWatchedPackages: WatchedPackagesHelper
+): Promise<{ segmentChanges: UpdateSegmentsResult; removedSegments: DBSegment[] }> {
+	const segmentChanges = await calculateSegmentsFromIngestData(
+		cache,
+		ingestRundown.segments,
+		allRundownWatchedPackages
+	)
+
+	/** Don't remove segments for now, orphan them instead. The 'commit' phase will clean them up if possible */
+	const removedSegments = cache.Segments.findFetch({ _id: { $nin: segmentChanges.segments.map((s) => s._id) } })
+	for (const oldSegment of removedSegments) {
+		segmentChanges.segments.push({
+			...oldSegment,
+			orphaned: SegmentOrphanedReason.DELETED,
+		})
+	}
+
+	if (Settings.preserveUnsyncedPlayingSegmentContents && removedSegments.length > 0) {
+		// Preserve any old content, unless the part is referenced in another segment
+		const retainSegments = new Set(removedSegments.map((s) => s._id))
+		const newPartIds = new Set(segmentChanges.parts.map((p) => p._id))
+		const oldParts = cache.Parts.findFetch((p) => retainSegments.has(p.segmentId) && !newPartIds.has(p._id))
+		segmentChanges.parts.push(...oldParts)
+
+		const oldPartIds = new Set(oldParts.map((p) => p._id))
+		segmentChanges.pieces.push(...cache.Pieces.findFetch((p) => oldPartIds.has(p.startPartId)))
+		segmentChanges.adlibPieces.push(...cache.AdLibPieces.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
+		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
+	}
+
+	return { segmentChanges, removedSegments }
 }

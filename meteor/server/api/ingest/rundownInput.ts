@@ -11,7 +11,7 @@ import { getCurrentTime, literal, protectString, unprotectString } from '../../.
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
-import { SegmentId, Segments } from '../../../lib/collections/Segments'
+import { DBSegment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
 	LocalIngestRundown,
@@ -36,10 +36,12 @@ import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownActio
 import { CacheForIngest } from './cache'
 import {
 	getRundownFromIngestData,
+	resolveSegmentChangesForUpdatedRundown,
 	saveChangesForRundown,
 	saveSegmentChangesToCache,
 	updateRundownFromIngestData,
 	updateSegmentFromIngestData,
+	UpdateSegmentsResult,
 } from './generation'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
@@ -572,21 +574,27 @@ export async function handleUpdatedRundownMetaDataInner(
 	// Save rundown and baseline
 	const dbRundown = await saveChangesForRundown(cache, dbRundownData, rundownRes, showStyle)
 
+	let segmentChanges: UpdateSegmentsResult | undefined
+	let removedSegments: DBSegment[] | undefined
 	if (!_.isEqual(existingRundown.metaData, dbRundown.metaData)) {
 		logger.info(`MetaData of rundown ${dbRundown.externalId} has been modified, regenerating segments`)
-		// Segments
+		const changes = await resolveSegmentChangesForUpdatedRundown(cache, ingestRundown, allRundownWatchedPackages)
+		segmentChanges = changes.segmentChanges
+		removedSegments = changes.removedSegments
 	}
 
 	updateBaselineExpectedPackagesOnRundown(cache, rundownRes.baseline)
 
-	// saveSegmentChangesToCache(cache, segmentChanges, true)
+	if (segmentChanges) {
+		saveSegmentChangesToCache(cache, segmentChanges, true)
+	}
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 
 	span?.end()
 	return literal<CommitIngestData>({
-		changedSegmentIds: [], // segmentChanges.segments.map((s) => s._id),
-		removedSegmentIds: [], // removedSegments.map((s) => s._id),
+		changedSegmentIds: segmentChanges?.segments.map((s) => s._id) ?? [],
+		removedSegmentIds: removedSegments?.map((s) => s._id) ?? [],
 		renamedSegments: new Map(),
 
 		removeRundown: false,
