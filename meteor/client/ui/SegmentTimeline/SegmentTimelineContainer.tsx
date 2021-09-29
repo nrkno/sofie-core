@@ -158,7 +158,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
 		// re-evaluated when a piece like that appears.
-		const _infinitesEndingPieces = PieceInstances.find({
+		PieceInstances.find({
 			rundownId: segment.rundownId,
 			dynamicallyInserted: {
 				$exists: true,
