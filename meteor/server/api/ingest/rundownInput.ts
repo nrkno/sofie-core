@@ -1,13 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
-import {
-	getExternalNRCSName,
-	PeripheralDevice,
-	PeripheralDeviceId,
-	PeripheralDevices,
-} from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
+import { getCurrentTime, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
@@ -28,7 +23,6 @@ import {
 	checkAccessAndGetPeripheralDevice,
 	getRundown,
 	extendIngestRundownCore,
-	modifyPlaylistExternalId,
 	getRundownId,
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
@@ -45,25 +39,11 @@ import {
 } from './generation'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { CommonContext, ShowStyleUserContext, StudioUserContext } from '../blueprints/context'
+import { StudioUserContext } from '../blueprints/context'
 import { selectShowStyleVariant } from '../rundown'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
-import { PackageInfo } from '../../coreSystem'
-import { RundownNote } from '../../../lib/api/notes'
-import { anythingChanged, sumChanges } from '../../lib/database'
-import { saveIntoCache } from '../../cache/lib'
-import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
-import { Random } from 'meteor/random'
-import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import {
-	postProcessRundownBaselineItems,
-	postProcessAdLibPieces,
-	postProcessGlobalAdLibActions,
-} from '../blueprints/postProcess'
 import { profiler } from '../profiler'
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 
