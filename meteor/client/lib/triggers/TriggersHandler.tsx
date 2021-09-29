@@ -251,6 +251,8 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	}
 
 	useEffect(() => {
+		const fKeys = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12']
+
 		if (initialized) {
 			localSorensen.bind('Escape', poisonHotkeys, {
 				exclusive: false,
@@ -265,25 +267,26 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					ordered: 'modifiersFirst',
 					preventDefaultPartials: false,
 				})
-				localSorensen.bind(['F5', 'Control+F5'], preventDefault, {
+				localSorensen.bind('Control+F5', preventDefault, {
 					global: true,
 					exclusive: true,
 					ordered: false,
 					preventDefaultPartials: false,
 				})
-				localSorensen.bind('F7', preventDefault, {
-					exclusive: false,
-					global: true,
-				})
+				fKeys.forEach((key) =>
+					localSorensen.bind(key, preventDefault, {
+						exclusive: false,
+						global: true,
+					})
+				)
 			}
 		}
 
 		return () => {
 			localSorensen.unbind('Escape', poisonHotkeys)
 			localSorensen.unbind('Control+KeyF', preventDefault)
-			localSorensen.unbind('F5', preventDefault)
 			localSorensen.unbind('Control+F5', preventDefault)
-			localSorensen.unbind('F7', preventDefault)
+			fKeys.forEach((key) => localSorensen.unbind(key, preventDefault))
 		}
 	}, [initialized]) // run once once Sorensen is initialized
 
