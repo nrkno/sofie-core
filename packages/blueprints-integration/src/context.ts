@@ -6,10 +6,10 @@ import {
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
 	IBlueprintResolvedPieceInstance,
-	IBlueprintRundownDB,
 	IBlueprintMutatablePart,
 	IBlueprintSegmentDB,
 	IBlueprintPieceDB,
+	IBlueprintSegmentRundown,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -120,7 +120,7 @@ export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleCont
 
 export interface IRundownContext extends IShowStyleContext {
 	readonly rundownId: string
-	readonly rundown: Readonly<IBlueprintRundownDB>
+	readonly rundown: Readonly<IBlueprintSegmentRundown>
 }
 
 export interface IRundownUserContext extends IUserNotesContext, IRundownContext {}

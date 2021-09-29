@@ -878,6 +878,13 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	async dataRundownUpdate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
 		return RundownInput.dataRundownUpdate(this, deviceId, deviceToken, ingestRundown)
 	}
+	async dataRundownMetaDataUpdate(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		ingestRundown: Omit<IngestRundown, 'segments'>
+	) {
+		return RundownInput.dataRundownMetaDataUpdate(this, deviceId, deviceToken, ingestRundown)
+	}
 	async dataSegmentGet(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
