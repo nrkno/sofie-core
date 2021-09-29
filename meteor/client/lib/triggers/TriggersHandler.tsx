@@ -271,6 +271,10 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					ordered: false,
 					preventDefaultPartials: false,
 				})
+				localSorensen.bind('F7', preventDefault, {
+					exclusive: false,
+					global: true,
+				})
 			}
 		}
 
@@ -279,6 +283,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			localSorensen.unbind('Control+KeyF', preventDefault)
 			localSorensen.unbind('F5', preventDefault)
 			localSorensen.unbind('Control+F5', preventDefault)
+			localSorensen.unbind('F7', preventDefault)
 		}
 	}, [initialized]) // run once once Sorensen is initialized
 
