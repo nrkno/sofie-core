@@ -47,11 +47,11 @@ yarn start
 
 5. In another window, start the playout-gateway. You will need to manually restart this upon making changes
 
-   `cd tv-automation-server-core/packages/playout-gateway`  
+   `cd tv-automation-server-core/packages/playout-gateway`
    `yarn buildstart`
 
-If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.  
- `cd tv-automation-server-core/packages`  
+If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.
+ `cd tv-automation-server-core/packages`
  `yarn watch` # or yarn build to build just once
 
 If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For example, for `tv-automation-mos-connection` library:
@@ -63,6 +63,15 @@ npm run build
 npm link
 cd ../tv-automation-server-core/meteor
 npm link mos-connection
+```
+
+### Dealing with strange errors
+
+If you get any strange errors (such as the application crashing, "Unable to resolve some modules" or errors during installation of dependencies), the last resort is to reset and restart:
+
+```bash
+yarn reset # Removes all installed dependencies and build artifacts
+yarn start # Set up, install and run in dev mode
 ```
 
 ## Translating Sofie, add a new language
@@ -99,7 +108,7 @@ This project does not follow semver. We believe that semver does not make sense 
 
 Instead of semver, the Major number gets incremented whenever we feel like Sofie has evolved enough to warrant the change. The minor number gets incremented for each iteration of the development cycle, with the digit matching the cycle number. The patch number gets incremented for patch releases as expected.
 
-The version numbers of the blueprints-integration and server-core-integration libraries are tied to this, and as such they also do not follow semver currently. In future these may be decoupled.  
+The version numbers of the blueprints-integration and server-core-integration libraries are tied to this, and as such they also do not follow semver currently. In future these may be decoupled.
 The api of server-core-integration is pretty stable and rarely undergoes any breaking changes, so is ok to be mismatched.
 The api of blueprints-integration is rather volatile, and often has breaking changes. Because of this, we recommend matching the minor version of blueprints-integration with Sofie core. Sofie will warn if these do not match. We expect this to settle down in the future, and will review this decision when we feel it is worthwhile.
 
