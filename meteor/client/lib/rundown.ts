@@ -672,10 +672,13 @@ export namespace RundownUtils {
 							const possibleBuddyPiece = lastPartPiecesBySourceLayer[layerId]
 							if (
 								possibleBuddyPiece &&
-								(possibleBuddyPiece.instance.infinite?.infiniteInstanceId ===
-									currentItem.instance.infinite?.infiniteInstanceId ||
-									possibleBuddyPiece.instance.infinite?.infinitePieceId ===
-										currentItem.instance.infinite?.infinitePieceId)
+								possibleBuddyPiece.instance.piece.lifespan !== PieceLifespan.WithinPart &&
+								currentItem.instance.infinite &&
+								possibleBuddyPiece.instance.infinite &&
+								(possibleBuddyPiece.instance.infinite.infiniteInstanceId ===
+									currentItem.instance.infinite.infiniteInstanceId ||
+									possibleBuddyPiece.instance.infinite.infinitePieceId ===
+										currentItem.instance.infinite.infinitePieceId)
 							) {
 								currentItem.hasOriginInPreceedingPart = true
 							}
