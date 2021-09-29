@@ -85,7 +85,6 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							)
 						})
 						.catch((err) => {
-							// console.error(err)
 							NotificationCenter.push(
 								new Notification(
 									undefined,
@@ -119,12 +118,11 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 					)
 				})
 				.catch((err) => {
-					// console.error(err)
 					NotificationCenter.push(
 						new Notification(
 							undefined,
 							NoticeLevel.WARNING,
-							t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', {
+							t('There was an error when troubleshooting the device: "{{deviceName}}": {{errorMessage}}', {
 								deviceName: device.name,
 								errorMessage: err + '',
 							}),

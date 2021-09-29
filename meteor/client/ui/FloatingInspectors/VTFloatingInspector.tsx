@@ -155,11 +155,14 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 	const offsetTimePosition = timePosition + seek
 	const showFrameMarker = offsetTimePosition === 0 || offsetTimePosition >= itemDuration
 
-	const previewUrl: string | undefined = props.contentPackageInfos
-		? props.expectedPackages && props.studio
-			? getPackagePreviewUrl(props.pieceId, props.expectedPackages, props.studio)
-			: undefined
-		: getMediaPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) // Fallback, media objects
+	let previewUrl: string | undefined = undefined
+	if (props.contentPackageInfos) {
+		if (props.expectedPackages && props.studio) {
+			previewUrl = getPackagePreviewUrl(props.pieceId, props.expectedPackages, props.studio)
+		}
+	} else {
+		previewUrl = getMediaPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) // Fallback, media objects
+	}
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>

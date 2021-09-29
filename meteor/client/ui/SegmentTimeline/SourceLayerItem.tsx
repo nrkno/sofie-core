@@ -150,7 +150,7 @@ export const SourceLayerItem = withTranslation()(
 								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
 							)
 
-							const styleObj = {
+							return {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
@@ -176,8 +176,6 @@ export const SourceLayerItem = withTranslation()(
 									'translate3d(-100%, 0, 5px)',
 								willChange: 'transform',
 							}
-
-							return styleObj
 						} else if (
 							this.state.rightAnchoredWidth < this.state.elementWidth &&
 							this.state.leftAnchoredWidth < this.state.elementWidth &&
@@ -188,7 +186,7 @@ export const SourceLayerItem = withTranslation()(
 								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
 							)
 
-							const styleObj = {
+							return {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
@@ -212,8 +210,6 @@ export const SourceLayerItem = withTranslation()(
 									'translate3d(-100%, 0, 5px)',
 								willChange: 'transform',
 							}
-
-							return styleObj
 						}
 					} else {
 						if (
@@ -224,7 +220,7 @@ export const SourceLayerItem = withTranslation()(
 								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
 							)
 
-							const styleObj = {
+							return {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
@@ -246,10 +242,8 @@ export const SourceLayerItem = withTranslation()(
 									'px,  0, 5px)',
 								willChange: 'transform',
 							}
-
-							return styleObj
 						} else {
-							const styleObj = {
+							return {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
@@ -259,8 +253,6 @@ export const SourceLayerItem = withTranslation()(
 										? '100%'
 										: 'none',
 							}
-
-							return styleObj
 						}
 					}
 				}

@@ -24,10 +24,6 @@ async function takesALongTimeInnerAsync(name: string) {
 	await sleep(300) // subtract to account for slowness in Jest
 	return 'result yo ' + name
 }
-// function takesALongTimeInnerFiber(name: string) {
-// 	waitForPromise(sleep(300)) // subtract to account for slowness in Jest
-// 	return 'result yo ' + name
-// }
 
 describe('codeControl rundown', () => {
 	beforeEach(() => {
@@ -152,10 +148,6 @@ describe('codeControl', () => {
 	afterAll(() => {
 		useNextTickDefer()
 	})
-
-	// const takesALongTime = syncFunction((name: string) => {
-	// 	return takesALongTimeInner(name)
-	// }, 'takesALongTime')
 
 	testInFiber('pushWorkToQueue, 1 queue promise', async () => {
 		// Running a syncFunction in a queue
