@@ -59,11 +59,11 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 }
 
 @mixin piece-colors {
-	&:not(.infinite) {
+	&:not(.super-infinite) {
 		@include item-type-colors();
 	}
 
-	&.infinite {
+	&.super-infinite {
 		@each $layer-type in $layer-types {
 			&.#{$layer-type} {
 				--infinite-piece-background-image: linear-gradient(
@@ -126,6 +126,10 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 					}
 				}
 			}
+		}
+
+		&.super-infinite:not(.infinite-starts) {
+			opacity: 0.5;
 		}
 
 		&.not-in-vision {

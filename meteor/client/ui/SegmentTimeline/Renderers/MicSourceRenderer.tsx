@@ -187,13 +187,15 @@ export const MicSourceRenderer = withTranslation()(
 				<>
 					{!this.props.isTooSmallForText && (
 						<>
-							<span
-								className="segment-timeline__piece__label first-words overflow-label"
-								ref={this.setLeftLabelRef}
-								style={this.getItemLabelOffsetLeft()}
-							>
-								{begin}
-							</span>
+							{!this.props.piece.hasOriginInPreceedingPart ? (
+								<span
+									className="segment-timeline__piece__label first-words overflow-label"
+									ref={this.setLeftLabelRef}
+									style={this.getItemLabelOffsetLeft()}
+								>
+									{begin}
+								</span>
+							) : null}
 							<span
 								className="segment-timeline__piece__label right-side"
 								ref={this.setRightLabelRef}

@@ -46,8 +46,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	private metadataRev: string | undefined
 	private cachedContentPackageInfos: ScanInfoForPackages | undefined
 
-	private leftLabelNodes: JSX.Element
-	private rightLabelNodes: JSX.Element
+	private leftLabelNodes: JSX.Element | null = null
+	private rightLabelNodes: JSX.Element | null = null
 
 	private rightLabelContainer: HTMLSpanElement | null = null
 	private countdownContainer: HTMLSpanElement | null = null
@@ -474,7 +474,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 
-		return (
+		return !this.props.piece.hasOriginInPreceedingPart ? (
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 				<span
@@ -496,7 +496,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				)}
 				{this.renderContentTrimmed()}
 			</span>
-		)
+		) : null
 	}
 
 	renderRightLabel() {

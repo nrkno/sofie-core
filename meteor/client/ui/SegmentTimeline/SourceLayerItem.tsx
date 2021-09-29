@@ -215,6 +215,19 @@ export const SourceLayerItem = withTranslation()(
 							}
 
 							return styleObj
+						} else {
+							const styleObj = {
+								maxWidth:
+									this.state.rightAnchoredWidth > 0
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
+										: maxLabelWidth !== undefined
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+										? '100%'
+										: 'none',
+							}
+
+							return styleObj
 						}
 					} else {
 						if (
@@ -722,11 +735,14 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0 &&
 								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth,
 
-							infinite:
-								this.props.layer.type !== SourceLayerType.SCRIPT && innerPiece.lifespan !== PieceLifespan.WithinPart,
-							'infinite-starts':
-								this.props.layer.type !== SourceLayerType.SCRIPT &&
+							'super-infinite':
 								innerPiece.lifespan !== PieceLifespan.WithinPart &&
+								innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
+								innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd,
+							'infinite-starts':
+								innerPiece.lifespan !== PieceLifespan.WithinPart &&
+								innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
+								innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd &&
 								piece.instance.piece.startPartId === this.props.part.partId,
 
 							'not-in-vision': piece.instance.piece.notInVision,

@@ -58,18 +58,20 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 			<React.Fragment>
 				{!this.props.isTooSmallForText && (
 					<>
-						<span
-							className="segment-timeline__piece__label"
-							ref={this.setLeftLabelRef}
-							style={this.getItemLabelOffsetLeft()}
-						>
-							{isMultiStep && stepContent ? (
-								<span className="segment-timeline__piece__step-chevron">
-									{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
-								</span>
-							) : null}
-							<span className="segment-timeline__piece__label">{innerPiece.name}</span>
-						</span>
+						{!this.props.piece.hasOriginInPreceedingPart ? (
+							<span
+								className="segment-timeline__piece__label"
+								ref={this.setLeftLabelRef}
+								style={this.getItemLabelOffsetLeft()}
+							>
+								{isMultiStep && stepContent ? (
+									<span className="segment-timeline__piece__step-chevron">
+										{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
+									</span>
+								) : null}
+								<span className="segment-timeline__piece__label">{innerPiece.name}</span>
+							</span>
+						) : null}
 						<span
 							className="segment-timeline__piece__label right-side"
 							ref={this.setRightLabelRef}
