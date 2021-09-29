@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { faCopy, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PlayoutActions, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
@@ -19,7 +19,6 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { useTranslation } from 'react-i18next'
 import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
 import { TriggerEditor } from './triggerEditors/TriggerEditor'
-import { useEffect } from 'react'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { iconDragHandle } from '../../../RundownList/icons'
 import { useDrag, useDrop } from 'react-dnd'
@@ -239,7 +238,10 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 				'drag-over': isOver,
 				dragged: isDragging,
 			})}
-			ref={(el) => (dragPreview(el), drop(el))}
+			ref={(el) => {
+				dragPreview(el)
+				drop(el)
+			}}
 		>
 			{!selected && !locked ? (
 				<div className="triggered-action-entry__drag-handle" ref={drag}>
