@@ -38,6 +38,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface IState {
 	outputLayers: {
@@ -567,54 +568,65 @@ export class DashboardPanelInner extends MeteorReactComponent<
 }
 
 export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: DBShowStyleBase) {
-	let prospectivePieces: PieceInstance[] = []
-	const now = getCurrentTime()
 	if (playlist.activationId && playlist.currentPartInstanceId) {
-		const partInstance = PartInstances.findOne(playlist.currentPartInstanceId)
+		return memoizedIsolatedAutorun(
+			(playlistActivationId, currentPartInstanceId, showStyleBase) => {
+				const now = getCurrentTime()
+				let prospectivePieces: PieceInstance[] = []
 
-		if (partInstance) {
-			prospectivePieces = PieceInstances.find({
-				partInstanceId: playlist.currentPartInstanceId,
-				playlistActivationId: playlist.activationId,
-			}).fetch()
+				const partInstance = PartInstances.findOne(currentPartInstanceId)
 
-			const nowInPart = partInstance.timings?.startedPlayback ? now - partInstance.timings.startedPlayback : 0
-			prospectivePieces = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieces, nowInPart)
+				if (partInstance) {
+					prospectivePieces = PieceInstances.find({
+						partInstanceId: currentPartInstanceId,
+						playlistActivationId: playlistActivationId,
+					}).fetch()
 
-			let nearestEnd = Number.POSITIVE_INFINITY
-			prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-				const piece = pieceInstance.piece
+					const nowInPart = partInstance.timings?.startedPlayback ? now - partInstance.timings.startedPlayback : 0
+					prospectivePieces = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieces, nowInPart)
 
-				if (!pieceInstance.adLibSourceId && !piece.tags) {
-					// No effect on the data, so ignore
-					return false
-				}
+					let nearestEnd = Number.POSITIVE_INFINITY
+					prospectivePieces = prospectivePieces.filter((pieceInstance) => {
+						const piece = pieceInstance.piece
 
-				let end: number | undefined
-				if (pieceInstance.stoppedPlayback) {
-					end = pieceInstance.stoppedPlayback
-				} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
-					end = pieceInstance.userDuration.end
-				} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
-					end = piece.enable.duration + pieceInstance.startedPlayback
-				}
+						if (!pieceInstance.adLibSourceId && !piece.tags) {
+							// No effect on the data, so ignore
+							return false
+						}
 
-				if (end !== undefined) {
-					if (end > now) {
-						nearestEnd = Math.min(nearestEnd, end)
+						let end: number | undefined
+						if (pieceInstance.stoppedPlayback) {
+							end = pieceInstance.stoppedPlayback
+						} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
+							end = pieceInstance.userDuration.end
+						} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
+							end = piece.enable.duration + pieceInstance.startedPlayback
+						}
+
+						if (end !== undefined) {
+							if (end > now) {
+								nearestEnd = Math.min(nearestEnd, end)
+								return true
+							} else {
+								return false
+							}
+						}
 						return true
-					} else {
-						return false
-					}
-				}
-				return true
-			})
+					})
 
-			if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
-		}
+					if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
+				}
+
+				return prospectivePieces
+			},
+			'getUnfinishedPieceInstancesReactive',
+			playlist.activationId,
+			playlist.currentPartInstanceId,
+			showStyleBase
+		)
 	}
 
-	return prospectivePieces
+	return []
 }
 
 export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[] {
