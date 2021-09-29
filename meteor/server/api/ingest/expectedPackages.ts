@@ -265,6 +265,7 @@ function generateExpectedPackagesForBucketAdlib(studio: Studio, adlibs: BucketAd
 			for (const base of bases) {
 				packages.push({
 					...base,
+					bucketId: adlib.bucketId,
 					pieceId: adlib._id,
 					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB,
 				})

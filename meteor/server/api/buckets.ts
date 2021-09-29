@@ -27,6 +27,7 @@ import {
 	updateExpectedPackagesForBucketAdLib,
 	updateExpectedPackagesForBucketAdLibAction,
 } from './ingest/expectedPackages'
+import { ExpectedPackageDBType, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -103,17 +104,21 @@ export namespace BucketsAPI {
 		const bucket = await Buckets.findOneAsync(id)
 		if (!bucket) throw new Meteor.Error(404, `Bucket not found: ${id}`)
 
-		await bucketSyncFunction(id, 'emptyBucket', async () => {
-			await emptyBucketInner(id)
+		await bucketSyncFunction(bucket._id, 'emptyBucket', async () => {
+			await emptyBucketInner(bucket)
 		})
 	}
 
-	async function emptyBucketInner(id: BucketId): Promise<void> {
+	async function emptyBucketInner(bucket: Bucket): Promise<void> {
 		await Promise.all([
-			BucketAdLibs.removeAsync({ bucketId: id }),
-			BucketAdLibActions.removeAsync({ bucketId: id }),
-			ExpectedMediaItems.removeAsync({ bucketId: id }),
-			// TODO - remove packages?
+			BucketAdLibs.removeAsync({ bucketId: bucket._id }),
+			BucketAdLibActions.removeAsync({ bucketId: bucket._id }),
+			ExpectedMediaItems.removeAsync({ bucketId: bucket._id }),
+			ExpectedPackages.removeAsync({
+				studioId: bucket.studioId,
+				fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB,
+				bucketId: bucket._id,
+			}),
 		])
 	}
 
@@ -342,8 +347,8 @@ export namespace BucketsAPI {
 		const bucket = await Buckets.findOneAsync(id)
 		if (!bucket) throw new Meteor.Error(404, `Bucket not found: ${id}`)
 
-		await bucketSyncFunction(id, 'removeBucket', async () => {
-			await Promise.all([Buckets.removeAsync(id), emptyBucketInner(id)])
+		await bucketSyncFunction(bucket._id, 'removeBucket', async () => {
+			await Promise.all([Buckets.removeAsync(bucket._id), emptyBucketInner(bucket)])
 		})
 	}
 }
