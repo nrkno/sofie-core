@@ -11,7 +11,6 @@ import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { Random } from 'meteor/random'
 import { assertNever } from '../../lib/lib'
-import classNames from 'classnames'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -468,7 +467,7 @@ const EditAttributeToggle = wrapEditAttribute(
 			return (
 				<div className="mvs">
 					<a
-						className={classNames(
+						className={ClassNames(
 							'switch-button',
 							'mrs',
 							this.props.className,

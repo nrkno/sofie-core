@@ -320,8 +320,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		return pixelMargin
 	}
 	calculateMarginPosition() {
-		const pixelMargin = ((this.configOptions.margin || 0) * window.innerHeight) / 100
-		return pixelMargin
+		// margin in pixels
+		return ((this.configOptions.margin || 0) * window.innerHeight) / 100
 	}
 	scrollToLive() {
 		const scrollMargin = this.calculateScrollPosition()

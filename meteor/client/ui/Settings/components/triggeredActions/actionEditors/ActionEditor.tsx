@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import _ from 'underscore'
 import {
 	IAdLibFilterLink,
@@ -13,7 +13,6 @@ import { literal } from '../../../../../../lib/lib'
 import { ViewFilter } from './filterPreviews/ViewFilter'
 import { RundownPlaylistFilter } from './filterPreviews/RundownPlaylistFilter'
 import { ShowStyleBase } from '../../../../../../lib/collections/ShowStyleBases'
-import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { ActionSelector } from './actionSelector/ActionSelector'
@@ -143,42 +142,42 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 				onSetFilter={() => onFilterInsertNext(-1)}
 				onClose={onOuterClose}
 			/>
-			{action.filterChain.map((chainLink, index) =>
+			{action.filterChain.map((chainLink, chainIndex) =>
 				chainLink.object === 'adLib' ? (
 					<AdLibFilter
 						link={chainLink}
 						readonly={readonly}
-						key={index}
-						opened={openFilterIndex === index}
-						onChange={(newVal) => onFilterChange(index, newVal)}
+						key={chainIndex}
+						opened={openFilterIndex === chainIndex}
+						onChange={(newVal) => onFilterChange(chainIndex, newVal)}
 						showStyleBase={showStyleBase}
 						onFocus={() => {
-							setOpenFilterIndex(index)
+							setOpenFilterIndex(chainIndex)
 							if (typeof onFocus === 'function') onFocus()
 						}}
 						onClose={onClose}
-						onInsertNext={() => onFilterInsertNext(index)}
-						onRemove={() => onFilterRemove(index)}
+						onInsertNext={() => onFilterInsertNext(chainIndex)}
+						onRemove={() => onFilterRemove(chainIndex)}
 					/>
 				) : chainLink.object === 'view' ? (
 					<ViewFilter
 						link={chainLink}
 						readonly={readonly}
-						key={index}
+						key={chainIndex}
 						onFocus={() => {
-							setOpenFilterIndex(index)
+							setOpenFilterIndex(chainIndex)
 							if (typeof onFocus === 'function') onFocus()
 						}}
 						onClose={onClose}
-						opened={openFilterIndex === index}
+						opened={openFilterIndex === chainIndex}
 						final={action.filterChain.length === 1 && isFinal(action, chainLink)}
-						onInsertNext={() => onFilterInsertNext(index)}
-						onRemove={() => onFilterRemove(index)}
+						onInsertNext={() => onFilterInsertNext(chainIndex)}
+						onRemove={() => onFilterRemove(chainIndex)}
 					/>
 				) : chainLink.object === 'rundownPlaylist' ? (
-					<RundownPlaylistFilter link={chainLink} key={index} />
+					<RundownPlaylistFilter link={chainLink} key={chainIndex} />
 				) : (
-					<dl className="triggered-action-entry__action__filter" key={index}>
+					<dl className="triggered-action-entry__action__filter" key={chainIndex}>
 						<dt>{chainLink.object}</dt>
 					</dl>
 				)

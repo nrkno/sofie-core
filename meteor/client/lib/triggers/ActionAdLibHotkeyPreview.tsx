@@ -28,10 +28,6 @@ type IProps =
 			targetId: PieceId
 	  }
 	| {
-			type: 'adLibPiece'
-			targetId: PieceId
-	  }
-	| {
 			type: 'sticky'
 			targetId: ISourceLayer['_id']
 	  }

@@ -1,8 +1,6 @@
 import { ControllerAbstract } from './lib'
 import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 
-// const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
-
 /**
  * This class handles control of the prompter using Keyboard keys sent from an xkeys
  * Up: control + alt + [1-7]

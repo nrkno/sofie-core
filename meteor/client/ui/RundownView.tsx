@@ -101,8 +101,6 @@ export const MAGIC_TIME_SCALE_FACTOR = 0.03
 const REHEARSAL_MARGIN = 1 * 60 * 1000
 const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
 
-// type WrappedShelf = ShelfBase & { getWrappedInstance(): ShelfBase }
-
 interface ITimingWarningProps {
 	playlist: RundownPlaylist
 	inActiveRundownView?: boolean
@@ -504,7 +502,7 @@ interface INextBreakTimingProps {
 
 const NextBreakTiming = withTranslation()(
 	withTiming<INextBreakTimingProps & WithTranslation, {}>()(
-		class PlaylistEndTiming extends React.Component<Translated<WithTiming<INextBreakTimingProps>>> {
+		class NextBreakTiming extends React.Component<Translated<WithTiming<INextBreakTimingProps>>> {
 			render() {
 				const { t, rundownsBeforeBreak } = this.props
 				const breakRundown = rundownsBeforeBreak.length
@@ -513,14 +511,16 @@ const NextBreakTiming = withTranslation()(
 
 				const rundownAsPlayedDuration = this.props.timingDurations.rundownAsPlayedDurations
 					? rundownsBeforeBreak.reduce(
-							(prev, curr) => (prev += this.props.timingDurations.rundownAsPlayedDurations![unprotectString(curr._id)]),
+							(memo, rundown) =>
+								memo + this.props.timingDurations.rundownAsPlayedDurations![unprotectString(rundown._id)],
 							0
 					  )
 					: undefined
 
 				const accumulatedExpectedDurations = this.props.timingDurations.rundownExpectedDurations
 					? rundownsBeforeBreak.reduce(
-							(prev, curr) => (prev += this.props.timingDurations.rundownExpectedDurations![unprotectString(curr._id)]),
+							(memo, rundown) =>
+								memo + this.props.timingDurations.rundownExpectedDurations![unprotectString(rundown._id)],
 							0
 					  )
 					: undefined

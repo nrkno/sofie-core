@@ -18,7 +18,6 @@ const orgSetTimeout = setTimeout
 
 describe('ClientAPI', () => {
 	let mockDeviceId: PeripheralDeviceId = protectString('not set yet')
-	// let mockDeviceToken: string = 'Not set yet'
 	beforeAllInFiber(() => {
 		const mockDevice = setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -26,7 +25,6 @@ describe('ClientAPI', () => {
 			PeripheralDeviceAPI.SUBTYPE_PROCESS
 		)
 		mockDeviceId = mockDevice._id
-		// mockDeviceToken = mockDevice.token
 	})
 	describe('clientErrorReport', () => {
 		testInFiber('Exports a Meteor method to the client', () => {
