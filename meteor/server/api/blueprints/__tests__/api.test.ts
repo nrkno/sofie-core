@@ -189,7 +189,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('with type', async () => {
 			const type = BlueprintManifestType.STUDIO
-			const newId = await insertBlueprint(DEFAULT_CONTEXT, type, undefined)
+			const newId = await insertBlueprint(DEFAULT_CONTEXT, type)
 			expect(newId).toBeTruthy()
 
 			// Check some props

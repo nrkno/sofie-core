@@ -2284,14 +2284,16 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		renderShowStyleEditButtons() {
 			const buttons: JSX.Element[] = []
 			if (this.props.studio) {
-				this.props.studio.supportedShowStyleBase.map((style) => {
-					const base = this.props.availableShowStyleBases.find((base) => base.showStyleBase._id === style)
-					if (base) {
+				this.props.studio.supportedShowStyleBase.map((showStyleBaseId) => {
+					const showStyleBase = this.props.availableShowStyleBases.find(
+						(base) => base.showStyleBase._id === showStyleBaseId
+					)
+					if (showStyleBase) {
 						buttons.push(
 							<SettingsNavigation
-								key={'settings-nevigation-' + base.showStyleBase.name}
+								key={'settings-nevigation-' + showStyleBase.showStyleBase.name}
 								attribute="name"
-								obj={base.showStyleBase}
+								obj={showStyleBase.showStyleBase}
 								type="showstyle"
 							></SettingsNavigation>
 						)

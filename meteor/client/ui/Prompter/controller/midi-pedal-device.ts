@@ -4,8 +4,6 @@ import Spline from 'cubic-spline'
 
 import webmidi, { Input, InputEventControlchange } from 'webmidi'
 
-// const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
-
 /**
  * This class handles control of the prompter using
  */

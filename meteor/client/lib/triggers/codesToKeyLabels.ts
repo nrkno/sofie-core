@@ -26,11 +26,7 @@ export function keyLabelsToCodes(labels: string, sorensen: Sorensen) {
 		.map((note) => {
 			const keys = note.split(/(?<!\+)\+/gi)
 
-			const joinedKeys = keys
-				.map((key) => toTitleCase(sorensen.getCodeForKey(key)?.replace(/Intl/, '') ?? key))
-				.join('+')
-
-			return joinedKeys
+			return keys.map((key) => toTitleCase(sorensen.getCodeForKey(key)?.replace(/Intl/, '') ?? key)).join('+')
 		})
 		.join(' ')
 }

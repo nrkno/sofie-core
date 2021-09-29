@@ -963,8 +963,8 @@ function getMinimumReactivePieceNotesForPart(
 		// TODO: check statuses (like media availability) here
 
 		if (sourceLayerMap && piece.sourceLayerId && sourceLayerMap[piece.sourceLayerId]) {
-			const part = sourceLayerMap[piece.sourceLayerId]
-			const st = checkPieceContentStatus(piece, part, studio)
+			const sourceLayer = sourceLayerMap[piece.sourceLayerId]
+			const st = checkPieceContentStatus(piece, sourceLayer, studio)
 			if (
 				st.status !== RundownAPI.PieceStatusCode.OK &&
 				st.status !== RundownAPI.PieceStatusCode.UNKNOWN &&

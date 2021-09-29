@@ -505,6 +505,8 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		// @ts-ignore action.action is "never", based on TypeScript rules, but if input doesn't folllow them,
 		// it can actually exist
 		action: action.action,
-		execute: () => {},
+		execute: () => {
+			// Nothing
+		},
 	}
 }

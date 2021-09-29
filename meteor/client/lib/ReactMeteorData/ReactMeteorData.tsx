@@ -263,9 +263,7 @@ export function withTracker<IProps, IState, TrackedProps>(
 				return true
 			}
 			render() {
-				const content = <WrappedComponent {...this.props} {...this.data} />
-				// this._renderedContent = content
-				return content
+				return <WrappedComponent {...this.props} {...this.data} />
 			}
 		}
 		HOC['displayName'] = `ReactMeteorComponentWrapper(${
@@ -336,7 +334,7 @@ export function useTracker<T, K extends undefined | T = undefined>(
  * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
  * 		renders so that it isn't torn down and created for every render.
  */
-export function useSubscription(sub: PubSub, ...args: any[]) {
+export function useSubscription(sub: PubSub, ...args: any[]): boolean {
 	const [ready, setReady] = useState<boolean>(false)
 
 	useEffect(() => {

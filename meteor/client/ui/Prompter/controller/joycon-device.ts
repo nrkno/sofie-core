@@ -2,8 +2,6 @@ import { ControllerAbstract } from './lib'
 import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
 import Spline from 'cubic-spline'
 
-// const LOCALSTORAGEMODE = 'prompter-controller-arrowkeys'
-
 type JoyconMode = 'L' | 'R' | 'LR'
 
 /**
@@ -98,7 +96,9 @@ export class JoyConController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private onButtonRelease(_button: string, _mode?: JoyconMode | null) {}
+	private onButtonRelease(_button: string, _mode?: JoyconMode | null) {
+		// Nothing
+	}
 	private onButtonPressed(button: string, mode?: JoyconMode | null) {
 		if (mode === 'L') {
 			// Button overview JoyCon L single mode

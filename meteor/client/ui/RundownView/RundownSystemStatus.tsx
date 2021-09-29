@@ -12,6 +12,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -73,10 +74,10 @@ interface OnLineOffLineList {
 }
 
 interface ITrackedProps {
-	mosStatus: PeripheralDeviceAPI.StatusCode
+	mosStatus: StatusCode
 	mosLastUpdate: Time
 	mosDevices: OnLineOffLineList
-	playoutStatus: PeripheralDeviceAPI.StatusCode
+	playoutStatus: StatusCode
 	playoutDevices: OnLineOffLineList
 }
 
@@ -124,7 +125,7 @@ export const RundownSystemStatus = translateWithTracker(
 		const [ingest, playout] = [ingestDevices, playoutDevices].map((devices) => {
 			const status = devices
 				.filter((i) => !i.ignore)
-				.reduce((memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
+				.reduce((memo: StatusCode, device: PeripheralDevice) => {
 					if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
 						return device.status.statusCode
 					} else if (!device.connected) {

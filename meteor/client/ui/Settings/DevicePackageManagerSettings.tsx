@@ -64,7 +64,9 @@ export const DevicePackageManagerSettings = translateWithTracker<
 							doModalDialog({
 								message: t('There was an error: {{error}}', { error: error.toString() }),
 								title: t(''),
-								onAccept: () => {},
+								onAccept: () => {
+									// Do nothing
+								},
 							})
 						}
 					} else {
@@ -87,7 +89,9 @@ export const DevicePackageManagerSettings = translateWithTracker<
 						doModalDialog({
 							message: t('There was an error: {{error}}', { error: error.toString() }),
 							title: t(''),
-							onAccept: () => {},
+							onAccept: () => {
+								// Do nothing
+							},
 						})
 					} else {
 						this.reloadStatus(true)
@@ -246,7 +250,6 @@ export const DevicePackageManagerSettings = translateWithTracker<
 						)}
 					</div>
 				)
-				// return this.renderEditForm(this.props.device)
 			} else {
 				return <Spinner />
 			}
