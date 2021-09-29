@@ -9,6 +9,7 @@ enum LocalStorageProperty {
 	SPEAKING = 'speakingMode',
 	SERVICE = 'serviceMode',
 	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
+	IGNORE_PIECE_CONTENT_STATUS = 'ignorePieceContentStatus',
 }
 
 export function setAllowStudio(studioMode: boolean) {
@@ -88,4 +89,11 @@ export function setShowHiddenSourceLayers(show: boolean) {
 }
 export function getShowHiddenSourceLayers(): boolean {
 	return localStorage.getItem(LocalStorageProperty.SHOW_HIDDEN_SOURCE_LAYERS) === '1'
+}
+
+export function setIgnorePieceContentStatus(show: boolean) {
+	localStorage.setItem(LocalStorageProperty.IGNORE_PIECE_CONTENT_STATUS, show ? '1' : '0')
+}
+export function getIgnorePieceContentStatus(): boolean {
+	return localStorage.getItem(LocalStorageProperty.IGNORE_PIECE_CONTENT_STATUS) === '1'
 }
