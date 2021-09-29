@@ -10,7 +10,7 @@ import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
+import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
@@ -29,6 +29,7 @@ import {
 	getRundown,
 	extendIngestRundownCore,
 	modifyPlaylistExternalId,
+	getRundownId,
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
@@ -442,6 +443,14 @@ export async function handleUpdatedRundownMetaData(
 		)
 	}
 
+	const studio = Studios.findOne(studioId)
+	if (!studio) {
+		throw new Meteor.Error(
+			500,
+			`Cannot find studio "${studioId}" requested by peripheral device "${peripheralDevice!._id}"`
+		)
+	}
+
 	const rundownExternalId = newIngestRundown.externalId
 	return runIngestOperationWithCache(
 		'handleUpdatedRundownMetaData',
@@ -449,7 +458,11 @@ export async function handleUpdatedRundownMetaData(
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
-				return makeNewIngestRundown({ ...newIngestRundown, segments: [] })
+				const segments = getIngestDataForRundown(getRundownId(studio, rundownExternalId))?.segments ?? []
+				return makeNewIngestRundown({
+					...newIngestRundown,
+					segments: segments.map((segment) => makeNewIngestSegment(segment)),
+				})
 			} else {
 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
 			}
@@ -523,9 +536,6 @@ export async function handleUpdatedRundownMetaDataInner(
 	const span = profiler.startSpan('ingest.rundownInput.handleUpdatedRundownMetaDataInner')
 
 	logger.info(`Updating rundown ${cache.RundownId}`)
-
-	const segments = getIngestDataForRundown(cache.RundownId)?.segments ?? []
-	ingestRundown.segments = segments.map((segment) => makeNewIngestSegment(segment))
 
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
 
