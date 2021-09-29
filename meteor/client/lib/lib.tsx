@@ -23,7 +23,7 @@ export function isTouchDevice(): boolean {
 	if (touchDeviceCache !== undefined) return touchDeviceCache
 
 	touchDeviceCache = false
-	if (window.matchMedia('(pointer: coarse)').matches) {
+	if (window.matchMedia('(any-pointer: coarse)').matches) {
 		touchDeviceCache = true
 	}
 	return touchDeviceCache

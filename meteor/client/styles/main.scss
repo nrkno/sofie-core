@@ -12,6 +12,15 @@ input {
 @import '_header';
 @import '_colorScheme';
 
+body {
+	overscroll-behavior: none;
+	touch-action: pan-x pan-y;
+}
+
+.scroll-sink {
+	overscroll-behavior: none;
+}
+
 /* Don't show visited status, since people will browse around the app a lot */
 a:visited {
 	color: $ui-button-primary;
