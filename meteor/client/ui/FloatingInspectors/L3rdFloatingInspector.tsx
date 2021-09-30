@@ -111,7 +111,9 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 								<td className="mini-inspector__value">{item.value}</td>
 							</tr>
 						))}
-						<tr>
+						{/* Disable the timing information for now, since it's not being used.
+							To be eventually removed, if noone complains -- Jan Starzak, 2021/09/30
+							<tr>
 							<td className="mini-inspector__row--timing"></td>
 							<td className="mini-inspector__row--timing">
 								<span className="mini-inspector__in-point">
@@ -152,7 +154,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 									</span>
 								)}
 							</td>
-						</tr>
+						</tr> */}
 					</tbody>
 				</table>
 			</div>
