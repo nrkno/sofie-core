@@ -102,7 +102,9 @@ export const TriggerEditor = function TriggerEditor({
 		setLocalTrigger(trigger)
 	}, [opened])
 
-	function onChangeType(_newValue: string) {}
+	function onChangeType(_newValue: string) {
+		// Nothing
+	}
 
 	function onConfirm() {
 		onChangeTrigger(localTrigger)
