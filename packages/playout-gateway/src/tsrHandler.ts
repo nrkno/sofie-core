@@ -203,7 +203,6 @@ export class TSRHandler {
 		})
 
 		this.tsr.on('setTimelineTriggerTime', (r: TimelineTriggerTimeResult) => {
-			this.logger.debug('setTimelineTriggerTime')
 			this._coreHandler.core.callMethod(P.methods.timelineTriggerTime, [r]).catch((e) => {
 				this.logger.error('Error in setTimelineTriggerTime', e)
 			})
@@ -308,7 +307,6 @@ export class TSRHandler {
 			this._triggerupdateExpectedPlayoutItems()
 		}
 		this._observers.push(expectedPlayoutItemsObserver)
-		this.logger.debug('VIZDEBUG: Observer to expectedPlayoutItems set up')
 	}
 	private resendStatuses(): void {
 		_.each(this._coreTsrHandlers, (tsrHandler) => {
@@ -798,9 +796,7 @@ export class TSRHandler {
 		delete this._coreTsrHandlers[deviceId]
 	}
 	private _triggerupdateExpectedPlayoutItems() {
-		this.logger.debug('VIZDEBUG: Trigger update expected playout items called')
 		if (!this._initialized) return
-		this.logger.debug("VIZDEBUG: And we're initialized")
 		if (this._triggerupdateExpectedPlayoutItemsTimeout) {
 			clearTimeout(this._triggerupdateExpectedPlayoutItemsTimeout)
 		}
@@ -811,12 +807,8 @@ export class TSRHandler {
 		}, 200)
 	}
 	private async _updateExpectedPlayoutItems() {
-		this.logger.debug('VIZDEBUG: Update expected playout items called')
-
 		const expectedPlayoutItems = this._coreHandler.core.getCollection('expectedPlayoutItems')
 		const peripheralDevice = this._getPeripheralDevice()
-
-		this.logger.debug(`VIZDEBUG: Items before filter ${JSON.stringify(expectedPlayoutItems)}`)
 
 		const expectedItems = expectedPlayoutItems.find({
 			studioId: peripheralDevice.studioId,
@@ -828,13 +820,9 @@ export class TSRHandler {
 			'_id'
 		)
 
-		this.logger.debug(`VIZDEBUG: Items after filter ${JSON.stringify(expectedItems)}`)
-
 		await Promise.all(
 			_.map(this.tsr.getDevices(), async (container) => {
 				if (await container.device.supportsExpectedPlayoutItems) {
-					this.logger.debug(`VIZDEBUG: Supports expected playout items`)
-
 					await container.device.handleExpectedPlayoutItems(
 						_.map(
 							_.filter(expectedItems, (item) => {
