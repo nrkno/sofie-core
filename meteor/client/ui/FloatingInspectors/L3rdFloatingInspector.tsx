@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { RundownUtils } from '../../lib/rundown'
 import Moment from 'react-moment'
 
-import { PieceLifespan, NoraContent } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, NoraContent, GraphicsContent } from '@sofie-automation/blueprints-integration'
 
 import { NoraFloatingInspector } from './NoraFloatingInspector'
 import { FloatingInspector } from '../FloatingInspector'
@@ -18,7 +18,7 @@ interface IProps {
 	pieceRenderedIn: number | null
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	content: NoraContent | undefined
+	content: GraphicsContent | NoraContent | undefined
 	floatingInspectorStyle: React.CSSProperties
 	typeClass?: string
 	displayOn?: 'document' | 'viewport'
@@ -27,7 +27,7 @@ interface IProps {
 type KeyValue = { key: string; value: string }
 
 export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
-	content: noraContent,
+	content,
 	floatingInspectorStyle,
 	showMiniInspector,
 	itemElement,
@@ -39,6 +39,8 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 }) => {
 	const { t } = useTranslation()
 	const innerPiece = piece
+
+	const noraContent = (content as NoraContent)?.payload?.content ? (content as NoraContent | undefined) : undefined
 
 	let properties: Array<KeyValue> = []
 	if (noraContent && noraContent.payload && noraContent.payload.content) {
@@ -76,8 +78,12 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 
 	const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
 
-	const templateName = noraContent?.payload?.metadata?.templateName
-	const templateVariant = noraContent?.payload?.metadata?.templateVariant
+	const graphicContent = (content as GraphicsContent)?.fileName ? (content as GraphicsContent | undefined) : undefined
+
+	const templateName = noraContent?.payload?.metadata?.templateName ?? piece.name
+	const templateVariant =
+		noraContent?.payload?.metadata?.templateVariant ??
+		(piece.name !== graphicContent?.fileName ? graphicContent?.fileName : undefined)
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector && !!itemElement ? (
@@ -88,8 +94,13 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle}>
 				{templateName && (
 					<div className="mini-inspector__header">
-						{templateName}
-						{templateVariant && <span className="mini-inspector__sub-header">{templateVariant}</span>}
+						<span>{templateName}</span>
+						{templateVariant && (
+							<>
+								{'\u2002' /* en-space for rythm */}
+								<span className="mini-inspector__sub-header">{templateVariant}</span>
+							</>
+						)}
 					</div>
 				)}
 				<table>

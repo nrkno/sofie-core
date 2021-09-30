@@ -42,7 +42,7 @@ import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveD
 import { checkPieceContentStatus, getNoteTypeForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
-import { SegmentTimelinePartClass } from './SegmentTimelinePart'
+import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
@@ -159,7 +159,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
 		// re-evaluated when a piece like that appears.
-		const _infinitesEndingPieces = PieceInstances.find({
+		PieceInstances.find({
 			rundownId: segment.rundownId,
 			dynamicallyInserted: {
 				$exists: true,

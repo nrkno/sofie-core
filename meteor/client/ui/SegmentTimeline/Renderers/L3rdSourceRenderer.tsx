@@ -2,8 +2,9 @@ import * as React from 'react'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { NoraContent } from '@sofie-automation/blueprints-integration'
+import { NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
+import { RundownUtils } from '../../../lib/rundown'
 
 type IProps = ICustomLayerItemProps
 interface IState {}
@@ -57,18 +58,20 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 			<React.Fragment>
 				{!this.props.isTooSmallForText && (
 					<>
-						<span
-							className="segment-timeline__piece__label"
-							ref={this.setLeftLabelRef}
-							style={this.getItemLabelOffsetLeft()}
-						>
-							{isMultiStep && stepContent ? (
-								<span className="segment-timeline__piece__step-chevron">
-									{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
-								</span>
-							) : null}
-							<span className="segment-timeline__piece__label">{innerPiece.name}</span>
-						</span>
+						{!this.props.piece.hasOriginInPreceedingPart ? (
+							<span
+								className="segment-timeline__piece__label"
+								ref={this.setLeftLabelRef}
+								style={this.getItemLabelOffsetLeft()}
+							>
+								{isMultiStep && stepContent ? (
+									<span className="segment-timeline__piece__step-chevron">
+										{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
+									</span>
+								) : null}
+								<span className="segment-timeline__piece__label">{innerPiece.name}</span>
+							</span>
+						) : null}
 						<span
 							className="segment-timeline__piece__label right-side"
 							ref={this.setRightLabelRef}
@@ -87,6 +90,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 				)}
 				<L3rdFloatingInspector
 					content={noraContent}
+					typeClass={this.props.typeClass || RundownUtils.getSourceLayerClassName(SourceLayerType.LOWER_THIRD)}
 					itemElement={this.props.itemElement}
 					piece={this.props.piece.instance.piece}
 					showMiniInspector={this.props.showMiniInspector}

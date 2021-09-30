@@ -1,6 +1,6 @@
 import { RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
-import { SegmentTimelinePartClass } from '../../SegmentTimeline/SegmentTimelinePart'
+import { SegmentTimelinePartClass } from '../../SegmentTimeline/Parts/SegmentTimelinePart'
 
 export interface TimeEventArgs {
 	currentTime: number

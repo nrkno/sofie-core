@@ -167,7 +167,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 				},
 				'infinite.fromPreviousPart': false,
 				'piece.lifespan': {
-					$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange],
+					$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnShowStyleEnd],
 				},
 				reset: {
 					$ne: true,
