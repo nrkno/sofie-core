@@ -502,7 +502,6 @@ export class TSRHandler {
 					},
 					orgDeviceOptions
 				)
-				delete deviceOptions.debug // Changing the debug flag shouldn't restart the device!
 
 				if (this._multiThreaded !== null && deviceOptions.isMultiThreaded === undefined) {
 					deviceOptions.isMultiThreaded = this._multiThreaded
@@ -523,11 +522,16 @@ export class TSRHandler {
 
 						// let oldOptions = (oldDevice.deviceOptions).options || {}
 
-						if (!_.isEqual(oldDevice.deviceOptions, deviceOptions)) {
+						if (
+							// Changing the debug flag shouldn't restart the device:
+							!_.isEqual(_.omit(oldDevice.deviceOptions, 'debug'), _.omit(deviceOptions, 'debug'))
+						) {
 							anyChanged = true
 						}
 
 						if (anyChanged) {
+							deviceOptions.debug = this.getDeviceDebug(orgDeviceOptions)
+
 							this.logger.info('Re-initializing device: ' + deviceId)
 							this.logger.info('old', oldDevice.deviceOptions)
 							this.logger.info('new', deviceOptions)
@@ -563,20 +567,23 @@ export class TSRHandler {
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
 
-		// Det logDebug on the devices:
+		// Set logDebug on the devices:
 		_.each(this.tsr.getDevices(), async (device: DeviceContainer<DeviceOptionsAny>) => {
-			const deviceOptions = devices[device.deviceId]
+			const deviceOptions: DeviceOptionsAny = devices[device.deviceId]
 			if (deviceOptions) {
-				const debug = deviceOptions.debug || false
-				if (device.logDebug !== debug) {
+				const debug: boolean = this.getDeviceDebug(deviceOptions)
+				if (device.debugLogging !== debug) {
 					this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
-					device.logDebug = debug
+					device.setDebugLogging(debug)
 				}
 			}
 		})
 
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.info('updateDevices end')
+	}
+	private getDeviceDebug(deviceOptions: DeviceOptionsAny): boolean {
+		return deviceOptions.debug || this._coreHandler.logDebug || false
 	}
 	private async _addDevice(deviceId: string, options: DeviceOptionsAny): Promise<any> {
 		this.logger.debug('Adding device ' + deviceId)
@@ -760,7 +767,7 @@ export class TSRHandler {
 				// Don't log if the "main" debug flag (_coreHandler.logDebug) is set to avoid duplicates,
 				// because then the tsr is also logging debug messages from the devices.
 
-				if (device.logDebug && !this._coreHandler.logDebug) {
+				if (device.debugLogging && !this._coreHandler.logDebug) {
 					this.logger.info('debug: ' + fixError(e), ...args)
 				}
 			})

@@ -645,7 +645,7 @@ export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
 	deviceConfig: [
 		{
 			id: 'debugLogging',
-			name: 'Activate Debug Logging (of everything)',
+			name: 'Activate Debug Logging',
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{
