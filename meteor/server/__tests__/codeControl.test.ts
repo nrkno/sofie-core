@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
-import { testInFiber, runTimersUntilNow, runAllTimers, testInFiberOnly } from '../../__mocks__/helpers/jest'
+import { testInFiber, runTimersUntilNow, runAllTimers } from '../../__mocks__/helpers/jest'
 import { purgeWorkQueues, pushWorkToQueue } from '../codeControl'
 import { tic, toc, waitTime, sleep, waitForPromise } from '../../lib/lib'
 import { useControllableDefer, useNextTickDefer } from '../../__mocks__/meteor'
