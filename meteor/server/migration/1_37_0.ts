@@ -58,7 +58,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 		triggers: [
 			{
 				type: TriggerType.hotkey,
-				keys: 'Backslash',
+				keys: 'Backquote',
 				up: true,
 			},
 		],
@@ -81,7 +81,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 		triggers: [
 			{
 				type: TriggerType.hotkey,
-				keys: 'Control+Backslash',
+				keys: 'Control+Backquote',
 				up: true,
 			},
 		],
@@ -103,7 +103,7 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 		triggers: [
 			{
 				type: TriggerType.hotkey,
-				keys: 'Control+Shift+Backslash',
+				keys: 'Control+Shift+Backquote',
 				up: true,
 			},
 		],

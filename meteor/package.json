@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.37.0-in-testing.0",
+	"version": "1.38.0-in-development",
 	"private": true,
 	"engines": {
 		"node": "^12.22.1 || 14"
@@ -49,7 +49,7 @@
 		"@fortawesome/fontawesome-svg-core": "^1.2.36",
 		"@fortawesome/free-solid-svg-icons": "^5.15.4",
 		"@fortawesome/react-fontawesome": "^0.1.15",
-		"@jstarpl/react-contextmenu": "^2.14.3",
+		"@jstarpl/react-contextmenu": "^2.14.4",
 		"@nrk/core-icons": "^9.2.2",
 		"@popperjs/core": "^2.10.1",
 		"@slack/webhook": "^6.0.0",

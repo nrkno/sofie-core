@@ -1173,6 +1173,27 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	async removeAllPackageContainerPackageStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
 		await PackageManagerIntegration.removeAllPackageContainerPackageStatusesOfDevice(this, deviceId, deviceToken)
 	}
+	async updatePackageContainerStatuses(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		changes: (
+			| {
+					containerId: string
+					type: 'delete'
+			  }
+			| {
+					containerId: string
+					type: 'update'
+					status: ExpectedPackageStatusAPI.PackageContainerStatus
+			  }
+		)[]
+	): Promise<void> {
+		await PackageManagerIntegration.updatePackageContainerStatuses(this, deviceId, deviceToken, changes)
+	}
+	async removeAllPackageContainerStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
+		await PackageManagerIntegration.removeAllPackageContainerStatusesOfDevice(this, deviceId, deviceToken)
+	}
+
 	async fetchPackageInfoMetadata(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,

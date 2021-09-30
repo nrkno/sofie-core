@@ -2,13 +2,14 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	RundownLayoutExternalFrame,
 	RundownLayoutBase,
 	DashboardLayoutExternalFrame,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { literal, protectString } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
@@ -498,18 +499,22 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		render() {
-			const scale = this.props.panel.scale || 1
+			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+			const scale = isDashboardLayout ? (this.props.panel as DashboardLayoutExternalFrame).scale || 1 : 1
 			return (
 				<div
-					className="external-frame-panel"
-					style={_.extend(
+					className={ClassNames(
+						'external-frame-panel',
 						RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-							? dashboardElementPosition(this.props.panel as DashboardLayoutExternalFrame)
-							: {},
-						{
-							visibility: this.props.visible ? 'visible' : 'hidden',
-						}
+							? (this.props.panel as DashboardLayoutExternalFrame).customClasses
+							: undefined
 					)}
+					style={{
+						visibility: this.props.visible ? 'visible' : 'hidden',
+						...(RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+							? dashboardElementStyle(this.props.panel as DashboardLayoutExternalFrame)
+							: {}),
+					}}
 				>
 					<iframe
 						ref={this.setElement}

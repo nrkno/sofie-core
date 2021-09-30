@@ -1,17 +1,18 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	RundownLayoutBase,
 	DashboardLayoutNextInfo,
 	RundownLayoutNextInfo,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition } from './DashboardPanel'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 import { Segment, Segments } from '../../../lib/collections/Segments'
+import { dashboardElementStyle } from './DashboardPanel'
 interface INextInfoPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
@@ -38,34 +39,24 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 			!this.props.panel.hideForDynamicallyInsertedParts || this.props.nextPartInstance?.orphaned !== 'adlib-part'
 		const segmentName = showAny && this.props.panel.showSegmentName && this.props.nextSegment?.name
 		const partTitle = showAny && this.props.panel.showPartTitle && this.props.nextPartInstance?.part.title
-		const style = {
-			fontSize: isDashboardLayout ? ((this.props.panel as DashboardLayoutNextInfo).scale || 1) * 1.5 + 'em' : undefined,
-		}
 		return (
 			<div
-				className="next-info-panel"
+				className={ClassNames(
+					'next-info-panel',
+					isDashboardLayout ? (this.props.panel as DashboardLayoutNextInfo).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
-						? dashboardElementPosition({ ...(this.props.panel as DashboardLayoutNextInfo), height: 1 })
+						? dashboardElementStyle({ ...(this.props.panel as DashboardLayoutNextInfo), height: 1 })
 						: {},
 					{
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
 				)}
 			>
-				<span className="next-info-panel__name" style={style}>
-					{showAny && this.props.panel.name}{' '}
-				</span>
-				{segmentName && (
-					<span className="next-info-panel__segment" style={style}>
-						{segmentName}
-					</span>
-				)}
-				{partTitle && (
-					<span className="next-info-panel__part" style={style}>
-						{partTitle}
-					</span>
-				)}
+				<span className="next-info-panel__name">{showAny && this.props.panel.name} </span>
+				{segmentName && <span className="next-info-panel__segment">{segmentName}</span>}
+				{partTitle && <span className="next-info-panel__part">{partTitle}</span>}
 			</div>
 		)
 	}

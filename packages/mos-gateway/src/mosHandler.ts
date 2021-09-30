@@ -216,8 +216,12 @@ export class MosHandler {
 
 		this.mos = new MosConnection(connectionConfig)
 		this.mos.on('rawMessage', (source, type, message) => {
+
+			// Filter out heartbeat messages, to reduce log amount:
+			if (`${message}`.indexOf('<heartbeat') >= 0) {
+				return
+			}
 			this.debugLog('rawMessage', source, type, message)
-			// this._logger.debug('rawMessage', source, type, message)
 		})
 		this.mos.on('info', (message: any) => {
 			this._logger.info(message)

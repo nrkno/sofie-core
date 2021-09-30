@@ -22,7 +22,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { NoteType, SegmentNote } from '../../../lib/api/notes'
+import { SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
@@ -35,10 +35,12 @@ import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifica
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
+import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 interface IProps {
 	id: string
@@ -67,6 +69,7 @@ interface IProps {
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number
+	displayLiveLineCounter: boolean
 	autoNextPart: boolean
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
@@ -75,10 +78,12 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
+	showCountdownToSegment: boolean
+	fixedSegmentDuration: boolean | undefined
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -700,11 +705,13 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						{t('On Air')}
 					</div>
 					<div className="segment-timeline__liveline__timecode">
-						<CurrentPartRemaining
-							currentPartInstanceId={this.props.playlist.currentPartInstanceId}
-							speaking={getAllowSpeaking()}
-							heavyClassName="overtime"
-						/>
+						{this.props.displayLiveLineCounter && (
+							<CurrentPartRemaining
+								currentPartInstanceId={this.props.playlist.currentPartInstanceId}
+								speaking={getAllowSpeaking()}
+								heavyClassName="overtime"
+							/>
+						)}
 						{this.props.autoNextPart ? (
 							<div className="rundown-view__part__icon rundown-view__part__icon--auto-next"></div>
 						) : (
@@ -900,11 +907,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		const { t } = this.props
 
 		const criticalNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteType.ERROR) return ++prev
+			if (item.type === NoteSeverity.ERROR) return ++prev
 			return prev
 		}, 0)
 		const warningNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteType.WARNING) return ++prev
+			if (item.type === NoteSeverity.WARNING) return ++prev
 			return prev
 		}, 0)
 
@@ -978,7 +985,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
 									onClick={() =>
-										this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(this.props.segment._id, NoteType.ERROR)
+										this.props.onHeaderNoteClick &&
+										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.ERROR)
 									}
 								>
 									<CriticalIconSmall />
@@ -990,7 +998,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
 									onClick={() =>
 										this.props.onHeaderNoteClick &&
-										this.props.onHeaderNoteClick(this.props.segment._id, NoteType.WARNING)
+										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.WARNING)
 									}
 								>
 									<WarningIconSmall />
@@ -1021,25 +1029,29 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							<SegmentDuration
 								parts={this.props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+								fixed={this.props.fixedSegmentDuration}
 							/>
 						)}
 				</div>
 				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
-					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
-						<PartCountdown
-							partId={countdownToPartId}
-							hideOnZero={!useTimeOfDayCountdowns}
-							useWallClock={useTimeOfDayCountdowns}
-							playlist={this.props.playlist}
-							label={
-								useTimeOfDayCountdowns ? (
-									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-								) : (
-									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-								)
-							}
-						/>
-					)}
+					{this.props.playlist &&
+						this.props.parts &&
+						this.props.parts.length > 0 &&
+						this.props.showCountdownToSegment && (
+							<PartCountdown
+								partId={countdownToPartId}
+								hideOnZero={!useTimeOfDayCountdowns}
+								useWallClock={useTimeOfDayCountdowns}
+								playlist={this.props.playlist}
+								label={
+									useTimeOfDayCountdowns ? (
+										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+									) : (
+										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+									)
+								}
+							/>
+						)}
 					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}

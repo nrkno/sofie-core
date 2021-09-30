@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
@@ -20,7 +20,7 @@ import {
 import { IContextMenuContext, MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { NoteType, PartNote, SegmentNote, TrackedNote } from '../../../lib/api/notes'
+import { PartNote, SegmentNote, TrackedNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -39,12 +39,14 @@ import RundownViewEventBus, {
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
-import { checkPieceContentStatus, getNoteTypeForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { checkPieceContentStatus, getNoteSeverityForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { SegmentTimelinePartClass } from './SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
+import { getIsFilterActive } from '../../lib/rundownLayouts'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
@@ -103,13 +105,16 @@ interface IProps {
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
-	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
 	isFollowingOnAirSegment: boolean
+	rundownViewLayout: RundownViewLayout | undefined
+	countdownToSegmentRequireLayers: string[] | undefined
+	fixedSegmentDuration: boolean | undefined
 }
 interface IState {
 	scrollLeft: number
@@ -136,6 +141,8 @@ interface ITrackedProps {
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
 	lastValidPartIndex: number | undefined
+	displayLiveLineCounter: boolean
+	showCountdownToSegment: boolean
 }
 export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITrackedProps>(
 	(props: IProps) => {
@@ -151,6 +158,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				hasGuestItems: false,
 				hasAlreadyPlayed: false,
 				lastValidPartIndex: undefined,
+				displayLiveLineCounter: true,
+				showCountdownToSegment: true,
 			}
 		}
 
@@ -258,6 +267,21 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		let displayLiveLineCounter: boolean = true
+		if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.requiredLayerIds) {
+			const { active } = getIsFilterActive(props.playlist, props.rundownViewLayout.liveLineProps)
+			displayLiveLineCounter = active
+		}
+
+		let showCountdownToSegment = true
+		if (props.countdownToSegmentRequireLayers?.length) {
+			const sourcelayersInSegment = o.parts
+				.map((pa) => pa.pieces.map((pi) => pi.sourceLayer?._id))
+				.flat()
+				.filter((s) => !!s) as string[]
+			showCountdownToSegment = props.countdownToSegmentRequireLayers.some((s) => sourcelayersInSegment.includes(s))
+		}
+
 		return {
 			segmentui: o.segmentExtended,
 			parts: o.parts,
@@ -266,6 +290,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			hasRemoteItems: o.hasRemoteItems,
 			hasGuestItems: o.hasGuestItems,
 			lastValidPartIndex,
+			displayLiveLineCounter,
+			showCountdownToSegment,
 		}
 	},
 	(data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
@@ -279,7 +305,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
 			props.isFollowingOnAirSegment !== nextProps.isFollowingOnAirSegment ||
-			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore)
+			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
+			!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers)
 		) {
 			return true
 		}
@@ -918,6 +945,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						followLiveLine={this.state.followLiveLine}
 						liveLineHistorySize={LIVELINE_HISTORY_SIZE}
 						livePosition={this.state.livePosition}
+						displayLiveLineCounter={this.props.displayLiveLineCounter}
 						onContextMenu={this.props.onContextMenu}
 						onFollowLiveLine={this.onFollowLiveLine}
 						onShowEntireSegment={this.onShowEntireSegment}
@@ -926,6 +954,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						isLastSegment={this.props.isLastSegment}
 						lastValidPartIndex={this.props.lastValidPartIndex}
 						onHeaderNoteClick={this.props.onHeaderNoteClick}
+						showCountdownToSegment={this.props.showCountdownToSegment}
+						fixedSegmentDuration={this.props.fixedSegmentDuration}
 					/>
 				)) ||
 				null
@@ -966,7 +996,7 @@ function getMinimumReactivePieceNotesForPart(
 			const st = checkPieceContentStatus(piece, part, studio)
 			if (st.status !== RundownAPI.PieceStatusCode.OK && st.status !== RundownAPI.PieceStatusCode.UNKNOWN) {
 				notes.push({
-					type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,
+					type: getNoteSeverityForPieceStatus(st.status) || NoteSeverity.WARNING,
 					origin: {
 						name: 'Media Check',
 						pieceId: piece._id,

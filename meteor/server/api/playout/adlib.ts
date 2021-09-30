@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { SourceLayerType, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
 import {
 	getCurrentTime,
 	literal,
@@ -32,15 +32,19 @@ import {
 	PieceInstance,
 	PieceInstanceId,
 	rewrapPieceToInstance,
+	PieceInstancePiece,
 } from '../../../lib/collections/PieceInstances'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
-import { fetchPiecesThatMayBeActiveForPart, syncPlayheadInfinitesForNextPartInstance } from './infinites'
+import {
+	fetchPiecesThatMayBeActiveForPart,
+	syncPlayheadInfinitesForNextPartInstance,
+	getPieceInstancesForPart,
+} from './infinites'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
-import { getPieceInstancesForPart } from './infinites'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from './lockFunction'
 import {
 	CacheForPlayout,
@@ -51,6 +55,8 @@ import {
 import { ReadonlyDeep } from 'type-fest'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { ServerPlayoutAPI } from './playout'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 
 export namespace ServerPlayoutAdLibAPI {
 	export async function pieceTakeNow(
@@ -72,10 +78,6 @@ export namespace ServerPlayoutAdLibAPI {
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 			},
 			async (cache) => {
-				const playlist = cache.Playlist.doc
-				if (!playlist.activationId)
-					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
-
 				const rundownIds = getRundownIDsFromCache(cache)
 
 				const pieceInstanceToCopy = cache.PieceInstances.findOne({
@@ -99,74 +101,122 @@ export namespace ServerPlayoutAdLibAPI {
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 
 				const showStyleBase = rundown.getShowStyleBase() // todo: database
-				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-				if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
+				if (!pieceToCopy.allowDirectPlay) {
 					throw new Meteor.Error(
 						403,
-						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a LOWER_THIRD item!`
+						`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" cannot be direct played!`
 					)
-
-				const newPieceInstance = convertAdLibToPieceInstance(
-					playlist.activationId,
-					pieceToCopy,
-					partInstance,
-					false
-				)
-				if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-					newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
-						_.map(newPieceInstance.piece.content.timelineObjects, (obj) => {
-							return literal<TimelineObjGeneric>({
-								...obj,
-								// @ts-ignore _id
-								_id: obj.id || obj._id,
-								studioId: protectString(''), // set later
-								objectType: TimelineObjType.RUNDOWN,
-							})
-						}),
-						unprotectString(newPieceInstance._id)
-					)
-				}
-
-				// Disable the original piece if from the same Part
-				if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
-					// Ensure the piece being copied isnt currently live
-					if (
-						pieceInstanceToCopy.startedPlayback &&
-						pieceInstanceToCopy.startedPlayback <= getCurrentTime()
-					) {
-						const resolvedPieces = getResolvedPieces(cache, showStyleBase, partInstance)
-						const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
-
-						if (
-							resolvedPieceBeingCopied &&
-							resolvedPieceBeingCopied.resolvedDuration !== undefined &&
-							(resolvedPieceBeingCopied.infinite ||
-								resolvedPieceBeingCopied.resolvedStart + resolvedPieceBeingCopied.resolvedDuration >=
-									getCurrentTime())
-						) {
-							// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
-							throw new Meteor.Error(
-								409,
-								`PieceInstance "${pieceInstanceToCopy._id}" is currently live and cannot be used as an ad-lib`
+				} else {
+					switch (pieceToCopy.allowDirectPlay.type) {
+						case IBlueprintDirectPlayType.AdLibPiece:
+							await pieceTakeNowAsAdlib(
+								cache,
+								showStyleBase,
+								partInstance,
+								pieceToCopy,
+								pieceInstanceToCopy
 							)
+							break
+						case IBlueprintDirectPlayType.AdLibAction: {
+							const executeProps = pieceToCopy.allowDirectPlay
+							await ServerPlayoutAPI.executeActionInner(
+								cache,
+								null, // TODO: should this be able to retrieve any watched packages?
+								async (actionContext, _rundown) => {
+									const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
+									if (!blueprint.blueprint.executeAction) {
+										throw new Meteor.Error(
+											400,
+											`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
+										)
+									}
+
+									logger.info(
+										`Executing AdlibAction "${executeProps.actionId}": ${JSON.stringify(
+											executeProps.userData
+										)}`
+									)
+
+									blueprint.blueprint.executeAction(
+										actionContext,
+										executeProps.actionId,
+										executeProps.userData
+									)
+								}
+							)
+							break
 						}
+						default:
+							assertNever(pieceToCopy.allowDirectPlay)
+							throw new Meteor.Error(
+								500,
+								`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not direct playable!`
+							)
 					}
-
-					cache.PieceInstances.update(pieceInstanceToCopy._id, {
-						$set: {
-							disabled: true,
-							hidden: true,
-						},
-					})
 				}
-
-				cache.PieceInstances.insert(newPieceInstance)
-
-				await syncPlayheadInfinitesForNextPartInstance(cache)
-
-				await updateTimeline(cache)
 			}
 		)
+	}
+
+	async function pieceTakeNowAsAdlib(
+		cache: CacheForPlayout,
+		showStyleBase: ShowStyleBase,
+		partInstance: PartInstance,
+		pieceToCopy: PieceInstancePiece,
+		pieceInstanceToCopy: PieceInstance | undefined
+	): Promise<void> {
+		const playlist = cache.Playlist.doc
+		if (!playlist.activationId)
+			throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
+
+		const newPieceInstance = convertAdLibToPieceInstance(playlist.activationId, pieceToCopy, partInstance, false)
+		if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
+			newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
+				_.map(newPieceInstance.piece.content.timelineObjects, (obj) => {
+					return literal<TimelineObjGeneric>({
+						...obj,
+						// @ts-ignore _id
+						_id: obj.id || obj._id,
+						studioId: protectString(''), // set later
+						objectType: TimelineObjType.RUNDOWN,
+					})
+				}),
+				unprotectString(newPieceInstance._id)
+			)
+		}
+
+		// Disable the original piece if from the same Part, and it hasnt finished playback
+		if (
+			pieceInstanceToCopy &&
+			pieceInstanceToCopy.partInstanceId === partInstance._id &&
+			!pieceInstanceToCopy.stoppedPlayback
+		) {
+			// Ensure the piece being copied isnt currently live
+			if (
+				pieceInstanceToCopy.startedPlayback &&
+				pieceInstanceToCopy.startedPlayback <= getCurrentTime() &&
+				!pieceInstanceToCopy.stoppedPlayback
+			) {
+				// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
+				throw new Meteor.Error(
+					409,
+					`PieceInstance "${pieceInstanceToCopy._id}" is currently live and cannot be used as an ad-lib`
+				)
+			}
+
+			cache.PieceInstances.update(pieceInstanceToCopy._id, {
+				$set: {
+					disabled: true,
+					hidden: true,
+				},
+			})
+		}
+
+		cache.PieceInstances.insert(newPieceInstance)
+
+		await syncPlayheadInfinitesForNextPartInstance(cache)
+
+		await updateTimeline(cache)
 	}
 	export async function segmentAdLibPieceStart(
 		access: VerifiedRundownPlaylistContentAccess,

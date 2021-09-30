@@ -25,6 +25,7 @@ import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBa
 import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
+import { preventDefault } from '../SorensenContext'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -255,10 +256,29 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				exclusive: false,
 				global: true,
 			})
+
+			// block Control+KeyF only if this is running in a context where other key bindings will be bound
+			if (!props.simulateTriggerBinding) {
+				localSorensen.bind('Control+KeyF', preventDefault, {
+					global: true,
+					exclusive: true,
+					ordered: 'modifiersFirst',
+					preventDefaultPartials: false,
+				})
+				localSorensen.bind(['F5', 'Control+F5'], preventDefault, {
+					global: true,
+					exclusive: true,
+					ordered: false,
+					preventDefaultPartials: false,
+				})
+			}
 		}
 
 		return () => {
 			localSorensen.unbind('Escape', poisonHotkeys)
+			localSorensen.unbind('Control+KeyF', preventDefault)
+			localSorensen.unbind('F5', preventDefault)
+			localSorensen.unbind('Control+F5', preventDefault)
 		}
 	}, [initialized]) // run once once Sorensen is initialized
 

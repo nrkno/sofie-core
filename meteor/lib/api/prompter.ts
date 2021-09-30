@@ -70,7 +70,13 @@ export namespace PrompterAPI {
 			playlist,
 			undefined,
 			undefined,
-			undefined,
+			// unless this is the current or next PartInstance, we actually don't want the PartInstances,
+			// we want it to behave as if all other PartInstances are reset.
+			{
+				_id: {
+					$in: [currentPartInstance?._id, nextPartInstance?._id].filter(Boolean) as PartInstanceId[],
+				},
+			},
 			undefined,
 			undefined,
 			{

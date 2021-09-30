@@ -139,7 +139,6 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/**
 	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment() )
-	 * Warning: This is currently an experimental api, and is likely to break in the next release
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,
