@@ -45,6 +45,7 @@ import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '..
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
@@ -964,7 +965,11 @@ function getMinimumReactivePieceNotesForPart(
 		if (sourceLayerMap && piece.sourceLayerId && sourceLayerMap[piece.sourceLayerId]) {
 			const sourceLayer = sourceLayerMap[piece.sourceLayerId]
 			const st = checkPieceContentStatus(piece, sourceLayer, studio)
-			if (st.status !== RundownAPI.PieceStatusCode.OK && st.status !== RundownAPI.PieceStatusCode.UNKNOWN) {
+			if (
+				st.status !== RundownAPI.PieceStatusCode.OK &&
+				st.status !== RundownAPI.PieceStatusCode.UNKNOWN &&
+				!getIgnorePieceContentStatus()
+			) {
 				notes.push({
 					type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,
 					origin: {

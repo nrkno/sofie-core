@@ -19,6 +19,7 @@ import {
 	setUIZoom,
 	getUIZoom,
 	setShowHiddenSourceLayers,
+	setIgnorePieceContentStatus,
 } from '../lib/localStorage'
 import Status from './Status'
 import { Settings as SettingsView } from './Settings'
@@ -104,6 +105,9 @@ export const App = translateWithTracker(() => {
 			}
 			if (params['show_hidden_source_layers']) {
 				setShowHiddenSourceLayers(params['show_hidden_source_layers'] === '1')
+			}
+			if (params['ignore_piece_content_status']) {
+				setIgnorePieceContentStatus(params['ignore_piece_content_status'] === '1')
 			}
 
 			if (!this.props.user) {

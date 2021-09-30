@@ -15,11 +15,13 @@ import { RundownTiming, TimingEvent } from '../RundownView/RundownTiming/Rundown
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { VTContent } from '@sofie-automation/blueprints-integration'
+import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 interface IPieceCountdownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPieceCountdown
 	playlist: RundownPlaylist
+	showStyleBase: DBShowStyleBase
 }
 
 interface IPieceCountdownPanelTrackedProps {
@@ -111,7 +113,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 
 export const PieceCountdownPanel = withTracker<IPieceCountdownPanelProps, IState, IPieceCountdownPanelTrackedProps>(
 	(props: IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps) => {
-		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist)
+		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist, props.showStyleBase)
 		const livePieceInstance: PieceInstance | undefined =
 			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
 				? _.flatten(Object.values(unfinishedPieces)).find((piece: PieceInstance) => {
