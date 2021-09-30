@@ -24,14 +24,14 @@ function localStorageGetCachedItem(key: LocalStorageProperty): string | null {
 		return cacheHit
 	}
 
-	const uncachedVal = localStorageGetCachedItem(key)
+	const uncachedVal = localStorage.getItem(key)
 	GUI_FLAGS[key] = uncachedVal
 	return uncachedVal
 }
 
 function localStorageSetCachedItem(key: LocalStorageProperty, value: string): void {
 	GUI_FLAGS[key] = value
-	localStorageSetCachedItem(key, value)
+	localStorage.setItem(key, value)
 }
 
 export function setAllowStudio(studioMode: boolean) {
