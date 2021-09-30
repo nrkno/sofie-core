@@ -477,13 +477,12 @@ export class TSRHandler {
 				return result
 			})
 		}
+		const devices: {
+			[deviceId: string]: DeviceOptionsAny
+		} = {}
 
 		if (peripheralDevice) {
 			const settings: TSRSettings = peripheralDevice.settings || {}
-
-			const devices: {
-				[deviceId: string]: DeviceOptionsAny
-			} = {}
 
 			_.each(settings.devices, (device, deviceId) => {
 				if (!device.disable) {
@@ -491,18 +490,19 @@ export class TSRHandler {
 				}
 			})
 
-			_.each(devices, (deviceOptions: DeviceOptionsAny, deviceId: string) => {
+			_.each(devices, (orgDeviceOptions: DeviceOptionsAny, deviceId: string) => {
 				const oldDevice: DeviceContainer<DeviceOptionsAny> | undefined = this.tsr.getDevice(deviceId)
 
-				deviceOptions = _.extend(
+				const deviceOptions = _.extend(
 					{
 						// Defaults:
 						limitSlowSentCommand: 40,
 						limitSlowFulfilledCommand: 100,
 						options: {},
 					},
-					deviceOptions
+					orgDeviceOptions
 				)
+				delete deviceOptions.debug // Changing the debug flag shouldn't restart the device!
 
 				if (this._multiThreaded !== null && deviceOptions.isMultiThreaded === undefined) {
 					deviceOptions.isMultiThreaded = this._multiThreaded
@@ -562,6 +562,19 @@ export class TSRHandler {
 				}, INIT_TIMEOUT)
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
+
+		// Det logDebug on the devices:
+		_.each(this.tsr.getDevices(), async (device: DeviceContainer<DeviceOptionsAny>) => {
+			const deviceOptions = devices[device.deviceId]
+			if (deviceOptions) {
+				const debug = deviceOptions.debug || false
+				if (device.logDebug !== debug) {
+					this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
+					device.logDebug = debug
+				}
+			}
+		})
+
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.info('updateDevices end')
 	}
@@ -697,7 +710,7 @@ export class TSRHandler {
 			}
 			let deviceName = device.deviceName
 			const deviceInstanceId = device.instanceId
-			const fixError = (e: any) => {
+			const fixError = (e: any): string => {
 				const name = `Device "${deviceName || deviceId}" (${deviceInstanceId})`
 				if (e.reason) e.reason = name + ': ' + e.reason
 				if (e.message) e.message = name + ': ' + e.message
@@ -742,7 +755,15 @@ export class TSRHandler {
 			await device.device.on('info', (e: any, ...args: any[]) => this.logger.info(fixError(e), ...args))
 			await device.device.on('warning', (e: any, ...args: any[]) => this.logger.warn(fixError(e), ...args))
 			await device.device.on('error', (e: any, ...args: any[]) => this.logger.error(fixError(e), ...args))
-			await device.device.on('debug', (e: any, ...args: any[]) => this.logger.debug(fixError(e), ...args))
+
+			await device.device.on('debug', (e: any, ...args: any[]) => {
+				// Don't log if the "main" debug flag (_coreHandler.logDebug) is set to avoid duplicates,
+				// because then the tsr is also logging debug messages from the devices.
+
+				if (device.logDebug && !this._coreHandler.logDebug) {
+					this.logger.info('debug: ' + fixError(e), ...args)
+				}
+			})
 
 			// also ask for the status now, and update:
 			onDeviceStatusChanged(await device.device.getStatus())
