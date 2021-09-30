@@ -34,7 +34,7 @@ describe('Test sending mos actions', () => {
 	})
 
 	testInFiber('reloadRundown: expect error', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		// Ensure there is a rundown to start with
 		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate())
 
@@ -62,7 +62,7 @@ describe('Test sending mos actions', () => {
 	})
 
 	testInFiber('reloadRundown: valid payload', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		// Ensure there is a rundown to start with
 		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate())
 
@@ -116,7 +116,7 @@ describe('Test sending mos actions', () => {
 	})
 
 	testInFiber('reloadRundown: receive incorrect response rundown id', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		// Ensure there is a rundown to start with
 		await MeteorCall.peripheralDevice.mosRoCreate(device._id, device.token, mockRO.roCreate())
 
