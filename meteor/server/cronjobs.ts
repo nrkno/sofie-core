@@ -13,6 +13,7 @@ import { CASPARCG_RESTART_TIME } from '../lib/constants'
 import { Studios } from '../lib/collections/Studios'
 import { removeEmptyPlaylists } from './api/rundownPlaylist'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
+import { removeDueToBeRemovedPackageInfos } from '../lib/collections/PackageInfos'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -156,6 +157,9 @@ Meteor.startup(() => {
 			)
 		)
 	}
-	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
+	Meteor.setInterval(() => {
+		cleanupPlaylists()
+		removeDueToBeRemovedPackageInfos()
+	}, 30 * 60 * 1000) // every 30 minutes
 	cleanupPlaylists()
 })

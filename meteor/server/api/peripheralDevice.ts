@@ -1214,9 +1214,15 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 			)
 		)
 	}
-	removePackageInfo(deviceId: PeripheralDeviceId, deviceToken: string, type: string, packageId: ExpectedPackageId) {
+	removePackageInfo(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		type: string,
+		packageId: ExpectedPackageId,
+		removeDelay?: number
+	) {
 		return makePromise(() =>
-			PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
+			PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId, removeDelay)
 		)
 	}
 }

@@ -24,7 +24,12 @@ import {
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageId,
 } from '../../../lib/collections/PackageContainerPackageStatus'
-import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
+import {
+	getPackageInfoId,
+	PackageInfoDB,
+	PackageInfos,
+	removeDueToBeRemovedPackageInfos,
+} from '../../../lib/collections/PackageInfos'
 import { BulkWriteOperation } from 'mongodb'
 import { onUpdatedPackageInfo } from '../ingest/packageInfo'
 
@@ -281,6 +286,8 @@ export namespace PackageManagerIntegration {
 
 			type: type,
 			payload: payload,
+
+			delayedRemoveTime: 0,
 		}
 		PackageInfos.upsert(id, {
 			$set: doc,
@@ -293,7 +300,8 @@ export namespace PackageManagerIntegration {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		type: string,
-		packageId: ExpectedPackageId
+		packageId: ExpectedPackageId,
+		removeDelay?: number
 	): void {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageId, String)
@@ -303,7 +311,19 @@ export namespace PackageManagerIntegration {
 
 		const id = getPackageInfoId(packageId, type)
 
-		PackageInfos.remove(id)
+
+		if (removeDelay) {
+			PackageInfos.update(id, {
+				$set: {
+					delayedRemoveTime: getCurrentTime() + removeDelay,
+				},
+			})
+			Meteor.setTimeout(() => {
+				removeDueToBeRemovedPackageInfos()
+			}, removeDelay + 10)
+		} else {
+			PackageInfos.remove(id)
+		}
 
 		onUpdatedPackageInfo(packageId, null) // ?
 	}

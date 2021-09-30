@@ -1,4 +1,4 @@
-import { registerCollection, ProtectedString, protectString } from '../lib'
+import { registerCollection, ProtectedString, protectString, getCurrentTime } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { registerIndex } from '../database'
@@ -31,6 +31,9 @@ export interface PackageInfoDB extends PackageInfo.Base {
 
 	type: PackageInfo.Type
 	payload: any
+
+	/** In case of a delayed removal, the timestamp of when the removal should be done */
+	delayedRemoveTime?: number
 }
 
 export const PackageInfos = createMongoCollection<PackageInfoDB, PackageInfoDB>('packageInfos')
@@ -42,4 +45,10 @@ registerIndex(PackageInfos, {
 })
 export function getPackageInfoId(packageId: ExpectedPackageId, type: string): PackageInfoId {
 	return protectString(`${packageId}_${type}`)
+}
+
+export function removeDueToBeRemovedPackageInfos() {
+	PackageInfos.remove({
+		delayedRemoveTime: { $lte: getCurrentTime() },
+	})
 }
