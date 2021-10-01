@@ -60,7 +60,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 		const content = this.props.piece.instance.piece.content as TransitionContent | undefined
 		return (
 			<>
-				{!this.props.piece.hasOriginInPreceedingPart ? (
+				{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 					<span
 						className="segment-timeline__piece__label with-overflow"
 						ref={this.setLeftLabelRef}

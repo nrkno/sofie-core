@@ -143,7 +143,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 				<div className="segment-timeline__piece__preview">{this.renderSubItems()}</div>
 				{!this.props.isTooSmallForText && (
 					<>
-						{!this.props.piece.hasOriginInPreceedingPart ? (
+						{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 							<span
 								className="segment-timeline__piece__label first-words overflow-label"
 								ref={this.setLeftLabelRef}

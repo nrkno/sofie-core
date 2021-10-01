@@ -58,7 +58,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 			<React.Fragment>
 				{!this.props.isTooSmallForText && (
 					<>
-						{!this.props.piece.hasOriginInPreceedingPart ? (
+						{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 							<span
 								className="segment-timeline__piece__label"
 								ref={this.setLeftLabelRef}
