@@ -1,6 +1,6 @@
 {
 	"name": "@tv2media/server-core-integration",
-	"version": "1.37.0-in-development",
+	"version": "1.37.0-rc12",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
