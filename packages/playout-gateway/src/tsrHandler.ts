@@ -468,7 +468,7 @@ export class TSRHandler {
 		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
 		const peripheralDevice = peripheralDevices.findOne(this._coreHandler.core.deviceId)
 
-		const ps: Promise<any>[] = []
+		let ps: Promise<any>[] = []
 		const promiseOperations: { [id: string]: true } = {}
 		const keepTrack = <T>(p: Promise<T>, name: string) => {
 			promiseOperations[name] = true
@@ -477,20 +477,18 @@ export class TSRHandler {
 				return result
 			})
 		}
-		const devices: {
-			[deviceId: string]: DeviceOptionsAny
-		} = {}
+		const devices = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
 			const settings: TSRSettings = peripheralDevice.settings || {}
 
-			_.each(settings.devices, (device, deviceId) => {
+			for (const [deviceId, device] of Object.entries(settings.devices)) {
 				if (!device.disable) {
-					devices[deviceId] = device
+					devices.set(deviceId, device)
 				}
-			})
+			}
 
-			_.each(devices, (orgDeviceOptions: DeviceOptionsAny, deviceId: string) => {
+			for (const [deviceId, orgDeviceOptions] of devices.entries()) {
 				const oldDevice: DeviceContainer<DeviceOptionsAny> | undefined = this.tsr.getDevice(deviceId)
 
 				const deviceOptions = _.extend(
@@ -520,8 +518,6 @@ export class TSRHandler {
 					if (deviceOptions.options) {
 						let anyChanged = false
 
-						// let oldOptions = (oldDevice.deviceOptions).options || {}
-
 						if (
 							// Changing the debug flag shouldn't restart the device:
 							!_.isEqual(_.omit(oldDevice.deviceOptions, 'debug'), _.omit(deviceOptions, 'debug'))
@@ -543,15 +539,15 @@ export class TSRHandler {
 						}
 					}
 				}
-			})
+			}
 
-			_.each(this.tsr.getDevices(), async (oldDevice: DeviceContainer<DeviceOptionsAny>) => {
+			for (const oldDevice of this.tsr.getDevices()) {
 				const deviceId = oldDevice.deviceId
-				if (!devices[deviceId]) {
+				if (!devices.has(deviceId)) {
 					this.logger.info('Un-initializing device: ' + deviceId)
 					ps.push(keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId))
 				}
-			})
+			}
 		}
 
 		await Promise.race([
@@ -566,18 +562,20 @@ export class TSRHandler {
 				}, INIT_TIMEOUT)
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
+		ps = []
 
 		// Set logDebug on the devices:
-		_.each(this.tsr.getDevices(), async (device: DeviceContainer<DeviceOptionsAny>) => {
-			const deviceOptions: DeviceOptionsAny = devices[device.deviceId]
+		for (const device of this.tsr.getDevices()) {
+			const deviceOptions = devices.get(device.deviceId)
 			if (deviceOptions) {
 				const debug: boolean = this.getDeviceDebug(deviceOptions)
 				if (device.debugLogging !== debug) {
 					this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
-					device.setDebugLogging(debug)
+					ps.push(device.setDebugLogging(debug))
 				}
 			}
-		})
+		}
+		await Promise.all(ps)
 
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.info('updateDevices end')
