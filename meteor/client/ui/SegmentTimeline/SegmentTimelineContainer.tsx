@@ -581,7 +581,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				currentNextPart &&
 				(nextPartIdOrOffsetHasChanged || isBecomingNextSegment)
 			) {
-				console.log('scroll into view')
 				const timelineWidth = getElementWidth(this.timelineDiv)
 				// If part is not within viewport scroll to its start
 				if (
@@ -836,44 +835,48 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onAirLineRefresh = (e: TimingEvent) => {
-			if (this.state.isLiveSegment && this.state.currentLivePart) {
-				const currentLivePartInstance = this.state.currentLivePart.instance
-				const currentLivePart = currentLivePartInstance.part
-
-				const partOffset =
-					(this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] || 0) -
-					(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] || 0)
-
-				let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
-				const lastTake = currentLivePartInstance.timings?.take
-				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
-				const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
-				const virtualStartedPlayback =
-					(lastTake || 0) > (lastStartedPlayback || -1)
-						? lastTake
-						: lastStartedPlayback !== undefined
-						? lastStartedPlayback - lastTakeOffset
-						: undefined
-
-				if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
-					isExpectedToPlay = true
+			this.setState((state) => {
+				if (state.isLiveSegment && state.currentLivePart) {
+					const currentLivePartInstance = state.currentLivePart.instance
+					const currentLivePart = currentLivePartInstance.part
+	
+					const partOffset =
+						(this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] || 0) -
+						(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] || 0)
+	
+					let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
+					const lastTake = currentLivePartInstance.timings?.take
+					const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
+					const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
+					const virtualStartedPlayback =
+						(lastTake || 0) > (lastStartedPlayback || -1)
+							? lastTake
+							: lastStartedPlayback !== undefined
+							? lastStartedPlayback - lastTakeOffset
+							: undefined
+	
+					if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
+						isExpectedToPlay = true
+					}
+	
+					const newLivePosition =
+						isExpectedToPlay && virtualStartedPlayback
+							? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
+							: partOffset + lastTakeOffset
+	
+					const budgetDuration = this.getSegmentBudgetDuration()
+	
+					
+					return {
+						livePosition: newLivePosition,
+						scrollLeft: state.followLiveLine
+							? Math.max(newLivePosition - LIVELINE_HISTORY_SIZE / state.timeScale, 0)
+							: state.scrollLeft,
+						budgetDuration,
+					}
 				}
-
-				const newLivePosition =
-					isExpectedToPlay && virtualStartedPlayback
-						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
-						: partOffset + lastTakeOffset
-
-				const budgetDuration = this.getSegmentBudgetDuration()
-
-				this.setState({
-					livePosition: newLivePosition,
-					scrollLeft: this.state.followLiveLine
-						? Math.max(newLivePosition - LIVELINE_HISTORY_SIZE / this.state.timeScale, 0)
-						: this.state.scrollLeft,
-					budgetDuration,
-				})
-			}
+				return null
+			})
 		}
 
 		visibleChanged = (entries: IntersectionObserverEntry[]) => {
