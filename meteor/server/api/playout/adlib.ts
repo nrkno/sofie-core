@@ -514,8 +514,10 @@ export namespace ServerPlayoutAdLibAPI {
 			true
 		)
 		newPartInstance.part._rank = getRank(
-			currentPartInstance.part,
-			followingPart?.part?.segmentId === newPartInstance.segmentId ? followingPart?.part : undefined
+			{ _rank: currentPartInstance.part._rank },
+			followingPart?.part?.segmentId === newPartInstance.segmentId
+				? { _rank: followingPart?.part._rank }
+				: undefined
 		)
 
 		cache.PartInstances.insert(newPartInstance)

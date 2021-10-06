@@ -8,10 +8,9 @@ import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselin
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { getCurrentTime } from '../../lib/lib'
 import { ScanInfoForPackages } from '../../lib/mediaObjects'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
-import { invalidateAt } from './invalidatingTime'
+import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 
 export interface AdLibPieceUi extends AdLibPiece {
 	hotkey?: string
@@ -113,94 +112,12 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist) {
-	let prospectivePieces: PieceInstance[] = []
-	const now = getCurrentTime()
-	if (playlist.activationId && playlist.currentPartInstanceId) {
-		prospectivePieces = PieceInstances.find({
-			startedPlayback: {
-				$exists: true,
-			},
-			playlistActivationId: playlist.activationId,
-			$and: [
-				{
-					$or: [
-						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
-						},
-						{
-							stoppedPlayback: {
-								$exists: false,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							adLibSourceId: {
-								$exists: true,
-							},
-						},
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							userDuration: {
-								$exists: false,
-							},
-						},
-						{
-							'userDuration.end': {
-								$exists: false,
-							},
-						},
-					],
-				},
-			],
-		}).fetch()
-
-		let nearestEnd = Number.POSITIVE_INFINITY
-		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-			const piece = pieceInstance.piece
-			const end: number | undefined =
-				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
-					? pieceInstance.userDuration.end
-					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + pieceInstance.startedPlayback!
-					: undefined
-
-			if (end !== undefined) {
-				if (end > now) {
-					nearestEnd = nearestEnd > end ? end : nearestEnd
-					return true
-				} else {
-					return false
-				}
-			}
-			return true
-		})
-
-		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
-	}
-
-	return prospectivePieces
-}
-
 export function getUnfinishedPieceInstancesGrouped(playlist: RundownPlaylist): {
 	unfinishedPieceInstances: PieceInstance[]
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 } {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist)
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, false)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)

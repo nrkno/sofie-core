@@ -15,6 +15,7 @@ import {
 	StudioRouteSetExclusivityGroup,
 	getActiveRoutes,
 	StudioPackageContainer,
+	StudioRouteType,
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -945,6 +946,7 @@ const StudioRoutings = withTranslation()(
 													{
 														device: routeDeviceType,
 														...route.remapping,
+														deviceId: route.remapping?.deviceId ? protectString(route.remapping.deviceId) : undefined,
 													} as MappingExt
 												}
 												studio={this.props.studio}
