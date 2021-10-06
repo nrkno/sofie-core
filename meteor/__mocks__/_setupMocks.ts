@@ -1,7 +1,8 @@
-import { setLoggerLevel } from '../server/api/logger'
+import { setLogLevel } from '../server/logging'
 import { Fiber } from './Fibers'
 import { resetRandomId } from './random'
 import { makeCompatible } from 'meteor-promise'
+import { LogLevel } from '../lib/lib'
 
 // This file is run before all tests start.
 
@@ -31,8 +32,8 @@ jest.mock('../server/api/integration/rabbitMQ', (...args) => require('./rabbitMQ
 require('../server/api/logger.ts')
 
 beforeEach(() => {
-	setLoggerLevel('warning')
-	// put setLoggerLevel('info') in the beginning of your test to see logs
+	setLogLevel(LogLevel.WARN)
+	// put setLogLevel('info') in the beginning of your test to see logs
 
 	resetRandomId()
 })

@@ -2,9 +2,9 @@ import { Meteor } from 'meteor/meteor'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
 import { ClientAPIMethods } from '../../../lib/api/client'
-import { protectString, makePromise } from '../../../lib/lib'
+import { protectString, makePromise, LogLevel } from '../../../lib/lib'
 import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { setLoggerLevel } from '../logger'
+import { setLogLevel } from '../../logging'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
@@ -12,7 +12,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 require('../client') // include in order to create the Meteor methods needed
 
-setLoggerLevel('info')
+setLogLevel(LogLevel.INFO)
 
 const orgSetTimeout = setTimeout
 
