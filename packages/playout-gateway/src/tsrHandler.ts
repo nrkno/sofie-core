@@ -107,7 +107,6 @@ export class TSRHandler {
 	tsr!: Conductor
 	// private _config: TSRConfig
 	private _coreHandler!: CoreHandler
-	private _triggerupdateDevicesTimeout: any = null
 	private _triggerupdateExpectedPlayoutItemsTimeout: any = null
 	private _coreTsrHandlers: { [deviceId: string]: CoreTSRDeviceHandler } = {}
 	private _observers: Array<any> = []
@@ -120,6 +119,7 @@ export class TSRHandler {
 
 	private _updateDevicesIsRunning = false
 	private _lastReportedObjHashes: string[] = []
+	private _triggerUpdateDevicesCheckAgain = false
 
 	constructor(logger: LoggerInstance) {
 		this.logger = logger
@@ -446,20 +446,19 @@ export class TSRHandler {
 				this._updateDevices().then(
 					() => {
 						this._updateDevicesIsRunning = false
+						if (this._triggerUpdateDevicesCheckAgain) setTimeout(() => this._triggerUpdateDevices(), 1000)
+						this._triggerUpdateDevicesCheckAgain = false
 					},
 					() => {
 						this._updateDevicesIsRunning = false
+						if (this._triggerUpdateDevicesCheckAgain) setTimeout(() => this._triggerUpdateDevices(), 1000)
+						this._triggerUpdateDevicesCheckAgain = false
 					}
 				)
 			}, 10)
 		} else {
-			// oh, it's already running, check again later then:
-			if (this._triggerupdateDevicesTimeout) {
-				clearTimeout(this._triggerupdateDevicesTimeout)
-			}
-			this._triggerupdateDevicesTimeout = setTimeout(() => {
-				this._triggerUpdateDevices()
-			}, 100)
+			// oh, it's already running, cue a check again later:
+			this._triggerUpdateDevicesCheckAgain = true
 		}
 	}
 	private async _updateDevices(): Promise<void> {
@@ -489,7 +488,7 @@ export class TSRHandler {
 			}
 
 			for (const [deviceId, orgDeviceOptions] of devices.entries()) {
-				const oldDevice: DeviceContainer<DeviceOptionsAny> | undefined = this.tsr.getDevice(deviceId)
+				const oldDevice: DeviceContainer<DeviceOptionsAny> | undefined = this.tsr.getDevice(deviceId, true)
 
 				const deviceOptions = _.extend(
 					{
@@ -596,6 +595,12 @@ export class TSRHandler {
 			const coreTsrHandler = new CoreTSRDeviceHandler(this._coreHandler, devicePr, deviceId, this)
 
 			this._coreTsrHandlers[deviceId] = coreTsrHandler
+
+			// set the status to uninitialized for now:
+			coreTsrHandler.statusChanged({
+				statusCode: P.StatusCode.BAD,
+				messages: ['Device initialising...'],
+			})
 
 			const device = await devicePr
 
