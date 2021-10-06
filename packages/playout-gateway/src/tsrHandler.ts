@@ -30,6 +30,8 @@ import { CoreConnection, PeripheralDeviceAPI as P } from '@sofie-automation/serv
 import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { LoggerInstance } from './index'
 import { disableAtemUpload } from './config'
+import Debug from 'debug'
+const debug = Debug('playout-gateway')
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TSRConfig {}
@@ -120,6 +122,7 @@ export class TSRHandler {
 	private _updateDevicesIsRunning = false
 	private _lastReportedObjHashes: string[] = []
 	private _triggerUpdateDevicesCheckAgain = false
+	private _triggerUpdateDevicesTimeout: NodeJS.Timeout | undefined
 
 	constructor(logger: LoggerInstance) {
 		this.logger = logger
@@ -286,12 +289,15 @@ export class TSRHandler {
 
 		const deviceObserver = this._coreHandler.core.observe('peripheralDevices')
 		deviceObserver.added = () => {
+			debug('triggerUpdateDevices from deviceObserver added')
 			this._triggerUpdateDevices()
 		}
 		deviceObserver.changed = () => {
+			debug('triggerUpdateDevices from deviceObserver changed')
 			this._triggerUpdateDevices()
 		}
 		deviceObserver.removed = () => {
+			debug('triggerUpdateDevices from deviceObserver removed')
 			this._triggerUpdateDevices()
 		}
 		this._observers.push(deviceObserver)
@@ -372,6 +378,7 @@ export class TSRHandler {
 
 			this.logger.info('Multithreading: ' + this._multiThreaded)
 
+			debug('triggerUpdateDevices from onSettingsChanged')
 			this._triggerUpdateDevices()
 		}
 		if (this._reportAllCommands !== this._coreHandler.reportAllCommands) {
@@ -379,6 +386,7 @@ export class TSRHandler {
 
 			this.logger.info('ReportAllCommands: ' + this._reportAllCommands)
 
+			debug('triggerUpdateDevices from onSettingsChanged')
 			this._triggerUpdateDevices()
 		}
 	}
@@ -438,26 +446,40 @@ export class TSRHandler {
 	private _triggerUpdateDevices() {
 		if (!this._initialized) return
 
+		if (this._triggerUpdateDevicesTimeout) clearTimeout(this._triggerUpdateDevicesTimeout)
+		this._triggerUpdateDevicesTimeout = undefined
+
 		if (!this._updateDevicesIsRunning) {
 			this._updateDevicesIsRunning = true
+			debug('triggerUpdateDevices now')
 
 			// Defer:
 			setTimeout(() => {
 				this._updateDevices().then(
 					() => {
 						this._updateDevicesIsRunning = false
-						if (this._triggerUpdateDevicesCheckAgain) setTimeout(() => this._triggerUpdateDevices(), 1000)
+						if (this._triggerUpdateDevicesCheckAgain) {
+							debug('triggerUpdateDevices from updateDevices promise resolved')
+							if (this._triggerUpdateDevicesTimeout) clearTimeout(this._triggerUpdateDevicesTimeout)
+							this._triggerUpdateDevicesTimeout = setTimeout(() => this._triggerUpdateDevices(), 1000)
+						}
 						this._triggerUpdateDevicesCheckAgain = false
 					},
 					() => {
 						this._updateDevicesIsRunning = false
-						if (this._triggerUpdateDevicesCheckAgain) setTimeout(() => this._triggerUpdateDevices(), 1000)
+						if (this._triggerUpdateDevicesCheckAgain) {
+							debug('triggerUpdateDevices from updateDevices promise rejected')
+							setTimeout(() => this._triggerUpdateDevices(), 1000)
+							if (this._triggerUpdateDevicesTimeout) clearTimeout(this._triggerUpdateDevicesTimeout)
+							this._triggerUpdateDevicesTimeout = setTimeout(() => this._triggerUpdateDevices(), 1000)
+						}
 						this._triggerUpdateDevicesCheckAgain = false
 					}
 				)
 			}, 10)
 		} else {
 			// oh, it's already running, cue a check again later:
+			debug('triggerUpdateDevices already running, cue a check again later')
 			this._triggerUpdateDevicesCheckAgain = true
 		}
 	}
@@ -590,7 +612,7 @@ export class TSRHandler {
 				throw new Error(`There is already a _coreTsrHandlers for deviceId "${deviceId}"!`)
 			}
 
-			const devicePr: Promise<DeviceContainer<DeviceOptionsAny>> = this.tsr.addDevice(deviceId, options)
+			const devicePr: Promise<DeviceContainer<DeviceOptionsAny>> = this.tsr.createDevice(deviceId, options)
 
 			const coreTsrHandler = new CoreTSRDeviceHandler(this._coreHandler, devicePr, deviceId, this)
 
@@ -738,6 +760,7 @@ export class TSRHandler {
 			device.onChildClose = () => {
 				// Called if a child is closed / crashed
 				this.logger.warn(`Child of device ${deviceId} closed/crashed`)
+				debug(`Trigger update devices because "${deviceId}" process closed`)
 
 				onDeviceStatusChanged({
 					statusCode: P.StatusCode.BAD,
@@ -775,21 +798,28 @@ export class TSRHandler {
 				}
 			})
 
+			// now initialize it
+			await this.tsr.initDevice(deviceId, options)
+
 			// also ask for the status now, and update:
 			onDeviceStatusChanged(await device.device.getStatus())
 		} catch (e) {
 			// Initialization failed, clean up any artifacts and see if we can try again later:
 			this.logger.error(`Error when adding device "${deviceId}"`, e)
+			debug(`Error when adding device "${deviceId}"`)
 			try {
 				await this._removeDevice(deviceId)
 			} catch (e) {
 				this.logger.error(`Error when cleaning up after adding device "${deviceId}" error...`, e)
 			}
 
-			setTimeout(() => {
-				// try again later:
-				this._triggerUpdateDevices()
-			}, 10 * 1000)
+			if (!this._triggerUpdateDevicesTimeout) {
+				this._triggerUpdateDevicesTimeout = setTimeout(() => {
+					debug(`Trigger updateDevices from failure "${deviceId}"`)
+					// try again later:
+					this._triggerUpdateDevices()
+				}, 10 * 1000)
+			}
 		}
 	}
 	/**
@@ -820,6 +850,7 @@ export class TSRHandler {
 		if (this._coreTsrHandlers[deviceId]) {
 			try {
 				await this._coreTsrHandlers[deviceId].dispose()
+				this.logger.debug('Disposed device ' + deviceId)
 			} catch (e) {
 				this.logger.error(`Error when removing device "${deviceId}"`, e)
 			}
