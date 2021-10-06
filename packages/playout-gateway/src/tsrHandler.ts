@@ -203,7 +203,6 @@ export class TSRHandler {
 		})
 
 		this.tsr.on('setTimelineTriggerTime', (r: TimelineTriggerTimeResult) => {
-			this.logger.debug('setTimelineTriggerTime')
 			this._coreHandler.core.callMethod(P.methods.timelineTriggerTime, [r]).catch((e) => {
 				this.logger.error('Error in setTimelineTriggerTime', e)
 			})
@@ -308,7 +307,6 @@ export class TSRHandler {
 			this._triggerupdateExpectedPlayoutItems()
 		}
 		this._observers.push(expectedPlayoutItemsObserver)
-		this.logger.debug('VIZDEBUG: Observer to expectedPlayoutItems set up')
 	}
 	private resendStatuses(): void {
 		_.each(this._coreTsrHandlers, (tsrHandler) => {
@@ -470,7 +468,7 @@ export class TSRHandler {
 		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
 		const peripheralDevice = peripheralDevices.findOne(this._coreHandler.core.deviceId)
 
-		const ps: Promise<any>[] = []
+		let ps: Promise<any>[] = []
 		const promiseOperations: { [id: string]: true } = {}
 		const keepTrack = <T>(p: Promise<T>, name: string) => {
 			promiseOperations[name] = true
@@ -479,31 +477,28 @@ export class TSRHandler {
 				return result
 			})
 		}
+		const devices = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
 			const settings: TSRSettings = peripheralDevice.settings || {}
 
-			const devices: {
-				[deviceId: string]: DeviceOptionsAny
-			} = {}
-
-			_.each(settings.devices, (device, deviceId) => {
+			for (const [deviceId, device] of Object.entries(settings.devices)) {
 				if (!device.disable) {
-					devices[deviceId] = device
+					devices.set(deviceId, device)
 				}
-			})
+			}
 
-			_.each(devices, (deviceOptions: DeviceOptionsAny, deviceId: string) => {
+			for (const [deviceId, orgDeviceOptions] of devices.entries()) {
 				const oldDevice: DeviceContainer<DeviceOptionsAny> | undefined = this.tsr.getDevice(deviceId)
 
-				deviceOptions = _.extend(
+				const deviceOptions = _.extend(
 					{
 						// Defaults:
 						limitSlowSentCommand: 40,
 						limitSlowFulfilledCommand: 100,
 						options: {},
 					},
-					deviceOptions
+					orgDeviceOptions
 				)
 
 				if (this._multiThreaded !== null && deviceOptions.isMultiThreaded === undefined) {
@@ -523,13 +518,16 @@ export class TSRHandler {
 					if (deviceOptions.options) {
 						let anyChanged = false
 
-						// let oldOptions = (oldDevice.deviceOptions).options || {}
-
-						if (!_.isEqual(oldDevice.deviceOptions, deviceOptions)) {
+						if (
+							// Changing the debug flag shouldn't restart the device:
+							!_.isEqual(_.omit(oldDevice.deviceOptions, 'debug'), _.omit(deviceOptions, 'debug'))
+						) {
 							anyChanged = true
 						}
 
 						if (anyChanged) {
+							deviceOptions.debug = this.getDeviceDebug(orgDeviceOptions)
+
 							this.logger.info('Re-initializing device: ' + deviceId)
 							this.logger.info('old', oldDevice.deviceOptions)
 							this.logger.info('new', deviceOptions)
@@ -541,15 +539,15 @@ export class TSRHandler {
 						}
 					}
 				}
-			})
+			}
 
-			_.each(this.tsr.getDevices(), async (oldDevice: DeviceContainer<DeviceOptionsAny>) => {
+			for (const oldDevice of this.tsr.getDevices()) {
 				const deviceId = oldDevice.deviceId
-				if (!devices[deviceId]) {
+				if (!devices.has(deviceId)) {
 					this.logger.info('Un-initializing device: ' + deviceId)
 					ps.push(keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId))
 				}
-			})
+			}
 		}
 
 		await Promise.race([
@@ -564,8 +562,26 @@ export class TSRHandler {
 				}, INIT_TIMEOUT)
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
+		ps = []
+
+		// Set logDebug on the devices:
+		for (const device of this.tsr.getDevices()) {
+			const deviceOptions = devices.get(device.deviceId)
+			if (deviceOptions) {
+				const debug: boolean = this.getDeviceDebug(deviceOptions)
+				if (device.debugLogging !== debug) {
+					this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
+					ps.push(device.setDebugLogging(debug))
+				}
+			}
+		}
+		await Promise.all(ps)
+
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.info('updateDevices end')
+	}
+	private getDeviceDebug(deviceOptions: DeviceOptionsAny): boolean {
+		return deviceOptions.debug || this._coreHandler.logDebug || false
 	}
 	private async _addDevice(deviceId: string, options: DeviceOptionsAny): Promise<any> {
 		this.logger.debug('Adding device ' + deviceId)
@@ -699,7 +715,7 @@ export class TSRHandler {
 			}
 			let deviceName = device.deviceName
 			const deviceInstanceId = device.instanceId
-			const fixError = (e: any) => {
+			const fixError = (e: any): string => {
 				const name = `Device "${deviceName || deviceId}" (${deviceInstanceId})`
 				if (e.reason) e.reason = name + ': ' + e.reason
 				if (e.message) e.message = name + ': ' + e.message
@@ -744,7 +760,15 @@ export class TSRHandler {
 			await device.device.on('info', (e: any, ...args: any[]) => this.logger.info(fixError(e), ...args))
 			await device.device.on('warning', (e: any, ...args: any[]) => this.logger.warn(fixError(e), ...args))
 			await device.device.on('error', (e: any, ...args: any[]) => this.logger.error(fixError(e), ...args))
-			await device.device.on('debug', (e: any, ...args: any[]) => this.logger.debug(fixError(e), ...args))
+
+			await device.device.on('debug', (e: any, ...args: any[]) => {
+				// Don't log if the "main" debug flag (_coreHandler.logDebug) is set to avoid duplicates,
+				// because then the tsr is also logging debug messages from the devices.
+
+				if (device.debugLogging && !this._coreHandler.logDebug) {
+					this.logger.info('debug: ' + fixError(e), ...args)
+				}
+			})
 
 			// also ask for the status now, and update:
 			onDeviceStatusChanged(await device.device.getStatus())
@@ -798,9 +822,7 @@ export class TSRHandler {
 		delete this._coreTsrHandlers[deviceId]
 	}
 	private _triggerupdateExpectedPlayoutItems() {
-		this.logger.debug('VIZDEBUG: Trigger update expected playout items called')
 		if (!this._initialized) return
-		this.logger.debug("VIZDEBUG: And we're initialized")
 		if (this._triggerupdateExpectedPlayoutItemsTimeout) {
 			clearTimeout(this._triggerupdateExpectedPlayoutItemsTimeout)
 		}
@@ -811,12 +833,8 @@ export class TSRHandler {
 		}, 200)
 	}
 	private async _updateExpectedPlayoutItems() {
-		this.logger.debug('VIZDEBUG: Update expected playout items called')
-
 		const expectedPlayoutItems = this._coreHandler.core.getCollection('expectedPlayoutItems')
 		const peripheralDevice = this._getPeripheralDevice()
-
-		this.logger.debug(`VIZDEBUG: Items before filter ${JSON.stringify(expectedPlayoutItems)}`)
 
 		const expectedItems = expectedPlayoutItems.find({
 			studioId: peripheralDevice.studioId,
@@ -828,13 +846,9 @@ export class TSRHandler {
 			'_id'
 		)
 
-		this.logger.debug(`VIZDEBUG: Items after filter ${JSON.stringify(expectedItems)}`)
-
 		await Promise.all(
 			_.map(this.tsr.getDevices(), async (container) => {
 				if (await container.device.supportsExpectedPlayoutItems) {
-					this.logger.debug(`VIZDEBUG: Supports expected playout items`)
-
 					await container.device.handleExpectedPlayoutItems(
 						_.map(
 							_.filter(expectedItems, (item) => {
