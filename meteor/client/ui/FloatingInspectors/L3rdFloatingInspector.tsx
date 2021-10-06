@@ -1,15 +1,12 @@
 import React from 'react'
 import * as _ from 'underscore'
-import { useTranslation } from 'react-i18next'
+// import { useTranslation } from 'react-i18next'
 
-import { RundownUtils } from '../../lib/rundown'
-import Moment from 'react-moment'
-
-import { PieceLifespan, NoraContent, GraphicsContent } from '@sofie-automation/blueprints-integration'
+import { NoraContent, GraphicsContent } from '@sofie-automation/blueprints-integration'
 
 import { NoraFloatingInspector } from './NoraFloatingInspector'
 import { FloatingInspector } from '../FloatingInspector'
-import { Time } from '../../../lib/lib'
+// import { Time } from '../../../lib/lib'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
 interface IProps {
@@ -32,13 +29,13 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	showMiniInspector,
 	itemElement,
 	piece,
-	pieceRenderedIn,
-	pieceRenderedDuration,
+	// pieceRenderedIn,
+	// pieceRenderedDuration,
 	typeClass,
 	displayOn,
 }) => {
-	const { t } = useTranslation()
-	const innerPiece = piece
+	// const { t } = useTranslation()
+	// const innerPiece = piece
 
 	const noraContent = (content as NoraContent)?.payload?.content ? (content as NoraContent | undefined) : undefined
 
@@ -76,7 +73,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		) as Array<KeyValue>
 	}
 
-	const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
+	// const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
 
 	const graphicContent = (content as GraphicsContent)?.fileName ? (content as GraphicsContent | undefined) : undefined
 
