@@ -1927,6 +1927,20 @@ const StudioPackageManagerSettings = withTranslation()(
 														<span className="text-s dimmed">{t('URL to the Quantel HTTP transformer')}</span>
 													</label>
 												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel FileFlow URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowURL`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('URL to the Quantel FileFlow Manager')}</span>
+													</label>
+												</div>
 											</>
 										) : null}
 
