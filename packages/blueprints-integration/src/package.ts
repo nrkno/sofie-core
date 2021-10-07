@@ -251,6 +251,9 @@ export namespace Accessor {
 
 		/** URL to a HTTP-transformer. Used for thumbnails, previews etc.. (http://hostname:port) */
 		transformerURL?: string
+
+		/** URL to a FileFlow Manager. Used for copying clips into CIFS file shares */
+		fileflowURL?: string
 	}
 	/** Virtual PackageContainer used for piping data into core */
 	export interface CorePackageCollection extends Base {
