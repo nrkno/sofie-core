@@ -560,7 +560,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}
 			}
 			
-			// TODO: Fix this part (AFJO)
 			// Setting the correct scroll position on parts when setting is next
 			const nextPartDisplayStartsAt =
 				currentNextPart &&
@@ -574,7 +573,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.props.playlist.nextPartInstanceId &&
 				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
 					this.nextPartOffset !== partOffset)
-			const isBecomingNextSegment = this.state.isNextSegment === false
+			const isBecomingNextSegment = this.state.isNextSegment === false && isNextSegment
 			if (
 				!isLiveSegment &&
 				isNextSegment &&
