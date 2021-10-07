@@ -523,14 +523,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
 			const partOffset =
 				nextPartDisplayStartsAt -
-					this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
+					(this.props.parts.length > 0 ? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] ?? 0 : 0)
 			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
 				this.props.playlist.nextPartInstanceId &&
 				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
 					this.nextPartOffset !== partOffset)
 			const isBecomingNextSegment = this.state.isNextSegment === false && isNextSegment
-			// Setting the correct scroll position on parts when setting as next
+			// the segment isn't live, will be next, and either the nextPartId has changed or it is just becoming next
 			if (
 				!isLiveSegment &&
 				isNextSegment &&
