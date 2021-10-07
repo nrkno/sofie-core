@@ -31,6 +31,7 @@ import {
 	RundownLayoutSegmentName,
 	RundownLayoutPartName,
 	RundownLayoutColoredBox,
+	RundownLayoutNextInfo,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -171,6 +172,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.EXTERNAL_FRAME,
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
+			RundownLayoutElementType.NEXT_INFO,
 		],
 	})
 	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
@@ -180,6 +182,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.EXTERNAL_FRAME,
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
+			RundownLayoutElementType.NEXT_INFO,
 		],
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
@@ -290,6 +293,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isPieceCountdown(element: RundownLayoutElementBase): element is RundownLayoutPieceCountdown {
 		return element.type === RundownLayoutElementType.PIECE_COUNTDOWN
+	}
+
+	export function isNextInfo(element: RundownLayoutElementBase): element is RundownLayoutNextInfo {
+		return element.type === RundownLayoutElementType.NEXT_INFO
 	}
 
 	export function isPlaylistStartTimer(

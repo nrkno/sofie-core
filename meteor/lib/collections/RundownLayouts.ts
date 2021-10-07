@@ -48,6 +48,7 @@ export enum RundownLayoutElementType {
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
 	PIECE_COUNTDOWN = 'piece_countdown',
+	NEXT_INFO = 'next_info',
 	PLAYLIST_START_TIMER = 'playlist_start_timer',
 	PLAYLIST_END_TIMER = 'playlist_end_timer',
 	END_WORDS = 'end_words',
@@ -110,6 +111,13 @@ export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.PIECE_COUNTDOWN
 	sourceLayerIds: string[] | undefined
+}
+
+export interface RundownLayoutNextInfo extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.NEXT_INFO
+	showSegmentName: boolean
+	showPartTitle: boolean
+	hideForDynamicallyInsertedParts: boolean
 }
 
 export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBase {
@@ -237,6 +245,7 @@ type DashboardPanel<T> = T & DashboardPanelBase
 export type DashboardLayoutExternalFrame = DashboardPanel<RundownLayoutExternalFrame>
 export type DashboardLayoutAdLibRegion = DashboardPanel<RundownLayoutAdLibRegion>
 export type DashboardLayoutPieceCountdown = DashboardPanel<RundownLayoutPieceCountdown>
+export type DashboardLayoutNextInfo = DashboardPanel<RundownLayoutNextInfo>
 export type DashboardLayoutPlaylistStartTimer = DashboardPanel<RundownLayoutPlaylistStartTimer>
 export type DashboardLayoutPlaylistEndTimer = DashboardPanel<RundownLayoutPlaylistEndTimer>
 export type DashboardLayoutEndsWords = DashboardPanel<RundownLayoutEndWords>

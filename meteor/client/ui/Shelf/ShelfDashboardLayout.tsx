@@ -18,6 +18,7 @@ import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from './AdLibPanel'
+import { NextInfoPanel } from './NextInfoPanel'
 import { PlaylistStartTimerPanel } from './PlaylistStartTimerPanel'
 import { EndWordsPanel } from './EndWordsPanel'
 import { PlaylistEndTimerPanel } from './PlaylistEndTimerPanel'
@@ -123,6 +124,16 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 						} else if (RundownLayoutsAPI.isPieceCountdown(panel)) {
 							return (
 								<PieceCountdownPanel
+									key={panel._id}
+									panel={panel}
+									layout={rundownLayout}
+									playlist={props.playlist}
+									visible={true}
+								/>
+							)
+						} else if (RundownLayoutsAPI.isNextInfo(panel)) {
+							return (
+								<NextInfoPanel
 									key={panel._id}
 									panel={panel}
 									layout={rundownLayout}

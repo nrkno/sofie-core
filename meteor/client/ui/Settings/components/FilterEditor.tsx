@@ -16,6 +16,7 @@ import {
 	RundownLayoutEndWords,
 	RundownLayoutExternalFrame,
 	RundownLayoutFilterBase,
+	RundownLayoutNextInfo,
 	RundownLayoutPartName,
 	RundownLayoutPartTiming,
 	RundownLayoutPieceCountdown,
@@ -795,6 +796,73 @@ export default withTranslation()(
 							className="input text-input input-l dropdown"
 							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 						/>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderNextInfo(
+			item: RundownLayoutBase,
+			tab: RundownLayoutNextInfo,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show segment name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.showSegmentName`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show part title')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.showPartTitle`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide for dynamically inserted parts')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideForDynamicallyInsertedParts`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
 					</div>
 					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
@@ -1650,6 +1718,8 @@ export default withTranslation()(
 				return this.renderAdLibRegion(item, filter, index, isRundownLayout, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPieceCountdown(filter)) {
 				return this.renderPieceCountdown(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isNextInfo(filter)) {
+				return this.renderNextInfo(item, filter, index, isRundownLayout, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPlaylistStartTimer(filter)) {
 				return this.renderPlaylistStartTimer(item, filter, index, isRundownLayout, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPlaylistEndTimer(filter)) {
