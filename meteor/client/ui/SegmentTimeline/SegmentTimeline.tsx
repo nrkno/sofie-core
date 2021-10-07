@@ -1106,10 +1106,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					{this.props.playlist &&
 						this.props.parts &&
 						this.props.parts.length > 0 &&
+						// [TV 2]: hideOnZero `&& false` -> We want the timer to hold on zero, but do not time to time-of-day
 						this.props.showCountdownToSegment && (
 							<PartCountdown
 								partId={countdownToPartId}
-								hideOnZero={!useTimeOfDayCountdowns}
+								hideOnZero={!useTimeOfDayCountdowns && false}
 								useWallClock={useTimeOfDayCountdowns}
 								playlist={this.props.playlist}
 								label={
