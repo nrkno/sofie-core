@@ -736,7 +736,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 	}
 }
 
-function rundownToSegmentRundown(rundown: ReadonlyDeep<Rundown>): IBlueprintSegmentRundown {
+export function rundownToSegmentRundown(rundown: ReadonlyDeep<Rundown>): IBlueprintSegmentRundown {
 	return {
 		externalId: rundown.externalId,
 		metaData: rundown.metaData,

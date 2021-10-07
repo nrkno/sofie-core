@@ -39,7 +39,7 @@ import {
 } from './generation'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { StudioUserContext } from '../blueprints/context'
+import { rundownToSegmentRundown, StudioUserContext } from '../blueprints/context'
 import { selectShowStyleVariant } from '../rundown'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
@@ -556,7 +556,7 @@ export async function handleUpdatedRundownMetaDataInner(
 
 	let segmentChanges: UpdateSegmentsResult | undefined
 	let removedSegments: DBSegment[] | undefined
-	if (!_.isEqual(existingRundown.metaData, dbRundown.metaData)) {
+	if (!_.isEqual(rundownToSegmentRundown(existingRundown), rundownToSegmentRundown(dbRundown))) {
 		logger.info(`MetaData of rundown ${dbRundown.externalId} has been modified, regenerating segments`)
 		const changes = await resolveSegmentChangesForUpdatedRundown(cache, ingestRundown, allRundownWatchedPackages)
 		segmentChanges = changes.segmentChanges
