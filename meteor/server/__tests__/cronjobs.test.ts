@@ -8,7 +8,7 @@ import { getRandomId, protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
-import { PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -212,6 +212,8 @@ describe('cronjobs', () => {
 				timings: {
 					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
+				playlistActivationId: protectString(''),
+				segmentPlayoutId: protectString(''),
 			}
 			const partInstance1: PartInstance = {
 				_id: protectString(`${part0._id}_${Random.id()}`),
@@ -221,6 +223,8 @@ describe('cronjobs', () => {
 				rehearsal: false,
 				isTemporary: false,
 				part: new Part(part0),
+				playlistActivationId: protectString(''),
+				segmentPlayoutId: protectString(''),
 			}
 			const partInstance2: PartInstance = {
 				_id: protectString(`${part0._id}_${Random.id()}`),
@@ -234,6 +238,8 @@ describe('cronjobs', () => {
 				timings: {
 					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
+				playlistActivationId: protectString(''),
+				segmentPlayoutId: protectString(''),
 			}
 			PartInstances.insert(partInstance0)
 			PartInstances.insert(partInstance1)
@@ -245,7 +251,9 @@ describe('cronjobs', () => {
 				piece: {
 					_id: protectString(`${partInstance0._id}_piece_inner1`),
 					startPartId: partInstance2.part._id,
-					content: {},
+					content: {
+						timelineObjects: [],
+					},
 					externalId: '',
 					name: 'abc',
 					sourceLayerId: '',
@@ -255,6 +263,7 @@ describe('cronjobs', () => {
 					lifespan: PieceLifespan.OutOnSegmentChange,
 					invalid: false,
 				},
+				playlistActivationId: protectString(''),
 			}
 			const pieceInstance1: PieceInstance = {
 				_id: protectString(`${partInstance2._id}_piece0`),
@@ -263,7 +272,9 @@ describe('cronjobs', () => {
 				piece: {
 					_id: protectString(`${partInstance2._id}_piece_inner1`),
 					startPartId: partInstance2.part._id,
-					content: {},
+					content: {
+						timelineObjects: [],
+					},
 					externalId: '',
 					name: 'abc',
 					sourceLayerId: '',
@@ -273,6 +284,7 @@ describe('cronjobs', () => {
 					lifespan: PieceLifespan.OutOnSegmentChange,
 					invalid: false,
 				},
+				playlistActivationId: protectString(''),
 			}
 			PieceInstances.insert(pieceInstance0)
 			PieceInstances.insert(pieceInstance1)
@@ -282,37 +294,6 @@ describe('cronjobs', () => {
 			expect(PartInstances.findOne(partInstance2._id)).toBeUndefined()
 			expect(PieceInstances.findOne(pieceInstance0._id)).toBeDefined()
 			expect(PieceInstances.findOne(pieceInstance1._id)).toBeUndefined()
-		})
-		testInFiber('Removes old entries in AsRunLong', async () => {
-			// reasonably fresh entry
-			const asRunLog0 = protectString<AsRunLogEventId>(Random.id())
-			AsRunLog.insert({
-				_id: asRunLog0,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				rehersal: false,
-				rundownId: protectString(''),
-				studioId: protectString(''),
-				// 3 days old
-				timestamp: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
-			})
-			// stale entry
-			const asRunLog1 = protectString<AsRunLogEventId>(Random.id())
-			AsRunLog.insert({
-				_id: asRunLog1,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				rehersal: false,
-				rundownId: protectString(''),
-				studioId: protectString(''),
-				// 50 + 1 minute days old
-				timestamp: lib.getCurrentTime() - (1000 * 3600 * 24 * 50 + 1000 * 60),
-			})
-
-			await runCronjobs()
-
-			expect(AsRunLog.findOne(asRunLog0)).toMatchObject({
-				_id: asRunLog0,
-			})
-			expect(AsRunLog.findOne(asRunLog1)).toBeUndefined()
 		})
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry

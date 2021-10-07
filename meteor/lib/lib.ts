@@ -631,7 +631,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 					ok = mongoWhere(o, innerSelector)
 				}
 			}
-		} catch (e) {
+		} catch (e: any) {
 			logger.warn(e || e.reason || e.toString()) // todo: why this logs empty message for TypeError (or any Error)?
 			ok = false
 		}

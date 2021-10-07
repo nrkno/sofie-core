@@ -8,6 +8,7 @@ import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
+import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
 
 interface IRundownNameProps {
 	rundownPlaylist: RundownPlaylist
@@ -21,6 +22,7 @@ export const RundownName = withTranslation()(
 		class RundownName extends React.Component<Translated<WithTiming<IRundownNameProps>>> {
 			render() {
 				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
+				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				return (
 					<span
 						className={ClassNames('timing-clock countdown left', {
@@ -34,7 +36,7 @@ export const RundownName = withTranslation()(
 								rundownPlaylist.activationId &&
 								!rundownPlaylist.activationId
 							),
-							heavy: rundownPlaylist.expectedStart && getCurrentTime() > rundownPlaylist.expectedStart,
+							heavy: expectedStart && getCurrentTime() > expectedStart,
 						})}
 					>
 						{currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
@@ -72,24 +74,17 @@ export const RundownName = withTranslation()(
 						rundownPlaylist.startedPlayback &&
 						rundownPlaylist.activationId &&
 						!rundownPlaylist.rehearsal
-							? rundownPlaylist.expectedStart &&
+							? expectedStart &&
 							  RundownUtils.formatDiffToTimecode(
-									rundownPlaylist.startedPlayback - rundownPlaylist.expectedStart,
+									rundownPlaylist.startedPlayback - expectedStart,
 									true,
 									false,
 									true,
 									true,
 									true
 							  )
-							: rundownPlaylist.expectedStart &&
-							  RundownUtils.formatDiffToTimecode(
-									getCurrentTime() - rundownPlaylist.expectedStart,
-									true,
-									false,
-									true,
-									true,
-									true
-							  )}
+							: expectedStart &&
+							  RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedStart, true, false, true, true, true)}
 					</span>
 				)
 			}

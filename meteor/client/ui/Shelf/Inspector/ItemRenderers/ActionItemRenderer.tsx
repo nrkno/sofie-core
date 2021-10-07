@@ -29,6 +29,7 @@ import { actionToAdLibPieceUi } from '../../BucketPanel'
 import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
+import { AdLibPieceUi } from '../../../../lib/shelf'
 
 export { isActionItem }
 

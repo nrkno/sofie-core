@@ -4,7 +4,7 @@ import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
+import { Segment, SegmentId, SegmentOrphanedReason, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import {
 	IngestRundown,
@@ -25,6 +25,7 @@ import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import { literal } from '../../../../lib/lib'
+import { Settings } from '../../../../lib/Settings'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -67,7 +68,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	afterEach(() => {
-		Settings.allowUnsyncedSegments = false
+		Settings.preserveUnsyncedPlayingSegmentContents = false
 	})
 
 	testInFiber('dataRundownCreate', () => {
@@ -702,7 +703,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		const segment0 = Segments.find({ externalId: segExternalId }).fetch()
 		expect(segment0).toHaveLength(1)
-		Segments.update(segment0[0]._id, { $set: { orphaned: 'deleted' } })
+		Segments.update(segment0[0]._id, { $set: { orphaned: SegmentOrphanedReason.DELETED } })
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
@@ -755,7 +756,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 
-		Segments.update({ rundownId: rundown._id }, { $set: { orphaned: 'deleted' } })
+		Segments.update({ rundownId: rundown._id }, { $set: { orphaned: SegmentOrphanedReason.DELETED } })
 		const segmentBefore = Segments.findOne({ externalId: segExternalId }) as Segment
 
 		const ingestSegment: IngestSegment = {
@@ -898,7 +899,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Segments.find({ rundownId: rundown._id, externalId: segExternalId }).count()).toBe(1)
 
 		Rundowns.update({}, { $unset: { orphaned: 1 } })
-		Segments.update({ rundownId: rundown._id, externalId: segExternalId }, { $set: { orphaned: 'deleted' } })
+		Segments.update(
+			{ rundownId: rundown._id, externalId: segExternalId },
+			{ $set: { orphaned: SegmentOrphanedReason.DELETED } }
+		)
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 
@@ -1344,7 +1348,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			const resyncRundown = () => {
 				try {
 					ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
-				} catch (e) {
+				} catch (e: any) {
 					if (e.toString().match(/does not support the method "reloadRundown"/)) {
 						// This is expected
 

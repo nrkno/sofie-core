@@ -1,5 +1,4 @@
 import _ from 'underscore'
-import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
@@ -13,7 +12,7 @@ export function getIsFilterActive(
 	playlist: RundownPlaylist,
 	panel: RequiresActiveLayers
 ): { active: boolean; activePieceInstance: PieceInstance | undefined } {
-	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist.currentPartInstanceId, true)
+	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist, true)
 	let activePieceInstance: PieceInstance | undefined
 	const activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
 	const containsEveryRequiredLayer = panel.requireAllAdditionalSourcelayers
@@ -46,17 +45,15 @@ export function getIsFilterActive(
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(
-	currentPartInstanceId: PartInstanceId | null,
-	includeNonAdLibPieces?: boolean
-) {
+export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, includeNonAdLibPieces: boolean) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
-	if (currentPartInstanceId) {
+	if (playlist.activationId && playlist.currentPartInstanceId) {
 		prospectivePieces = PieceInstances.find({
 			startedPlayback: {
 				$exists: true,
 			},
+			playlistActivationId: playlist.activationId,
 			$and: [
 				{
 					$or: [

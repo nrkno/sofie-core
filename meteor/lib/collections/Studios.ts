@@ -1,4 +1,11 @@
-import { registerCollection, ProtectedString, omit, ProtectedStringProperties, unprotectObject } from '../lib'
+import {
+	registerCollection,
+	ProtectedString,
+	omit,
+	ProtectedStringProperties,
+	unprotectObject,
+	protectString,
+} from '../lib'
 import * as _ from 'underscore'
 import {
 	IBlueprintConfig,
@@ -199,12 +206,12 @@ export function getRoutedMappings<M extends MappingExt>(
 					route.deviceType &&
 					route.remapping &&
 					route.remapping.deviceId
-						? {
+						? ({
+								...route.remapping,
 								lookahead: route.remapping.lookahead ?? LookaheadMode.NONE,
 								device: route.deviceType,
-								deviceId: route.remapping.deviceId,
-								...route.remapping,
-						  }
+								deviceId: protectString<any>(route.remapping.deviceId),
+						  } as M)
 						: {
 								...inputMapping,
 								...(route.remapping || {}),
@@ -222,7 +229,7 @@ export function getRoutedMappings<M extends MappingExt>(
 			const routedMapping: MappingExt = {
 				lookahead: route.remapping.lookahead || LookaheadMode.NONE,
 				device: route.deviceType,
-				deviceId: route.remapping.deviceId,
+				deviceId: protectString<any>(route.remapping.deviceId),
 				...route.remapping,
 			}
 			outputMappings[route.outputMappedLayer] = routedMapping as M
