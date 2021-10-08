@@ -101,6 +101,7 @@ export namespace ExpectedPackage {
 					| AccessorOnPackage.FileShare
 					| AccessorOnPackage.HTTP
 					| AccessorOnPackage.HTTPProxy
+					| AccessorOnPackage.Quantel
 			}
 		}[]
 	}
