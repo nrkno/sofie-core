@@ -13,6 +13,9 @@ import { CASPARCG_RESTART_TIME } from '../lib/constants'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { RundownPlaylists } from '../lib/collections/RundownPlaylists'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
+import { Parts } from '../lib/collections/Parts'
+import { PartInstances } from '../lib/collections/PartInstances'
+import { PieceInstances } from '../lib/collections/PieceInstances'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -45,6 +48,39 @@ export function nightlyCronjobInner() {
 	if (rundownCacheCount) logger.info('Cronjob: Will remove cached data from ' + rundownCacheCount + ' rundowns')
 
 	const cleanLimitTime = getCurrentTime() - 1000 * 3600 * 24 * 50 // 50 days ago
+
+	// Remove old PartInstances and PieceInstances:
+	const getPartInstanceIdsToRemove = () => {
+		const existingPartIds = Parts.find({}, { fields: { _id: 1 } })
+			.fetch()
+			.map((part) => part._id)
+		const oldPartInstanceSelector = {
+			reset: true,
+			'timings.takeOut': { $lt: cleanLimitTime },
+			'part._id': { $nin: existingPartIds },
+		}
+		const oldPartInstanceIds = PartInstances.find(oldPartInstanceSelector, { fields: { _id: 1 } })
+			.fetch()
+			.map((partInstance) => partInstance._id)
+		return oldPartInstanceIds
+	}
+	const partInstanceIdsToRemove = getPartInstanceIdsToRemove()
+	if (partInstanceIdsToRemove.length > 0) {
+		logger.info(`Cronjob: Will remove ${partInstanceIdsToRemove.length} PartInstances`)
+	}
+	const oldPieceInstances = PieceInstances.find({
+		partInstanceId: { $in: partInstanceIdsToRemove },
+	}).count()
+	if (oldPieceInstances > 0) {
+		logger.info(`Cronjob: Will remove ${oldPieceInstances} PieceInstances`)
+	}
+	lowPrioFcn(() => {
+		const partInstanceIdsToRemove = getPartInstanceIdsToRemove()
+		PartInstances.remove({ _id: { $in: partInstanceIdsToRemove } })
+		PieceInstances.remove({
+			partInstanceId: { $in: partInstanceIdsToRemove },
+		})
+	})
 
 	// Remove old entries in UserActionsLog:
 	const oldUserActionsLogCount: number = UserActionsLog.find({
