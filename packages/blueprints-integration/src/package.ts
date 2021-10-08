@@ -254,6 +254,9 @@ export namespace Accessor {
 
 		/** URL to a FileFlow Manager. Used for copying clips into CIFS file shares */
 		fileflowURL?: string
+
+		/** FileFlow Export profile name. Used for copying clips into CIFS file shares */
+		fileflowProfile?: string
 	}
 	/** Virtual PackageContainer used for piping data into core */
 	export interface CorePackageCollection extends Base {

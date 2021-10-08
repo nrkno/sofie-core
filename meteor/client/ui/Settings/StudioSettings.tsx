@@ -1941,6 +1941,22 @@ const StudioPackageManagerSettings = withTranslation()(
 														<span className="text-s dimmed">{t('URL to the Quantel FileFlow Manager')}</span>
 													</label>
 												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel FileFlow Profile name')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowProfile`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">
+															{t('Profile name to be used by FileFlow when exporting the clips')}
+														</span>
+													</label>
+												</div>
 											</>
 										) : null}
 
