@@ -2114,10 +2114,10 @@ atem-connection@^2.3.0:
     tslib "^1.13.0"
     wavefile "^8.4.4"
 
-atem-state@^0.12.1:
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.1.tgz#b8db152ef3e775826e0bb66952366720a68b779e"
-  integrity sha512-MSOUfjK9Qnph8MSO1qpwC3xcn/t/hVeK31fAN/SsErqqvxBeaEXGSKg47QOx5rwVx9kP2zOGk3IeHtkdQw79SQ==
+atem-state@0.12.2-nightly-latest-20211007-163338-78e7dca.0:
+  version "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
+  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.2-nightly-latest-20211007-163338-78e7dca.0.tgz#c49f99a9ef81e3367148f18d97c93da379097b7b"
+  integrity sha512-OMVT3mU4ZJgV2oj4x68xLiYT2NlNX/+GhQMURirkKSuQwlqlT5kH4Rbtmh/ZIeKH+fOpyWdOluRI7DSMMhx9qg==
   dependencies:
     deepmerge "^4.2.2"
     tslib "^2.2.0"
@@ -8512,14 +8512,14 @@ timeline-state-resolver-types@6.2.0-release37.4:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-release37.4:
-  version "6.2.0-release37.4"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.4.tgz#2b2696a3268ff3aac3cbd84af2e5beeb5d824f2a"
-  integrity sha512-9zLolo4A0vIzjuzI6ZWe7E8pWb/yOFqJNbrbIb063Zf9rzDXkskQo3I75XfcN/xh6zYQBaCHM7HJASIE6mAhSw==
+timeline-state-resolver@6.2.0-nightly-release37-20211008-090942-9f250c3d0.0:
+  version "6.2.0-nightly-release37-20211008-090942-9f250c3d0.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-release37-20211008-090942-9f250c3d0.0.tgz#d4cfb7dbe882aaa9482fe767670acd259121cd69"
+  integrity sha512-lZtjFlK2snLbPp1DX4bOJMJKFpoPAa3XyAT00nlyAHQaR0hFklhzqTQOZRzt2E++0Do9jXH/wWLRz8eNqF6/Ng==
   dependencies:
     "@tv2media/v-connection" "^5.1.0"
     atem-connection "^2.3.0"
-    atem-state "^0.12.1"
+    atem-state "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
     casparcg-connection "^5.1.0"
     casparcg-state "^2.1.0"
     debug "^4.3.1"
