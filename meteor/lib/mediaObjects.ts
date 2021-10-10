@@ -181,6 +181,7 @@ export function checkPieceContentStatus(
 	const settings: IStudioSettings | undefined = studio?.settings
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
+	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
 	if (!ignoreMediaStatus && sourceLayer && studio) {
 		if (piece.expectedPackages) {
 			// Using Expected Packages:
@@ -299,7 +300,7 @@ export function checkPieceContentStatus(
 					const { scan, deepScan } = packageInfo
 
 					if (scan && scan.streams) {
-						if (scan.streams.length < 2) {
+						if (!ignoreMediaAudioStatus && scan.streams.length < 2) {
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 							messages.push(
 								t("{{sourceLayer}} doesn't have both audio & video", {
@@ -350,6 +351,7 @@ export function checkPieceContentStatus(
 							packageInfo.timebase = timebase // what todo?
 						}
 						if (
+							!ignoreMediaAudioStatus &&
 							audioConfig &&
 							(!expectedAudioStreams.has(audioStreams.toString()) ||
 								(isStereo && !expectedAudioStreams.has('stereo')))
@@ -458,7 +460,7 @@ export function checkPieceContentStatus(
 							// Do a format check:
 							if (mediaObject.mediainfo) {
 								if (mediaObject.mediainfo.streams) {
-									if (mediaObject.mediainfo.streams.length < 2) {
+									if (!ignoreMediaAudioStatus && mediaObject.mediainfo.streams.length < 2) {
 										newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 										messages.push(t("Clip doesn't have audio & video", { fileName: displayName }))
 									}
@@ -504,6 +506,7 @@ export function checkPieceContentStatus(
 										mediaObject.mediainfo.timebase = timebase
 									}
 									if (
+										!ignoreMediaAudioStatus &&
 										audioConfig &&
 										(!expectedAudioStreams.has(audioStreams.toString()) ||
 											(isStereo && !expectedAudioStreams.has('stereo')))
