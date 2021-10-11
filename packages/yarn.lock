@@ -2126,10 +2126,10 @@ atem-connection@^2.3.0:
     tslib "^1.13.0"
     wavefile "^8.4.4"
 
-atem-state@^0.12.1:
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.1.tgz#b8db152ef3e775826e0bb66952366720a68b779e"
-  integrity sha512-MSOUfjK9Qnph8MSO1qpwC3xcn/t/hVeK31fAN/SsErqqvxBeaEXGSKg47QOx5rwVx9kP2zOGk3IeHtkdQw79SQ==
+atem-state@0.12.2-nightly-latest-20211007-163338-78e7dca.0:
+  version "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
+  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.2-nightly-latest-20211007-163338-78e7dca.0.tgz#c49f99a9ef81e3367148f18d97c93da379097b7b"
+  integrity sha512-OMVT3mU4ZJgV2oj4x68xLiYT2NlNX/+GhQMURirkKSuQwlqlT5kH4Rbtmh/ZIeKH+fOpyWdOluRI7DSMMhx9qg==
   dependencies:
     deepmerge "^4.2.2"
     tslib "^2.2.0"
@@ -8529,14 +8529,14 @@ timeline-state-resolver-types@6.2.0-release37.4:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-nightly-feat-separate-init-20211006-070030-20cdd6802.0:
-  version "6.2.0-nightly-feat-separate-init-20211006-070030-20cdd6802.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-feat-separate-init-20211006-070030-20cdd6802.0.tgz#f66f3927e7b22ec5e2bcc46faebfcd38a61a00b5"
-  integrity sha512-ByihHBjERs83qMPgUiOMrjs7YTawwu/X8SZD0BbQIKpEi9YqnH8D0Bri8EEFHmAFxheBc45jnbmk8x6m46Tp7g==
+timeline-state-resolver@6.2.0-nightly-release37-20211011-063131-f37f79b85.0:
+  version "6.2.0-nightly-release37-20211011-063131-f37f79b85.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-release37-20211011-063131-f37f79b85.0.tgz#3ad1c294a61ec1a9f2c9167b026e458f369eb043"
+  integrity sha512-tkznDJun6MMJ+m7+obWuDQnBqDkkJYNFXItzcGkJLeULM5ccXnMlu4FCXkmdTnqNLEPWYZ58l6YQmrAUbkVbQg==
   dependencies:
     "@tv2media/v-connection" "^5.1.0"
     atem-connection "^2.3.0"
-    atem-state "^0.12.1"
+    atem-state "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
     casparcg-connection "^5.1.0"
     casparcg-state "^2.1.0"
     debug "^4.3.1"
