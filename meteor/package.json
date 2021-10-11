@@ -12,7 +12,7 @@
 		"libs:syncVersionsAndChangelogs": "cd ../packages && yarn sync-version-and-changelog",
 		"postinstall": "meteor npm run prepareForTest",
 		"prepareForTest": "node ../scripts/fixTestFibers.js",
-		"unit": "jest",
+		"unit": "jest --maxWorkers 8",
 		"unitci": "jest --maxWorkers 2 --coverage",
 		"unitcov": "jest --coverage",
 		"test": "meteor npm run check-types && meteor npm run unit",
