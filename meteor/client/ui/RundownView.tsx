@@ -1390,7 +1390,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const params = queryStringParse(location.search)
 
-	const displayOptions = ((params['display'] as string) || 'buckets,layout,shelfLayout,inspector').split(',')
+	const DEFAULT_DISPLAY_OPTIONS = props.onlyShelf ? 'layout,shelfLayout' : 'buckets,layout,shelfLayout,inspector'
+
+	const displayOptions = ((params['display'] as string) || DEFAULT_DISPLAY_OPTIONS).split(',')
 	const bucketDisplayFilter = !(params['buckets'] as string)
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
@@ -1614,21 +1616,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					selectedShelfLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
 				}
 
-				// if still not found, use the first one
+				// if still not found, use the first one - this is a fallback functionality reserved for Shelf layouts
 				if (!selectedShelfLayout) {
 					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForShelf(i))
-				}
-
-				if (!selectedViewLayout) {
-					selectedViewLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownView(i))
-				}
-
-				if (!selectedHeaderLayout) {
-					selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
-				}
-
-				if (!selectedMiniShelfLayout) {
-					selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
 				}
 			}
 

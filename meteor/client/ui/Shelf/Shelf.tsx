@@ -26,6 +26,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	SelectPieceEvent,
+	ShelfStateEvent,
 	SwitchToShelfTabEvent,
 } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
@@ -126,15 +127,13 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
-		RundownViewEventBus.on(RundownViewEvents.SHELF_STATE, (e) => {
-			this.blurActiveElement()
-			this.props.onChangeExpanded(e.state === 'toggle' ? !this.props.isExpanded : e.state)
-		})
+		RundownViewEventBus.on(RundownViewEvents.SHELF_STATE, this.onShelfStateChange)
 	}
 
 	componentWillUnmount() {
 		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
+		RundownViewEventBus.off(RundownViewEvents.SHELF_STATE, this.onShelfStateChange)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -326,6 +325,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 	}
 
+	onShelfStateChange = (e: ShelfStateEvent) => {
+		this.blurActiveElement()
+		this.props.onChangeExpanded(e.state === 'toggle' ? !this.props.isExpanded : e.state)
+	}
+
 	onSwitchShelfTab = (e: SwitchToShelfTabEvent) => {
 		if (e.tab) {
 			this.switchTab(e.tab)
@@ -361,7 +365,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	render() {
-		const { fullViewport } = this.props
+		const { fullViewport, shelfDisplayOptions } = this.props
 		return (
 			<div
 				className={ClassNames('rundown-view__shelf dark', {
@@ -384,7 +388,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					</div>
 				)}
 				<div className="rundown-view__shelf__contents">
-					{!this.props.fullViewport || this.props.shelfDisplayOptions.layout ? (
+					{shelfDisplayOptions.layout ? (
 						<ContextMenuTrigger
 							id="shelf-context-menu"
 							attributes={{
@@ -437,7 +441,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							</ErrorBoundary>
 						</ContextMenuTrigger>
 					) : null}
-					{!this.props.fullViewport || this.props.shelfDisplayOptions.buckets ? (
+					{shelfDisplayOptions.buckets ? (
 						<ErrorBoundary>
 							<RundownViewBuckets
 								buckets={this.props.buckets}
@@ -456,7 +460,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							/>
 						</ErrorBoundary>
 					) : null}
-					{!this.props.fullViewport || this.props.shelfDisplayOptions.inspector ? (
+					{shelfDisplayOptions.inspector ? (
 						<ErrorBoundary>
 							<ShelfInspector
 								selected={this.state.selectedPiece}
