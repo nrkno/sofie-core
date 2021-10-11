@@ -35,6 +35,7 @@ import {
 } from './cache'
 import { Settings } from '../../../lib/Settings'
 import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -48,17 +49,23 @@ export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void
 	// const rundownIds = new Set(getRundownIDsFromCache(cache))
 
 	const partInstancesToRemove = new Set(cache.PartInstances.remove((p) => p.rehearsal))
-	cache.PieceInstances.remove((p) => partInstancesToRemove.has(p.partInstanceId))
+	cache.deferAfterSave(() => {
+		PieceInstances.remove({
+			partInstanceId: { $in: Array.from(partInstancesToRemove.values()) },
+		})
+	})
 
 	cache.PartInstances.update((p) => !p.reset, {
 		$set: {
 			reset: true,
 		},
 	})
-	cache.PieceInstances.update((p) => !p.reset, {
-		$set: {
-			reset: true,
-		},
+	cache.deferAfterSave(() => {
+		PieceInstances.update((p) => !p.reset, {
+			$set: {
+				reset: true,
+			},
+		})
 	})
 
 	cache.Playlist.update({
@@ -314,19 +321,21 @@ export async function setNextPart(
 				},
 			}
 		)
-		cache.PieceInstances.update(
-			{
-				partInstanceId: { $nin: selectedPartInstanceIds },
-				rundownId: nextPart.rundownId,
-				'piece.startPartId': nextPart._id,
-				reset: { $ne: true },
-			},
-			{
-				$set: {
-					reset: true,
+		cache.deferAfterSave(() => {
+			PieceInstances.update(
+				{
+					partInstanceId: { $in: partInstanceIdsToReset },
 				},
-			}
-		)
+				{
+					$set: {
+						reset: true,
+					},
+				},
+				{
+					multi: true,
+				}
+			)
+		})
 
 		cache.Playlist.update({
 			$set: literal<Partial<RundownPlaylist>>({

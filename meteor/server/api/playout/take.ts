@@ -17,9 +17,14 @@ import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
 import { PartEndState, ShowStyleBlueprintManifest, VTContent } from '@sofie-automation/blueprints-integration'
 import { getResolvedPieces } from './pieces'
-import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
+import {
+	PieceInstance,
+	PieceInstanceId,
+	PieceInstanceInfiniteId,
+	PieceInstances,
+} from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
-import { PartInstance, unprotectPartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId, unprotectPartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartInstanceHasStarted } from '../blueprints/events'
