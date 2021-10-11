@@ -334,7 +334,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					{isShelfLayout && <ShelfLayoutSettings item={item} />}
 					{isRundownHeaderLayout && <RundownHeaderLayoutSettings item={item} />}
-					{isRundownViewLayout && <RundownViewLayoutSettings item={item} layouts={this.props.rundownLayouts} />}
+					{isRundownViewLayout && (
+						<RundownViewLayoutSettings
+							item={item}
+							layouts={this.props.rundownLayouts}
+							showStyleBase={this.props.showStyleBase}
+						/>
+					)}
 					{RundownLayoutsAPI.isLayoutWithFilters(item) && layout?.supportedFilters.length ? (
 						<React.Fragment>
 							<h4 className="mod mhs">{layout?.filtersTitle ?? t('Filters')}</h4>

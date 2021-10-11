@@ -46,6 +46,7 @@ import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
+import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
@@ -97,6 +98,7 @@ interface IProps {
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio: Studio
 	showStyleBase: ShowStyleBase
+	rundownViewLayout?: RundownViewLayout
 	playlist: RundownPlaylist
 	rundown: Rundown
 	timeScale: number
@@ -225,6 +227,22 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			true,
 			true
 		)
+
+		if (props.rundownViewLayout && o.segmentExtended) {
+			if (props.rundownViewLayout.visibleSourceLayers) {
+				const visibleSourceLayers = props.rundownViewLayout.visibleSourceLayers
+				Object.entries(o.segmentExtended.sourceLayers).forEach(([id, sourceLayer]) => {
+					sourceLayer.isHidden = !visibleSourceLayers.includes(id)
+				})
+			}
+			if (props.rundownViewLayout.visibleOutputLayers) {
+				const visibleOutputLayers = props.rundownViewLayout.visibleOutputLayers
+				Object.entries(o.segmentExtended.outputLayers).forEach(([id, outputLayer]) => {
+					outputLayer.used = visibleOutputLayers.includes(id)
+				})
+			}
+		}
+
 		const notes: TrackedNote[] = getBasicNotesForSegment(
 			segment,
 			rundownNrcsName ?? 'NRCS',
@@ -280,6 +298,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
 			props.isFollowingOnAirSegment !== nextProps.isFollowingOnAirSegment ||
+			props.rundownViewLayout !== nextProps.rundownViewLayout ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore)
 		) {
 			return true

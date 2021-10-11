@@ -2114,9 +2114,9 @@ at-least-node@^1.0.0:
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
 atem-connection@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.3.0.tgz#388cdbfb2805bd9cd4317dfef22360d00a62d647"
-  integrity sha512-/3x+/yNyyR+IbFL6KraGTnkU/3qPs/KoyGZnvfEhvIKVYu3POHCXbIUyPvjUcs9ytalvHgcxLK5slM6sCoIgoA==
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.3.1.tgz#9341ba8095b692cbd7608becf6898486274b67d6"
+  integrity sha512-lw0k0uYDt+Ljf/w4zAEdQSI0g4/FZkFKEsohcYaliotH2rtkRMXkbfHbtQ9e/f8SIdZN4VikJBBeAkHqApi0GA==
   dependencies:
     big-integer "^1.6.48"
     eventemitter3 "^4.0.4"

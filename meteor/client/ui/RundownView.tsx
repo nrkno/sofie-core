@@ -1322,7 +1322,7 @@ interface IState {
 	isClipTrimmerOpen: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	shelfLayout: RundownLayoutShelfBase | undefined
-	rundownViewLayout: RundownLayoutBase | undefined
+	rundownViewLayout: RundownViewLayout | undefined
 	rundownHeaderLayout: RundownLayoutRundownHeader | undefined
 	miniShelfLayout: RundownLayoutShelfBase | undefined
 	currentRundown: Rundown | undefined
@@ -1645,7 +1645,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					selectedShelfLayout && RundownLayoutsAPI.isLayoutForShelf(selectedShelfLayout)
 						? selectedShelfLayout
 						: undefined,
-				rundownViewLayout: selectedViewLayout,
+				rundownViewLayout:
+					selectedViewLayout && RundownLayoutsAPI.isLayoutForRundownView(selectedViewLayout)
+						? selectedViewLayout
+						: undefined,
 				rundownHeaderLayout:
 					selectedHeaderLayout && RundownLayoutsAPI.isLayoutForRundownHeader(selectedHeaderLayout)
 						? selectedHeaderLayout
@@ -2253,6 +2256,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													segmentId={segment._id}
 													playlist={this.props.playlist}
 													rundown={rundownAndSegments.rundown}
+													rundownViewLayout={this.state.rundownViewLayout}
 													timeScale={this.state.timeScale}
 													onContextMenu={this.onContextMenu}
 													onSegmentScroll={this.onSegmentScroll}
