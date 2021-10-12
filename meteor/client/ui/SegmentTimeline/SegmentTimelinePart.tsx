@@ -429,7 +429,7 @@ interface IProps {
 	isLastInSegment: boolean
 	isAfterLastValidInSegmentAndItsLive: boolean
 	isLastSegment: boolean
-	isBudgetGap: boolean
+	isBudgetGap?: boolean
 	isPreview?: boolean
 	cropDuration?: number
 	className?: string

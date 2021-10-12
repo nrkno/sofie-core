@@ -191,7 +191,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 					isLastInSegment={false}
 					isAfterLastValidInSegmentAndItsLive={false}
 					isLastSegment={false}
-					isBudgetGap={false}
 				/>
 			)
 		})
@@ -806,7 +805,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							!!this.props.playlist.nextPartInstanceId
 						}
 						part={part}
-						isBudgetGap={false}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
