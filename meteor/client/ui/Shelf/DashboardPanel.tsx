@@ -707,7 +707,9 @@ export function isAdLibOnAir(
 ) {
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
-		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
+		(adLib.currentPieceTags &&
+			adLib.currentPieceTags.length > 0 &&
+			adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
 	) {
 		return true
 	}
@@ -721,7 +723,9 @@ export function isAdLibNext(
 ) {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
+		(adLib.nextPieceTags &&
+			adLib.nextPieceTags.length > 0 &&
+			adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
 	) {
 		return true
 	}
