@@ -286,6 +286,24 @@ function SegmentTimelineZoomButtons(props: IProps) {
 
 export const SEGMENT_TIMELINE_ELEMENT_ID = 'rundown__segment__'
 
+export const BUDGET_GAP_PART = {
+	partId: protectString('gap'),
+	instance: wrapPartToTemporaryInstance(protectString(''), {
+		_id: protectString('gap'),
+		_rank: 0,
+		segmentId: protectString(''),
+		rundownId: protectString(''),
+		externalId: 'gap',
+		gap: true,
+		title: 'gap',
+		invalid: true,
+	}),
+	pieces: [],
+	renderedDuration: 0,
+	startsAt: 0,
+	willProbablyAutoNext: false,
+}
+
 export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	static whyDidYouRender = true
 
@@ -858,23 +876,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						isLastInSegment={false}
 						isAfterLastValidInSegmentAndItsLive={false}
 						isBudgetGap={true}
-						part={{
-							partId: protectString('gap'),
-							instance: wrapPartToTemporaryInstance(protectString(''), {
-								_id: protectString('gap'),
-								_rank: 0,
-								segmentId: this.props.segment._id,
-								rundownId: this.props.segment.rundownId,
-								externalId: 'gap',
-								gap: true,
-								title: 'gap',
-								invalid: true,
-							}),
-							pieces: [],
-							renderedDuration: 0,
-							startsAt: 0,
-							willProbablyAutoNext: false,
-						}}
+						part={BUDGET_GAP_PART}
 					/>
 				)}
 			</>
