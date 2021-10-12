@@ -1086,9 +1086,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
 							<SegmentDuration
+								segmentId={this.props.segment._id}
 								parts={this.props.parts}
-								budgetDuration={this.props.budgetDuration}
-								playedOutDuration={this.props.isLiveSegment ? this.props.livePosition : 0}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 							/>
 						)}

@@ -3,11 +3,11 @@ import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
+import { SegmentId } from '../../../../lib/collections/Segments'
 
 interface ISegmentDurationProps {
+	segmentId: SegmentId
 	parts: PartUi[]
-	budgetDuration?: number
-	playedOutDuration: number
 	label?: ReactNode
 }
 
@@ -23,19 +23,27 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 	let duration: number | undefined = undefined
 	let budget = 0
 	let playedOut = 0
-	if (props.budgetDuration !== undefined) {
-		budget = props.budgetDuration
-		duration = props.budgetDuration - props.playedOutDuration
-	} else if (props.parts && props.timingDurations.partPlayed) {
-		const { partPlayed } = props.timingDurations
 
+	const segmentBudgetDuration =
+		props.timingDurations.segmentBudgetDurations &&
+		props.timingDurations.segmentBudgetDurations[unprotectString(props.segmentId)]
+
+	if (segmentBudgetDuration !== undefined) {
+		budget = segmentBudgetDuration
+	}
+	if (props.parts && props.timingDurations.partPlayed) {
+		const { partPlayed } = props.timingDurations
+		if (segmentBudgetDuration === undefined) {
+			props.parts.forEach((part) => {
+				budget += part.instance.orphaned || part.instance.part.untimed ? 0 : part.instance.part.expectedDuration || 0
+			})
+		}
 		props.parts.forEach((part) => {
-			budget += part.instance.orphaned || part.instance.part.untimed ? 0 : part.instance.part.expectedDuration || 0
 			playedOut += (!part.instance.part.untimed ? partPlayed[unprotectString(part.instance.part._id)] : 0) || 0
 		})
-
-		duration = budget - playedOut
 	}
+
+	duration = budget - playedOut
 
 	if (duration !== undefined) {
 		return (
