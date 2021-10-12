@@ -5,14 +5,21 @@ import { useTranslation } from 'react-i18next'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { FloatingInspector } from '../FloatingInspector'
 import { NoticeLevel } from '../../lib/notifications/notifications'
-import { Accessor, ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integration'
+import {
+	Accessor,
+	ExpectedPackage,
+	ExpectedPackageStatusAPI,
+	VTContent,
+} from '@sofie-automation/blueprints-integration'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { StyledTimecode } from '../../lib/StyledTimecode'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
-import { getPreviewPackageSettings } from '../../../lib/collections/ExpectedPackages'
+import { getExpectedPackageId, getSideEffect } from '../../../lib/collections/ExpectedPackages'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { getPackageContainerPackageStatus } from '../../../lib/globalStores'
+import { PieceId } from '../../../lib/collections/Pieces'
 
 interface IProps {
 	status: RundownAPI.PieceStatusCode
@@ -29,43 +36,60 @@ interface IProps {
 	renderedDuration?: number | undefined
 
 	contentPackageInfos: ScanInfoForPackages | undefined
+	pieceId: PieceId
 	expectedPackages: ExpectedPackage.Any[] | undefined
-	studioPackageContainers: Studio['packageContainers'] | undefined
+	studio: Studio | undefined
 	displayOn?: 'document' | 'viewport'
 }
 
 function getPackagePreviewUrl(
+	pieceId: PieceId,
 	expectedPackages: ExpectedPackage.Any[],
-	studioPackageContainers: Studio['packageContainers']
+	studio: Studio
 ): string | undefined {
 	// use Expected packages:
 	// Just use the first one we find.
+
 	// TODO: support multiple expected packages?
 	let packagePreviewPath: string | undefined
 	let previewContainerId: string | undefined
-	for (const expectedPackage of expectedPackages) {
-		const sideEffect = expectedPackage.sideEffect.previewPackageSettings || getPreviewPackageSettings(expectedPackage)
-		packagePreviewPath = sideEffect?.path
-		previewContainerId = expectedPackage.sideEffect.previewContainerId
+	let expectedPackage: ExpectedPackage.Any | undefined
+	for (const expPackage of expectedPackages) {
+		const sideEffect = getSideEffect(expPackage, studio)
+		packagePreviewPath = sideEffect.previewPackageSettings?.path
+		previewContainerId = sideEffect.previewContainerId
+		expectedPackage = expPackage
 
-		if (packagePreviewPath && previewContainerId) {
+		if (packagePreviewPath && previewContainerId && expectedPackage) {
 			break // don't look further
 		}
 	}
-	if (packagePreviewPath && previewContainerId) {
-		const packageContainer = studioPackageContainers[previewContainerId]
-		if (packageContainer) {
-			// Look up an accessor we can use:
-			for (const accessor of Object.values(packageContainer.container.accessors)) {
-				if (accessor.type === Accessor.AccessType.HTTP && accessor.baseUrl) {
-					// TODO: add fiter for accessor.networkId ?
-					return [
-						accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
-						encodeURIComponent(
-							packagePreviewPath.replace(/^\//, '') // trim leading slash
-						),
-					].join('/')
-				}
+	if (packagePreviewPath && previewContainerId && expectedPackage) {
+		const packageContainer = studio.packageContainers[previewContainerId]
+		if (!packageContainer) return
+
+		const packageOnPackageContainer = getPackageContainerPackageStatus(
+			studio._id,
+			previewContainerId,
+			getExpectedPackageId(pieceId, expectedPackage._id)
+		)
+		if (!packageOnPackageContainer) return
+		if (packageOnPackageContainer.status.status !== ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY)
+			return
+
+		// Look up an accessor we can use:
+		for (const accessor of Object.values(packageContainer.container.accessors)) {
+			if (
+				(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
+				accessor.baseUrl
+			) {
+				// TODO: add fiter for accessor.networkId ?
+				return [
+					accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
+					encodeURIComponent(
+						packagePreviewPath.replace(/^\//, '') // trim leading slash
+					),
+				].join('/')
 			}
 		}
 	}
@@ -131,11 +155,14 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 	const offsetTimePosition = timePosition + seek
 	const showFrameMarker = offsetTimePosition === 0 || offsetTimePosition >= itemDuration
 
-	const previewUrl: string | undefined = props.contentPackageInfos
-		? props.expectedPackages && props.studioPackageContainers
-			? getPackagePreviewUrl(props.expectedPackages, props.studioPackageContainers)
-			: undefined
-		: getMediaPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) // Fallback, media objects
+	let previewUrl: string | undefined = undefined
+	if (props.contentPackageInfos) {
+		if (props.expectedPackages && props.studio) {
+			previewUrl = getPackagePreviewUrl(props.pieceId, props.expectedPackages, props.studio)
+		}
+	} else {
+		previewUrl = getMediaPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) // Fallback, media objects
+	}
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>

@@ -4,6 +4,9 @@
  * Example: A piece uses a media file for playout in CasparCG. The media file will then be an ExpectedPackage, which the Package Manager
  *   will fetch from a MAM and copy to the media-folder of CasparCG.
  */
+
+import { StatusCode } from './status'
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ExpectedPackage {
 	export type Any = ExpectedPackageMediaFile | ExpectedPackageQuantelClip
@@ -98,6 +101,7 @@ export namespace ExpectedPackage {
 					| AccessorOnPackage.FileShare
 					| AccessorOnPackage.HTTP
 					| AccessorOnPackage.HTTPProxy
+					| AccessorOnPackage.Quantel
 			}
 		}[]
 	}
@@ -248,6 +252,12 @@ export namespace Accessor {
 
 		/** URL to a HTTP-transformer. Used for thumbnails, previews etc.. (http://hostname:port) */
 		transformerURL?: string
+
+		/** URL to a FileFlow Manager. Used for copying clips into CIFS file shares */
+		fileflowURL?: string
+
+		/** FileFlow Export profile name. Used for copying clips into CIFS file shares */
+		fileflowProfile?: string
 	}
 	/** Virtual PackageContainer used for piping data into core */
 	export interface CorePackageCollection extends Base {
@@ -332,8 +342,14 @@ export namespace ExpectedPackageStatusAPI {
 		/** The reason as to why the status is what it is */
 		statusReason: Reason
 
+		/** Previous reasons, for each state. */
+		prevStatusReasons?: { [status: string]: Reason }
+
 		/** Timestamp when the status was (actually) last changed. Just minor changes in the statusReason doesn't count. */
 		statusChanged: number
+
+		/** The priority Package Manager has set (lower value = higher priority) */
+		priority: number
 
 		/** Progress, 0-1 */
 		progress?: number
@@ -382,6 +398,22 @@ export namespace ExpectedPackageStatusAPI {
 		/** All good, the package is in place and ready to play*/
 		READY = 'ready',
 	}
+
+	export interface PackageContainerStatus {
+		status: StatusCode
+		statusReason: Reason
+		statusChanged: number
+
+		monitors: {
+			[monitorId: string]: PackageContainerMonitorStatus
+		}
+	}
+	export interface PackageContainerMonitorStatus {
+		label: string
+		status: StatusCode
+		statusReason: Reason
+	}
+
 	/** Contains textual descriptions for statuses. */
 	export interface Reason {
 		/** User-readable reason (to be displayed in GUI:s, to regular humans ) */

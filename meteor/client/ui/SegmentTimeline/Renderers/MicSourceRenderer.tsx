@@ -93,9 +93,7 @@ export const MicSourceRenderer = withTranslation()(
 			this.updateAnchoredElsWidths()
 			if (this.props.itemElement) {
 				this.itemElement = this.props.itemElement
-				this.itemElement.parentNode &&
-					this.itemElement.parentNode.parentNode &&
-					this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
+				this.itemElement.parentElement?.parentElement?.parentElement?.appendChild(this.lineItem)
 				this.refreshLine()
 			}
 		}
@@ -137,13 +135,15 @@ export const MicSourceRenderer = withTranslation()(
 			// Move the line element
 			if (this.itemElement !== this.props.itemElement) {
 				if (this.itemElement) {
-					this.lineItem.remove()
+					try {
+						this.lineItem.remove()
+					} catch (err) {
+						console.error('Error in MicSourceRenderer.componentDidUpdate', err)
+					}
 				}
 				this.itemElement = this.props.itemElement
 				if (this.itemElement) {
-					this.itemElement.parentNode &&
-						this.itemElement.parentNode.parentNode &&
-						this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
+					this.itemElement.parentElement?.parentElement?.parentElement?.appendChild(this.lineItem)
 					_forceSizingRecheck = true
 				}
 			}
@@ -163,8 +163,12 @@ export const MicSourceRenderer = withTranslation()(
 		}
 
 		componentWillUnmount() {
-			// Remove the line element
-			this.lineItem.remove()
+			try {
+				// Remove the line element
+				this.lineItem?.remove()
+			} catch (err) {
+				console.error('Error in MicSourceRenderer.componentWillUnmount', err)
+			}
 		}
 
 		render() {
@@ -183,13 +187,15 @@ export const MicSourceRenderer = withTranslation()(
 				<>
 					{!this.props.isTooSmallForText && (
 						<>
-							<span
-								className="segment-timeline__piece__label first-words overflow-label"
-								ref={this.setLeftLabelRef}
-								style={this.getItemLabelOffsetLeft()}
-							>
-								{begin}
-							</span>
+							{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
+								<span
+									className="segment-timeline__piece__label first-words overflow-label"
+									ref={this.setLeftLabelRef}
+									style={this.getItemLabelOffsetLeft()}
+								>
+									{begin}
+								</span>
+							) : null}
 							<span
 								className="segment-timeline__piece__label right-side"
 								ref={this.setRightLabelRef}

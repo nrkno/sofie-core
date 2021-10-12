@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { setLoggerLevel } from '../../server/api/logger'
+import { setLogLevel } from '../../server/logging'
 import {
 	getHash,
 	MeteorPromiseCall,
@@ -26,6 +26,7 @@ import {
 	ProtectedString,
 	equalSets,
 	equivalentArrays,
+	LogLevel,
 } from '../lib'
 import { TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -191,7 +192,7 @@ describe('lib/lib', () => {
 		expect(stringifyObjects(o)).toEqual(stringifyObjects(o))
 	})
 	testInFiber('mongowhere', () => {
-		setLoggerLevel('debug')
+		setLogLevel(LogLevel.DEBUG)
 
 		// mongoWhere is used my Collection mock
 		const MyCollection = new Mongo.Collection<any>('mycollection')

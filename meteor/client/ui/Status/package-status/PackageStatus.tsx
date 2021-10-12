@@ -62,6 +62,12 @@ export const PackageStatus = withTranslation()(
 		componentDidUpdate(): void {
 			this.updateWorkingState()
 		}
+		componentWillUnmount(): void {
+			if (this.updateWorkingStateTimeout) {
+				clearTimeout(this.updateWorkingStateTimeout)
+				this.updateWorkingStateTimeout = null
+			}
+		}
 		updateWorkingState(): void {
 			const requiredProgress = this.getProgress(true)
 			const allProgress = this.getProgress(false)
@@ -169,7 +175,7 @@ export const PackageStatus = withTranslation()(
 			if (p2.type === ExpectedPackage.PackageType.MEDIA_FILE) {
 				return p2.content.filePath || unprotectString(this.props.package._id)
 			} else if (p2.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
-				return p2.content.guid || p2.content.title || unprotectString(this.props.package._id)
+				return p2.content.title || p2.content.guid || unprotectString(this.props.package._id)
 			} else {
 				assertNever(p2)
 				return unprotectString(this.props.package._id)
@@ -193,8 +199,8 @@ export const PackageStatus = withTranslation()(
 							this.toggleOpen()
 						}}
 					>
-						<td></td>
-						<td>{this.getPackageStatus()}</td>
+						<td className="indent"></td>
+						<td className="status">{this.getPackageStatus()}</td>
 						<td>
 							<span className="package__chevron">
 								{this.state.isOpen ? (
@@ -203,7 +209,7 @@ export const PackageStatus = withTranslation()(
 									<FontAwesomeIcon icon={faChevronRight} />
 								)}
 							</span>
-							{this.getPackageName()}
+							<span>{this.getPackageName()}</span>
 						</td>
 						<td>
 							<DisplayFormattedTime displayTimestamp={this.props.package.created} t={t} />

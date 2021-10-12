@@ -226,6 +226,15 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 				word-break: break-all;
 				line-height: 1.5em !important;
 				vertical-align: inherit;
+
+				> .hotkeys {
+					> span::after {
+						content: ', ';
+					}
+					> span:last-child::after {
+						content: none;
+					}
+				}
 			}
 			.adlib-panel__list-view__list__table__cell--output {
 				width: 3.89em;

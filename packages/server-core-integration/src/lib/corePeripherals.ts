@@ -17,7 +17,7 @@ export namespace PeripheralDeviceAPI {
 		/** Not good. Operation is affected. Will be able to recover on it's own when the situation changes. */
 		BAD = 4,
 		/** Not good. Operation is affected. Will NOT be able to to recover from this, manual intervention will be required. */
-		FATAL = 5
+		FATAL = 5,
 	}
 
 	export interface StatusObject {
@@ -28,7 +28,7 @@ export namespace PeripheralDeviceAPI {
 	export enum DeviceCategory {
 		INGEST = 'ingest',
 		PLAYOUT = 'playout',
-		MEDIA_MANAGER = 'media_manager'
+		MEDIA_MANAGER = 'media_manager',
 	}
 	/**
 	 * Deprecated and should not be used in new integrations.
@@ -41,14 +41,9 @@ export namespace PeripheralDeviceAPI {
 		// Playout devices:
 		PLAYOUT = 'playout',
 		// Media-manager devices:
-		MEDIA_MANAGER = 'media_manager'
+		MEDIA_MANAGER = 'media_manager',
 	}
-	export type DeviceSubType =
-		| SUBTYPE_PROCESS
-		| TSR_DeviceType
-		| MOS_DeviceType
-		| Spreadsheet_DeviceType
-		| string
+	export type DeviceSubType = SUBTYPE_PROCESS | TSR_DeviceType | MOS_DeviceType | Spreadsheet_DeviceType | string
 
 	/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
 	export type SUBTYPE_PROCESS = '_process'
@@ -66,7 +61,7 @@ export namespace PeripheralDeviceAPI {
 		connectionId: string
 		parentDeviceId?: string
 		versions?: {
-			[libraryName: string]: string;
+			[libraryName: string]: string
 		}
 
 		configManifest?: DeviceConfigManifest
@@ -160,29 +155,22 @@ export namespace PeripheralDeviceAPI {
 		'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
 
 		'updatePackageContainerPackageStatuses' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatuses',
+		'removeAllPackageContainerPackageStatusesOfDevice' = 'peripheralDevice.packageManager.removeAllPackageContainerPackageStatusesOfDevice',
+
+		'updatePackageContainerStatuses' = 'peripheralDevice.packageManager.updatePackageContainerStatuses',
+		'removeAllPackageContainerStatusesOfDevice' = 'peripheralDevice.packageManager.removeAllPackageContainerStatusesOfDevice',
+
 		'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
 		'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
 		'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',
 
 		'requestUserAuthToken' = 'peripheralDevice.spreadsheet.requestUserAuthToken',
-		'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken'
+		'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken',
 	}
 
-	export type initialize = (
-		id: string,
-		token: string,
-		options: InitOptions
-	) => Promise<string>
-	export type unInitialize = (
-		id: string,
-		token: string,
-		status: StatusObject
-	) => Promise<StatusObject>
-	export type setStatus = (
-		id: string,
-		token: string,
-		status: StatusObject
-	) => Promise<StatusObject>
+	export type initialize = (id: string, token: string, options: InitOptions) => Promise<string>
+	export type unInitialize = (id: string, token: string, status: StatusObject) => Promise<StatusObject>
+	export type setStatus = (id: string, token: string, status: StatusObject) => Promise<StatusObject>
 	export type executeFunction = (
 		deviceId: string,
 		cb: (err: any, result: any) => void,

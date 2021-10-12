@@ -29,6 +29,7 @@ export interface Blueprint {
 		studio: {
 			[studioId: string]: string
 		}
+		system: string | undefined
 	}
 
 	blueprintVersion: string

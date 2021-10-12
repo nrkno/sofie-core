@@ -59,21 +59,23 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 	render() {
 		const content = this.props.piece.instance.piece.content as TransitionContent | undefined
 		return (
-			<React.Fragment>
-				<span
-					className="segment-timeline__piece__label with-overflow"
-					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}
-				>
-					{this.props.piece.instance.piece.name}
-					{content && content.icon && !this.state.iconFailed && (
-						<img
-							src={'/blueprints/assets/' + content.icon}
-							className="segment-timeline__piece__label__transition-icon"
-							onError={this.iconFailed}
-						/>
-					)}
-				</span>
+			<>
+				{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
+					<span
+						className="segment-timeline__piece__label with-overflow"
+						ref={this.setLeftLabelRef}
+						style={this.getItemLabelOffsetLeft()}
+					>
+						{this.props.piece.instance.piece.name}
+						{content && content.icon && !this.state.iconFailed && (
+							<img
+								src={'/blueprints/assets/' + content.icon}
+								className="segment-timeline__piece__label__transition-icon"
+								onError={this.iconFailed}
+							/>
+						)}
+					</span>
+				) : null}
 				<FloatingInspector
 					shown={this.props.showMiniInspector && !this.state.iconFailed && this.props.itemElement !== null}
 				>
@@ -86,7 +88,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 						</div>
 					)}
 				</FloatingInspector>
-			</React.Fragment>
+			</>
 		)
 	}
 }

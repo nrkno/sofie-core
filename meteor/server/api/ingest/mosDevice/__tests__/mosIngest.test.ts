@@ -69,7 +69,7 @@ describe('Test recieved mos ingest payloads', () => {
 	}
 
 	testInFiber('mosRoCreate', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 
 		expect(Rundowns.findOne()).toBeFalsy()
 
@@ -99,7 +99,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	testInFiber('mosRoCreate: replace existing', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 
 		const roData = mockRO.roCreate()
 		const s = roData.Stories.splice(7, 1)

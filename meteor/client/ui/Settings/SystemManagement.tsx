@@ -8,6 +8,8 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorCall } from '../../../lib/api/methods'
 import * as _ from 'underscore'
 import { languageAnd } from '../../lib/language'
+import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
+import { LogLevel } from '../../../lib/lib'
 
 interface IProps {}
 
@@ -148,6 +150,23 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 							</div>
 						</label>
 
+						<h2 className="mhn mtn">{t('Logging level')}</h2>
+						<label className="field">
+							{t('This affects how much is logged to the console on the server')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="logLevel"
+									obj={this.props.coreSystem}
+									type="dropdown"
+									options={LogLevel}
+									collection={CoreSystem}
+									className="mdinput"
+								/>
+								<span className="mdfx"></span>
+							</div>
+						</label>
+
 						<h2 className="mhn mtn">{t('System-wide Notification Message')}</h2>
 						<label className="field">
 							{t('Message')}
@@ -190,6 +209,12 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								<span className="mdfx"></span>
 							</div>
 						</label>
+
+						<div className="row">
+							<div className="col c12 r1-c12">
+								<TriggeredActionsEditor showStyleBaseId={null} />
+							</div>
+						</div>
 
 						<h2 className="mhn">{t('Application Performance Monitoring')}</h2>
 						<div className="field">

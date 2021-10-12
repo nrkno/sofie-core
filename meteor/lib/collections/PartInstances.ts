@@ -158,6 +158,11 @@ export const PartInstances = createMongoCollection<PartInstance, DBPartInstance>
 registerCollection('PartInstances', PartInstances)
 registerIndex(PartInstances, {
 	rundownId: 1,
+	playlistActivationId: 1,
+	reset: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
 	segmentId: 1,
 	takeCount: 1,
 	reset: 1,

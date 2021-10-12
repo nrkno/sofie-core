@@ -1751,6 +1751,43 @@ const StudioPackageManagerSettings = withTranslation()(
 													</label>
 												</div>
 											</>
+										) : accessor.type === Accessor.AccessType.HTTP_PROXY ? (
+											<>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Base URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">
+															{t('Base url to the resource (example: http://myserver/folder)')}
+														</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Network Id')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">
+															{t(
+																'(Optional) A name/identifier of the local network where the share is located, leave empty if globally accessible'
+															)}
+														</span>
+													</label>
+												</div>
+											</>
 										) : accessor.type === Accessor.AccessType.FILE_SHARE ? (
 											<>
 												<div className="mod mvs mhs">
@@ -1840,7 +1877,9 @@ const StudioPackageManagerSettings = withTranslation()(
 															collection={Studios}
 															className="input text-input input-l"
 														></EditAttribute>
-														<span className="text-s dimmed">{t('URLs to the ISAs (in order of importance)')}</span>
+														<span className="text-s dimmed">
+															{t('URLs to the ISAs, in order of importance (comma separated)')}
+														</span>
 													</label>
 												</div>
 												<div className="mod mvs mhs">
@@ -1870,6 +1909,51 @@ const StudioPackageManagerSettings = withTranslation()(
 														></EditAttribute>
 														<span className="text-s dimmed">
 															{t('Server id (Can be omitted for sources, as clip-searches are zone-wide.)')}
+														</span>
+													</label>
+												</div>
+
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel transformer URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.transformerURL`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('URL to the Quantel HTTP transformer')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel FileFlow URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowURL`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('URL to the Quantel FileFlow Manager')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel FileFlow Profile name')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowProfile`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">
+															{t('Profile name to be used by FileFlow when exporting the clips')}
 														</span>
 													</label>
 												</div>
@@ -1929,7 +2013,7 @@ const StudioPackageManagerSettings = withTranslation()(
 			for (const [containerId, packageContainer] of Object.entries(this.props.studio.packageContainers)) {
 				let hasHttpAccessor = false
 				for (const accessor of Object.values(packageContainer.container.accessors)) {
-					if (accessor.type === Accessor.AccessType.HTTP) {
+					if (accessor.type === Accessor.AccessType.HTTP_PROXY) {
 						hasHttpAccessor = true
 						break
 					}
@@ -2230,14 +2314,16 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		renderShowStyleEditButtons() {
 			const buttons: JSX.Element[] = []
 			if (this.props.studio) {
-				this.props.studio.supportedShowStyleBase.map((style) => {
-					const base = this.props.availableShowStyleBases.find((base) => base.showStyleBase._id === style)
-					if (base) {
+				this.props.studio.supportedShowStyleBase.map((showStyleBaseId) => {
+					const showStyleBase = this.props.availableShowStyleBases.find(
+						(base) => base.showStyleBase._id === showStyleBaseId
+					)
+					if (showStyleBase) {
 						buttons.push(
 							<SettingsNavigation
-								key={'settings-nevigation-' + base.showStyleBase.name}
+								key={'settings-nevigation-' + showStyleBase.showStyleBase.name}
 								attribute="name"
-								obj={base.showStyleBase}
+								obj={showStyleBase.showStyleBase}
 								type="showstyle"
 							></SettingsNavigation>
 						)

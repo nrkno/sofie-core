@@ -1,13 +1,10 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import * as mousetrap from 'mousetrap'
+import React from 'react'
+import _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import ClassNames from 'classnames'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
 import { IOutputLayer, ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -34,10 +31,14 @@ import { PieceId } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface IState {
 	outputLayers: {
@@ -114,8 +115,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IDashboardPanelProps & AdLibFetchAndFilterProps & IDashboardPanelTrackedProps>,
 	IState
 > {
-	usedHotkeys: Array<string> = []
-
 	constructor(props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>) {
 		super(props)
 
@@ -197,19 +196,14 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				})
 			}
 		})
-
-		this.refreshKeyboardHotkeys()
 	}
 
 	componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps, prevState: IState) {
 		const { selectedAdLib } = this.state
 		const { selectedPiece } = this.props
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-		this.usedHotkeys.length = 0
 
 		const newState: Partial<IState> = {}
 
-		this.refreshKeyboardHotkeys()
 		// Synchronize the internal selectedAdlib state with the outer selectedPiece
 		if (
 			selectedAdLib &&
@@ -244,14 +238,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	componentWillUnmount() {
-		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-
-		this.usedHotkeys.length = 0
-	}
-
 	protected static filterOutAdLibs(
 		props: IAdLibPanelProps & AdLibFetchAndFilterProps,
 		state: IState,
@@ -277,110 +263,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			!!this.props.filter?.nextInCurrentPart,
 			!!this.props.filter?.oneNextPerSourceLayer
 		)
-	}
-
-	protected refreshKeyboardHotkeys() {
-		if (!this.props.studioMode) return
-		if (!this.props.registerHotkeys) return
-
-		const preventDefault = (e) => {
-			e.preventDefault()
-		}
-
-		if (this.props.liveSegment && this.props.liveSegment.pieces) {
-			this.props.liveSegment.pieces.forEach((item) => {
-				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-					mousetrapHelper.bind(
-						item.hotkey,
-						(e: mousetrap.ExtendedKeyboardEvent) => {
-							preventDefault(e)
-							this.onToggleAdLib(item, false, e)
-						},
-						'keyup',
-						this.props.hotkeyGroup
-					)
-					this.usedHotkeys.push(item.hotkey)
-
-					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
-					if (sourceLayer && sourceLayer.isQueueable) {
-						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-						mousetrapHelper.bind(
-							queueHotkey,
-							(e: mousetrap.ExtendedKeyboardEvent) => {
-								preventDefault(e)
-								this.onToggleAdLib(item, true, e)
-							},
-							'keyup',
-							this.props.hotkeyGroup
-						)
-						this.usedHotkeys.push(queueHotkey)
-					}
-				}
-			})
-		}
-
-		if (this.props.rundownBaselineAdLibs) {
-			this.props.rundownBaselineAdLibs.forEach((item) => {
-				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-					mousetrapHelper.bind(
-						item.hotkey,
-						(e: mousetrap.ExtendedKeyboardEvent) => {
-							preventDefault(e)
-							this.onToggleAdLib(item, false, e)
-						},
-						'keyup',
-						this.props.hotkeyGroup
-					)
-					this.usedHotkeys.push(item.hotkey)
-
-					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
-					if (sourceLayer && sourceLayer.isQueueable) {
-						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-						mousetrapHelper.bind(
-							queueHotkey,
-							(e: mousetrap.ExtendedKeyboardEvent) => {
-								preventDefault(e)
-								this.onToggleAdLib(item, true, e)
-							},
-							'keyup',
-							this.props.hotkeyGroup
-						)
-						this.usedHotkeys.push(queueHotkey)
-					}
-				}
-			})
-		}
-
-		if (this.props.sourceLayerLookup) {
-			const clearKeyboardHotkeySourceLayers: { [hotkey: string]: ISourceLayer[] } = {}
-
-			_.each(this.props.sourceLayerLookup, (sourceLayer) => {
-				if (sourceLayer.clearKeyboardHotkey) {
-					sourceLayer.clearKeyboardHotkey.split(',').forEach((hotkey) => {
-						if (!clearKeyboardHotkeySourceLayers[hotkey]) clearKeyboardHotkeySourceLayers[hotkey] = []
-						clearKeyboardHotkeySourceLayers[hotkey].push(sourceLayer)
-					})
-				}
-			})
-
-			_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
-				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-				mousetrapHelper.bind(
-					hotkey,
-					(e: mousetrap.ExtendedKeyboardEvent) => {
-						preventDefault(e)
-						this.onClearAllSourceLayers(sourceLayers, e)
-					},
-					'keyup',
-					this.props.hotkeyGroup
-				)
-				this.usedHotkeys.push(hotkey)
-			})
-		}
 	}
 
 	protected onToggleOrSelectAdLib = (
@@ -433,7 +315,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.isClearable)) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
 					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
@@ -470,7 +352,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					this.onToggleSticky(adlibPiece.sourceLayerId, e)
 				}
 			} else {
-				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+				if (sourceLayer && sourceLayer.isClearable) {
 					this.onClearAllSourceLayers([sourceLayer], e)
 				}
 			}
@@ -514,7 +396,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			const piece = this.state.selectedAdLib
 			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.isClearable)) {
 					if (piece.isAction && piece.adlibAction) {
 						const action = piece.adlibAction
 						doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
@@ -558,7 +440,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
 			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
-			if (sourceLayer && (sourceLayer.clearKeyboardHotkey || outButton)) {
+			if (sourceLayer && (sourceLayer.isClearable || outButton)) {
 				this.onClearAllSourceLayers([sourceLayer], e)
 			}
 		}
@@ -685,92 +567,74 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartInstanceId | null) {
-	let prospectivePieces: PieceInstance[] = []
-	const now = getCurrentTime()
-	if (currentPartInstanceId) {
-		prospectivePieces = PieceInstances.find({
-			startedPlayback: {
-				$exists: true,
-			},
-			$and: [
-				{
-					$or: [
-						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
-						},
-						{
-							stoppedPlayback: {
-								$exists: false,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							adLibSourceId: {
-								$exists: true,
-							},
-						},
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							userDuration: {
-								$exists: false,
-							},
-						},
-						{
-							'userDuration.end': {
-								$exists: false,
-							},
-						},
-					],
-				},
-			],
-		}).fetch()
+export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: DBShowStyleBase) {
+	if (playlist.activationId && playlist.currentPartInstanceId) {
+		return memoizedIsolatedAutorun(
+			(playlistActivationId, currentPartInstanceId, showStyleBase) => {
+				const now = getCurrentTime()
+				let prospectivePieces: PieceInstance[] = []
 
-		let nearestEnd = Number.POSITIVE_INFINITY
-		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-			const piece = pieceInstance.piece
-			const end: number | undefined =
-				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
-					? pieceInstance.userDuration.end
-					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + pieceInstance.startedPlayback!
-					: undefined
+				const partInstance = PartInstances.findOne(currentPartInstanceId)
 
-			if (end !== undefined) {
-				if (end > now) {
-					nearestEnd = nearestEnd > end ? end : nearestEnd
-					return true
-				} else {
-					return false
+				if (partInstance) {
+					prospectivePieces = PieceInstances.find({
+						partInstanceId: currentPartInstanceId,
+						playlistActivationId: playlistActivationId,
+					}).fetch()
+
+					const nowInPart = partInstance.timings?.startedPlayback ? now - partInstance.timings.startedPlayback : 0
+					prospectivePieces = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieces, nowInPart)
+
+					let nearestEnd = Number.POSITIVE_INFINITY
+					prospectivePieces = prospectivePieces.filter((pieceInstance) => {
+						const piece = pieceInstance.piece
+
+						if (!pieceInstance.adLibSourceId && !piece.tags) {
+							// No effect on the data, so ignore
+							return false
+						}
+
+						let end: number | undefined
+						if (pieceInstance.stoppedPlayback) {
+							end = pieceInstance.stoppedPlayback
+						} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
+							end = pieceInstance.userDuration.end
+						} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
+							end = piece.enable.duration + pieceInstance.startedPlayback
+						}
+
+						if (end !== undefined) {
+							if (end > now) {
+								nearestEnd = Math.min(nearestEnd, end)
+								return true
+							} else {
+								return false
+							}
+						}
+						return true
+					})
+
+					if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
 				}
-			}
-			return true
-		})
 
-		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
+				return prospectivePieces
+			},
+			'getUnfinishedPieceInstancesReactive',
+			playlist.activationId,
+			playlist.currentPartInstanceId,
+			showStyleBase
+		)
 	}
 
-	return prospectivePieces
+	return []
 }
 
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): PieceInstance[] {
+export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
-	if (nextPartInstanceId) {
+	if (playlist.activationId && playlist.nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
-			partInstanceId: nextPartInstanceId,
+			playlistActivationId: playlist.activationId,
+			partInstanceId: playlist.nextPartInstanceId,
 			$and: [
 				{
 					piece: {
@@ -799,17 +663,20 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 }
 
 export function getUnfinishedPieceInstancesGrouped(
-	currentPartInstanceId: PartInstanceId | null
+	playlist: RundownPlaylist,
+	showStyleBase: DBShowStyleBase
 ): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
 		.map((piece) => piece.adLibSourceId!)
-	const unfinishedTags: string[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
+	const unfinishedTags: string[] = _.uniq(
+		unfinishedPieceInstances
+			.filter((piece) => !!piece.piece.tags)
+			.map((piece) => piece.piece.tags!)
+			.reduce((a, b) => a.concat(b), [])
+	)
 
 	return {
 		unfinishedAdLibIds,
@@ -818,9 +685,9 @@ export function getUnfinishedPieceInstancesGrouped(
 }
 
 export function getNextPieceInstancesGrouped(
-	nextPartInstanceId: PartInstanceId | null
+	playlist: RundownPlaylist
 ): Pick<IDashboardPanelTrackedProps, 'nextAdLibIds' | 'nextTags'> & { nextPieceInstances: PieceInstance[] } {
-	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
+	const nextPieceInstances = getNextPiecesReactive(playlist)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -908,9 +775,10 @@ export const DashboardPanel = translateWithTracker<
 >(
 	(props: Translated<IAdLibPanelProps>) => {
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
+			props.playlist,
+			props.showStyleBase
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),

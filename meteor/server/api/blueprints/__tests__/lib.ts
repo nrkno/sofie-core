@@ -38,6 +38,7 @@ export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, 
 		databaseVersion: {
 			showStyle: {},
 			studio: {},
+			system: undefined,
 		},
 
 		blueprintVersion: '',

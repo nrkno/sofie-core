@@ -26,6 +26,8 @@ export enum RundownNotificationsAPIMethods {
 export type RankedNote = (PartNote | SegmentNote | RundownNote) & {
 	rank: number
 }
+/** How often the client polls for updates on media statuses */
+export const MEDIASTATUS_POLL_INTERVAL = 10 * 1000
 
 export interface RundownNotificationsAPI {
 	getSegmentPartNotes(rundownIds: RundownId[]): Promise<RankedNote[]>

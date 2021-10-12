@@ -1,8 +1,8 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { registerCollection, ProtectedString, hashObj, assertNever, Time } from '../lib'
+import { registerCollection, ProtectedString, hashObj, assertNever, Time, literal, protectString } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
-import { StudioId } from './Studios'
+import { Studio, StudioId } from './Studios'
 import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
 import { AdLibActionId } from './AdLibActions'
@@ -10,6 +10,8 @@ import { BucketAdLibId } from './BucketAdlibs'
 import { BucketAdLibActionId } from './BucketAdlibActions'
 import { RundownBaselineAdLibActionId } from './RundownBaselineAdLibActions'
 import { SegmentId } from './Segments'
+import deepExtend from 'deep-extend'
+import { BucketId } from './Buckets'
 /*
  Expected Packages are created from Pieces in the rundown.
  A "Package" is a generic term for a "thing that can be played", such as media files, audio, graphics etc..
@@ -109,6 +111,7 @@ export interface ExpectedPackageDBFromStudioBaselineObjects extends ExpectedPack
 
 export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB
+	bucketId: BucketId
 	/** The Bucket adlib this package belongs to */
 	pieceId: BucketAdLibId
 }
@@ -176,4 +179,34 @@ export function getThumbnailPackageSettings(
 		}
 	}
 	return undefined
+}
+export function getSideEffect(
+	expectedPackage: ExpectedPackage.Base,
+	studio: Studio
+): ExpectedPackage.Base['sideEffect'] {
+	return deepExtend(
+		{},
+		literal<ExpectedPackage.Base['sideEffect']>({
+			previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
+			thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
+			previewPackageSettings: getPreviewPackageSettings(expectedPackage as ExpectedPackage.Any),
+			thumbnailPackageSettings: getThumbnailPackageSettings(expectedPackage as ExpectedPackage.Any),
+		}),
+		expectedPackage.sideEffect
+	)
+}
+export function getExpectedPackageId(
+	/** _id of the owner (the piece, adlib etc..) */
+	ownerId:
+		| PieceId
+		| AdLibActionId
+		| RundownBaselineAdLibActionId
+		| BucketAdLibId
+		| BucketAdLibActionId
+		| RundownId
+		| StudioId,
+	/** The locally unique id of the expectedPackage */
+	localExpectedPackageId: ExpectedPackage.Base['_id']
+): ExpectedPackageId {
+	return protectString(`${ownerId}_${localExpectedPackageId}`)
 }

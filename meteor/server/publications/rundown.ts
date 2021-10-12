@@ -91,6 +91,25 @@ meteorPublish(PubSub.partInstances, function (selector: MongoQuery<DBPartInstanc
 	}
 	return null
 })
+meteorPublish(PubSub.partInstancesSimple, function (selector: MongoQuery<DBPartInstance>, token?: string) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier: FindOptions<DBPartInstance> = {
+		fields: {
+			// @ts-ignore
+			'part.metaData': 0,
+			isTaken: 0,
+			timings: 0,
+		},
+	}
+
+	// Enforce only not-reset
+	selector.reset = { $ne: true }
+
+	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+		return PartInstances.find(selector, modifier)
+	}
+	return null
+})
 
 meteorPublish(PubSub.pieces, function (selector: MongoQuery<Piece>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')

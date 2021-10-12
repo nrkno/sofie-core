@@ -174,12 +174,13 @@ export interface RundownLayoutWithFilters extends RundownLayoutBase {
 
 export interface RundownViewLayout extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_VIEW_LAYOUT
-	expectedEndText: string
 	/** Expose as a layout that can be selected by the user in the lobby view */
 	exposeAsSelectableLayout: boolean
 	shelfLayout: RundownLayoutId
 	miniShelfLayout: RundownLayoutId
 	rundownHeaderLayout: RundownLayoutId
+	visibleSourceLayers?: string[]
+	visibleOutputLayers?: string[]
 }
 
 export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {

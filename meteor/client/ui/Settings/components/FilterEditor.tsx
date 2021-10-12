@@ -34,7 +34,7 @@ interface IProps {
 export default withTranslation()(
 	class FilterEditor extends React.Component<Translated<IProps>> {
 		onToggleDefault = (item: RundownLayout, index: number, value: boolean) => {
-			const obj = _.object(item.filters.map((item, i) => [`filters.${i}.default`, i === index ? value : false]))
+			const obj = _.object(item.filters.map((_item, i) => [`filters.${i}.default`, i === index ? value : false]))
 			RundownLayouts.update(item._id, {
 				$set: obj,
 			})

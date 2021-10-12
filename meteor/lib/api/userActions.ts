@@ -148,11 +148,6 @@ export interface NewUserActionAPI extends MethodContext {
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
 	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>> //
-	resyncSegment(
-		userEvent: string,
-		rundownId: RundownId,
-		segmentId: SegmentId
-	): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
 	mediaRestartWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaAbortWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaPrioritizeWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
@@ -168,6 +163,11 @@ export interface NewUserActionAPI extends MethodContext {
 		userEvent: string,
 		deviceId: PeripheralDeviceId,
 		workId: string
+	): Promise<ClientAPI.ClientResponse<void>>
+	packageManagerRestartPackageContainer(
+		userEvent: string,
+		deviceId: PeripheralDeviceId,
+		containerId: string
 	): Promise<ClientAPI.ClientResponse<void>>
 	regenerateRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	generateRestartToken(userEvent: string): Promise<ClientAPI.ClientResponse<string>>
@@ -269,7 +269,6 @@ export enum UserActionAPIMethods {
 
 	'removeRundown' = 'userAction.removeRundown',
 	'resyncRundown' = 'userAction.resyncRundown',
-	'resyncSegment' = 'userAction.resyncSegment',
 
 	'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
 	'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',
@@ -280,6 +279,7 @@ export enum UserActionAPIMethods {
 	'packageManagerRestartExpectation' = 'userAction.packagemanager.restartExpectation',
 	'packageManagerRestartAllExpectations' = 'userAction.packagemanager.restartAllExpectations',
 	'packageManagerAbortExpectation' = 'userAction.packagemanager.abortExpectation',
+	'packageManagerRestartPackageContainer' = 'userAction.packagemanager.restartPackageContainer',
 
 	'regenerateRundownPlaylist' = 'userAction.ingest.regenerateRundownPlaylist',
 
