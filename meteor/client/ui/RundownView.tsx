@@ -2487,11 +2487,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onTake = (e: any) => {
-			const { t } = this.props
-			if (this.state.studioMode && this.props.playlist) {
-				const playlistId = this.props.playlist._id
-				doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, playlistId))
-			}
+			RundownViewEventBus.emit(RundownViewEvents.TAKE, {
+				context: e,
+			})
 		}
 
 		getStyle() {
