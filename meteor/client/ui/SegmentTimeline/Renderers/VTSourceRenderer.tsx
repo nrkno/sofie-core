@@ -329,7 +329,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				// TODO: support multiple packages:
 				if (piece.contentPackageInfos[0]?.deepScan?.freezes?.length) {
 					items = piece.contentPackageInfos[0].deepScan.freezes
-						.filter((i) => i.start < itemDuration)
+						.filter((i) => i.start * 1000 < itemDuration)
 						.map((i): PackageInfo.Anomaly => {
 							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 						})
@@ -342,7 +342,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				// add freezes
 				if (metadata && metadata.mediainfo && metadata.mediainfo.freezes?.length) {
 					items = metadata.mediainfo.freezes
-						.filter((i) => i.start < itemDuration)
+						.filter((i) => i.start * 1000 < itemDuration)
 						.map((i): PackageInfo.Anomaly => {
 							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 						})
@@ -543,10 +543,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					Math.abs(
 						(this.props.piece.renderedInPoint || 0) +
 							(vtContent.sourceDuration - seek) -
-							(this.props.partExpectedDuration || 0)
+							(this.props.part.instance.part.expectedDuration || 0)
 					) > 500))
 		) {
-			const endOfContentAt = (this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration - seek)
+			const endOfContentAt =
+				(this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration + (vtContent.postrollDuration || 0) - seek)
 			const counter = endOfContentAt - livePositionInPart
 
 			if (counter > 0) {

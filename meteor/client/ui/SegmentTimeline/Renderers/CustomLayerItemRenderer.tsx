@@ -129,6 +129,7 @@ export class CustomLayerItemRenderer<
 
 		const vtContent = innerPiece.content as VTContent | undefined
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
+		const postrollDuration = vtContent && vtContent.postrollDuration ? vtContent.postrollDuration : 0
 		if (
 			vtContent &&
 			vtContent.sourceDuration !== undefined &&
@@ -140,8 +141,12 @@ export class CustomLayerItemRenderer<
 					className="segment-timeline__piece__source-finished"
 					style={{
 						left: this.props.relative
-							? (((vtContent.sourceDuration - seek) / (this.getItemDuration() || 1)) * 100).toString() + '%'
-							: Math.round((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
+							? (
+									((vtContent.sourceDuration + postrollDuration - seek) / (this.getItemDuration() || 1)) *
+									100
+							  ).toString() + '%'
+							: Math.round((vtContent.sourceDuration + postrollDuration - seek) * this.props.timeScale).toString() +
+							  'px',
 					}}
 				></div>
 			)

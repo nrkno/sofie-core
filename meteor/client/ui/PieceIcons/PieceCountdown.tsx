@@ -47,6 +47,7 @@ export const PieceCountdownContainer = withTracker((props: IPropsHeader) => {
 			const piece = this.props.pieceInstance ? this.props.pieceInstance.piece : undefined
 			const sourceDuration = (piece?.content as VTContent)?.sourceDuration
 			const seek = (piece?.content as VTContent)?.seek || 0
+			const postrollDuration = (piece?.content as VTContent)?.postrollDuration || 0
 			const pieceEnable = typeof piece?.enable.start !== 'number' ? 0 : piece?.enable.start
 			if (
 				this.props.partStartedPlayback &&
@@ -58,7 +59,8 @@ export const PieceCountdownContainer = withTracker((props: IPropsHeader) => {
 					(!this.props.partAutoNext &&
 						Math.abs(pieceEnable + (sourceDuration - seek) - (this.props.partExpectedDuration || 0)) > 500))
 			) {
-				const freezeCountdown = this.props.partStartedPlayback + pieceEnable + sourceDuration - getCurrentTime()
+				const freezeCountdown =
+					this.props.partStartedPlayback + pieceEnable + sourceDuration + postrollDuration - getCurrentTime()
 				if (freezeCountdown > 0) {
 					return (
 						<>
