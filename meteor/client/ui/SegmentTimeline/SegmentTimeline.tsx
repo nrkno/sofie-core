@@ -572,8 +572,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				this.props.maxTimeScale,
 				Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1)))
 			)
-			if (this.timeline?.parentElement) {
-				const clientPositon = this.timeline.parentElement.getBoundingClientRect()
+			if (this.timeline) {
+				const clientPositon = this.timeline.getBoundingClientRect()
 				let zoomOffset = Math.max(0, e.clientX - clientPositon.x) / this.state.timelineWidth
 
 				const currentlyVisibleArea = this.state.timelineWidth / this.props.timeScale
@@ -1126,11 +1126,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					})}
 					onMouseDown={this.onTimelineMouseDown}
 					onTouchStartCapture={this.onTimelineTouchStart}
+					ref={this.setTimelineRef}
 				>
 					<div
 						className="segment-timeline__timeline"
 						key={this.props.segment._id + '-timeline'}
-						ref={this.setTimelineRef}
 						style={this.timelineStyle()}
 					>
 						<ErrorBoundary>

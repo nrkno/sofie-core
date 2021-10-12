@@ -852,7 +852,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],
 			})
-			this.intersectionObserver.observe(this.timelineDiv.parentElement!.parentElement!)
+			this.intersectionObserver.observe(this.timelineDiv.parentElement!)
 		}
 
 		stopLive = () => {
