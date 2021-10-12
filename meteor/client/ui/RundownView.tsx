@@ -88,7 +88,11 @@ import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
-import RundownViewEventBus, { ActivateRundownPlaylistEvent, RundownViewEvents } from './RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	ActivateRundownPlaylistEvent,
+	IEventContext,
+	RundownViewEvents,
+} from './RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
@@ -617,6 +621,7 @@ const RundownHeader = withTranslation()(
 			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
+			RundownViewEventBus.on(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
 
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
@@ -625,6 +630,7 @@ const RundownHeader = withTranslation()(
 			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.off(RundownViewEvents.TAKE, this.eventTake)
+			RundownViewEventBus.off(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
 		}
 		eventActivate = (e: ActivateRundownPlaylistEvent) => {
 			if (e.rehearsal) {
@@ -633,11 +639,14 @@ const RundownHeader = withTranslation()(
 				this.activate(e.context)
 			}
 		}
-		eventResync = (e) => {
+		eventResync = (e: IEventContext) => {
 			this.reloadRundownPlaylist(e.context)
 		}
-		eventTake = (e) => {
-			this.take(e)
+		eventTake = (e: IEventContext) => {
+			this.take(e.context)
+		}
+		eventResetRundownPlaylist = (e: IEventContext) => {
+			this.resetRundown(e.context)
 		}
 
 		handleDisableNextPiece = (err: ClientAPI.ClientResponse<undefined>) => {
@@ -2022,6 +2031,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				{ timeout: 1000 }
 			)
 		}
+
 		onGoToLiveSegment = () => {
 			if (
 				this.props.playlist &&
