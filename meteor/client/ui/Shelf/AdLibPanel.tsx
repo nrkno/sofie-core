@@ -295,7 +295,19 @@ const AdLibListView = withTranslation()(
 			return this.props.uiSegments
 				.filter((a) => (this.props.filter ? (this.props.filter.currentSegment ? a.isLive : true) : true))
 				.map((segment) => {
-					return (
+					const segmentAdLibs = segment.pieces.filter((item) =>
+						matchFilter(
+							item,
+							this.props.showStyleBase,
+							this.props.uiSegments,
+							this.props.filter,
+							this.props.searchFilter,
+							uniquenessIds
+						)
+					)
+
+					// only show the segment in the list if it's not hidden or it does contain some AdLibs
+					return !segment.isHidden || segment.pieces.length > 0 ? (
 						<tbody
 							key={unprotectString(segment._id)}
 							className={ClassNames(
@@ -314,37 +326,25 @@ const AdLibListView = withTranslation()(
 							<tr className="adlib-panel__list-view__list__seg-header">
 								<td colSpan={4}>{segment.name}</td>
 							</tr>
-							{segment.pieces &&
-								segment.pieces
-									.filter((item) =>
-										matchFilter(
-											item,
-											this.props.showStyleBase,
-											this.props.uiSegments,
-											this.props.filter,
-											this.props.searchFilter,
-											uniquenessIds
-										)
-									)
-									.map((adLibPiece: AdLibPieceUi) => (
-										<AdLibListItem
-											key={unprotectString(adLibPiece._id)}
-											piece={adLibPiece}
-											layer={adLibPiece.sourceLayer!}
-											studio={this.props.studio}
-											selected={
-												(this.props.selectedPiece &&
-													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
-													this.props.selectedPiece._id === adLibPiece._id) ||
-												false
-											}
-											onToggleAdLib={this.props.onToggleAdLib}
-											onSelectAdLib={this.props.onSelectAdLib}
-											playlist={this.props.playlist}
-										/>
-									))}
+							{segmentAdLibs.map((adLibPiece: AdLibPieceUi) => (
+								<AdLibListItem
+									key={unprotectString(adLibPiece._id)}
+									piece={adLibPiece}
+									layer={adLibPiece.sourceLayer!}
+									studio={this.props.studio}
+									selected={
+										(this.props.selectedPiece &&
+											RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+											this.props.selectedPiece._id === adLibPiece._id) ||
+										false
+									}
+									onToggleAdLib={this.props.onToggleAdLib}
+									onSelectAdLib={this.props.onSelectAdLib}
+									playlist={this.props.playlist}
+								/>
+							))}
 						</tbody>
-					)
+					) : null
 				})
 		}
 
@@ -1050,24 +1050,24 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		renderSegmentList() {
-			return this.props.uiSegments.map((item) => {
-				return (
+			return this.props.uiSegments.map((segment) => {
+				return !segment.isHidden || segment.pieces.length > 0 ? (
 					<li
 						className={ClassNames('adlib-panel__segments__segment', {
-							live: item.isLive,
-							next: item.isNext && !item.isLive,
+							live: segment.isLive,
+							next: segment.isNext && !segment.isLive,
 							past:
-								item.parts.reduce((memo, part) => {
+								segment.parts.reduce((memo, part) => {
 									return part.timings?.startedPlayback && part.timings?.duration ? memo : false
 								}, true) === true,
 						})}
-						onClick={() => this.onSelectSegment(item)}
-						key={unprotectString(item._id)}
+						onClick={() => this.onSelectSegment(segment)}
+						key={unprotectString(segment._id)}
 						tabIndex={0}
 					>
-						{item.name}
+						{segment.name}
 					</li>
-				)
+				) : null
 			})
 		}
 
