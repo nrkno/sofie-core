@@ -80,9 +80,7 @@ export class RundownTimingCalculator {
 	private segmentStartedPlayback: Record<string, number> = {}
 	private breakProps: {
 		props: BreakProps | undefined
-		state:
-			| BreakPropsStateItem[]
-			| undefined
+		state: BreakPropsStateItem[] | undefined
 	} = { props: undefined, state: undefined }
 
 	/**

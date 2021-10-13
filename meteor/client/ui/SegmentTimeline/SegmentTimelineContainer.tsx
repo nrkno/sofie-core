@@ -559,7 +559,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					)*/
 				}
 			}
-			
+
 			// Setting the correct scroll position on parts when setting is next
 			const nextPartDisplayStartsAt =
 				currentNextPart &&
@@ -567,7 +567,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
 			const partOffset =
 				nextPartDisplayStartsAt -
-					(this.props.parts.length > 0 ? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] : 0)
+				(this.props.parts.length > 0
+					? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)]
+					: 0)
 			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
 				this.props.playlist.nextPartInstanceId &&
@@ -592,7 +594,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}
 				this.nextPartOffset = partOffset
 			}
-
 
 			// rewind all scrollLeft's to 0 on rundown activate
 			if (
@@ -807,7 +808,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					showingAllSegment: newScale !== undefined ? false : this.state.showingAllSegment,
 				}
 			})
-
 		}
 
 		onGoToPart = (e: GoToPartEvent) => {
@@ -838,11 +838,12 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				if (state.isLiveSegment && state.currentLivePart) {
 					const currentLivePartInstance = state.currentLivePart.instance
 					const currentLivePart = currentLivePartInstance.part
-	
+
 					const partOffset =
 						(this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] || 0) -
-						(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] || 0)
-	
+						(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] ||
+							0)
+
 					let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
 					const lastTake = currentLivePartInstance.timings?.take
 					const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
@@ -853,19 +854,18 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 							: lastStartedPlayback !== undefined
 							? lastStartedPlayback - lastTakeOffset
 							: undefined
-	
+
 					if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
 						isExpectedToPlay = true
 					}
-	
+
 					const newLivePosition =
 						isExpectedToPlay && virtualStartedPlayback
 							? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
 							: partOffset + lastTakeOffset
-	
+
 					const budgetDuration = this.getSegmentBudgetDuration()
-	
-					
+
 					return {
 						livePosition: newLivePosition,
 						scrollLeft: state.followLiveLine

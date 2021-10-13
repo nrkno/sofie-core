@@ -23,10 +23,7 @@ interface INextBreakTimingPanelProps {
 
 interface IState {}
 
-export class NextBreakTimingPanelInner extends MeteorReactComponent<
-	Translated<INextBreakTimingPanelProps>,
-	IState
-> {
+export class NextBreakTimingPanelInner extends MeteorReactComponent<Translated<INextBreakTimingPanelProps>, IState> {
 	constructor(props) {
 		super(props)
 	}
@@ -51,11 +48,7 @@ export class NextBreakTimingPanelInner extends MeteorReactComponent<
 						: {}
 				)}
 			>
-				
-				<NextBreakTiming
-					loop={playlist.loop}
-					breakText={panel.name}
-				/>
+				<NextBreakTiming loop={playlist.loop} breakText={panel.name} />
 			</div>
 		)
 	}

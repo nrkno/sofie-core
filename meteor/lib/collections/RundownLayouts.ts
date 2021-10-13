@@ -411,6 +411,15 @@ export interface DashboardLayoutColoredBox extends RundownLayoutColoredBox {
 	customClasses?: string[]
 }
 
+export interface DashboardLayoutNextBreakTiming extends RundownLayoutNextBreakTiming {
+	x: number
+	y: number
+	height: number
+	width: number
+	scale: number
+	customClasses?: string[]
+}
+
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	x: number
 	y: number
