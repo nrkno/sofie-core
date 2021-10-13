@@ -419,6 +419,16 @@ export const SourceLayerItem = withTranslation()(
 		// 	}
 		// }
 
+		private measureElement = () => {
+			if (!this.itemElement) return
+			const width = getElementWidth(this.itemElement) || 0
+			if (this.state.elementWidth !== width) {
+				this.setState({
+					elementWidth: width,
+				})
+			}
+		}
+
 		private onResize = (entries: ResizeObserverEntry[]) => {
 			const firstEntry = entries && entries[0]
 
@@ -437,12 +447,7 @@ export const SourceLayerItem = withTranslation()(
 				this._resizeObserver = new ResizeObserver(this.onResize)
 				this._resizeObserver.observe(this.itemElement)
 
-				const width = getElementWidth(this.itemElement) || 0
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
+				this.measureElement()
 			}
 		}
 
@@ -473,12 +478,7 @@ export const SourceLayerItem = withTranslation()(
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
 			} else if (this.itemElement) {
-				const width = getElementWidth(this.itemElement) || 0
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
+				this.measureElement()
 			}
 
 			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
@@ -507,6 +507,8 @@ export const SourceLayerItem = withTranslation()(
 				this.mountResizeObserver()
 			} else if (!this.props.isLiveLine && this._resizeObserver) {
 				this.unmountResizeObserver()
+			} else if (!this.props.isLiveLine) {
+				this.measureElement()
 			}
 		}
 

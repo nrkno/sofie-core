@@ -261,7 +261,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		newState = this.mountSourceEndedCountdownContainer(this.props, newState, itemElement)
 
 		if (Object.keys(newState).length > 0) {
-			this.setState(newState as IState)
+			this.setState(newState as IState, () => {
+				if (newState.noticeLevel && newState.noticeLevel !== prevState.noticeLevel) {
+					this.updateAnchoredElsWidths()
+				}
+			})
 		}
 	}
 
