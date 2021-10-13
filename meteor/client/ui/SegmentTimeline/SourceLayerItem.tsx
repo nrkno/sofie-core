@@ -19,6 +19,7 @@ import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { Studio } from '../../../lib/collections/Studios'
+import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -103,11 +104,11 @@ export const SourceLayerItem = withTranslation()(
 			return Math.round(this.props.timeScale * time)
 		}
 
-		shouldSwapDurationLabel = (): boolean => {
+		sourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
 			if (this.props.part && this.props.partStartsAt !== undefined && !this.props.isLiveLine) {
-				return this.state.leftAnchoredWidth > this.state.elementWidth - 10
+				return this.state.leftAnchoredWidth > this.state.elementWidth - 10 ? 'left' : 'right'
 			}
-			return false
+			return 'right'
 		}
 
 		getItemLabelOffsetLeft = (): React.CSSProperties => {
@@ -603,7 +604,7 @@ export const SourceLayerItem = withTranslation()(
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
-							shouldSwapDurationLabel={this.shouldSwapDurationLabel}
+							sourceDurationLabelAlignment={this.sourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -674,7 +675,7 @@ export const SourceLayerItem = withTranslation()(
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
-							shouldSwapDurationLabel={this.shouldSwapDurationLabel}
+							sourceDurationLabelAlignment={this.sourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}

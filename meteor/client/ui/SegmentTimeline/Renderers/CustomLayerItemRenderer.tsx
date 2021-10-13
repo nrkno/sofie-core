@@ -8,6 +8,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PieceLifespan, VTContent } from '@sofie-automation/blueprints-integration'
 import { OffsetPosition } from '../../../utils/positions'
 
+export type SourceDurationLabelAlignment = 'left' | 'right'
+
 export interface ICustomLayerItemProps {
 	mediaPreviewUrl?: string
 	typeClass?: string
@@ -38,7 +40,7 @@ export interface ICustomLayerItemProps {
 	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: (returnInfinite?: boolean) => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
-	shouldSwapDurationLabel?: () => boolean
+	sourceDurationLabelAlignment?: () => SourceDurationLabelAlignment
 	showDurationSourceLayers?: Set<string>
 }
 export interface ISourceLayerItemState {}
@@ -47,11 +49,12 @@ export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
 > extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
-	shouldSwapDurationLabel(): boolean {
-		return !!(
-			this.props.shouldSwapDurationLabel &&
-			typeof this.props.shouldSwapDurationLabel === 'function' &&
-			this.props.shouldSwapDurationLabel()
+	sourceDurationLabelAlignment(): SourceDurationLabelAlignment {
+		return (
+			(this.props.sourceDurationLabelAlignment &&
+				typeof this.props.sourceDurationLabelAlignment === 'function' &&
+				this.props.sourceDurationLabelAlignment()) ||
+			'right'
 		)
 	}
 
