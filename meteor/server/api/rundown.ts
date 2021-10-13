@@ -12,6 +12,7 @@ import {
 	normalizeArray,
 	normalizeArrayToMap,
 	clone,
+	waitForPromise,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -23,7 +24,7 @@ import {
 	ShowStyleCompound,
 } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { Blueprints } from '../../lib/collections/Blueprints'
+import { Blueprint, Blueprints, getBlueprintVersion } from '../../lib/collections/Blueprints'
 import { Studios } from '../../lib/collections/Studios'
 import { ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
@@ -400,9 +401,9 @@ export namespace ClientRundownAPI {
 			if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0))
 				return 'showStyleBase'
 
-			const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
-			if (!blueprint) return 'missing blueprint'
-			if (rundown.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
+			const blueprintVersion = waitForPromise(getBlueprintVersion(showStyleBase.blueprintId))
+			if (!blueprintVersion) return 'missing blueprint'
+			if (rundown.importVersions.blueprint !== (blueprintVersion || 0)) return 'blueprint'
 
 			const studio = Studios.findOne(rundown.studioId)
 			if (!studio) return 'missing studio'
@@ -422,7 +423,9 @@ export namespace ClientRundownAPI {
 		const rundownPlaylist = access.playlist
 
 		const studio = rundownPlaylist.getStudio()
-		const studioBlueprint = studio.blueprintId ? await Blueprints.findOneAsync(studio.blueprintId) : null
+		const studioBlueprint = studio.blueprintId
+			? ((await Blueprints.findOneAsync(studio.blueprintId, { fields: { code: 0 } })) as Omit<Blueprint, 'code'>)
+			: null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
 		const rundowns = rundownPlaylist.getRundowns()
@@ -441,9 +444,14 @@ export namespace ClientRundownAPI {
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) },
 			}),
 		])
-		const showStyleBlueprints = await Blueprints.findFetchAsync({
-			_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
-		})
+		const showStyleBlueprints = (await Blueprints.findFetchAsync(
+			{
+				_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
+			},
+			{
+				fields: { code: 0 }, // Optimize: because .code is large
+			}
+		)) as Omit<Blueprint, 'code'>[]
 
 		const showStyleBasesMap = normalizeArray(showStyleBases, '_id')
 		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')

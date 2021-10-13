@@ -77,7 +77,7 @@ function initializeCoreSystem() {
 		queueCheckBlueprintsConfig()
 	}
 
-	const blueprintsCursor = Blueprints.find({})
+	const blueprintsCursor = Blueprints.find({}, { fields: { code: 0 } })
 	blueprintsCursor.observeChanges({
 		added: observeBlueprintChanges,
 		changed: observeBlueprintChanges,
@@ -127,7 +127,14 @@ function checkDatabaseVersions() {
 
 		// Blueprints:
 		const blueprintIds: { [id: string]: true } = {}
-		Blueprints.find({}).forEach((blueprint) => {
+		Blueprints.find(
+			{},
+			{
+				fields: {
+					code: 0, // Optimization, reduce bandwidth because the .code property is large
+				},
+			}
+		).forEach((blueprint) => {
 			if (blueprint.hasCode) {
 				blueprintIds[unprotectString(blueprint._id)] = true
 

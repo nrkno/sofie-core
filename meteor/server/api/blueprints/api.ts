@@ -86,7 +86,7 @@ export async function uploadBlueprint(
 	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
-	const blueprint = await Blueprints.findOneAsync(blueprintId)
+	const blueprint = (await Blueprints.findOneAsync(blueprintId, { fields: { code: 0 } })) as Omit<Blueprint, 'code'>
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
@@ -128,13 +128,13 @@ export async function internalUploadBlueprint(
 	organizationId?: OrganizationId | null
 ): Promise<Blueprint> {
 	organizationId = organizationId || null
-	const blueprint = await Blueprints.findOneAsync(blueprintId)
+	const blueprint = (await Blueprints.findOneAsync(blueprintId, { fields: { code: 0 } })) as Omit<Blueprint, 'code'>
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
 export async function innerUploadBlueprint(
 	organizationId: OrganizationId | null,
-	blueprint: Blueprint | undefined,
+	blueprint: Omit<Blueprint, 'code'> | undefined,
 	blueprintId: BlueprintId,
 	body: string,
 	blueprintName?: string,
@@ -252,7 +252,10 @@ async function assignSystemBlueprint(methodContext: MethodContext, blueprintId?:
 	if (blueprintId !== undefined && blueprintId !== null) {
 		check(blueprintId, String)
 
-		const blueprint = await Blueprints.findOneAsync(blueprintId)
+		const blueprint = (await Blueprints.findOneAsync(blueprintId, { fields: { code: 0 } })) as Omit<
+			Blueprint,
+			'code'
+		>
 		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
 
 		if (blueprint.organizationId)

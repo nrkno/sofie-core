@@ -24,7 +24,7 @@ import {
 	reportPartInstanceHasStopped,
 	reportPieceHasStopped,
 } from '../blueprints/events'
-import { Blueprints } from '../../../lib/collections/Blueprints'
+import { getBlueprintVersion } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
@@ -1349,9 +1349,9 @@ export namespace ServerPlayoutAPI {
 
 			if (versionsContent?.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
 			if (studio.blueprintId) {
-				const blueprint = await Blueprints.findOneAsync(studio.blueprintId)
-				if (!blueprint) return 'blueprintUnknown'
-				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
+				const blueprintVersion = await getBlueprintVersion(studio.blueprintId)
+				if (!blueprintVersion) return 'blueprintUnknown'
+				if (versionsContent.blueprintVersion !== (blueprintVersion || 0)) return 'blueprintVersion'
 			}
 		}
 
