@@ -106,7 +106,9 @@ export const SourceLayerItem = withTranslation()(
 
 		getSourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
 			if (this.props.part && this.props.partStartsAt !== undefined && !this.props.isLiveLine) {
-				return this.state.leftAnchoredWidth > this.state.elementWidth - 10 ? 'left' : 'right'
+				return this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth - 10
+					? 'left'
+					: 'right'
 			}
 			return 'right'
 		}
