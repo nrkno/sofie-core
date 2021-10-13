@@ -2,13 +2,13 @@
 
 ## System architecture
 
-![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](/gitbook/assets/frame (7) (7) (5).png)
+![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](/gitbook/assets/sofie-pogw-spreadheet.png)
 
 ### **Sofie Core**
 
-\*\*\*\*[**Sofie Core**](../dictionary.md#sofie-core) is a web-server which handle business logic and serves the Web-GUI.  
+[**Sofie Core**](../dictionary.md#sofie-core) is a web-server which handle business logic and serves the Web-GUI.  
 It is a [NodeJS](https://nodejs.org) process backed up by a [MongoDB](https://www.mongodb.com/) database and based on the framework [Meteor](http://meteor.com).  
-Read more: [_System architecture_](concepts-and-architecture.md#system-architecture)_,_ [_Getting Started_](../getting-started/)
+Read more: [_System architecture_](concepts-and-architecture.md#system-architecture)_,_ [_Getting Started_](../getting-started/intro)
 
 ### Gateways
 
@@ -39,9 +39,9 @@ A Playlist \(or "Rundown Playlist"\) is the entity that "goes on air" and contro
 
 It contains one or several Rundowns inside, which are playout out in order.
 
-{% hint style="info" %}
+:::info
 In some \(most?\) studios, there are only ever one rundown in a playlist. In those cases, we sometimes lazily refer to playlists and rundowns as "being the same thing".
-{% endhint %}
+:::
 
 A Playlist is played out in the context of it's [Studio](../dictionary.md#studio), thereby only a single Playlist can be active at a time within each Studio.
 
@@ -67,9 +67,9 @@ The Pieces inside of a Part determines what's going to happen, the could be indi
 
 Inside of the pieces are the [timeline-objects](../dictionary.md#timeline-object) which controls the play-out on a technical level.
 
-{% hint style="info" %}
+:::tip
 Tip! If you want to manually play a certain piece \(for example a graphics overlay\), you can at any time double-click it in the GUI, and it will be copied and played at your play head, just like an [AdLib](../dictionary.md#adlib-pieces) would!
-{% endhint %}
+:::
 
 See also: [Showstyle](../dictionary.md#showstyle)
 
@@ -126,7 +126,7 @@ The [Playout Gateway](../for-developers/libraries.md#gateways) picks up the time
 
 The Sofie system is made to work with a modern web- and IT-based approach in mind. Therefore, the Sofie Core can be run either on-site, or in an off-site cloud.
 
-![Sofie Core can run in the cloud](/gitbook/assets/sofie-web-architecture (1).png)
+![Sofie Core can run in the cloud](/gitbook/assets/sofie-web-architecture-2.png)
 
 One drawback of running in a cloud over the public internet is the - sometimes unpredictable - latency. The Timeline overcomes this by moving all the immediate control of the play-out devices to the Playout Gateway, which is intended to run on a local network, close to the hardware it controls.  
 This also gives the system a simple way of load-balancing - since the number of web-clients or load on Sofie Core won't affect the play-out.
@@ -135,11 +135,11 @@ Another benefit of basing the play-out on a timeline is that when programming th
 
 ### How does it work?
 
-{% hint style="success" %}
+:::tip
 Fun tip! The timeline in itself is a [separate library available on github](https://github.com/SuperFlyTV/supertimeline).
 
 You can play around with the timeline in the browser using [JSFiddle and the timeline-visualizer](https://jsfiddle.net/nytamin/rztp517u/)!
-{% endhint %}
+:::
 
 The Timeline is stored by Sofie Core in a MongoDB collection. It is generated whenever a user does a [TAKE](../dictionary.md#take-point), changes the [Next-point](../dictionary.md#next-point-and-lookahead) or anything else that might affect the play-out.
 
@@ -162,11 +162,11 @@ The TSR then...
 * ..generates commands to send to each device to account for the change.
 * The commands are then put on queue and sent to the devices at the correct time.
 
-{% hint style="info" %}
+:::info
 For more information about what play-out devices the TSR supports, and examples of the timeline-objects, see the [README of TSR](https://github.com/nrkno/tv-automation-state-timeline-resolver#timeline-state-resolver)
-{% endhint %}
+:::
 
-{% hint style="info" %}
+:::info
 For more information about how to program timeline-objects, see the [README of the timeline-library](https://github.com/SuperFlyTV/supertimeline#superfly-timeline)
-{% endhint %}
+:::
 

@@ -81,7 +81,7 @@ module.exports = {
 					],
 				},
 			],
-			copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+			copyright: `Copyright © ${new Date().getFullYear()} Norsk rikskringkasting AS and Contributors`,
 		},
 		prism: {
 			theme: lightCodeTheme,
@@ -104,6 +104,7 @@ module.exports = {
 							banner: 'none',
 						},
 					},
+
 				},
 				// blog: {
 				//   showReadingTime: true,
@@ -127,7 +128,7 @@ module.exports = {
 				sidebarPath: require.resolve('./sidebarsReleases.js'),
 				// ... other options
 			},
-		],
+		]
 		// [
 		//   '@docusaurus/plugin-content-docs',
 		//   {

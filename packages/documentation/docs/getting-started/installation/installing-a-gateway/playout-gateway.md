@@ -1,3 +1,6 @@
+---
+sidebar_position: 3
+---
 # Playout Gateway
 
 The Playout Gateway handles interacting external pieces of hardware or software by sending commands that will playout rundown content.

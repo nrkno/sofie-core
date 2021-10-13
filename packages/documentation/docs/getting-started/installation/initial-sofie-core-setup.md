@@ -12,5 +12,5 @@ To upgrade to a newer version or installation of new blueprints, Sofie needs to 
 
 Fill in the form as prompted and continue by clicking _Run Migrations Procedure_. Sometimes you will need to go through multiple steps before the upgrade is finished.
 
-Next, you will need to [add some Blueprints](installing-blueprints.md) and [add Gateways](installing-a-gateway/) to allow _Sofie_ to interpret rundown data and then play out things.
+Next, you will need to [add some Blueprints](installing-blueprints.md) and [add Gateways](installing-a-gateway/README) to allow _Sofie_ to interpret rundown data and then play out things.
 

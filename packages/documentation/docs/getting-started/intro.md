@@ -12,7 +12,7 @@ _Sofie_ can be installed in many different ways, depending on which platforms, n
 
 The _Rundowns_ page will display all the active rundowns that the _Sofie Core_ has access to. 
 
-![Rundown Page](/gitbook/assets/image (4).png)
+![Rundown Page](/gitbook/assets/rundown-page.png)
 
 The _Status_ pages displays the current status for the attached devices and gateways.
 
