@@ -443,6 +443,7 @@ export function checkPieceContentStatus(
 						messages.push(t('{{sourceLayer}} is missing a file path', { sourceLayer: sourceLayer.name }))
 					} else {
 						const mediaObject = MediaObjects.findOne({
+							studioId: studio._id,
 							mediaId: fileName,
 						})
 						// If media object not found, then...
@@ -603,6 +604,7 @@ export function checkPieceContentStatus(
 				case SourceLayerType.GRAPHICS:
 					if (fileName) {
 						const mediaObject = MediaObjects.findOne({
+							studioId: studio._id,
 							mediaId: fileName,
 						})
 						if (!mediaObject) {
