@@ -40,7 +40,7 @@ export interface ICustomLayerItemProps {
 	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: (returnInfinite?: boolean) => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
-	sourceDurationLabelAlignment?: () => SourceDurationLabelAlignment
+	getSourceDurationLabelAlignment?: () => SourceDurationLabelAlignment
 	showDurationSourceLayers?: Set<string>
 }
 export interface ISourceLayerItemState {}
@@ -49,11 +49,11 @@ export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
 > extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
-	sourceDurationLabelAlignment(): SourceDurationLabelAlignment {
+	getSourceDurationLabelAlignment(): SourceDurationLabelAlignment {
 		return (
-			(this.props.sourceDurationLabelAlignment &&
-				typeof this.props.sourceDurationLabelAlignment === 'function' &&
-				this.props.sourceDurationLabelAlignment()) ||
+			(this.props.getSourceDurationLabelAlignment &&
+				typeof this.props.getSourceDurationLabelAlignment === 'function' &&
+				this.props.getSourceDurationLabelAlignment()) ||
 			'right'
 		)
 	}

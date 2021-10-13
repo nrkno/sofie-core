@@ -104,7 +104,7 @@ export const SourceLayerItem = withTranslation()(
 			return Math.round(this.props.timeScale * time)
 		}
 
-		sourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
+		getSourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
 			if (this.props.part && this.props.partStartsAt !== undefined && !this.props.isLiveLine) {
 				return this.state.leftAnchoredWidth > this.state.elementWidth - 10 ? 'left' : 'right'
 			}
@@ -604,7 +604,7 @@ export const SourceLayerItem = withTranslation()(
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
-							sourceDurationLabelAlignment={this.sourceDurationLabelAlignment}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -646,7 +646,7 @@ export const SourceLayerItem = withTranslation()(
 							// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
-							sourceDurationLabelAlignment={this.sourceDurationLabelAlignment}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -676,7 +676,7 @@ export const SourceLayerItem = withTranslation()(
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
-							sourceDurationLabelAlignment={this.sourceDurationLabelAlignment}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
