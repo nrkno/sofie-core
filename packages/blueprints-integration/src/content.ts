@@ -65,6 +65,8 @@ export interface VTContent extends BaseContent {
 	previewFrame?: number
 	mediaFlowIds?: string[]
 	seek?: number
+	/** Duration of extra content past sourceDuration. Not planned to play back but present on the media and playable. */
+	postrollDuration?: number
 	editable?: VTEditableParameters
 	ignoreMediaObjectStatus?: boolean
 }
