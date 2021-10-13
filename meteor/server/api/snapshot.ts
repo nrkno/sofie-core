@@ -856,6 +856,12 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 	snapshot.showStyleVariants = _.map(snapshot.showStyleVariants, (showStyleVariant) => {
 		return migrateConfigToBlueprintConfigOnObject(showStyleVariant)
 	})
+	if (snapshot.blueprints) {
+		snapshot.blueprints = _.map(snapshot.blueprints, (bp) => {
+			bp.hasCode = !!bp.code
+			return bp
+		})
+	}
 
 	const changes = sumChanges(
 		...(await Promise.all([

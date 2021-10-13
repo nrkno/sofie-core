@@ -111,6 +111,7 @@ function initializeCoreSystem() {
 let lastDatabaseVersionBlueprintIds: { [id: string]: true } = {}
 function checkDatabaseVersions() {
 	// Core system
+	logger.debug('checkDatabaseVersions...')
 
 	const databaseSystem = getCoreSystem()
 	if (!databaseSystem) {
@@ -126,8 +127,8 @@ function checkDatabaseVersions() {
 
 		// Blueprints:
 		const blueprintIds: { [id: string]: true } = {}
-		Blueprints.find().forEach((blueprint) => {
-			if (blueprint.code) {
+		Blueprints.find({}).forEach((blueprint) => {
+			if (blueprint.hasCode) {
 				blueprintIds[unprotectString(blueprint._id)] = true
 
 				// @ts-ignore
@@ -188,6 +189,7 @@ function checkDatabaseVersions() {
 		})
 		lastDatabaseVersionBlueprintIds = blueprintIds
 	}
+	logger.debug('checkDatabaseVersions done!')
 }
 function onCoreSystemChanged() {
 	checkDatabaseVersions()
