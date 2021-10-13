@@ -181,6 +181,7 @@ export function checkPieceContentStatus(
 	const settings: IStudioSettings | undefined = studio?.settings
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
+	const sourceDuration = piece.content.sourceDuration
 	if (!ignoreMediaStatus && sourceLayer && studio) {
 		if (piece.expectedPackages) {
 			// Using Expected Packages:
@@ -378,7 +379,12 @@ export function checkPieceContentStatus(
 												count: frames,
 											})
 										)
-									} else if (scan.format && anomalies[0].end === Number(scan.format.duration)) {
+									} else if (
+										scan.format &&
+										anomalies[0].end === Number(scan.format.duration) &&
+										(sourceDuration === undefined ||
+											Math.round(anomalies[0].start) * 1000 < sourceDuration)
+									) {
 										const freezeStartsAt = Math.round(anomalies[0].start)
 										messages.push(
 											t('This clip ends with {{type}} frames after {{count}} second', {
@@ -397,15 +403,20 @@ export function checkPieceContentStatus(
 										)
 									}
 								} else if (anomalies.length > 0) {
-									const dur = anomalies.map((b) => b.duration).reduce((a, b) => a + b, 0)
+									const dur = anomalies
+										.filter((a) => sourceDuration === undefined || a.start * 1000 < sourceDuration)
+										.map((b) => b.duration)
+										.reduce((a, b) => a + b, 0)
 									const frames = Math.round((dur * 1000) / timebase)
-									messages.push(
-										t('{{frames}} {{type}} frame detected in clip', {
-											frames,
-											type,
-											count: frames,
-										})
-									)
+									if (frames > 0) {
+										messages.push(
+											t('{{frames}} {{type}} frame detected in clip', {
+												frames,
+												type,
+												count: frames,
+											})
+										)
+									}
 								}
 							}
 							if (deepScan?.blacks?.length) {
@@ -536,7 +547,9 @@ export function checkPieceContentStatus(
 												} else if (
 													mediaObject.mediainfo &&
 													mediaObject.mediainfo.format &&
-													arr[0].end === Number(mediaObject.mediainfo.format.duration)
+													arr[0].end === Number(mediaObject.mediainfo.format.duration) &&
+													(sourceDuration === undefined ||
+														Math.round(arr[0].start) * 1000 < sourceDuration)
 												) {
 													const freezeStartsAt = Math.round(arr[0].start)
 													messages.push(
@@ -549,7 +562,10 @@ export function checkPieceContentStatus(
 															}
 														)
 													)
-												} else {
+												} else if (
+													sourceDuration === undefined ||
+													Math.round(arr[0].start) * 1000 < sourceDuration
+												) {
 													messages.push(
 														t('{{frames}} {{type}} frame detected within the clip', {
 															frames,
@@ -559,15 +575,24 @@ export function checkPieceContentStatus(
 													)
 												}
 											} else if (arr.length > 0) {
-												const dur = arr.map((b) => b.duration).reduce((a, b) => a + b, 0)
+												const dur = arr
+													.filter(
+														(a) =>
+															sourceDuration === undefined ||
+															a.start * 1000 < sourceDuration
+													)
+													.map((b) => b.duration)
+													.reduce((a, b) => a + b, 0)
 												const frames = Math.ceil((dur * 1000) / timebase)
-												messages.push(
-													t('{{frames}} {{type}} frame detected in clip', {
-														frames,
-														type,
-														count: frames,
-													})
-												)
+												if (frames > 0) {
+													messages.push(
+														t('{{frames}} {{type}} frame detected in clip', {
+															frames,
+															type,
+															count: frames,
+														})
+													)
+												}
 											}
 										}
 										if (!piece.content.ignoreBlackFrames && mediaObject.mediainfo.blacks?.length) {
