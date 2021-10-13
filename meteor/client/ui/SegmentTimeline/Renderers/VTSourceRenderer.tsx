@@ -469,7 +469,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					className={ClassNames(
 						'segment-timeline__piece__label',
 						'with-duration',
-						`duration-${this.sourceDurationLabelAlignment()}`,
+						`with-duration--${this.sourceDurationLabelAlignment()}`,
 						{
 							'overflow-label': end !== '',
 						}

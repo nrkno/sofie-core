@@ -56,7 +56,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 						className={ClassNames(
 							'segment-timeline__piece__label',
 							'with-duration',
-							`duration-${this.sourceDurationLabelAlignment()}`
+							`with-duration--${this.sourceDurationLabelAlignment()}`
 						)}
 					>
 						<span>{this.props.piece.instance.piece.name}</span>
