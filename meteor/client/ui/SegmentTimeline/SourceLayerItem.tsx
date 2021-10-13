@@ -646,6 +646,7 @@ export const SourceLayerItem = withTranslation()(
 							// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
+							sourceDurationLabelAlignment={this.sourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
