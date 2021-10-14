@@ -50,35 +50,6 @@ export function makeNewIngestSegment(ingestSegment: IngestSegment): LocalIngestS
 export function makeNewIngestPart(ingestPart: IngestPart): LocalIngestPart {
 	return { ...ingestPart, modified: getCurrentTime() }
 }
-export function getIngestDataForRundown(rundownId: RundownId): IngestRundown | undefined {
-	const cachedData = IngestDataCache.find({ rundownId }).fetch()
-	const ingestRundown = cachedData.find((d) => d.type === IngestCacheType.RUNDOWN) as
-		| IngestDataCacheObjRundown
-		| undefined
-	if (!ingestRundown) return
-
-	const ingestSegments: Array<IngestDataCacheObjSegment> = cachedData.filter(
-		(d) => d.type === IngestCacheType.SEGMENT
-	) as Array<IngestDataCacheObjSegment>
-	const ingestParts: { [segmentId: string]: Array<IngestDataCacheObjPart> } = _.groupBy(
-		cachedData.filter((d) => d.type === IngestCacheType.PART),
-		(p) => p.segmentId
-	) as { [segmentId: string]: Array<IngestDataCacheObjPart> }
-
-	const segments: Array<IngestSegment> = []
-	for (const ingestSegment of ingestSegments) {
-		const parts = ingestParts[unprotectString(ingestSegment._id)] ?? []
-		segments.push({
-			...ingestSegment.data,
-			parts: parts.map((p) => p.data),
-		})
-	}
-
-	return {
-		...ingestRundown.data,
-		segments,
-	}
-}
 
 export class RundownIngestDataCache {
 	private constructor(

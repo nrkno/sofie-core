@@ -5,7 +5,7 @@ import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { DBSegment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
@@ -13,7 +13,6 @@ import {
 	makeNewIngestSegment,
 	makeNewIngestPart,
 	makeNewIngestRundown,
-	getIngestDataForRundown,
 } from './ingestCache'
 import {
 	getSegmentId,
@@ -23,7 +22,6 @@ import {
 	checkAccessAndGetPeripheralDevice,
 	getRundown,
 	extendIngestRundownCore,
-	getRundownId,
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
@@ -425,14 +423,6 @@ export async function handleUpdatedRundownMetaData(
 		)
 	}
 
-	const studio = Studios.findOne(studioId)
-	if (!studio) {
-		throw new Meteor.Error(
-			500,
-			`Cannot find studio "${studioId}" requested by peripheral device "${peripheralDevice!._id}"`
-		)
-	}
-
 	const rundownExternalId = newIngestRundown.externalId
 	return runIngestOperationWithCache(
 		'handleUpdatedRundownMetaData',
@@ -440,10 +430,9 @@ export async function handleUpdatedRundownMetaData(
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
-				const segments = getIngestDataForRundown(getRundownId(studio, rundownExternalId))?.segments ?? []
 				return makeNewIngestRundown({
 					...newIngestRundown,
-					segments: segments.map((segment) => makeNewIngestSegment(segment)),
+					segments: ingestRundown.segments.map((segment) => makeNewIngestSegment(segment)),
 				})
 			} else {
 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
