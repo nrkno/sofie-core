@@ -8,12 +8,12 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { JobContext } from '../jobs'
 import { PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../logging'
-import debounceFn, { DebouncedFunction } from 'debounce-fn'
+import * as debounceFn from 'debounce-fn'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 
 const EVENT_WAIT_TIME = 500
 
-const partInstanceTimingDebounceFunctions = new Map<string, DebouncedFunction<[], void>>()
+const partInstanceTimingDebounceFunctions = new Map<string, debounceFn.DebouncedFunction<[], void>>()
 
 function handlePartInstanceTimingEvent(
 	context: JobContext,

@@ -1,4 +1,4 @@
-import { ProtectedString, unprotectString, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
+import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { AnyBulkWriteOperation, Collection as MongoCollection, FindOptions } from 'mongodb'
 import { startSpanManual } from '../profiler'
 import { ICollection, MongoModifier, MongoQuery } from './collections'
