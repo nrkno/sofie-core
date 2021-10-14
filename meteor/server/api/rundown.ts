@@ -50,7 +50,13 @@ import { runIngestOperationFromRundown } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { checkAccessToPlaylist } from './lib'
-import { fetchBlueprintVersion, fetchShowStyleBaseLight, fetchStudioLight } from '../../lib/collections/optimizations'
+import {
+	fetchBlueprintLight,
+	fetchBlueprintsLight,
+	fetchBlueprintVersion,
+	fetchShowStyleBaseLight,
+	fetchStudioLight,
+} from '../../lib/collections/optimizations'
 
 export async function selectShowStyleVariant(
 	context: StudioUserContext,
@@ -423,9 +429,7 @@ export namespace ClientRundownAPI {
 		const rundownPlaylist = access.playlist
 
 		const studio = rundownPlaylist.getStudio()
-		const studioBlueprint = studio.blueprintId
-			? ((await Blueprints.findOneAsync(studio.blueprintId, { fields: { code: 0 } })) as Omit<Blueprint, 'code'>)
-			: null
+		const studioBlueprint = studio.blueprintId ? await fetchBlueprintLight(studio.blueprintId) : null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
 		const rundowns = rundownPlaylist.getRundowns()
@@ -444,14 +448,9 @@ export namespace ClientRundownAPI {
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) },
 			}),
 		])
-		const showStyleBlueprints = (await Blueprints.findFetchAsync(
-			{
-				_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
-			},
-			{
-				fields: { code: 0 }, // Optimize: because .code is large
-			}
-		)) as Omit<Blueprint, 'code'>[]
+		const showStyleBlueprints = await fetchBlueprintsLight({
+			_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
+		})
 
 		const showStyleBasesMap = normalizeArray(showStyleBases, '_id')
 		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')

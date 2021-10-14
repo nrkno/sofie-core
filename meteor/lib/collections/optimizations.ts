@@ -10,21 +10,35 @@ import { DBStudio, StudioId, Studios } from './Studios'
 */
 
 export async function fetchBlueprintVersion(blueprintId: BlueprintId) {
-	const blueprint = (await Blueprints.findOneAsync(blueprintId, { fields: { code: 0 } })) as Omit<Blueprint, 'code'>
+	const blueprint = await fetchBlueprintLight(blueprintId)
 	return blueprint?.blueprintVersion
 }
+export async function fetchBlueprintLight(blueprintId: BlueprintId): Promise<BlueprintLight | undefined> {
+	return Blueprints.findOneAsync(blueprintId, {
+		fields: {
+			code: 0,
+		},
+	})
+}
+export async function fetchBlueprintsLight(selector: MongoSelector<Blueprint>): Promise<BlueprintLight[]> {
+	return Blueprints.findFetchAsync(selector, {
+		fields: {
+			code: 0,
+		},
+	})
+}
+export type BlueprintLight = Omit<Blueprint, 'code'>
 
 /**
  * Returns a "light" version of the Studio, where the most heavy/large properties are omitted.
  */
 export function fetchStudioLight(studioId: StudioId): StudioLight | undefined {
-	const studio = Studios.findOne(studioId, {
+	return Studios.findOne(studioId, {
 		fields: {
 			mappings: 0,
 			blueprintConfig: 0,
 		},
 	})
-	return studio
 }
 export function fetchStudiosLight(selector: MongoSelector<DBStudio>): StudioLight[] {
 	return Studios.find(selector, {
@@ -38,26 +52,24 @@ export type StudioLight = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
 
 /** Checks if a studio exists */
 export function checkStudioExists(studioId: StudioId): boolean {
-	const studio = Studios.findOne(studioId, {
+	return !!Studios.findOne(studioId, {
 		fields: {
 			_id: 1,
 		},
 	})
-	return !!studio
 }
 
 /**
  * Returns a "light" version of the Studio, where the most heavy/large properties are omitted.
  */
 export function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): ShowStyleBaseLight | undefined {
-	const showStyle = ShowStyleBases.findOne(showStyleId, {
+	return ShowStyleBases.findOne(showStyleId, {
 		fields: {
 			blueprintConfig: 0,
 			outputLayers: 0,
 			sourceLayers: 0,
 		},
 	})
-	return showStyle
 }
 export function fetchShowStyleBasesLight(selector: MongoSelector<DBShowStyleBase>): ShowStyleBaseLight[] {
 	return ShowStyleBases.find(selector, {

@@ -23,6 +23,7 @@ import { Credentials, isResolvedCredentials } from '../../security/lib/credentia
 import { Settings } from '../../../lib/Settings'
 import { upsertBundles } from '../translationsBundles'
 import { fsMakeDir, fsReadFile, fsWriteFile } from '../../lib'
+import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,
@@ -86,7 +87,7 @@ export async function uploadBlueprint(
 	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
-	const blueprint = (await Blueprints.findOneAsync(blueprintId, { fields: { code: 0 } })) as Omit<Blueprint, 'code'>
+	const blueprint = await fetchBlueprintLight(blueprintId)
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
@@ -128,13 +129,13 @@ export async function internalUploadBlueprint(
 	organizationId?: OrganizationId | null
 ): Promise<Blueprint> {
 	organizationId = organizationId || null
-	const blueprint = (await Blueprints.findOneAsync(blueprintId, { fields: { code: 0 } })) as Omit<Blueprint, 'code'>
+	const blueprint = await fetchBlueprintLight(blueprintId)
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
 export async function innerUploadBlueprint(
 	organizationId: OrganizationId | null,
-	blueprint: Omit<Blueprint, 'code'> | undefined,
+	blueprint: BlueprintLight | undefined,
 	blueprintId: BlueprintId,
 	body: string,
 	blueprintName?: string,
