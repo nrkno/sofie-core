@@ -219,6 +219,8 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	): Promise<ClientAPI.ClientResponse<void>>
 	restoreRundownOrder(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+
+	storeSnapshot(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<SnapshotId>>
 }
 
 export enum UserActionAPIMethods {
@@ -295,6 +297,7 @@ export enum UserActionAPIMethods {
 	'switchRouteSet' = 'userAction.switchRouteSet',
 	'moveRundown' = 'userAction.moveRundown',
 	'restoreRundownOrder' = 'userAction.restoreRundownOrder',
+	'storeSnapshot' = 'userAction.storeSnapshot',
 }
 
 export interface ReloadRundownPlaylistResponse {
