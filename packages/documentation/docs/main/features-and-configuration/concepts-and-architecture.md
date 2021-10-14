@@ -4,7 +4,7 @@
 
 ![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](/gitbook/assets/sofie-pogw-spreadheet.png)
 
-### **Sofie Core**
+### Sofie Core
 
 [**Sofie Core**](../dictionary.md#sofie-core) is a web-server which handle business logic and serves the Web-GUI.  
 It is a [NodeJS](https://nodejs.org) process backed up by a [MongoDB](https://www.mongodb.com/) database and based on the framework [Meteor](http://meteor.com).  
@@ -92,19 +92,19 @@ Documentation on these interfaces are available in the [Blueprints integration](
 
 There are 3 types of Blueprints, and all 3 must be uploaded into Sofie before the system works.
 
-### **System Blueprints**
+### System Blueprints
 
 Handle things on the _System level_.  
 Documentation on the interface to be exposed by the Blueprint:  
 [https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts\#L52](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts#L52)
 
-### **Studio Blueprints**
+### Studio Blueprints
 
 Handle things on the _Studio level_, like "which showstyle to use for this rundown".  
 Documentation on the interface to be exposed by the Blueprint:  
 [https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts\#L57](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts#L57)
 
-### **Showstyle Blueprints**
+### Showstyle Blueprints
 
 Handle things on the _Showstyle level_, like generating [_Baseline_](../dictionary.md#baseline), _Segments_, _Parts, Pieces_ and _Timelines_ in a rundown.  
 Documentation on the interface to be exposed by the Blueprint:  
