@@ -55,17 +55,23 @@ export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void
 		})
 	})
 
-	cache.PartInstances.update((p) => !p.reset, {
-		$set: {
-			reset: true,
-		},
-	})
-	cache.deferAfterSave(() => {
-		PieceInstances.update((p) => !p.reset, {
+	cache.PartInstances.update(
+		{ $or: [{ reset: false }, { reset: { $exists: false } }] },
+		{
 			$set: {
 				reset: true,
 			},
-		})
+		}
+	)
+	cache.deferAfterSave(() => {
+		PieceInstances.update(
+			{ $or: [{ reset: false }, { reset: { $exists: false } }] },
+			{
+				$set: {
+					reset: true,
+				},
+			}
+		)
 	})
 
 	cache.Playlist.update({
