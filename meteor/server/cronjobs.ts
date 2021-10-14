@@ -2,7 +2,7 @@ import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { getCurrentTime, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, waitForPromise, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
@@ -20,6 +20,13 @@ const lowPrioFcn = (fcn: () => any) => {
 		fcn()
 	}, Math.random() * 10 * 1000)
 }
+/** Returns true if it is "low-season" (like during the night) when it is suitable to run cronjobs */
+function isLowSeason() {
+	const d = new Date(getCurrentTime())
+	return (
+		d.getHours() >= 4 && d.getHours() < 5 // It is nighttime
+	)
+}
 
 Meteor.startup(() => {
 	let lastNightlyCronjob = 0
@@ -29,8 +36,7 @@ Meteor.startup(() => {
 		const d = new Date(getCurrentTime())
 		const timeSinceLast = getCurrentTime() - lastNightlyCronjob
 		if (
-			d.getHours() >= 4 &&
-			d.getHours() < 5 && // It is nighttime
+			isLowSeason() &&
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
 			const previousLastNightlyCronjob = lastNightlyCronjob
@@ -82,7 +88,7 @@ Meteor.startup(() => {
 			}
 
 			const ps: Array<Promise<any>> = []
-			// restart casparcg
+			// Restart casparcg
 			if (system?.cron?.casparCGRestart?.enabled) {
 				PeripheralDevices.find({
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
@@ -130,13 +136,12 @@ Meteor.startup(() => {
 					})
 				})
 			}
-			Promise.all(ps)
-				.then(() => {
-					failedRetries = 0
-				})
-				.catch((err) => {
-					logger.error(err)
-				})
+			try {
+				waitForPromiseAll(ps)
+				failedRetries = 0
+			} catch (err) {
+				logger.error(err)
+			}
 
 			// last:
 			logger.info('Nightly cronjob: done')
