@@ -77,6 +77,7 @@ interface ISourceLayerPropsBase {
 	layerIndex: number
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	isPreview: boolean
+	showDurationSourceLayers?: Set<string>
 }
 interface ISourceLayerProps extends ISourceLayerPropsBase {
 	layer: ISourceLayerUi
@@ -156,6 +157,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							onFollowLiveLine={this.props.onFollowLiveLine}
 							layerIndex={this.props.layerIndex}
 							isPreview={this.props.isPreview}
+							showDurationSourceLayers={this.props.showDurationSourceLayers}
 						/>
 					)
 				})
@@ -230,6 +232,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 								scrollWidth={this.props.scrollWidth}
 								layerIndex={this.props.layerIndex}
 								isPreview={this.props.isPreview}
+								showDurationSourceLayers={this.props.showDurationSourceLayers}
 							/>
 						)
 					})
@@ -286,6 +289,7 @@ interface IOutputGroupProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	indexOffset: number
 	isPreview: boolean
+	showDurationSourceLayers?: Set<string>
 }
 class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	static whyDidYouRender = true
@@ -326,6 +330,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 							onPieceClick={this.props.onPieceClick}
 							onPieceDoubleClick={this.props.onPieceDoubleClick}
 							isPreview={this.props.isPreview}
+							showDurationSourceLayers={this.props.showDurationSourceLayers}
 						/>
 					)
 				})
@@ -362,6 +367,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						onPieceClick={this.props.onPieceClick}
 						onPieceDoubleClick={this.props.onPieceDoubleClick}
 						isPreview={this.props.isPreview}
+						showDurationSourceLayers={this.props.showDurationSourceLayers}
 					/>
 				)
 			}
@@ -433,6 +439,7 @@ interface IProps {
 	isPreview?: boolean
 	cropDuration?: number
 	className?: string
+	showDurationSourceLayers?: Set<string>
 }
 
 interface IState {
@@ -821,6 +828,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								liveLinePadding={SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)}
 								indexOffset={currentIndex}
 								isPreview={this.props.isPreview || false}
+								showDurationSourceLayers={this.props.showDurationSourceLayers}
 							/>
 						)
 					}

@@ -83,6 +83,7 @@ interface IProps {
 	lastValidPartIndex: number | undefined
 	showCountdownToSegment: boolean
 	fixedSegmentDuration: boolean | undefined
+	showDurationSourceLayers?: Set<string>
 	budgetDuration?: number
 }
 interface IStateHeader {
@@ -810,6 +811,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							previousPartIsLive &&
 							!!this.props.playlist.nextPartInstanceId
 						}
+						showDurationSourceLayers={this.props.showDurationSourceLayers}
 						part={part}
 						isBudgetGap={false}
 					/>

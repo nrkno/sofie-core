@@ -8,6 +8,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PieceLifespan, VTContent } from '@sofie-automation/blueprints-integration'
 import { OffsetPosition } from '../../../utils/positions'
 
+export type SourceDurationLabelAlignment = 'left' | 'right'
+
 export interface ICustomLayerItemProps {
 	mediaPreviewUrl?: string
 	typeClass?: string
@@ -38,6 +40,8 @@ export interface ICustomLayerItemProps {
 	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: (returnInfinite?: boolean) => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
+	getSourceDurationLabelAlignment?: () => SourceDurationLabelAlignment
+	showDurationSourceLayers?: Set<string>
 }
 export interface ISourceLayerItemState {}
 
@@ -45,6 +49,15 @@ export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
 > extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
+	getSourceDurationLabelAlignment(): SourceDurationLabelAlignment {
+		return (
+			(this.props.getSourceDurationLabelAlignment &&
+				typeof this.props.getSourceDurationLabelAlignment === 'function' &&
+				this.props.getSourceDurationLabelAlignment()) ||
+			'right'
+		)
+	}
+
 	getItemLabelOffsetLeft(): React.CSSProperties {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
@@ -185,6 +198,23 @@ export class CustomLayerItemRenderer<
 				<FontAwesomeIcon icon={faCut} />
 			</div>
 		) : null
+	}
+
+	renderDuration() {
+		const uiPiece = this.props.piece
+		const innerPiece = uiPiece.instance.piece
+		const content = innerPiece.content
+		const duration = content && content.sourceDuration
+		if (duration && this.props.showDurationSourceLayers?.has(innerPiece.sourceLayerId)) {
+			return (
+				<span className="segment-timeline__piece__label__duration">{`(${RundownUtils.formatDiffToTimecode(
+					duration,
+					false,
+					false,
+					true
+				)})`}</span>
+			)
+		}
 	}
 
 	render() {

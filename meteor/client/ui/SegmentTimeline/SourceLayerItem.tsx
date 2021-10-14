@@ -19,6 +19,7 @@ import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { Studio } from '../../../lib/collections/Studios'
+import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -51,6 +52,7 @@ export interface ISourceLayerItemProps {
 	liveLinePadding: number
 	layerIndex: number
 	studio: Studio | undefined
+	showDurationSourceLayers?: Set<string>
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean
@@ -100,6 +102,15 @@ export const SourceLayerItem = withTranslation()(
 
 		convertTimeToPixels = (time: number) => {
 			return Math.round(this.props.timeScale * time)
+		}
+
+		getSourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
+			if (this.props.part && this.props.partStartsAt !== undefined && !this.props.isLiveLine) {
+				return this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth - 10
+					? 'left'
+					: 'right'
+			}
+			return 'right'
 		}
 
 		getItemLabelOffsetLeft = (): React.CSSProperties => {
@@ -410,6 +421,16 @@ export const SourceLayerItem = withTranslation()(
 		// 	}
 		// }
 
+		private measureElement = () => {
+			if (!this.itemElement) return
+			const width = getElementWidth(this.itemElement) || 0
+			if (this.state.elementWidth !== width) {
+				this.setState({
+					elementWidth: width,
+				})
+			}
+		}
+
 		private onResize = (entries: ResizeObserverEntry[]) => {
 			const firstEntry = entries && entries[0]
 
@@ -428,12 +449,7 @@ export const SourceLayerItem = withTranslation()(
 				this._resizeObserver = new ResizeObserver(this.onResize)
 				this._resizeObserver.observe(this.itemElement)
 
-				const width = getElementWidth(this.itemElement) || 0
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
+				this.measureElement()
 			}
 		}
 
@@ -464,12 +480,7 @@ export const SourceLayerItem = withTranslation()(
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
 			} else if (this.itemElement) {
-				const width = getElementWidth(this.itemElement) || 0
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
+				this.measureElement()
 			}
 
 			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
@@ -498,6 +509,8 @@ export const SourceLayerItem = withTranslation()(
 				this.mountResizeObserver()
 			} else if (!this.props.isLiveLine && this._resizeObserver) {
 				this.unmountResizeObserver()
+			} else if (!this.props.isLiveLine) {
+				this.measureElement()
 			}
 		}
 
@@ -595,6 +608,7 @@ export const SourceLayerItem = withTranslation()(
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -636,6 +650,7 @@ export const SourceLayerItem = withTranslation()(
 							// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -665,6 +680,7 @@ export const SourceLayerItem = withTranslation()(
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}

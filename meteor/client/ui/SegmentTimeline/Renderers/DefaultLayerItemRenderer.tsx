@@ -1,4 +1,5 @@
 import * as React from 'react'
+import ClassNames from 'classnames'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
@@ -51,7 +52,16 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 						ref={this.setLeftLabelRef}
 						style={this.getItemLabelOffsetLeft()}
 					>
-						<span className="segment-timeline__piece__label">{this.props.piece.instance.piece.name}</span>
+						<span
+							className={ClassNames(
+								'segment-timeline__piece__label',
+								'with-duration',
+								`with-duration--${this.getSourceDurationLabelAlignment()}`
+							)}
+						>
+							<span>{this.props.piece.instance.piece.name}</span>
+							{this.renderDuration()}
+						</span>
 					</span>
 					<span
 						className="segment-timeline__piece__label right-side"

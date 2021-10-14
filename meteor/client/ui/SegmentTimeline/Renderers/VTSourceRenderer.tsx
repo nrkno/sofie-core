@@ -261,7 +261,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		newState = this.mountSourceEndedCountdownContainer(this.props, newState, itemElement)
 
 		if (Object.keys(newState).length > 0) {
-			this.setState(newState as IState)
+			this.setState(newState as IState, () => {
+				if (newState.noticeLevel && newState.noticeLevel !== prevState.noticeLevel) {
+					this.updateAnchoredElsWidths()
+				}
+			})
 		}
 	}
 
@@ -466,11 +470,17 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 				<span
-					className={ClassNames('segment-timeline__piece__label', {
-						'overflow-label': end !== '',
-					})}
+					className={ClassNames(
+						'segment-timeline__piece__label',
+						'with-duration',
+						`with-duration--${this.getSourceDurationLabelAlignment()}`,
+						{
+							'overflow-label': end !== '',
+						}
+					)}
 				>
-					{begin}
+					<span>{begin}</span>
+					{this.renderDuration()}
 				</span>
 				{begin && end === '' && vtContent && vtContent.loop && (
 					<div className="segment-timeline__piece__label label-icon label-loop-icon">

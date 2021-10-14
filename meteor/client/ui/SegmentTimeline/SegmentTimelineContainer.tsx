@@ -119,6 +119,7 @@ interface IProps {
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined
 	fixedSegmentDuration: boolean | undefined
+	showDurationSourceLayers?: Set<string>
 }
 interface IState {
 	scrollLeft: number
@@ -1014,6 +1015,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								showCountdownToSegment={this.props.showCountdownToSegment}
 								fixedSegmentDuration={this.props.fixedSegmentDuration}
 								displayLiveLineCounter={this.props.displayLiveLineCounter}
+								showDurationSourceLayers={this.props.showDurationSourceLayers}
 							/>
 						)}
 						{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (

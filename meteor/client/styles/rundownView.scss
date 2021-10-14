@@ -1857,7 +1857,6 @@ svg.icon {
 							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
 								($output-layer-group-collapse-animation-duration * 2/3);
 							pointer-events: none;
-							display: inline-block;
 							white-space: nowrap;
 
 							transform: translate3d(0, 0, 1px); // Just to make it render in front
@@ -2265,6 +2264,26 @@ svg.icon {
 					object-fit: contain;
 					object-position: center center;
 					margin-left: 0.5em;
+				}
+
+				&.with-duration {
+					display: inline-flex;					
+					flex-direction: row;
+
+					.segment-timeline__piece__label__duration {
+						font-weight: 300;
+						font-size: 0.9em;
+						margin-left: 0.2em;
+					}
+
+					&.with-duration--left {
+						.segment-timeline__piece__label__duration
+						{
+						   order: -1;
+						   margin-left: 0;
+						   margin-right: 0.2em;
+						}
+					}
 				}
 			}
 
