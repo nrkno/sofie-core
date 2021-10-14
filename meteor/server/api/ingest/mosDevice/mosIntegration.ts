@@ -4,7 +4,7 @@ import * as MOS from 'mos-connection'
 import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../logging'
-import { getStudioFromDevice, canRundownBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
+import { canRundownBeUpdated, checkAccessAndGetPeripheralDevice, getStudioLightFromDevice } from '../lib'
 import { handleRemovedRundown, regenerateRundown } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import {
@@ -107,7 +107,7 @@ export namespace MosIntegration {
 		logger.info(`mosRoStatus "${status.ID}"`)
 		logger.debug(status)
 
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studio = getStudioLightFromDevice(peripheralDevice)
 		const rundown = getRundownFromMosRO(studio, status.ID)
 		if (!canRundownBeUpdated(rundown, false)) return
 
@@ -133,7 +133,7 @@ export namespace MosIntegration {
 		logger.info(`mosRoStoryStatus "${status.ID}"`)
 		logger.debug(status)
 
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studio = getStudioLightFromDevice(peripheralDevice)
 		const rundown = getRundownFromMosRO(studio, status.RunningOrderId)
 		if (!canRundownBeUpdated(rundown, false)) return
 		// TODO ORPHAN include segment in check
@@ -277,7 +277,7 @@ export namespace MosIntegration {
 		logger.info(`mosRoReadyToAir "${Action.ID}"`)
 		logger.debug(Action)
 
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studio = getStudioLightFromDevice(peripheralDevice)
 		const rundown = getRundownFromMosRO(studio, Action.ID)
 		if (!canRundownBeUpdated(rundown, false)) return
 

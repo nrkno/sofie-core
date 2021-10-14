@@ -45,6 +45,7 @@ import { CacheForStudio } from '../studio/cache'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { StudioLight } from '../../../lib/collections/optimizations'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
@@ -130,7 +131,7 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	)
 }
 export function generateExpectedPackagesForPartInstance(
-	studio: Studio,
+	studio: StudioLight,
 	rundownId: RundownId,
 	partInstance: PartInstance
 ) {
@@ -291,7 +292,7 @@ function generateExpectedPackagesForBucketAdlibAction(studio: Studio, adlibActio
 	return packages
 }
 function generateExpectedPackageBases(
-	studio: ReadonlyDeep<Studio>,
+	studio: ReadonlyDeep<StudioLight>,
 	ownerId:
 		| PieceId
 		| AdLibActionId

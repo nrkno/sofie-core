@@ -28,6 +28,7 @@ import { profiler } from './api/profiler'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
 import { StatusCode } from '../lib/api/systemStatus'
+import { fetchStudiosLight } from '../lib/collections/optimizations'
 
 export { PackageInfo }
 
@@ -166,7 +167,7 @@ function checkDatabaseVersions() {
 					}
 
 					// TODO - is this correct for the current relationships? What about studio blueprints?
-					Studios.find({
+					fetchStudiosLight({
 						supportedShowStyleBase: showStyleBase._id,
 					}).forEach((studio) => {
 						if (!studioIds[unprotectString(studio._id)]) {

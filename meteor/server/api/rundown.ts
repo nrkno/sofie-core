@@ -406,7 +406,7 @@ export namespace ClientRundownAPI {
 			if (!blueprintVersion) return 'missing blueprint'
 			if (rundown.importVersions.blueprint !== (blueprintVersion || 0)) return 'blueprint'
 
-			const studio = Studios.findOne(rundown.studioId)
+			const studio = fetchStudioLight(rundown.studioId)
 			if (!studio) return 'missing studio'
 			if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 		})

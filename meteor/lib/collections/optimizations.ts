@@ -1,3 +1,4 @@
+import { MongoSelector } from '../typings/meteor'
 import { BlueprintId, Blueprints, Blueprint } from './Blueprints'
 import { DBStudio, StudioId, Studios } from './Studios'
 
@@ -10,4 +11,36 @@ import { DBStudio, StudioId, Studios } from './Studios'
 export async function fetchBlueprintVersion(blueprintId: BlueprintId) {
 	const blueprint = (await Blueprints.findOneAsync(blueprintId, { fields: { code: 0 } })) as Omit<Blueprint, 'code'>
 	return blueprint?.blueprintVersion
+}
+
+/**
+ * Returns a "light" version of the Studio, where the most heavy/large properties are omitted.
+ */
+export function fetchStudioLight(studioId: StudioId): StudioLight | undefined {
+	const studio = Studios.findOne(studioId, {
+		fields: {
+			mappings: 0,
+			blueprintConfig: 0,
+		},
+	})
+	return studio
+}
+export function fetchStudiosLight(selector: MongoSelector<DBStudio>): StudioLight[] {
+	return Studios.find(selector, {
+		fields: {
+			mappings: 0,
+			blueprintConfig: 0,
+		},
+	}).fetch()
+}
+export type StudioLight = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
+
+/** Checks if a studio exists */
+export function checkStudioExists(studioId: StudioId): boolean {
+	const studio = Studios.findOne(studioId, {
+		fields: {
+			_id: 1,
+		},
+	})
+	return !!studio
 }

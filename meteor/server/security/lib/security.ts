@@ -13,6 +13,7 @@ import { UserId } from '../../../lib/collections/Users'
 import { ShowStyleBaseId, ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
+import { fetchStudioLight, StudioLight } from '../../../lib/collections/optimizations'
 
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 
@@ -119,13 +120,13 @@ export function allowAccessToShowStyleVariant(
 export function allowAccessToStudio(
 	cred0: Credentials | ResolvedCredentials,
 	studioId: MongoQueryKey<StudioId>
-): Access<Studio | null> {
+): Access<StudioLight | null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!studioId) return noAccess('studioId not set')
 	if (!isProtectedString(studioId)) return noAccess('studioId is not a string')
 	const cred = resolveCredentials(cred0)
 
-	const studio = Studios.findOne(studioId)
+	const studio = fetchStudioLight(studioId)
 	if (!studio) return noAccess('Studio not found')
 
 	return {
@@ -270,7 +271,7 @@ namespace AccessRules {
 			return allAccess(showStyleBase)
 		} else return noAccess(`User is not in the same organization as the showStyleBase "${showStyleBase._id}"`)
 	}
-	export function accessStudio(studio: Studio, cred: ResolvedCredentials): Access<Studio> {
+	export function accessStudio(studio: StudioLight, cred: ResolvedCredentials): Access<StudioLight> {
 		if (!studio.organizationId) return noAccess('Studio has no organization')
 		if (!cred.organization) return noAccess('No organization in credentials')
 		if (studio.organizationId === cred.organization._id) {
@@ -282,7 +283,7 @@ namespace AccessRules {
 		playlist: RundownPlaylist,
 		cred: ResolvedCredentials
 	): Access<RundownPlaylist> {
-		const studio = playlist.getStudio()
+		const studio = playlist.getStudioLight()
 		if (!studio) return noAccess(`Studio of playlist "${playlist._id}" not found`)
 		return { ...accessStudio(studio, cred), document: playlist }
 	}

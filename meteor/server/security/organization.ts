@@ -11,8 +11,9 @@ import { Settings } from '../../lib/Settings'
 import { MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import { Studio, StudioId, Studios } from '../../lib/collections/Studios'
+import { StudioId } from '../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
 
 type OrganizationContent = { organizationId: OrganizationId }
 export namespace OrganizationReadAccess {
@@ -51,11 +52,11 @@ export namespace OrganizationContentWriteAccess {
 		return anyContent(cred0, { organizationId })
 	}
 
-	export function studio(cred0: Credentials, existingStudio?: Studio | StudioId) {
+	export function studio(cred0: Credentials, existingStudio?: StudioLight | StudioId) {
 		triggerWriteAccess()
 		if (existingStudio && isProtectedString(existingStudio)) {
 			const studioId = existingStudio
-			existingStudio = Studios.findOne(studioId)
+			existingStudio = fetchStudioLight(studioId)
 			if (!existingStudio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 		}
 		return { ...anyContent(cred0, existingStudio), studio: existingStudio }

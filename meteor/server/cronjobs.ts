@@ -10,9 +10,9 @@ import { TSR } from '@sofie-automation/blueprints-integration'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
-import { Studios } from '../lib/collections/Studios'
 import { removeEmptyPlaylists } from './api/rundownPlaylist'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
+import { fetchStudiosLight } from '../lib/collections/optimizations'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -146,8 +146,8 @@ Meteor.startup(() => {
 	nightlyCronjob()
 
 	function cleanupPlaylists() {
-		// Ensure there are no empty playlists on an interval
-		const studios = Studios.find().fetch()
+		// Ensure there are no empty playlists:
+		const studios = fetchStudiosLight({})
 		waitForPromiseAll(studios.map(async (studio) => removeEmptyPlaylists(studio._id)))
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes

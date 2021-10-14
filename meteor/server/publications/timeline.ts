@@ -9,6 +9,7 @@ import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/Per
 import { Studios, getActiveRoutes, StudioId } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
+import { fetchStudioLight } from '../../lib/collections/optimizations'
 
 meteorPublish(PubSub.timeline, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -75,7 +76,7 @@ meteorCustomPublishArray(
 					if (!newData.studioId || !newData.timeline) {
 						return []
 					} else {
-						const studio = Studios.findOne(newData.studioId)
+						const studio = fetchStudioLight(newData.studioId)
 						if (!studio) return []
 
 						const routes = getActiveRoutes(studio)

@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, canRundownBeUpdated, getPartId, getRundownId } from '../lib'
+import { canRundownBeUpdated, getPartId, getRundownId, getStudioLightFromDevice } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -103,7 +103,7 @@ export async function handleMosRundownData(
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	isCreateAction: boolean
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrder.ID)
 	const rundownExternalId = parseMosString(mosRunningOrder.ID)
 
@@ -172,7 +172,7 @@ export async function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(mosRunningOrderBase.ID)
 
@@ -207,7 +207,7 @@ export async function handleMosFullStory(
 	// @ts-ignore
 	// logger.debug(story)
 
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	const partExternalId = parseMosString(story.ID)
 	const rundownExternalId = parseMosString(story.RunningOrderId)
@@ -255,7 +255,7 @@ export async function handleMosDeleteStory(
 ): Promise<void> {
 	if (stories.length === 0) return
 
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
 	const rundownId = getRundownId(studio, rundownExternalId)
@@ -328,7 +328,7 @@ export async function handleMosInsertParts(
 	// inserts stories and all of their defined items before the referenced story in a Running Order
 	// ...and roStoryReplace message replaces the referenced story with another story or stories
 
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
 	const rundownId = getRundownId(studio, rundownExternalId)
@@ -396,7 +396,7 @@ export async function handleMosSwapStories(
 	story0: MOS.MosString128,
 	story1: MOS.MosString128
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	const story0Str = parseMosString(story0)
 	const story1Str = parseMosString(story1)
@@ -454,7 +454,7 @@ export async function handleMosMoveStories(
 	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
 	const rundownId = getRundownId(studio, rundownExternalId)

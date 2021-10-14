@@ -110,7 +110,7 @@ export namespace IngestActions {
 					if (!rundownPlaylist)
 						throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
 
-					const studio = rundownPlaylist.getStudio()
+					const studio = rundownPlaylist.getStudioLight()
 					if (!studio) {
 						throw new Meteor.Error(
 							404,

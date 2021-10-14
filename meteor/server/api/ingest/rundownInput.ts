@@ -16,7 +16,7 @@ import {
 } from './ingestCache'
 import {
 	getSegmentId,
-	getStudioFromDevice,
+	getStudioLightFromDevice,
 	canRundownBeUpdated,
 	canSegmentBeUpdated,
 	checkAccessAndGetPeripheralDevice,
@@ -28,6 +28,7 @@ import { CacheForIngest } from './cache'
 import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { StudioLight } from '../../../lib/collections/optimizations'
 
 export namespace RundownInput {
 	export async function dataPlaylistGet(
@@ -294,7 +295,7 @@ export async function handleRemovedRundown(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
 }
@@ -341,7 +342,7 @@ export async function handleRemovedRundownByRundown(rundown: DBRundown, forceDel
 
 /** Handle an updated (or inserted) Rundown */
 export async function handleUpdatedRundown(
-	studio0: Studio | undefined,
+	studio0: StudioLight | undefined,
 	peripheralDevice: PeripheralDevice | undefined,
 	newIngestRundown: IngestRundown,
 	isCreateAction: boolean
@@ -391,7 +392,7 @@ export async function handleUpdatedRundownInner(
 	return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
 }
 export async function regenerateRundown(
-	studio: Studio,
+	studio: StudioLight,
 	rundownExternalId: string,
 	peripheralDevice0: PeripheralDevice | undefined
 ): Promise<void> {
@@ -431,7 +432,7 @@ export async function handleRemovedSegment(
 	rundownExternalId: string,
 	segmentExternalId: string
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleRemovedSegment',
@@ -485,7 +486,7 @@ export async function handleUpdatedSegment(
 	newIngestSegment: IngestSegment,
 	isCreateAction: boolean
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	const segmentExternalId = newIngestSegment.externalId
 
@@ -518,7 +519,7 @@ export async function handleUpdatedSegmentRanks(
 	rundownExternalId: string,
 	newRanks: { [segmentExternalId: string]: number }
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleUpdatedSegmentRanks',
@@ -572,7 +573,7 @@ export async function handleRemovedPart(
 	segmentExternalId: string,
 	partExternalId: string
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleRemovedPart',
@@ -609,7 +610,7 @@ export async function handleUpdatedPart(
 	segmentExternalId: string,
 	ingestPart: IngestPart
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studio = getStudioLightFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleUpdatedPart',
