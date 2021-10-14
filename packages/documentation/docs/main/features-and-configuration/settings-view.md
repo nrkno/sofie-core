@@ -80,12 +80,13 @@ Route Sets can also be configured with a _Default State_. This can be used to co
 A _Showstyle_ is related to the looks and logic of a _show_, which in contrast to the _studio_ is not directly related to the hardware.  
 The Showstyle contains settings like
 
-* **Source Layers -** Groups different types of content in the GUI
+* **Source Layers** - Groups different types of content in the GUI
 * **Output Channels** - Indicates different output targets \(such as the _Program_ or _back-screen in the studio_\)
+* **Action Triggers** - Select how actions can be started on a per-show basis, outside of the on-screen controls
 * **Blueprint configuration** - ****custom config option defined by the blueprints
 
 :::caution
-Please note the difference between S_ource Layers_ and _timeline-layers:_
+Please note the difference between _Source Layers_ and _timeline-layers_:
 
 [Pieces ](../dictionary.md#piece)are put onto _Source layers_, to group different types of content \(such as a VT or Camera\), they are therefore intended only as something to indicate to the user what is going to be played, not what is actually going to happen on the technical level.
 
@@ -95,7 +96,21 @@ The exact timeline-layer is never exposed to the user, but instead used on the t
 An example of the difference could be when playing a VT \(that's a Source Layer\), which could involve all of the timeline-layers _video\_player0_, _audio\_fader\_video_, _audio\_fader\_host_ and _mixer\_pgm._
 :::
 
+### Action Triggers
 
+This is a way to set up how - outside of the Point-and-Click Graphical User Interface - actions can be performed in the User Interface. Commonly, these are the *hotkey combinations* that can be used to either trigger AdLib content or other actions in the larger system. This is done by creating sets of Triggers and Actions to be triggered by them. These pairs can be set at the Show Style level or at the Core (System) level, for common actions such as doing a Take or activating a Rundown, where you want a shared method of operation.
+
+#### Triggers
+
+The triggers are designed to be either client-specific or issued by a peripheral device module.
+
+Currently, the Action Triggers system only supports a single, client-specific trigger type: a Hotkey. Hotkeys can be either a single key, a combination of keys (*combo*) or a *chord* - a sequnece of key combinations pressed in a particular order. *Chords* are popular in some text editing applications and vastly expand the amount of actions that can be triggered from a keyboard, at the expense of the time needed to execute them. Currenlty, the Hotkey editor in Sofie does not support creating *Chords*, but they can be specified by Blueprints during migrations.
+
+#### Actions
+
+The actions are built using a base *action* (such as *Activate a Rundown* or *AdLib*) and a set of *filters*, limiting the scope of the *action*. Optionally, some of these *actions* can take additional *parameters*. These filters can operate on various types of objects, depending on the action in question. All actions currently require that the chain of filters starts with scoping out the Rundown the action is supposed to affect. Currently, there is only one type of Rundown-level filter supported: "The Rundown currently in view".
+
+The Action Triggers user interface guides the user in a wizzard-like fashion through the available *filter* options on a given *action*.
 
 ## Migrations
 
