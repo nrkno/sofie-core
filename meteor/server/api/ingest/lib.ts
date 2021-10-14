@@ -21,7 +21,7 @@ import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { CacheForIngest } from './cache'
-import { fetchStudioLight, StudioLight } from '../../../lib/collections/optimizations'
+import { checkStudioExists, fetchStudioLight, StudioLight } from '../../../lib/collections/optimizations'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -43,10 +43,10 @@ export function checkAccessAndGetPeripheralDevice(
 	return peripheralDevice
 }
 
-export function getRundownId(studio: ReadonlyDeep<StudioLight> | StudioId, rundownExternalId: string): RundownId {
-	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
+export function getRundownId(studioId: StudioId, rundownExternalId: string): RundownId {
+	if (!studioId) throw new Meteor.Error(500, 'getRundownId: studio not set!')
 	if (!rundownExternalId) throw new Meteor.Error(401, 'getRundownId: rundownExternalId must be set!')
-	return protectString<RundownId>(getHash(`${isProtectedString(studio) ? studio : studio._id}_${rundownExternalId}`))
+	return protectString<RundownId>(getHash(`${studioId}_${rundownExternalId}`))
 }
 export function getSegmentId(rundownId: RundownId, segmentExternalId: string): SegmentId {
 	if (!rundownId) throw new Meteor.Error(401, 'getSegmentId: rundownId must be set!')
@@ -59,24 +59,24 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 	return protectString<PartId>(getHash(`${rundownId}_part_${partExternalId}`))
 }
 
-export function getStudioLightFromDevice(peripheralDevice: PeripheralDevice): StudioLight {
-	const span = profiler.startSpan('mosDevice.lib.getStudioLightFromDevice')
+export function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId {
+	const span = profiler.startSpan('mosDevice.lib.getStudioIdFromDevice')
 
 	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
-	const studio = fetchStudioLight(studioId)
-	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
+	const studioExists = checkStudioExists(studioId)
+	if (!studioExists) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
 
 	span?.end()
-	return studio
+	return studioId
 }
 export function getRundown(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
 	const rundown = cache.Rundown.doc
 	if (!rundown) {
-		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
+		const rundownId = getRundownId(cache.Studio.doc._id, cache.RundownExternalId)
 		throw new Meteor.Error(404, `Rundown "${rundownId}" ("${cache.RundownExternalId}") not found`)
 	}
 	return rundown
@@ -100,10 +100,12 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 }
 
 function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
-	PeripheralDevices.update(deviceId, {
+	PeripheralDevices.updateAsync(deviceId, {
 		$set: {
 			lastDataReceived: getCurrentTime(),
 		},
+	}).catch((err) => {
+		logger.error(`Error in updateDeviceLastDataReceived "${deviceId}": ${err}`)
 	})
 }
 

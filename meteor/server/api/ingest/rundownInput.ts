@@ -16,11 +16,11 @@ import {
 } from './ingestCache'
 import {
 	getSegmentId,
-	getStudioLightFromDevice,
 	canRundownBeUpdated,
 	canSegmentBeUpdated,
 	checkAccessAndGetPeripheralDevice,
 	getRundown,
+	fetchStudioIdFromDevice,
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
@@ -295,9 +295,9 @@ export async function handleRemovedRundown(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string
 ): Promise<void> {
-	const studio = getStudioLightFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
-	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
+	return handleRemovedRundownFromStudio(studioId, rundownExternalId)
 }
 async function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
 	return runIngestOperationWithCache(
@@ -392,13 +392,13 @@ export async function handleUpdatedRundownInner(
 	return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
 }
 export async function regenerateRundown(
-	studio: StudioLight,
+	studioId: StudioId,
 	rundownExternalId: string,
 	peripheralDevice0: PeripheralDevice | undefined
 ): Promise<void> {
 	return runIngestOperationWithCache(
 		'regenerateRundown',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -432,11 +432,11 @@ export async function handleRemovedSegment(
 	rundownExternalId: string,
 	segmentExternalId: string
 ): Promise<void> {
-	const studio = getStudioLightFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleRemovedSegment',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -486,13 +486,13 @@ export async function handleUpdatedSegment(
 	newIngestSegment: IngestSegment,
 	isCreateAction: boolean
 ): Promise<void> {
-	const studio = getStudioLightFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const segmentExternalId = newIngestSegment.externalId
 
 	return runIngestOperationWithCache(
 		'handleUpdatedSegment',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -519,11 +519,11 @@ export async function handleUpdatedSegmentRanks(
 	rundownExternalId: string,
 	newRanks: { [segmentExternalId: string]: number }
 ): Promise<void> {
-	const studio = getStudioLightFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleUpdatedSegmentRanks',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -573,11 +573,11 @@ export async function handleRemovedPart(
 	segmentExternalId: string,
 	partExternalId: string
 ): Promise<void> {
-	const studio = getStudioLightFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleRemovedPart',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -610,11 +610,11 @@ export async function handleUpdatedPart(
 	segmentExternalId: string,
 	ingestPart: IngestPart
 ): Promise<void> {
-	const studio = getStudioLightFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleUpdatedPart',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {

@@ -42,7 +42,7 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
 	const studio = fetchStudioLight(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
 
-	const rundownId = getRundownId(studio, ingestRundown.externalId)
+	const rundownId = getRundownId(studio._id, ingestRundown.externalId)
 
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced
