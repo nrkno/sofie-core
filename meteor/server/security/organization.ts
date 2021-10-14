@@ -12,8 +12,13 @@ import { MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
 import { StudioId } from '../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import {
+	fetchShowStyleBaseLight,
+	fetchStudioLight,
+	ShowStyleBaseLight,
+	StudioLight,
+} from '../../lib/collections/optimizations'
 
 type OrganizationContent = { organizationId: OrganizationId }
 export namespace OrganizationReadAccess {
@@ -90,11 +95,11 @@ export namespace OrganizationContentWriteAccess {
 	export function dataFromSnapshot(cred0: Credentials, organizationId: OrganizationId) {
 		return anyContent(cred0, { organizationId: organizationId })
 	}
-	export function showStyleBase(cred0: Credentials, existingShowStyleBase?: ShowStyleBase | ShowStyleBaseId) {
+	export function showStyleBase(cred0: Credentials, existingShowStyleBase?: ShowStyleBaseLight | ShowStyleBaseId) {
 		triggerWriteAccess()
 		if (existingShowStyleBase && isProtectedString(existingShowStyleBase)) {
 			const showStyleBaseId = existingShowStyleBase
-			existingShowStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+			existingShowStyleBase = fetchShowStyleBaseLight(showStyleBaseId)
 			if (!existingShowStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
 		}
 		return { ...anyContent(cred0, existingShowStyleBase), showStyleBase: existingShowStyleBase }

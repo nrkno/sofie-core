@@ -10,10 +10,15 @@ import { isProtectedString } from '../../../lib/lib'
 import { OrganizationId, Organizations, Organization } from '../../../lib/collections/Organization'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { UserId } from '../../../lib/collections/Users'
-import { ShowStyleBaseId, ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
-import { fetchStudioLight, StudioLight } from '../../../lib/collections/optimizations'
+import {
+	fetchShowStyleBasesLight,
+	fetchStudioLight,
+	ShowStyleBaseLight,
+	StudioLight,
+} from '../../../lib/collections/optimizations'
 
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 
@@ -78,15 +83,15 @@ export function allowAccessToOrganization(
 export function allowAccessToShowStyleBase(
 	cred0: Credentials | ResolvedCredentials,
 	showStyleBaseId: MongoQueryKey<ShowStyleBaseId>
-): Access<ShowStyleBase | null> {
+): Access<ShowStyleBaseLight | null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!showStyleBaseId) return noAccess('showStyleBaseId not set')
 	const cred = resolveCredentials(cred0)
 
-	const showStyleBases = ShowStyleBases.find({
+	const showStyleBases = fetchShowStyleBasesLight({
 		_id: showStyleBaseId,
-	}).fetch()
-	let access: Access<ShowStyleBase | null> = allAccess(null)
+	})
+	let access: Access<ShowStyleBaseLight | null> = allAccess(null)
 	for (const showStyleBase of showStyleBases) {
 		access = combineAccess(access, AccessRules.accessShowStyleBase(showStyleBase, cred))
 	}
@@ -108,10 +113,10 @@ export function allowAccessToShowStyleVariant(
 		_id: showStyleVariantId,
 	}).fetch()
 	const showStyleBaseIds = _.uniq(_.map(showStyleVariants, (v) => v.showStyleBaseId))
-	const showStyleBases = ShowStyleBases.find({
+	const showStyleBases = fetchShowStyleBasesLight({
 		_id: { $in: showStyleBaseIds },
-	}).fetch()
-	let access: Access<ShowStyleBase | null> = allAccess(null)
+	})
+	let access: Access<ShowStyleBaseLight | null> = allAccess(null)
 	for (const showStyleBase of showStyleBases) {
 		access = combineAccess(access, AccessRules.accessShowStyleBase(showStyleBase, cred))
 	}
@@ -261,9 +266,9 @@ namespace AccessRules {
 		} else return noAccess(`User is not in the organization "${organization._id}"`)
 	}
 	export function accessShowStyleBase(
-		showStyleBase: ShowStyleBase,
+		showStyleBase: ShowStyleBaseLight,
 		cred: ResolvedCredentials
-	): Access<ShowStyleBase> {
+	): Access<ShowStyleBaseLight> {
 		if (!showStyleBase.organizationId) return noAccess('ShowStyleBase has no organization')
 		if (!cred.organization) return noAccess('No organization in credentials')
 		if (showStyleBase.organizationId === cred.organization._id) {

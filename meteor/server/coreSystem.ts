@@ -28,7 +28,7 @@ import { profiler } from './api/profiler'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
 import { StatusCode } from '../lib/api/systemStatus'
-import { fetchStudiosLight } from '../lib/collections/optimizations'
+import { fetchShowStyleBasesLight, fetchStudiosLight } from '../lib/collections/optimizations'
 
 export { PackageInfo }
 
@@ -153,7 +153,7 @@ function checkDatabaseVersions() {
 				}
 
 				const studioIds: { [studioId: string]: true } = {}
-				ShowStyleBases.find({
+				fetchShowStyleBasesLight({
 					blueprintId: blueprint._id,
 				}).forEach((showStyleBase) => {
 					if (o.statusCode === StatusCode.GOOD) {
@@ -251,6 +251,7 @@ function queueCheckBlueprintsConfig() {
 
 let lastBlueprintConfigIds: { [id: string]: true } = {}
 function checkBlueprintsConfig() {
+	logger.debug('checkBlueprintsConfig start')
 	waitForPromise(
 		pushWorkToQueue('checkBlueprintsConfig', 'checkBlueprintsConfig', async () => {
 			const blueprintIds: { [id: string]: true } = {}
@@ -300,6 +301,7 @@ function checkBlueprintsConfig() {
 			lastBlueprintConfigIds = blueprintIds
 		})
 	)
+	logger.debug('checkBlueprintsConfig done!')
 }
 function setBlueprintConfigStatus(systemStatusId: string, diff: string[], studioId?: StudioId) {
 	if (diff && diff.length > 0) {

@@ -50,7 +50,7 @@ import { runIngestOperationFromRundown } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { checkAccessToPlaylist } from './lib'
-import { fetchBlueprintVersion, fetchStudioLight } from '../../lib/collections/optimizations'
+import { fetchBlueprintVersion, fetchShowStyleBaseLight, fetchStudioLight } from '../../lib/collections/optimizations'
 
 export async function selectShowStyleVariant(
 	context: StudioUserContext,
@@ -396,7 +396,7 @@ export namespace ClientRundownAPI {
 			if (rundown.importVersions.showStyleVariant !== (showStyleVariant._rundownVersionHash || 0))
 				return 'showStyleVariant'
 
-			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+			const showStyleBase = fetchShowStyleBaseLight(rundown.showStyleBaseId)
 			if (!showStyleBase) return 'missing showStyleBase'
 			if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0))
 				return 'showStyleBase'

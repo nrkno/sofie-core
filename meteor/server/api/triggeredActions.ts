@@ -16,6 +16,7 @@ import {
 } from '../../lib/collections/TriggeredActions'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from '../../lib/api/triggeredActions'
 import { SystemWriteAccess } from '../security/system'
+import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 export function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,
@@ -54,7 +55,7 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 
 	try {
 		if (showStyleBaseId !== undefined) {
-			const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+			const showStyleBase = fetchShowStyleBaseLight(showStyleBaseId)
 			if (!showStyleBase) {
 				throw new Meteor.Error(
 					404,

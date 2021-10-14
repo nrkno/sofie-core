@@ -1,5 +1,6 @@
 import { MongoSelector } from '../typings/meteor'
 import { BlueprintId, Blueprints, Blueprint } from './Blueprints'
+import { DBShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
 import { DBStudio, StudioId, Studios } from './Studios'
 
 /*
@@ -44,3 +45,27 @@ export function checkStudioExists(studioId: StudioId): boolean {
 	})
 	return !!studio
 }
+
+/**
+ * Returns a "light" version of the Studio, where the most heavy/large properties are omitted.
+ */
+export function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): ShowStyleBaseLight | undefined {
+	const showStyle = ShowStyleBases.findOne(showStyleId, {
+		fields: {
+			blueprintConfig: 0,
+			outputLayers: 0,
+			sourceLayers: 0,
+		},
+	})
+	return showStyle
+}
+export function fetchShowStyleBasesLight(selector: MongoSelector<DBShowStyleBase>): ShowStyleBaseLight[] {
+	return ShowStyleBases.find(selector, {
+		fields: {
+			blueprintConfig: 0,
+			outputLayers: 0,
+			sourceLayers: 0,
+		},
+	}).fetch()
+}
+export type ShowStyleBaseLight = Omit<DBShowStyleBase, 'blueprintConfig' | 'outputLayers' | 'sourceLayers'>
