@@ -9,12 +9,10 @@ import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
 	onSetNextSegment: (segmentId: SegmentId | null, e: any) => void
-	onResyncSegment: (segment: SegmentUi, e: any) => void
 	playlist?: RundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
@@ -31,7 +29,6 @@ export const SegmentContextMenu = withTranslation()(
 		render() {
 			const { t } = this.props
 
-			const segment = this.getSegmentFromContext()
 			const part = this.getPartFromContext()
 			const timecode = this.getTimePosition()
 			const startsAt = this.getPartStartsAt()
@@ -42,7 +39,7 @@ export const SegmentContextMenu = withTranslation()(
 			return this.props.studioMode && this.props.playlist && this.props.playlist.activationId ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
-						{this.props.playlist.activationId ? (
+						{this.props.playlist.activationId && (
 							<>
 								{part && !part.instance.part.invalid && timecode !== null && (
 									<>
@@ -91,27 +88,11 @@ export const SegmentContextMenu = withTranslation()(
 										)}
 									</>
 								)}
-								{Settings.preserveUnsyncedPlayingSegmentContents && this.menuItemResyncSegment(t, segment)}
 							</>
-						) : (
-							Settings.preserveUnsyncedPlayingSegmentContents && this.menuItemResyncSegment(t, segment)
 						)}
 					</ContextMenu>
 				</Escape>
 			) : null
-		}
-
-		menuItemResyncSegment = (
-			t: (key: string | string[], options?: unknown | undefined) => any,
-			segment: SegmentUi | null
-		) => {
-			if (segment && segment.orphaned) {
-				return (
-					<MenuItem onClick={(e) => this.props.onResyncSegment(segment, e)}>
-						<span>{t('Resync Segment')}</span>
-					</MenuItem>
-				)
-			}
 		}
 
 		getSegmentFromContext = (): SegmentUi | null => {

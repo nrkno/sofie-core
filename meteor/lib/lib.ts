@@ -157,7 +157,24 @@ export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1
 	}
 	const cache = cacheResultCache[name]
 	if (!cache || cache.ttl < Date.now()) {
-		const value = fcn()
+		const value: T = fcn()
+		cacheResultCache[name] = {
+			ttl: Date.now() + limitTime,
+			value: value,
+		}
+		return value
+	} else {
+		return cache.value
+	}
+}
+/** Cache the result of function for a limited time */
+export async function cacheResultAsync<T>(name: string, fcn: () => Promise<T>, limitTime: number = 1000): Promise<T> {
+	if (Math.random() < 0.01) {
+		Meteor.setTimeout(cleanOldCacheResult, 10000)
+	}
+	const cache = cacheResultCache[name]
+	if (!cache || cache.ttl < Date.now()) {
+		const value: Promise<T> = fcn()
 		cacheResultCache[name] = {
 			ttl: Date.now() + limitTime,
 			value: value,
@@ -471,4 +488,13 @@ export function generateTranslation(key: string, args?: { [k: string]: any }): I
 		key,
 		args,
 	}
+}
+
+export enum LogLevel {
+	SILLY = 'silly',
+	DEBUG = 'debug',
+	VERBOSE = 'verbose',
+	INFO = 'info',
+	WARN = 'warn',
+	ERROR = 'error',
 }

@@ -4,19 +4,30 @@ import { TimelineObjectCoreExt } from './timeline'
 /** The type of the source layer, used to enable specific functions for special-type layers */
 export enum SourceLayerType {
 	UNKNOWN = 0,
+	/** Local camera sources (local to the studio, not requiring additional coordination) */
 	CAMERA = 1,
+	/** Video clips */
 	VT = 2,
+	/** Remote cameras & pre-produced sources */
 	REMOTE = 3,
+	/** Script and comments for the prompter */
 	SCRIPT = 4,
+	/** Fullscreen graphics */
 	GRAPHICS = 5,
+	/** Sources composed out of other sources, such as DVEs, "SuperSource", Additional M/Es, etc. */
 	SPLITS = 6,
+	/** Audio-only sources */
 	AUDIO = 7,
 	// CAMERA_MOVEMENT = 8,
 	// METADATA = 9,
+	/** Graphical overlays on top of other video */
 	LOWER_THIRD = 10,
+	/** Video-only clips or clips with only environment audio */
 	LIVE_SPEAK = 11,
+	/** Transition effects */
 	TRANSITION = 13,
 	// LIGHTS = 14,
+	/** Uncontrolled local sources, such as PowerPoint presentation inputs, Weather systems, EVS replay machines, etc. */
 	LOCAL = 15,
 }
 
@@ -29,6 +40,7 @@ export interface BaseContent {
 
 	sourceDuration?: number
 	ignoreMediaObjectStatus?: boolean
+	ignoreAudioFormat?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -51,6 +63,7 @@ export type SomeContent =
 	| TransitionContent
 	| GraphicsContent
 	| UnknownContent
+	| EvsContent
 export type SomeTimelineContent = WithTimeline<SomeContent>
 
 export type UnknownContent = BaseContent
@@ -76,6 +89,17 @@ export interface CameraContent extends BaseContent {
 export interface RemoteContent extends BaseContent {
 	studioLabel: string
 	switcherInput: number | string
+}
+
+/** Content description for the EVS variant of a LOCAL source */
+export interface EvsContent extends BaseContent {
+	studioLabel: string
+	/** Switcher input for the EVS channel */
+	switcherInput: number | string
+	/** Name of the EVS channel as used in the studio */
+	channelName: string
+	/** Color code used to represent the EVS channel in 24 bit hex format (fx ff0000) */
+	color?: string
 }
 
 export interface ScriptContent extends BaseContent {

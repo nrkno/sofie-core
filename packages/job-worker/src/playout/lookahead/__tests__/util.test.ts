@@ -9,7 +9,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getCurrentTime } from '../../../lib'
-import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
+import { LookaheadMode, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { getOrderedPartsAfterPlayhead } from '../util'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../../playout/lock'
@@ -91,6 +91,9 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			},
 
 			externalNRCSName: 'mock',
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 
 		const segmentIds = await Promise.all([

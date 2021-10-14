@@ -55,7 +55,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { ExpectedPackageDBBase, ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { applyToArray, getRandomId, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import {
@@ -78,6 +78,7 @@ import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner }
 import { CacheForStudio } from '../studio/cache'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PieceGroupMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -397,7 +398,7 @@ export async function moveNextPartInner(
 
 		// find the allowable segment ids
 		const allowedSegments =
-			segmentDelta < 0
+			segmentDelta > 0
 				? considerSegments.slice(targetSegmentIndex)
 				: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
 		// const allowedSegmentIds = new Set(allowedSegments.map((s) => s._id))
@@ -668,7 +669,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 			}
 
 			if (nextPieceInstance) {
-				logger.info((data.undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
+				logger.debug((data.undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
 				cache.PieceInstances.update(nextPieceInstance._id, {
 					$set: {
 						disabled: !data.undo,
@@ -707,7 +708,7 @@ export async function onPiecePlaybackStarted(context: JobContext, data: OnPieceP
 			if (pieceInstance) {
 				const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 				if (!isPlaying) {
-					logger.info(
+					logger.debug(
 						`onPiecePlaybackStarted: Playout reports pieceInstance "${
 							data.pieceInstanceId
 						}" has started playback on timestamp ${new Date(data.startedPlayback).toISOString()}`
@@ -748,7 +749,7 @@ export async function onPiecePlaybackStopped(context: JobContext, data: OnPieceP
 			if (pieceInstance) {
 				const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 				if (isPlaying) {
-					logger.info(
+					logger.debug(
 						`onPiecePlaybackStopped: Playout reports pieceInstance "${
 							data.pieceInstanceId
 						}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
@@ -790,7 +791,7 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 			const isPlaying =
 				playingPartInstance.timings?.startedPlayback && !playingPartInstance.timings?.stoppedPlayback
 			if (!isPlaying) {
-				logger.info(
+				logger.debug(
 					`Playout reports PartInstance "${data.partInstanceId}" has started playback on timestamp ${new Date(
 						data.startedPlayback
 					).toISOString()}`
@@ -933,7 +934,7 @@ export async function onPartPlaybackStopped(context: JobContext, data: OnPartPla
 
 				const isPlaying = partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
 				if (isPlaying) {
-					logger.info(
+					logger.debug(
 						`onPartPlaybackStopped: Playout reports PartInstance "${
 							data.partInstanceId
 						}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
@@ -1078,34 +1079,6 @@ function timelineTriggerTimeInner(
 }
 
 export async function executeAction(context: JobContext, data: ExecuteActionProps): Promise<void> {
-	return executeActionInner(
-		context,
-		data,
-		data.actionDocId,
-		async (actionContext, _cache, _rundown, _partInstance, blueprint) => {
-			if (!blueprint.blueprint.executeAction) throw UserError.create(UserErrorMessage.ActionsNotSupported)
-
-			logger.info(`Executing AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
-
-			await blueprint.blueprint.executeAction(actionContext, data.actionId, data.userData, data.triggerMode)
-		}
-	)
-}
-
-export async function executeActionInner(
-	context: JobContext,
-	data: RundownPlayoutPropsBase,
-	actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
-	func: (
-		context: ActionExecutionContext,
-		cache: CacheForPlayout,
-		rundown: DBRundown,
-		currentPartInstance: DBPartInstance,
-		blueprint: WrappedShowStyleBlueprint
-	) => Promise<void>
-): Promise<void> {
-	const now = getCurrentTime()
-
 	return runJobWithPlayoutCache(
 		context,
 		// 'executeActionInner',
@@ -1117,66 +1090,100 @@ export async function executeActionInner(
 			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
 		},
 		async (cache) => {
-			const playlist = cache.Playlist.doc
-
-			const currentPartInstance = playlist.currentPartInstanceId
-				? cache.PartInstances.findOne(playlist.currentPartInstanceId)
-				: undefined
-			if (!currentPartInstance)
-				throw new Error(`Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
-
-			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
-			if (!rundown) throw new Error(`Current Rundown "${currentPartInstance.rundownId}" could not be found`)
-
-			const [showStyle, watchedPackages] = await Promise.all([
-				context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId),
-				WatchedPackagesHelper.create(context, context.studio._id, {
-					pieceId: actionDocId,
+			return executeActionInner(
+				context,
+				cache,
+				{
+					pieceId: data.actionDocId,
 					fromPieceType: {
 						$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
 					},
-				}),
-			])
-
-			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
-			const actionContext = new ActionExecutionContext(
-				{
-					name: `${rundown.name}(${playlist.name})`,
-					identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-						currentPartInstance._id
-					},execution=${getRandomId()}`,
-					tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
 				},
-				context,
-				cache,
-				showStyle,
-				context.getShowStyleBlueprintConfig(showStyle),
-				rundown,
-				watchedPackages
-			)
+				async (actionContext, _rundown, _currentPartInstance, blueprint) => {
+					if (!blueprint.blueprint.executeAction) throw UserError.create(UserErrorMessage.ActionsNotSupported)
 
-			// If any action cannot be done due to timings, that needs to be rejected by the context
-			await func(actionContext, cache, rundown, currentPartInstance, blueprint)
+					logger.info(`Executing AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
 
-			if (
-				actionContext.currentPartState !== ActionPartChange.NONE ||
-				actionContext.nextPartState !== ActionPartChange.NONE
-			) {
-				await syncPlayheadInfinitesForNextPartInstance(context, cache)
-			}
-
-			if (actionContext.takeAfterExecute) {
-				await callTakeWithCache(context, cache, now)
-			} else {
-				if (
-					actionContext.currentPartState !== ActionPartChange.NONE ||
-					actionContext.nextPartState !== ActionPartChange.NONE
-				) {
-					await updateTimeline(context, cache)
+					await blueprint.blueprint.executeAction(
+						actionContext,
+						data.actionId,
+						data.userData,
+						data.triggerMode
+					)
 				}
-			}
+			)
 		}
 	)
+}
+
+export async function executeActionInner(
+	context: JobContext,
+	cache: CacheForPlayout,
+	watchedPackagesFilter: MongoQuery<Omit<ExpectedPackageDBBase, 'studioId'>> | null,
+	func: (
+		context: ActionExecutionContext,
+		rundown: DBRundown,
+		currentPartInstance: DBPartInstance,
+		blueprint: WrappedShowStyleBlueprint
+	) => Promise<void>
+): Promise<void> {
+	const now = getCurrentTime()
+
+	const playlist = cache.Playlist.doc
+
+	const currentPartInstance = playlist.currentPartInstanceId
+		? cache.PartInstances.findOne(playlist.currentPartInstanceId)
+		: undefined
+	if (!currentPartInstance)
+		throw new Error(`Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
+
+	const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+	if (!rundown) throw new Error(`Current Rundown "${currentPartInstance.rundownId}" could not be found`)
+
+	const [showStyle, watchedPackages] = await Promise.all([
+		context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId),
+		watchedPackagesFilter
+			? WatchedPackagesHelper.create(context, context.studio._id, watchedPackagesFilter)
+			: WatchedPackagesHelper.empty(context),
+	])
+
+	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+	const actionContext = new ActionExecutionContext(
+		{
+			name: `${rundown.name}(${playlist.name})`,
+			identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+				currentPartInstance._id
+			},execution=${getRandomId()}`,
+			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+		},
+		context,
+		cache,
+		showStyle,
+		context.getShowStyleBlueprintConfig(showStyle),
+		rundown,
+		watchedPackages
+	)
+
+	// If any action cannot be done due to timings, that needs to be rejected by the context
+	await func(actionContext, rundown, currentPartInstance, blueprint)
+
+	if (
+		actionContext.currentPartState !== ActionPartChange.NONE ||
+		actionContext.nextPartState !== ActionPartChange.NONE
+	) {
+		await syncPlayheadInfinitesForNextPartInstance(context, cache)
+	}
+
+	if (actionContext.takeAfterExecute) {
+		await callTakeWithCache(context, cache, now)
+	} else {
+		if (
+			actionContext.currentPartState !== ActionPartChange.NONE ||
+			actionContext.nextPartState !== ActionPartChange.NONE
+		) {
+			await updateTimeline(context, cache)
+		}
+	}
 }
 /**
  * This exists for the purpose of mocking this call for testing.

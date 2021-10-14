@@ -55,7 +55,7 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 	}
 
 	validate(): null | number {
-		const p = /^[0-9]{2}\:[0-9]{2}\:[0-9]{2}[\:\;][0-9]{2}$/
+		const p = /^\d{2}\:\d{2}\:\d{2}[\:\;]\d{2}$/
 		const match = p.exec(this.state.currentValue)
 		if (!match) return null
 		const t = Timecode.init({

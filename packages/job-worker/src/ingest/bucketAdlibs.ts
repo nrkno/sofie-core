@@ -30,6 +30,7 @@ import { postProcessBucketAction, postProcessBucketAdLib } from '../blueprints/p
 import { omit } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
+import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -74,7 +75,11 @@ async function emptyBucketInner(context: JobContext, id: BucketId): Promise<void
 		context.directCollections.BucketAdLibPieces.remove({ bucketId: id, studioId: context.studioId }),
 		context.directCollections.BucketAdLibActions.remove({ bucketId: id, studioId: context.studioId }),
 		context.directCollections.ExpectedMediaItems.remove({ bucketId: id, studioId: context.studioId }),
-		// TODO - remove packages?
+		context.directCollections.ExpectedPackages.remove({
+			studioId: context.studioId,
+			fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB, // TODO - what about bucket adlib actions?
+			bucketId: id,
+		}),
 	])
 }
 

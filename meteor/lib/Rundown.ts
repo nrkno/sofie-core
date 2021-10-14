@@ -72,6 +72,8 @@ export interface PieceExtended {
 	continuesRef?: PieceExtended
 	/** Maximum width of a label so as not to appear underneath the following item */
 	maxLabelWidth?: number
+	/** If this piece has a "buddy" piece in the preceeding part, then it's not neccessary to display it's left label */
+	hasOriginInPreceedingPart?: boolean
 }
 
 export function fetchPiecesThatMayBeActiveForPart(

@@ -1,7 +1,11 @@
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { PieceInstance, rewrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import {
+	PieceInstance,
+	PieceInstancePiece,
+	rewrapPieceToInstance,
+} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { assertNever, getRandomId, getRank, literal } from '@sofie-automation/corelib/dist/lib'
@@ -37,12 +41,13 @@ import {
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, SourceLayerType, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { executeActionInner } from './playout'
 
 export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -60,9 +65,6 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 				throw UserError.create(UserErrorMessage.AdlibCurrentPart)
 		},
 		async (cache) => {
-			const playlist = cache.Playlist.doc
-			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
-
 			const rundownIds = getRundownIDsFromCache(cache)
 
 			const pieceInstanceToCopy = cache.PieceInstances.findOne(
@@ -88,73 +90,130 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 			if (!rundown) throw new Error(`Rundown "${partInstance.rundownId}" not found!`)
 
 			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
-			const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-			if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
-				throw UserError.from(
-					new Error(
-						`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" wrong type "${sourceLayer?.type}"!`
-					),
-					UserErrorMessage.PieceAsAdlibWrongType
-				)
-
-			const newPieceInstance = convertAdLibToPieceInstance(
-				context,
-				playlist.activationId,
-				pieceToCopy,
-				partInstance,
-				false
-			)
-			if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-				newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
-					newPieceInstance.piece.content.timelineObjects.map((obj) => {
-						return literal<TimelineObjGeneric>({
-							...obj,
-							objectType: TimelineObjType.RUNDOWN,
-						})
-					}),
-					unprotectString(newPieceInstance._id)
-				)
-			}
-
-			// Disable the original piece if from the same Part
-			if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
-				// Ensure the piece being copied isnt currently live
-				if (pieceInstanceToCopy.startedPlayback && pieceInstanceToCopy.startedPlayback <= getCurrentTime()) {
-					const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, partInstance)
-					const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
-
-					if (
-						resolvedPieceBeingCopied &&
-						resolvedPieceBeingCopied.resolvedDuration !== undefined &&
-						(resolvedPieceBeingCopied.infinite ||
-							resolvedPieceBeingCopied.resolvedStart + resolvedPieceBeingCopied.resolvedDuration >=
-								getCurrentTime())
-					) {
-						// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
-						throw UserError.from(
-							new Error(
-								`PieceInstance "${pieceInstanceToCopy._id}" is currently live and cannot be used as an ad-lib`
-							),
-							UserErrorMessage.PieceAsAdlibCurrentlyLive
+			if (!pieceToCopy.allowDirectPlay) {
+				// Not explicitly allowed, use legacy route
+				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
+				if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
+					throw new Meteor.Error(
+						403,
+						`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" cannot be direct played!`
+					)
+				await pieceTakeNowAsAdlib(context, cache, showStyleBase, partInstance, pieceToCopy, pieceInstanceToCopy)
+			} else {
+				switch (pieceToCopy.allowDirectPlay.type) {
+					case IBlueprintDirectPlayType.AdLibPiece:
+						await pieceTakeNowAsAdlib(
+							context,
+							cache,
+							showStyleBase,
+							partInstance,
+							pieceToCopy,
+							pieceInstanceToCopy
 						)
+						break
+					case IBlueprintDirectPlayType.AdLibAction: {
+						const executeProps = pieceToCopy.allowDirectPlay
+						await executeActionInner(
+							context,
+							cache,
+							null, // TODO: should this be able to retrieve any watched packages?
+							async (actionContext, _rundown, _currentPartInstance, blueprint) => {
+								if (!blueprint.blueprint.executeAction)
+									throw UserError.create(UserErrorMessage.ActionsNotSupported)
+
+								logger.info(
+									`Executing AdlibAction "${executeProps.actionId}": ${JSON.stringify(
+										executeProps.userData
+									)}`
+								)
+
+								await blueprint.blueprint.executeAction(
+									actionContext,
+									executeProps.actionId,
+									executeProps.userData
+								)
+							}
+						)
+						break
 					}
+					default:
+						assertNever(pieceToCopy.allowDirectPlay)
+						throw new Meteor.Error(
+							500,
+							`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not direct playable!`
+						)
 				}
-
-				cache.PieceInstances.update(pieceInstanceToCopy._id, {
-					$set: {
-						disabled: true,
-						hidden: true,
-					},
-				})
 			}
-
-			cache.PieceInstances.insert(newPieceInstance)
-
-			await syncPlayheadInfinitesForNextPartInstance(context, cache)
-
-			await updateTimeline(context, cache)
 		}
 	)
+}
+async function pieceTakeNowAsAdlib(
+	context: JobContext,
+	cache: CacheForPlayout,
+	showStyleBase: DBShowStyleBase,
+	partInstance: DBPartInstance,
+	pieceToCopy: PieceInstancePiece,
+	pieceInstanceToCopy: PieceInstance | undefined
+): Promise<void> {
+	const playlist = cache.Playlist.doc
+	if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+
+	const newPieceInstance = convertAdLibToPieceInstance(
+		context,
+		playlist.activationId,
+		pieceToCopy,
+		partInstance,
+		false
+	)
+	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
+		newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
+			newPieceInstance.piece.content.timelineObjects.map((obj) => {
+				return literal<TimelineObjGeneric>({
+					...obj,
+					objectType: TimelineObjType.RUNDOWN,
+				})
+			}),
+			unprotectString(newPieceInstance._id)
+		)
+	}
+
+	// Disable the original piece if from the same Part
+	if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
+		// Ensure the piece being copied isnt currently live
+		if (pieceInstanceToCopy.startedPlayback && pieceInstanceToCopy.startedPlayback <= getCurrentTime()) {
+			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, partInstance)
+			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
+
+			if (
+				resolvedPieceBeingCopied &&
+				resolvedPieceBeingCopied.resolvedDuration !== undefined &&
+				(resolvedPieceBeingCopied.infinite ||
+					resolvedPieceBeingCopied.resolvedStart + resolvedPieceBeingCopied.resolvedDuration >=
+						getCurrentTime())
+			) {
+				// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
+				throw UserError.from(
+					new Error(
+						`PieceInstance "${pieceInstanceToCopy._id}" is currently live and cannot be used as an ad-lib`
+					),
+					UserErrorMessage.PieceAsAdlibCurrentlyLive
+				)
+			}
+		}
+
+		cache.PieceInstances.update(pieceInstanceToCopy._id, {
+			$set: {
+				disabled: true,
+				hidden: true,
+			},
+		})
+	}
+
+	cache.PieceInstances.insert(newPieceInstance)
+
+	await syncPlayheadInfinitesForNextPartInstance(context, cache)
+
+	await updateTimeline(context, cache)
 }
 
 export async function adLibPieceStart(context: JobContext, data: AdlibPieceStartProps): Promise<void> {
@@ -178,16 +237,22 @@ export async function adLibPieceStart(context: JobContext, data: AdlibPieceStart
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${partInstance.rundownId}" not found!`)
 
+			// Rundows that share the same showstyle variant as the current rundown, so adlibs from these rundowns are safe to play
+			const safeRundownIds = cache.Rundowns.findFetch(
+				{ showStyleVariantId: rundown.showStyleVariantId },
+				{ fields: { _id: 1 } }
+			).map((r) => r._id)
+
 			let adLibPiece: AdLibPiece | BucketAdLib | undefined
 			if (data.pieceType === 'baseline') {
 				adLibPiece = await context.directCollections.RundownBaselineAdLibPieces.findOne({
 					_id: data.adLibPieceId,
-					rundownId: partInstance.rundownId,
+					rundownId: { $in: safeRundownIds },
 				})
 			} else if (data.pieceType === 'normal') {
 				adLibPiece = await context.directCollections.AdLibPieces.findOne({
 					_id: data.adLibPieceId,
-					rundownId: partInstance.rundownId,
+					rundownId: { $in: safeRundownIds },
 				})
 			} else if (data.pieceType === 'bucket') {
 				const bucketAdlib = await context.directCollections.BucketAdLibPieces.findOne({

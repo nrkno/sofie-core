@@ -21,11 +21,11 @@ import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
 import { clone } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
-import StudioPackageContainersContext from '../../RundownView/StudioPackageContainersContext'
+import StudioContext from '../../RundownView/StudioContext'
 import { Studio } from '../../../../lib/collections/Studios'
 
 interface IProps extends ICustomLayerItemProps {
-	studioPackageContainers: Studio['packageContainers'] | undefined
+	studio: Studio | undefined
 }
 interface IState {
 	scenes?: Array<number>
@@ -46,8 +46,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	private metadataRev: string | undefined
 	private cachedContentPackageInfos: ScanInfoForPackages | undefined
 
-	private leftLabelNodes: JSX.Element
-	private rightLabelNodes: JSX.Element
+	private leftLabelNodes: JSX.Element | null = null
+	private rightLabelNodes: JSX.Element | null = null
 
 	private rightLabelContainer: HTMLSpanElement | null = null
 	private countdownContainer: HTMLSpanElement | null = null
@@ -109,7 +109,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 					newState.rightLabelIsAppendage = true
 				} else {
-					this.rightLabelContainer?.remove()
+					try {
+						this.rightLabelContainer?.remove()
+					} catch (err) {
+						console.error('Error in VTSourceRendererBase.mountRightLabelContainer 1', err)
+					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
 				}
@@ -119,7 +123,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 					newState.rightLabelIsAppendage = true
 				} else if (itemDuration !== Number.POSITIVE_INFINITY && this.state.rightLabelIsAppendage === true) {
-					this.rightLabelContainer?.remove()
+					try {
+						this.rightLabelContainer?.remove()
+					} catch (err) {
+						console.error('Error in VTSourceRendererBase.mountRightLabelContainer 2', err)
+					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
 				}
@@ -156,7 +164,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			this.state.sourceEndCountdownAppendage &&
 			!(!relativeRendering && isLiveLine && !outputLayer.collapsed && itemElement)
 		) {
-			this.countdownContainer.remove()
+			try {
+				this.countdownContainer.remove()
+			} catch (err) {
+				console.error('Error in VTSourceRendererBase.mountSourceEndedCountdownContainer 1', err)
+			}
 			newState.sourceEndCountdownAppendage = false
 		}
 
@@ -271,12 +283,20 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 
 		if (this.rightLabelContainer) {
-			this.rightLabelContainer.remove()
+			try {
+				this.rightLabelContainer.remove()
+			} catch (err) {
+				console.error('Error in VTSourceRendererBase.componentWillUnmount 1', err)
+			}
 			this.rightLabelContainer = null
 		}
 
 		if (this.countdownContainer) {
-			this.countdownContainer.remove()
+			try {
+				this.countdownContainer.remove()
+			} catch (err) {
+				console.error('Error in VTSourceRendererBase.componentWillUnmount 2', err)
+			}
 			this.countdownContainer = null
 		}
 	}
@@ -454,7 +474,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 
-		return (
+		return !this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 				<span
@@ -476,7 +496,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				)}
 				{this.renderContentTrimmed()}
 			</span>
-		)
+		) : null
 	}
 
 	renderRightLabel() {
@@ -644,8 +664,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					noticeMessage={this.props.piece.message || ''}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
+					pieceId={this.props.piece.instance.piece._id}
 					expectedPackages={this.props.piece.instance.piece.expectedPackages}
-					studioPackageContainers={this.props.studioPackageContainers}
+					studio={this.props.studio}
 				/>
 			</React.Fragment>
 		)
@@ -654,11 +675,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 export const VTSourceRenderer = withTranslation()(
 	// withStudioPackageContainers<IProps & WithTranslation, {}>()(VTSourceRendererBase)
-	(props: Omit<IProps, 'studioPackageContainers'> & WithTranslation) => (
-		<StudioPackageContainersContext.Consumer>
-			{(studioPackageContainers) => (
-				<VTSourceRendererBase {...props} studioPackageContainers={studioPackageContainers} />
-			)}
-		</StudioPackageContainersContext.Consumer>
+	(props: Omit<IProps, 'studio'> & WithTranslation) => (
+		<StudioContext.Consumer>{(studio) => <VTSourceRendererBase {...props} studio={studio} />}</StudioContext.Consumer>
 	)
 )

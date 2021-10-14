@@ -54,6 +54,23 @@ const isolatedAutorunsMem: {
 	}
 } = {}
 
+/**
+ * Create a reactive computation that will be run independently of the outer one. If the same function (using the same
+ * name and parameters) will be used again, this computation will only be computed once on invalidation and it's
+ * result will be memoized and reused on every other call.
+ *
+ * The function will be considered "same", if `functionName` and `params` match.
+ *
+ * If the `fnc` computation is invalidated, the outer computations will only be invalidated if the value returned from
+ * `fnc` fails a deep equality check (_.isEqual).
+ *
+ * @export
+ * @template T
+ * @param {T} fnc The computation function to be memoized and calculated separately from the outer one.
+ * @param {string} functionName The name of this computation function
+ * @param {...Parameters<T>} params Params `fnc` depends on from the outer scope. All parameters will be passed through to the function.
+ * @return {*}  {ReturnType<T>}
+ */
 export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 	fnc: T,
 	functionName: string,
@@ -105,14 +122,22 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 	return result
 }
 
-export function slowDownReactivity<T extends (...args: any) => any>(
-	fnc: T,
-	delay: number,
-	...params: Parameters<T>
-): ReturnType<T> {
+/**
+ * Slow down the reactivity of the inner function `fnc` to the outer computation.
+ *
+ * This is essentially a `throttle` for reactivity. If the inner `fnc` computation is invalidated, it will wait `delay`
+ * time to invalidate the outer computation.
+ *
+ * @export
+ * @template T
+ * @param {T} fnc The wrapped computation
+ * @param {number} delay The amount of time to wait before invalidating the outer function
+ * @return {*}  {ReturnType<T>}
+ */
+export function slowDownReactivity<T extends (...args: any) => any>(fnc: T, delay: number): ReturnType<T> {
 	// if the delay is <= 0, call straight away and register a direct dependency
 	if (delay <= 0) {
-		return fnc(...(params as any))
+		return fnc()
 	}
 
 	// if the delay is > 0, slow down the reactivity
@@ -125,7 +150,7 @@ export function slowDownReactivity<T extends (...args: any) => any>(
 	const parentComputation = Tracker.currentComputation
 	const computation = Tracker.nonreactive(() => {
 		const computation = Tracker.autorun(() => {
-			result = fnc(...(params as any))
+			result = fnc()
 		})
 		computation.onInvalidate(() => {
 			// if the parent hasn't been invalidated and there is no scheduled invalidation

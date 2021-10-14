@@ -24,7 +24,7 @@ import { PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
-import { SegmentId, Segments } from '../../lib/collections/Segments'
+import { SegmentId } from '../../lib/collections/Segments'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
@@ -32,7 +32,6 @@ import { ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
-import { rundownContentAllowWrite } from '../security/rundown'
 import { profiler } from './profiler'
 import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
@@ -322,7 +321,7 @@ export async function pieceSetInOutPoints(
 		) // MOS data is in seconds
 		return ClientAPI.responseSuccess(undefined)
 	} catch (error) {
-		return ClientAPI.responseError(error)
+		return ClientAPI.responseError(error as any)
 	}
 }
 export async function executeAction(
@@ -484,13 +483,6 @@ export function resyncRundown(context: MethodContext, rundownId: RundownId) {
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundown(context, rundown._id))
 }
-export function resyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId) {
-	rundownContentAllowWrite(context.userId, { rundownId })
-	const segment = Segments.findOne(segmentId)
-	if (!segment) throw new Meteor.Error(404, `Rundown "${segmentId}" not found!`)
-
-	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, segment.rundownId, segmentId))
-}
 export function mediaRestartWorkflow(context: MethodContext, workflowId: MediaWorkFlowId) {
 	return ClientAPI.responseSuccess(MediaManagerAPI.restartWorkflow(context, workflowId))
 }
@@ -508,14 +500,29 @@ export function mediaAbortAllWorkflows(context: MethodContext) {
 	const access = OrganizationContentWriteAccess.anyContent(context)
 	return ClientAPI.responseSuccess(MediaManagerAPI.abortAllWorkflows(context, access.organizationId))
 }
-export function packageManagerRestartExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
-	return ClientAPI.responseSuccess(PackageManagerAPI.restartExpectation(context, deviceId, workId))
+export async function packageManagerRestartExpectation(
+	context: MethodContext,
+	deviceId: PeripheralDeviceId,
+	workId: string
+) {
+	return ClientAPI.responseSuccess(await PackageManagerAPI.restartExpectation(context, deviceId, workId))
 }
-export function packageManagerRestartAllExpectations(context: MethodContext, studioId: StudioId) {
-	return ClientAPI.responseSuccess(PackageManagerAPI.restartAllExpectationsInStudio(context, studioId))
+export async function packageManagerRestartAllExpectations(context: MethodContext, studioId: StudioId) {
+	return ClientAPI.responseSuccess(await PackageManagerAPI.restartAllExpectationsInStudio(context, studioId))
 }
-export function packageManagerAbortExpectation(context: MethodContext, deviceId: PeripheralDeviceId, workId: string) {
-	return ClientAPI.responseSuccess(PackageManagerAPI.abortExpectation(context, deviceId, workId))
+export async function packageManagerAbortExpectation(
+	context: MethodContext,
+	deviceId: PeripheralDeviceId,
+	workId: string
+) {
+	return ClientAPI.responseSuccess(await PackageManagerAPI.abortExpectation(context, deviceId, workId))
+}
+export async function packageManagerRestartPackageContainer(
+	context: MethodContext,
+	deviceId: PeripheralDeviceId,
+	containerId: string
+) {
+	return ClientAPI.responseSuccess(await PackageManagerAPI.restartPackageContainer(context, deviceId, containerId))
 }
 export async function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
 	check(id, String)
@@ -986,9 +993,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	async resyncRundown(_userEvent: string, rundownId: RundownId) {
 		return traceAction(UserActionAPIMethods.resyncRundown, resyncRundown, this, rundownId)
 	}
-	async resyncSegment(_userEvent: string, rundownId: RundownId, segmentId: SegmentId) {
-		return traceAction(UserActionAPIMethods.resyncSegment, resyncSegment, this, rundownId, segmentId)
-	}
 	async mediaRestartWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaRestartWorkflow(this, workflowId))
 	}
@@ -1005,13 +1009,16 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return makePromise(() => mediaAbortAllWorkflows(this))
 	}
 	async packageManagerRestartExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
-		return makePromise(() => packageManagerRestartExpectation(this, deviceId, workId))
+		return packageManagerRestartExpectation(this, deviceId, workId)
 	}
 	async packageManagerRestartAllExpectations(_userEvent: string, studioId: StudioId) {
-		return makePromise(() => packageManagerRestartAllExpectations(this, studioId))
+		return packageManagerRestartAllExpectations(this, studioId)
 	}
 	async packageManagerAbortExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
-		return makePromise(() => packageManagerAbortExpectation(this, deviceId, workId))
+		return packageManagerAbortExpectation(this, deviceId, workId)
+	}
+	async packageManagerRestartPackageContainer(_userEvent: string, deviceId: PeripheralDeviceId, containerId: string) {
+		return packageManagerRestartPackageContainer(this, deviceId, containerId)
 	}
 	async regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return traceAction(UserActionAPIMethods.regenerateRundownPlaylist, regenerateRundownPlaylist, this, playlistId)

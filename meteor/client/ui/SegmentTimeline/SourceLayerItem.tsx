@@ -12,6 +12,7 @@ import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
+import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
@@ -22,6 +23,7 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 import { Studio } from '../../../lib/collections/Studios'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
+const MARGINAL_ANCHORED_WIDTH = 5
 
 export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
@@ -149,7 +151,7 @@ export const SourceLayerItem = withTranslation()(
 								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
 							)
 
-							const styleObj = {
+							return {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
@@ -175,8 +177,6 @@ export const SourceLayerItem = withTranslation()(
 									'translate3d(-100%, 0, 5px)',
 								willChange: 'transform',
 							}
-
-							return styleObj
 						} else if (
 							this.state.rightAnchoredWidth < this.state.elementWidth &&
 							this.state.leftAnchoredWidth < this.state.elementWidth &&
@@ -187,7 +187,7 @@ export const SourceLayerItem = withTranslation()(
 								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
 							)
 
-							const styleObj = {
+							return {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
@@ -211,8 +211,17 @@ export const SourceLayerItem = withTranslation()(
 									'translate3d(-100%, 0, 5px)',
 								willChange: 'transform',
 							}
-
-							return styleObj
+						} else {
+							return {
+								maxWidth:
+									this.state.rightAnchoredWidth > 0
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
+										: maxLabelWidth !== undefined
+										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+										: nextIsTouching
+										? '100%'
+										: 'none',
+							}
 						}
 					} else {
 						if (
@@ -223,7 +232,7 @@ export const SourceLayerItem = withTranslation()(
 								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
 							)
 
-							const styleObj = {
+							return {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
@@ -245,10 +254,8 @@ export const SourceLayerItem = withTranslation()(
 									'px,  0, 5px)',
 								willChange: 'transform',
 							}
-
-							return styleObj
 						} else {
-							const styleObj = {
+							return {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
 										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
@@ -258,8 +265,6 @@ export const SourceLayerItem = withTranslation()(
 										? '100%'
 										: 'none',
 							}
-
-							return styleObj
 						}
 					}
 				}
@@ -557,9 +562,10 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		setAnchoredElsWidths = (leftAnchoredWidth: number, rightAnchoredWidth: number) => {
+			// anchored labels will sometimes errorneously report some width. Discard if it's marginal.
 			this.setState({
-				leftAnchoredWidth: leftAnchoredWidth,
-				rightAnchoredWidth: rightAnchoredWidth,
+				leftAnchoredWidth: leftAnchoredWidth > MARGINAL_ANCHORED_WIDTH ? leftAnchoredWidth : 0,
+				rightAnchoredWidth: rightAnchoredWidth > MARGINAL_ANCHORED_WIDTH ? rightAnchoredWidth : 0,
 			})
 		}
 
@@ -632,13 +638,26 @@ export const SourceLayerItem = withTranslation()(
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
 							{...this.props}
 							{...this.state}
-							studioPackageContainers={this.props.studio?.packageContainers}
+							studio={this.props.studio}
 						/>
 					)
 
 				case SourceLayerType.TRANSITION:
 					return (
 						<TransitionSourceRenderer
+							key={unprotectString(this.props.piece.instance._id)}
+							typeClass={typeClass}
+							getItemDuration={this.getItemDuration}
+							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							{...this.props}
+							{...this.state}
+						/>
+					)
+				case SourceLayerType.LOCAL:
+					return (
+						<LocalLayerItemRenderer
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
@@ -706,7 +725,18 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0 &&
 								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth,
 
-							infinite: piece.instance.userDuration === undefined && innerPiece.lifespan !== PieceLifespan.WithinPart, // 0 is a special value
+							'super-infinite':
+								innerPiece.lifespan !== PieceLifespan.WithinPart &&
+								innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
+								innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd,
+							'infinite-starts':
+								innerPiece.lifespan !== PieceLifespan.WithinPart &&
+								innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
+								innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd &&
+								piece.instance.piece.startPartId === this.props.part.partId,
+
+							'not-in-vision': piece.instance.piece.notInVision,
+
 							'next-is-touching': this.props.piece.cropped,
 
 							'source-missing':

@@ -378,7 +378,7 @@ export async function handleUserUnsyncRundown(context: JobContext, data: UserUns
 			if (!rundown.orphaned) {
 				await context.directCollections.Rundowns.update(rundown._id, {
 					$set: {
-						orphaned: 'deleted',
+						orphaned: 'manual',
 					},
 				})
 			} else {

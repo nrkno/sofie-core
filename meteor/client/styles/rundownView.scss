@@ -519,6 +519,7 @@ svg.icon {
 	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.7);
 
 	--segment-layer-height: #{$segment-layer-height};
+	--infinite-piece-background-line-height: #{$segment-layer-height / 8};
 	border-radius: $segment-border-radius;
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
@@ -643,6 +644,7 @@ svg.icon {
 			.segment-timeline__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+					margin-bottom: -1px;
 				}
 			}
 		}
@@ -663,6 +665,7 @@ svg.icon {
 			.segment-timeline__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+					margin-bottom: -1px;
 				}
 			}
 		}
@@ -1003,14 +1006,14 @@ svg.icon {
 
 			.segment-timeline__zoom-area__controls__selected-area {
 				position: absolute;
-				border: 2px solid #fff;
+				border: 1px solid #333;
 				top: 0;
 				bottom: 0;
 				width: 250px;
 				margin-left: -125px;
 				cursor: grab;
-				background: rgba(255, 255, 255, 0.2);
-				box-shadow: 0 0 6px rgba(255, 255, 255, 1);
+				background: #222;
+				border-radius: 15px;
 
 				.segment-timeline__zoom-area__controls__selected-area__left-arrow {
 					position: absolute;
@@ -1018,7 +1021,11 @@ svg.icon {
 					left: 3px;
 					transform: translate(0, -50%);
 				}
-
+				.segment-timeline__zoom-area__controls__selected-area__center-handle {
+					position: absolute;
+					top: 50%;
+					transform: translate(0, -50%);
+				}
 				.segment-timeline__zoom-area__controls__selected-area__right-arrow {
 					position: absolute;
 					top: 50%;
@@ -1662,6 +1669,7 @@ svg.icon {
 				min-height: $segment-layer-height;
 				border-bottom: 0px solid $segment-layer-separator-color;
 				transform-style: preserve-3d;
+				overflow: hidden;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
 
@@ -1671,6 +1679,7 @@ svg.icon {
 					line-height: $segment-layer-height;
 					border-bottom: 2px solid $segment-layer-separator-color;
 					transform-style: preserve-3d;
+					overflow: hidden;
 
 					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 						$output-layer-group-collapse-animation-duration border ease-in-out;
@@ -1681,7 +1690,6 @@ svg.icon {
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
 						transform-style: preserve-3d;
-						overflow: hidden;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
@@ -1690,7 +1698,7 @@ svg.icon {
 							transform: translate3d(0, 0, 10px);
 						}
 
-						@include item-type-colors();
+						@include piece-colors();
 
 						&.disabled {
 							background: $segment-item-disabled-background;
@@ -1698,6 +1706,10 @@ svg.icon {
 						}
 						&.next-is-touching {
 							border-right: 1px solid $segment-timeline-background-color;
+							overflow: hidden;
+						}
+						&.super-infinite {
+							overflow: hidden;
 						}
 
 						&.next-is-touching:hover {
@@ -2017,7 +2029,6 @@ svg.icon {
 					padding: 0 0.3em;
 					overflow: hidden;
 					text-overflow: clip;
-					background: inherit;
 
 					> * {
 						position: relative;
@@ -2097,6 +2108,16 @@ svg.icon {
 					object-position: center center;
 					margin-left: 0.5em;
 				}
+
+				.segment-timeline__piece__label__colored-mark {
+					font-size: 600%;
+					line-height: 23px;
+					width: 25px;
+				}
+			}
+
+			.segment-timeline__piece:not(.infinite) .segment-timeline__piece__label.right-side {
+				background: inherit;
 			}
 
 			// Layer-item appendages are parts of a layer item going beyond the layer (usually, across the entire timeline)
@@ -2538,7 +2559,8 @@ svg.icon {
 	}
 
 	> .rundown-divider-timeline__expected-start,
-	> .rundown-divider-timeline__expected-duration {
+	> .rundown-divider-timeline__expected-duration,
+	> .rundown-divider-timeline__expected-end {
 		vertical-align: bottom;
 		margin: 1em 0.5em 0.5em;
 
@@ -2906,7 +2928,6 @@ svg.icon {
 		margin-bottom: 6px;
 
 		> .mini-inspector__sub-header {
-			margin-left: 0.5em;
 			font-weight: 300;
 		}
 	}

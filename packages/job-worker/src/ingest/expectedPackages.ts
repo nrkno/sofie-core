@@ -15,12 +15,22 @@ import {
 	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageDBFromStudioBaselineObjects,
 	getContentVersionHash,
+	getExpectedPackageId,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { PartId, SegmentId, RundownId, AdLibActionId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PartId,
+	SegmentId,
+	RundownId,
+	AdLibActionId,
+	PieceId,
+	RundownBaselineAdLibActionId,
+	BucketAdLibActionId,
+	BucketAdLibId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
-import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { saveIntoCache } from '../cache/lib'
 import { saveIntoDb } from '../db/changes'
 import { CacheForPlayout } from '../playout/cache'
@@ -257,6 +267,7 @@ function generateExpectedPackagesForBucketAdlib(studio: ReadonlyDeep<DBStudio>, 
 			for (const base of bases) {
 				packages.push({
 					...base,
+					bucketId: adlib.bucketId,
 					pieceId: adlib._id,
 					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB,
 				})
@@ -276,6 +287,7 @@ function generateExpectedPackagesForBucketAdlibAction(
 			for (const base of bases) {
 				packages.push({
 					...base,
+					bucketId: action.bucketId,
 					pieceId: action._id,
 					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
 				})
@@ -286,19 +298,25 @@ function generateExpectedPackagesForBucketAdlibAction(
 }
 function generateExpectedPackageBases(
 	studio: ReadonlyDeep<DBStudio>,
-	ownerId: ProtectedString<any>,
+	ownerId:
+		| PieceId
+		| AdLibActionId
+		| RundownBaselineAdLibActionId
+		| BucketAdLibId
+		| BucketAdLibActionId
+		| RundownId
+		| StudioId,
 	expectedPackages: ExpectedPackage.Any[]
 ) {
 	const bases: Omit<ExpectedPackageDBBase, 'pieceId' | 'fromPieceType'>[] = []
 
-	let i = 0
-	for (const expectedPackage of expectedPackages) {
-		let id = expectedPackage._id
-		if (!id) id = '__unnamed' + i++
+	for (let i = 0; i < expectedPackages.length; i++) {
+		const expectedPackage = expectedPackages[i]
+		const id = expectedPackage._id || '__unnamed' + i
 
 		bases.push({
 			...expectedPackage,
-			_id: protectString(`${ownerId}_${id}`),
+			_id: getExpectedPackageId(ownerId, id),
 			blueprintPackageId: id,
 			contentVersionHash: getContentVersionHash(expectedPackage),
 			studioId: studio._id,
@@ -355,6 +373,9 @@ export function updateBaselineExpectedPackagesOnRundown(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnRundown(context, cache, baseline.expectedPlayoutItems)
 
+	// Fill in ids of unnamed expectedPackages
+	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
+
 	const bases = generateExpectedPackageBases(context.studio, cache.RundownId, baseline.expectedPackages ?? [])
 	saveIntoCache<ExpectedPackageDB>(
 		context,
@@ -387,6 +408,9 @@ export function updateBaselineExpectedPackagesOnStudio(
 	// @todo: this call is for backwards compatibility and soon to be removed
 	updateBaselineExpectedPlayoutItemsOnStudio(context, cache, baseline.expectedPlayoutItems)
 
+	// Fill in ids of unnamed expectedPackages
+	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
+
 	const bases = generateExpectedPackageBases(context.studio, context.studio._id, baseline.expectedPackages ?? [])
 	cache.deferAfterSave(async () => {
 		await saveIntoDb<ExpectedPackageDB>(
@@ -405,4 +429,16 @@ export function updateBaselineExpectedPackagesOnStudio(
 			})
 		)
 	})
+}
+
+export function setDefaultIdOnExpectedPackages(expectedPackages: ExpectedPackage.Any[] | undefined): void {
+	// Fill in ids of unnamed expectedPackage
+	if (expectedPackages) {
+		for (let i = 0; i < expectedPackages.length; i++) {
+			const expectedPackage = expectedPackages[i]
+			if (!expectedPackage._id) {
+				expectedPackage._id = `__index${i}`
+			}
+		}
+	}
 }

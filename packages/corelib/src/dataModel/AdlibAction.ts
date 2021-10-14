@@ -10,7 +10,8 @@ import { RundownId, AdLibActionId, PartId } from './Ids'
 export interface AdLibActionCommon extends ProtectedStringProperties<IBlueprintActionManifest, 'partId'> {
 	rundownId: RundownId
 	display: IBlueprintActionManifest['display'] & {
-		label: ITranslatableMessage
+		// this property can be a string if the name is modified by the User
+		label: ITranslatableMessage | string
 		triggerLabel?: ITranslatableMessage
 		description?: ITranslatableMessage
 	}

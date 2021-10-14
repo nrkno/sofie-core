@@ -7,7 +7,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getCurrentTime } from '../../../lib'
 import { SelectedPartInstancesTimelineInfo } from '../../../playout/timeline'
 import { getLookeaheadObjects } from '..'
-import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
+import { LookaheadMode, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { setupDefaultJobEnvironment, MockJobContext } from '../../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../../playout/lock'
 import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObjects'
@@ -83,6 +83,9 @@ describe('Lookahead', () => {
 				core: '',
 			},
 			externalNRCSName: 'mock',
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 
 		function createMockPart(index: number, segId: SegmentId): DBPart {

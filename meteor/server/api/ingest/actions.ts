@@ -6,7 +6,6 @@ import { Part } from '../../../lib/collections/Parts'
 import { logger } from '../../logging'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
-import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
 import {
 	PeripheralDeviceCategory,
@@ -35,19 +34,6 @@ export namespace IngestActions {
 		}
 	}
 
-	export function reloadSegment(rundown: Rundown, segment: Segment): TriggerReloadDataResponse {
-		const device = getPeripheralDeviceFromRundown(rundown)
-
-		if (device.type === PeripheralDeviceType.MOS) {
-			// MOS doesn't support reloading a segment, so do the whole rundown
-			return MOSDeviceActions.reloadRundown(device, rundown)
-		} else if (device.type === PeripheralDeviceType.INEWS) {
-			return GenericDeviceActions.reloadSegment(device, rundown, segment)
-		} else {
-			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
-		}
-	}
-
 	/**
 	 * Notify the device on what part is currently playing
 	 * @param rundown
@@ -64,6 +50,8 @@ export namespace IngestActions {
 		if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
 		if (playlist.rehearsal) currentPlayingPart = null
 
+		const previousPlayingPartExternalId: string | null = rundown.notifiedCurrentPlayingPartExternalId || null
+
 		const currentPlayingPartExternalId: string | null = currentPlayingPart ? currentPlayingPart.externalId : null
 		if (currentPlayingPartExternalId) {
 			Rundowns.update(this._id, {
@@ -75,7 +63,7 @@ export namespace IngestActions {
 		} else {
 			Rundowns.update(this._id, {
 				$unset: {
-					currentPlayingStoryStatus: 1,
+					notifiedCurrentPlayingPartExternalId: 1,
 				},
 			})
 			delete rundown.notifiedCurrentPlayingPartExternalId
@@ -88,7 +76,7 @@ export namespace IngestActions {
 			MOSDeviceActions.notifyCurrentPlayingPart(
 				device,
 				rundown,
-				rundown.notifiedCurrentPlayingPartExternalId || null,
+				previousPlayingPartExternalId,
 				currentPlayingPartExternalId
 			)
 		}

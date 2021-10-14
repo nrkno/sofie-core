@@ -383,9 +383,8 @@ function generatePlaylistAndRundownsCollectionInner(
 		// Update the ranks of the rundowns
 		if (!newPlaylist.rundownRanksAreSetInSofie) {
 			// Update the rundown ranks
-			for (const [id, rank] of Object.entries(newRundownOrder)) {
-				const id2 = protectString(id)
-				rundownsCollection.update(id2, { $set: { _rank: rank } })
+			for (const [externalId, rank] of Object.entries(newRundownOrder)) {
+				rundownsCollection.update({ externalId: externalId }, { $set: { _rank: rank } })
 			}
 		} else if (changedRundownId) {
 			// This rundown is new, so push to the end of the manually ordered playlist

@@ -326,6 +326,7 @@ export interface NewPeripheralDeviceAPI {
 			  }
 		)[]
 	): Promise<void>
+	removeAllPackageContainerPackageStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
 	fetchPackageInfoMetadata(
 		deviceId: PeripheralDeviceId,
@@ -415,7 +416,6 @@ export enum PeripheralDeviceAPIMethods {
 	'dataPartUpdate' = 'peripheralDevice.rundown.partUpdate',
 
 	'resyncRundown' = 'peripheralDevice.mos.roResync',
-	'resyncSegment' = 'peripheralDevice.mos.segmentResync',
 
 	'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',
@@ -430,6 +430,11 @@ export enum PeripheralDeviceAPIMethods {
 	'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
 
 	'updatePackageContainerPackageStatuses' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatuses',
+	'removeAllPackageContainerPackageStatusesOfDevice' = 'peripheralDevice.packageManager.removeAllPackageContainerPackageStatusesOfDevice',
+
+	'updatePackageContainerStatuses' = 'peripheralDevice.packageManager.updatePackageContainerStatuses',
+	'removeAllPackageContainerStatusesOfDevice' = 'peripheralDevice.packageManager.removeAllPackageContainerStatusesOfDevice',
+
 	'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
 	'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
 	'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',

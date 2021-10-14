@@ -11,7 +11,7 @@ import {
 	RemovePlaylistProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
-import { BlueprintResultOrderedRundowns } from '@sofie-automation/blueprints-integration'
+import { BlueprintResultOrderedRundowns, IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 import { JobContext } from './jobs'
 import { logger } from './logging'
 import { resetRundownPlaylist } from './playout/lib'
@@ -182,8 +182,7 @@ export function produceRundownPlaylistInfoFromRundown(
 			organizationId: context.studio.organizationId,
 			studioId: context.studioId,
 			name: playlistInfo.playlist.name,
-			expectedStart: playlistInfo.playlist.expectedStart,
-			expectedDuration: playlistInfo.playlist.expectedDuration,
+			timing: playlistInfo.playlist.timing,
 
 			loop: playlistInfo.playlist.loop,
 
@@ -203,11 +202,7 @@ export function produceRundownPlaylistInfoFromRundown(
 	// If no order is provided, fall back to default sorting:
 	const order =
 		playlistInfo?.order ??
-		_.object(
-			literal<Array<[string, number]>>(
-				rundownsInDefaultOrder.map((i, index) => [unprotectString(i._id), index + 1])
-			)
-		)
+		_.object(literal<Array<[string, number]>>(rundownsInDefaultOrder.map((i, index) => [i.externalId, index + 1])))
 
 	return {
 		rundownPlaylist: newPlaylist,
@@ -216,7 +211,7 @@ export function produceRundownPlaylistInfoFromRundown(
 }
 
 function defaultPlaylistForRundown(
-	rundown: ReadonlyDeep<DBRundown>,
+	rundown: ReadonlyDeep<IBlueprintRundown>,
 	studio: ReadonlyDeep<DBStudio>,
 	existingPlaylist?: ReadonlyDeep<DBRundownPlaylist>
 ): Omit<DBRundownPlaylist, '_id' | 'externalId'> {
@@ -231,8 +226,7 @@ function defaultPlaylistForRundown(
 		organizationId: studio.organizationId,
 		studioId: studio._id,
 		name: rundown.name,
-		expectedStart: rundown.expectedStart,
-		expectedDuration: rundown.expectedDuration,
+		timing: rundown.timing,
 
 		modified: getCurrentTime(),
 	}
@@ -268,7 +262,7 @@ export function updateRundownsInPlaylist(
 	const orderedUnrankedRundowns = sortDefaultRundownInPlaylistOrder(unrankedRundowns)
 
 	orderedUnrankedRundowns.forEach((rundown) => {
-		rundownCollection.update(rundown._id, { $set: { _rank: ++maxRank } })
+		rundownCollection.update({ externalId: rundown.externalId }, { $set: { _rank: ++maxRank } })
 	})
 }
 
@@ -463,9 +457,9 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 function sortDefaultRundownInPlaylistOrder(rundowns: ReadonlyDeep<Array<DBRundown>>): ReadonlyDeep<Array<DBRundown>> {
 	return mongoFindOptions<ReadonlyDeep<DBRundown>>(rundowns, {
 		sort: {
-			expectedStart: 1,
 			name: 1,
+			externalId: 1,
 			_id: 1,
 		},
-	})
+	}).sort(PlaylistTiming.sortTiminings)
 }

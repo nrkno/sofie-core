@@ -15,10 +15,11 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { PeripheralDeviceStatus } from '../Status/SystemStatus'
+import { StatusCodePill } from '../Status/StatusCodePill'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
+import { DevicePackageManagerSettings } from './DevicePackageManagerSettings'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -85,7 +86,6 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							)
 						})
 						.catch((err) => {
-							// console.error(err)
 							NotificationCenter.push(
 								new Notification(
 									undefined,
@@ -119,12 +119,11 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 					)
 				})
 				.catch((err) => {
-					// console.error(err)
 					NotificationCenter.push(
 						new Notification(
 							undefined,
 							NoticeLevel.WARNING,
-							t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', {
+							t('There was an error when troubleshooting the device: "{{deviceName}}": {{errorMessage}}', {
 								deviceName: device.name,
 								errorMessage: err + '',
 							}),
@@ -171,7 +170,11 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 								</button>
 							</div>
 							<div className="mbs">
-								<PeripheralDeviceStatus device={device} />
+								<StatusCodePill
+									connected={device.connected}
+									statusCode={device.status?.statusCode}
+									messages={device.status?.messages}
+								/>
 							</div>
 							{device.type === PeripheralDeviceType.PACKAGE_MANAGER ? (
 								<div className="mbs">
@@ -215,8 +218,19 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 					</div>
 
 					{this.renderSpecifics()}
+
+					{this.props.device &&
+					this.props.device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER &&
+					this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+						? this.renderPackageManagerSpecial()
+						: null}
 				</div>
 			)
+		}
+		renderPackageManagerSpecial() {
+			if (this.props.device) {
+				return <DevicePackageManagerSettings deviceId={this.props.device._id} />
+			}
 		}
 
 		render() {

@@ -55,7 +55,6 @@ namespace UserActionAPI {
 
 		'removeRundown' = 'userAction.removeRundown',
 		'resyncRundown' = 'userAction.resyncRundown',
-		'resyncSegment' = 'userAction.resyncSegment',
 
 		'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
 		'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',

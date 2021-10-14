@@ -5,8 +5,6 @@ import { waitTime, protectString } from '../../../lib/lib'
 import { CacheForStudio } from '../../api/studio/cache'
 import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 
-// setLoggerLevel('info')
-
 describe('DatabaseCaches', () => {
 	beforeEach(async () => {
 		await setupDefaultStudioEnvironment()

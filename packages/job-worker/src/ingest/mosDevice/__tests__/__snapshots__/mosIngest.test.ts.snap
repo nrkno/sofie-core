@@ -12,6 +12,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -41,6 +44,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -71,78 +75,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -156,6 +177,9 @@ Object {
   "showStyleBaseId": "mockShowStyleBase0",
   "showStyleVariantId": "mockShowStyleVariant0",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -297,6 +321,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -326,6 +353,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -356,78 +384,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
     ],
@@ -441,6 +486,9 @@ Object {
   "showStyleBaseId": "mockShowStyleBase0",
   "showStyleVariantId": "mockShowStyleVariant0",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -573,6 +621,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -603,6 +654,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -633,78 +685,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -719,6 +788,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -834,9 +906,11 @@ Array [
       "Body": Array [],
       "ID": Object {
         "_str": "ro1;s1;p2",
+        "strict": true,
       },
       "RunningOrderId": Object {
         "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
       },
     },
     "notes": Array [],
@@ -871,6 +945,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -901,6 +978,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -931,78 +1009,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -1017,6 +1112,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1158,6 +1256,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1187,6 +1288,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -1217,78 +1319,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -1303,6 +1422,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1444,6 +1566,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1474,6 +1599,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -1504,78 +1630,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -1590,6 +1733,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1696,6 +1842,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1726,6 +1875,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -1756,78 +1906,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -1842,6 +2009,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -1995,6 +2165,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2025,6 +2198,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -2055,78 +2229,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -2141,6 +2332,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2303,6 +2497,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2333,6 +2530,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -2363,78 +2561,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -2449,6 +2664,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2593,6 +2811,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2623,6 +2844,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -2653,78 +2875,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -2739,6 +2978,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2883,6 +3125,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -2913,6 +3158,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -2943,78 +3189,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -3029,6 +3292,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3187,6 +3453,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -3217,78 +3484,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -3303,6 +3587,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3447,6 +3734,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3477,6 +3767,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -3507,78 +3798,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -3593,6 +3901,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3728,6 +4039,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -3758,6 +4072,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -3788,78 +4103,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -3874,6 +4206,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -4045,6 +4380,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -4075,6 +4413,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -4105,78 +4444,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -4191,6 +4547,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -4335,6 +4694,9 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 
@@ -4365,6 +4727,7 @@ Object {
     },
     "ID": Object {
       "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+      "strict": true,
     },
     "MosExternalMetaData": Array [
       Object {
@@ -4395,78 +4758,95 @@ Object {
     ],
     "Slug": Object {
       "_str": "All effect1 into clip combinations",
+      "strict": true,
     },
     "Stories": Array [
       Object {
         "ID": Object {
           "_str": "ro1;s1;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s1;p3",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT1;PART3",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s2;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART1",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s3;p2",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT3;PART2",
+          "strict": true,
         },
       },
       Object {
         "ID": Object {
           "_str": "ro1;s4;p1",
+          "strict": true,
         },
         "Items": Array [],
         "Slug": Object {
           "_str": "SEGMENT2;PART3",
+          "strict": true,
         },
       },
     ],
@@ -4481,6 +4861,9 @@ Object {
   "showStyleVariantId": "mockShowStyleVariant0",
   "status": "BUSY",
   "studioId": "mockStudio4",
+  "timing": Object {
+    "type": "none",
+  },
 }
 `;
 

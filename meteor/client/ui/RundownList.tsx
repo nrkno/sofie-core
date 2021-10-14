@@ -32,6 +32,8 @@ import { RundownListFooter } from './RundownList/RundownListFooter'
 import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 import { doUserAction, UserAction } from '../lib/userAction'
+import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
+import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -96,7 +98,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
 	const rundownLayouts = RundownLayouts.find({
-		$or: [{ exposeAsStandalone: true }, { exposeAsShelf: true }],
+		$or: [{ exposeAsSelectableLayout: true }, { exposeAsShelf: true }],
 	}).fetch()
 
 	return {
@@ -303,10 +305,18 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 											<span>{t('Show Style')}</span>
 											<span>{t('On Air Start Time')}</span>
 											<span>{t('Duration')}</span>
-											<span>{t('Last Updated')}</span>
-											{this.props.rundownLayouts.some((l) => l.exposeAsShelf || l.exposeAsStandalone) && (
-												<span>{t('Shelf Layout')}</span>
-											)}
+											{this.props.rundownPlaylists.some(
+												(p) =>
+													!!PlaylistTiming.getExpectedEnd(p.timing) ||
+													p.rundowns.some((r) => PlaylistTiming.getExpectedEnd(r.timing))
+											) && <span>{t('Expected End Time')}</span>}
+											<span>{t('Last updated')}</span>
+											{this.props.rundownLayouts.some(
+												(l) =>
+													(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
+													(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
+											) && <span>{t('View Layout')}</span>}
+											<span>&nbsp;</span>
 										</header>
 										{this.renderRundownPlaylists(rundownPlaylists)}
 										<footer>

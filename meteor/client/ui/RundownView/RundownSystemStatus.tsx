@@ -7,7 +7,6 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
 	PeripheralDevices,
-	PeripheralDeviceStatusCode,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
@@ -17,6 +16,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -78,10 +78,10 @@ interface OnLineOffLineList {
 }
 
 interface ITrackedProps {
-	mosStatus: PeripheralDeviceStatusCode
+	mosStatus: StatusCode
 	mosLastUpdate: Time
 	mosDevices: OnLineOffLineList
-	playoutStatus: PeripheralDeviceStatusCode
+	playoutStatus: StatusCode
 	playoutDevices: OnLineOffLineList
 }
 
@@ -127,22 +127,18 @@ export const RundownSystemStatus = translateWithTracker(
 		const [ingest, playout] = [ingestDevices, playoutDevices].map((devices) => {
 			const status = devices
 				.filter((i) => !i.ignore)
-				.reduce((memo: PeripheralDeviceStatusCode, device: PeripheralDevice) => {
+				.reduce((memo: StatusCode, device: PeripheralDevice) => {
 					if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
 						return device.status.statusCode
 					} else if (!device.connected) {
-						return PeripheralDeviceStatusCode.FATAL
+						return StatusCode.FATAL
 					} else {
 						return memo
 					}
-				}, PeripheralDeviceStatusCode.UNKNOWN)
+				}, StatusCode.UNKNOWN)
 			const onlineOffline: OnLineOffLineList = {
-				onLine: devices.filter(
-					(device) => device.connected && device.status.statusCode < PeripheralDeviceStatusCode.WARNING_MINOR
-				),
-				offLine: devices.filter(
-					(device) => !device.connected || device.status.statusCode >= PeripheralDeviceStatusCode.WARNING_MINOR
-				),
+				onLine: devices.filter((device) => device.connected && device.status.statusCode < StatusCode.WARNING_MINOR),
+				offLine: devices.filter((device) => !device.connected || device.status.statusCode >= StatusCode.WARNING_MINOR),
 			}
 			const lastUpdate = devices.reduce((memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
 			return {
@@ -215,11 +211,11 @@ export const RundownSystemStatus = translateWithTracker(
 					<div className="rundown-system-status__indicators">
 						<div
 							className={ClassNames('indicator', 'mos', {
-								good: this.props.mosStatus === PeripheralDeviceStatusCode.GOOD,
-								minor: this.props.mosStatus === PeripheralDeviceStatusCode.WARNING_MINOR,
-								major: this.props.mosStatus === PeripheralDeviceStatusCode.WARNING_MAJOR,
-								bad: this.props.mosStatus === PeripheralDeviceStatusCode.BAD,
-								fatal: this.props.mosStatus === PeripheralDeviceStatusCode.FATAL,
+								good: this.props.mosStatus === StatusCode.GOOD,
+								minor: this.props.mosStatus === StatusCode.WARNING_MINOR,
+								major: this.props.mosStatus === StatusCode.WARNING_MAJOR,
+								bad: this.props.mosStatus === StatusCode.BAD,
+								fatal: this.props.mosStatus === StatusCode.FATAL,
 							})}
 						>
 							<div className="indicator__tooltip">
@@ -264,11 +260,11 @@ export const RundownSystemStatus = translateWithTracker(
 						</div>
 						<div
 							className={ClassNames('indicator', 'playout', {
-								good: this.props.playoutStatus === PeripheralDeviceStatusCode.GOOD,
-								minor: this.props.playoutStatus === PeripheralDeviceStatusCode.WARNING_MINOR,
-								major: this.props.playoutStatus === PeripheralDeviceStatusCode.WARNING_MAJOR,
-								bad: this.props.playoutStatus === PeripheralDeviceStatusCode.BAD,
-								fatal: this.props.playoutStatus === PeripheralDeviceStatusCode.FATAL,
+								good: this.props.playoutStatus === StatusCode.GOOD,
+								minor: this.props.playoutStatus === StatusCode.WARNING_MINOR,
+								major: this.props.playoutStatus === StatusCode.WARNING_MAJOR,
+								bad: this.props.playoutStatus === StatusCode.BAD,
+								fatal: this.props.playoutStatus === StatusCode.FATAL,
 							})}
 						>
 							<div className="indicator__tooltip">

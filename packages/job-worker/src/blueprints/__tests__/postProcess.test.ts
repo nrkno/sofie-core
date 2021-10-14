@@ -10,6 +10,7 @@ import {
 	IBlueprintPiece,
 	IUserNotesContext,
 	PieceLifespan,
+	PlaylistTimingType,
 	TimelineObjectCoreExt,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
@@ -47,6 +48,9 @@ describe('Test blueprint post-process', () => {
 			externalNRCSName: 'mockNRCS',
 			playlistId: protectString(''),
 			_rank: 0,
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		}
 
 		const showStyle = {} as ShowStyleCompound

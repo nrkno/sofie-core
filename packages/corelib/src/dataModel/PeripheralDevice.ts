@@ -1,4 +1,4 @@
-import { Time, TSR } from '@sofie-automation/blueprints-integration'
+import { Time, TSR, StatusCode } from '@sofie-automation/blueprints-integration'
 import { assertNever } from '../lib'
 import { DeviceConfigManifest } from '../deviceConfig'
 import { PeripheralDeviceId, OrganizationId, StudioId } from './Ids'
@@ -60,19 +60,10 @@ export interface PeripheralDevice {
 	accessTokenUrl?: string
 }
 
-export enum PeripheralDeviceStatusCode {
-	UNKNOWN = 0, // Status unknown
-	GOOD = 1, // All good and green
-	WARNING_MINOR = 2, // Everything is not OK, operation is not affected
-	WARNING_MAJOR = 3, // Everything is not OK, operation might be affected
-	BAD = 4, // Operation affected, possible to recover
-	FATAL = 5, // Operation affected, not possible to recover without manual interference
-}
-
 // Note The actual type of a device is determined by the Category, Type and SubType
 
 export interface PeripheralDeviceStatusObject {
-	statusCode: PeripheralDeviceStatusCode
+	statusCode: StatusCode
 	messages?: Array<string>
 }
 // Note The actual type of a device is determined by the Category, Type and SubType

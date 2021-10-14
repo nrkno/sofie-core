@@ -1,6 +1,6 @@
 import { ExpectedPackageStatusAPI, Time } from '@sofie-automation/blueprints-integration'
 import { protectString } from '../protectedString'
-import { ExpectedPackageId, PackageContainerPackageId, StudioId } from './Ids'
+import { ExpectedPackageId, PackageContainerPackageId, PeripheralDeviceId, StudioId } from './Ids'
 
 /**
  * The PackageContainerPackageStatuses-collection contains statuses about "a Package on a specific PackageContainer"
@@ -21,7 +21,10 @@ export interface PackageContainerPackageStatusDB {
 	containerId: string
 
 	/** The Package this status is for */
-	packageId: string
+	packageId: ExpectedPackageId
+
+	/** Which PeripheralDevice this update came from */
+	deviceId: PeripheralDeviceId
 
 	/** The status of the Package */
 	status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
@@ -32,7 +35,7 @@ export interface PackageContainerPackageStatusDB {
 export function getPackageContainerPackageId(
 	studioId: StudioId,
 	containerId: string,
-	packageId: string | ExpectedPackageId
+	packageId: ExpectedPackageId
 ): PackageContainerPackageId {
 	return protectString(`${studioId}_${containerId}_${packageId}`)
 }

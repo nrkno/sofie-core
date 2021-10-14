@@ -139,7 +139,7 @@ describe('Test recieved mos ingest payloads', () => {
 	}
 
 	test('mosRoCreate', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 
 		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
 
@@ -168,7 +168,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	test('mosRoCreate: replace existing', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 
 		const roData = mockRO.roCreate()
 		const s = roData.Stories.splice(7, 1)

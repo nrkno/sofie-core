@@ -2,8 +2,6 @@ import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import * as mousetrap from 'mousetrap'
-import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -11,10 +9,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayoutBase, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
@@ -29,6 +26,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	SelectPieceEvent,
+	ShelfStateEvent,
 	SwitchToShelfTabEvent,
 } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
@@ -51,7 +49,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 		key: string
 		label: string
 	}>
-	rundownLayout?: RundownLayoutBase
+	rundownLayout?: RundownLayoutShelfBase
 	fullViewport?: boolean
 	shelfDisplayOptions: {
 		buckets: boolean
@@ -102,14 +100,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 	private _mouseDown: number
 
-	private bindKeys: Array<{
-		key: string
-		up?: (e: KeyboardEvent) => any
-		down?: (e: KeyboardEvent) => any
-		label: string
-		global?: boolean
-	}> = []
-
 	constructor(props: Translated<IShelfProps>) {
 		super(props)
 
@@ -130,87 +120,20 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			selectedPiece: undefined,
 			localStorageName,
 		}
-
-		const { t } = props
-
-		this.bindKeys = [
-			{
-				key: RundownViewKbdShortcuts.RUNDOWN_TOGGLE_SHELF,
-				up: this.keyToggleShelf,
-				label: t('Toggle Shelf'),
-			},
-			// {
-			// 	key: RundownViewKbdShortcuts.RUNDOWN_RESET_FOCUS,
-			// 	up: this.keyBlurActiveElement,
-			// 	label: t('Escape from filter search'),
-			// 	global: true
-			// }
-		]
 	}
 
 	componentDidMount() {
-		const preventDefault = (e) => {
-			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
-		}
-		this.bindKeys.forEach((k) => {
-			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
-			if (k.up) {
-				method(
-					k.key,
-					(e: KeyboardEvent) => {
-						preventDefault(e)
-						if (k.up) k.up(e)
-					},
-					'keyup'
-				)
-				method(
-					k.key,
-					(e: KeyboardEvent) => {
-						preventDefault(e)
-					},
-					'keydown'
-				)
-			}
-			if (k.down) {
-				method(
-					k.key,
-					(e: KeyboardEvent) => {
-						preventDefault(e)
-						if (k.down) k.down(e)
-					},
-					'keydown'
-				)
-			}
-		})
-
-		this.props.onRegisterHotkeys(this.bindKeys)
 		this.restoreDefaultTab()
 
 		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
-
-		document.body.addEventListener('wheel', this.preventWheelPropagation, {
-			passive: false,
-		})
+		RundownViewEventBus.on(RundownViewEvents.SHELF_STATE, this.onShelfStateChange)
 	}
 
 	componentWillUnmount() {
-		this.bindKeys.forEach((k) => {
-			if (k.up) {
-				mousetrap.unbind(k.key, 'keyup')
-				mousetrap.unbind(k.key, 'keydown')
-			}
-			if (k.down) {
-				mousetrap.unbind(k.key, 'keydown')
-			}
-		})
-
 		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
-
-		document.body.removeEventListener('wheel', this.preventWheelPropagation)
+		RundownViewEventBus.off(RundownViewEvents.SHELF_STATE, this.onShelfStateChange)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -402,6 +325,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 	}
 
+	onShelfStateChange = (e: ShelfStateEvent) => {
+		this.blurActiveElement()
+		this.props.onChangeExpanded(e.state === 'toggle' ? !this.props.isExpanded : e.state)
+	}
+
 	onSwitchShelfTab = (e: SwitchToShelfTabEvent) => {
 		if (e.tab) {
 			this.switchTab(e.tab)
@@ -436,30 +364,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 	}
 
-	private preventWheelPropagation = (e: WheelEvent) => {
-		const composedPath = e.composedPath()
-		if (this.element && composedPath.includes(this.element)) {
-			const scrollSink = composedPath.find(
-				(element) => element instanceof HTMLElement && element.classList.contains('scroll-sink')
-			)
-			if (scrollSink instanceof HTMLElement) {
-				if (e.deltaY < 0 && scrollSink.scrollTop <= 0) {
-					e.preventDefault()
-				} else if (
-					e.deltaY > 0 &&
-					Math.round(scrollSink.scrollTop) >= scrollSink.scrollHeight - scrollSink.clientHeight
-				) {
-					e.preventDefault()
-				}
-			}
-		}
-	}
-
 	render() {
-		const { fullViewport } = this.props
+		const { fullViewport, shelfDisplayOptions } = this.props
 		return (
 			<div
-				className={ClassNames('rundown-view__shelf dark scroll-sink', {
+				className={ClassNames('rundown-view__shelf dark', {
+					'scroll-sink': !fullViewport,
 					'full-viewport': fullViewport,
 					moving: this.state.moving,
 				})}
@@ -478,7 +388,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					</div>
 				)}
 				<div className="rundown-view__shelf__contents">
-					{!this.props.fullViewport || this.props.shelfDisplayOptions.layout ? (
+					{shelfDisplayOptions.layout ? (
 						<ContextMenuTrigger
 							id="shelf-context-menu"
 							attributes={{
@@ -531,7 +441,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							</ErrorBoundary>
 						</ContextMenuTrigger>
 					) : null}
-					{!this.props.fullViewport || this.props.shelfDisplayOptions.buckets ? (
+					{shelfDisplayOptions.buckets ? (
 						<ErrorBoundary>
 							<RundownViewBuckets
 								buckets={this.props.buckets}
@@ -550,7 +460,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							/>
 						</ErrorBoundary>
 					) : null}
-					{!this.props.fullViewport || this.props.shelfDisplayOptions.inspector ? (
+					{shelfDisplayOptions.inspector ? (
 						<ErrorBoundary>
 							<ShelfInspector
 								selected={this.state.selectedPiece}

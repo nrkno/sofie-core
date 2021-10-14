@@ -7,12 +7,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Route, NavLink, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
 
 import { Studio, Studios } from '../../lib/collections/Studios'
-import {
-	PeripheralDevice,
-	PeripheralDevices,
-	PeripheralDeviceStatusCode,
-	PeripheralDeviceType,
-} from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 
 import StudioSettings from './Settings/StudioSettings'
@@ -34,6 +29,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { getUser, User } from '../../lib/collections/Users'
 import { Settings as MeteorSettings } from '../../lib/Settings'
 import { getAllowConfigure } from '../lib/localStorage'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 class WelcomeToSettings extends React.Component {
 	render() {
@@ -86,21 +82,21 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			this.state = {}
 		}
 
-		statusCodeString(statusCode: PeripheralDeviceStatusCode) {
+		statusCodeString(statusCode: StatusCode) {
 			const t = this.props.t
 
 			switch (statusCode) {
-				case PeripheralDeviceStatusCode.UNKNOWN:
+				case StatusCode.UNKNOWN:
 					return t('Unknown')
-				case PeripheralDeviceStatusCode.GOOD:
+				case StatusCode.GOOD:
 					return t('Good')
-				case PeripheralDeviceStatusCode.WARNING_MINOR:
+				case StatusCode.WARNING_MINOR:
 					return t('Minor Warning')
-				case PeripheralDeviceStatusCode.WARNING_MAJOR:
+				case StatusCode.WARNING_MAJOR:
 					return t('Warning')
-				case PeripheralDeviceStatusCode.BAD:
+				case StatusCode.BAD:
 					return t('Bad')
-				case PeripheralDeviceStatusCode.FATAL:
+				case StatusCode.FATAL:
 					return t('Fatal')
 			}
 		}

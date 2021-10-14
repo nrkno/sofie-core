@@ -14,3 +14,10 @@ registerIndex(PieceInstances, {
 	partInstanceId: 1,
 	reset: -1,
 })
+
+registerIndex(PieceInstances, {
+	rundownId: 1,
+	playlistActivationId: 1,
+	partInstanceId: 1,
+	reset: -1,
+})

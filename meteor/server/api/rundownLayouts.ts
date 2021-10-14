@@ -7,6 +7,7 @@ import {
 	RundownLayoutType,
 	RundownLayoutBase,
 	RundownLayoutId,
+	CustomizableRegions,
 } from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
@@ -22,11 +23,9 @@ export function createRundownLayout(
 	name: string,
 	type: RundownLayoutType,
 	showStyleBaseId: ShowStyleBaseId,
+	regionId: CustomizableRegions,
 	blueprintId: BlueprintId | undefined,
-	userId?: UserId | undefined,
-	exposeAsStandalone?: boolean,
-	exposeAsShelf?: boolean,
-	openByDefault?: boolean
+	userId?: UserId | undefined
 ) {
 	const id: RundownLayoutId = getRandomId()
 	RundownLayouts.insert(
@@ -35,14 +34,11 @@ export function createRundownLayout(
 			name,
 			showStyleBaseId,
 			blueprintId,
-			filters: [],
 			type,
 			userId,
-			exposeAsStandalone: !!exposeAsStandalone,
-			exposeAsShelf: !!exposeAsShelf,
 			icon: '',
 			iconColor: '#ffffff',
-			openByDefault: openByDefault ?? false,
+			regionId,
 		})
 	)
 	return id
@@ -74,7 +70,6 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 		const layout = JSON.parse(body) as RundownLayoutBase
 		check(layout._id, Match.Optional(String))
 		check(layout.name, String)
-		check(layout.filters, Array)
 		check(layout.type, String)
 
 		layout.showStyleBaseId = showStyleBase._id
@@ -124,7 +119,8 @@ function apiCreateRundownLayout(
 	context: MethodContext,
 	name: string,
 	type: RundownLayoutType,
-	showStyleBaseId: ShowStyleBaseId
+	showStyleBaseId: ShowStyleBaseId,
+	regionId: CustomizableRegions
 ) {
 	check(name, String)
 	check(type, String)
@@ -132,7 +128,7 @@ function apiCreateRundownLayout(
 
 	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 
-	return createRundownLayout(name, type, showStyleBaseId, undefined, access.userId || undefined)
+	return createRundownLayout(name, type, showStyleBaseId, regionId, undefined, access.userId || undefined)
 }
 function apiRemoveRundownLayout(context: MethodContext, id: RundownLayoutId) {
 	check(id, String)
@@ -145,8 +141,13 @@ function apiRemoveRundownLayout(context: MethodContext, id: RundownLayoutId) {
 }
 
 class ServerRundownLayoutsAPI extends MethodContextAPI implements NewRundownLayoutsAPI {
-	async createRundownLayout(name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
-		return makePromise(() => apiCreateRundownLayout(this, name, type, showStyleBaseId))
+	async createRundownLayout(
+		name: string,
+		type: RundownLayoutType,
+		showStyleBaseId: ShowStyleBaseId,
+		regionId: CustomizableRegions
+	) {
+		return makePromise(() => apiCreateRundownLayout(this, name, type, showStyleBaseId, regionId))
 	}
 	async removeRundownLayout(rundownLayoutId: RundownLayoutId) {
 		return makePromise(() => apiRemoveRundownLayout(this, rundownLayoutId))

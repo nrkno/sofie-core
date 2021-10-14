@@ -16,6 +16,8 @@ import { NoteType } from './api/notes'
 import { PackageInfos } from './collections/PackageInfos'
 import { protectString, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
+import { getExpectedPackageId } from './collections/ExpectedPackages'
+import { PieceGeneric } from './collections/Pieces'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a
@@ -163,7 +165,7 @@ export interface ScanInfoForPackage {
 }
 
 export function checkPieceContentStatus(
-	piece: Pick<IBlueprintPieceGeneric, 'name' | 'content' | 'expectedPackages'>,
+	piece: Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>,
 	sourceLayer: ISourceLayer | undefined,
 	studio: Studio | undefined,
 	t?: i18next.TFunction
@@ -179,6 +181,7 @@ export function checkPieceContentStatus(
 	const settings: IStudioSettings | undefined = studio?.settings
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
+	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
 	if (!ignoreMediaStatus && sourceLayer && studio) {
 		if (piece.expectedPackages) {
 			// Using Expected Packages:
@@ -217,7 +220,7 @@ export function checkPieceContentStatus(
 						const packageOnPackageContainer = getPackageContainerPackageStatus(
 							studio._id,
 							packageContainerId,
-							expectedPackage._id
+							getExpectedPackageId(piece._id, expectedPackage._id)
 						)
 						const packageName =
 							// @ts-expect-error hack
@@ -297,7 +300,7 @@ export function checkPieceContentStatus(
 					const { scan, deepScan } = packageInfo
 
 					if (scan && scan.streams) {
-						if (scan.streams.length < 2) {
+						if (!ignoreMediaAudioStatus && scan.streams.length < 2) {
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 							messages.push(
 								t("{{sourceLayer}} doesn't have both audio & video", {
@@ -348,6 +351,7 @@ export function checkPieceContentStatus(
 							packageInfo.timebase = timebase // what todo?
 						}
 						if (
+							!ignoreMediaAudioStatus &&
 							audioConfig &&
 							(!expectedAudioStreams.has(audioStreams.toString()) ||
 								(isStereo && !expectedAudioStreams.has('stereo')))
@@ -439,6 +443,7 @@ export function checkPieceContentStatus(
 						messages.push(t('{{sourceLayer}} is missing a file path', { sourceLayer: sourceLayer.name }))
 					} else {
 						const mediaObject = MediaObjects.findOne({
+							studioId: studio._id,
 							mediaId: fileName,
 						})
 						// If media object not found, then...
@@ -456,7 +461,7 @@ export function checkPieceContentStatus(
 							// Do a format check:
 							if (mediaObject.mediainfo) {
 								if (mediaObject.mediainfo.streams) {
-									if (mediaObject.mediainfo.streams.length < 2) {
+									if (!ignoreMediaAudioStatus && mediaObject.mediainfo.streams.length < 2) {
 										newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 										messages.push(t("Clip doesn't have audio & video", { fileName: displayName }))
 									}
@@ -502,6 +507,7 @@ export function checkPieceContentStatus(
 										mediaObject.mediainfo.timebase = timebase
 									}
 									if (
+										!ignoreMediaAudioStatus &&
 										audioConfig &&
 										(!expectedAudioStreams.has(audioStreams.toString()) ||
 											(isStereo && !expectedAudioStreams.has('stereo')))
@@ -598,6 +604,7 @@ export function checkPieceContentStatus(
 				case SourceLayerType.GRAPHICS:
 					if (fileName) {
 						const mediaObject = MediaObjects.findOne({
+							studioId: studio._id,
 							mediaId: fileName,
 						})
 						if (!mediaObject) {
@@ -609,6 +616,9 @@ export function checkPieceContentStatus(
 						}
 					}
 					break
+				// Note: If adding another type here, make sure it is also handled in:
+				// getMediaObjectMediaId()
+				// * withMediaObjectStatus.tsx (updateMediaObjectSubscription)
 			}
 		}
 	}

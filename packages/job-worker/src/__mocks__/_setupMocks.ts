@@ -41,7 +41,7 @@ jest.mock('../../../corelib/dist/random', (...args) => require('./random').setup
 // require('../server/api/logger.ts')
 
 // beforeEach(() => {
-// 	setLoggerLevel('warning')
+// 	setLogLevel(LogLevel.WARNING)
 // 	// put setLoggerLevel('info') in the beginning of your test to see logs
 
 // 	resetRandomId()

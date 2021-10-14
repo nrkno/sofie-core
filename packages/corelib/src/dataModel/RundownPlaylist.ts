@@ -1,4 +1,4 @@
-import { Time, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
+import { Time, TimelinePersistentState, RundownPlaylistTiming } from '@sofie-automation/blueprints-integration'
 import {
 	PartId,
 	PieceInstanceInfiniteId,
@@ -48,10 +48,8 @@ export interface DBRundownPlaylist {
 	created: Time
 	/** Last modified timestamp */
 	modified: Time
-	/** When the playlist is expected to start */
-	expectedStart?: Time
-	/** How long the playlist is expected to take ON AIR */
-	expectedDuration?: number
+	/** Rundown timing information */
+	timing: RundownPlaylistTiming
 	/** Is the playlist in rehearsal mode (can be used, when active: true) */
 	rehearsal?: boolean
 	/** Playout hold state */

@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
-import { ScriptContent } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
-import { getRandomId, normalizeArrayToMap } from '../lib'
+import { getRandomId, normalizeArray, normalizeArrayToMap } from '../lib'
 import { SegmentId } from '../collections/Segments'
 import { PieceId } from '../collections/Pieces'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
@@ -12,7 +12,8 @@ import { PartId } from '../collections/Parts'
 import { FindOptions } from '../typings/meteor'
 import { PieceInstance, PieceInstances } from '../collections/PieceInstances'
 import { Rundown, RundownId } from '../collections/Rundowns'
-import { ShowStyleBaseId } from '../collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../collections/ShowStyleBases'
+import { processAndPrunePieceInstanceTimings } from '../rundown/infinites'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -50,9 +51,16 @@ export namespace PrompterAPI {
 		const playlist = RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 		const rundowns = playlist.getRundowns()
-		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
+		const rundownIdsToShowStyleBaseIds: Map<RundownId, ShowStyleBaseId> = new Map()
+		const rundownIdsToShowStyleBase: Map<RundownId, [ShowStyleBase, Record<string, ISourceLayer>] | undefined> =
+			new Map()
 		for (const rundown of rundowns) {
-			rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
+			rundownIdsToShowStyleBaseIds.set(rundown._id, rundown.showStyleBaseId)
+			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+			rundownIdsToShowStyleBase.set(
+				rundown._id,
+				showStyleBase ? [showStyleBase, normalizeArray(showStyleBase.sourceLayers, '_id')] : undefined
+			)
 		}
 		const rundownMap = normalizeArrayToMap(rundowns, '_id')
 
@@ -62,7 +70,13 @@ export namespace PrompterAPI {
 			playlist,
 			undefined,
 			undefined,
-			undefined,
+			// unless this is the current or next PartInstance, we actually don't want the PartInstances,
+			// we want it to behave as if all other PartInstances are reset.
+			{
+				_id: {
+					$in: [currentPartInstance?._id, nextPartInstance?._id].filter(Boolean) as PartInstanceId[],
+				},
+			},
 			undefined,
 			undefined,
 			{
@@ -70,6 +84,7 @@ export namespace PrompterAPI {
 					isTaken: 0,
 					previousPartEndState: 0,
 					takeCount: 0,
+					timings: 0,
 				},
 			}
 		)
@@ -138,17 +153,18 @@ export namespace PrompterAPI {
 					fields: {
 						startedPlayback: 0,
 						stoppedPlayback: 0,
+						userDuration: 0,
 					},
 				}
 
-				const allPieceInstances = getPieceInstancesForPartInstance(
+				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
 					rundown,
 					partInstance,
 					new Set(partIds.slice(0, partIndex)),
 					new Set(segmentIds.slice(0, segmentIndex)),
 					rundownIds.slice(0, currentRundownIndex),
-					rundownsToShowstyles,
+					rundownIdsToShowStyleBaseIds,
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,
@@ -164,22 +180,34 @@ export namespace PrompterAPI {
 					true
 				)
 
-				allPieceInstances.forEach((pieceInstance) => {
-					const piece = pieceInstance.piece
-					if (piece.content) {
-						const content = piece.content as ScriptContent
-						if (content.fullScript) {
-							if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) > 0) {
-								return // piece already included in prompter script
+				const showStyleBaseAndSLayers = rundownIdsToShowStyleBase.get(partInstance.rundownId)
+				if (showStyleBaseAndSLayers) {
+					const preprocessedPieces = processAndPrunePieceInstanceTimings(
+						showStyleBaseAndSLayers[0],
+						rawPieceInstances,
+						0,
+						true
+					)
+
+					preprocessedPieces.forEach((pieceInstance) => {
+						const piece = pieceInstance.piece
+						const sourceLayer = showStyleBaseAndSLayers[1][piece.sourceLayerId] as ISourceLayer | undefined
+
+						if (piece.content && sourceLayer && sourceLayer.type === SourceLayerType.SCRIPT) {
+							const content = piece.content as ScriptContent
+							if (content.fullScript) {
+								if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) >= 0) {
+									return // piece already included in prompter script
+								}
+								piecesIncluded.push(piece.continuesRefId || piece._id)
+								partData.pieces.push({
+									id: piece._id,
+									text: content.fullScript,
+								})
 							}
-							piecesIncluded.push(piece.continuesRefId || piece._id)
-							partData.pieces.push({
-								id: piece._id,
-								text: content.fullScript,
-							})
 						}
-					}
-				})
+					})
+				}
 
 				if (partData.pieces.length === 0) {
 					// insert an empty line

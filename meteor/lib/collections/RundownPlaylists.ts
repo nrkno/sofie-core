@@ -7,7 +7,7 @@ import { Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
 import { Segments, Segment, DBSegment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
-import { TimelinePersistentState } from '@sofie-automation/blueprints-integration'
+import { TimelinePersistentState, RundownPlaylistTiming } from '@sofie-automation/blueprints-integration'
 import {
 	sortPartsInSegments,
 	sortPartsInSortedSegments,
@@ -49,8 +49,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public startedPlayback?: Time
 	public lastIncorrectPartPlaybackReported?: Time
 	public rundownsStartedPlayback?: Record<string, Time>
-	public expectedStart?: Time
-	public expectedDuration?: number
+	public timing: RundownPlaylistTiming
 	public rehearsal?: boolean
 	public holdState?: RundownHoldState
 	public activationId?: RundownPlaylistActivationId
@@ -140,8 +139,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				name: 1,
 				_rank: 1,
 				playlistId: 1,
-				expectedStart: 1,
-				expectedDuration: 1,
+				timing: 1,
 				showStyleBaseId: 1,
 			},
 		})

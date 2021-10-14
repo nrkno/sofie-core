@@ -22,7 +22,6 @@ export interface IAdLibListItem extends AdLibPieceUi {
 	contentPackageInfos?: ScanInfoForPackages
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
-	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
 	floated?: boolean
@@ -85,7 +84,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						metadata: this.props.piece.contentMetaData,
 						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
 						packageInfos: this.props.piece.contentPackageInfos,
-						studioPackageContainers: this.props.studio.packageContainers,
+						studio: this.props.studio,
 					})}
 				</ContextMenuTrigger>
 			)

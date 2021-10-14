@@ -25,7 +25,7 @@ import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspect
 import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { getThumbnailPackageSettings } from '../../../lib/collections/ExpectedPackages'
+import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 
 export interface IDashboardButtonProps {
@@ -73,7 +73,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		height: number
 	} | null = null
 	private _labelEl: HTMLTextAreaElement
-	private activeTouch: React.Touch | null = null
+	private pointerId: number | null = null
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
@@ -94,30 +94,33 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	getThumbnailUrl = (): string | undefined => {
-		const { piece } = this.props
+	getThumbnailUrl = (piece: IAdLibListItem, studio: Studio): string | undefined => {
 		if (piece.expectedPackages) {
 			// use Expected packages:
 			// Just use the first one we find.
 			// TODO: support multiple expected packages?
+
 			let thumbnailContainerId: string | undefined
 			let packageThumbnailPath: string | undefined
 			for (const expectedPackage of piece.expectedPackages) {
-				const sideEffect =
-					expectedPackage.sideEffect.thumbnailPackageSettings || getThumbnailPackageSettings(expectedPackage)
-				packageThumbnailPath = sideEffect?.path
-				thumbnailContainerId = expectedPackage.sideEffect.thumbnailContainerId
+				const sideEffect = getSideEffect(expectedPackage, studio)
+
+				packageThumbnailPath = sideEffect.thumbnailPackageSettings?.path
+				thumbnailContainerId = sideEffect.thumbnailContainerId
 
 				if (packageThumbnailPath && thumbnailContainerId) {
 					break // don't look further
 				}
 			}
 			if (packageThumbnailPath && thumbnailContainerId) {
-				const packageContainer = this.props.studio?.packageContainers[thumbnailContainerId]
+				const packageContainer = studio.packageContainers[thumbnailContainerId]
 				if (packageContainer) {
 					// Look up an accessor we can use:
 					for (const accessor of Object.values(packageContainer.container.accessors)) {
-						if (accessor.type === Accessor.AccessType.HTTP && accessor.baseUrl) {
+						if (
+							(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
+							accessor.baseUrl
+						) {
 							// TODO: add fiter for accessor.networkId ?
 							return [
 								accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
@@ -172,8 +175,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		let thumbnailUrl: string | undefined
 		let sourceDuration: number | undefined
 		const adLib = this.props.piece as any as AdLibPieceUi
-		if (this.props.piece.content) {
-			thumbnailUrl = this.getThumbnailUrl()
+		if (this.props.piece.content && this.props.studio) {
+			thumbnailUrl = this.getThumbnailUrl(this.props.piece, this.props.studio!)
 			const vtContent = adLib.content as VTContent | undefined
 			sourceDuration = vtContent?.sourceDuration
 		}
@@ -208,8 +211,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
+					pieceId={this.props.piece._id}
 					expectedPackages={this.props.piece.expectedPackages}
-					studioPackageContainers={this.props.studio?.packageContainers}
+					studio={this.props.studio}
 					displayOn="viewport"
 				/>
 			</>
@@ -237,12 +241,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private setRef = (el: HTMLDivElement | null) => {
 		this.element = el
-
-		if (this.element) {
-			this.element.addEventListener('touchstart', this.handleTouchStart)
-			this.element.addEventListener('touchend', this.handleTouchEnd)
-			this.element.addEventListener('touchcancel', this.handleTouchCancel)
-		}
 	}
 
 	private handleOnMouseEnter = (_e: React.MouseEvent<HTMLDivElement>) => {
@@ -332,9 +330,22 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		const { toggleOnSingleClick } = this.props
-		if (toggleOnSingleClick) {
-			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-		} else {
+		// if pointerId is not set, it means we are dealing with a mouse and not an emulated mouse event
+		if (this.pointerId === null && e.button === 0) {
+			// this is a main-button-click
+			if (toggleOnSingleClick) {
+				this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+			} else {
+				this.props.onSelectAdLib(this.props.piece, e)
+			}
+		}
+	}
+
+	private handleOnMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+		// if mouseDown event is fired, that means that pointerDown did not fire, which means we are dealing with a mouse
+		this.pointerId = null
+		if (e.button) {
+			// this is some other button, main button is 0
 			this.props.onSelectAdLib(this.props.piece, e)
 		}
 	}
@@ -348,45 +359,19 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	private handleTouchStart = (e: TouchEvent) => {
-		this.activeTouch = e.changedTouches.item(0) || null
-		e.preventDefault()
-		e.stopPropagation()
-		e.stopImmediatePropagation()
-		if (this.activeTouch) {
-			this.setState({
-				active: true,
-			})
+	private handleOnPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerType !== 'mouse') {
+			this.pointerId = e.pointerId
+			e.preventDefault()
+		} else {
+			this.pointerId = null
 		}
 	}
 
-	private handleTouchCancel = (e: TouchEvent) => {
-		const targetTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this.activeTouch?.identifier)
-		if (targetTouch) {
-			this.activeTouch = null
-
-			this.setState({
-				active: false,
-			})
-		}
-	}
-
-	private handleTouchEnd = (e: TouchEvent) => {
-		const targetTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this.activeTouch?.identifier)
-		if (
-			targetTouch &&
-			targetTouch.screenX === this.activeTouch?.screenX &&
-			targetTouch.screenY === this.activeTouch?.screenY
-		) {
+	private handleOnPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerId === this.pointerId) {
 			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 			e.preventDefault()
-			e.stopPropagation()
-			e.stopImmediatePropagation()
-			this.activeTouch = null
-
-			this.setState({
-				active: false,
-			})
 		}
 	}
 
@@ -430,9 +415,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onClick={this.handleClick}
 				onDoubleClick={this.handleDoubleClick}
 				ref={this.setRef}
+				onMouseDown={this.handleOnMouseDown}
 				onMouseEnter={this.handleOnMouseEnter}
 				onMouseLeave={this.handleOnMouseLeave}
 				onMouseMove={this.handleOnMouseMove}
+				onPointerDown={this.handleOnPointerDown}
+				onPointerUp={this.handleOnPointerUp}
 				data-obj-id={this.props.piece._id}
 			>
 				{!this.props.layer

@@ -634,7 +634,10 @@ export namespace RundownUtils {
 				return userDurationNumber || item.renderedDuration || expectedDurationNumber
 			}
 
+			let lastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
+
 			partsE.forEach((part) => {
+				const thisLastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
 				if (part.pieces) {
 					// if an item is continued by another item, rendered duration may need additional resolution
 					part.pieces.forEach((item) => {
@@ -643,24 +646,45 @@ export namespace RundownUtils {
 						}
 					})
 
-					const itemsByLayer = _.groupBy(part.pieces, (item) => {
-						return item.outputLayer && item.sourceLayer && item.outputLayer.isFlattened
-							? item.instance.piece.outputLayerId + '_' + item.sourceLayer.exclusiveGroup
-							: item.instance.piece.outputLayerId + '_' + item.instance.piece.sourceLayerId
-					})
+					const itemsByLayer = Object.entries(
+						_.groupBy(part.pieces, (item) => {
+							return item.outputLayer && item.sourceLayer && item.outputLayer.isFlattened
+								? item.instance.piece.outputLayerId + '_' + item.sourceLayer.exclusiveGroup
+								: item.instance.piece.outputLayerId + '_' + item.instance.piece.sourceLayerId
+						})
+					)
 					// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
 					// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
-					for (const layerItems of Object.values(itemsByLayer)) {
+					for (let i = 0; i < itemsByLayer.length; i++) {
+						const layerId = itemsByLayer[i][0]
+						const layerItems = itemsByLayer[i][1]
 						// sort on rendered in-point and then on priority
 						const sortedItems = layerItems.sort(
 							(a, b) =>
 								(a.renderedInPoint || 0) - (b.renderedInPoint || 0) ||
-								a.instance.priority - b.instance.priority
+								a.instance.priority - b.instance.priority ||
+								(a.sourceLayer?._rank || 0) - (b.sourceLayer?._rank || 0)
 						)
-						for (let i = 1; i < sortedItems.length; i++) {
+						for (let i = 0; i < sortedItems.length; i++) {
 							const currentItem = sortedItems[i]
-							const previousItem = sortedItems[i - 1]
+							const previousItem = sortedItems[i - 1] as PieceExtended | undefined
+
+							const possibleBuddyPiece = lastPartPiecesBySourceLayer[layerId]
 							if (
+								possibleBuddyPiece &&
+								possibleBuddyPiece.instance.piece.lifespan !== PieceLifespan.WithinPart &&
+								currentItem.instance.infinite &&
+								possibleBuddyPiece.instance.infinite &&
+								(possibleBuddyPiece.instance.infinite.infiniteInstanceId ===
+									currentItem.instance.infinite.infiniteInstanceId ||
+									possibleBuddyPiece.instance.infinite.infinitePieceId ===
+										currentItem.instance.infinite.infinitePieceId)
+							) {
+								currentItem.hasOriginInPreceedingPart = true
+							}
+
+							if (
+								previousItem !== undefined && // on i === 0, previousItem will be undefined
 								previousItem.renderedInPoint !== null &&
 								currentItem.renderedInPoint !== null &&
 								previousItem.renderedInPoint !== undefined &&
@@ -685,9 +709,16 @@ export namespace RundownUtils {
 
 								previousItem.maxLabelWidth = currentItem.renderedInPoint - previousItem.renderedInPoint
 							}
+
+							if (currentItem.renderedDuration === null && i === sortedItems.length - 1) {
+								// only if this is the very last piece on this layer
+								thisLastPartPiecesBySourceLayer[layerId] = currentItem
+							}
 						}
 					}
 				}
+
+				lastPartPiecesBySourceLayer = thisLastPartPiecesBySourceLayer
 			})
 
 			segmentExtended.outputLayers = outputLayers

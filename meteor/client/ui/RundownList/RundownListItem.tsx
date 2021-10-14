@@ -147,27 +147,6 @@ const dropCollect: DropTargetCollector<IRundownDropTargetProps, IRundownListItem
 	}
 }
 
-// interface IRundownDragLayerProps {
-// 	currentOffset: XYCoord | null
-// 	clientOffset: XYCoord | null
-// }
-
-// const dragLayerCollect: DragLayerCollector<IRundownDragSourceProps & IRundownListItemProps, IRundownDragLayerProps> =
-// 	function (monitor, props) {
-// 		let currentOffset: XYCoord | null = null
-// 		let clientOffset: XYCoord | null = null
-
-// 		if (monitor.getItem()?.id === props.rundown._id) {
-// 			currentOffset = monitor.getDifferenceFromInitialOffset()
-// 			clientOffset = monitor.getClientOffset()
-// 		}
-
-// 		return {
-// 			currentOffset,
-// 			clientOffset,
-// 		}
-// 	}
-
 export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
 	(props: Translated<IRundownListItemProps>) => {
 		let studio: Studio | undefined = undefined

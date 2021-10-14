@@ -286,6 +286,25 @@ class WrappedAsyncTransformedCollection<Class extends DBInterface, DBInterface e
 		return p
 	}
 
+	async upsertManyAsync(docs: DBInterface[]): Promise<{ numberAffected: number; insertedIds: DBInterface['_id'][] }> {
+		const result: {
+			numberAffected: number
+			insertedIds: DBInterface['_id'][]
+		} = {
+			numberAffected: 0,
+			insertedIds: [],
+		}
+		await Promise.all(
+			docs.map(async (doc) =>
+				this.upsertAsync(doc._id, { $set: doc }).then((r) => {
+					if (r.numberAffected) result.numberAffected += r.numberAffected
+					if (r.insertedId) result.insertedIds.push(r.insertedId)
+				})
+			)
+		)
+		return result
+	}
+
 	async removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number> {
 		const p = makePromise(() => {
 			return this.remove(selector)
@@ -389,6 +408,24 @@ class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id
 		return this.upsert(selector, modifier, options)
 	}
 
+	async upsertManyAsync(docs: DBInterface[]): Promise<{ numberAffected: number; insertedIds: DBInterface['_id'][] }> {
+		const result: {
+			numberAffected: number
+			insertedIds: DBInterface['_id'][]
+		} = {
+			numberAffected: 0,
+			insertedIds: [],
+		}
+		await Promise.all(
+			docs.map(async (doc) => {
+				const r = this.upsert(doc._id, { $set: doc })
+				if (r.numberAffected) result.numberAffected += r.numberAffected
+				if (r.insertedId) result.insertedIds.push(r.insertedId)
+			})
+		)
+		return result
+	}
+
 	async removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number> {
 		await this.realSleep(0)
 		return this.remove(selector)
@@ -443,6 +480,8 @@ export interface AsyncTransformedCollection<
 		modifier: MongoModifier<DBInterface>,
 		options?: UpsertOptions
 	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }>
+
+	upsertManyAsync(doc: DBInterface[]): Promise<{ numberAffected: number; insertedIds: DBInterface['_id'][] }>
 
 	removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number>
 

@@ -66,7 +66,7 @@ export default function ShelfContextMenu() {
 
 	const context = useTracker(() => {
 		return shelfContextMenuContext.get()
-	})
+	}, [])
 
 	const clearContext = () => {
 		shelfContextMenuContext.set(undefined)

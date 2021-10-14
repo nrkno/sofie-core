@@ -1,16 +1,11 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import {
-	PeripheralDevice,
-	PeripheralDevices,
-	PeripheralDeviceStatusCode,
-	PeripheralDeviceType,
-} from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
-import { getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
+import { assertNever, getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import Tooltip from 'rc-tooltip'
 import { faTrash, faEye } from '@fortawesome/free-solid-svg-icons'
@@ -23,13 +18,14 @@ import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notific
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
-import { TSR } from '@sofie-automation/blueprints-integration'
+import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
 import { CASPARCG_RESTART_TIME } from '../../../lib/constants'
+import { StatusCodePill } from './StatusCodePill'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -40,20 +36,24 @@ interface IDeviceItemProps {
 }
 interface IDeviceItemState {}
 
-export function statusCodeToString(t: i18next.TFunction, statusCode: PeripheralDeviceStatusCode) {
-	return statusCode === PeripheralDeviceStatusCode.UNKNOWN
-		? t('Unknown')
-		: statusCode === PeripheralDeviceStatusCode.GOOD
-		? t('Good')
-		: statusCode === PeripheralDeviceStatusCode.WARNING_MINOR
-		? t('Minor Warning')
-		: statusCode === PeripheralDeviceStatusCode.WARNING_MAJOR
-		? t('Warning')
-		: statusCode === PeripheralDeviceStatusCode.BAD
-		? t('Bad')
-		: statusCode === PeripheralDeviceStatusCode.FATAL
-		? t('Fatal')
-		: t('Unknown')
+export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode) {
+	switch (statusCode) {
+		case StatusCode.UNKNOWN:
+			return t('Unknown')
+		case StatusCode.GOOD:
+			return t('Good')
+		case StatusCode.WARNING_MINOR:
+			return t('Minor Warning')
+		case StatusCode.WARNING_MAJOR:
+			return t('Warning')
+		case StatusCode.BAD:
+			return t('Bad')
+		case StatusCode.FATAL:
+			return t('Fatal')
+		default:
+			assertNever(statusCode)
+			return t('Unknown')
+	}
 }
 
 export const DeviceItem = reacti18next.withTranslation()(
@@ -202,7 +202,11 @@ export const DeviceItem = reacti18next.withTranslation()(
 			return (
 				<div key={unprotectString(this.props.device._id)} className="device-item">
 					<div className="status-container">
-						<PeripheralDeviceStatus device={this.props.device} />
+						<StatusCodePill
+							connected={this.props.device.connected}
+							statusCode={this.props.device?.status.statusCode}
+							messages={this.props.device?.status.messages}
+						/>
 
 						<div className="device-item__last-seen">
 							<label>{t('Last seen')}: </label>
@@ -694,60 +698,6 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 						<h1>{t('System Status')}</h1>
 					</header>
 					<div className="mod mvl">{this.renderPeripheralDevices()}</div>
-				</div>
-			)
-		}
-	}
-)
-
-interface PeripheralDeviceStatusProps {
-	device: PeripheralDevice
-}
-interface PeripheralDeviceStatusState {}
-export const PeripheralDeviceStatus = reacti18next.withTranslation()(
-	class PeripheralDeviceStatus extends React.Component<
-		PeripheralDeviceStatusProps & reacti18next.WithTranslation,
-		PeripheralDeviceStatusState
-	> {
-		constructor(props: PeripheralDeviceStatusProps & reacti18next.WithTranslation) {
-			super(props)
-		}
-		statusCodeString() {
-			const { t } = this.props
-
-			return this.props.device.connected
-				? statusCodeToString(t, this.props.device.status.statusCode)
-				: t('Not Connected')
-		}
-		statusMessages() {
-			const messages = ((this.props.device || {}).status || {}).messages || []
-			return messages.length ? '"' + messages.join(', ') + '"' : ''
-		}
-		render() {
-			const statusClassNames = [
-				'device-status',
-				this.props.device.status.statusCode === PeripheralDeviceStatusCode.UNKNOWN || !this.props.device.connected
-					? 'device-status--unknown'
-					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.GOOD
-					? 'device-status--good'
-					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.WARNING_MINOR
-					? 'device-status--minor-warning'
-					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.WARNING_MAJOR
-					? 'device-status--warning'
-					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.BAD
-					? 'device-status--bad'
-					: this.props.device.status.statusCode === PeripheralDeviceStatusCode.FATAL
-					? 'device-status--fatal'
-					: '',
-			].join(' ')
-			return (
-				<div className={statusClassNames}>
-					<div className="value">
-						<span className="pill device-status__label">{this.statusCodeString()}</span>
-					</div>
-					<div className="device-item__device-status-message">
-						<span className="text-s dimmed">{this.statusMessages()}</span>
-					</div>
 				</div>
 			)
 		}

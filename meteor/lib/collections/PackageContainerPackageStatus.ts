@@ -18,3 +18,6 @@ registerIndex(PackageContainerPackageStatuses, {
 	containerId: 1,
 	packageId: 1,
 })
+registerIndex(PackageContainerPackageStatuses, {
+	deviceId: 1,
+})

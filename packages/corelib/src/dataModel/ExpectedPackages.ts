@@ -1,9 +1,11 @@
 import { ExpectedPackage, Time } from '@sofie-automation/blueprints-integration'
+import { protectString } from '../protectedString'
 import { hashObj } from '../lib'
 import {
 	AdLibActionId,
 	BucketAdLibActionId,
 	BucketAdLibId,
+	BucketId,
 	ExpectedPackageId,
 	PieceId,
 	RundownBaselineAdLibActionId,
@@ -109,11 +111,13 @@ export interface ExpectedPackageDBFromStudioBaselineObjects extends ExpectedPack
 
 export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB
+	bucketId: BucketId
 	/** The Bucket adlib this package belongs to */
 	pieceId: BucketAdLibId
 }
 export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION
+	bucketId: BucketId
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
 }
@@ -124,4 +128,20 @@ export function getContentVersionHash(expectedPackage: Omit<ExpectedPackage.Any,
 		version: expectedPackage.version,
 		// todo: should expectedPackage.sources.containerId be here as well?
 	})
+}
+
+export function getExpectedPackageId(
+	/** _id of the owner (the piece, adlib etc..) */
+	ownerId:
+		| PieceId
+		| AdLibActionId
+		| RundownBaselineAdLibActionId
+		| BucketAdLibId
+		| BucketAdLibActionId
+		| RundownId
+		| StudioId,
+	/** The locally unique id of the expectedPackage */
+	localExpectedPackageId: ExpectedPackage.Base['_id']
+): ExpectedPackageId {
+	return protectString(`${ownerId}_${localExpectedPackageId}`)
 }
