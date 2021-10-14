@@ -198,7 +198,9 @@ Meteor.startup(() => {
 		Blueprints.find(
 			{},
 			{
-				fields: { code: 0 }, // Optimize: don't retriece the .code, since that is large
+				// Optimize: don't retriece the .code, since that is large,
+				// this instead relies on the .modified property being updated whenever the .code changes.
+				fields: { code: 0 },
 			}
 		).observeChanges({
 			added: (id: BlueprintId) => {
