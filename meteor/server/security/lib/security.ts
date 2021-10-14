@@ -5,7 +5,7 @@ import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredent
 import { allAccess, noAccess, combineAccess, Access } from './access'
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { RundownId, Rundowns, Rundown } from '../../../lib/collections/Rundowns'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { StudioId } from '../../../lib/collections/Studios'
 import { isProtectedString } from '../../../lib/lib'
 import { OrganizationId, Organizations, Organization } from '../../../lib/collections/Organization'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'

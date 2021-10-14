@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime, protectString, unprotectObject, clone, isProtectedString } from '../../../lib/lib'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
 	PeripheralDevices,

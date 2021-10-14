@@ -89,7 +89,7 @@ import {
 	PackageContainerPackageStatuses,
 } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
-import { checkStudioExists, fetchStudioLight } from '../../lib/collections/optimizations'
+import { checkStudioExists } from '../../lib/collections/optimizations'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists

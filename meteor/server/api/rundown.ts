@@ -25,7 +25,6 @@ import {
 } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
-import { Studios } from '../../lib/collections/Studios'
 import { ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'

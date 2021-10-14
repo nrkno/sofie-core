@@ -5,7 +5,7 @@ import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
+import { StudioId } from '../../../lib/collections/Studios'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
