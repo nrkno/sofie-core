@@ -432,7 +432,7 @@ export async function handleUpdatedRundownMetaData(
 			if (ingestRundown) {
 				return makeNewIngestRundown({
 					...newIngestRundown,
-					segments: ingestRundown.segments.map((segment) => makeNewIngestSegment(segment)),
+					segments: ingestRundown.segments,
 				})
 			} else {
 				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
