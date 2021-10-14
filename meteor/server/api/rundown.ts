@@ -24,7 +24,7 @@ import {
 	ShowStyleCompound,
 } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { Blueprint, Blueprints, getBlueprintVersion } from '../../lib/collections/Blueprints'
+import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { Studios } from '../../lib/collections/Studios'
 import { ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
@@ -51,6 +51,7 @@ import { runIngestOperationFromRundown } from './ingest/lockFunction'
 import { getRundown } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { checkAccessToPlaylist } from './lib'
+import { fetchBlueprintVersion, fetchStudioLight } from '../../lib/collections/optimizations'
 
 export async function selectShowStyleVariant(
 	context: StudioUserContext,
@@ -401,7 +402,7 @@ export namespace ClientRundownAPI {
 			if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0))
 				return 'showStyleBase'
 
-			const blueprintVersion = waitForPromise(getBlueprintVersion(showStyleBase.blueprintId))
+			const blueprintVersion = waitForPromise(fetchBlueprintVersion(showStyleBase.blueprintId))
 			if (!blueprintVersion) return 'missing blueprint'
 			if (rundown.importVersions.blueprint !== (blueprintVersion || 0)) return 'blueprint'
 

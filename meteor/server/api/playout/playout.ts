@@ -24,7 +24,6 @@ import {
 	reportPartInstanceHasStopped,
 	reportPieceHasStopped,
 } from '../blueprints/events'
-import { getBlueprintVersion } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
@@ -79,6 +78,7 @@ import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { profiler } from '../profiler'
 import { MongoQuery } from '../../../lib/typings/meteor'
+import { fetchBlueprintVersion } from '../../../lib/collections/optimizations'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1349,7 +1349,7 @@ export namespace ServerPlayoutAPI {
 
 			if (versionsContent?.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
 			if (studio.blueprintId) {
-				const blueprintVersion = await getBlueprintVersion(studio.blueprintId)
+				const blueprintVersion = await fetchBlueprintVersion(studio.blueprintId)
 				if (!blueprintVersion) return 'blueprintUnknown'
 				if (versionsContent.blueprintVersion !== (blueprintVersion || 0)) return 'blueprintVersion'
 			}

@@ -50,8 +50,3 @@ registerCollection('Blueprints', Blueprints)
 registerIndex(Blueprints, {
 	organizationId: 1,
 })
-
-export async function getBlueprintVersion(blueprintId: BlueprintId) {
-	const blueprint = (await Blueprints.findOneAsync(blueprintId, { fields: { code: 0 } })) as Omit<Blueprint, 'code'>
-	return blueprint?.blueprintVersion
-}
