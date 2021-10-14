@@ -2,7 +2,7 @@ import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { getCurrentTime, waitForPromise, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
@@ -33,7 +33,6 @@ Meteor.startup(() => {
 	let failedRetries = 0
 
 	function nightlyCronjob() {
-		const d = new Date(getCurrentTime())
 		const timeSinceLast = getCurrentTime() - lastNightlyCronjob
 		if (
 			isLowSeason() &&
@@ -150,11 +149,13 @@ Meteor.startup(() => {
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
 
-	function cleanupPlaylists() {
-		// Ensure there are no empty playlists:
-		const studios = fetchStudiosLight({})
-		waitForPromiseAll(studios.map(async (studio) => removeEmptyPlaylists(studio._id)))
+	function cleanupPlaylists(force?: boolean) {
+		if (isLowSeason() || force) {
+			// Ensure there are no empty playlists:
+			const studios = fetchStudiosLight({})
+			waitForPromiseAll(studios.map(async (studio) => removeEmptyPlaylists(studio._id)))
+		}
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
-	cleanupPlaylists()
+	cleanupPlaylists(true)
 })
