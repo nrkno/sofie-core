@@ -51,10 +51,16 @@ import { getRundown } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { checkAccessToPlaylist } from './lib'
 
+export interface SelectedShowStyleVariant {
+	variant: ShowStyleVariant
+	base: ShowStyleBase
+	compound: ShowStyleCompound
+}
+
 export async function selectShowStyleVariant(
 	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
-): Promise<{ variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null> {
+): Promise<SelectedShowStyleVariant | null> {
 	const studio = context.studio
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
