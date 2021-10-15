@@ -533,6 +533,52 @@ export class CoreHandler {
 		}
 		return versions
 	}
+
+	async testlogging(): Promise<void> {
+		const data = {
+			myProp0: 0,
+			myProp1: 'hello',
+			myProp2: {
+				innerProp0: 'world',
+			},
+		}
+		const data2 = {
+			testProp0: 'this is the second object',
+		}
+
+		console.log('Testing console.log')
+		console.log(data) // only data
+		console.log('Testing console.log with data', data)
+		console.log(new Error('Error description'))
+
+		console.error('Testing console.error')
+		console.error(data) // only data
+		console.error('Testing console.error with data', data)
+		console.error(new Error('Error description'))
+
+		this.logger.silly('Testing logger.silly')
+		this.logger.verbose('Testing logger.verbose')
+		this.logger.debug('Testing logger.debug')
+		this.logger.info('Testing logger.info')
+		this.logger.warn('Testing logger.warn')
+		this.logger.error('Testing logger.error')
+
+		this.logger.info('Info alone')
+		this.logger.info(data as any) // data alone
+		this.logger.info('Info with data', data)
+		this.logger.info('Info with data and data2', data, data2)
+
+		this.logger.info('Info with array of strings', ['a', 'b', 'c'])
+		this.logger.info('Info with array of data', [data, data2])
+
+		this.logger.info('Info with error:', new Error('Error description'))
+		// @ts-expect-error
+		this.logger.info(new Error('Error description')) // only error
+
+		this.logger.error('Error with error:', new Error('Error description'))
+
+		this.logger.info('This is the end of tests!')
+	}
 }
 
 export class CoreTSRDeviceHandler {
