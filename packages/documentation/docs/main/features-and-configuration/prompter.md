@@ -1,3 +1,7 @@
+---
+sidebar_position: 7
+---
+
 # Prompter
 
 See [Sofie views](sofie-pages.md#prompter) for how to access the prompter page.

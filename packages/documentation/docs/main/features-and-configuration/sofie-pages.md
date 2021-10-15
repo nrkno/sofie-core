@@ -1,3 +1,7 @@
+---
+sidebar_position: 6
+---
+
 # Additional Sofie views
 
 For the purpose of running the system in a studio environment, there are some views that can be used for various purposes:

@@ -1,3 +1,6 @@
+---
+sidebar_position: 3
+---
 # Access Levels
 
 By default, a user cannot edit settings, nor play out anything.
