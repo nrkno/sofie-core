@@ -2,6 +2,7 @@ import { PartInstance } from '../../collections/PartInstances'
 import { DBPart, Part, PartId } from '../../collections/Parts'
 import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
 import { DBRundown, Rundown } from '../../collections/Rundowns'
+import { DBSegment } from '../../collections/Segments'
 import { literal, protectString, unprotectString } from '../../lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 
@@ -52,6 +53,17 @@ function makeMockPart(
 	)
 }
 
+function makeMockSegment(id: string, rank: number, rundownId: string): DBSegment {
+	return literal<DBSegment>({
+		_id: protectString(id),
+		name: 'mock-segment',
+		externalId: id,
+		externalModified: 0,
+		_rank: rank,
+		rundownId: protectString(rundownId),
+	})
+}
+
 function makeMockRundown(id: string, playlistId: string, rank: number) {
 	return new Rundown(
 		literal<DBRundown>({
@@ -90,6 +102,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			[],
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -127,6 +140,9 @@ describe('rundown Timing Calculator', () => {
 		const rundownId = 'rundown1'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId))
 		const parts: Part[] = []
 		parts.push(makeMockPart('part1', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
@@ -143,6 +159,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -219,6 +236,9 @@ describe('rundown Timing Calculator', () => {
 		const rundownId = 'rundown1'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId))
 		const parts: Part[] = []
 		parts.push(makeMockPart('part1', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
@@ -235,6 +255,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -312,6 +333,9 @@ describe('rundown Timing Calculator', () => {
 		const rundownId2 = 'rundown2'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId1))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId2))
 		const parts: Part[] = []
 		parts.push(makeMockPart('part1', 0, rundownId1, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId1, segmentId1, { expectedDuration: 1000 }))
@@ -329,6 +353,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -407,6 +432,9 @@ describe('rundown Timing Calculator', () => {
 		const rundownId1 = 'rundown1'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId1))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId1))
 		const parts: Part[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
@@ -447,6 +475,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -523,6 +552,9 @@ describe('rundown Timing Calculator', () => {
 		const rundownId1 = 'rundown1'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId1))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId1))
 		const parts: Part[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
@@ -554,20 +586,21 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
-				asPlayedPlaylistDuration: 4000,
+				asPlayedPlaylistDuration: 8000,
 				currentPartWillAutoNext: false,
 				currentTime: 0,
 				rundownExpectedDurations: {
 					[rundownId1]: 4000,
 				},
 				rundownAsPlayedDurations: {
-					[rundownId1]: 4000,
+					[rundownId1]: 8000,
 				},
 				partCountdown: {
 					part1: 0,
@@ -611,8 +644,8 @@ describe('rundown Timing Calculator', () => {
 					part3: 2000,
 					part4: 3000,
 				},
-				remainingPlaylistDuration: 4000,
-				totalPlaylistDuration: 4000,
+				remainingPlaylistDuration: 8000,
+				totalPlaylistDuration: 8000,
 				segmentBudgetDurations: {
 					segment1: 5000,
 					segment2: 3000,
