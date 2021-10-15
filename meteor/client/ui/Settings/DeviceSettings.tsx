@@ -220,7 +220,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 					{this.renderSpecifics()}
 
 					{this.props.device &&
-					this.props.device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER &&
+					this.props.device.type === PeripheralDeviceType.PACKAGE_MANAGER &&
 					this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 						? this.renderPackageManagerSpecial()
 						: null}

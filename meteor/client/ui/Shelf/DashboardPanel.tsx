@@ -36,9 +36,9 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 
 interface IState {
 	outputLayers: {

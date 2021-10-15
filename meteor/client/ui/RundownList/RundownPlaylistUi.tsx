@@ -40,7 +40,7 @@ import { getAllowStudio } from '../../lib/localStorage'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]

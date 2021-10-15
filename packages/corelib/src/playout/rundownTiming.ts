@@ -19,7 +19,6 @@ import {
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
-import { DBRundown } from '../dataModel/Rundown'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace PlaylistTiming {
@@ -62,7 +61,7 @@ export namespace PlaylistTiming {
 			: undefined
 	}
 
-	export function sortTiminings(a: ReadonlyDeep<DBRundown>, b: ReadonlyDeep<DBRundown>): number {
+	export function sortTiminings(a: ReadonlyDeep<{ timing: RundownPlaylistTiming}>, b: ReadonlyDeep<{ timing: RundownPlaylistTiming}>): number {
 		// Compare start times, then allow rundowns with start time to be first
 		if (
 			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&

@@ -1,4 +1,4 @@
-import { Time, registerCollection, TimeDuration } from '../lib'
+import { Time, TimeDuration } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { UserActionsLogItemId, OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'

@@ -20,7 +20,7 @@ import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Part } from '../../../lib/collections/Parts'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

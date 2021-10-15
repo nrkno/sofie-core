@@ -41,12 +41,13 @@ import RundownViewEventBus, {
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { checkPieceContentStatus, getNoteTypeForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
-import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownTiming'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500

@@ -1,11 +1,11 @@
 import { ProtectedString } from '../lib'
-import { PeripheralDeviceStatusCode as StatusCode } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { SystemInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { SystemInstanceId }
 
 export type ExternalStatus = 'OK' | 'FAIL' | 'WARNING' | 'UNDEFINED'
 
-export { StatusCode }
+export { StatusCode } // TODO-HACK
 
 // /** Enum for the different status codes in the system  */
 // export enum StatusCode {

@@ -33,7 +33,7 @@ import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
-import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',

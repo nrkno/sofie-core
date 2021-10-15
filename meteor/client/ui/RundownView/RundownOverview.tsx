@@ -12,7 +12,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

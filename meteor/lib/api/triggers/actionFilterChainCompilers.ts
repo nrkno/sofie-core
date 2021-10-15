@@ -9,7 +9,6 @@ import {
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
 import { Mongo } from 'meteor/mongo'
-import { isTranslatableMessage } from '../TranslatableMessage'
 import { AdLibAction, AdLibActions } from '../../collections/AdLibActions'
 import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
 import { PartId } from '../../collections/Parts'
@@ -26,6 +25,7 @@ import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { FindOptions, MongoSelector } from '../../typings/meteor'
 import { RundownId } from '../../collections/Rundowns'
+import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 

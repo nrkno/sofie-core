@@ -60,6 +60,9 @@ export type OrganizationId = ProtectedString<'OrganizationId'>
 export type PackageInfoId = ProtectedString<'PackageInfoId'>
 
 /** Id of a package container */
+export type PackageContainerId = ProtectedString<'PackageContainerId'>
+
+/** Id of a package container */
 export type PackageContainerPackageId = ProtectedString<'PackageContainerPackageId'>
 
 /** A string, identifying a PartInstance */
@@ -113,6 +116,9 @@ export type TimelineObjId = ProtectedString<'TimelineObjId'>
 
 /** A string identifying a translations bundle */
 export type TranslationsBundleId = ProtectedString<'TranslationsBundleId'>
+
+/** A string identifying a triggered action */
+export type TriggeredActionId = ProtectedString<'TriggeredActionId'>
 
 /** A string, identifying a UserActionsLogItem */
 export type UserActionsLogItemId = ProtectedString<'UserActionsLogItemId'>

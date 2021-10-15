@@ -2,12 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import {
-	PeripheralDevices,
-	PeripheralDeviceId,
-	PeripheralDeviceStatusCode,
-	PeripheralDeviceType,
-} from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, stringifyObjects } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
@@ -23,6 +18,7 @@ import {
 	IngestPart,
 	ExpectedPackageStatusAPI,
 	PackageInfo,
+	StatusCode,
 } from '@sofie-automation/blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
@@ -111,7 +107,7 @@ export namespace ServerPeripheralDeviceAPI {
 				organizationId: null,
 				created: getCurrentTime(),
 				status: {
-					statusCode: PeripheralDeviceStatusCode.UNKNOWN,
+					statusCode: StatusCode.UNKNOWN,
 				},
 				studioId: protectString(''),
 				connected: true,
@@ -159,10 +155,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(status, Object)
 		check(status.statusCode, Number)
-		if (
-			status.statusCode < PeripheralDeviceStatusCode.UNKNOWN ||
-			status.statusCode > PeripheralDeviceStatusCode.FATAL
-		) {
+		if (status.statusCode < StatusCode.UNKNOWN || status.statusCode > StatusCode.FATAL) {
 			throw new Meteor.Error(400, 'device status code is not known')
 		}
 

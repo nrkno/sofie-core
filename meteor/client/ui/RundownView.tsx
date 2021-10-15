@@ -96,8 +96,8 @@ import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
-import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
 import { SorensenContext } from '../lib/SorensenContext'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 

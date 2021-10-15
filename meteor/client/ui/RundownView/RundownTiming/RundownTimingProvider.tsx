@@ -8,8 +8,8 @@ import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
-import { RundownTimingCalculator, RundownTimingContext } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { Rundown } from '../../../../lib/collections/Rundowns'
+import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every

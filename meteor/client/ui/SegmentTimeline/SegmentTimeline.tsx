@@ -38,7 +38,7 @@ import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+import { RundownTimingContext } from '../../lib/rundownTiming'
 
 interface IProps {
 	id: string

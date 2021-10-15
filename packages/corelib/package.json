@@ -42,7 +42,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "file:../blueprints-integration",
+		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"@types/meteor": "1.4.47",
 		"fast-clone": "^1.5.13",
 		"i18next": "^19.9.2",
