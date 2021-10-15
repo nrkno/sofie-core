@@ -40,7 +40,13 @@ import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
-import { scrollToPosition, scrollToSegment, maintainFocusOnPartInstance, scrollToPartInstance } from '../lib/viewPort'
+import {
+	scrollToPosition,
+	scrollToSegment,
+	maintainFocusOnPartInstance,
+	scrollToPartInstance,
+	getHeaderHeight,
+} from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
@@ -1952,7 +1958,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		componentWillUnmount() {
 			this._cleanUp()
 			document.body.classList.remove('dark', 'vertical-overflow-only')
-			// window.removeEventListener('scroll', this.onWindowScroll)
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
 
 			documentTitle.set(null)
@@ -2000,20 +2005,28 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		// onWindowScroll = (e: Event) => {
-		// 	console.log('Scroll handler')
-		// 	const isAutoScrolling = document.body.classList.contains('auto-scrolling')
-		// 	if (this.state.followLiveSegments && !isAutoScrolling && this.props.rundown && this.props.rundown.activationId) {
-		// 		this.setState({
-		// 			followLiveSegments: false
-		// 		})
-		// 	}
-		// }
+		onWheelScrollInner = _.debounce(() => {
+			if (this.state.followLiveSegments && this.props.playlist && this.props.playlist.activationId) {
+				const liveSegmentComponent = document.querySelector('.segment-timeline.live')
+				if (liveSegmentComponent) {
+					const offsetPosition = liveSegmentComponent.getBoundingClientRect()
+					if (
+						// if it's closer to the top edge than the headerHeight
+						offsetPosition.top < getHeaderHeight() ||
+						// of if it's closer to the bottom edge than very close to the top
+						offsetPosition.bottom < window.innerHeight - getHeaderHeight() - 20 - (offsetPosition.height * 3) / 2
+					) {
+						this.setState({
+							followLiveSegments: false,
+						})
+					}
+				}
+			}
+		}, 250)
 
 		onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-			if (!e.altKey && e.ctrlKey && !e.shiftKey && !e.metaKey && e.deltaY !== 0) {
-				this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
-				e.preventDefault()
+			if (e.deltaX === 0 && e.deltaY !== 0 && !e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+				this.onWheelScrollInner()
 			}
 		}
 
