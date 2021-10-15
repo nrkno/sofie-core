@@ -26,6 +26,7 @@ import { mongoFindOptions } from '@sofie-automation/corelib/dist/mongo'
 import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from './cache/CacheCollection'
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
 	// TODO: Worker - should this lock each rundown for removal? Perhaps by putting work onto the ingest queue?

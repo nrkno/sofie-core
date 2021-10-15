@@ -1,4 +1,4 @@
-import { AdLibActionId, PartId, RundownBaselineAdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -14,7 +14,6 @@ import {
 	SetNextPartProps,
 	StopPiecesOnSourceLayersProps,
 	ExecuteActionProps,
-	RundownPlayoutPropsBase,
 	TakeNextPartProps,
 	OnPiecePlaybackStartedProps,
 	OnPiecePlaybackStoppedProps,

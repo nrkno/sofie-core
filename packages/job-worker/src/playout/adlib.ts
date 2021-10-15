@@ -94,9 +94,11 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 				// Not explicitly allowed, use legacy route
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
 				if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
-					throw new Meteor.Error(
-						403,
-						`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" cannot be direct played!`
+					throw UserError.from(
+						new Error(
+							`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" cannot be direct played!`
+						),
+						UserErrorMessage.PieceAsAdlibNotDirectPlayable
 					)
 				await pieceTakeNowAsAdlib(context, cache, showStyleBase, partInstance, pieceToCopy, pieceInstanceToCopy)
 			} else {
@@ -138,9 +140,11 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 					}
 					default:
 						assertNever(pieceToCopy.allowDirectPlay)
-						throw new Meteor.Error(
-							500,
-							`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not direct playable!`
+						throw UserError.from(
+							new Error(
+								`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" cannot be direct played!`
+							),
+							UserErrorMessage.PieceAsAdlibNotDirectPlayable
 						)
 				}
 			}

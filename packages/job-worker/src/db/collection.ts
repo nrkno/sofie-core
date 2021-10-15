@@ -46,7 +46,7 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		}
 		const res = await this.#collection.findOne(selector, options)
 		if (span) span.end()
-		return res
+		return res ?? undefined
 	}
 
 	async insertOne(doc: TDoc): Promise<TDoc['_id']> {

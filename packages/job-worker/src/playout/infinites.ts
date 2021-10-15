@@ -39,12 +39,12 @@ export function canContinueAdlibOnEndInfinites(
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	orderedSegments: DBSegment[],
 	previousPartInstance: DBPartInstance | undefined,
-	candidateInstance: DBPartInstance
+	candidateInstance: DBPart
 ): boolean {
 	if (previousPartInstance && playlist) {
 		// When in the same segment, we can rely on the ranks to be in order. This is to handle orphaned parts, but is also valid for normal parts
 		if (candidateInstance.segmentId === previousPartInstance.segmentId) {
-			return candidateInstance.part._rank > previousPartInstance.part._rank
+			return candidateInstance._rank > previousPartInstance.part._rank
 		} else {
 			// Check if the segment is after the other
 			const previousSegmentIndex = orderedSegments.findIndex((s) => s._id === previousPartInstance.segmentId)
@@ -185,7 +185,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 			playlist,
 			orderedPartsAndSegments.segments,
 			currentPartInstance,
-			nextPartInstance
+			nextPartInstance.part
 		)
 		const playingPieceInstances = cache.PieceInstances.findFetch(
 			(p) => p.partInstanceId === currentPartInstance._id
@@ -257,7 +257,7 @@ export function getPieceInstancesForPart(
 		playlist,
 		orderedPartsAndSegments.segments,
 		playingPartInstance,
-		wrapPartToTemporaryInstance(playlist.activationId, part)
+		part
 	)
 
 	const rundownIdsToShowstyleIds = getShowStyleIdsRundownMappingFromCache(cache)
