@@ -568,6 +568,8 @@ export class CoreHandler {
 		this.logger.info('Info with data', data)
 		this.logger.info('Info with data and data2', data, data2)
 
+		this.logger.info('Info with stringified data', JSON.stringify(data))
+
 		this.logger.info('Info with array of strings', ['a', 'b', 'c'])
 		this.logger.info('Info with array of data', [data, data2])
 
