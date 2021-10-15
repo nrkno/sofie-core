@@ -24,7 +24,7 @@ import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemWriteAccess } from '../security/system'
-import { StatusCode as BPStatusCode } from '@sofie-automation/blueprints-integration'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -38,9 +38,6 @@ const expectedLibraryVersions: { [libName: string]: string } = {
 /**
  * Handling of system statuses
  */
-
-/** Enum for the different status codes in the system  */
-export type StatusCode = BPStatusCode
 
 export interface StatusObject {
 	studioId?: StudioId
@@ -80,7 +77,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		})
 	}
 
-	if (deviceStatus === BPStatusCode.GOOD && !device.disableVersionChecks) {
+	if (deviceStatus === StatusCode.GOOD && !device.disableVersionChecks) {
 		if (!device.versions) device.versions = {}
 		const deviceVersions = device.versions
 
@@ -142,7 +139,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		statusMessage: deviceStatusMessages.length ? deviceStatusMessages.join(', ') : undefined,
 		_internal: {
 			// statusCode: deviceStatus,
-			statusCodeString: BPStatusCode[deviceStatus],
+			statusCodeString: StatusCode[deviceStatus],
 			messages: deviceStatusMessages,
 			versions: device.versions || {},
 		},
@@ -198,11 +195,11 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		instanceId: instanceId,
 		updated: new Date(getCurrentTime()).toISOString(),
 		status: 'UNDEFINED',
-		_status: BPStatusCode.UNKNOWN,
+		_status: StatusCode.UNKNOWN,
 		documentation: 'https://github.com/nrkno/tv-automation-server-core',
 		_internal: {
 			// this _internal is set later
-			statusCodeString: BPStatusCode[BPStatusCode.UNKNOWN],
+			statusCodeString: StatusCode[StatusCode.UNKNOWN],
 			messages: [],
 			versions: {},
 		},
@@ -237,7 +234,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 	const systemStatus: StatusCode = setStatus(statusObj)
 	statusObj._internal = {
 		// statusCode: systemStatus,
-		statusCodeString: BPStatusCode[systemStatus],
+		statusCodeString: StatusCode[systemStatus],
 		messages: collectMesages(statusObj),
 		versions: getRelevantSystemVersions(),
 	}
@@ -249,7 +246,7 @@ export function setSystemStatus(type: string, status: StatusObject) {
 	let systemStatus: StatusObjectInternal = systemStatuses[type]
 	if (!systemStatus) {
 		systemStatus = {
-			statusCode: BPStatusCode.UNKNOWN,
+			statusCode: StatusCode.UNKNOWN,
 			timestamp: 0,
 			messages: [],
 		}
@@ -315,7 +312,7 @@ function collectMesages(statusObj: StatusResponse | Component): Array<string> {
 	}
 	if (statusObj.checks) {
 		_.each(statusObj.checks, (check: CheckObj) => {
-			if (check._status !== BPStatusCode.GOOD && check.errors) {
+			if (check._status !== StatusCode.GOOD && check.errors) {
 				_.each(check.errors, (errMsg) => {
 					allMessages.push(`check ${check.description}: ${errMsg.message}`)
 				})
@@ -334,11 +331,11 @@ function collectMesages(statusObj: StatusResponse | Component): Array<string> {
 	return allMessages
 }
 export function status2ExternalStatus(statusCode: StatusCode): ExternalStatus {
-	if (statusCode === BPStatusCode.GOOD) {
+	if (statusCode === StatusCode.GOOD) {
 		return 'OK'
-	} else if (statusCode === BPStatusCode.WARNING_MINOR || statusCode === BPStatusCode.WARNING_MAJOR) {
+	} else if (statusCode === StatusCode.WARNING_MINOR || statusCode === StatusCode.WARNING_MAJOR) {
 		return 'WARNING'
-	} else if (statusCode === BPStatusCode.BAD || statusCode === BPStatusCode.FATAL) {
+	} else if (statusCode === StatusCode.BAD || statusCode === StatusCode.FATAL) {
 		return 'FAIL'
 	}
 	return 'UNDEFINED'

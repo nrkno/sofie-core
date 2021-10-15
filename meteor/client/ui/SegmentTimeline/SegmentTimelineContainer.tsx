@@ -20,7 +20,7 @@ import {
 import { IContextMenuContext, MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { NoteType, PartNote, SegmentNote, TrackedNote } from '../../../lib/api/notes'
+import { NoteType, PartNote, SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'

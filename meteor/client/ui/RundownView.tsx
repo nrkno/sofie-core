@@ -60,7 +60,7 @@ import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../..
 import { doUserAction, UserAction } from '../lib/userAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { NoteType } from '../../lib/api/notes'
+import { NoteType } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PubSub } from '../../lib/api/pubsub'
 import {
 	RundownLayouts,

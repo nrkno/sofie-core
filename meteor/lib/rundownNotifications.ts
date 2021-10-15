@@ -1,5 +1,5 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
-import { NoteType, TrackedNote } from './api/notes'
+import { NoteType, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Segments, DBSegment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { unprotectString, literal, generateTranslation, normalizeArrayToMap } from './lib'

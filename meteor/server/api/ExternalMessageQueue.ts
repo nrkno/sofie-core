@@ -11,6 +11,7 @@ import {
 	ExternalMessageQueueObjSOAP,
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
+	StatusCode,
 } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
@@ -22,7 +23,6 @@ import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { StatusCode } from '../../lib/api/systemStatus'
 
 let runMessageQueue = true
 let errorOnLastRunCount: number = 0

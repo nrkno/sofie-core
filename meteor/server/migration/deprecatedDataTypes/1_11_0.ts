@@ -1,5 +1,5 @@
 import { RundownId } from '../../../lib/collections/Rundowns'
-import { PartNote } from '../../../lib/api/notes'
+import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import {
 	PartEndState,
 	Timeline as BPTimeline,

@@ -7,7 +7,7 @@ import {
 } from '../../lib/api/rundownNotifications'
 import { registerClassToMeteorMethods } from '../methods'
 import { RundownId, Rundowns } from '../../lib/collections/Rundowns'
-import { PartNote } from '../../lib/api/notes'
+import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { cacheResultAsync, makePromise, normalizeArrayToMap } from '../../lib/lib'
 import { getSegmentPartNotes } from '../../lib/rundownNotifications'
 import { MethodContextAPI } from '../../lib/api/methods'

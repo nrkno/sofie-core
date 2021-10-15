@@ -1,5 +1,5 @@
 import { RundownId } from '../collections/Rundowns'
-import { PartNote, SegmentNote, RundownNote } from './notes'
+import { PartNote, SegmentNote, RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PieceId } from '../collections/Pieces'
 import { RundownAPI } from './rundown'
 import { PartId } from '../collections/Parts'

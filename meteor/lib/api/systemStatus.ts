@@ -5,24 +5,6 @@ export { SystemInstanceId }
 
 export type ExternalStatus = 'OK' | 'FAIL' | 'WARNING' | 'UNDEFINED'
 
-export { StatusCode } // TODO-HACK
-
-// /** Enum for the different status codes in the system  */
-// export enum StatusCode {
-// 	/** Status unknown */
-// 	UNKNOWN = 0,
-// 	/** All good and green */
-// 	GOOD = 1,
-// 	/** Everything is not OK, operation is not affected */
-// 	WARNING_MINOR = 2,
-// 	/** Everything is not OK, operation might be affected */
-// 	WARNING_MAJOR = 3,
-// 	/** Operation affected, possible to recover */
-// 	BAD = 4,
-// 	/** Operation affected, not possible to recover without manual interference */
-// 	FATAL = 5,
-// }
-
 export interface CheckObj {
 	description: string
 	status: ExternalStatus

@@ -1,6 +1,6 @@
 import { applyClassToDocument } from '../lib'
 import { PartHoldMode } from '@sofie-automation/blueprints-integration'
-import { PartNote } from '../api/notes'
+import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'

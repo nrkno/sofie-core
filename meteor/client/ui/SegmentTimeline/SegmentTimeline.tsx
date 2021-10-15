@@ -22,7 +22,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { NoteType, SegmentNote } from '../../../lib/api/notes'
+import { NoteType, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'

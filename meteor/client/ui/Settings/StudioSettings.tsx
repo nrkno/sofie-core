@@ -52,7 +52,7 @@ import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
-import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '../../../lib/constants'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 
 interface IStudioDevicesProps {

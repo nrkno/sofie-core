@@ -5,9 +5,9 @@ import { logger } from '../logging'
 import * as semver from 'semver'
 import { createMongoCollection } from './lib'
 import _ from 'underscore'
-import { StatusCode } from '../api/systemStatus'
 import { CoreSystemId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 export { CoreSystemId }
 
 export const SYSTEM_ID: CoreSystemId = protectString('core')

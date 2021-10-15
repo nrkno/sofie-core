@@ -6,7 +6,7 @@ import { setSystemStatus } from '../../systemStatus/systemStatus'
 import { logger } from '../../logging'
 import { TimeDiff, DiffTimeResult } from '../../../lib/api/peripheralDevice'
 import { env } from 'process'
-import { StatusCode } from '../../../lib/api/systemStatus'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 /** How often the system-time should be updated */
 const UPDATE_SYSTEM_TIME_INTERVAL = 3600 * 1000

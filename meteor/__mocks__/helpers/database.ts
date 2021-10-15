@@ -29,6 +29,7 @@ import {
 	IBlueprintPiece,
 	TriggerType,
 	PlayoutActions,
+	StatusCode,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -61,7 +62,6 @@ import {
 	defaultStudio,
 } from '../defaultCollectionObjects'
 import { OrganizationId } from '../../lib/collections/Organization'
-import { StatusCode } from '../../lib/api/systemStatus'
 import { PackageInfo } from '../../server/coreSystem'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 
