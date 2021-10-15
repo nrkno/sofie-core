@@ -19,7 +19,7 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getRundownId } from '../ingest/lib'
 import { getCurrentTime } from '../lib'
-import { PieceLifespan } from '../../../blueprints-integration/dist'
+import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -38,6 +38,10 @@ export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioI
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
+
+		timing: {
+			type: PlaylistTimingType.None,
+		},
 	}
 }
 export function defaultRundown(
@@ -74,6 +78,10 @@ export function defaultRundown(
 		},
 
 		externalNRCSName: 'mock',
+
+		timing: {
+			type: PlaylistTimingType.None,
+		},
 	}
 }
 

@@ -10,7 +10,14 @@ import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getCurrentTime, getSystemVersion } from '../lib'
-import { IOutputLayer, ISourceLayer, PieceLifespan, SourceLayerType } from '../../../blueprints-integration/dist'
+import {
+	IOutputLayer,
+	ISourceLayer,
+	PieceLifespan,
+	PlaylistTimingType,
+	SourceLayerType,
+	StatusCode,
+} from '@sofie-automation/blueprints-integration'
 import { JobContext } from '../jobs'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -22,7 +29,6 @@ import {
 	PeripheralDeviceType,
 	PeripheralDevice,
 	PeripheralDeviceSubType,
-	PeripheralDeviceStatusCode,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { createShowStyleCompound } from '../showStyles'
@@ -166,6 +172,10 @@ export async function setupDefaultRundown(
 		},
 
 		externalNRCSName: 'mock',
+
+		timing: {
+			type: PlaylistTimingType.None,
+		},
 	})
 
 	const segment0Id = await context.directCollections.Segments.insertOne({
@@ -384,7 +394,7 @@ export async function setupMockPeripheralDevice(
 
 		created: 1234,
 		status: {
-			statusCode: PeripheralDeviceStatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 		},
 		lastSeen: 1234,
 		lastConnected: 1234,

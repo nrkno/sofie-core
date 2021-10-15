@@ -25,7 +25,7 @@ import { ApmSpan, JobContext } from '../jobs'
 import { createShowStyleCompound } from '../showStyles'
 import { getMockCollections } from './collection'
 import { clone } from '@sofie-automation/corelib/dist/lib'
-import { ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
+import { IDirectCollections } from '../db'
 import {
 	BlueprintManifestType,
 	BlueprintResultPart,
@@ -40,13 +40,13 @@ import {
 	IngestSegment,
 	ISegmentUserContext,
 	IShowStyleContext,
+	PlaylistTimingType,
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
-} from '../../../blueprints-integration/dist'
-import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
+} from '@sofie-automation/blueprints-integration'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 // import _ = require('underscore')
 import { defaultStudio } from './defaultCollectionObjects'
-import { Collection, FindOptions, AnyBulkWriteOperation } from 'mongodb'
 
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const collections = getMockCollections()
@@ -222,6 +222,9 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 			// expectedStart?:
 			// expectedDuration?: number;
 			metaData: ingestRundown.payload,
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		}
 
 		// Allow the rundown to specify a playlistExternalId that should be used

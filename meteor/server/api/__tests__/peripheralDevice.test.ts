@@ -5,7 +5,6 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
 	PeripheralDevices,
-	PeripheralDeviceStatusCode,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
@@ -48,7 +47,7 @@ import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
-import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, PlaylistTimingType, StatusCode } from '@sofie-automation/blueprints-integration'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
@@ -200,14 +199,14 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('setStatus', () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
-			statusCode: PeripheralDeviceStatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 		})
 		Meteor.call(PeripheralDeviceAPIMethods.setStatus, device._id, device.token, {
-			statusCode: PeripheralDeviceStatusCode.WARNING_MINOR,
+			statusCode: StatusCode.WARNING_MINOR,
 			messages: ["Something's not right"],
 		})
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
-			statusCode: PeripheralDeviceStatusCode.WARNING_MINOR,
+			statusCode: StatusCode.WARNING_MINOR,
 			messages: ["Something's not right"],
 		})
 	})
@@ -633,7 +632,7 @@ describe('test peripheralDevice general API methods', () => {
 				lastConnected: 0,
 				lastSeen: 0,
 				status: {
-					statusCode: PeripheralDeviceStatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: '_process',
 				token: 'MockToken',
@@ -802,7 +801,7 @@ describe('test peripheralDevice general API methods', () => {
 				lastConnected: 0,
 				lastSeen: 0,
 				status: {
-					statusCode: PeripheralDeviceStatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: '_process',
 				token: 'MockToken',

@@ -8,12 +8,11 @@ import { getRandomId, protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
-import { PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
+import { PlaylistTimingType, StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import {
 	PeripheralDevices,
 	PeripheralDeviceId,
-	PeripheralDeviceStatusCode,
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
 } from '../../lib/collections/PeripheralDevices'
@@ -268,7 +267,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'Playout gateway',
 				status: {
-					statusCode: PeripheralDeviceStatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
@@ -291,7 +290,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'CasparCG',
 				status: {
-					statusCode: PeripheralDeviceStatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
@@ -313,7 +312,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'ATEM',
 				status: {
-					statusCode: PeripheralDeviceStatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
@@ -353,7 +352,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'Playout gateway',
 				status: {
-					statusCode: PeripheralDeviceStatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
@@ -376,7 +375,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'CasparCG',
 				status: {
-					statusCode: PeripheralDeviceStatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
@@ -398,7 +397,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'ATEM',
 				status: {
-					statusCode: PeripheralDeviceStatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
