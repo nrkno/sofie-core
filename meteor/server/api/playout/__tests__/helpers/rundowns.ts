@@ -1047,3 +1047,16 @@ export function setupRundownWithOutTransitionAndInTransition(
 
 	return rundownId
 }
+
+export function setupRundownWithOutTransitionEnableHold(
+	env: DefaultEnvironment,
+	playlistId: RundownPlaylistId,
+	rundownId: RundownId
+): RundownId {
+	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId, { holdMode: PartHoldMode.FROM, outTransitionDuration: 500 })
+
+	setupPart2(env, rundownId, rundown, segment0, { holdMode: PartHoldMode.TO })
+
+	return rundownId
+}
+

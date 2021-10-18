@@ -30,6 +30,7 @@ import {
 	setupRundownWithOutTransitionAndPreroll,
 	setupRundownWithOutTransitionAndPreroll2,
 	setupRundownWithOutTransitionAndInTransition,
+	setupRundownWithOutTransitionEnableHold,
 } from './helpers/rundowns'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 
@@ -832,5 +833,117 @@ describe('Timeline', () => {
 				})
 			}
 		)
+		
+		testInFiber('outTransition is disabled during hold', async () => {
+			const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
+				env,
+				undefined,
+				setupRundownWithOutTransitionEnableHold
+			)
+			expect(rundownId0).toBeTruthy()
+			expect(playlistId0).toBeTruthy()
+
+			const getRundown0 = () => {
+				return Rundowns.findOne(rundownId0) as Rundown
+			}
+			const getPlaylist0 = () => {
+				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+				playlist.activationId = playlist.activationId ?? undefined
+				return playlist
+			}
+			expect(getRundown0()).toBeTruthy()
+			expect(getPlaylist0()).toBeTruthy()
+
+			const parts = getRundown0().getParts()
+
+			expect(getPlaylist0()).toMatchObject({
+				activationId: undefined,
+				rehearsal: false,
+			})
+
+			{
+				// Prepare and activate in rehersal:
+				await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
+				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+				expect(currentPartInstance).toBeFalsy()
+				expect(nextPartInstance).toBeTruthy()
+				expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
+				expect(getPlaylist0()).toMatchObject({
+					activationId: expect.stringMatching(/^randomId/),
+					rehearsal: false,
+					currentPartInstanceId: null,
+					// nextPartInstanceId: parts[0]._id,
+				})
+			}
+
+			{
+				// Take the first Part:
+				await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
+				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+				expect(currentPartInstance).toBeTruthy()
+				expect(nextPartInstance).toBeTruthy()
+				expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
+				expect(nextPartInstance!.part._id).toEqual(parts[1]._id)
+
+				// activate hold mode
+				await ServerPlayoutAPI.activateHold(DEFAULT_ACCESS(playlistId0), playlistId0)
+			}
+
+			{
+				// Take the second Part:
+				await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
+				const { currentPartInstance, previousPartInstance } = getPlaylist0().getSelectedPartInstances()
+				expect(previousPartInstance).toBeTruthy()
+				expect(currentPartInstance).toBeTruthy()
+				expect(previousPartInstance!.part._id).toEqual(parts[0]._id)
+				expect(currentPartInstance!.part._id).toEqual(parts[1]._id)
+
+				await runPlayoutOperationWithCache(
+					null,
+					'updateTimeline',
+					getRundown0().playlistId,
+					PlayoutLockFunctionPriority.USER_PLAYOUT,
+					null,
+					async (cache) => {
+						await updateTimeline(cache)
+					}
+				)
+
+				const timeline = Timeline.findOne(getRundown0().studioId)
+				expect(timeline).toBeTruthy()
+
+				// old part ends immediately
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
+				expect(oldPartTlObj).toBeTruthy()
+				expect(oldPartTlObj?.enable).toMatchObject({
+					// end: `#part_group_${currentPartInstance?._id}.start`,
+					// note: this seems incorrect? why extend during hold??
+					end: `#part_group_${currentPartInstance?._id}.start + 500`,
+				})
+
+				// pieces are not delayed
+				const newPartPieceTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
+				)
+				expect(newPartPieceTlObj).toBeTruthy()
+				expect(newPartPieceTlObj?.enable).toMatchObject({
+					start: 0,
+				})
+			}
+
+			{
+				// Deactivate rundown:
+				await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
+				expect(getPlaylist0()).toMatchObject({
+					activationId: undefined,
+					currentPartInstanceId: null,
+					nextPartInstanceId: null,
+				})
+			}
+
+			expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
+		})
 	})
 })

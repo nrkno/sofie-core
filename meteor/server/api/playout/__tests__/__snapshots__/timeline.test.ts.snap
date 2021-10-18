@@ -775,6 +775,37 @@ Array [
 ]
 `;
 
+exports[`Timeline Out transitions outTransition is disabled during hold 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio89",
+    "generated": 12345,
+    "timeline": Array [
+      Object {
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint85",
+            "blueprintVersion": "0.0.0",
+            "core": "0.0.0-test",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+      },
+    ],
+    "timelineHash": "randomId9024",
+  },
+]
+`;
+
 exports[`Timeline Preroll 1`] = `
 Array [
   Object {
