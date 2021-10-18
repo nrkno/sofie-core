@@ -119,6 +119,44 @@ export function setupRundownBase (
 	return { rundown, segment0, part00 }
 }
 
+export function setupPart2(env: DefaultEnvironment, rundownId: RundownId, rundown: DBRundown, segment0: DBSegment,
+	partPropsOverride: Partial<DBPart> = {}) {
+	const part01: DBPart = {
+		_id: protectString(rundownId + '_part0_1'),
+		segmentId: segment0._id,
+		rundownId: segment0.rundownId,
+		_rank: 1,
+		externalId: 'MOCK_PART_0_1',
+		title: 'Part 0 1',
+
+		...partPropsOverride
+	}
+	Parts.insert(part01)
+
+	const piece010: Piece = {
+		_id: protectString(rundownId + '_piece010'),
+		externalId: 'MOCK_PIECE_010',
+		startRundownId: rundown._id,
+		startSegmentId: part01.segmentId,
+		startPartId: part01._id,
+		name: 'Piece 010',
+		status: RundownAPI.PieceStatusCode.OK,
+		enable: {
+			start: 0,
+		},
+		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
+	}
+	Pieces.insert(piece010)
+
+	return { part01 }
+}
+
 export function setupRundownWithPreroll(
 	env: DefaultEnvironment,
 	playlistId: RundownPlaylistId,
@@ -837,3 +875,177 @@ export function setupRundownWithInTransitionDisabled(
 	return rundownId
 }
 
+export function setupRundownWithOutTransition(
+	env: DefaultEnvironment,
+	playlistId: RundownPlaylistId,
+	rundownId: RundownId
+): RundownId {
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, {
+		outTransitionDuration: 1000
+	})
+
+	const piece002: Piece = {
+		_id: protectString(rundownId + '_piece002'),
+		externalId: 'MOCK_PIECE_002',
+		startRundownId: rundown._id,
+		startSegmentId: part00.segmentId,
+		startPartId: part00._id,
+		name: 'Piece 002',
+		status: RundownAPI.PieceStatusCode.OK,
+		isOutTransition: true,
+		enable: {
+			start: 0, // will be overwritten
+			duration: 1000
+		},
+		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
+	}
+	Pieces.insert(piece002)
+
+	setupPart2(env, rundownId, rundown, segment0)
+
+	return rundownId
+}
+
+export function setupRundownWithOutTransitionAndPreroll(
+	env: DefaultEnvironment,
+	playlistId: RundownPlaylistId,
+	rundownId: RundownId
+): RundownId {
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, {
+		outTransitionDuration: 1000,
+	})
+
+	const piece002: Piece = {
+		_id: protectString(rundownId + '_piece002'),
+		externalId: 'MOCK_PIECE_002',
+		startRundownId: rundown._id,
+		startSegmentId: part00.segmentId,
+		startPartId: part00._id,
+		name: 'Piece 002',
+		status: RundownAPI.PieceStatusCode.OK,
+		isOutTransition: true,
+		enable: {
+			start: 0, // will be overwritten
+			duration: 1000,
+		},
+		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
+	}
+	Pieces.insert(piece002)
+
+	setupPart2(env, rundownId, rundown, segment0, { prerollDuration: 250 })
+
+	return rundownId
+}
+
+export function setupRundownWithOutTransitionAndPreroll2(
+	env: DefaultEnvironment,
+	playlistId: RundownPlaylistId,
+	rundownId: RundownId
+): RundownId {
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, {
+		outTransitionDuration: 250,
+	})
+
+	const piece002: Piece = {
+		_id: protectString(rundownId + '_piece002'),
+		externalId: 'MOCK_PIECE_002',
+		startRundownId: rundown._id,
+		startSegmentId: part00.segmentId,
+		startPartId: part00._id,
+		name: 'Piece 002',
+		status: RundownAPI.PieceStatusCode.OK,
+		isOutTransition: true,
+		enable: {
+			start: 0, // will be overwritten
+			duration: 250,
+		},
+		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
+	}
+	Pieces.insert(piece002)
+
+	setupPart2(env, rundownId, rundown, segment0, { prerollDuration: 1000 })
+
+	return rundownId
+}
+
+export function setupRundownWithOutTransitionAndInTransition(
+	env: DefaultEnvironment,
+	playlistId: RundownPlaylistId,
+	rundownId: RundownId
+): RundownId {
+	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, {
+		outTransitionDuration: 600,
+	})
+
+	const piece002: Piece = {
+		_id: protectString(rundownId + '_piece002'),
+		externalId: 'MOCK_PIECE_002',
+		startRundownId: rundown._id,
+		startSegmentId: part00.segmentId,
+		startPartId: part00._id,
+		name: 'Piece 002',
+		status: RundownAPI.PieceStatusCode.OK,
+		isOutTransition: true,
+		enable: {
+			start: 0, // will be overwritten
+			duration: 600,
+		},
+		sourceLayerId: env.showStyleBase.sourceLayers[2]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
+	}
+	Pieces.insert(piece002)
+
+	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
+		transitionDuration: 500,
+		transitionKeepaliveDuration: 250,
+		transitionPrerollDuration: 300,
+	})
+
+	const piece011: Piece = {
+		_id: protectString(rundownId + '_piece011'),
+		externalId: 'MOCK_PIECE_011',
+		startRundownId: rundown._id,
+		startSegmentId: part01.segmentId,
+		startPartId: part01._id,
+		name: 'Piece 011',
+		status: RundownAPI.PieceStatusCode.OK,
+		isTransition: true,
+		enable: {
+			start: 0,
+			duration: 500,
+		},
+		sourceLayerId: env.showStyleBase.sourceLayers[2]._id,
+		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
+	}
+	Pieces.insert(piece011)
+
+	return rundownId
+}

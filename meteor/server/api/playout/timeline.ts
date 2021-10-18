@@ -880,7 +880,13 @@ function transformPartIntoTimeline(
 		? pieceInstances.find((i) => !!i.piece.isTransition)
 		: undefined
 	const transitionPieceDelay = transitionProps
-		? Math.max(0, (transitionProps.preroll || 0) - (transitionProps.transitionPreroll || 0))
+		? Math.max(0, (transitionProps.preroll || 0) - (transitionProps.transitionPreroll || 0), (outTransitionDuration || 0) - (transitionProps.transitionKeepalive || 0))
+		: 0
+	const outTransitionPieceDelay = outTransitionDuration
+		? Math.max(
+				0,
+				-(transitionProps?.preroll || 0) + (outTransitionDuration || 0)
+		  )
 		: 0
 	const transitionContentsDelay = transitionProps
 		? (transitionProps.transitionPreroll || 0) - (transitionProps.preroll || 0)
@@ -933,9 +939,10 @@ function transformPartIntoTimeline(
 				} else if (
 					!pieceInstance.piece.isTransition &&
 					allowTransition &&
-					outTransitionDuration &&
-					!pieceInstance.adLibSourceId) {
-						pieceEnable.start = `${outTransitionDuration}`
+					outTransitionPieceDelay &&
+					!pieceInstance.adLibSourceId
+				) {
+					pieceEnable.start = `${outTransitionPieceDelay}`
 				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
 					pieceEnable.start = Math.max(0, transitionPieceDelay)
 				}
@@ -990,18 +997,13 @@ function calcPartKeepaliveDuration(fromPart: Part, toPart: Part, relativeToFrom:
 		return fromPart.autoNextOverlap || 0
 	}
 
-	if (fromPart.outTransitionDuration) {
-		return fromPart.outTransitionDuration
-	}
-
 	if (relativeToFrom) {
-		// TODO remove
-		if (toPart.transitionKeepaliveDuration === undefined || toPart.transitionKeepaliveDuration === null) {
-			return toPart.prerollDuration || 0
-		}
-
-		const transPieceDelay = Math.max(0, (toPart.prerollDuration || 0) - (toPart.transitionPrerollDuration || 0))
-		return transPieceDelay + (toPart.transitionKeepaliveDuration || 0)
+		const minimum = Math.max(0, fromPart.outTransitionDuration || 0, toPart.transitionKeepaliveDuration || 0)
+		const transPieceDelay = Math.max(
+			0,
+			Math.max(toPart.prerollDuration || 0, fromPart.outTransitionDuration || 0) - (toPart.transitionPrerollDuration || 0)
+		)
+		return Math.max(minimum, transPieceDelay + (toPart.transitionKeepaliveDuration || 0))
 	}
 
 	// if (toPart.transitionKeepaliveDuration === undefined || toPart.transitionKeepaliveDuration === null) {
