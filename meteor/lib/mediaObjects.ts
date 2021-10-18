@@ -371,7 +371,7 @@ export function checkPieceContentStatus(
 								t: i18next.TFunction
 							) => {
 								if (anomalies.length === 1) {
-									const frames = Math.round((anomalies[0].duration * 1000) / timebase)
+									const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
 									if (anomalies[0].start === 0) {
 										messages.push(
 											t('Clip starts with {{frames}} {{type}} frame', {
@@ -400,7 +400,7 @@ export function checkPieceContentStatus(
 									}
 								} else if (anomalies.length > 0) {
 									const dur = anomalies.map((b) => b.duration).reduce((a, b) => a + b, 0)
-									const frames = Math.round((dur * 1000) / timebase)
+									const frames = Math.ceil((dur * 1000) / timebase)
 									messages.push(
 										t('{{frames}} {{type}} frame detected in clip', {
 											frames,
@@ -411,10 +411,10 @@ export function checkPieceContentStatus(
 								}
 							}
 							if (deepScan?.blacks) {
-								addFrameWarning(deepScan.blacks, 'black', t)
+								addFrameWarning(deepScan.blacks, t('black'), t)
 							}
 							if (deepScan?.freezes) {
-								addFrameWarning(deepScan.freezes, 'freeze', t)
+								addFrameWarning(deepScan.freezes, t('freeze'), t)
 							}
 						}
 					}

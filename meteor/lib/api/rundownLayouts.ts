@@ -134,7 +134,7 @@ class RundownLayoutsRegistry {
 export namespace RundownLayoutsAPI {
 	const registry = new RundownLayoutsRegistry()
 	registry.registerShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
-		filtersTitle: 'Panels',
+		filtersTitle: 'Tabs',
 		supportedFilters: [
 			RundownLayoutElementType.ADLIB_REGION,
 			RundownLayoutElementType.EXTERNAL_FRAME,
@@ -143,7 +143,7 @@ export namespace RundownLayoutsAPI {
 		],
 	})
 	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
-		filtersTitle: 'Tabs',
+		filtersTitle: 'Panels',
 		supportedFilters: [
 			RundownLayoutElementType.ADLIB_REGION,
 			RundownLayoutElementType.EXTERNAL_FRAME,
