@@ -1,5 +1,6 @@
 import * as React from 'react'
 
+import ClassNames from 'classnames'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { withTranslation, WithTranslation } from 'react-i18next'
@@ -184,7 +185,9 @@ export const MicSourceRenderer = withTranslation()(
 					{!this.props.isTooSmallForText && (
 						<>
 							<span
-								className="segment-timeline__piece__label first-words overflow-label"
+								className={ClassNames('segment-timeline__piece__label', 'first-words', {
+									'overflow-label': end !== '',
+								})}
 								ref={this.setLeftLabelRef}
 								style={this.getItemLabelOffsetLeft()}
 							>
