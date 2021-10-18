@@ -11,6 +11,7 @@ import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { RundownTimingCalculator, RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import _ from 'underscore'
+import { DBSegment } from '../../../../lib/collections/Segments'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
@@ -43,6 +44,7 @@ interface IRundownTimingProviderTrackedProps {
 	parts: Array<Part>
 	partInstancesMap: Map<PartId, PartInstance>
 	segmentEntryPartInstances: PartInstance[]
+	segments: DBSegment[]
 }
 
 /**
@@ -58,13 +60,15 @@ export const RundownTimingProvider = withTracker<
 >((props) => {
 	let rundowns: Array<Rundown> = []
 	let parts: Array<Part> = []
+	let segments: Array<DBSegment> = []
 	const partInstancesMap = new Map<PartId, PartInstance>()
 	let currentRundown: Rundown | undefined
 	const segmentEntryPartInstances: PartInstance[] = []
 	if (props.playlist) {
 		rundowns = props.playlist.getRundowns()
-		const { parts: incomingParts } = props.playlist.getSegmentsAndPartsSync()
+		const { parts: incomingParts, segments: incomingSegments } = props.playlist.getSegmentsAndPartsSync()
 		parts = incomingParts
+		segments = incomingSegments
 		const partInstances = props.playlist.getActivePartInstances()
 
 		const currentPartInstance = partInstances.find((p) => p._id === props.playlist!.currentPartInstanceId)
@@ -130,6 +134,7 @@ export const RundownTimingProvider = withTracker<
 		parts,
 		partInstancesMap,
 		segmentEntryPartInstances,
+		segments,
 	}
 })(
 	class RundownTimingProvider
@@ -234,7 +239,8 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isLowResolution: boolean) {
-			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segmentEntryPartInstances } = this.props
+			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segmentEntryPartInstances, segments } =
+				this.props
 			this.durations = Object.assign(
 				this.durations,
 				this.timingCalculator.updateDurations(
@@ -245,6 +251,7 @@ export const RundownTimingProvider = withTracker<
 					currentRundown,
 					parts,
 					partInstancesMap,
+					segments,
 					this.props.defaultDuration,
 					segmentEntryPartInstances
 				)

@@ -7,6 +7,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import { withTiming, WithTiming } from './withTiming'
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
 
 interface IEndTimingProps {
 	rundownPlaylist: RundownPlaylist
@@ -29,6 +30,21 @@ export const PlaylistEndTiming = withTranslation()(
 			render() {
 				const { t } = this.props
 				const { rundownPlaylist, expectedStart, expectedEnd, expectedDuration } = this.props
+
+				const now = this.props.timingDurations.currentTime ?? getCurrentTime()
+
+				const frontAnchor = PlaylistTiming.isPlaylistTimingForwardTime(rundownPlaylist.timing)
+					? Math.max(now, rundownPlaylist.startedPlayback ?? expectedStart!)
+					: now
+
+				const backAnchor = PlaylistTiming.isPlaylistTimingForwardTime(rundownPlaylist.timing)
+					? expectedEnd ?? (rundownPlaylist.startedPlayback ?? expectedStart!) + (expectedDuration ?? 0)
+					: expectedEnd ?? 0
+
+				const diff = PlaylistTiming.isPlaylistTimingNone(rundownPlaylist.timing)
+					? (this.props.timingDurations.asPlayedPlaylistDuration || 0) -
+					  (expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0)
+					: frontAnchor + (this.props.timingDurations.remainingPlaylistDuration || 0) - backAnchor
 
 				return (
 					<React.Fragment>
@@ -62,7 +78,7 @@ export const PlaylistEndTiming = withTranslation()(
 												interval={0}
 												format="HH:mm:ss"
 												date={
-													getCurrentTime() +
+													now +
 													(this.props.timingDurations.partCountdown[
 														Object.keys(this.props.timingDurations.partCountdown)[0]
 													] || 0)
@@ -78,10 +94,7 @@ export const PlaylistEndTiming = withTranslation()(
 										<Moment
 											interval={0}
 											format="HH:mm:ss"
-											date={
-												(expectedStart || getCurrentTime()) +
-												(this.props.timingDurations.remainingPlaylistDuration || 0)
-											}
+											date={(expectedStart || now) + (this.props.timingDurations.remainingPlaylistDuration || 0)}
 										/>
 									</span>
 								)
@@ -91,7 +104,7 @@ export const PlaylistEndTiming = withTranslation()(
 							!this.props.hideCountdown &&
 							(expectedEnd ? (
 								<span className="timing-clock countdown plan-end right">
-									{RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedEnd, true, true, true)}
+									{RundownUtils.formatDiffToTimecode(now - expectedEnd, true, true, true)}
 								</span>
 							) : expectedStart && expectedDuration ? (
 								<span className="timing-clock countdown plan-end right">
@@ -107,26 +120,12 @@ export const PlaylistEndTiming = withTranslation()(
 							this.props.timingDurations ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 								<span
 									className={ClassNames('timing-clock heavy-light right', {
-										heavy:
-											(this.props.timingDurations.asPlayedPlaylistDuration || 0) <
-											(expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0),
-										light:
-											(this.props.timingDurations.asPlayedPlaylistDuration || 0) >
-											(expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0),
+										heavy: diff < 0,
+										light: diff > 0,
 									})}
 								>
 									{!this.props.hideDiffLabel && <span className="timing-clock-label right">{t('Diff')}</span>}
-									{RundownUtils.formatDiffToTimecode(
-										(this.props.timingDurations.asPlayedPlaylistDuration || 0) -
-											(expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0),
-										true,
-										false,
-										true,
-										true,
-										true,
-										undefined,
-										true
-									)}
+									{RundownUtils.formatDiffToTimecode(diff, true, false, true, true, true, undefined, true)}
 								</span>
 							) : null
 						) : null}
