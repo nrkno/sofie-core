@@ -23,7 +23,7 @@ A _Studio_ in Sofie-terms is a physical location, with a specific set of devices
 The _studio_ settings are settings for that specific studio, and contains settings related to hardware and play-out, such as:
 
 * **Attached devices** - the Gateways related to this studio
-* **Blueprint configuration** - ****custom config option defined by the blueprints
+* **Blueprint configuration** - custom config option defined by the blueprints
 * **Layer Mappings** - Maps the logical _timeline layers_ to physical devices and outputs
 
 The Studio uses a studio-blueprint, which handles things like mapping up an incoming rundown to a Showstyle.
@@ -86,7 +86,7 @@ The Showstyle contains settings like
 * **Source Layers** - Groups different types of content in the GUI
 * **Output Channels** - Indicates different output targets \(such as the _Program_ or _back-screen in the studio_\)
 * **Action Triggers** - Select how actions can be started on a per-show basis, outside of the on-screen controls
-* **Blueprint configuration** - ****custom config option defined by the blueprints
+* **Blueprint configuration** - custom config option defined by the blueprints
 
 :::caution
 Please note the difference between _Source Layers_ and _timeline-layers_:
@@ -101,19 +101,32 @@ An example of the difference could be when playing a VT \(that's a Source Layer\
 
 ### Action Triggers
 
-This is a way to set up how - outside of the Point-and-Click Graphical User Interface - actions can be performed in the User Interface. Commonly, these are the *hotkey combinations* that can be used to either trigger AdLib content or other actions in the larger system. This is done by creating sets of Triggers and Actions to be triggered by them. These pairs can be set at the Show Style level or at the Core (System) level, for common actions such as doing a Take or activating a Rundown, where you want a shared method of operation.
+This is a way to set up how - outside of the Point-and-Click Graphical User Interface - actions can be performed in the User Interface. Commonly, these are the *hotkey combinations* that can be used to either trigger AdLib content or other actions in the larger system. This is done by creating sets of Triggers and Actions to be triggered by them. These pairs can be set at the Show Style level or at the Core (System) level, for common actions such as doing a Take or activating a Rundown, where you want a shared method of operation. Core migrations will set up a base set of basic, system-wide Action Triggers for interacting with rundowns, but they can be changed by the System blueprint.
+
+![Action triggers define modes of interacting with a Rundown](/gitbook/assets/action_triggers_3.png)
 
 #### Triggers
 
 The triggers are designed to be either client-specific or issued by a peripheral device module.
 
-Currently, the Action Triggers system only supports a single, client-specific trigger type: a Hotkey. Hotkeys can be either a single key, a combination of keys (*combo*) or a *chord* - a sequnece of key combinations pressed in a particular order. *Chords* are popular in some text editing applications and vastly expand the amount of actions that can be triggered from a keyboard, at the expense of the time needed to execute them. Currenlty, the Hotkey editor in Sofie does not support creating *Chords*, but they can be specified by Blueprints during migrations.
+Currently, the Action Triggers system only supports a single, client-specific trigger type: a Hotkey. Hotkeys can be either a single key, a combination of keys (*combo*) or a *chord* - a sequnece of key combinations pressed in a particular order. *Chords* are popular in some text editing applications and vastly expand the amount of actions that can be triggered from a keyboard, at the expense of the time needed to execute them. Currently, the Hotkey editor in Sofie does not support creating *Chords*, but they can be specified by Blueprints during migrations.
+
+To edit a given trigger, click on the trigger pill on the left of the Trigger-Action set. When hovering, a **+** sign will appear,
+allowing you to add a new trigger to the set.
 
 #### Actions
 
 The actions are built using a base *action* (such as *Activate a Rundown* or *AdLib*) and a set of *filters*, limiting the scope of the *action*. Optionally, some of these *actions* can take additional *parameters*. These filters can operate on various types of objects, depending on the action in question. All actions currently require that the chain of filters starts with scoping out the Rundown the action is supposed to affect. Currently, there is only one type of Rundown-level filter supported: "The Rundown currently in view".
 
 The Action Triggers user interface guides the user in a wizzard-like fashion through the available *filter* options on a given *action*.
+
+![Actions can take additional parameters](/gitbook/assets/action_triggers_2.png)
+
+If the action provides a preview of the triggered items and there is an available matching Rundown, a preview will be displayed for the matching objects in that Rundown. The system will select the current active rundown, if it is of the currently-edited ShowStyle, and if not, it will select the first available Rundown of the currently-edited ShowStyle.
+
+![A preview of the action, as scoped by the filters](/gitbook/assets/action_triggers_4.png)
+
+Clicking on the action and filter pills allows you to edit the action parameters and filter parameters. *Limit* limits the amount of objects to only the first *N* objects matched - this can significantly improve performance on large data sets. *Pick* and *Pick last* filters end the chain of the filters by selecting a single item from the filtered set of objects (the *N-th* object from the beginning or the end, respectively). *Pick* implicitly contains a *Limit* for the performance improvement. This is not true for *Pick last*, though.
 
 ## Migrations
 
