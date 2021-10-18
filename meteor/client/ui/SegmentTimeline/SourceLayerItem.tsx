@@ -383,7 +383,8 @@ export const SourceLayerItem = withTranslation()(
 				if (innerPiece.isOutTransition) {
 					return {
 						// also: don't render transitions in relative mode
-						left: (((this.props.partDuration - itemDuration || 0) / (this.props.partDuration || 1)) * 100).toString() + '%',
+						left:
+							(((this.props.partDuration - itemDuration || 0) / (this.props.partDuration || 1)) * 100).toString() + '%',
 						width: ((itemDuration / (this.props.partDuration || 1)) * 100).toString() + '%',
 					}
 				}
@@ -395,7 +396,10 @@ export const SourceLayerItem = withTranslation()(
 			} else {
 				if (innerPiece.isOutTransition) {
 					return {
-						left: this.convertTimeToPixels((this.props.partDuration - itemDuration || 0) + inTransitionDuration).toString() + 'px',
+						left:
+							this.convertTimeToPixels(
+								(this.props.partDuration - itemDuration || 0) + inTransitionDuration
+							).toString() + 'px',
 						width:
 							this.convertTimeToPixels(itemDuration - inTransitionDuration - outTransitionDuration).toString() + 'px',
 					}

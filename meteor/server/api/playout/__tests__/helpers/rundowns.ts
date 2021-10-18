@@ -1,8 +1,4 @@
-import * as _ from 'underscore'
-import {
-	PartHoldMode,
-	PieceLifespan,
-} from '@sofie-automation/blueprints-integration'
+import { PartHoldMode, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime, protectString } from '../../../../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../../../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../../../../lib/collections/Segments'
@@ -10,11 +6,9 @@ import { DBPart, Parts } from '../../../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../../../lib/api/rundown'
 import { RundownPlaylistId } from '../../../../../lib/collections/RundownPlaylists'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../../../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibPiece, AdLibPieces } from '../../../../../lib/collections/AdLibPieces'
-import { DefaultEnvironment, LAYER_IDS } from '../../../../../__mocks__/helpers/database'
+import { DefaultEnvironment } from '../../../../../__mocks__/helpers/database'
 
-export function setupRundownBase (
+export function setupRundownBase(
 	env: DefaultEnvironment,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
@@ -70,7 +64,7 @@ export function setupRundownBase (
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
 
-		...partPropsOverride
+		...partPropsOverride,
 	}
 	Parts.insert(part00)
 
@@ -119,8 +113,13 @@ export function setupRundownBase (
 	return { rundown, segment0, part00 }
 }
 
-export function setupPart2(env: DefaultEnvironment, rundownId: RundownId, rundown: DBRundown, segment0: DBSegment,
-	partPropsOverride: Partial<DBPart> = {}) {
+export function setupPart2(
+	env: DefaultEnvironment,
+	rundownId: RundownId,
+	rundown: DBRundown,
+	segment0: DBSegment,
+	partPropsOverride: Partial<DBPart> = {}
+) {
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
 		segmentId: segment0._id,
@@ -129,7 +128,7 @@ export function setupPart2(env: DefaultEnvironment, rundownId: RundownId, rundow
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
 
-		...partPropsOverride
+		...partPropsOverride,
 	}
 	Parts.insert(part01)
 
@@ -162,7 +161,7 @@ export function setupRundownWithPreroll(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
+	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -172,7 +171,7 @@ export function setupRundownWithPreroll(
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
 
-		prerollDuration: 500
+		prerollDuration: 500,
 	}
 	Parts.insert(part01)
 
@@ -205,7 +204,7 @@ export function setupRundownWithInTransition(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
+	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -215,9 +214,9 @@ export function setupRundownWithInTransition(
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
 
-        transitionDuration: 1000,
-        transitionKeepaliveDuration: 1000,
-        transitionPrerollDuration: 0
+		transitionDuration: 1000,
+		transitionKeepaliveDuration: 1000,
+		transitionPrerollDuration: 0,
 	}
 	Parts.insert(part01)
 
@@ -250,7 +249,7 @@ export function setupRundownWithInTransitionPlannedPiece(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
+	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -287,7 +286,7 @@ export function setupRundownWithInTransitionPlannedPiece(
 	}
 	Pieces.insert(piece010)
 
-    const piece011: Piece = {
+	const piece011: Piece = {
 		_id: protectString(rundownId + '_piece011'),
 		externalId: 'MOCK_PIECE_011',
 		startRundownId: rundown._id,
@@ -308,7 +307,7 @@ export function setupRundownWithInTransitionPlannedPiece(
 		isTransition: true,
 	}
 	Pieces.insert(piece011)
-	
+
 	// delayed piece
 	const piece012: Piece = {
 		_id: protectString(rundownId + '_piece012'),
@@ -340,7 +339,7 @@ export function setupRundownWithInTransitionPreroll(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
+	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -377,7 +376,7 @@ export function setupRundownWithInTransitionPreroll(
 	}
 	Pieces.insert(piece010)
 
-    const piece011: Piece = {
+	const piece011: Piece = {
 		_id: protectString(rundownId + '_piece011'),
 		externalId: 'MOCK_PIECE_011',
 		startRundownId: rundown._id,
@@ -407,7 +406,7 @@ export function setupRundownWithInTransitionPrerollAndPreroll(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
+	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -420,7 +419,7 @@ export function setupRundownWithInTransitionPrerollAndPreroll(
 		transitionDuration: 1000,
 		transitionKeepaliveDuration: 1000,
 		transitionPrerollDuration: 500,
-        prerollDuration: 250
+		prerollDuration: 250,
 	}
 	Parts.insert(part01)
 
@@ -444,8 +443,8 @@ export function setupRundownWithInTransitionPrerollAndPreroll(
 		},
 	}
 	Pieces.insert(piece010)
-	
-    const piece011: Piece = {
+
+	const piece011: Piece = {
 		_id: protectString(rundownId + '_piece011'),
 		externalId: 'MOCK_PIECE_011',
 		startRundownId: rundown._id,
@@ -463,7 +462,7 @@ export function setupRundownWithInTransitionPrerollAndPreroll(
 		content: {
 			timelineObjects: [],
 		},
-        isTransition: true
+		isTransition: true,
 	}
 	Pieces.insert(piece011)
 
@@ -621,7 +620,6 @@ export function setupRundownWithInTransitionNewInfinite(
 		isTransition: true,
 	}
 	Pieces.insert(piece011)
-    
 
 	const piece012: Piece = {
 		_id: protectString(rundownId + '_piece012'),
@@ -652,7 +650,7 @@ export function setupRundownWithInTransitionEnableHold(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, { holdMode: PartHoldMode.FROM })
+	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId, { holdMode: PartHoldMode.FROM })
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -881,7 +879,7 @@ export function setupRundownWithOutTransition(
 	rundownId: RundownId
 ): RundownId {
 	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, {
-		outTransitionDuration: 1000
+		outTransitionDuration: 1000,
 	})
 
 	const piece002: Piece = {
@@ -895,7 +893,7 @@ export function setupRundownWithOutTransition(
 		isOutTransition: true,
 		enable: {
 			start: 0, // will be overwritten
-			duration: 1000
+			duration: 1000,
 		},
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,

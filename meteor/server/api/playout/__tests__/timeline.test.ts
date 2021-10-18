@@ -16,8 +16,21 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../.
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
-import { setupRundownWithInTransitionExistingInfinite, setupRundownWithInTransition, setupRundownWithInTransitionPreroll, setupRundownWithInTransitionPrerollAndPreroll, setupRundownWithPreroll, setupRundownWithInTransitionNewInfinite, setupRundownWithInTransitionPlannedPiece, setupRundownWithInTransitionEnableHold, setupRundownWithInTransitionDisabled, setupRundownWithOutTransition, setupRundownWithOutTransitionAndPreroll, setupRundownWithOutTransitionAndPreroll2, setupRundownWithOutTransitionAndInTransition } from './helpers/rundowns'
-import { string } from 'prop-types'
+import {
+	setupRundownWithInTransitionExistingInfinite,
+	setupRundownWithInTransition,
+	setupRundownWithInTransitionPreroll,
+	setupRundownWithInTransitionPrerollAndPreroll,
+	setupRundownWithPreroll,
+	setupRundownWithInTransitionNewInfinite,
+	setupRundownWithInTransitionPlannedPiece,
+	setupRundownWithInTransitionEnableHold,
+	setupRundownWithInTransitionDisabled,
+	setupRundownWithOutTransition,
+	setupRundownWithOutTransitionAndPreroll,
+	setupRundownWithOutTransitionAndPreroll2,
+	setupRundownWithOutTransitionAndInTransition,
+} from './helpers/rundowns'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 
 function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
@@ -132,13 +145,17 @@ describe('Timeline', () => {
 	describe('In transitions', () => {
 		function testTransition(
 			name: string,
-			customRundownFactory: (env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId) => RundownId,
+			customRundownFactory: (
+				env: DefaultEnvironment,
+				playlistId: RundownPlaylistId,
+				rundownId: RundownId
+			) => RundownId,
 			fcn: (
 				rundownId: RundownId,
 				timeline: TimelineComplete,
 				currentPartInstance: PartInstance,
 				previousPartInstance: PartInstance
-			) => void | Promise<void>,
+			) => void,
 			timeout?: number
 		) {
 			testInFiber(
@@ -250,9 +267,13 @@ describe('Timeline', () => {
 			setupRundownWithInTransition,
 			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
 				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find((tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id)
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
 				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({ end: `#part_group_${currentPartInstance?._id}.start + 1000` })
+				expect(oldPartTlObj?.enable).toMatchObject({
+					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+				})
 
 				// pieces are not delayed due to no transition preroll
 				const newPartPieceTlObj = timeline?.timeline.find(
@@ -268,9 +289,13 @@ describe('Timeline', () => {
 			setupRundownWithInTransitionPlannedPiece,
 			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
 				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find((tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id)
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
 				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({ end: `#part_group_${currentPartInstance?._id}.start + 1000` })
+				expect(oldPartTlObj?.enable).toMatchObject({
+					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+				})
 
 				// pieces are delayed by the transition preroll
 				const newPartPieceTlObj = timeline?.timeline.find(
@@ -299,9 +324,13 @@ describe('Timeline', () => {
 			setupRundownWithPreroll,
 			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
 				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find((tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id)
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
 				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({ end: `#part_group_${currentPartInstance?._id}.start + 500` })
+				expect(oldPartTlObj?.enable).toMatchObject({
+					end: `#part_group_${currentPartInstance?._id}.start + 500`,
+				})
 
 				// pieces are not delayed due to no transition preroll
 				const newPartPieceTlObj = timeline?.timeline.find(
@@ -317,9 +346,13 @@ describe('Timeline', () => {
 			setupRundownWithInTransitionPreroll,
 			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
 				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find((tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id)
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
 				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({ end: `#part_group_${currentPartInstance?._id}.start + 1000` })
+				expect(oldPartTlObj?.enable).toMatchObject({
+					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+				})
 
 				// pieces are delayed by the transition preroll
 				const newPartPieceTlObj = timeline?.timeline.find(
@@ -337,9 +370,13 @@ describe('Timeline', () => {
 			setupRundownWithInTransitionPrerollAndPreroll,
 			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
 				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find((tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id)
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
 				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({ end: `#part_group_${currentPartInstance?._id}.start + 1000` })
+				expect(oldPartTlObj?.enable).toMatchObject({
+					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+				})
 
 				// pieces are delayed by the transition preroll
 				const newPartPieceTlObj = timeline?.timeline.find(
@@ -357,15 +394,20 @@ describe('Timeline', () => {
 			setupRundownWithInTransitionExistingInfinite,
 			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
 				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find((tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id)
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
 				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({ end: `#part_group_${currentPartInstance?._id}.start + 1000` })
+				expect(oldPartTlObj?.enable).toMatchObject({
+					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+				})
 
 				// pieces are delayed by the transition preroll
 				// console.log(JSON.stringify(timeline, undefined, 2))
 				// looking for: part_group_randomId9002_part0_1_randomId9012_randomId9002_piece001_infinite
 				const infPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece002_infinite'
+					(tlObj) =>
+						tlObj.id === 'part_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece002_infinite'
 				)
 				expect(infPieceTlObj).toBeTruthy()
 				expect(infPieceTlObj?.enable).toMatchObject({
@@ -379,13 +421,18 @@ describe('Timeline', () => {
 			setupRundownWithInTransitionNewInfinite,
 			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
 				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find((tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id)
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
 				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({ end: `#part_group_${currentPartInstance?._id}.start + 1000` })
+				expect(oldPartTlObj?.enable).toMatchObject({
+					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+				})
 
 				// pieces are delayed by the transition preroll
 				const infPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece012_infinite'
+					(tlObj) =>
+						tlObj.id === 'part_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece012_infinite'
 				)
 				expect(infPieceTlObj).toBeTruthy()
 				expect(infPieceTlObj?.enable).toMatchObject({
@@ -475,7 +522,9 @@ describe('Timeline', () => {
 				expect(timeline).toBeTruthy()
 
 				// old part ends immediately
-				const oldPartTlObj = timeline?.timeline.find((tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id)
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
 				expect(oldPartTlObj).toBeTruthy()
 				expect(oldPartTlObj?.enable).toMatchObject({
 					// end: `#part_group_${currentPartInstance?._id}.start`,
@@ -511,7 +560,9 @@ describe('Timeline', () => {
 			setupRundownWithInTransitionDisabled,
 			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
 				// old part is not extended
-				const oldPartTlObj = timeline?.timeline.find((tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id)
+				const oldPartTlObj = timeline?.timeline.find(
+					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
+				)
 				expect(oldPartTlObj).toBeTruthy()
 				expect(oldPartTlObj?.enable).toMatchObject({ end: `#part_group_${currentPartInstance?._id}.start + 0` })
 
@@ -540,7 +591,7 @@ describe('Timeline', () => {
 				timeline: TimelineComplete,
 				currentPartInstance: PartInstance,
 				previousPartInstance: PartInstance
-			) => void | Promise<void>,
+			) => void,
 			timeout?: number
 		) {
 			testInFiber(
@@ -574,13 +625,8 @@ describe('Timeline', () => {
 
 					{
 						// Prepare and activate in rehersal:
-						await ServerPlayoutAPI.activateRundownPlaylist(
-							DEFAULT_ACCESS(playlistId0),
-							playlistId0,
-							false
-						)
-						const { currentPartInstance, nextPartInstance } =
-							getPlaylist0().getSelectedPartInstances()
+						await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
+						const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 						expect(currentPartInstance).toBeFalsy()
 						expect(nextPartInstance).toBeTruthy()
 						expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
@@ -595,8 +641,7 @@ describe('Timeline', () => {
 					{
 						// Take the first Part:
 						await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-						const { currentPartInstance, nextPartInstance } =
-							getPlaylist0().getSelectedPartInstances()
+						const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 						expect(currentPartInstance).toBeTruthy()
 						expect(nextPartInstance).toBeTruthy()
 						expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
@@ -610,8 +655,7 @@ describe('Timeline', () => {
 					{
 						// Take the second Part:
 						await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-						const { currentPartInstance, previousPartInstance } =
-							getPlaylist0().getSelectedPartInstances()
+						const { currentPartInstance, previousPartInstance } = getPlaylist0().getSelectedPartInstances()
 						expect(previousPartInstance).toBeTruthy()
 						expect(currentPartInstance).toBeTruthy()
 						expect(previousPartInstance!.part._id).toEqual(parts[0]._id)
@@ -640,10 +684,7 @@ describe('Timeline', () => {
 
 					{
 						// Deactivate rundown:
-						await ServerPlayoutAPI.deactivateRundownPlaylist(
-							DEFAULT_ACCESS(playlistId0),
-							playlistId0
-						)
+						await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
 						expect(getPlaylist0()).toMatchObject({
 							activationId: undefined,
 							currentPartInstanceId: null,
@@ -675,17 +716,19 @@ describe('Timeline', () => {
 					(tlObj) => tlObj.id === 'piece_group_' + previousPartInstance?._id + '_' + rundownId0 + '_piece002'
 				)
 				expect(outTransitionPieceTlObj).toBeTruthy()
-				expect(outTransitionPieceTlObj?.enable).toMatchObject({ start: `#part_group_${previousPartInstance?._id}.end - 1000` })
+				expect(outTransitionPieceTlObj?.enable).toMatchObject({
+					start: `#part_group_${previousPartInstance?._id}.end - 1000`,
+				})
 
 				// pieces are delayed by outTransition time
 				const newPartPieceTlObj = timeline?.timeline.find(
 					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
 				)
 				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({ start: "1000" })
+				expect(newPartPieceTlObj?.enable).toMatchObject({ start: '1000' })
 			}
 		)
-		
+
 		testTransition(
 			'outTransition + preroll',
 			setupRundownWithOutTransitionAndPreroll,
@@ -716,7 +759,7 @@ describe('Timeline', () => {
 				expect(newPartPieceTlObj?.enable).toMatchObject({ start: '750' }) /// 1000ms out transition, 250ms preroll
 			}
 		)
-		
+
 		testTransition(
 			'outTransition + preroll (2)',
 			setupRundownWithOutTransitionAndPreroll2,
@@ -747,7 +790,7 @@ describe('Timeline', () => {
 				expect(newPartPieceTlObj?.enable).toMatchObject({ start: 0 }) /// 250ms out transition, 1000ms preroll. preroll takes precedence
 			}
 		)
-		
+
 		testTransition(
 			'outTransition + inTransition',
 			setupRundownWithOutTransitionAndInTransition,
@@ -786,9 +829,8 @@ describe('Timeline', () => {
 				expect(newPartPieceTlObj).toBeTruthy()
 				expect(newPartPieceTlObj?.enable).toMatchObject({
 					start: `#piece_group_${currentPartInstance?._id}_${rundownId0}_piece011.start + 300`,
-				}) 
+				})
 			}
 		)
 	})
-
 })

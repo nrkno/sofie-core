@@ -880,13 +880,14 @@ function transformPartIntoTimeline(
 		? pieceInstances.find((i) => !!i.piece.isTransition)
 		: undefined
 	const transitionPieceDelay = transitionProps
-		? Math.max(0, (transitionProps.preroll || 0) - (transitionProps.transitionPreroll || 0), (outTransitionDuration || 0) - (transitionProps.transitionKeepalive || 0))
-		: 0
-	const outTransitionPieceDelay = outTransitionDuration
 		? Math.max(
 				0,
-				-(transitionProps?.preroll || 0) + (outTransitionDuration || 0)
+				(transitionProps.preroll || 0) - (transitionProps.transitionPreroll || 0),
+				(outTransitionDuration || 0) - (transitionProps.transitionKeepalive || 0)
 		  )
+		: 0
+	const outTransitionPieceDelay = outTransitionDuration
+		? Math.max(0, -(transitionProps?.preroll || 0) + (outTransitionDuration || 0))
 		: 0
 	const transitionContentsDelay = transitionProps
 		? (transitionProps.transitionPreroll || 0) - (transitionProps.preroll || 0)
@@ -998,17 +999,14 @@ function calcPartKeepaliveDuration(fromPart: Part, toPart: Part, relativeToFrom:
 	}
 
 	if (relativeToFrom) {
-		const minimum = Math.max(0, fromPart.outTransitionDuration || 0, toPart.transitionKeepaliveDuration || 0)
-		const transPieceDelay = Math.max(
-			0,
-			Math.max(toPart.prerollDuration || 0, fromPart.outTransitionDuration || 0) - (toPart.transitionPrerollDuration || 0)
+		return (
+			Math.max(
+				0,
+				(toPart.prerollDuration || 0) - (toPart.transitionPrerollDuration || 0),
+				(fromPart.outTransitionDuration || 0) - (toPart.transitionKeepaliveDuration || 0)
+			) + (toPart.transitionKeepaliveDuration || 0)
 		)
-		return Math.max(minimum, transPieceDelay + (toPart.transitionKeepaliveDuration || 0))
 	}
-
-	// if (toPart.transitionKeepaliveDuration === undefined || toPart.transitionKeepaliveDuration === null) {
-	// 	return (fromPart.autoNextOverlap || 0)
-	// }
 
 	return 0
 }
