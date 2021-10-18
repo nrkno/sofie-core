@@ -507,27 +507,25 @@ export class RundownTimingCalculator {
 					nextSegmentIndex = itIndex
 				}
 				const segmentBudgetDuration = this.segmentBudgetDurations[unprotectString(segment._id)]
-				if (segmentBudgetDuration !== undefined) {
-					const isSegmentUntimed = this.untimedSegments.has(segment._id)
-					if (!isSegmentUntimed) {
-						let valToAddToRundownAsPlayedDuration = 0
-						if (segment._id === liveSegmentId) {
-							const startedPlayback = this.segmentStartedPlayback[unprotectString(segment._id)]
-							valToAddToRundownAsPlayedDuration = Math.max(
-								0,
-								segmentBudgetDuration - (startedPlayback ? now - startedPlayback : 0)
-							)
-						} else if (!playlist.activationId || (nextSegmentIndex >= 0 && itIndex >= nextSegmentIndex)) {
-							valToAddToRundownAsPlayedDuration = segmentBudgetDuration
-						}
-						remainingRundownDuration += valToAddToRundownAsPlayedDuration
-						asPlayedRundownDuration += valToAddToRundownAsPlayedDuration
-						rundownAsPlayedDurations[unprotectString(segment.rundownId)] =
-							(rundownAsPlayedDurations[unprotectString(segment.rundownId)] ?? 0) +
-							valToAddToRundownAsPlayedDuration
-						totalRundownDuration += segmentBudgetDuration
-					}
+
+				if (segmentBudgetDuration === undefined || this.untimedSegments.has(segment._id)) return
+
+				let valToAddToRundownAsPlayedDuration = 0
+				if (segment._id === liveSegmentId) {
+					const startedPlayback = this.segmentStartedPlayback[unprotectString(segment._id)]
+					valToAddToRundownAsPlayedDuration = Math.max(
+						0,
+						segmentBudgetDuration - (startedPlayback ? now - startedPlayback : 0)
+					)
+				} else if (!playlist.activationId || (nextSegmentIndex >= 0 && itIndex >= nextSegmentIndex)) {
+					valToAddToRundownAsPlayedDuration = segmentBudgetDuration
 				}
+				remainingRundownDuration += valToAddToRundownAsPlayedDuration
+				asPlayedRundownDuration += valToAddToRundownAsPlayedDuration
+				rundownAsPlayedDurations[unprotectString(segment.rundownId)] =
+					(rundownAsPlayedDurations[unprotectString(segment.rundownId)] ?? 0) +
+					valToAddToRundownAsPlayedDuration
+				totalRundownDuration += segmentBudgetDuration
 			})
 
 			// if (this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0) {
