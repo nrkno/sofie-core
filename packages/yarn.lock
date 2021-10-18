@@ -1536,10 +1536,9 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@tv2media/v-connection@^5.1.0":
+"@tv2media/v-connection@github:nrkno/v-connection#ae6d994":
   version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-5.1.0.tgz#683b55ca80ed5c076b4af6f580e883c613f05190"
-  integrity sha512-Kg9drmAllMtzoJ6dgXxSCKjSzQyp6jUOxvwkP4PxAZE9Ifa2KHV/IhjPfwG7QXSTOrUFDRac15HQMMO6tFIltA==
+  resolved "https://codeload.github.com/nrkno/v-connection/tar.gz/ae6d994497aa7e9aa08ed5ecf0762be90ca5e058"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -6008,7 +6007,12 @@ minimist-options@4.1.0, minimist-options@^4.0.2:
     is-plain-obj "^1.1.0"
     kind-of "^6.0.3"
 
-minimist@^0.1.0, minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
+minimist@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.1.0.tgz#99df657a52574c21c9057497df742790b2b4c0de"
+  integrity sha1-md9lelJXTCHJBXSX33QnkLK0wN4=
+
+minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
@@ -8524,12 +8528,12 @@ timeline-state-resolver-types@6.2.0-release37.4:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-release37.5:
-  version "6.2.0-release37.5"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.5.tgz#0fb7c82cda71934b5102c97e5716d32acc1fee50"
-  integrity sha512-8UvSseb9m2K/KBnkSmMZpi9BGBu0Plq3/r7XuLSUE1/lOsvtPolPOeiiv0TcYDcF7BfzLx0YWt92KyXiU6/tuA==
+timeline-state-resolver@6.2.0-nightly-chore-vizmse-xml-logging-20211018-105508-ea7396b26.0:
+  version "6.2.0-nightly-chore-vizmse-xml-logging-20211018-105508-ea7396b26.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-chore-vizmse-xml-logging-20211018-105508-ea7396b26.0.tgz#9d836e91d6d7531c198700343d96a32f92d0a9c1"
+  integrity sha512-EQu/XLHyWYWWSvXxh13qxt5J5n8vaSIH0vMTsTKdyCV0HB9bqux6F4ickvitnnj8RlETjm9o9H6yvFNHduJw1g==
   dependencies:
-    "@tv2media/v-connection" "^5.1.0"
+    "@tv2media/v-connection" nrkno/v-connection#ae6d994
     atem-connection "^2.3.0"
     atem-state "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
     casparcg-connection "^5.1.0"
@@ -8649,7 +8653,7 @@ trim-newlines@^3.0.0:
   resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-3.0.1.tgz#260a5d962d8b752425b32f3a7db0dcacd176c144"
   integrity sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==
 
-trim-newlines@^4.0.1, trim-newlines@^4.0.2:
+trim-newlines@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-4.0.2.tgz#d6aaaf6a0df1b4b536d183879a6b939489808c7c"
   integrity sha512-GJtWyq9InR/2HRiLZgpIKv+ufIKrVrvjQWEj7PxAXNc5dwbNJkqhAUoAGgzRmULAnoOM5EIpveYd3J2VeSAIew==
