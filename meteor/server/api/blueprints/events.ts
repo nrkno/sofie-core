@@ -195,6 +195,7 @@ export function reportPartInstanceHasStarted(
 	timestamp: Time
 ): void {
 	if (partInstance) {
+		let timestampUpdated = false
 		// If timings.startedPlayback has already been set, we shouldn't set it to another value:
 		if (!partInstance.timings?.startedPlayback) {
 			cache.PartInstances.update(partInstance._id, {
@@ -203,6 +204,12 @@ export function reportPartInstanceHasStarted(
 					'timings.startedPlayback': timestamp,
 				},
 			})
+			timestampUpdated = true
+
+			// Unset stoppedPlayback if it is set:
+			if (partInstance.timings?.stoppedPlayback) {
+				cache.PartInstances.update(partInstance._id, { $unset: { 'timings.stoppedPlayback': 1 } })
+			}
 		}
 		// Update the playlist:
 		cache.Playlist.update((playlist) => {
@@ -225,12 +232,14 @@ export function reportPartInstanceHasStarted(
 			return playlist
 		})
 
-		cache.deferAfterSave(() => {
-			// Run in the background, we don't want to hold onto the lock to do this
-			Meteor.setTimeout(() => {
-				handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
-			}, LOW_PRIO_DEFER_TIME)
-		})
+		if (timestampUpdated) {
+			cache.deferAfterSave(() => {
+				// Run in the background, we don't want to hold onto the lock to do this
+				Meteor.setTimeout(() => {
+					handlePartInstanceTimingEvent(cache.PlaylistId, partInstance._id)
+				}, LOW_PRIO_DEFER_TIME)
+			})
+		}
 	}
 }
 export async function reportPartInstanceHasStopped(
