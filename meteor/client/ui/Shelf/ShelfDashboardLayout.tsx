@@ -1,9 +1,5 @@
 import * as React from 'react'
-import {
-	DashboardLayout,
-	DashboardLayoutFilter,
-	RundownLayoutElementBase,
-} from '../../../lib/collections/RundownLayouts'
+import { DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { DashboardPanel } from './DashboardPanel'
@@ -156,7 +152,15 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								<PlaylistEndTimerPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 							)
 						} else if (RundownLayoutsAPI.isEndWords(panel)) {
-							return <EndWordsPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+							return (
+								<EndWordsPanel
+									key={panel._id}
+									playlist={props.playlist}
+									layout={rundownLayout}
+									panel={panel}
+									showStyleBase={props.showStyleBase}
+								/>
+							)
 						} else if (RundownLayoutsAPI.isSegmentTiming(panel)) {
 							return (
 								<SegmentTimingPanel
@@ -168,7 +172,15 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								/>
 							)
 						} else if (RundownLayoutsAPI.isPartTiming(panel)) {
-							return <PartTimingPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+							return (
+								<PartTimingPanel
+									key={panel._id}
+									playlist={props.playlist}
+									layout={rundownLayout}
+									panel={panel}
+									showStyleBase={props.showStyleBase}
+								/>
+							)
 						} else if (RundownLayoutsAPI.isTextLabel(panel)) {
 							return <TextLabelPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						} else if (RundownLayoutsAPI.isPlaylistName(panel)) {

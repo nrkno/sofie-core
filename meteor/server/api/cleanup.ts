@@ -387,6 +387,12 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 			_id: { $nin: studioIds },
 		})
 	}
+	// TriggeredActions
+	{
+		removeByQuery('TriggeredActions', TriggeredActions, {
+			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
+		})
+	}
 	// UserActionsLog
 	{
 		removeByQuery('UserActionsLog', UserActionsLog, {

@@ -2043,7 +2043,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													segmentId={segment._id}
 													playlist={this.props.playlist}
 													rundown={rundownAndSegments.rundown}
-													rundownViewLayout={this.state.rundownViewLayout}
 													timeScale={this.state.timeScale}
 													onContextMenu={this.onContextMenu}
 													onSegmentScroll={this.onSegmentScroll}

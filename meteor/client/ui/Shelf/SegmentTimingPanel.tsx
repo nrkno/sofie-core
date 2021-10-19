@@ -67,7 +67,6 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 						<SegmentDuration
 							parts={this.props.parts}
 							countUp={panel.timingType === 'count_up'}
-							playedOutDuration={0}
 							className="segment-duration"
 						/>
 					)}

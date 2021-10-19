@@ -23,6 +23,7 @@ export const RundownName = withTranslation()(
 			render() {
 				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
 				const playlistStartTime = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
+
 				return (
 					<span
 						className={ClassNames('timing-clock countdown left', {
@@ -74,24 +75,17 @@ export const RundownName = withTranslation()(
 						rundownPlaylist.startedPlayback &&
 						rundownPlaylist.activationId &&
 						!rundownPlaylist.rehearsal
-							? rundownPlaylist.expectedStart &&
+							? playlistStartTime &&
 							  RundownUtils.formatDiffToTimecode(
-									rundownPlaylist.startedPlayback - rundownPlaylist.expectedStart,
+									rundownPlaylist.startedPlayback - playlistStartTime,
 									true,
 									false,
 									true,
 									true,
 									true
 							  )
-							: rundownPlaylist.expectedStart &&
-							  RundownUtils.formatDiffToTimecode(
-									getCurrentTime() - rundownPlaylist.expectedStart,
-									true,
-									false,
-									true,
-									true,
-									true
-							  )}
+							: playlistStartTime &&
+							  RundownUtils.formatDiffToTimecode(getCurrentTime() - playlistStartTime, true, false, true, true, true)}
 					</span>
 				)
 			}
