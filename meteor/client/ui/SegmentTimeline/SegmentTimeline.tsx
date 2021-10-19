@@ -27,12 +27,13 @@ import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStor
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
-import { literal, unprotectString } from '../../../lib/lib'
+import { literal, protectString, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
@@ -81,6 +82,7 @@ interface IProps {
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
+	budgetDuration?: number
 	showCountdownToSegment: boolean
 	fixedSegmentDuration: boolean | undefined
 }
@@ -287,6 +289,24 @@ function SegmentTimelineZoomButtons(props: IProps) {
 }
 
 export const SEGMENT_TIMELINE_ELEMENT_ID = 'rundown__segment__'
+
+export const BUDGET_GAP_PART = {
+	partId: protectString('gap'),
+	instance: wrapPartToTemporaryInstance(protectString(''), {
+		_id: protectString('gap'),
+		_rank: 0,
+		segmentId: protectString(''),
+		rundownId: protectString(''),
+		externalId: 'gap',
+		gap: true,
+		title: 'gap',
+		invalid: true,
+	}),
+	pieces: [],
+	renderedDuration: 0,
+	startsAt: 0,
+	willProbablyAutoNext: false,
+}
 
 export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	static whyDidYouRender = true
@@ -573,8 +593,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				this.props.maxTimeScale,
 				Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1)))
 			)
-			if (this.timeline?.parentElement) {
-				const clientPositon = this.timeline.parentElement.getBoundingClientRect()
+			if (this.timeline) {
+				const clientPositon = this.timeline.getBoundingClientRect()
 				let zoomOffset = Math.max(0, e.clientX - clientPositon.x) / this.state.timelineWidth
 
 				const currentlyVisibleArea = this.state.timelineWidth / this.props.timeScale
@@ -663,6 +683,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return {
 			transform: 'translate3d(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px, 0, 0.1px)',
 			willChange: 'transform',
+			minWidth:
+				this.props.budgetDuration !== undefined
+					? `calc(${this.convertTimeToPixels(this.props.budgetDuration).toString()}px + 100vW)`
+					: undefined,
 		}
 	}
 
@@ -829,6 +853,42 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		})
 	}
 
+	renderBudgetGapPart() {
+		return (
+			<>
+				{this.props.budgetDuration !== undefined && (
+					<SegmentTimelinePart
+						segment={this.props.segment}
+						playlist={this.props.playlist}
+						studio={this.props.studio}
+						collapsedOutputs={this.props.collapsedOutputs}
+						scrollLeft={this.props.scrollLeft}
+						timeScale={this.props.timeScale}
+						autoNextPart={this.props.autoNextPart}
+						followLiveLine={this.props.followLiveLine}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						livePosition={this.props.livePosition}
+						onScroll={this.props.onScroll}
+						onCollapseOutputToggle={this.props.onCollapseOutputToggle}
+						onFollowLiveLine={this.props.onFollowLiveLine}
+						onContextMenu={this.props.onContextMenu}
+						relative={false}
+						onPieceClick={this.props.onItemClick}
+						onPieceDoubleClick={this.props.onItemDoubleClick}
+						scrollWidth={this.state.timelineWidth / this.props.timeScale}
+						firstPartInSegment={this.props.parts[0]}
+						lastPartInSegment={this.props.parts[this.props.parts.length - 1]}
+						isLastSegment={this.props.isLastSegment}
+						isLastInSegment={false}
+						isAfterLastValidInSegmentAndItsLive={false}
+						isBudgetGap={true}
+						part={BUDGET_GAP_PART}
+					/>
+				)}
+			</>
+		)
+	}
+
 	renderEndOfSegment() {
 		return <div className="segment-timeline__part segment-timeline__part--end-of-segment"></div>
 	}
@@ -897,6 +957,15 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						)
 					}
 				})
+		}
+	}
+
+	renderEditorialLine() {
+		if (this.props.budgetDuration !== undefined) {
+			const lineStyle = {
+				left: this.props.budgetDuration * this.props.timeScale - this.props.scrollLeft * this.props.timeScale + 'px',
+			}
+			return <div className="segment-timeline__editorialline" style={lineStyle}></div>
 		}
 	}
 
@@ -1026,6 +1095,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
 							<SegmentDuration
+								segmentId={this.props.segment._id}
 								parts={this.props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={this.props.fixedSegmentDuration}
@@ -1066,18 +1136,20 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					})}
 					onMouseDown={this.onTimelineMouseDown}
 					onTouchStartCapture={this.onTimelineTouchStart}
+					ref={this.setTimelineRef}
 				>
 					<div
 						className="segment-timeline__timeline"
 						key={this.props.segment._id + '-timeline'}
-						ref={this.setTimelineRef}
 						style={this.timelineStyle()}
 					>
 						<ErrorBoundary>
 							{this.renderTimeline()}
+							{this.renderBudgetGapPart()}
 							{this.renderEndOfSegment()}
 						</ErrorBoundary>
 					</div>
+					{this.renderEditorialLine()}
 					{this.renderLiveLine()}
 				</div>
 				<ErrorBoundary>

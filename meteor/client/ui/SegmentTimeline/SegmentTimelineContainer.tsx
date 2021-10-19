@@ -130,6 +130,7 @@ interface IState {
 	currentLivePart: PartUi | undefined
 	currentNextPart: PartUi | undefined
 	autoNextPart: boolean
+	budgetGap: number
 	timeScale: number
 	maxTimeScale: number
 	showingAllSegment: boolean
@@ -142,6 +143,7 @@ interface ITrackedProps {
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
 	lastValidPartIndex: number | undefined
+	budgetDuration: number | undefined
 	displayLiveLineCounter: boolean
 	showCountdownToSegment: boolean
 }
@@ -159,6 +161,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				hasGuestItems: false,
 				hasAlreadyPlayed: false,
 				lastValidPartIndex: undefined,
+				budgetDuration: undefined,
 				displayLiveLineCounter: true,
 				showCountdownToSegment: true,
 			}
@@ -284,6 +287,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		let budgetDuration: number | undefined
+		for (const part of o.parts) {
+			if (part.instance.part.budgetDuration !== undefined) {
+				budgetDuration = (budgetDuration ?? 0) + part.instance.part.budgetDuration
+			}
+		}
+
 		let displayLiveLineCounter: boolean = true
 		if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.requiredLayerIds) {
 			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.rundownViewLayout.liveLineProps)
@@ -307,6 +317,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			hasRemoteItems: o.hasRemoteItems,
 			hasGuestItems: o.hasGuestItems,
 			lastValidPartIndex,
+			budgetDuration,
 			displayLiveLineCounter,
 			showCountdownToSegment,
 		}
@@ -403,6 +414,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				autoNextPart: false,
 				currentLivePart: undefined,
 				currentNextPart: undefined,
+				budgetGap: 0,
 				timeScale: props.timeScale,
 				maxTimeScale: props.timeScale,
 				showingAllSegment: true,
@@ -863,7 +875,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],
 			})
-			this.intersectionObserver.observe(this.timelineDiv.parentElement!.parentElement!)
+			this.intersectionObserver.observe(this.timelineDiv.parentElement!)
 		}
 
 		stopLive = () => {
@@ -972,6 +984,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						isLastSegment={this.props.isLastSegment}
 						lastValidPartIndex={this.props.lastValidPartIndex}
 						onHeaderNoteClick={this.props.onHeaderNoteClick}
+						budgetDuration={this.props.budgetDuration}
 						showCountdownToSegment={this.props.showCountdownToSegment}
 						fixedSegmentDuration={this.props.fixedSegmentDuration}
 					/>
