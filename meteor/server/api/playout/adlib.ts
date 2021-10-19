@@ -465,9 +465,9 @@ export namespace ServerPlayoutAdLibAPI {
 			sourceLayerId: { $in: sourceLayerId },
 		}
 
-		const pieces = Pieces.find(query, { fields: { _id: 1, startPartId: 1, enable: 1 } }).fetch()
+		const pieces: Piece[] = Pieces.find(query, { fields: { _id: 1, startPartId: 1, enable: 1 } }).fetch()
 
-		const part = cache.Parts.findOne(
+		const part: Part | undefined = cache.Parts.findOne(
 			{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },
 			{ sort: { _rank: -1 } }
 		)
@@ -477,9 +477,9 @@ export namespace ServerPlayoutAdLibAPI {
 		}
 
 		const partStarted = currentPartInstance.timings?.startedPlayback
-		const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
+		const nowInPart: number = partStarted ? getCurrentTime() - partStarted : 0
 
-		const piece = pieces
+		const piecesSortedAsc: Piece[] = pieces
 			.filter((p) => p.startPartId === part._id && (p.enable.start === 'now' || p.enable.start <= nowInPart))
 			.sort((a, b) => {
 				if (a.enable.start === 'now' && b.enable.start === 'now') return 0
@@ -487,11 +487,18 @@ export namespace ServerPlayoutAdLibAPI {
 				if (b.enable.start === 'now') return 1
 
 				return b.enable.start - a.enable.start
-			})[0]
+			})
+
+		const piece: Piece = piecesSortedAsc[0]
+		if (!piece) {
+			return
+		}
+
+		const fetchedPiece: Piece | undefined = Pieces.findOne(piece._id)
 
 		if (span) span.end()
 
-		return piece
+		return fetchedPiece
 	}
 
 	export async function innerStartQueuedAdLib(
