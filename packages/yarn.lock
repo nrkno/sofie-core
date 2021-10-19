@@ -1536,9 +1536,9 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@tv2media/v-connection@github:nrkno/v-connection#ae6d994":
+"@tv2media/v-connection@github:nrkno/v-connection#24c4e88e1c043cc58ce7fda90158f0b3e2ff5ad4":
   version "5.1.0"
-  resolved "https://codeload.github.com/nrkno/v-connection/tar.gz/ae6d994497aa7e9aa08ed5ecf0762be90ca5e058"
+  resolved "https://codeload.github.com/nrkno/v-connection/tar.gz/24c4e88e1c043cc58ce7fda90158f0b3e2ff5ad4"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -8528,12 +8528,12 @@ timeline-state-resolver-types@6.2.0-release37.4:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-nightly-chore-vizmse-xml-logging-20211018-105508-ea7396b26.0:
-  version "6.2.0-nightly-chore-vizmse-xml-logging-20211018-105508-ea7396b26.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-chore-vizmse-xml-logging-20211018-105508-ea7396b26.0.tgz#9d836e91d6d7531c198700343d96a32f92d0a9c1"
-  integrity sha512-EQu/XLHyWYWWSvXxh13qxt5J5n8vaSIH0vMTsTKdyCV0HB9bqux6F4ickvitnnj8RlETjm9o9H6yvFNHduJw1g==
+timeline-state-resolver@6.2.0-nightly-chore-vizmse-xml-logging-20211019-112845-47a0549a5.0:
+  version "6.2.0-nightly-chore-vizmse-xml-logging-20211019-112845-47a0549a5.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-chore-vizmse-xml-logging-20211019-112845-47a0549a5.0.tgz#4d10cf9edd558c822964cb31dda6af8a4467ea7f"
+  integrity sha512-BdyKOROYjifK3qa57ZEdZ8Z7uVhHqlVGw1A1eD09OhS7aw4lcHLJ7DWZY6xUmh8xaT6X80NxrK6TZh/NichHnQ==
   dependencies:
-    "@tv2media/v-connection" nrkno/v-connection#ae6d994
+    "@tv2media/v-connection" nrkno/v-connection#24c4e88e1c043cc58ce7fda90158f0b3e2ff5ad4
     atem-connection "^2.3.0"
     atem-state "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
     casparcg-connection "^5.1.0"
