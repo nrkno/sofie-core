@@ -292,7 +292,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (part.instance.part.budgetDuration !== undefined) {
 				budgetDuration = (budgetDuration ?? 0) + part.instance.part.budgetDuration
 			}
-    }
+		}
 
 		let displayLiveLineCounter: boolean = true
 		if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.requiredLayerIds) {
