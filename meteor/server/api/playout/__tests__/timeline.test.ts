@@ -833,7 +833,7 @@ describe('Timeline', () => {
 				})
 			}
 		)
-		
+
 		testInFiber('outTransition is disabled during hold', async () => {
 			const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
 				env,
