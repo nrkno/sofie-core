@@ -21,7 +21,7 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 		case UserAction.RESYNC_RUNDOWN_PLAYLIST:
 			return t('Re-Syncing Rundown Playlist')
 		case UserAction.RESYNC_RUNDOWN:
-			return t('Re-syncing rundown')
+			return t('Re-Syncing Rundown')
 		case UserAction.DISABLE_NEXT_PIECE:
 			return t('Disabling next Piece')
 		case UserAction.TAKE:

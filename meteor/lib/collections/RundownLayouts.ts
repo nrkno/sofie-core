@@ -314,6 +314,10 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	countdownToSegmentRequireLayers: string[]
 	/** Always show planned segment duration instead of counting up/down when the segment is live */
 	fixedSegmentDuration: boolean
+	/** Show only the listed source layers in the RundownView (sourceLayerIds) */
+	visibleSourceLayers?: string[]
+	/** Show only the listed output groups in the RundownView (outputLayerIds) */
+	visibleOutputLayers?: string[]
 }
 
 export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {

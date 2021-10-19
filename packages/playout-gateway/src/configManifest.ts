@@ -23,6 +23,11 @@ import {
 
 const PLAYOUT_SUBDEVICE_COMMON: SubDeviceConfigManifestEntry[] = [
 	{
+		id: 'debug',
+		name: 'Activate debug logging for device',
+		type: ConfigManifestEntryType.BOOLEAN,
+	},
+	{
 		id: 'disable',
 		name: 'Disable',
 		type: ConfigManifestEntryType.BOOLEAN,

@@ -92,7 +92,9 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange 
 				value={displayValue}
 				onKeyDown={onKeyDown}
 				onBlur={onBlur}
-				onChange={() => {}}
+				onChange={() => {
+					// Do nothing
+				}}
 			/>
 			<EditAttribute
 				type={'toggle'}

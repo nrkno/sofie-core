@@ -36,6 +36,7 @@ export const IBlueprintPieceSampleKeys = allKeysOfObject<IBlueprintPiece>({
 	expectedPackages: true,
 	hasSideEffects: true,
 	allowDirectPlay: true,
+	notInVision: true,
 })
 
 // Compile a list of the keys which are allowed to be set

@@ -1590,6 +1590,13 @@
     "@types/node" "*"
     "@types/responselike" "*"
 
+"@types/debug@^4.1.7":
+  version "4.1.7"
+  resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.7.tgz#7cc0ea761509124709b8b2d1090d8f6c17aadb82"
+  integrity sha512-9AonUzyTjXXhEOa0DnqpzZi6VHlqKMswga9EXjpXnnqxwLtdvPPtlO8evrI5D9S6asFRCQ6v+wpiUKbw+vKqyg==
+  dependencies:
+    "@types/ms" "*"
+
 "@types/ejson@^2.1.3":
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/@types/ejson/-/ejson-2.1.3.tgz#29a0028db4180b589b62eb2b6b9367c65b0c1864"
@@ -1664,6 +1671,11 @@
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@types/minimist/-/minimist-1.2.2.tgz#ee771e2ba4b3dc5b372935d549fd9617bf345b8c"
   integrity sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==
+
+"@types/ms@*":
+  version "0.7.31"
+  resolved "https://registry.yarnpkg.com/@types/ms/-/ms-0.7.31.tgz#31b7ca6407128a3d2bbc27fe2d21b345397f6197"
+  integrity sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==
 
 "@types/node@*":
   version "16.9.1"
@@ -2102,9 +2114,9 @@ at-least-node@^1.0.0:
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
 atem-connection@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.3.0.tgz#388cdbfb2805bd9cd4317dfef22360d00a62d647"
-  integrity sha512-/3x+/yNyyR+IbFL6KraGTnkU/3qPs/KoyGZnvfEhvIKVYu3POHCXbIUyPvjUcs9ytalvHgcxLK5slM6sCoIgoA==
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.3.1.tgz#9341ba8095b692cbd7608becf6898486274b67d6"
+  integrity sha512-lw0k0uYDt+Ljf/w4zAEdQSI0g4/FZkFKEsohcYaliotH2rtkRMXkbfHbtQ9e/f8SIdZN4VikJBBeAkHqApi0GA==
   dependencies:
     big-integer "^1.6.48"
     eventemitter3 "^4.0.4"
@@ -2114,10 +2126,10 @@ atem-connection@^2.3.0:
     tslib "^1.13.0"
     wavefile "^8.4.4"
 
-atem-state@^0.12.1:
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.1.tgz#b8db152ef3e775826e0bb66952366720a68b779e"
-  integrity sha512-MSOUfjK9Qnph8MSO1qpwC3xcn/t/hVeK31fAN/SsErqqvxBeaEXGSKg47QOx5rwVx9kP2zOGk3IeHtkdQw79SQ==
+atem-state@0.12.2-nightly-latest-20211007-163338-78e7dca.0:
+  version "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
+  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.2-nightly-latest-20211007-163338-78e7dca.0.tgz#c49f99a9ef81e3367148f18d97c93da379097b7b"
+  integrity sha512-OMVT3mU4ZJgV2oj4x68xLiYT2NlNX/+GhQMURirkKSuQwlqlT5kH4Rbtmh/ZIeKH+fOpyWdOluRI7DSMMhx9qg==
   dependencies:
     deepmerge "^4.2.2"
     tslib "^2.2.0"
@@ -4161,7 +4173,7 @@ globby@^11.0.2, globby@^11.0.3:
     merge2 "^1.3.0"
     slash "^3.0.0"
 
-got@^11.5.2, got@^11.8.2:
+got@^11.8.2:
   version "11.8.2"
   resolved "https://registry.yarnpkg.com/got/-/got-11.8.2.tgz#7abb3959ea28c31f3576f1576c1effce23f33599"
   integrity sha512-D0QywKgIe30ODs+fm8wMZiAcZjypcCodPNuMz5H9Mny7RJ+IjJ10BdmGW7OM7fHXP+O7r6ZwapQ/YQmMSvB0UQ==
@@ -8505,21 +8517,21 @@ timeline-state-resolver-types@6.2.0-nightly-release37-20210920-094335-6d1ddb522.
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver-types@6.2.0-release37.1:
-  version "6.2.0-release37.1"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-release37.1.tgz#fafe37c2547301c3ec0c528822368c7e88fd8302"
-  integrity sha512-YrSCbfz7ZPs6icpJpT61IjFxx1T3334DK0bWpCjgRAHz7C+eb28POtXTgblh/Umq77qoweowmp529ZX/0eB2AQ==
+timeline-state-resolver-types@6.2.0-release37.4:
+  version "6.2.0-release37.4"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-release37.4.tgz#593f59d4b44c5fb4032207c09c4f411cb3488b50"
+  integrity sha512-jv1i0HOvl0ZeiAmgpC8GmB89XMbJ+kroYxEqLILqEsDtHd1LzaYOHZdgM8j3KkvgcHq8rP0XQL8yMWu0p5WcAg==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-release37.2:
-  version "6.2.0-release37.2"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.2.tgz#3482e05c19b178c3668605e86c04fcb3c0afbcb0"
-  integrity sha512-2Qvyyvr2T0JK8AzJnfRygVMZw6VXUuCXAEw4G9GA4lWmjRd3b/+KU3ZevgJbfWaRmGYSOzt8OVEk2A+eox4Q1w==
+timeline-state-resolver@6.2.0-release37.5:
+  version "6.2.0-release37.5"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.5.tgz#0fb7c82cda71934b5102c97e5716d32acc1fee50"
+  integrity sha512-8UvSseb9m2K/KBnkSmMZpi9BGBu0Plq3/r7XuLSUE1/lOsvtPolPOeiiv0TcYDcF7BfzLx0YWt92KyXiU6/tuA==
   dependencies:
     "@tv2media/v-connection" "^5.1.0"
     atem-connection "^2.3.0"
-    atem-state "^0.12.1"
+    atem-state "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
     casparcg-connection "^5.1.0"
     casparcg-state "^2.1.0"
     debug "^4.3.1"
@@ -8537,9 +8549,9 @@ timeline-state-resolver@6.2.0-release37.2:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.2.0-release37.1"
+    timeline-state-resolver-types "6.2.0-release37.4"
     tslib "^2.3.1"
-    tv-automation-quantel-gateway-client "^1.0.12"
+    tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
     underscore-deep-extend "^1.1.5"
     utf-8-validate "^5.0.2"
@@ -8729,13 +8741,12 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-tv-automation-quantel-gateway-client@^1.0.12:
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/tv-automation-quantel-gateway-client/-/tv-automation-quantel-gateway-client-1.0.12.tgz#2856a2d8459a9fe21c2eb12f54ecea471db3e930"
-  integrity sha512-yab4tXDifQAZhLRl+t03zSnSlu/N3Zh9zGHs5c3b1OuRSHTEFZqHIt6jnXVsxzHfLSTo2NYV5T5f8o4GmMVhIQ==
+tv-automation-quantel-gateway-client@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/tv-automation-quantel-gateway-client/-/tv-automation-quantel-gateway-client-2.0.4.tgz#c130cca5e953a4749226ddedad672fc3de9e1d84"
+  integrity sha512-ETw+Zrusv6aMoZz1qfxsHaQ1q5SCXocN1IBOdAZ7NHW1Yw1+QCm10LXXh8OuL8iyaHx9GKbIsYOAAYYpLM9j6w==
   dependencies:
-    got "^11.5.2"
-    underscore "^1.9.1"
+    got "^11.8.2"
 
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"

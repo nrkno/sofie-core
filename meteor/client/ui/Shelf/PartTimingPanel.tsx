@@ -15,12 +15,14 @@ import { getAllowSpeaking } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IPartTimingPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPartTiming
 	playlist: RundownPlaylist
+	showStyleBase: ShowStyleBase
 }
 
 interface IPartTimingPanelTrackedProps {
@@ -74,7 +76,7 @@ export const PartTimingPanel = translateWithTracker<IPartTimingPanelProps, IStat
 	(props: IPartTimingPanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
 			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
-			const { active } = getIsFilterActive(props.playlist, props.panel)
+			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)
 
 			return { active, livePart }
 		}

@@ -389,6 +389,17 @@ function createShowEntireCurrentSegmentAction(_filterChain: IGUIContextFilterLin
 	}
 }
 
+function createRundownPlaylistSoftResetRundownAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
+	return {
+		action: PlayoutActions.resetRundownPlaylist,
+		execute: (t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, {
+				context: e,
+			})
+		},
+	}
+}
+
 /**
  * A utility method to create an ExecutableAction wrapping a simple UserAction call that takes some variables from
  * InternalActionContext as input
@@ -486,9 +497,13 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				)
 			}
 		case PlayoutActions.resetRundownPlaylist:
-			return createUserActionWithCtx(action, UserAction.RESET_RUNDOWN_PLAYLIST, async (e, ctx) =>
-				MeteorCall.userAction.resetRundownPlaylist(e, ctx.rundownPlaylistId)
-			)
+			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+				return createRundownPlaylistSoftResetRundownAction(action.filterChain as IGUIContextFilterLink[])
+			} else {
+				return createUserActionWithCtx(action, UserAction.RESET_RUNDOWN_PLAYLIST, async (e, ctx) =>
+					MeteorCall.userAction.resetRundownPlaylist(e, ctx.rundownPlaylistId)
+				)
+			}
 		case PlayoutActions.resyncRundownPlaylist:
 			return createUserActionWithCtx(action, UserAction.RESYNC_RUNDOWN_PLAYLIST, async (e, ctx) =>
 				MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId)
@@ -505,6 +520,8 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		// @ts-ignore action.action is "never", based on TypeScript rules, but if input doesn't folllow them,
 		// it can actually exist
 		action: action.action,
-		execute: () => {},
+		execute: () => {
+			// Nothing
+		},
 	}
 }

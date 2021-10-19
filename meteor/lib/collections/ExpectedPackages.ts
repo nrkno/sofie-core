@@ -11,6 +11,7 @@ import { BucketAdLibActionId } from './BucketAdlibActions'
 import { RundownBaselineAdLibActionId } from './RundownBaselineAdLibActions'
 import { SegmentId } from './Segments'
 import deepExtend from 'deep-extend'
+import { BucketId } from './Buckets'
 /*
  Expected Packages are created from Pieces in the rundown.
  A "Package" is a generic term for a "thing that can be played", such as media files, audio, graphics etc..
@@ -110,11 +111,13 @@ export interface ExpectedPackageDBFromStudioBaselineObjects extends ExpectedPack
 
 export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB
+	bucketId: BucketId
 	/** The Bucket adlib this package belongs to */
 	pieceId: BucketAdLibId
 }
 export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION
+	bucketId: BucketId
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
 }

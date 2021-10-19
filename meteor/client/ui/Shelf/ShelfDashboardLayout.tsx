@@ -128,6 +128,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 									panel={panel}
 									layout={rundownLayout}
 									playlist={props.playlist}
+									showStyleBase={props.showStyleBase}
 									visible={true}
 								/>
 							)

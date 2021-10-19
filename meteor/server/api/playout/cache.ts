@@ -220,8 +220,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			DbCacheReadCollection.createFromDatabase(Segments, { rundownId: { $in: loadRundownIds } }),
 			DbCacheReadCollection.createFromDatabase(Parts, { rundownId: { $in: loadRundownIds } }),
 			DbCacheWriteCollection.createFromDatabase(PartInstances, {
-				playlistActivationId: playlist.activationId,
 				rundownId: { $in: rundownIds },
+				playlistActivationId: playlist.activationId,
 				$or: [
 					{
 						reset: { $ne: true },
@@ -232,8 +232,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 				],
 			}),
 			DbCacheWriteCollection.createFromDatabase(PieceInstances, {
-				playlistActivationId: playlist.activationId,
 				rundownId: { $in: rundownIds },
+				playlistActivationId: playlist.activationId,
 				partInstanceId: { $in: selectedPartInstanceIds },
 			}),
 			// Future: This could be defered until we get to updateTimeline. It could be a small performance boost

@@ -101,6 +101,7 @@ export namespace ExpectedPackage {
 					| AccessorOnPackage.FileShare
 					| AccessorOnPackage.HTTP
 					| AccessorOnPackage.HTTPProxy
+					| AccessorOnPackage.Quantel
 			}
 		}[]
 	}
@@ -251,6 +252,12 @@ export namespace Accessor {
 
 		/** URL to a HTTP-transformer. Used for thumbnails, previews etc.. (http://hostname:port) */
 		transformerURL?: string
+
+		/** URL to a FileFlow Manager. Used for copying clips into CIFS file shares */
+		fileflowURL?: string
+
+		/** FileFlow Export profile name. Used for copying clips into CIFS file shares */
+		fileflowProfile?: string
 	}
 	/** Virtual PackageContainer used for piping data into core */
 	export interface CorePackageCollection extends Base {

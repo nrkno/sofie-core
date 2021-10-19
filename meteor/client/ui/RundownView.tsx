@@ -86,7 +86,11 @@ import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
-import RundownViewEventBus, { ActivateRundownPlaylistEvent, RundownViewEvents } from './RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	ActivateRundownPlaylistEvent,
+	IEventContext,
+	RundownViewEvents,
+} from './RundownView/RundownViewEventBus'
 import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
@@ -108,8 +112,6 @@ export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
 const REHEARSAL_MARGIN = 1 * 60 * 1000
 const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
-
-// type WrappedShelf = ShelfBase & { getWrappedInstance(): ShelfBase }
 
 interface ITimingWarningProps {
 	playlist: RundownPlaylist
@@ -363,6 +365,7 @@ const RundownHeader = withTranslation()(
 			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
+			RundownViewEventBus.on(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
 
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
@@ -371,6 +374,7 @@ const RundownHeader = withTranslation()(
 			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.off(RundownViewEvents.TAKE, this.eventTake)
+			RundownViewEventBus.off(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
 		}
 		eventActivate = (e: ActivateRundownPlaylistEvent) => {
 			if (e.rehearsal) {
@@ -379,11 +383,14 @@ const RundownHeader = withTranslation()(
 				this.activate(e.context)
 			}
 		}
-		eventResync = (e) => {
+		eventResync = (e: IEventContext) => {
 			this.reloadRundownPlaylist(e.context)
 		}
-		eventTake = (e) => {
-			this.take(e)
+		eventTake = (e: IEventContext) => {
+			this.take(e.context)
+		}
+		eventResetRundownPlaylist = (e: IEventContext) => {
+			this.resetRundown(e.context)
 		}
 
 		handleDisableNextPiece = (err: ClientAPI.ClientResponse<undefined>) => {
@@ -1166,7 +1173,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const params = queryStringParse(location.search)
 
-	const displayOptions = ((params['display'] as string) || 'buckets,layout,shelfLayout,inspector').split(',')
+	const DEFAULT_DISPLAY_OPTIONS = props.onlyShelf ? 'layout,shelfLayout' : 'buckets,layout,shelfLayout,inspector'
+
+	const displayOptions = ((params['display'] as string) || DEFAULT_DISPLAY_OPTIONS).split(',')
 	const bucketDisplayFilter = !(params['buckets'] as string)
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
@@ -1395,23 +1404,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					selectedShelfLayout = props.rundownLayouts.find((i) => i.type === RundownLayoutType.RUNDOWN_LAYOUT)
 				}
 
-				// if still not found, use the first one
+				// if still not found, use the first one - this is a fallback functionality reserved for Shelf layouts
+				// To be removed once Rundown View Layouts/Shelf layouts are refactored
 				if (!selectedShelfLayout) {
 					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForShelf(i))
-				}
-
-				if (!selectedViewLayout) {
-					selectedViewLayout = props.rundownLayouts.find((i) =>
-						RundownLayoutsAPI.isLayoutForRundownView(i)
-					) as RundownViewLayout
-				}
-
-				if (!selectedHeaderLayout) {
-					selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
-				}
-
-				if (!selectedMiniShelfLayout) {
-					selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
 				}
 			}
 
@@ -1428,7 +1424,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					selectedShelfLayout && RundownLayoutsAPI.isLayoutForShelf(selectedShelfLayout)
 						? selectedShelfLayout
 						: undefined,
-				rundownViewLayout: selectedViewLayout,
+				rundownViewLayout:
+					selectedViewLayout && RundownLayoutsAPI.isLayoutForRundownView(selectedViewLayout)
+						? selectedViewLayout
+						: undefined,
 				rundownHeaderLayout:
 					selectedHeaderLayout && RundownLayoutsAPI.isLayoutForRundownHeader(selectedHeaderLayout)
 						? selectedHeaderLayout
@@ -1818,6 +1817,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				{ timeout: 1000 }
 			)
 		}
+
 		onGoToLiveSegment = () => {
 			if (
 				this.props.playlist &&
@@ -2043,6 +2043,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													segmentId={segment._id}
 													playlist={this.props.playlist}
 													rundown={rundownAndSegments.rundown}
+													rundownViewLayout={this.state.rundownViewLayout}
 													timeScale={this.state.timeScale}
 													onContextMenu={this.onContextMenu}
 													onSegmentScroll={this.onSegmentScroll}
@@ -2281,11 +2282,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onTake = (e: any) => {
-			const { t } = this.props
-			if (this.state.studioMode && this.props.playlist) {
-				const playlistId = this.props.playlist._id
-				doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, playlistId))
-			}
+			RundownViewEventBus.emit(RundownViewEvents.TAKE, {
+				context: e,
+			})
 		}
 
 		getStyle() {

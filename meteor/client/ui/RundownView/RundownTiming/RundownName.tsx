@@ -8,6 +8,7 @@ import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
+import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
 
 interface IRundownNameProps {
 	rundownPlaylist: RundownPlaylist
@@ -21,6 +22,7 @@ export const RundownName = withTranslation()(
 		class RundownName extends React.Component<Translated<WithTiming<IRundownNameProps>>> {
 			render() {
 				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
+				const playlistStartTime = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				return (
 					<span
 						className={ClassNames('timing-clock countdown left', {
@@ -34,7 +36,7 @@ export const RundownName = withTranslation()(
 								rundownPlaylist.activationId &&
 								!rundownPlaylist.activationId
 							),
-							heavy: rundownPlaylist.expectedStart && getCurrentTime() > rundownPlaylist.expectedStart,
+							heavy: playlistStartTime && getCurrentTime() > playlistStartTime,
 						})}
 					>
 						{currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (

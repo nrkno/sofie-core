@@ -40,6 +40,7 @@ export interface BaseContent {
 
 	sourceDuration?: number
 	ignoreMediaObjectStatus?: boolean
+	ignoreAudioFormat?: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

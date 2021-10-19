@@ -263,9 +263,7 @@ export function withTracker<IProps, IState, TrackedProps>(
 				return true
 			}
 			render() {
-				const content = <WrappedComponent {...this.props} {...this.data} />
-				// this._renderedContent = content
-				return content
+				return <WrappedComponent {...this.props} {...this.data} />
 			}
 		}
 		HOC['displayName'] = `ReactMeteorComponentWrapper(${

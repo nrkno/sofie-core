@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { logger, transports } from '../logging'
+import { logger } from '../logging'
 
 Meteor.methods({
 	logger: (type: string, ...args: any[]) => {
@@ -8,8 +8,3 @@ Meteor.methods({
 		loggerFunction(...args)
 	},
 })
-
-// This is used when running in tests to minimize the logged output:
-export function setLoggerLevel(loggerLevel: 'debug' | 'info' | 'warning' | 'error') {
-	transports.console.level = loggerLevel
-}

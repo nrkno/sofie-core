@@ -30,12 +30,15 @@ import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface IState {
 	outputLayers: {
@@ -600,17 +603,20 @@ export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[
 }
 
 export function getUnfinishedPieceInstancesGrouped(
-	playlist: RundownPlaylist
+	playlist: RundownPlaylist,
+	showStyleBase: DBShowStyleBase
 ): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, false)
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
 		.map((piece) => piece.adLibSourceId!)
-	const unfinishedTags: string[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
+	const unfinishedTags: string[] = _.uniq(
+		unfinishedPieceInstances
+			.filter((piece) => !!piece.piece.tags)
+			.map((piece) => piece.piece.tags!)
+			.reduce((a, b) => a.concat(b), [])
+	)
 
 	return {
 		unfinishedAdLibIds,
@@ -641,7 +647,9 @@ export function isAdLibOnAir(
 ) {
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
-		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
+		(adLib.currentPieceTags &&
+			adLib.currentPieceTags.length > 0 &&
+			adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
 	) {
 		return true
 	}
@@ -655,7 +663,9 @@ export function isAdLibNext(
 ) {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
+		(adLib.nextPieceTags &&
+			adLib.nextPieceTags.length > 0 &&
+			adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
 	) {
 		return true
 	}
@@ -708,7 +718,10 @@ export const DashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
-		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+			props.playlist,
+			props.showStyleBase
+		)
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		return {
 			...fetchAndFilter(props),

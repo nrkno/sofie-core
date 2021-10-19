@@ -1,19 +1,23 @@
 import _ from 'underscore'
-import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { getCurrentTime } from '../../lib/lib'
+import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { invalidateAt } from './invalidatingTime'
+import { memoizedIsolatedAutorun } from './reactiveData/reactiveDataHelper'
 
 /**
  * If the conditions of the filter are met, activePieceInstance will include the first piece instance found that matches the filter, otherwise it will be undefined.
  */
 export function getIsFilterActive(
 	playlist: RundownPlaylist,
+	showStyleBase: DBShowStyleBase,
 	panel: RequiresActiveLayers
 ): { active: boolean; activePieceInstance: PieceInstance | undefined } {
-	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist, true)
+	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
 	let activePieceInstance: PieceInstance | undefined
 	const activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
 	const containsEveryRequiredLayer = panel.requireAllAdditionalSourcelayers
@@ -46,86 +50,66 @@ export function getIsFilterActive(
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, includeNonAdLibPieces: boolean) {
-	let prospectivePieces: PieceInstance[] = []
-	const now = getCurrentTime()
+export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: DBShowStyleBase) {
 	if (playlist.activationId && playlist.currentPartInstanceId) {
-		prospectivePieces = PieceInstances.find({
-			startedPlayback: {
-				$exists: true,
-			},
-			playlistActivationId: playlist.activationId,
-			$and: [
-				{
-					$or: [
-						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
-						},
-						{
-							stoppedPlayback: {
-								$exists: false,
-							},
-						},
-					],
-				},
-				!includeNonAdLibPieces
-					? {
-							$or: [
-								{
-									adLibSourceId: {
-										$exists: true,
-									},
-								},
-								{
-									'piece.tags': {
-										$exists: true,
-									},
-								},
-							],
-					  }
-					: {},
-				{
-					$or: [
-						{
-							userDuration: {
-								$exists: false,
-							},
-						},
-						{
-							'userDuration.end': {
-								$exists: false,
-							},
-						},
-					],
-				},
-			],
-		}).fetch()
+		return memoizedIsolatedAutorun(
+			(playlistActivationId, currentPartInstanceId, showStyleBase) => {
+				const now = getCurrentTime()
+				let prospectivePieces: PieceInstance[] = []
 
-		let nearestEnd = Number.POSITIVE_INFINITY
-		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-			const piece = pieceInstance.piece
-			const end: number | undefined =
-				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
-					? pieceInstance.userDuration.end
-					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + pieceInstance.startedPlayback!
-					: undefined
+				const partInstance = PartInstances.findOne(currentPartInstanceId)
 
-			if (end !== undefined) {
-				if (end > now) {
-					nearestEnd = nearestEnd > end ? end : nearestEnd
-					return true
-				} else {
-					return false
+				if (partInstance) {
+					prospectivePieces = PieceInstances.find({
+						partInstanceId: currentPartInstanceId,
+						playlistActivationId: playlistActivationId,
+					}).fetch()
+
+					const nowInPart = partInstance.timings?.startedPlayback
+						? now - partInstance.timings.startedPlayback
+						: 0
+					prospectivePieces = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieces, nowInPart)
+
+					let nearestEnd = Number.POSITIVE_INFINITY
+					prospectivePieces = prospectivePieces.filter((pieceInstance) => {
+						const piece = pieceInstance.piece
+
+						if (!pieceInstance.adLibSourceId && !piece.tags) {
+							// No effect on the data, so ignore
+							return false
+						}
+
+						let end: number | undefined
+						if (pieceInstance.stoppedPlayback) {
+							end = pieceInstance.stoppedPlayback
+						} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
+							end = pieceInstance.userDuration.end
+						} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
+							end = piece.enable.duration + pieceInstance.startedPlayback
+						}
+
+						if (end !== undefined) {
+							if (end > now) {
+								nearestEnd = Math.min(nearestEnd, end)
+								return true
+							} else {
+								return false
+							}
+						}
+						return true
+					})
+
+					if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
 				}
-			}
-			return true
-		})
 
-		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
+				return prospectivePieces
+			},
+			'getUnfinishedPieceInstancesReactive',
+			playlist.activationId,
+			playlist.currentPartInstanceId,
+			showStyleBase
+		)
 	}
 
-	return prospectivePieces
+	return []
 }

@@ -223,7 +223,6 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				// we should offset the first step -1, as this is the one that will be dissaperaing as the
 				// timeline is moving
 				const xPosition = this.ring(i * step - pixelOffset, maxTicks * step) - step * interStep
-				// if (i === 0) breakX = xPosition
 
 				const isLabel = i % interStep === 0
 

@@ -21,7 +21,9 @@ describe('Security', () => {
 
 			isSimulation: false,
 			connection: null,
-			setUserId: (_userId: string) => {},
+			setUserId: (_userId: string) => {
+				// Nothing
+			},
 			unblock: () => {},
 		}
 	}

@@ -709,7 +709,7 @@ export namespace ServerPlayoutAPI {
 				}
 
 				if (nextPieceInstance) {
-					logger.info((undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
+					logger.debug((undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
 					cache.PieceInstances.update(nextPieceInstance._id, {
 						$set: {
 							disabled: !undo,
@@ -761,7 +761,7 @@ export namespace ServerPlayoutAPI {
 				if (pieceInstance) {
 					const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 					if (!isPlaying) {
-						logger.info(
+						logger.debug(
 							`onPiecePlaybackStarted: Playout reports pieceInstance "${pieceInstanceId}" has started playback on timestamp ${new Date(
 								startedPlayback
 							).toISOString()}`
@@ -814,7 +814,7 @@ export namespace ServerPlayoutAPI {
 				if (pieceInstance) {
 					const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 					if (isPlaying) {
-						logger.info(
+						logger.debug(
 							`onPiecePlaybackStopped: Playout reports pieceInstance "${pieceInstanceId}" has stopped playback on timestamp ${new Date(
 								stoppedPlayback
 							).toISOString()}`
@@ -878,7 +878,7 @@ export namespace ServerPlayoutAPI {
 				const isPlaying =
 					playingPartInstance.timings?.startedPlayback && !playingPartInstance.timings?.stoppedPlayback
 				if (!isPlaying) {
-					logger.info(
+					logger.debug(
 						`Playout reports PartInstance "${partInstanceId}" has started playback on timestamp ${new Date(
 							startedPlayback
 						).toISOString()}`
@@ -1024,7 +1024,7 @@ export namespace ServerPlayoutAPI {
 
 					const isPlaying = partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
 					if (isPlaying) {
-						logger.info(
+						logger.debug(
 							`onPartPlaybackStopped: Playout reports PartInstance "${partInstanceId}" has stopped playback on timestamp ${new Date(
 								stoppedPlayback
 							).toISOString()}`
@@ -1156,7 +1156,7 @@ export namespace ServerPlayoutAPI {
 							)
 						}
 
-						logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
+						logger.debug(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
 						blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
 					}

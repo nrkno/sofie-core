@@ -87,7 +87,7 @@ export const SegmentTimingPanel = translateWithTracker<
 			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
 			const liveSegment = livePart ? props.playlist.getSegments({ _id: livePart.segmentId })[0] : undefined
 
-			const { active } = getIsFilterActive(props.playlist, props.panel)
+			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)
 
 			if (!liveSegment) return { active }
 
