@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import {
 	DashboardLayoutShowStyleDisplay,
 	RundownLayoutBase,
@@ -32,7 +31,7 @@ class ShowStylePanelInner extends MeteorReactComponent<Translated<IShowStylePane
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { t, panel } = this.props
+		const { t } = this.props
 
 		return (
 			<div

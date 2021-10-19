@@ -30,15 +30,13 @@ import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface IState {
 	outputLayers: {

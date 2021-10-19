@@ -1,5 +1,5 @@
 import _ from 'underscore'
-import { PartInstanceId, PartInstances } from '../../lib/collections/PartInstances'
+import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'

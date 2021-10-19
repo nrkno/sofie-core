@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
 	DashboardLayoutPlaylistStartTimer,
@@ -13,7 +12,6 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTranslation } from 'react-i18next'
 import { PlaylistStartTiming } from '../RundownView/RundownTiming/PlaylistStartTiming'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IPlaylistStartTimerPanelProps {
 	layout: RundownLayoutBase

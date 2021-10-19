@@ -91,7 +91,6 @@ import RundownViewEventBus, {
 	IEventContext,
 	RundownViewEvents,
 } from './RundownView/RundownViewEventBus'
-import { LoopingIcon } from '../lib/ui/icons/looping'
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'

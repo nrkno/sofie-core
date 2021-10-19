@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import {
 	DashboardLayoutColoredBox,
 	RundownLayoutBase,
@@ -28,7 +27,6 @@ class ColoredBoxPanelInner extends MeteorReactComponent<Translated<IColoredBoxPa
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { panel } = this.props
 
 		return (
 			<div

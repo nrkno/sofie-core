@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import {
 	DashboardLayoutTimeOfDay,
 	RundownLayoutBase,
