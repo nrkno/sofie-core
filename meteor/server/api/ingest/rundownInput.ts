@@ -6,7 +6,7 @@ import { getCurrentTime, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { SegmentId, Segments } from '../../../lib/collections/Segments'
+import { DBSegment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
 	LocalIngestRundown,
@@ -21,13 +21,29 @@ import {
 	canSegmentBeUpdated,
 	checkAccessAndGetPeripheralDevice,
 	getRundown,
+	extendIngestRundownCore,
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
 import { CacheForIngest } from './cache'
-import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
+import {
+	getRundownFromIngestData,
+	resolveSegmentChangesForUpdatedRundown,
+	saveChangesForRundown,
+	saveSegmentChangesToCache,
+	updateRundownFromIngestData,
+	updateSegmentFromIngestData,
+	UpdateSegmentsResult,
+} from './generation'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { rundownToSegmentRundown, StudioUserContext } from '../blueprints/context'
+import { selectShowStyleVariant } from '../rundown'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
+import _ from 'underscore'
+import { profiler } from '../profiler'
+import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 
 export namespace RundownInput {
 	export async function dataPlaylistGet(
@@ -95,6 +111,17 @@ export namespace RundownInput {
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
 		await handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, false)
+	}
+	export async function dataRundownMetaDataUpdate(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		ingestRundown: Omit<IngestRundown, 'segments'>
+	): Promise<void> {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		logger.info('dataRundownMetaDataUpdate', ingestRundown)
+		check(ingestRundown, Object)
+		await handleUpdatedRundownMetaData(undefined, peripheralDevice, ingestRundown)
 	}
 	export async function dataSegmentGet(
 		context: MethodContext,
@@ -378,6 +405,46 @@ export async function handleUpdatedRundown(
 		}
 	)
 }
+/** Handle updates to existing rundown properties */
+export async function handleUpdatedRundownMetaData(
+	studio0: Studio | undefined,
+	peripheralDevice: PeripheralDevice | undefined,
+	newIngestRundown: Omit<IngestRundown, 'segments'>
+): Promise<void> {
+	const studioId = peripheralDevice?.studioId ?? studio0?._id
+	if ((!peripheralDevice && !studio0) || !studioId) {
+		throw new Meteor.Error(500, `A PeripheralDevice or Studio is required to update a rundown`)
+	}
+
+	if (peripheralDevice && studio0 && peripheralDevice.studioId !== studio0._id) {
+		throw new Meteor.Error(
+			500,
+			`PeripheralDevice "${peripheralDevice._id}" does not belong to studio "${studio0._id}"`
+		)
+	}
+
+	const rundownExternalId = newIngestRundown.externalId
+	return runIngestOperationWithCache(
+		'handleUpdatedRundownMetaData',
+		studioId,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				return makeNewIngestRundown({
+					...newIngestRundown,
+					segments: ingestRundown.segments,
+				})
+			} else {
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
+			}
+		},
+		async (cache, ingestRundown) => {
+			if (!ingestRundown) throw new Meteor.Error(`Rundown "${rundownExternalId}" not found`)
+
+			return handleUpdatedRundownMetaDataInner(cache, ingestRundown, peripheralDevice)
+		}
+	)
+}
 export async function handleUpdatedRundownInner(
 	cache: CacheForIngest,
 	ingestRundown: LocalIngestRundown,
@@ -424,6 +491,86 @@ export async function regenerateRundown(
 			return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
 		}
 	)
+}
+
+export async function handleUpdatedRundownMetaDataInner(
+	cache: CacheForIngest,
+	ingestRundown: LocalIngestRundown,
+	peripheralDevice?: PeripheralDevice // TODO - to cache?
+): Promise<CommitIngestData | null> {
+	if (!canRundownBeUpdated(cache.Rundown.doc, false)) return null
+	const existingRundown = cache.Rundown.doc
+	if (!existingRundown) {
+		throw new Meteor.Error(404, `Rundown "${ingestRundown.externalId}" does not exist`)
+	}
+
+	const span = profiler.startSpan('ingest.rundownInput.handleUpdatedRundownMetaDataInner')
+
+	logger.info(`Updating rundown ${cache.RundownId}`)
+
+	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
+
+	const selectShowStyleContext = new StudioUserContext(
+		{
+			name: 'selectShowStyleVariant',
+			identifier: `studioId=${cache.Studio.doc._id},rundownId=${cache.RundownId},ingestRundownId=${cache.RundownExternalId}`,
+			tempSendUserNotesIntoBlackHole: true,
+		},
+		cache.Studio.doc
+	)
+	// TODO-CONTEXT save any user notes from selectShowStyleContext
+	const showStyle = await selectShowStyleVariant(selectShowStyleContext, extendedIngestRundown)
+	if (!showStyle) {
+		logger.debug('Blueprint rejected the rundown')
+		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
+	}
+
+	const pAllRundownWatchedPackages = WatchedPackagesHelper.createForIngest(cache, undefined)
+
+	const showStyleBlueprint = await loadShowStyleBlueprint(showStyle.base)
+	const allRundownWatchedPackages = await pAllRundownWatchedPackages
+
+	// Call blueprints, get rundown
+	const { dbRundownData, rundownRes } = await getRundownFromIngestData(
+		cache,
+		ingestRundown,
+		peripheralDevice,
+		showStyle,
+		showStyleBlueprint,
+		allRundownWatchedPackages
+	)
+
+	// Save rundown and baseline
+	const dbRundown = await saveChangesForRundown(cache, dbRundownData, rundownRes, showStyle)
+
+	let segmentChanges: UpdateSegmentsResult | undefined
+	let removedSegments: DBSegment[] | undefined
+	if (!_.isEqual(rundownToSegmentRundown(existingRundown), rundownToSegmentRundown(dbRundown))) {
+		logger.info(`MetaData of rundown ${dbRundown.externalId} has been modified, regenerating segments`)
+		const changes = await resolveSegmentChangesForUpdatedRundown(cache, ingestRundown, allRundownWatchedPackages)
+		segmentChanges = changes.segmentChanges
+		removedSegments = changes.removedSegments
+	}
+
+	updateBaselineExpectedPackagesOnRundown(cache, rundownRes.baseline)
+
+	if (segmentChanges) {
+		saveSegmentChangesToCache(cache, segmentChanges, true)
+	}
+
+	logger.info(`Rundown ${dbRundown._id} update complete`)
+
+	span?.end()
+	return literal<CommitIngestData>({
+		changedSegmentIds: segmentChanges?.segments.map((s) => s._id) ?? [],
+		removedSegmentIds: removedSegments?.map((s) => s._id) ?? [],
+		renamedSegments: new Map(),
+
+		removeRundown: false,
+
+		showStyle: showStyle.compound,
+		blueprint: showStyleBlueprint,
+	})
 }
 
 export async function handleRemovedSegment(

@@ -14,7 +14,7 @@ export function setLogLevel(level: LogLevel) {
 		if (transports.file) {
 			transports.file.level = level
 		}
-		console.log(`Setting logger level to "${level}"`)
+		if (!Meteor.isTest) console.log(`Setting logger level to "${level}"`)
 	}
 }
 

@@ -292,9 +292,12 @@ export class TSRHandler {
 			debug('triggerUpdateDevices from deviceObserver added')
 			this._triggerUpdateDevices()
 		}
-		deviceObserver.changed = () => {
-			debug('triggerUpdateDevices from deviceObserver changed')
-			this._triggerUpdateDevices()
+		deviceObserver.changed = (_id, _oldFields, _clearedFields, newFields) => {
+			// Only react to changes in the .settings property:
+			if (newFields['settings'] !== undefined) {
+				debug('triggerUpdateDevices from deviceObserver changed')
+				this._triggerUpdateDevices()
+			}
 		}
 		deviceObserver.removed = () => {
 			debug('triggerUpdateDevices from deviceObserver removed')

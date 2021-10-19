@@ -7,12 +7,12 @@ import {
 	IBlueprintPieceGeneric,
 	ExpectedPackageStatusAPI,
 	PackageInfo,
+	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
-import { NoteType } from './api/notes'
 import { PackageInfos } from './collections/PackageInfos'
 import { protectString, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
@@ -371,7 +371,7 @@ export function checkPieceContentStatus(
 								t: i18next.TFunction
 							) => {
 								if (anomalies.length === 1) {
-									const frames = Math.round((anomalies[0].duration * 1000) / timebase)
+									const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
 									if (anomalies[0].start === 0) {
 										messages.push(
 											t('Clip starts with {{frames}} {{type}} frame', {
@@ -400,7 +400,7 @@ export function checkPieceContentStatus(
 									}
 								} else if (anomalies.length > 0) {
 									const dur = anomalies.map((b) => b.duration).reduce((a, b) => a + b, 0)
-									const frames = Math.round((dur * 1000) / timebase)
+									const frames = Math.ceil((dur * 1000) / timebase)
 									messages.push(
 										t('{{frames}} {{type}} frame detected in clip', {
 											frames,
@@ -411,10 +411,10 @@ export function checkPieceContentStatus(
 								}
 							}
 							if (deepScan?.blacks) {
-								addFrameWarning(deepScan.blacks, 'black', t)
+								addFrameWarning(deepScan.blacks, t('black'), t)
 							}
 							if (deepScan?.freezes) {
-								addFrameWarning(deepScan.freezes, 'freeze', t)
+								addFrameWarning(deepScan.freezes, t('freeze'), t)
 							}
 						}
 					}
@@ -443,6 +443,7 @@ export function checkPieceContentStatus(
 						messages.push(t('{{sourceLayer}} is missing a file path', { sourceLayer: sourceLayer.name }))
 					} else {
 						const mediaObject = MediaObjects.findOne({
+							studioId: studio._id,
 							mediaId: fileName,
 						})
 						// If media object not found, then...
@@ -603,6 +604,7 @@ export function checkPieceContentStatus(
 				case SourceLayerType.GRAPHICS:
 					if (fileName) {
 						const mediaObject = MediaObjects.findOne({
+							studioId: studio._id,
 							mediaId: fileName,
 						})
 						if (!mediaObject) {
@@ -630,12 +632,12 @@ export function checkPieceContentStatus(
 	}
 }
 
-export function getNoteTypeForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoteType | null {
+export function getNoteSeverityForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoteSeverity | null {
 	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
 		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-			? NoteType.ERROR
+			? NoteSeverity.ERROR
 			: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
 			  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
-			  NoteType.WARNING
+			  NoteSeverity.WARNING
 		: null
 }

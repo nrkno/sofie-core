@@ -20,6 +20,7 @@ import {
 	getUIZoom,
 	setShowHiddenSourceLayers,
 	setIgnorePieceContentStatus,
+	setShelfFollowsOnAir,
 } from '../lib/localStorage'
 import Status from './Status'
 import { Settings as SettingsView } from './Settings'
@@ -88,6 +89,7 @@ export const App = translateWithTracker(() => {
 				if (params['develop']) setAllowDeveloper(params['develop'] === '1')
 				if (params['testing']) setAllowTesting(params['testing'] === '1')
 				if (params['service']) setAllowService(params['service'] === '1')
+				if (params['shelffollowsonair']) setShelfFollowsOnAir(params['shelffollowsonair'] === '1')
 
 				if (params['admin']) {
 					const val = params['admin'] === '1'

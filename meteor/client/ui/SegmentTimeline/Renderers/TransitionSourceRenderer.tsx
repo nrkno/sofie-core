@@ -26,7 +26,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 	}
 
 	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = getElementWidth(this.leftLabel)
+		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, 0)
 	}

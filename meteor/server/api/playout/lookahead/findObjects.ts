@@ -4,7 +4,6 @@ import { Part } from '../../../../lib/collections/Parts'
 import { literal, protectString, unprotectString } from '../../../../lib/lib'
 import { PieceInstance } from '../../../../lib/collections/PieceInstances'
 import { PartInstanceId } from '../../../../lib/collections/PartInstances'
-import { profiler } from '../../profiler'
 import { PartAndPieces, PieceInstanceWithObjectMap } from './util'
 
 function getBestPieceInstanceId(piece: PieceInstance): string {
@@ -69,7 +68,6 @@ export function findLookaheadObjectsForPart(
 	if (!partInfo || partInfo.pieces.length === 0) {
 		return []
 	}
-	const span = profiler.startSpan('findObjectsForPart')
 
 	const allObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	for (const rawPiece of partInfo.pieces) {
@@ -88,7 +86,6 @@ export function findLookaheadObjectsForPart(
 	}
 
 	if (allObjs.length === 0) {
-		if (span) span.end()
 		// Should never happen. suggests something got 'corrupt' during this process
 		return []
 	}
@@ -108,7 +105,6 @@ export function findLookaheadObjectsForPart(
 		const obj = allObjs[0]
 		const patchedContent = tryActivateKeyframesForObject(obj, !!transitionPiece, classesFromPreviousPart)
 
-		if (span) span.end()
 		return [
 			{
 				...obj,
@@ -147,7 +143,6 @@ export function findLookaheadObjectsForPart(
 			}
 		})
 
-		if (span) span.end()
 		return res
 	}
 }
