@@ -204,18 +204,25 @@ export function reportPartInstanceHasStarted(
 				},
 			})
 		}
+		// Update the playlist:
+		cache.Playlist.update((playlist) => {
+			if (!playlist.rundownsStartedPlayback) {
+				playlist.rundownsStartedPlayback = {}
+			}
 
-		// Track on the playlist
-		cache.Playlist.update((pl) => {
-			if (!pl.rundownsStartedPlayback) pl.rundownsStartedPlayback = {}
+			// If the partInstance is "untimed", it will not update the playlist's startedPlayback and will not count time in the GUI:
+			if (!partInstance.part.untimed) {
+				const rundownId = unprotectString(partInstance.rundownId)
+				if (!playlist.rundownsStartedPlayback[rundownId]) {
+					playlist.rundownsStartedPlayback[rundownId] = timestamp
+				}
 
-			const rundownId = unprotectString(partInstance.rundownId)
-			if (!pl.rundownsStartedPlayback[rundownId] && !partInstance.part.untimed)
-				pl.rundownsStartedPlayback[rundownId] = timestamp
+				if (!playlist.startedPlayback) {
+					playlist.startedPlayback = timestamp
+				}
+			}
 
-			if (!pl.startedPlayback && !partInstance.part.untimed) pl.startedPlayback = timestamp
-
-			return pl
+			return playlist
 		})
 
 		cache.deferAfterSave(() => {
