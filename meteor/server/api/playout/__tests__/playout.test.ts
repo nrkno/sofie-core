@@ -257,9 +257,6 @@ describe('Playout API', () => {
 			expect(rundownId1).toBeTruthy()
 			expect(playlistId1).toBeTruthy()
 
-			const getRundown0 = () => {
-				return Rundowns.findOne(rundownId0) as Rundown
-			}
 			const getPlaylist0 = () => {
 				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 				playlist.activationId = playlist.activationId ?? undefined
@@ -421,16 +418,20 @@ describe('Playout API', () => {
 			).toHaveLength(3)
 
 			// take the second part
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// Setting as next a part that is previous
 
 			// set and take first Part again
-			ServerPlayoutAPI.setNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1, getRundown1().getParts()[0]._id)
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
+			await ServerPlayoutAPI.setNextPart(
+				DEFAULT_ACCESS(getPlaylist1()),
+				playlistId1,
+				getRundown1().getParts()[0]._id
+			)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// take the second part to check if we reset all previous partInstances correctly
-			ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
 			// should contain one non-reset taken partInstance
 			expect(
