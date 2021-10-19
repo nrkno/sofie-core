@@ -195,20 +195,26 @@ export function reportPartInstanceHasStarted(
 	timestamp: Time
 ): void {
 	if (partInstance) {
-		cache.PartInstances.update(partInstance._id, {
-			$set: {
-				isTaken: true,
-				'timings.startedPlayback': timestamp,
-			},
-		})
+		// If timings.startedPlayback has already been set, we shouldn't set it to another value:
+		if (!partInstance.timings?.startedPlayback) {
+			cache.PartInstances.update(partInstance._id, {
+				$set: {
+					isTaken: true,
+					'timings.startedPlayback': timestamp,
+				},
+			})
+		}
 
 		// Track on the playlist
 		cache.Playlist.update((pl) => {
 			if (!pl.rundownsStartedPlayback) pl.rundownsStartedPlayback = {}
+
 			const rundownId = unprotectString(partInstance.rundownId)
 			if (!pl.rundownsStartedPlayback[rundownId] && !partInstance.part.untimed)
 				pl.rundownsStartedPlayback[rundownId] = timestamp
+
 			if (!pl.startedPlayback && !partInstance.part.untimed) pl.startedPlayback = timestamp
+
 			return pl
 		})
 
