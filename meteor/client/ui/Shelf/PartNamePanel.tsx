@@ -41,6 +41,7 @@ class PartNamePanelInner extends MeteorReactComponent<
 	}
 
 	render() {
+		const { t } = this.props
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
 		const sourceLayerType = this.props.instanceToShow?.sourceLayer?.type
