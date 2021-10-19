@@ -266,6 +266,11 @@ export const Collections: { [name: string]: AsyncTransformedCollection<any, any>
 export function registerCollection(name: string, collection: AsyncTransformedCollection<any, any>) {
 	Collections[name] = collection
 }
+export function getCollectionKey(collection: AsyncTransformedCollection<any, any>): string {
+	const o = Object.entries(Collections).find(([_key, col]) => col === collection)
+	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
+	return o[0] // collectionName
+}
 // export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
 // 	function getCollectionIndexes(collection: TransformedCollection<any, any>, cb) {
 // 		let raw = collection.rawCollection()

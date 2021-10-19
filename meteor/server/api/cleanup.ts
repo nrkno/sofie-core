@@ -1,4 +1,4 @@
-import { ProtectedString, getCurrentTime, waitForPromise } from '../../lib/lib'
+import { ProtectedString, getCurrentTime, waitForPromise, getCollectionKey } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { TransformedCollection, MongoQuery } from '../../lib/typings/meteor'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
@@ -42,6 +42,8 @@ import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPacka
 import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfos } from '../../lib/collections/PackageInfos'
 import { Settings } from '../../lib/Settings'
+import { TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { AsyncTransformedCollection } from '../../lib/collections/lib'
 
 export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
 	if (actuallyCleanup) {
@@ -82,10 +84,12 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	const playlistIds = getAllIdsInCollection(RundownPlaylists)
 
 	const removeByQuery = <Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-		collectionName: string,
-		collection: TransformedCollection<Class, DBInterface>,
+		// collectionName: string,
+		collection: AsyncTransformedCollection<Class, DBInterface>,
 		query: MongoQuery<DBInterface>
 	): void => {
+		const collectionName = getCollectionKey(collection)
+
 		const count = collection.find(query).count()
 		if (actuallyCleanup) {
 			collection.remove(query)
@@ -97,10 +101,9 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; rundownId: RundownId }
 	>(
-		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
 	): void => {
-		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
 			rundownId: { $nin: rundownIds },
 		})
 	}
@@ -108,10 +111,9 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; playlistId: RundownPlaylistId }
 	>(
-		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
 	): void => {
-		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
 			playlistId: { $nin: playlistIds },
 		})
 	}
@@ -119,10 +121,9 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; studioId: StudioId }
 	>(
-		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
 	): void => {
-		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
 			studioId: { $nin: studioIds },
 		})
 	}
@@ -130,10 +131,9 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; rundownId?: RundownId; studioId: StudioId }
 	>(
-		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
 	): void => {
-		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
 			$or: [
 				{
 					rundownId: { $exists: true, $nin: rundownIds },
@@ -149,10 +149,9 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; organizationId: OrganizationId | null | undefined }
 	>(
-		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
 	): void => {
-		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
 			$and: [
 				{
 					organizationId: { $nin: [organizationIds] },
@@ -170,10 +169,9 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; deviceId: PeripheralDeviceId }
 	>(
-		collectionName: string,
 		collection: TransformedCollection<Class, DBInterface>
 	): void => {
-		removeByQuery(collectionName, collection as TransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
 			deviceId: { $nin: deviceIds },
 		})
 	}
@@ -185,31 +183,31 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 	// AdLibActions
 	{
-		ownedByRundownId('AdLibActions', AdLibActions)
+		ownedByRundownId(AdLibActions)
 	}
 	// AdLibPieces
 	{
-		ownedByRundownId('AdLibPieces', AdLibPieces)
+		ownedByRundownId(AdLibPieces)
 	}
 	// Blueprints
 	{
-		ownedByOrganizationId('Blueprints', Blueprints)
+		ownedByOrganizationId(Blueprints)
 	}
 	// BucketAdLibs
 	{
-		ownedByStudioId('BucketAdLibs', BucketAdLibs)
+		ownedByStudioId(BucketAdLibs)
 	}
 	// BucketAdLibActions
 	{
-		ownedByStudioId('BucketAdLibActions', BucketAdLibActions)
+		ownedByStudioId(BucketAdLibActions)
 	}
 	// Buckets
 	{
-		ownedByStudioId('Buckets', Buckets)
+		ownedByStudioId(Buckets)
 	}
 	// Evaluations
 	{
-		removeByQuery('Evaluations', Evaluations, {
+		removeByQuery(Evaluations, {
 			timestamp: { $lt: getCurrentTime() - Settings.maximumDataAge },
 		})
 	}
@@ -253,39 +251,39 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 	// ExpectedPackages
 	{
-		ownedByStudioId('ExpectedPackages', ExpectedPackages)
+		ownedByStudioId(ExpectedPackages)
 	}
 	// ExpectedPackageWorkStatuses
 	{
-		ownedByStudioId('ExpectedPackageWorkStatuses', ExpectedPackageWorkStatuses)
-		ownedByDeviceId('ExpectedPackageWorkStatuses', ExpectedPackageWorkStatuses)
+		ownedByStudioId(ExpectedPackageWorkStatuses)
+		ownedByDeviceId(ExpectedPackageWorkStatuses)
 	}
 	// ExpectedPlayoutItems
 	{
-		ownedByRundownIdOrStudioId('ExpectedPlayoutItems', ExpectedPlayoutItems)
+		ownedByRundownIdOrStudioId(ExpectedPlayoutItems)
 	}
 	// ExternalMessageQueue
 	{
-		removeByQuery('ExternalMessageQueue', ExternalMessageQueue, {
+		removeByQuery(ExternalMessageQueue, {
 			created: { $lt: getCurrentTime() - Settings.maximumDataAge },
 		})
 	}
 	// IngestDataCache
 	{
-		ownedByRundownId('IngestDataCache', IngestDataCache)
+		ownedByRundownId(IngestDataCache)
 	}
 	// MediaObjects
 	{
 		// TODO: Shouldn't this be owned by a device?
-		ownedByStudioId('MediaObjects', MediaObjects)
+		ownedByStudioId(MediaObjects)
 	}
 	// MediaWorkFlows
 	{
-		ownedByDeviceId('MediaWorkFlows', MediaWorkFlows)
+		ownedByDeviceId(MediaWorkFlows)
 	}
 	// MediaWorkFlowSteps
 	{
-		removeByQuery('MediaWorkFlowSteps', MediaWorkFlowSteps, {
+		removeByQuery(MediaWorkFlowSteps, {
 			workFlowId: { $nin: getAllIdsInCollection(MediaWorkFlows) },
 		})
 	}
@@ -295,107 +293,107 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 	// PackageContainerPackageStatuses
 	{
-		ownedByStudioId('PackageContainerPackageStatuses', PackageContainerPackageStatuses)
-		ownedByDeviceId('PackageContainerPackageStatuses', PackageContainerPackageStatuses)
+		ownedByStudioId(PackageContainerPackageStatuses)
+		ownedByDeviceId(PackageContainerPackageStatuses)
 	}
 	// PackageInfos
 	{
-		ownedByStudioId('PackageInfos', PackageInfos)
-		ownedByDeviceId('PackageInfos', PackageInfos)
+		ownedByStudioId(PackageInfos)
+		ownedByDeviceId(PackageInfos)
 	}
 	// Parts
 	{
-		ownedByRundownId('Parts', Parts)
+		ownedByRundownId(Parts)
 	}
 	// PartInstances
 	{
-		ownedByRundownId('PartInstances', PartInstances)
+		ownedByRundownId(PartInstances)
 	}
 	// PeripheralDeviceCommands
 	{
-		ownedByDeviceId('PeripheralDeviceCommands', PeripheralDeviceCommands)
+		ownedByDeviceId(PeripheralDeviceCommands)
 	}
 	// PeripheralDevices
 	{
-		ownedByOrganizationId('PeripheralDevices', PeripheralDevices)
+		ownedByOrganizationId(PeripheralDevices)
 	}
 	// Pieces
 	{
-		removeByQuery('Pieces', Pieces, {
+		removeByQuery(Pieces, {
 			startRundownId: { $nin: rundownIds },
 		})
 	}
 	// PieceInstances
 	{
-		removeByQuery('PieceInstances', PieceInstances, {
+		removeByQuery(PieceInstances, {
 			rundownId: { $nin: rundownIds },
 		})
 	}
 	// RundownBaselineAdLibActions
 	{
-		ownedByRundownId('RundownBaselineAdLibActions', RundownBaselineAdLibActions)
+		ownedByRundownId(RundownBaselineAdLibActions)
 	}
 	// RundownBaselineAdLibPieces
 	{
-		ownedByRundownId('RundownBaselineAdLibPieces', RundownBaselineAdLibPieces)
+		ownedByRundownId(RundownBaselineAdLibPieces)
 	}
 	// RundownBaselineObjs
 	{
-		ownedByRundownId('RundownBaselineObjs', RundownBaselineObjs)
+		ownedByRundownId(RundownBaselineObjs)
 	}
 	// RundownLayouts
 	{
-		removeByQuery('RundownLayouts', RundownLayouts, {
+		removeByQuery(RundownLayouts, {
 			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
 		})
 	}
 	// RundownPlaylists
 	{
-		ownedByStudioId('RundownPlaylists', RundownPlaylists)
+		ownedByStudioId(RundownPlaylists)
 	}
 	// Rundowns
 	{
-		ownedByRundownPlaylistId('Rundowns', Rundowns)
+		ownedByRundownPlaylistId(Rundowns)
 	}
 	// Segments
 	{
-		ownedByRundownId('Segments', Segments)
+		ownedByRundownId(Segments)
 	}
 	// ShowStyleBases
 	{
-		ownedByOrganizationId('ShowStyleBases', ShowStyleBases)
+		ownedByOrganizationId(ShowStyleBases)
 	}
 	// ShowStyleVariants
 	{
-		removeByQuery('ShowStyleVariants', ShowStyleVariants, {
+		removeByQuery(ShowStyleVariants, {
 			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
 		})
 	}
 	// Snapshots
 	{
-		removeByQuery('Snapshots', Snapshots, {
+		removeByQuery(Snapshots, {
 			created: { $lt: getCurrentTime() - Settings.maximumDataAge },
 		})
 	}
 	// Studios
 	{
-		ownedByOrganizationId('Studios', Studios)
+		ownedByOrganizationId(Studios)
 	}
 	// Timeline
 	{
-		removeByQuery('Timeline', Timeline, {
+		removeByQuery(Timeline, {
 			_id: { $nin: studioIds },
 		})
 	}
 	// TriggeredActions
 	{
-		removeByQuery('TriggeredActions', TriggeredActions, {
+		removeByQuery(TriggeredActions, {
 			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
 		})
 	}
 	// UserActionsLog
 	{
-		removeByQuery('UserActionsLog', UserActionsLog, {
+		removeByQuery(UserActionsLog, {
 			timestamp: { $lt: getCurrentTime() - Settings.maximumDataAge },
 		})
 	}
