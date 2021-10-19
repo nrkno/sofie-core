@@ -43,6 +43,9 @@ export function MicFloatingInspector(props: IProps) {
 					) : (
 						<span className="mini-inspector__system">{t('Script is empty')}</span>
 					)}
+					{props.content?.comment ? (
+						<span className="mini-inspector__full-text text-comment text-end">{props.content.comment}</span>
+					) : null}
 				</div>
 				{props.content && props.content.lastModified ? (
 					<div className="mini-inspector__footer">

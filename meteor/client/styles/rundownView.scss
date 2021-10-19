@@ -2992,6 +2992,11 @@ svg.icon {
 			display: block;
 		}
 	}
+	.mini-inspector__full-text + .mini-inspector__full-text:not(.text-broken),
+	.mini-inspector__system + .mini-inspector__full-text:not(.text-broken) {
+		margin-top: 1em;
+		display: block;
+	}
 	.mini-inspector__in-point {
 		margin-right: 1em;
 		letter-spacing: 0.3px;
