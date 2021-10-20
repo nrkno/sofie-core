@@ -11,9 +11,9 @@ import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
 import { Mongo } from 'meteor/mongo'
-import { TimelineComplete } from '../../../lib/collections/Timeline'
+import { RoutedTimeline } from '../../../lib/collections/Timeline'
 
-const StudioTimeline = new Mongo.Collection<TimelineComplete>('studioTimeline')
+const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
 
 interface ITimelineViewProps {
 	match?: {

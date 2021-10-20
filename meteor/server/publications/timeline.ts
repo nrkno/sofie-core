@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { Timeline, getRoutedTimeline, TimelineComplete } from '../../lib/collections/Timeline'
+import { Timeline, getRoutedTimeline, TimelineComplete, RoutedTimeline } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/typings/meteor'
@@ -9,6 +9,7 @@ import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/Per
 import { Studios, getActiveRoutes, StudioId } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
+import { literal } from '../../lib/lib'
 
 meteorPublish(PubSub.timeline, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -21,7 +22,7 @@ meteorPublish(PubSub.timeline, function (selector, token) {
 	return null
 })
 
-meteorCustomPublishArray(
+meteorCustomPublishArray<RoutedTimeline>(
 	PubSub.timelineForDevice,
 	'studioTimeline',
 	function (pub, deviceId: PeripheralDeviceId, token) {
@@ -40,14 +41,22 @@ meteorCustomPublishArray(
 	}
 )
 
-meteorCustomPublishArray(PubSub.timelineForStudio, 'studioTimeline', function (pub, studioId: StudioId, token) {
-	if (StudioReadAccess.studio({ _id: studioId }, { userId: this.userId, token })) {
-		createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
+meteorCustomPublishArray<RoutedTimeline>(
+	PubSub.timelineForStudio,
+	'studioTimeline',
+	function (pub, studioId: StudioId, token) {
+		if (StudioReadAccess.studio({ _id: studioId }, { userId: this.userId, token })) {
+			createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
+		}
 	}
-})
+)
 
 /** Create an observer for each publication, to simplify the stop conditions */
-function createObserverForTimelinePublication(pub: CustomPublishArray, observerId: PubSub, studioId: StudioId) {
+function createObserverForTimelinePublication(
+	pub: CustomPublishArray<RoutedTimeline>,
+	observerId: PubSub,
+	studioId: StudioId
+) {
 	const observer = setUpOptimizedObserver(
 		`pub_${observerId}_${studioId}`,
 		(triggerUpdate) => {
@@ -95,12 +104,13 @@ function createObserverForTimelinePublication(pub: CustomPublishArray, observerI
 				const routedTimeline = getRoutedTimeline(newData.timeline.timeline, routes)
 
 				return [
-					{
+					literal<RoutedTimeline>({
 						_id: newData.timeline._id,
 						mappingsHash: studio.mappingsHash,
 						timelineHash: newData.timeline.timelineHash,
 						timeline: routedTimeline,
-					},
+						generated: newData.timeline.generated,
+					}),
 				]
 			}
 		},
