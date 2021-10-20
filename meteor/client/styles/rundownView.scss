@@ -3046,20 +3046,6 @@ svg.icon {
 			}
 		}
 
-		> .segment-timeline__mini-inspector__warnings {
-			display: block;
-			position: absolute;
-			left: 0;
-			bottom: 0;
-			max-width: 100%;
-			font-weight: 400;
-			text-shadow: 0 0 1px rgba(0, 0, 0, 1);
-			font-size: 0.75em;
-			padding: 0.2em 0.3em;
-			background: rgba(0, 0, 0, 0.25);
-			border-top-right-radius: 3px;
-		}
-
 		> .video-preview {
 			position: relative;
 			overflow: hidden;

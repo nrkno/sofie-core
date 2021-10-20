@@ -399,68 +399,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	getInspectorWarnings = (time: number): JSX.Element | undefined => {
-		let show = false
-		let msgBlacks = ''
-		let msgFreezes = ''
-		let timebase: number
-		if (this.props.piece.contentPackageInfos) {
-			timebase = this.props.piece.contentPackageInfos[0]?.timebase || 25
-		} else {
-			// Fallback to media objects:
-			const metadata = this.props.piece.contentMetaData as MediaObject
-			timebase = metadata?.mediainfo?.timebase || 20
-		}
-
-		if (this.state.blacks?.length) {
-			let tot = 0
-			for (const b of this.state.blacks) {
-				tot += b.duration
-				let s = b.start
-				let e = b.end
-				if (b.duration < 5000) {
-					s = b.start + b.duration * 0.5 - 2500
-					e = b.end - b.duration * 0.5 + 2500
-				}
-				if (s < time && e > time) {
-					show = true
-				}
-			}
-			// @todo: hardcoded 25fps
-			if (tot > 0) msgBlacks = `${Math.ceil(tot / timebase)} black frame${tot > timebase ? 's' : ''} in clip`
-		}
-		if (this.state.freezes?.length) {
-			let tot = 0
-			for (const b of this.state.freezes) {
-				tot += b.duration
-				let s = b.start
-				let e = b.end
-				if (b.duration < 5000) {
-					s = b.start + b.duration * 0.5 - 2500
-					e = b.end - b.duration * 0.5 + 2500
-				}
-				if (s < time && e > time) {
-					show = true
-				}
-			}
-			// @todo: hardcoded 25fps
-			if (tot > 0) msgFreezes += `${Math.ceil(tot / timebase)} freeze\n frame${tot > timebase ? 's' : ''} in clip`
-		}
-		if (show) {
-			return (
-				<React.Fragment>
-					<div className="segment-timeline__mini-inspector__warnings">
-						{msgBlacks}
-						{msgFreezes && <br />}
-						{msgFreezes}
-					</div>
-				</React.Fragment>
-			)
-		} else {
-			return undefined
-		}
-	}
-
 	renderLeftLabel() {
 		const { noticeLevel, begin, end } = this.state
 
