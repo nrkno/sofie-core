@@ -58,6 +58,7 @@ interface ISourceLayerItemState {
 	showMiniInspector: boolean
 	elementPosition: OffsetPosition
 	cursorPosition: OffsetPosition
+	cursorRawPosition: { clientX: number; clientY: number }
 	scrollLeftOffset: number
 	cursorTimePosition: number
 	elementWidth: number
@@ -82,6 +83,10 @@ export const SourceLayerItem = withTranslation()(
 				cursorPosition: {
 					top: 0,
 					left: 0,
+				},
+				cursorRawPosition: {
+					clientX: 0,
+					clientY: 0,
 				},
 				scrollLeftOffset: 0,
 				cursorTimePosition: 0,
@@ -496,10 +501,23 @@ export const SourceLayerItem = withTranslation()(
 		componentDidUpdate(prevProps: ISourceLayerItemProps, _prevState: ISourceLayerItemState) {
 			if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 				const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
-				const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)
-				if (this.state.scrollLeftOffset !== scrollLeftOffset && this.state.cursorTimePosition !== cursorTimePosition) {
+				if (this.state.scrollLeftOffset !== scrollLeftOffset) {
 					this.setState({
 						scrollLeftOffset,
+					})
+				}
+
+				const elementPos = getElementDocumentOffset(this.state.itemElement) || {
+					top: 0,
+					left: 0,
+				}
+				const cursorPosition = {
+					left: this.state.cursorRawPosition.clientX - elementPos.left,
+					top: this.state.cursorRawPosition.clientY - elementPos.top,
+				}
+				const cursorTimePosition = Math.max(cursorPosition.left, 0) / this.props.timeScale
+				if (this.state.cursorTimePosition !== cursorTimePosition) {
+					this.setState({
 						cursorTimePosition,
 					})
 				}
@@ -563,6 +581,10 @@ export const SourceLayerItem = withTranslation()(
 				elementPosition: elementPos,
 				cursorPosition,
 				cursorTimePosition,
+				cursorRawPosition: {
+					clientX: e.clientX,
+					clientY: e.clientY,
+				},
 			})
 		}
 
@@ -576,6 +598,10 @@ export const SourceLayerItem = withTranslation()(
 			this.setState({
 				cursorPosition: _.extend(this.state.cursorPosition, cursorPosition),
 				cursorTimePosition,
+				cursorRawPosition: {
+					clientX: e.clientX,
+					clientY: e.clientY,
+				},
 			})
 		}
 
