@@ -117,7 +117,7 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 				<div>
 					<div>
 						<div>
-							<table className="testtools-mappingstable">
+							<table className="testtools-timelinetable">
 								<tbody>
 									<tr>
 										<th>Mapping</th>
