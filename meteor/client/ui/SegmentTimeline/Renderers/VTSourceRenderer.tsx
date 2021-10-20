@@ -287,33 +287,17 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 	getScenes = (): Array<number> | undefined => {
 		if (this.props.piece) {
-			const itemDuration = this.getItemDuration() // todo: rename to pieceDuration
-
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
 				// TODO: support multiple packages:
 				if (piece.contentPackageInfos[0]?.deepScan?.scenes) {
-					return _.compact(
-						piece.contentPackageInfos[0].deepScan.scenes.map((i) => {
-							if (i < itemDuration) {
-								return i * 1000
-							}
-							return undefined
-						})
-					) // convert into milliseconds
+					return _.compact(piece.contentPackageInfos[0].deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
 				}
 			} else {
 				// Fallback to media objects:
 				const metadata = piece.contentMetaData as MediaObject
 				if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
-					return _.compact(
-						metadata.mediainfo.scenes.map((i) => {
-							if (i < itemDuration) {
-								return i * 1000
-							}
-							return undefined
-						})
-					) // convert into milliseconds
+					return _.compact(metadata.mediainfo.scenes.map((i) => i * 1000)) // convert into milliseconds
 				}
 			}
 		}
@@ -325,18 +309,15 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				return
 			}
 
-			const itemDuration = this.getItemDuration()
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
 				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
 				// TODO: support multiple packages:
 				if (piece.contentPackageInfos[0]?.deepScan?.freezes?.length) {
-					items = piece.contentPackageInfos[0].deepScan.freezes
-						.filter((i) => i.start * 1000 < itemDuration)
-						.map((i): PackageInfo.Anomaly => {
-							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-						})
+					items = piece.contentPackageInfos[0].deepScan.freezes.map((i): PackageInfo.Anomaly => {
+						return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+					})
 				}
 				return items
 			} else {
@@ -345,11 +326,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
 				if (metadata && metadata.mediainfo && metadata.mediainfo.freezes?.length) {
-					items = metadata.mediainfo.freezes
-						.filter((i) => i.start * 1000 < itemDuration)
-						.map((i): PackageInfo.Anomaly => {
-							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-						})
+					items = metadata.mediainfo.freezes.map((i): PackageInfo.Anomaly => {
+						return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+					})
 				}
 				return items
 			}
@@ -362,7 +341,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				return
 			}
 
-			const itemDuration = this.getItemDuration()
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
 				let items: Array<PackageInfo.Anomaly> = []
@@ -371,11 +349,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				if (piece.contentPackageInfos[0]?.deepScan?.blacks) {
 					items = [
 						...items,
-						...piece.contentPackageInfos[0].deepScan.blacks
-							.filter((i) => i.start < itemDuration)
-							.map((i): PackageInfo.Anomaly => {
-								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-							}),
+						...piece.contentPackageInfos[0].deepScan.blacks.map((i): PackageInfo.Anomaly => {
+							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+						}),
 					]
 				}
 				return items
@@ -387,11 +363,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				if (metadata && metadata.mediainfo && metadata.mediainfo.blacks) {
 					items = [
 						...items,
-						...metadata.mediainfo.blacks
-							.filter((i) => i.start < itemDuration)
-							.map((i): PackageInfo.Anomaly => {
-								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-							}),
+						...metadata.mediainfo.blacks.map((i): PackageInfo.Anomaly => {
+							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+						}),
 					]
 				}
 				return items
