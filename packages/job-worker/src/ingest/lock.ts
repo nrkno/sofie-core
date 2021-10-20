@@ -13,6 +13,7 @@ import { getRundownId } from './lib'
 import { JobContext } from '../jobs'
 import { IngestPropsBase } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface CommitIngestData {
 	/** Segment Ids which had any changes */
@@ -30,9 +31,9 @@ export interface CommitIngestData {
 	removeRundown: boolean
 
 	/** ShowStyle, if loaded to reuse */
-	showStyle: ShowStyleCompound | undefined
+	showStyle: ReadonlyDeep<ShowStyleCompound> | undefined
 	/** Blueprint, if loaded to reuse */
-	blueprint: WrappedShowStyleBlueprint | undefined
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
 }
 
 export enum UpdateIngestRundownAction {

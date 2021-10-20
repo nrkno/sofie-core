@@ -16,7 +16,7 @@ import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { clone, getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { clone, deepFreeze, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import {
@@ -47,7 +47,7 @@ export class JobContextBase implements JobContext {
 	) {}
 
 	get studio(): ReadonlyDeep<DBStudio> {
-		// TODO: Worker - Clone and seal to avoid mutations?
+		// This is frozen at the point of populating the cache
 		return this.cacheData.studio
 	}
 
@@ -56,12 +56,9 @@ export class JobContextBase implements JobContext {
 	}
 
 	get studioBlueprint(): ReadonlyObjectDeep<WrappedStudioBlueprint> {
+		// This is frozen at the point of populating the cache
 		return this.cacheData.studioBlueprint
 	}
-
-	// trackLock(lock: LockBase): void {
-	// 	this.locks.push(lock)
-	// }
 
 	trackCache(cache: ReadOnlyCacheBase<any>): void {
 		this.caches.push(cache)
@@ -111,8 +108,7 @@ export class JobContextBase implements JobContext {
 		if (!IS_PRODUCTION) {
 			for (const cache of this.caches) {
 				if (cache.hasChanges()) {
-					// TODO: Worker - cache will not serialize well..
-					logger.warn(`Cache has unsaved changes: ${cache}`)
+					logger.warn(`Cache has unsaved changes: ${cache.DisplayName}`)
 				}
 			}
 		}
@@ -141,16 +137,15 @@ export class JobContextBase implements JobContext {
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig {
 		if (!this.cacheData.studioBlueprintConfig) {
-			this.cacheData.studioBlueprintConfig = preprocessStudioConfig(
-				this.cacheData.studio,
-				this.cacheData.studioBlueprint.blueprint
+			this.cacheData.studioBlueprintConfig = deepFreeze(
+				preprocessStudioConfig(this.cacheData.studio, this.cacheData.studioBlueprint.blueprint) ?? null
 			)
 		}
 
 		return clone(this.cacheData.studioBlueprintConfig)
 	}
 
-	async getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBase> {
+	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBase>> {
 		// Check if allowed
 		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
 			throw new Error(`ShowStyleBase "${id}" is not allowed in studio`)
@@ -160,17 +155,20 @@ export class JobContextBase implements JobContext {
 		if (doc === undefined) {
 			// Load the document
 			doc = await this.directCollections.ShowStyleBases.findOne(id)
+
+			// Freeze and cache it
+			doc = deepFreeze(doc)
 			this.cacheData.showStyleBases.set(id, doc ?? null)
 		}
 
 		if (doc) {
-			// TODO: Worker - freeze the raw doc instead
-			return clone(doc)
+			// Return the raw doc, as it was frozen before being cached
+			return doc
 		}
 
 		throw new Error(`ShowStyleBase "${id}" does not exist`)
 	}
-	async getShowStyleVariant(id: ShowStyleVariantId): Promise<DBShowStyleVariant> {
+	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariant>> {
 		let doc = this.cacheData.showStyleVariants.get(id)
 		if (doc === undefined) {
 			// Load the document
@@ -181,6 +179,8 @@ export class JobContextBase implements JobContext {
 				throw new Error(`ShowStyleVariant "${id}" is not allowed in studio`)
 			}
 
+			// Freeze and cache it
+			doc = deepFreeze(doc)
 			this.cacheData.showStyleVariants.set(id, doc ?? null)
 		}
 
@@ -190,13 +190,16 @@ export class JobContextBase implements JobContext {
 				throw new Error(`ShowStyleVariant "${id}" is not allowed in studio`)
 			}
 
-			// TODO: Worker - freeze the raw doc instead
-			return clone(doc)
+			// Return the raw doc, as it was frozen before being cached
+			return doc
 		}
 
 		throw new Error(`ShowStyleBase "${id}" does not exist`)
 	}
-	async getShowStyleCompound(variantId: ShowStyleVariantId, baseId?: ShowStyleBaseId): Promise<ShowStyleCompound> {
+	async getShowStyleCompound(
+		variantId: ShowStyleVariantId,
+		baseId?: ShowStyleBaseId
+	): Promise<ReadonlyDeep<ShowStyleCompound>> {
 		const [variant, base0] = await Promise.all([
 			this.getShowStyleVariant(variantId),
 			baseId ? this.getShowStyleBase(baseId) : null,
@@ -213,18 +216,21 @@ export class JobContextBase implements JobContext {
 		return compound
 	}
 
-	async getShowStyleBlueprint(id: ShowStyleBaseId): Promise<WrappedShowStyleBlueprint> {
+	async getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>> {
 		const showStyle = await this.getShowStyleBase(id)
 
 		let blueprint = this.cacheData.showStyleBlueprints.get(showStyle.blueprintId)
 		if (blueprint === undefined) {
 			// Load the document
 			blueprint = await loadShowStyleBlueprint(this.directCollections, showStyle).catch(() => undefined)
+
+			// Freeze and cache it
+			blueprint = deepFreeze(blueprint)
 			this.cacheData.showStyleBlueprints.set(showStyle.blueprintId, blueprint ?? null)
 		}
 
 		if (blueprint) {
-			// TODO: Worker - freeze the raw doc instead
+			// Return the raw doc, as it was frozen before being cached
 			return blueprint
 		}
 
@@ -240,10 +246,11 @@ export class JobContextBase implements JobContext {
 		if (!blueprint)
 			throw new Error(`Blueprint "${showStyle.blueprintId}" must be loaded before its config can be retrieved`)
 
-		const config = preprocessShowStyleConfig(showStyle, blueprint.blueprint)
+		const config = deepFreeze(preprocessShowStyleConfig(showStyle, blueprint.blueprint))
 		this.cacheData.showStyleBlueprintConfig.set(showStyle.blueprintId, config)
 
-		return clone(config)
+		// Return the raw object, as it was frozen before being cached
+		return config
 	}
 }
 

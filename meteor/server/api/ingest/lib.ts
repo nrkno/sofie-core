@@ -37,10 +37,22 @@ export async function runIngestOperation<T extends keyof IngestJobFunc>(
 
 		const span = profiler.startSpan('queued-job')
 		const res = await job.complete
-		span?.end()
 
-		// TODO: Worker - track timings
-		// console.log(await job.getTimings)
+		if (span) {
+			// These timings may want tracking better, for when APM is not enabled
+			try {
+				const timings = await job.getTimings
+				span.addLabels({
+					startedTime: timings.startedTime ? timings.startedTime - timings.queueTime : '-',
+					finishedTime: timings.finishedTime ? timings.finishedTime - timings.queueTime : '-',
+					completedTime: timings.completedTime - timings.queueTime,
+				})
+			} catch (_e) {
+				// Not worth handling
+			}
+
+			span.end()
+		}
 
 		return res
 	} catch (e) {

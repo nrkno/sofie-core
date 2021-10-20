@@ -71,8 +71,6 @@ async function runUserAction<T extends keyof StudioJobFunc>(
 
 		return ClientAPI.responseSuccess(res)
 	} catch (e) {
-		console.log('raw', e, JSON.stringify(e))
-
 		let userError: UserError
 		if (UserError.isUserError(e)) {
 			userError = e

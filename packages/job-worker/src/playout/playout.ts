@@ -1123,7 +1123,7 @@ export async function executeActionInner(
 		context: ActionExecutionContext,
 		rundown: DBRundown,
 		currentPartInstance: DBPartInstance,
-		blueprint: WrappedShowStyleBlueprint
+		blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>
 	) => Promise<void>
 ): Promise<void> {
 	const now = getCurrentTime()

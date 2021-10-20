@@ -37,6 +37,8 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		context.trackCache(this)
 	}
 
+	abstract DisplayName: string
+
 	protected getAllCollections() {
 		const highPrioDBs: DbCacheWritable<any>[] = []
 		const lowPrioDBs: DbCacheWritable<any>[] = []

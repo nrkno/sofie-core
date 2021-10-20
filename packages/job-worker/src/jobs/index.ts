@@ -51,10 +51,13 @@ export interface JobContext {
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig
 
-	getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBase>
-	getShowStyleVariant(id: ShowStyleVariantId): Promise<DBShowStyleVariant>
-	getShowStyleCompound(variantId: ShowStyleVariantId, baseId?: ShowStyleBaseId): Promise<ShowStyleCompound>
+	getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBase>>
+	getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariant>>
+	getShowStyleCompound(
+		variantId: ShowStyleVariantId,
+		baseId?: ShowStyleBaseId
+	): Promise<ReadonlyDeep<ShowStyleCompound>>
 
-	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<WrappedShowStyleBlueprint>
+	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>>
 	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig
 }

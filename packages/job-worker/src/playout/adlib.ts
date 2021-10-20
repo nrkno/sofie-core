@@ -154,7 +154,7 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 async function pieceTakeNowAsAdlib(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: DBShowStyleBase,
+	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
 	partInstance: DBPartInstance,
 	pieceToCopy: PieceInstancePiece,
 	pieceInstanceToCopy: PieceInstance | undefined

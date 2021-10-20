@@ -54,6 +54,10 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		this.Rundowns = rundowns
 	}
 
+	public get DisplayName(): string {
+		return `CacheForPlayoutPreInit "${this.PlaylistId}"`
+	}
+
 	static async createPreInit(
 		context: JobContext,
 		playlistLock: PlaylistLock,
@@ -152,6 +156,10 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		this.PieceInstances = pieceInstances
 
 		this.BaselineObjects = baselineObjects
+	}
+
+	public get DisplayName(): string {
+		return `CacheForPlayout "${this.PlaylistId}"`
 	}
 
 	static async fromInit(

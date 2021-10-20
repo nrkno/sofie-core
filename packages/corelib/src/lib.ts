@@ -67,6 +67,11 @@ export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
 	return fastClone(o as any)
 }
 
+export function deepFreeze<T>(o: ReadonlyDeep<T> | Readonly<T> | T): ReadonlyDeep<T> {
+	// TODO: Worker - implement this
+	return o as any
+}
+
 export function getRandomString(numberOfChars?: number): string {
 	return Random.id(numberOfChars)
 }
@@ -109,7 +114,7 @@ export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexK
 	}
 	return normalizedObject as { [key: string]: T }
 }
-export function normalizeArrayToMap<T, K extends keyof T>(array: T[], indexKey: K): Map<T[K], T> {
+export function normalizeArrayToMap<T, K extends keyof T>(array: readonly T[], indexKey: K): Map<T[K], T> {
 	const normalizedObject = new Map<T[K], T>()
 	for (const item of array) {
 		normalizedObject.set(item[indexKey], item)

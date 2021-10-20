@@ -38,6 +38,10 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 		this.Timeline = timeline
 	}
 
+	public get DisplayName(): string {
+		return `CacheForStudio`
+	}
+
 	static async create(context: JobContext): Promise<CacheForStudio> {
 		const span = context.startSpan('CacheForStudio.create')
 

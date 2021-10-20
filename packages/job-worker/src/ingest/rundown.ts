@@ -9,12 +9,17 @@ import _ = require('underscore')
 import { StudioUserContext } from '../blueprints/context'
 import { JobContext } from '../jobs'
 import { clone } from '@sofie-automation/corelib/dist/lib'
+import { ReadonlyDeep } from 'type-fest'
 
 export async function selectShowStyleVariant(
 	context: JobContext,
 	blueprintContext: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
-): Promise<{ variant: DBShowStyleVariant; base: DBShowStyleBase; compound: ShowStyleCompound } | null> {
+): Promise<{
+	variant: ReadonlyDeep<DBShowStyleVariant>
+	base: ReadonlyDeep<DBShowStyleBase>
+	compound: ReadonlyDeep<ShowStyleCompound>
+} | null> {
 	const studio = blueprintContext.studio
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)

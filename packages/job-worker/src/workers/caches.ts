@@ -18,15 +18,16 @@ import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { DefaultStudioBlueprint } from '../blueprints/defaults/studio'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 
 export interface WorkerDataCache {
-	studio: DBStudio
+	studio: ReadonlyDeep<DBStudio>
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 	studioBlueprintConfig: ProcessedStudioConfig | undefined
 
-	showStyleBases: Map<ShowStyleBaseId, DBShowStyleBase | null> // null when not found
-	showStyleVariants: Map<ShowStyleVariantId, DBShowStyleVariant | null> // null when not found
-	showStyleBlueprints: Map<BlueprintId, WrappedShowStyleBlueprint | null> // null when not found
+	showStyleBases: Map<ShowStyleBaseId, ReadonlyDeep<DBShowStyleBase> | null> // null when not found
+	showStyleVariants: Map<ShowStyleVariantId, ReadonlyDeep<DBShowStyleVariant> | null> // null when not found
+	showStyleBlueprints: Map<BlueprintId, ReadonlyDeep<WrappedShowStyleBlueprint> | null> // null when not found
 	showStyleBlueprintConfig: Map<BlueprintId, ProcessedShowStyleConfig>
 
 	studioQueue: Queue
@@ -52,9 +53,9 @@ export async function loadWorkerDataCache(
 	studioId: StudioId
 ): Promise<WorkerDataCache> {
 	// Load some 'static' data from the db
-	const studio = await collections.Studios.findOne(studioId)
+	const studio = deepFreeze(await collections.Studios.findOne(studioId))
 	if (!studio) throw new Error('Missing studio')
-	const studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, studio) // TODO: Worker - guard against errors?
+	const studioBlueprint = deepFreeze(await loadStudioBlueprintOrPlaceholder(collections, studio)) // TODO: Worker - guard against errors?
 
 	return {
 		studio,
@@ -86,7 +87,7 @@ export async function invalidateWorkerDataCache(
 		// If studio blueprintId changed, then force it to be reloaded
 		if (newStudio.blueprintId !== cache.studio.blueprintId) updateStudioBlueprint = true
 
-		cache.studio = newStudio
+		cache.studio = deepFreeze(newStudio)
 		cache.studioBlueprintConfig = undefined
 	}
 
@@ -97,13 +98,8 @@ export async function invalidateWorkerDataCache(
 
 	// Reload studioBlueprint
 	if (updateStudioBlueprint) {
-		cache.studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, cache.studio) // TODO: Worker - guard against errors?
+		cache.studioBlueprint = deepFreeze(await loadStudioBlueprintOrPlaceholder(collections, cache.studio)) // TODO: Worker - guard against errors?
 		cache.studioBlueprintConfig = undefined
-	}
-
-	// Check if studioBlueprint config should be re-processed
-	if (updateStudioBlueprint || cache.studio) {
-		// TODO: Worker - invalidate studioBluepint config
 	}
 
 	if (data.studio) {
@@ -122,7 +118,15 @@ export async function invalidateWorkerDataCache(
 			}
 		}
 
-		// TODO: Worker - can we delete any blueprints
+		// // Unload any unreferenced blueprints
+		// const validShowStyleBlueprints = new Set<BlueprintId>()
+		// for (const showStyleBase of cache.showStyleBases) {
+		// 	if (showStyleBase[1]) {
+		// 		validShowStyleBlueprints.add(showStyleBase[1].blueprintId)
+		// 	}
+		// }
+
+		// TODO: Worker - can we delete any blueprints. be gentle, we could have briefly unloaded the showStyleBase that referenced them
 	}
 	// TODO: Worker - handle showStyleBases & showStyleVariants changes
 

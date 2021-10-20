@@ -249,7 +249,7 @@ export interface SelectedPartInstanceTimelineInfo {
 export function getPartInstanceTimelineInfo(
 	cache: CacheForPlayout,
 	currentTime: Time,
-	showStyle: DBShowStyleBase,
+	showStyle: ReadonlyDeep<DBShowStyleBase>,
 	partInstance: DBPartInstance | undefined
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {

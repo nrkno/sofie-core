@@ -73,7 +73,7 @@ export function extendIngestRundownCore(
 }
 export function modifyPlaylistExternalId(
 	playlistExternalId: string | undefined,
-	showStyleBase: DBShowStyleBase
+	showStyleBase: ReadonlyDeep<DBShowStyleBase>
 ): string | undefined {
 	if (playlistExternalId) return `${showStyleBase._id}_${playlistExternalId}`
 	else return undefined

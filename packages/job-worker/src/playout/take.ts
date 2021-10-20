@@ -214,7 +214,7 @@ export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout
 async function afterTakeUpdateTimingsAndEvents(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyle: ShowStyleCompound,
+	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	isFirstTake: boolean,
 	takeDoneTime: number
@@ -285,7 +285,7 @@ async function afterTakeUpdateTimingsAndEvents(
 export function updatePartInstanceOnTake(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyle: ShowStyleCompound,
+	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	takeRundown: DBRundown,
 	takePartInstance: DBPartInstance,
@@ -437,7 +437,7 @@ function startHold(
 async function completeHold(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: DBShowStyleBase,
+	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
 	currentPartInstance: DBPartInstance | undefined
 ): Promise<void> {
 	cache.Playlist.update({

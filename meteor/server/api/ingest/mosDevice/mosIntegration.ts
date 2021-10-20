@@ -118,8 +118,6 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStatus', apmNamespace)
 
-		// TODO: Worker
-
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 		const studio = getStudioFromDevice(peripheralDevice)
 

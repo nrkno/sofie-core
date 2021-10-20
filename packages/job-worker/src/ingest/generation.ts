@@ -43,6 +43,7 @@ import { CommitIngestData } from './lock'
 import { selectShowStyleVariant } from './rundown'
 import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -52,9 +53,9 @@ export interface UpdateSegmentsResult {
 	adlibActions: AdLibAction[]
 
 	/** ShowStyle, if loaded to reuse */
-	showStyle: ShowStyleCompound | undefined
+	showStyle: ReadonlyDeep<ShowStyleCompound> | undefined
 	/** Blueprint, if loaded to reuse */
-	blueprint: WrappedShowStyleBlueprint | undefined
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
 }
 
 async function getWatchedPackagesHelper(
