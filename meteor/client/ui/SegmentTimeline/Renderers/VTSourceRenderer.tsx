@@ -468,8 +468,15 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 							(this.props.part.instance.part.expectedDuration || 0)
 					) > 500))
 		) {
+			const lastFreeze = this.state.freezes && this.state.freezes[this.state.freezes.length - 1]
+			const endingFreezeStart =
+				lastFreeze &&
+				lastFreeze.start >= vtContent.sourceDuration &&
+				lastFreeze.start < vtContent.sourceDuration + (vtContent.postrollDuration || 0) &&
+				lastFreeze.start
 			const endOfContentAt =
-				(this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration + (vtContent.postrollDuration || 0) - seek)
+				(this.props.piece.renderedInPoint || 0) +
+				((endingFreezeStart || vtContent.sourceDuration + (vtContent.postrollDuration || 0)) - seek)
 			const counter = endOfContentAt - livePositionInPart
 
 			if (counter > 0) {
