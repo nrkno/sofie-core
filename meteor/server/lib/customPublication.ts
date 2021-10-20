@@ -50,7 +50,7 @@ export function meteorCustomPublish(
 	genericMeteorCustomPublish(publicationName, customCollectionName, cb)
 }
 
-class CustomPublishArray {
+export class CustomPublishArray {
 	private _docs: { [id: string]: DBObj } = {}
 	private _firstRun: boolean = true
 	constructor(private _publication: CustomPublish) {}
