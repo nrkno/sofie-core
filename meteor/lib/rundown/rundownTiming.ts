@@ -80,6 +80,7 @@ export class RundownTimingCalculator {
 	private displayDurationGroups: Record<string, number> = {}
 	private segmentBudgetDurations: Record<string, number> = {}
 	private segmentStartedPlayback: Record<string, number> = {}
+	private segmentAsPlayedDurations: Record<string, number> = {}
 	private breakProps: {
 		props: BreakProps | undefined
 		state: BreakPropsStateItem[] | undefined
@@ -134,6 +135,7 @@ export class RundownTimingCalculator {
 		Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 		Object.keys(this.segmentBudgetDurations).forEach((key) => delete this.segmentBudgetDurations[key])
 		Object.keys(this.segmentStartedPlayback).forEach((key) => delete this.segmentStartedPlayback[key])
+		Object.keys(this.segmentAsPlayedDurations).forEach((key) => delete this.segmentAsPlayedDurations[key])
 		this.untimedSegments.clear()
 		this.linearParts.length = 0
 
@@ -215,7 +217,7 @@ export class RundownTimingCalculator {
 				}
 
 				// expected is just a sum of expectedDurations
-				if (!segmentUsesBudget) {
+				if (!segmentUsesBudget && !partIsUntimed) {
 					totalRundownDuration += partInstance.part.expectedDuration || 0
 				}
 
@@ -337,23 +339,37 @@ export class RundownTimingCalculator {
 				// playback duration whichever is larger.
 				// Parts that are Untimed are ignored always.
 				// Parts that don't count are ignored, unless they are being played or have been played.
-				if (!partIsUntimed && !segmentUsesBudget) {
-					let valToAddToAsPlayedDuration = 0
+				if (!partIsUntimed) {
+					if (!segmentUsesBudget) {
+						let valToAddToAsPlayedDuration = 0
 
-					if (lastStartedPlayback && !partInstance.timings?.duration) {
-						valToAddToAsPlayedDuration = Math.max(partExpectedDuration, now - lastStartedPlayback)
-					} else if (partInstance.timings?.duration) {
-						valToAddToAsPlayedDuration = partInstance.timings.duration
-					} else if (partCounts) {
-						valToAddToAsPlayedDuration = partInstance.part.expectedDuration || 0
-					}
+						if (lastStartedPlayback && !partInstance.timings?.duration) {
+							valToAddToAsPlayedDuration = Math.max(partExpectedDuration, now - lastStartedPlayback)
+						} else if (partInstance.timings?.duration) {
+							valToAddToAsPlayedDuration = partInstance.timings.duration
+						} else if (partCounts) {
+							valToAddToAsPlayedDuration = partInstance.part.expectedDuration || 0
+						}
 
-					asPlayedRundownDuration += valToAddToAsPlayedDuration
-					if (!rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)]) {
-						rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)] =
-							valToAddToAsPlayedDuration
+						asPlayedRundownDuration += valToAddToAsPlayedDuration
+						if (!rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)]) {
+							rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)] =
+								valToAddToAsPlayedDuration
+						} else {
+							rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)] +=
+								valToAddToAsPlayedDuration
+						}
 					} else {
-						rundownAsPlayedDurations[unprotectString(partInstance.part.rundownId)] +=
+						let valToAddToAsPlayedDuration = 0
+						if (partInstance.timings?.duration) {
+							valToAddToAsPlayedDuration = partInstance.timings?.duration
+						} else if (lastStartedPlayback && !partInstance.timings?.duration) {
+							valToAddToAsPlayedDuration =
+								Math.min(partInstance.timings?.takeOut || Number.POSITIVE_INFINITY, now) -
+								lastStartedPlayback
+						}
+						this.segmentAsPlayedDurations[unprotectString(partInstance.segmentId)] =
+							(this.segmentAsPlayedDurations[unprotectString(partInstance.segmentId)] || 0) +
 							valToAddToAsPlayedDuration
 					}
 				}
@@ -510,22 +526,31 @@ export class RundownTimingCalculator {
 
 				if (segmentBudgetDuration === undefined || this.untimedSegments.has(segment._id)) return
 
+				totalRundownDuration += segmentBudgetDuration
+
 				let valToAddToRundownAsPlayedDuration = 0
+				let valToAddToRundownRemainingDuration = 0
 				if (segment._id === liveSegmentId) {
 					const startedPlayback = this.segmentStartedPlayback[unprotectString(segment._id)]
-					valToAddToRundownAsPlayedDuration = Math.max(
+					valToAddToRundownRemainingDuration = Math.max(
 						0,
 						segmentBudgetDuration - (startedPlayback ? now - startedPlayback : 0)
 					)
+					valToAddToRundownAsPlayedDuration = Math.max(
+						startedPlayback ? now - startedPlayback : 0,
+						segmentBudgetDuration
+					)
 				} else if (!playlist.activationId || (nextSegmentIndex >= 0 && itIndex >= nextSegmentIndex)) {
 					valToAddToRundownAsPlayedDuration = segmentBudgetDuration
+					valToAddToRundownRemainingDuration = segmentBudgetDuration
+				} else {
+					valToAddToRundownAsPlayedDuration = this.segmentAsPlayedDurations[unprotectString(segment._id)] || 0
 				}
-				remainingRundownDuration += valToAddToRundownAsPlayedDuration
+				remainingRundownDuration += valToAddToRundownRemainingDuration
 				asPlayedRundownDuration += valToAddToRundownAsPlayedDuration
 				rundownAsPlayedDurations[unprotectString(segment.rundownId)] =
 					(rundownAsPlayedDurations[unprotectString(segment.rundownId)] ?? 0) +
 					valToAddToRundownAsPlayedDuration
-				totalRundownDuration += segmentBudgetDuration
 			})
 
 			// if (this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0) {
