@@ -253,11 +253,20 @@ export interface RundownLayoutKeyboardPreview extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.KEYBOARD_PREVIEW
 }
 
+export enum DashboardPanelUnit {
+	EM = 'em',
+	PERCENT = '%',
+}
+
 export interface DashboardPanelBase {
 	x: number
 	y: number
 	width: number
 	height: number
+	xUnit?: DashboardPanelUnit
+	yUnit?: DashboardPanelUnit
+	widthUnit?: DashboardPanelUnit
+	heightUnit?: DashboardPanelUnit
 	scale?: number
 	customClasses?: string[]
 }

@@ -33,6 +33,7 @@ import {
 	RundownLayoutSytemStatus,
 	RundownLayoutTextLabel,
 	RundownLayoutTimeOfDay,
+	DashboardPanelUnit,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -1588,6 +1589,16 @@ export default withTranslation()(
 								collection={RundownLayouts}
 								className="input text-input input-l"
 							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.xUnit`}
+								obj={item}
+								options={Object.values(DashboardPanelUnit)}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input"
+								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+							/>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1600,6 +1611,16 @@ export default withTranslation()(
 								type="float"
 								collection={RundownLayouts}
 								className="input text-input input-l"
+							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.yUnit`}
+								obj={item}
+								options={Object.values(DashboardPanelUnit)}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input"
+								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
 							/>
 						</label>
 					</div>
@@ -1614,6 +1635,16 @@ export default withTranslation()(
 								collection={RundownLayouts}
 								className="input text-input input-l"
 							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.widthUnit`}
+								obj={item}
+								options={Object.values(DashboardPanelUnit)}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input"
+								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+							/>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -1626,6 +1657,16 @@ export default withTranslation()(
 								type="float"
 								collection={RundownLayouts}
 								className="input text-input input-l"
+							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.heightUnit`}
+								obj={item}
+								options={Object.values(DashboardPanelUnit)}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input"
+								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
 							/>
 						</label>
 					</div>
