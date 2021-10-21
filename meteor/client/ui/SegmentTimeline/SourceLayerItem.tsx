@@ -507,13 +507,9 @@ export const SourceLayerItem = withTranslation()(
 					})
 				}
 
-				const elementPos = getElementDocumentOffset(this.state.itemElement) || {
-					top: 0,
-					left: 0,
-				}
 				const cursorPosition = {
-					left: this.state.cursorRawPosition.clientX - elementPos.left,
-					top: this.state.cursorRawPosition.clientY - elementPos.top,
+					left: this.state.cursorRawPosition.clientX - this.state.elementPosition.left,
+					top: this.state.cursorRawPosition.clientY - this.state.elementPosition.top,
 				}
 				const cursorTimePosition = Math.max(cursorPosition.left, 0) / this.props.timeScale
 				if (this.state.cursorTimePosition !== cursorTimePosition) {
