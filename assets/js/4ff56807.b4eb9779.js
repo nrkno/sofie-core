@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunksofie_documentation=self.webpackChunksofie_documentation||[]).push([[2872],{4382:function(o){o.exports=JSON.parse('{"allTagsPath":"/tv-automation-server-core/blog/tags","slug":"/tv-automation-server-core/blog/tags/docusaurus","name":"docusaurus","count":3,"permalink":"/tv-automation-server-core/blog/tags/docusaurus"}')}}]);
