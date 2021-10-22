@@ -5,7 +5,7 @@ import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../logging'
 import { getStudioFromDevice, canRundownBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
-import { handleRemovedRundown, regenerateRundown } from '../rundownInput'
+import { handleRemovedRundown } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import {
 	handleMosRundownData,
@@ -15,6 +15,7 @@ import {
 	handleMosSwapStories,
 	handleMosMoveStories,
 	handleMosRundownMetadata,
+	handleMosReadyToAir,
 } from './ingest'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
@@ -277,19 +278,7 @@ export namespace MosIntegration {
 		logger.info(`mosRoReadyToAir "${Action.ID}"`)
 		logger.debug(Action)
 
-		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundownFromMosRO(studio, Action.ID)
-		if (!canRundownBeUpdated(rundown, false)) return
-
-		// Set the ready to air status of a Rundown
-		if (rundown.airStatus !== Action.Status) {
-			await Rundowns.updateAsync(rundown._id, {
-				$set: {
-					airStatus: Action.Status,
-				},
-			})
-			await regenerateRundown(studio, rundown.externalId, peripheralDevice)
-		}
+		await handleMosReadyToAir(peripheralDevice, Action)
 
 		transaction?.end()
 	}
