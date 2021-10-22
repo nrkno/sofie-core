@@ -3079,6 +3079,11 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
+"@trysound/sax@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.1.1.tgz#3348564048e7a2d7398c935d466c0414ebb6a669"
+  integrity sha512-Z6DoceYb/1xSg5+e+ZlPZ9v0N16ZvZ+wYMraFue4HYrE4ttONKtsvruIRf6t9TBR0YvSOfi1hUU0fJfBLCDYow==
+
 "@tv2media/v-connection@^5.1.1":
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-5.1.1.tgz#beb47a90d81a3bad0d0670fb876bdaeb00e313c0"
@@ -13983,10 +13988,20 @@ then-fs@^2.0.0:
   dependencies:
     promise ">=3.2 <8"
 
-threadedclass@0.8.3, threadedclass@^0.8.0:
+threadedclass@^0.8.0:
   version "0.8.3"
   resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-0.8.3.tgz#ee95a7d2c4fe6ca79e7265bba9baa7c6fff83309"
   integrity sha512-cI6tVYRIIVYxFG7Nykt8NMVflrrdMvyvzAQfgAZdARdU/PaFSGd5Y7wChvJ3DXLsLiFb3datLhfn26K5DTKf+A==
+  dependencies:
+    callsites "^3.1.0"
+    eventemitter3 "^4.0.4"
+    is-running "^2.1.0"
+    tslib "^1.13.0"
+
+threadedclass@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.0.tgz#6011eba6e0d7be03f933911ba336d928c829cee6"
+  integrity sha512-0r4zVIOWE2Y93rwzfPaidJUBEVikEMs4HjZv+wQEq95xKjMG82Ih/S1GJmKIB4P0pXaiM82hIKs8Z41v06yIOw==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
@@ -14018,17 +14033,22 @@ through@2, "through@>=2.2.7 <3", through@^2.3.4, through@^2.3.6, through@^2.3.8:
   resolved "https://registry.yarnpkg.com/through/-/through-2.3.8.tgz#0dd4c9ffaabc357960b1b724115d7e0e86a2e1f5"
   integrity sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
 
-timeline-state-resolver-types@6.2.0-release37.4:
-  version "6.2.0-release37.4"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-release37.4.tgz#593f59d4b44c5fb4032207c09c4f411cb3488b50"
-  integrity sha512-jv1i0HOvl0ZeiAmgpC8GmB89XMbJ+kroYxEqLILqEsDtHd1LzaYOHZdgM8j3KkvgcHq8rP0XQL8yMWu0p5WcAg==
+thunky@^1.0.2:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/thunky/-/thunky-1.1.0.tgz#5abaf714a9405db0504732bbccd2cedd9ef9537d"
+  integrity sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==
+
+timeline-state-resolver-types@6.3.0-nightly-release38-20211022-090801-9264c02ad.0:
+  version "6.3.0-nightly-release38-20211022-090801-9264c02ad.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.3.0-nightly-release38-20211022-090801-9264c02ad.0.tgz#9290366d1d3858f5bf0e0904f1acaaa8607d3885"
+  integrity sha512-CFMTieMbR54Zpp2rumC/xvzXu0FHU2Hyx+AiBoskLTg8aVBoWttbddhCAql9r0KLUxzSHrp6hJOsP+scnlXHrA==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-release37.7:
-  version "6.2.0-release37.7"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.7.tgz#e990dc1dae349d20d0a8237851b1447b46110ced"
-  integrity sha512-/kmi5yWEe4QvqWS24hGHQ2Ui+aTJX1CwgzYA4YR4bxUdD0fiTRACiv+frfR0iiRkv8KWfgsg3GlnlGjnwEF/5A==
+timeline-state-resolver@6.3.0-nightly-release38-20211022-090801-9264c02ad.0:
+  version "6.3.0-nightly-release38-20211022-090801-9264c02ad.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.3.0-nightly-release38-20211022-090801-9264c02ad.0.tgz#eba3e3d40040edc8be8c3f80edb8c8886bde6ed8"
+  integrity sha512-wEFjbkWiOAyPofC1LQ7lqYIfdjQKkdmfS1O/YpoHbIfTfVaH28rMmx/I2fRanPjYU6Bw0FMBtvO0JbaHb+JoVg==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "^2.3.0"
@@ -14049,8 +14069,8 @@ timeline-state-resolver@6.2.0-release37.7:
     request "^2.88.0"
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
-    threadedclass "0.8.3"
-    timeline-state-resolver-types "6.2.0-release37.4"
+    threadedclass "^1.0.0"
+    timeline-state-resolver-types "6.3.0-nightly-release38-20211022-090801-9264c02ad.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
