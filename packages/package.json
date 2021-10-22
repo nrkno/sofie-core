@@ -29,7 +29,6 @@
 	},
 	"devDependencies": {
 		"@sofie-automation/code-standard-preset": "^0.4.2",
-		"@strictsoftware/typedoc-plugin-monorepo": "^0.4.2",
 		"@types/ejson": "^2.1.3",
 		"@types/got": "^9.6.12",
 		"@types/jest": "^26.0.24",
