@@ -5,6 +5,7 @@ import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
 import { UserId } from './Users'
 import { registerIndex } from '../database'
+import { DashboardPanel } from '../../client/ui/Shelf/DashboardPanel'
 
 /**
  * The view targeted by this layout:
@@ -252,199 +253,70 @@ export interface RundownLayoutKeyboardPreview extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.KEYBOARD_PREVIEW
 }
 
-export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame {
+export enum DashboardPanelUnit {
+	EM = 'em',
+	PERCENT = '%',
+}
+
+export interface DashboardPanelBase {
 	x: number
 	y: number
 	width: number
 	height: number
+	scale?: number
 	customClasses?: string[]
 }
 
-export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
-	x: number
-	y: number
-	width: number
-	height: number
-	customClasses?: string[]
+export interface DashboardPanelUnits {
+	xUnit?: DashboardPanelUnit
+	yUnit?: DashboardPanelUnit
+	widthUnit?: DashboardPanelUnit
+	heightUnit?: DashboardPanelUnit
 }
 
-export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
+type DashboardPanel<T> = T & DashboardPanelBase & DashboardPanelUnits
 
-export interface DashboardLayoutNextInfo extends RundownLayoutNextInfo {
-	x: number
-	y: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
+export type DashboardLayoutExternalFrame = DashboardPanel<RundownLayoutExternalFrame>
+export type DashboardLayoutAdLibRegion = DashboardPanel<RundownLayoutAdLibRegion>
+export type DashboardLayoutPieceCountdown = DashboardPanel<RundownLayoutPieceCountdown>
+export type DashboardLayoutNextInfo = DashboardPanel<RundownLayoutNextInfo>
+export type DashboardLayoutPlaylistStartTimer = DashboardPanel<RundownLayoutPlaylistStartTimer>
+export type DashboardLayoutNextBreakTiming = DashboardPanel<RundownLayoutNextBreakTiming>
+export type DashboardLayoutPlaylistEndTimer = DashboardPanel<RundownLayoutPlaylistEndTimer>
+export type DashboardLayoutEndsWords = DashboardPanel<RundownLayoutEndWords>
+export type DashboardLayoutSegmentCountDown = DashboardPanel<RundownLayoutSegmentTiming>
+export type DashboardLayoutPartCountDown = DashboardPanel<RundownLayoutPartTiming>
+export type DashboardLayoutTextLabel = DashboardPanel<RundownLayoutTextLabel>
+export type DashboardLayoutPlaylistName = DashboardPanel<RundownLayoutPlaylistName>
+export type DashboardLayoutStudioName = DashboardPanel<RundownLayoutStudioName>
+export type DashboardLayoutTimeOfDay = DashboardPanel<RundownLayoutTimeOfDay>
+export type DashboardLayoutSystemStatus = DashboardPanel<RundownLayoutSytemStatus>
+export type DashboardLayoutShowStyleDisplay = DashboardPanel<RundownLayoutShowStyleDisplay>
+export type DashboardLayoutSegmentName = DashboardPanel<RundownLayoutSegmentName>
+export type DashboardLayoutPartName = DashboardPanel<RundownLayoutPartName>
+export type DashboardLayoutColoredBox = DashboardPanel<RundownLayoutColoredBox>
+export type DashboardLayoutKeyboardPreview = DashboardPanel<RundownLayoutKeyboardPreview>
+export type DashboardLayoutFilter = DashboardPanel<
+	RundownLayoutFilterBase & {
+		enableSearch: boolean
 
-export interface DashboardLayoutPlaylistStartTimer extends RundownLayoutPlaylistStartTimer {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
+		buttonWidthScale: number
+		buttonHeightScale: number
 
-export interface DashboardLayoutPlaylistEndTimer extends RundownLayoutPlaylistEndTimer {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutEndsWords extends RundownLayoutEndWords {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutSegmentCountDown extends RundownLayoutSegmentTiming {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutPartCountDown extends RundownLayoutPartTiming {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutTextLabel extends RundownLayoutTextLabel {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutPlaylistName extends RundownLayoutPlaylistName {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutStudioName extends RundownLayoutStudioName {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutTimeOfDay extends RundownLayoutTimeOfDay {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutSystemStatus extends RundownLayoutSytemStatus {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutShowStyleDisplay extends RundownLayoutShowStyleDisplay {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutSegmentName extends RundownLayoutSegmentName {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutPartName extends RundownLayoutPartName {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutColoredBox extends RundownLayoutColoredBox {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutNextBreakTiming extends RundownLayoutNextBreakTiming {
-	x: number
-	y: number
-	height: number
-	width: number
-	scale: number
-	customClasses?: string[]
-}
-
-export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
-	x: number
-	y: number
-	width: number
-	height: number
-	customClasses?: string[]
-	enableSearch: boolean
-
-	buttonWidthScale: number
-	buttonHeightScale: number
-
-	includeClearInRundownBaseline: boolean
-	assignHotKeys: boolean
-	overflowHorizontally?: boolean
-	showAsTimeline?: boolean
-	hide?: boolean
-	displayTakeButtons?: boolean
-	queueAllAdlibs?: boolean
-	toggleOnSingleClick?: boolean
-	/**
-	 * character or sequence that will be replaced with line break in buttons
-	 */
-	lineBreak?: string
-}
-
+		includeClearInRundownBaseline: boolean
+		assignHotKeys: boolean
+		overflowHorizontally?: boolean
+		showAsTimeline?: boolean
+		hide?: boolean
+		displayTakeButtons?: boolean
+		queueAllAdlibs?: boolean
+		toggleOnSingleClick?: boolean
+		/**
+		 * character or sequence that will be replaced with line break in buttons
+		 */
+		lineBreak?: string
+	}
+>
 export interface MiniShelfLayoutFilter extends RundownLayoutFilterBase {
 	buttonWidthScale: number
 	buttonHeightScale: number
@@ -454,13 +326,6 @@ export interface MiniShelfLayoutFilter extends RundownLayoutFilterBase {
 
 /** A string, identifying a RundownLayout */
 export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
-
-export interface DashboardLayoutKeyboardPreview extends RundownLayoutKeyboardPreview {
-	x: number
-	y: number
-	width: number
-	height: number
-}
 
 export interface RundownLayoutBase {
 	_id: RundownLayoutId
@@ -545,13 +410,9 @@ export enum ActionButtonType {
 	KLAR_ON_AIR = 'klar_on_air',
 }
 
-export interface DashboardLayoutActionButton {
+export interface DashboardLayoutActionButton extends DashboardPanelBase {
 	_id: string
 	type: ActionButtonType
-	x: number
-	y: number
-	width: number
-	height: number
 	label: string
 	labelToggled: string // different label for when the button is toggled on
 }

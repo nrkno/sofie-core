@@ -11,7 +11,7 @@ import { IOutputLayer, ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayoutFilter, DashboardPanelUnit } from '../../../lib/collections/RundownLayouts'
 import { unprotectString } from '../../../lib/lib'
 import {
 	IAdLibPanelProps,
@@ -79,45 +79,68 @@ interface DashboardPositionableElement {
 	y: number
 	width: number
 	height: number
-	scale?: number
+	xUnit?: DashboardPanelUnit
+	yUnit?: DashboardPanelUnit
+	widthUnit?: DashboardPanelUnit
+	heightUnit?: DashboardPanelUnit
 }
 
 type AdLibPieceUiWithNext = AdLibPieceUi & { isNext: boolean }
+
+function getVerticalOffsetFromHeight(el: DashboardPositionableElement) {
+	return el.height < 0
+		? el.heightUnit === DashboardPanelUnit.PERCENT
+			? `calc(${-1 * el.height}% + var(--dashboard-panel-margin-height) / 2))`
+			: `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
+		: undefined
+}
+
+function getHorizontalOffsetFromWidth(el: DashboardPositionableElement) {
+	return el.width < 0
+		? el.widthUnit === DashboardPanelUnit.PERCENT
+			? `calc(${-1 * el.width}% + var(--dashboard-panel-margin-width) / 2))`
+			: `calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))`
+		: undefined
+}
 
 export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
 	return {
 		width:
 			el.width >= 0
-				? `calc((${el.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))`
+				? el.widthUnit === DashboardPanelUnit.PERCENT
+					? `calc(${el.width}% - var(--dashboard-panel-margin-width))`
+					: `calc((${el.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))`
 				: undefined,
 		height:
 			el.height >= 0
-				? `calc((${el.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))`
+				? el.heightUnit === DashboardPanelUnit.PERCENT
+					? `calc(${el.height}% - var(--dashboard-panel-margin-height))`
+					: `calc((${el.height} * var(--dashboard-button-grid-height)) + var(--dashboard-panel-margin-height))`
 				: undefined,
 		left:
 			el.x >= 0
-				? `calc(${el.x} * var(--dashboard-button-grid-width))`
-				: el.width < 0
-				? `calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))`
-				: undefined,
+				? el.xUnit === DashboardPanelUnit.PERCENT
+					? `calc(${el.x}% + var(--dashboard-panel-margin-width) / 2)`
+					: `calc(${el.x} * var(--dashboard-button-grid-width))`
+				: getHorizontalOffsetFromWidth(el),
 		top:
 			el.y >= 0
-				? `calc(${el.y} * var(--dashboard-button-grid-height))`
-				: el.height < 0
-				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
-				: undefined,
+				? el.yUnit === DashboardPanelUnit.PERCENT
+					? `calc(${el.y}% + var(--dashboard-panel-margin-height) / 2)`
+					: `calc(${el.y} * var(--dashboard-button-grid-height))`
+				: getVerticalOffsetFromHeight(el),
 		right:
 			el.x < 0
-				? `calc(${-1 * el.x - 1} * var(--dashboard-button-grid-width))`
-				: el.width < 0
-				? `calc(${-1 * el.width - 1} * var(--dashboard-button-grid-width))`
-				: undefined,
+				? el.xUnit === DashboardPanelUnit.PERCENT
+					? `calc(${-1 * el.x}% + var(--dashboard-panel-margin-width) / 2)`
+					: `calc(${-1 * el.x - 1} * var(--dashboard-button-grid-width))`
+				: getHorizontalOffsetFromWidth(el),
 		bottom:
 			el.y < 0
-				? `calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))`
-				: el.height < 0
-				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
-				: undefined,
+				? el.yUnit === DashboardPanelUnit.PERCENT
+					? `calc(${-1 * el.y}% + var(--dashboard-panel-margin-height) / 2)`
+					: `calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))`
+				: getVerticalOffsetFromHeight(el),
 		// @ts-ignore
 		'--dashboard-panel-scale': el.scale || undefined,
 	}

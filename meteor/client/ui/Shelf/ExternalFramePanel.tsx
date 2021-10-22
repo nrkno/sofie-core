@@ -499,7 +499,8 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		render() {
-			const scale = this.props.panel.scale || 1
+			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+			const scale = isDashboardLayout ? (this.props.panel as DashboardLayoutExternalFrame).scale || 1 : 1
 			const frameStyle = {
 				transform: `scale(${scale})`,
 				width: `calc(100% / ${scale})`,

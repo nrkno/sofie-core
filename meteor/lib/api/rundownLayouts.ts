@@ -180,6 +180,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.EXTERNAL_FRAME,
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
+			RundownLayoutElementType.NEXT_INFO,
 		],
 	})
 	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
@@ -189,6 +190,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.EXTERNAL_FRAME,
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
+			RundownLayoutElementType.NEXT_INFO,
 		],
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
