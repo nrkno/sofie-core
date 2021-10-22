@@ -13743,10 +13743,10 @@ stylehacks@^5.0.1:
     browserslist "^4.16.0"
     postcss-selector-parser "^6.0.4"
 
-superfly-timeline@^8.2.1:
-  version "8.2.1"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.1.tgz#07c0dfee351ae0597c9dcf0a33794ff53f90829e"
-  integrity sha512-cwd5mGL/2KP8JSBxdxU1bIG4zB3KtWUB/DwhyxBKtTQksAxgplZmWxSqkrE69LfmEQ/8nYBct2NFZ0fCTZzEnQ==
+superfly-timeline@^8.2.2:
+  version "8.2.2"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.2.tgz#dede70ff10f2cb600c3eb344c314dcb931ca04b8"
+  integrity sha512-RZz9fULViZJ3lIGf5VW1lsrbWdtU8HFUX/UjAXItFqXaMXBXdS5jrjSPFqMmxV+ep6KMStqFJvjyFNVzy7b6WQ==
   dependencies:
     tslib "^2.2.0"
     underscore "^1.13.1"
@@ -14045,10 +14045,17 @@ timeline-state-resolver-types@6.3.0-nightly-release38-20211022-090801-9264c02ad.
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.3.0-nightly-release38-20211022-090801-9264c02ad.0:
-  version "6.3.0-nightly-release38-20211022-090801-9264c02ad.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.3.0-nightly-release38-20211022-090801-9264c02ad.0.tgz#eba3e3d40040edc8be8c3f80edb8c8886bde6ed8"
-  integrity sha512-wEFjbkWiOAyPofC1LQ7lqYIfdjQKkdmfS1O/YpoHbIfTfVaH28rMmx/I2fRanPjYU6Bw0FMBtvO0JbaHb+JoVg==
+timeline-state-resolver-types@6.3.0-nightly-release38-20211022-115732-2c75df103.0:
+  version "6.3.0-nightly-release38-20211022-115732-2c75df103.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.3.0-nightly-release38-20211022-115732-2c75df103.0.tgz#853332e292c6b4531e8d417fb4feda8d830412f9"
+  integrity sha512-7gpSZT4ZH/ZiGYx8Efh93ugfZoocNz9WXjKfd9OrNJqKwIfUQdMYzdVkSdBiAGUGsG2m+Qctr3G7aQTXtlz4Fw==
+  dependencies:
+    tslib "^2.3.1"
+
+timeline-state-resolver@6.3.0-nightly-release38-20211022-115732-2c75df103.0:
+  version "6.3.0-nightly-release38-20211022-115732-2c75df103.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.3.0-nightly-release38-20211022-115732-2c75df103.0.tgz#739ffd235d952015581e719b7604fecf8f5d846b"
+  integrity sha512-9BZJynfwieKU0axur0yd8lCBwSqcCr7+fag3k1kJabYx7yAt0ls0w+KkypPncYHbgX5TY4oQtVizfVizP6mP4g==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "^2.3.0"
@@ -14068,9 +14075,9 @@ timeline-state-resolver@6.3.0-nightly-release38-20211022-090801-9264c02ad.0:
     p-timeout "^3.2.0"
     request "^2.88.0"
     sprintf-js "^1.1.2"
-    superfly-timeline "^8.2.1"
+    superfly-timeline "^8.2.2"
     threadedclass "^1.0.0"
-    timeline-state-resolver-types "6.3.0-nightly-release38-20211022-090801-9264c02ad.0"
+    timeline-state-resolver-types "6.3.0-nightly-release38-20211022-115732-2c75df103.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
