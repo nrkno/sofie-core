@@ -263,15 +263,18 @@ export interface DashboardPanelBase {
 	y: number
 	width: number
 	height: number
-	xUnit?: DashboardPanelUnit
-	yUnit?: DashboardPanelUnit
-	widthUnit?: DashboardPanelUnit
-	heightUnit?: DashboardPanelUnit
 	scale?: number
 	customClasses?: string[]
 }
 
-type DashboardPanel<T> = T & DashboardPanelBase
+export interface DashboardPanelUnits {
+	xUnit?: DashboardPanelUnit
+	yUnit?: DashboardPanelUnit
+	widthUnit?: DashboardPanelUnit
+	heightUnit?: DashboardPanelUnit
+}
+
+type DashboardPanel<T> = T & DashboardPanelBase & DashboardPanelUnits
 
 export type DashboardLayoutExternalFrame = DashboardPanel<RundownLayoutExternalFrame>
 export type DashboardLayoutAdLibRegion = DashboardPanel<RundownLayoutAdLibRegion>

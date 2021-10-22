@@ -34,6 +34,7 @@ import {
 	RundownLayoutTextLabel,
 	RundownLayoutTimeOfDay,
 	DashboardPanelUnit,
+	DashboardPanelBase,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -139,58 +140,7 @@ export default withTranslation()(
 									</label>
 								</div>
 							)}
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('X')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.x`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Y')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.y`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Width')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.width`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Height')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.height`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
+							{this.renderDashboardLayoutSettings(item, index, { scale: 0 })}
 							{!isList && (
 								<React.Fragment>
 									<div className="mod mvs mhs">
@@ -223,19 +173,6 @@ export default withTranslation()(
 							)}
 						</React.Fragment>
 					)}
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Display Rank')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.rank`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Only Display AdLibs from Current Segment')}
@@ -629,24 +566,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
-					{isDashboardLayout && (
-						<React.Fragment>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Display Rank')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.rank`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-						</React.Fragment>
-					)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -742,7 +662,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, { scale: 0 })}
 					{isDashboardLayout && (
 						<React.Fragment>
 							<div className="mod mvs mhs">
@@ -800,7 +720,7 @@ export default withTranslation()(
 							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 						/>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -868,7 +788,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -975,7 +895,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1003,7 +923,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1050,7 +970,7 @@ export default withTranslation()(
 						t('Script Source Layers'),
 						t('Source layers containing script')
 					)}
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1094,7 +1014,7 @@ export default withTranslation()(
 						</label>
 					</div>
 					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1138,7 +1058,7 @@ export default withTranslation()(
 						</label>
 					</div>
 					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1179,7 +1099,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1220,7 +1140,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1248,7 +1168,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1290,7 +1210,7 @@ export default withTranslation()(
 							></EditAttribute>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1346,7 +1266,7 @@ export default withTranslation()(
 							<span className="text-s dimmed">{t('Use color of primary piece as background of panel')}</span>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1388,7 +1308,7 @@ export default withTranslation()(
 							></EditAttribute>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1416,7 +1336,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1444,7 +1364,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1485,7 +1405,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1573,104 +1493,118 @@ export default withTranslation()(
 			)
 		}
 
-		renderDashboardLayoutSettings(item: RundownLayoutBase, index: number, scalable?: boolean) {
+		renderDashboardLayoutSettings(
+			item: RundownLayoutBase,
+			index: number,
+			options?: {
+				[P in keyof DashboardPanelBase]?: 0
+			}
+		) {
 			const { t } = this.props
 
 			return (
 				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('X')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.x`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.xUnit`}
-								obj={item}
-								options={Object.values(DashboardPanelUnit)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input"
-								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-							/>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Y')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.y`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.yUnit`}
-								obj={item}
-								options={Object.values(DashboardPanelUnit)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input"
-								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-							/>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Width')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.width`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.widthUnit`}
-								obj={item}
-								options={Object.values(DashboardPanelUnit)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input"
-								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-							/>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Height')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.height`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.heightUnit`}
-								obj={item}
-								options={Object.values(DashboardPanelUnit)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input"
-								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-							/>
-						</label>
-					</div>
-					{scalable && (
+					{!options?.x && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('X')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.x`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.xUnit`}
+									obj={item}
+									options={Object.values(DashboardPanelUnit)}
+									type="dropdown"
+									collection={RundownLayouts}
+									className="input text-input"
+									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+								/>
+							</label>
+						</div>
+					)}
+					{!options?.y && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Y')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.y`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.yUnit`}
+									obj={item}
+									options={Object.values(DashboardPanelUnit)}
+									type="dropdown"
+									collection={RundownLayouts}
+									className="input text-input"
+									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+								/>
+							</label>
+						</div>
+					)}
+					{!options?.width && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Width')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.width`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.widthUnit`}
+									obj={item}
+									options={Object.values(DashboardPanelUnit)}
+									type="dropdown"
+									collection={RundownLayouts}
+									className="input text-input"
+									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+								/>
+							</label>
+						</div>
+					)}
+					{!options?.height && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Height')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.height`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.heightUnit`}
+									obj={item}
+									options={Object.values(DashboardPanelUnit)}
+									type="dropdown"
+									collection={RundownLayouts}
+									className="input text-input"
+									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+								/>
+							</label>
+						</div>
+					)}
+					{!options?.scale && (
 						<div className="mod mvs mhs">
 							<label className="field">
 								{t('Scale')}
@@ -1687,22 +1621,37 @@ export default withTranslation()(
 					)}
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Custom Classes')}
+							{t('Display Rank')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={`filters.${index}.customClasses`}
+								attribute={`filters.${index}.rank`}
 								obj={item}
-								type="text"
+								type="float"
 								collection={RundownLayouts}
 								className="input text-input input-l"
-								mutateDisplayValue={(v: string[] | undefined) => v?.join(',')}
-								mutateUpdateValue={(v: string | undefined) => v?.split(',')}
 							/>
-							<span className="text-s dimmed">
-								Add custom css classes for customization. Separate classes with a &lsquo;,&rsquo;
-							</span>
 						</label>
 					</div>
+					{!options?.customClasses && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Custom Classes')}
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.customClasses`}
+									obj={item}
+									type="text"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+									mutateDisplayValue={(v: string[] | undefined) => v?.join(',')}
+									mutateUpdateValue={(v: string | undefined) => v?.split(',')}
+								/>
+								<span className="text-s dimmed">
+									Add custom css classes for customization. Separate classes with a &lsquo;,&rsquo;
+								</span>
+							</label>
+						</div>
+					)}
 				</React.Fragment>
 			)
 		}
@@ -1730,88 +1679,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && (
-						<React.Fragment>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('X')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.x`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Y')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.y`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Width')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.width`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Height')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.height`}
-										obj={item}
-										type="int"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Scale')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.scale`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Display Rank')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.rank`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-						</React.Fragment>
-					)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
 		}
@@ -1878,62 +1746,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && (
-						<React.Fragment>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('X')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.x`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Y')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.y`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Width')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.width`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Scale')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.scale`}
-										obj={item}
-										type="float"
-										collection={RundownLayouts}
-										className="input text-input input-l"
-									/>
-								</label>
-							</div>
-						</React.Fragment>
-					)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, { height: 0 })}
 				</React.Fragment>
 			)
 		}
