@@ -589,7 +589,7 @@ export const SourceLayerItem = withTranslation()(
 				left: e.clientX - this.state.elementPosition.left,
 				top: e.clientY - this.state.elementPosition.top,
 			}
-			const cursorTimePosition = Math.max(cursorPosition.left, 0) / this.props.timeScale + this.state.scrollLeftOffset
+			const cursorTimePosition = Math.max(cursorPosition.left, 0) / this.props.timeScale
 
 			this.setState({
 				cursorPosition: _.extend(this.state.cursorPosition, cursorPosition),
