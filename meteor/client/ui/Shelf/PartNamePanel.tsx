@@ -45,12 +45,16 @@ class PartNamePanelInner extends MeteorReactComponent<
 		const { t, panel } = this.props
 
 		const sourceLayerType = this.props.instanceToShow?.sourceLayer?.type
-		const backgroundBySourceLayer: string = sourceLayerTypeToString(sourceLayerType) || 'unknown'
+		let backgroundSourceLayer = sourceLayerType ? sourceLayerTypeToString(sourceLayerType) : undefined
+
+		if (!backgroundSourceLayer) {
+			backgroundSourceLayer = ''
+		}
 
 		return (
 			<div
 				className={ClassNames('part-name-panel', {
-					[backgroundBySourceLayer]: true,
+					[backgroundSourceLayer || 'unknown']: true,
 				})}
 				style={_.extend(
 					isDashboardLayout
@@ -65,23 +69,15 @@ class PartNamePanelInner extends MeteorReactComponent<
 					<span className="part-name-title">
 						{this.props.panel.part === 'current' ? t('Current Part') : t('Next Part')}
 					</span>
-					<span className="part-name">{getPartName(sourceLayerType, this.props.name)}</span>
+					<span className="part-name">{this.props.name}</span>
 				</div>
 			</div>
 		)
 	}
 }
 
-function getPartName(sourceLayerType: SourceLayerType, name: string | undefined): string | undefined {
-	const isVtClip: boolean = sourceLayerType == SourceLayerType.VT
-	if (isVtClip) {
-		return 'SERVER A/B'
-	}
-	return name
-}
-
-function sourceLayerTypeToString(sourceLayerType: SourceLayerType): string {
-	if (!sourceLayerType) return ''
+function sourceLayerTypeToString(sourceLayerType: SourceLayerType) {
+	if (!sourceLayerType) return
 
 	switch (sourceLayerType) {
 		case SourceLayerType.GRAPHICS:
@@ -96,8 +92,6 @@ function sourceLayerTypeToString(sourceLayerType: SourceLayerType): string {
 			return 'vt'
 		case SourceLayerType.CAMERA:
 			return 'camera'
-		default:
-			return ''
 	}
 }
 
