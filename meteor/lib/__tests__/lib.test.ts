@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { testInFiber } from '../../__mocks__/helpers/jest'
+import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
 import { setLogLevel } from '../../server/logging'
 import {
 	getHash,
@@ -31,10 +31,14 @@ import {
 import { TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { FindOptions } from '../typings/meteor'
+import { MeteorMock } from '../../__mocks__/meteor'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
 describe('lib/lib', () => {
+	afterEachInFiber(() => {
+		MeteorMock.mockSetServerEnvironment()
+	})
 	testInFiber('getHash', () => {
 		const h0 = getHash('abc')
 		const h1 = getHash('abcd')
@@ -67,7 +71,10 @@ describe('lib/lib', () => {
 	})
 	testInFiber('getCurrentTime', () => {
 		systemTime.diff = 5439
+		MeteorMock.mockSetClientEnvironment()
 		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1)
+		MeteorMock.mockSetServerEnvironment()
+		expect(getCurrentTime() / 1000).toBeCloseTo(Date.now() / 1000, 1)
 	})
 	testInFiber('literal', () => {
 		const obj = literal<TimelineObjGeneric>({

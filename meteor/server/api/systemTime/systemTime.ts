@@ -135,7 +135,7 @@ function updateServerTime(retries: number = 0) {
 		ntpServerStr = '0.se.pool.ntp.org,1.se.pool.ntp.org,2.se.pool.ntp.org'
 	}
 	const ntpServer = (ntpServerStr.split(',') || [])[0] || 'pool.ntp.org' // Just use the first one specified, for now
-	logger.info(`System time: Updating, using ntp-server "${ntpServer}"...`)
+	logger.info(`System time: Verifying, using ntp-server "${ntpServer}"...`)
 
 	determineDiffTimeInner({
 		host: ntpServer,
@@ -146,18 +146,17 @@ function updateServerTime(retries: number = 0) {
 		.then((result) => {
 			// if result.stdDev is less than one frame-time, it should be okay:
 			if (result.stdDev < 1000 / 50) {
-				logger.info(
-					`System time: Setting diff to ${Math.round(result.mean)} ms (std. dev: ${
-						Math.floor(result.stdDev * 10) / 10
-					} ms)`
-				)
+				const message = `Diff is ${Math.round(result.mean)} ms (std. dev: ${
+					Math.floor(result.stdDev * 10) / 10
+				} ms)`
+				logger.info(`System time: ${message}`)
 
 				systemTime.hasBeenSet = true
 				systemTime.diff = result.mean
 				systemTime.stdDev = result.stdDev
 				setSystemStatus('systemTime', {
-					statusCode: StatusCode.GOOD,
-					messages: [`NTP-time accuracy (standard deviation): ${Math.floor(result.stdDev * 10) / 10} ms`],
+					statusCode: systemTime.diff < 200 ? StatusCode.GOOD : StatusCode.WARNING_MAJOR,
+					messages: [message],
 				})
 			} else {
 				if (result.stdDev < systemTime.stdDev) {
@@ -169,9 +168,9 @@ function updateServerTime(retries: number = 0) {
 					Math.floor(result.stdDev * 10) / 10
 				} ms)`
 				if (systemTime.stdDev < 200) {
-					setSystemStatus('systemTime', { statusCode: StatusCode.WARNING_MAJOR, messages: [message] })
+					setSystemStatus('systemTime', { statusCode: StatusCode.WARNING_MINOR, messages: [message] })
 				} else {
-					setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: [message] })
+					setSystemStatus('systemTime', { statusCode: StatusCode.WARNING_MINOR, messages: [message] })
 				}
 				Meteor.setTimeout(() => {
 					updateServerTime()
@@ -184,9 +183,9 @@ function updateServerTime(retries: number = 0) {
 					updateServerTime(retries - 1)
 				}, 1 * 1000)
 			} else {
-				logger.info('Unable to set system time (' + (err.reason || err) + ')')
+				logger.info('Unable to verify system time (' + (err.reason || err) + ')')
 				setSystemStatus('systemTime', {
-					statusCode: systemTime.hasBeenSet ? StatusCode.WARNING_MAJOR : StatusCode.BAD,
+					statusCode: StatusCode.WARNING_MINOR,
 					messages: [`Error message: ${err.toString()}`],
 				})
 			}

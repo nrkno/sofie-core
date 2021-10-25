@@ -120,12 +120,13 @@ const systemTime = {
 }
 /**
  * Returns the current (synced) time
- * The synced time differs from Date.now() in that it uses a time synced with the Sofie server,
+ * On the server: It equals Date.now() because we're assuming the system clock is NTP-synced and accurate enough.
+ * On the client: The synced time differs from Date.now() in that it uses a time synced with the Sofie server,
  * so it is unaffected of whether the client has a well-synced computer time or not.
  * @return {Time}
  */
 export function getCurrentTime(): Time {
-	return Math.floor(Date.now() - systemTime.diff)
+	return Math.floor(Date.now() - (Meteor.isServer ? 0 : systemTime.diff))
 }
 export { systemTime }
 
