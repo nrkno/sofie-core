@@ -19,6 +19,7 @@ import {
 } from '../playout/lockFunction'
 import { removeRundownsFromDb } from '../rundownPlaylist'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
+import { checkStudioExists } from '../../../lib/collections/optimizations'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -110,11 +111,11 @@ export namespace IngestActions {
 					if (!rundownPlaylist)
 						throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
 
-					const studio = rundownPlaylist.getStudio()
-					if (!studio) {
+					const studioExists = checkStudioExists(rundownPlaylist.studioId)
+					if (!studioExists) {
 						throw new Meteor.Error(
 							404,
-							`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`
+							`Studio "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`
 						)
 					}
 
@@ -140,7 +141,7 @@ export namespace IngestActions {
 					// exit the sync function, so the cache is written back
 					return rundowns.map((rundown) => ({
 						rundownExternalId: rundown.externalId,
-						studio,
+						studioId: rundownPlaylist.studioId,
 					}))
 				}
 			)
@@ -148,8 +149,8 @@ export namespace IngestActions {
 
 		// Fire off all the updates in parallel, in their own low-priority tasks
 		waitForPromiseAll(
-			ingestData.map(async ({ rundownExternalId, studio }) =>
-				regenerateRundown(studio, rundownExternalId, undefined)
+			ingestData.map(async ({ rundownExternalId, studioId }) =>
+				regenerateRundown(studioId, rundownExternalId, undefined)
 			)
 		)
 	}

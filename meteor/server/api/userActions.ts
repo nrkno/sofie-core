@@ -9,7 +9,7 @@ import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { StudioId } from '../../lib/collections/Studios'
+import { StudioId, Studios } from '../../lib/collections/Studios'
 import { Pieces, PieceId } from '../../lib/collections/Pieces'
 import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
@@ -771,23 +771,31 @@ export async function bucketAdlibImport(
 	bucketId: BucketId,
 	ingestItem: IngestAdlib
 ): Promise<ClientAPI.ClientResponse<undefined>> {
-	const { studio } = OrganizationContentWriteAccess.studio(context, studioId)
+	const o = OrganizationContentWriteAccess.studio(context, studioId)
+	const studioLight = o.studio
+
+	// Optimization: since
+	const pStudio = studioLight ? Studios.findOneAsync(studioLight._id) : Promise.resolve(undefined)
 
 	check(studioId, String)
 	check(showStyleVariantId, String)
 	check(bucketId, String)
 	// TODO - validate IngestAdlib
 
-	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+	if (!studioLight) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 	const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
 	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
 
-	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
+	if (studioLight.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
 		throw new Meteor.Error(500, `ShowStyle Variant "${showStyleVariantId}" not supported by studio "${studioId}"`)
 	}
 
 	const bucket = await Buckets.findOneAsync(bucketId)
 	if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found`)
+
+	const studio = await pStudio
+	if (!studio)
+		throw new Meteor.Error(404, `Studio "${studioLight._id}" not found (even though the studioLight was found)`)
 
 	await updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
 

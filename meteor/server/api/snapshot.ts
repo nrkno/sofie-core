@@ -89,6 +89,7 @@ import {
 	PackageContainerPackageStatuses,
 } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
+import { checkStudioExists } from '../../lib/collections/optimizations'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -550,9 +551,10 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 	// @ts-ignore is's not really a snapshot here:
 	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
-		const studio = Studios.findOne(Meteor.settings.manualSnapshotIngestStudioId || 'studio0')
-		if (studio) {
-			importIngestRundown(studio._id, snapshot)
+		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
+		const studioExists = checkStudioExists(studioId)
+		if (studioExists) {
+			importIngestRundown(studioId, snapshot)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)
@@ -859,6 +861,12 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 	snapshot.showStyleVariants = _.map(snapshot.showStyleVariants, (showStyleVariant) => {
 		return migrateConfigToBlueprintConfigOnObject(showStyleVariant)
 	})
+	if (snapshot.blueprints) {
+		snapshot.blueprints = _.map(snapshot.blueprints, (bp) => {
+			bp.hasCode = !!bp.code
+			return bp
+		})
+	}
 
 	const changes = sumChanges(
 		...(await Promise.all([
