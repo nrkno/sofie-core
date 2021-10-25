@@ -50,6 +50,16 @@ export function fetchStudiosLight(selector: MongoSelector<DBStudio>): StudioLigh
 }
 export type StudioLight = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
 
+export function fetchStudioIds(selector: MongoSelector<DBStudio>): StudioId[] {
+	return Studios.find(selector, {
+		fields: {
+			_id: 1,
+		},
+	})
+		.fetch()
+		.map((s) => s._id)
+}
+
 /** Checks if a studio exists */
 export function checkStudioExists(studioId: StudioId): boolean {
 	return !!Studios.findOne(studioId, {

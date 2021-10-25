@@ -253,10 +253,7 @@ async function assignSystemBlueprint(methodContext: MethodContext, blueprintId?:
 	if (blueprintId !== undefined && blueprintId !== null) {
 		check(blueprintId, String)
 
-		const blueprint = (await Blueprints.findOneAsync(blueprintId, { fields: { code: 0 } })) as Omit<
-			Blueprint,
-			'code'
-		>
+		const blueprint = await fetchBlueprintLight(blueprintId)
 		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
 
 		if (blueprint.organizationId)

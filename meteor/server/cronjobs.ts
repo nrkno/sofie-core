@@ -12,7 +12,7 @@ import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
 import { removeEmptyPlaylists } from './api/rundownPlaylist'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
-import { fetchStudiosLight } from '../lib/collections/optimizations'
+import { fetchStudioIds } from '../lib/collections/optimizations'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -152,8 +152,8 @@ Meteor.startup(() => {
 	function cleanupPlaylists(force?: boolean) {
 		if (isLowSeason() || force) {
 			// Ensure there are no empty playlists:
-			const studios = fetchStudiosLight({})
-			waitForPromiseAll(studios.map(async (studio) => removeEmptyPlaylists(studio._id)))
+			const studioIds = fetchStudioIds({})
+			waitForPromiseAll(studioIds.map(async (studioId) => removeEmptyPlaylists(studioId)))
 		}
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
