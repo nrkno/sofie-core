@@ -60,7 +60,7 @@ import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../R
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
-import { getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { getShelfFollowsOnAir, getShowHiddenSourceLayers } from '../../lib/localStorage'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -874,7 +874,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			this.state = {
 				selectedSegment: undefined,
 				searchFilter: undefined,
-				followLive: true,
+				followLive: getShelfFollowsOnAir(),
 			}
 		}
 
@@ -1045,7 +1045,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		onSelectSegment = (segment: AdlibSegmentUi) => {
 			this.setState({
 				selectedSegment: segment,
-				followLive: this.props.liveSegment ? segment._id === this.props.liveSegment._id : true,
 			})
 		}
 

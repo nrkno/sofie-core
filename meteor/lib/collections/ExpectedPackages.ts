@@ -118,6 +118,7 @@ export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase 
 }
 export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageDBBase {
 	fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION
+	bucketId: BucketId
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
 }

@@ -283,6 +283,7 @@ function generateExpectedPackagesForBucketAdlibAction(studio: Studio, adlibActio
 			for (const base of bases) {
 				packages.push({
 					...base,
+					bucketId: action.bucketId,
 					pieceId: action._id,
 					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
 				})

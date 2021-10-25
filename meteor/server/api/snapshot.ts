@@ -213,7 +213,10 @@ async function createRundownPlaylistSnapshot(
 		..._.compact(adLibPieces.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
 		..._.compact(baselineAdlibs.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
 	]
-	const mediaObjects = await MediaObjects.findFetchAsync({ mediaId: { $in: mediaObjectIds } })
+	const mediaObjects = await MediaObjects.findFetchAsync({
+		studioId: playlist.studioId,
+		mediaId: { $in: mediaObjectIds },
+	})
 	const expectedMediaItems = await ExpectedMediaItems.findFetchAsync({ partId: { $in: parts.map((i) => i._id) } })
 	const expectedPlayoutItems = await ExpectedPlayoutItems.findFetchAsync({ rundownId: { $in: rundownIds } })
 	const expectedPackages = await ExpectedPackages.findFetchAsync({ rundownId: { $in: rundownIds } })

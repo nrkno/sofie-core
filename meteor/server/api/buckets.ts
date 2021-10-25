@@ -119,6 +119,11 @@ export namespace BucketsAPI {
 				fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB,
 				bucketId: bucket._id,
 			}),
+			ExpectedPackages.removeAsync({
+				studioId: bucket.studioId,
+				fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
+				bucketId: bucket._id,
+			}),
 		])
 	}
 
