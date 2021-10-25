@@ -5,7 +5,6 @@ import { getRundownId, getPartId } from '../lib'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 import { getCurrentTime } from '../../../../lib/lib'
-import { StudioLight } from '../../../../lib/collections/optimizations'
 import { StudioId } from '../../../../lib/collections/Studios'
 
 export function getRundownIdFromMosRO(studioId: StudioId, runningOrderMosId: MOS.MosString128) {

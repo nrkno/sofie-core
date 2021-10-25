@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, unprotectObject, clone, isProtectedString } from '../../../lib/lib'
+import { getHash, getCurrentTime, protectString, unprotectObject, clone } from '../../../lib/lib'
 import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
@@ -21,7 +21,7 @@ import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { CacheForIngest } from './cache'
-import { checkStudioExists, fetchStudioLight, StudioLight } from '../../../lib/collections/optimizations'
+import { checkStudioExists } from '../../../lib/collections/optimizations'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(

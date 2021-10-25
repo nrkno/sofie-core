@@ -1,5 +1,5 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time, registerCollection, ProtectedString, assertNever, cacheResult } from '../lib'
+import { Time, registerCollection, ProtectedString, assertNever } from '../lib'
 
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
 import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
