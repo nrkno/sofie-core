@@ -280,6 +280,8 @@ const TimingDisplay = withTranslation()(
 				const expectedEnd = PlaylistTiming.getExpectedEnd(rundownPlaylist.timing)
 				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
 
+				const overUnderClock = PlaylistTiming.getDiff(rundownPlaylist, this.props.timingDurations) ?? 0
+
 				return (
 					<div className="timing mod">
 						{rundownPlaylist.startedPlayback && rundownPlaylist.activationId && !rundownPlaylist.rehearsal ? (
@@ -359,6 +361,7 @@ const TimingDisplay = withTranslation()(
 										loop={rundownPlaylist.loop}
 										expectedEnd={expectedEnd}
 										expectedDuration={expectedDuration}
+										playlist={rundownPlaylist}
 										endLabel={this.props.layout?.expectedEndText}
 									></PlaylistEndTiming>
 								) : null}
@@ -412,26 +415,12 @@ const TimingDisplay = withTranslation()(
 								{this.props.timingDurations && this.props.rundownCount < 2 ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 									<span
 										className={ClassNames('timing-clock heavy-light right', {
-											heavy:
-												(this.props.timingDurations.asPlayedPlaylistDuration || 0) <
-												(this.props.timingDurations.totalPlaylistDuration || 0),
-											light:
-												(this.props.timingDurations.asPlayedPlaylistDuration || 0) >
-												(this.props.timingDurations.totalPlaylistDuration || 0),
+											heavy: overUnderClock < 0,
+											light: overUnderClock >= 0,
 										})}
 									>
 										<span className="timing-clock-label right">{t('Diff')}</span>
-										{RundownUtils.formatDiffToTimecode(
-											(this.props.timingDurations.asPlayedPlaylistDuration || 0) -
-												(this.props.timingDurations.totalPlaylistDuration || 0),
-											true,
-											false,
-											true,
-											true,
-											true,
-											undefined,
-											true
-										)}
+										{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true)}
 									</span>
 								) : null}
 							</React.Fragment>
@@ -447,6 +436,7 @@ interface IEndTimingProps {
 	loop?: boolean
 	expectedDuration?: number
 	expectedEnd: number
+	playlist: RundownPlaylist
 	endLabel?: string
 }
 
@@ -454,7 +444,9 @@ const PlaylistEndTiming = withTranslation()(
 	withTiming<IEndTimingProps & WithTranslation, {}>()(
 		class PlaylistEndTiming extends React.Component<Translated<WithTiming<IEndTimingProps>>> {
 			render() {
-				const { t } = this.props
+				const { t, playlist, timingDurations } = this.props
+
+				const overUnderClock = PlaylistTiming.getDiff(playlist, timingDurations) ?? 0
 
 				return (
 					<React.Fragment>
@@ -472,23 +464,12 @@ const PlaylistEndTiming = withTranslation()(
 						{this.props.expectedDuration ? (
 							<span
 								className={ClassNames('timing-clock heavy-light right', {
-									heavy:
-										(this.props.timingDurations.asPlayedPlaylistDuration || 0) < (this.props.expectedDuration || 0),
-									light:
-										(this.props.timingDurations.asPlayedPlaylistDuration || 0) > (this.props.expectedDuration || 0),
+									heavy: overUnderClock < 0,
+									light: overUnderClock >= 0,
 								})}
 							>
 								<span className="timing-clock-label right">{t('Diff')}</span>
-								{RundownUtils.formatDiffToTimecode(
-									(this.props.timingDurations.asPlayedPlaylistDuration || 0) - this.props.expectedDuration,
-									true,
-									false,
-									true,
-									true,
-									true,
-									undefined,
-									true
-								)}
+								{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true)}
 							</span>
 						) : null}
 					</React.Fragment>
@@ -1692,8 +1673,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
+						activationId: 1,
 					},
-				}) as Pick<RundownPlaylist, '_id' | 'getRundowns'> | undefined
+				}) as Pick<RundownPlaylist, '_id' | 'getRundowns' | 'activationId'> | undefined
 				if (playlist) {
 					const rundowns = playlist.getRundowns(undefined, {
 						fields: {
@@ -1746,6 +1728,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						rundownId: {
 							$in: rundownIDs,
 						},
+						playlistActivationId: playlist.activationId,
 						reset: {
 							$ne: true,
 						},

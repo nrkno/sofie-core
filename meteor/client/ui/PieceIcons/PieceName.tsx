@@ -6,9 +6,11 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { IPropsHeader } from './PieceIcon'
 import { findPieceInstanceToShow } from './utils'
+import { RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
 
 interface INamePropsHeader extends IPropsHeader {
 	partName: string
+	playlistActivationId: RundownPlaylistActivationId | undefined
 }
 
 const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT])
@@ -22,6 +24,7 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 		componentDidMount() {
 			this.subscribe(PubSub.pieceInstancesSimple, {
 				rundownId: { $in: this.props.rundownIds },
+				playlistActivationId: this.props.playlistActivationId,
 			})
 			this.subscribe(PubSub.showStyleBases, {
 				_id: this.props.showStyleBaseId,
