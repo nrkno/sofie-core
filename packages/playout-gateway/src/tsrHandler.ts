@@ -31,6 +31,7 @@ import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { LoggerInstance } from './index'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
+import { sendTrace } from './influxdb'
 const debug = Debug('playout-gateway')
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -243,6 +244,7 @@ export class TSRHandler {
 					this.logger.error('Error in reportResolveDone', e)
 				})
 		})
+		this.tsr.on('timeTrace', (trace: Record<string, any>) => sendTrace(trace))
 
 		this.logger.debug('tsr init')
 		await this.tsr.init()
@@ -797,6 +799,8 @@ export class TSRHandler {
 					this.logger.info('debug: ' + fixError(e), ...args)
 				}
 			})
+
+			await device.device.on('timeTrace', (trace: Record<string, any>) => sendTrace(trace))
 
 			// now initialize it
 			await this.tsr.initDevice(deviceId, options)
