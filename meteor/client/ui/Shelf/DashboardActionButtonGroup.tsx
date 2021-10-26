@@ -9,7 +9,7 @@ import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/Run
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { NoticeLevel, Notification, NotificationCenter } from "../../lib/notifications/notifications";
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]
@@ -85,23 +85,20 @@ export const DashboardActionButtonGroup = withTranslation()(
 			const { t } = this.props
 			const playlistId: RundownPlaylistId = this.props.playlist._id
 			const reason: string = 'Debug snapshot requested by user'
-			doUserAction(t, e, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, (e) =>
-				MeteorCall.userAction.storeRundownSnapshot(e, playlistId, reason),
+			doUserAction(
+				t,
+				e,
+				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
+				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, reason),
 				(err, snapshotId) => {
 					let noticeLevel: NoticeLevel = NoticeLevel.WARNING
-					let message = t('Snapshot failed: {{errorMessage}}', { errorMessage: err + '' });
+					let message = t('Snapshot failed: {{errorMessage}}', { errorMessage: err + '' })
 					if (!err && snapshotId) {
 						noticeLevel = NoticeLevel.NOTIFICATION
 						message = t('Successfully stored snapshot')
 					}
 
-					const notification: Notification = new Notification(
-						undefined,
-						noticeLevel,
-						message,
-						'StoreSnapshot'
-					)
-
+					const notification: Notification = new Notification(undefined, noticeLevel, message, 'StoreSnapshot')
 					NotificationCenter.push(notification)
 				}
 			)
