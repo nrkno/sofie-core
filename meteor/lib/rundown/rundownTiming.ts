@@ -691,7 +691,29 @@ export namespace PlaylistTiming {
 			: undefined
 	}
 
-	export function sortTiminings(a, b): number {
+	export function getDiff(
+		playlist: Pick<RundownPlaylist, 'timing' | 'startedPlayback'>,
+		timingContext: RundownTimingContext
+	): number | undefined {
+		const { timing, startedPlayback } = playlist
+		const currentTime = timingContext.currentTime || Date.now()
+		let frontAnchor: number = currentTime
+		let backAnchor: number = currentTime
+		if (isPlaylistTimingForwardTime(timing)) {
+			backAnchor =
+				timing.expectedEnd ??
+				(startedPlayback ?? Math.max(timing.expectedStart, currentTime)) +
+					(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
+			frontAnchor = Math.max(currentTime, playlist.startedPlayback ?? Math.max(timing.expectedStart, currentTime))
+		} else if (isPlaylistTimingBackTime(timing)) {
+			backAnchor = timing.expectedEnd
+		}
+
+		const diff = frontAnchor + (timingContext.remainingPlaylistDuration || 0) - backAnchor
+		return diff
+	}
+
+	export function sortTiminings(a: RundownPlaylist, b: RundownPlaylist): number {
 		// Compare start times, then allow rundowns with start time to be first
 		if (
 			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&

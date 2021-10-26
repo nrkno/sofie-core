@@ -296,8 +296,9 @@ export class PresenterScreenBase extends MeteorReactComponent<
 			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
 				fields: {
 					_id: 1,
+					activationId: 1,
 				},
-			}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs' | 'getRundowns'> | undefined
+			}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs' | 'getRundowns' | 'activationId'> | undefined
 			if (playlist) {
 				this.subscribe(PubSub.rundowns, {
 					playlistId: playlist._id,
@@ -335,6 +336,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					})
 					this.subscribe(PubSub.partInstances, {
 						rundownId: { $in: rundownIds },
+						playlistActivationId: playlist.activationId,
 						reset: { $ne: true },
 					})
 					this.subscribe(PubSub.showStyleBases, {
@@ -451,12 +453,8 @@ export class PresenterScreenBase extends MeteorReactComponent<
 			const nextPart = this.props.nextPartInstance
 			const nextSegment = this.props.nextSegment
 
-			const expectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing)
 			const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
-			const overUnderClock = expectedDuration
-				? (this.props.timingDurations.asDisplayedPlaylistDuration || 0) - expectedDuration
-				: (this.props.timingDurations.asDisplayedPlaylistDuration || 0) -
-				  (this.props.timingDurations.totalPlaylistDuration || 0)
+			const overUnderClock = PlaylistTiming.getDiff(playlist, this.props.timingDurations) ?? 0
 
 			return (
 				<div className="presenter-screen">
@@ -475,6 +473,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										partInstanceId={currentPart.instance._id}
 										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
+										playlistActivationId={this.props.playlist?.activationId}
 									/>
 								</div>
 								<div className="presenter-screen__part__piece-name">
@@ -483,6 +482,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										partInstanceId={currentPart.instance._id}
 										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
+										playlistActivationId={this.props.playlist?.activationId}
 									/>
 								</div>
 								<div className="presenter-screen__part__piece-countdown">
@@ -493,6 +493,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										partAutoNext={currentPart.instance.part.autoNext || false}
 										partExpectedDuration={currentPart.instance.part.expectedDuration}
 										partStartedPlayback={currentPart.instance.timings?.startedPlayback}
+										playlistActivationId={this.props.playlist?.activationId}
 									/>
 								</div>
 								<div className="presenter-screen__part__part-countdown">
@@ -520,6 +521,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										partInstanceId={nextPart.instance._id}
 										showStyleBaseId={nextShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
+										playlistActivationId={this.props.playlist?.activationId}
 									/>
 								</div>
 								<div className="presenter-screen__part__piece-name">
@@ -532,6 +534,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 											partInstanceId={nextPart.instance._id}
 											showStyleBaseId={nextShowStyleBaseId}
 											rundownIds={this.props.rundownIds}
+											playlistActivationId={this.props.playlist?.activationId}
 										/>
 									) : (
 										'_'
