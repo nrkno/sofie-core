@@ -36,58 +36,63 @@ export const SegmentContextMenu = withTranslation()(
 			const isCurrentPart =
 				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
 
+			const canSetAsNext = !!this.props.playlist?.activationId
+
 			return this.props.studioMode && this.props.playlist && this.props.playlist.activationId ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
-						{this.props.playlist.activationId && (
+						{part && (
 							<>
-								{part && !part.instance.part.invalid && timecode !== null && (
-									<>
-										{startsAt !== null && (
-											<MenuItem
-												onClick={(e) => this.props.onSetNext(part.instance.part, e)}
-												disabled={isCurrentPart || !!part.instance.orphaned}
-											>
-												<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span>{' '}
-												({RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
-											</MenuItem>
-										)}
-										{startsAt !== null && part && this.props.enablePlayFromAnywhere ? (
-											<>
-												<MenuItem
-													onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)}
-													disabled={isCurrentPart || !!part.instance.orphaned}
-												>
-													<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> (
-													{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
-												</MenuItem>
-												<MenuItem
-													onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
-													disabled={isCurrentPart || !!part.instance.orphaned}
-												>
-													<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> (
-													{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
-												</MenuItem>
-											</>
-										) : null}
-									</>
+								<MenuItem
+									onClick={(e) => this.props.onSetNext(part.instance.part, e)}
+									disabled={isCurrentPart || !canSetAsNext}
+								>
+									<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
+								</MenuItem>
+								{part.instance.segmentId !== this.props.playlist.nextSegmentId ? (
+									<MenuItem
+										onClick={(e) => this.props.onSetNextSegment(part.instance.segmentId, e)}
+										disabled={!canSetAsNext}
+									>
+										<span>{t('Queue segment')}</span>
+									</MenuItem>
+								) : (
+									<MenuItem onClick={(e) => this.props.onSetNextSegment(null, e)} disabled={!canSetAsNext}>
+										<span>{t('Clear queued segment')}</span>
+									</MenuItem>
 								)}
-								{part && timecode === null && (
+								<hr />
+							</>
+						)}
+						{part && !part.instance.part.invalid && timecode !== null && (
+							<>
+								{startsAt !== null && (
+									<MenuItem
+										onClick={(e) => this.props.onSetNext(part.instance.part, e)}
+										disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+									>
+										<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> (
+										{RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
+									</MenuItem>
+								)}
+								{startsAt !== null && part && this.props.enablePlayFromAnywhere ? (
 									<>
-										<MenuItem onClick={(e) => this.props.onSetNext(part.instance.part, e)} disabled={isCurrentPart}>
-											<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
+										<MenuItem
+											onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)}
+											disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+										>
+											<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> (
+											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 										</MenuItem>
-										{part.instance.segmentId !== this.props.playlist.nextSegmentId ? (
-											<MenuItem onClick={(e) => this.props.onSetNextSegment(part.instance.segmentId, e)}>
-												<span>{t('Queue segment')}</span>
-											</MenuItem>
-										) : (
-											<MenuItem onClick={(e) => this.props.onSetNextSegment(null, e)}>
-												<span>{t('Clear queued segment')}</span>
-											</MenuItem>
-										)}
+										<MenuItem
+											onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
+											disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+										>
+											<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> (
+											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
+										</MenuItem>
 									</>
-								)}
+								) : null}
 							</>
 						)}
 					</ContextMenu>
