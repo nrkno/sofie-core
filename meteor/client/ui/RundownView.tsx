@@ -2010,12 +2010,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const liveSegmentComponent = document.querySelector('.segment-timeline.live')
 				if (liveSegmentComponent) {
 					const offsetPosition = liveSegmentComponent.getBoundingClientRect()
-					if (
-						// if it's closer to the top edge than the headerHeight
-						offsetPosition.top < getHeaderHeight() ||
-						// of if it's closer to the bottom edge than very close to the top
+					// if it's closer to the top edge than the headerHeight
+					const segmentComponentTooHigh = offsetPosition.top < getHeaderHeight()
+					// or if it's closer to the bottom edge than very close to the top
+					const segmentComponentTooLow =
 						offsetPosition.bottom < window.innerHeight - getHeaderHeight() - 20 - (offsetPosition.height * 3) / 2
-					) {
+					if (segmentComponentTooHigh || segmentComponentTooLow) {
 						this.setState({
 							followLiveSegments: false,
 						})
