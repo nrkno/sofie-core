@@ -30,7 +30,7 @@ import {
 	omitPiecePropertiesForInstance,
 } from '../../lib/collections/PieceInstances'
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
-import {MeteorCall, MethodContext, MethodContextAPI} from '../../lib/api/methods'
+import { MethodContext, MethodContextAPI} from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
 import { SegmentId, Segment, Segments } from '../../lib/collections/Segments'
 import { Settings } from '../../lib/Settings'
@@ -899,10 +899,6 @@ export async function restoreRundownOrder(
 	return ClientAPI.responseSuccess(await restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
 }
 
-export async function storeSnapshot(studioId: StudioId): Promise<ClientAPI.ClientResponse<SnapshotId>> {
-	return ClientAPI.responseSuccess(await MeteorCall.snapshot.storeDebugSnapshot(studioId, `Requested by user`))
-}
-
 export async function traceAction<T extends (...args: any[]) => any>(
 	description: string,
 	fn: T,
@@ -1265,10 +1261,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return restoreRundownOrder(this, playlistId)
-	}
-
-	storeSnapshot(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<SnapshotId>> {
-		return storeSnapshot(studioId);
 	}
 }
 registerClassToMeteorMethods(
