@@ -29,7 +29,7 @@ import { Part, PartId } from '../collections/Parts'
 import { RundownPlaylist } from '../collections/RundownPlaylists'
 import { Rundown } from '../collections/Rundowns'
 import { SegmentId } from '../collections/Segments'
-import { unprotectString, literal, protectString } from '../lib'
+import { unprotectString, literal, protectString, getCurrentTime } from '../lib'
 import { Settings } from '../Settings'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
@@ -696,7 +696,7 @@ export namespace PlaylistTiming {
 		timingContext: RundownTimingContext
 	): number | undefined {
 		const { timing, startedPlayback } = playlist
-		const currentTime = timingContext.currentTime || Date.now()
+		const currentTime = timingContext.currentTime || getCurrentTime()
 		let frontAnchor: number = currentTime
 		let backAnchor: number = currentTime
 		if (isPlaylistTimingForwardTime(timing)) {
@@ -709,11 +709,14 @@ export namespace PlaylistTiming {
 			backAnchor = timing.expectedEnd
 		}
 
-		const diff = frontAnchor + (timingContext.remainingPlaylistDuration || 0) - backAnchor
+		const diff = isPlaylistTimingNone(timing)
+			? (this.props.timingDurations.asPlayedPlaylistDuration || 0) -
+			  (this.props.timingDurations.totalPlaylistDuration ?? 0)
+			: frontAnchor + (timingContext.remainingPlaylistDuration || 0) - backAnchor
 		return diff
 	}
 
-	export function sortTiminings(a: RundownPlaylist, b: RundownPlaylist): number {
+	export function sortTiminings(a: Rundown, b: Rundown): number {
 		// Compare start times, then allow rundowns with start time to be first
 		if (
 			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&
