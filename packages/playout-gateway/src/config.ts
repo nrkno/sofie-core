@@ -14,10 +14,10 @@ const certs: string[] = (process.env.CERTIFICATES || '').split(';') || []
 let disableAtemUpload: boolean = process.env.DISABLE_ATEM_UPLOAD === '1' || false // TODO: change this to be an opt-in instead
 
 let influxHost: string | undefined = process.env.INFLUX_HOST || undefined
-let influxPort: number | undefined = parseInt(process.env.INFLUX_HOST + '') || 8086
-let influxUser: string | undefined = process.env.INFLUX_HOST || 'sofie'
-let influxPassword: string | undefined = process.env.INFLUX_HOST || undefined
-let influxDatabase: string | undefined = process.env.INFLUX_HOST || 'sofie'
+let influxPort: number | undefined = parseInt(process.env.INFLUX_PORT + '') || 8086
+let influxUser: string | undefined = process.env.INFLUX_USER || 'sofie'
+let influxPassword: string | undefined = process.env.INFLUX_PASSWORD || undefined
+let influxDatabase: string | undefined = process.env.INFLUX_DB || 'sofie'
 
 let prevProcessArg = ''
 process.argv.forEach((val) => {
