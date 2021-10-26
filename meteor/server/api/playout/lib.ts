@@ -48,24 +48,42 @@ export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void
 	// Remove all dunamically inserted pieces (adlibs etc)
 	// const rundownIds = new Set(getRundownIDsFromCache(cache))
 
-	const partInstancesToRemove = new Set(cache.PartInstances.remove((p) => p.rehearsal))
+	const partInstancesToRemove = new Set(
+		cache.PartInstances.remove((p) => p.rehearsal || p.playlistActivationId !== cache.Playlist.doc.activationId)
+	)
 	cache.deferAfterSave(() => {
 		PieceInstances.remove({
 			partInstanceId: { $in: Array.from(partInstancesToRemove.values()) },
 		})
 	})
 
-	cache.PartInstances.update((p) => !p.reset, {
-		$set: {
-			reset: true,
+	cache.PartInstances.update(
+		{
+			$and: [
+				{ $or: [{ reset: false }, { reset: { $exists: false } }] },
+				{ _id: { $in: Array.from(partInstancesToRemove.values()) } },
+			],
 		},
-	})
-	cache.deferAfterSave(() => {
-		PieceInstances.update((p) => !p.reset, {
+		{
 			$set: {
 				reset: true,
 			},
-		})
+		}
+	)
+	cache.deferAfterSave(() => {
+		PieceInstances.update(
+			{
+				$and: [
+					{ $or: [{ reset: false }, { reset: { $exists: false } }] },
+					{ partInstanceId: { $in: Array.from(partInstancesToRemove.values()) } },
+				],
+			},
+			{
+				$set: {
+					reset: true,
+				},
+			}
+		)
 	})
 
 	cache.Playlist.update({
