@@ -366,7 +366,7 @@ function startupMessage() {
 }
 
 function startInstrumenting() {
-	if (process.env.JEST_WORKER_ID) {
+	if (Meteor.isTest) {
 		return
 	}
 

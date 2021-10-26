@@ -1402,7 +1402,7 @@ interface UpdateTimelineFromIngestDataTimeout {
 }
 const updateTimelineFromIngestDataTimeouts = new Map<RundownPlaylistId, UpdateTimelineFromIngestDataTimeout>()
 export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylistId) {
-	if (process.env.JEST_WORKER_ID) {
+	if (Meteor.isTest) {
 		// Don't run this when in jest, as it is not useful and ends up producing errors
 		return
 	}
