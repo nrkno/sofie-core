@@ -60,6 +60,7 @@
 		"@sofie-automation/server-core-integration": "1.37.0-in-testing.0",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
+		"influx": "^5.9.2",
 		"timeline-state-resolver": "6.2.0-release37.6",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
