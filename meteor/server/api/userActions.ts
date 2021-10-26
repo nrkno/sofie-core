@@ -30,7 +30,7 @@ import {
 	omitPiecePropertiesForInstance,
 } from '../../lib/collections/PieceInstances'
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
-import { MethodContext, MethodContextAPI} from '../../lib/api/methods'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
 import { SegmentId, Segment, Segments } from '../../lib/collections/Segments'
 import { Settings } from '../../lib/Settings'
