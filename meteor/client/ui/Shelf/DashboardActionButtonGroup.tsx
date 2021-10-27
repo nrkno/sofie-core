@@ -84,22 +84,19 @@ export const DashboardActionButtonGroup = withTranslation()(
 		storeSnapshot = (e: React.SyntheticEvent<HTMLElement>) => {
 			const { t } = this.props
 			const playlistId: RundownPlaylistId = this.props.playlist._id
-			const reason: string = 'Debug snapshot requested by user'
+			const reason: string = 'Taken by user'
 			doUserAction(
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, reason),
 				(err, snapshotId) => {
-					let noticeLevel: NoticeLevel = NoticeLevel.WARNING
-					let message = t('Snapshot failed: {{errorMessage}}', { errorMessage: err + '' })
 					if (!err && snapshotId) {
-						noticeLevel = NoticeLevel.NOTIFICATION
-						message = t('Successfully stored snapshot')
+						let noticeLevel: NoticeLevel = NoticeLevel.NOTIFICATION
+						let message: string = t('Successfully stored snapshot')
+						const notification: Notification = new Notification(undefined, noticeLevel, message, 'StoreSnapshot')
+						NotificationCenter.push(notification)
 					}
-
-					const notification: Notification = new Notification(undefined, noticeLevel, message, 'StoreSnapshot')
-					NotificationCenter.push(notification)
 				}
 			)
 		}
