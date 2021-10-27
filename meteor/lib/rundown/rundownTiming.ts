@@ -716,7 +716,7 @@ export namespace PlaylistTiming {
 		return diff
 	}
 
-	export function sortTiminings(a: Rundown, b: Rundown): number {
+	export function sortTiminings(a: Rundown | RundownPlaylist, b: Rundown | RundownPlaylist): number {
 		// Compare start times, then allow rundowns with start time to be first
 		if (
 			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&
