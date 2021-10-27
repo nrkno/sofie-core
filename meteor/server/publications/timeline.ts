@@ -15,6 +15,7 @@ import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/Per
 import { Studios, getActiveRoutes, StudioId, DBStudio, ResultingMappingRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
+import { FastTrackObservers, setupFastTrackObserver } from './fastTrack'
 
 meteorPublish(PubSub.timeline, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -64,6 +65,15 @@ meteorCustomPublishArray(
 							changed: (timeline) => triggerUpdate({ timeline: timeline }),
 							removed: () => triggerUpdate({ timeline: null }),
 						}),
+						setupFastTrackObserver(
+							FastTrackObservers.TIMELINE,
+							[studioId],
+							(timeline: TimelineComplete) => {
+								triggerUpdate({
+									timeline: timeline,
+								})
+							}
+						),
 					]
 				},
 				() => {
