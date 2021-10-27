@@ -11,7 +11,7 @@ export interface InfluxConfig {
 
 const url = /(https?:\/\/)?([\s\S]+)/g.exec(config.influx.host || '')
 const hostname = url?.[2]
-const protocol = (url?.[1].replace('://', '') || 'https') as 'http' | 'https'
+const protocol = (url?.[1]?.replace('://', '') || 'https') as 'http' | 'https'
 const client = config.influx.host
 	? new Influx.InfluxDB({
 			database: config.influx.database,
@@ -56,7 +56,7 @@ export function sendTrace(trace: Record<string, any>) {
 			timeout = setTimeout(() => {
 				emptyBuffers()
 				timeout = undefined
-			}, 5 * 1000)
+			}, 30 * 1000)
 		}
 	}
 }
