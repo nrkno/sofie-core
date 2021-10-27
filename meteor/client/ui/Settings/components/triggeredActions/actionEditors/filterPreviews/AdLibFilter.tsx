@@ -6,6 +6,12 @@ import { TFunction } from 'i18next'
 import { assertNever } from '../../../../../../../lib/lib'
 import { FilterEditor } from './FilterEditor'
 import { ShowStyleBase } from '../../../../../../../lib/collections/ShowStyleBases'
+import { EditAttributeType } from '../../../../../../lib/EditAttribute'
+import { useTracker } from '../../../../../../lib/ReactMeteorData/ReactMeteorData'
+import { RundownBaselineAdLibActions } from '../../../../../../../lib/collections/RundownBaselineAdLibActions'
+import { AdLibActions } from '../../../../../../../lib/collections/AdLibActions'
+import { RundownBaselineAdLibPieces } from '../../../../../../../lib/collections/RundownBaselineAdLibPieces'
+import { AdLibPieces } from '../../../../../../../lib/collections/AdLibPieces'
 
 interface IProps {
 	link: IAdLibFilterLink
@@ -28,13 +34,14 @@ function typeOptionsWithLabels(t: TFunction) {
 	}
 }
 
-function fieldToType(field: IAdLibFilterLink['field']) {
+function fieldToType(field: IAdLibFilterLink['field']): EditAttributeType {
 	switch (field) {
 		case 'global':
 			return 'dropdown'
 		case 'label':
-		case 'tag':
 			return 'text'
+		case 'tag':
+			return 'dropdowntext'
 		case 'limit':
 		case 'pick':
 		case 'pickEnd':
@@ -259,6 +266,10 @@ function getAvailableFields(t: TFunction, fields: IAdLibFilterLink['field'][]): 
 	return result
 }
 
+function isLinkFinal(link: IAdLibFilterLink) {
+	return link.field === 'pick' || link.field === 'pickEnd'
+}
+
 export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 	link,
 	readonly,
@@ -287,6 +298,31 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 		'type',
 	]
 
+	const availableOptions = useTracker<Record<string, any> | string[], Record<string, any> | string[]>(
+		() => {
+			// tags are a special case because we need to search the database for available options
+			// we should have the data subscribed already
+			if (link.field === 'tag') {
+				const availableTags = _.chain(
+					RundownBaselineAdLibActions.find()
+						.map((action) => action.display.tags)
+						.concat(AdLibActions.find().map((action) => action.display.tags))
+						.concat(RundownBaselineAdLibPieces.find().map((piece) => piece.tags))
+						.concat(AdLibPieces.find().map((piece) => piece.tags))
+				)
+					.flatten()
+					.compact()
+					.uniq()
+					.value() as string[]
+				return availableTags
+			} else {
+				return fieldToOptions(t, showStyleBase, link.field)
+			}
+		},
+		[link.field],
+		fieldToOptions(t, showStyleBase, link.field)
+	)
+
 	return (
 		<FilterEditor
 			field={link.field}
@@ -294,8 +330,8 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 			fieldLabel={fieldToLabel(t, link.field)}
 			valueLabel={fieldValueToValueLabel(t, showStyleBase, link)}
 			value={fieldValueToEditorValue(link)}
-			final={link.field === 'pick' || link.field === 'pickEnd'}
-			values={fieldToOptions(t, showStyleBase, link.field)}
+			final={isLinkFinal(link)}
+			values={availableOptions}
 			type={fieldToType(link.field)}
 			readonly={readonly}
 			opened={opened}
