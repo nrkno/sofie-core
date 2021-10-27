@@ -13,7 +13,7 @@ const client = config.influx.host
 	? new Influx.InfluxDB({
 			database: config.influx.database,
 			host: config.influx.host,
-			port: 8086,
+			port: config.influx.port,
 			username: config.influx.user,
 			password: config.influx.password,
 	  })
@@ -52,7 +52,7 @@ export function sendTrace(trace: Record<string, any>) {
 			timeout = setTimeout(() => {
 				emptyBuffers()
 				timeout = undefined
-			}, 30 * 1000)
+			}, 5 * 1000)
 		}
 	}
 }
@@ -79,5 +79,6 @@ function emptyBuffers() {
 	const points = bufferedTraces // create a reference so we can safely empty bufferedTraces
 	bufferedTraces = []
 
-	client?.writePoints(points).catch(() => null) // only tracing so not relevant enough to throw errors
+    console.log('send ' + points.length)
+	client?.writePoints(points).catch((e) => console.log(e)) // only tracing so not relevant enough to throw errors
 }
