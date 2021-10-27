@@ -9,13 +9,17 @@ export interface InfluxConfig {
 	database: string
 }
 
+const url = /(https?:\/\/)?([\s\S]+)/g.exec(config.influx.host || '')
+const hostname = url?.[2]
+const protocol = (url?.[1].replace('://', '') || 'https') as 'http' | 'https'
 const client = config.influx.host
 	? new Influx.InfluxDB({
 			database: config.influx.database,
-			host: config.influx.host,
+			host: hostname,
 			port: config.influx.port,
 			username: config.influx.user,
 			password: config.influx.password,
+			protocol
 	  })
 	: undefined
 
@@ -30,7 +34,7 @@ export function sendTrace(trace: Record<string, any>) {
 		measurement: trace.measurement,
 		tags: {
 			...trace.tags,
-			// host: ???
+			host: config.device.deviceId,
 			...versions,
 		},
 		fields: {
@@ -79,6 +83,5 @@ function emptyBuffers() {
 	const points = bufferedTraces // create a reference so we can safely empty bufferedTraces
 	bufferedTraces = []
 
-    console.log('send ' + points.length)
-	client?.writePoints(points).catch((e) => console.log(e)) // only tracing so not relevant enough to throw errors
+	client?.writePoints(points).catch((e) => console.log(e)) // only tracing so not relevant enough to throw errors, stdout should go to debug
 }
