@@ -303,7 +303,7 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 			// tags are a special case because we need to search the database for available options
 			// we should have the data subscribed already
 			if (link.field === 'tag') {
-				const availableTags = _.chain(
+				return _.chain(
 					RundownBaselineAdLibActions.find()
 						.map((action) => action.display.tags)
 						.concat(AdLibActions.find().map((action) => action.display.tags))
@@ -314,7 +314,6 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 					.compact()
 					.uniq()
 					.value() as string[]
-				return availableTags
 			} else {
 				return fieldToOptions(t, showStyleBase, link.field)
 			}
