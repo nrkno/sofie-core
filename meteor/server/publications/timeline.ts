@@ -1,15 +1,22 @@
 import { Meteor } from 'meteor/meteor'
-import { Timeline, getRoutedTimeline, TimelineComplete } from '../../lib/collections/Timeline'
+import {
+	Timeline,
+	getRoutedTimeline,
+	TimelineComplete,
+	TimelineObjGeneric,
+	TimelineHash,
+} from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/typings/meteor'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Studios, getActiveRoutes, StudioId } from '../../lib/collections/Studios'
+import { Studios, getActiveRoutes, StudioId, DBStudio, ResultingMappingRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
-import { fetchStudioLight } from '../../lib/collections/optimizations'
+import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
+import { FastTrackObservers, setupFastTrackObserver } from './fastTrack'
 
 meteorPublish(PubSub.timeline, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -48,9 +55,9 @@ meteorCustomPublishArray(
 								mappingsHash: 1,
 							},
 						}).observe({
-							added: () => triggerUpdate({ studioId: studioId }),
-							changed: () => triggerUpdate({ studioId: studioId }),
-							removed: () => triggerUpdate({ studioId: null }),
+							added: () => triggerUpdate({ invalidateStudio: true, studioId: studioId }),
+							changed: () => triggerUpdate({ invalidateStudio: true, studioId: studioId }),
+							removed: () => triggerUpdate({ invalidateStudio: true, studioId: null }),
 						}),
 						Timeline.find({
 							_id: studioId,
@@ -59,42 +66,104 @@ meteorCustomPublishArray(
 							changed: (timeline) => triggerUpdate({ timeline: timeline }),
 							removed: () => triggerUpdate({ timeline: null }),
 						}),
+						setupFastTrackObserver(
+							FastTrackObservers.TIMELINE,
+							[studioId],
+							(timeline: TimelineComplete) => {
+								triggerUpdate({
+									timeline: timeline,
+								})
+							}
+						),
 					]
 				},
 				() => {
 					// Initial data fetch
 					return {
+						studioId: studioId,
 						timeline: Timeline.findOne({
 							_id: studioId,
 						}),
-						studioId: studioId,
+
+						invalidateStudio: true,
+						studio: undefined,
+						routes: undefined,
+
+						timelineHash: undefined,
+						routedTimeline: [],
 					}
 				},
-				(newData: { studioId: StudioId | undefined; timeline: TimelineComplete | undefined }) => {
+				(context: {
+					studioId: StudioId | undefined
+					timeline: TimelineComplete | undefined
+
+					invalidateStudio: boolean
+					studio: StudioLight | undefined
+					routes: ResultingMappingRoutes | undefined
+
+					// re-calc of timeline using timelineHash:
+					timelineHash: TimelineHash | undefined
+					routedTimeline: TimelineObjGeneric[]
+				}) => {
 					// Prepare data for publication:
 
-					if (!newData.studioId || !newData.timeline) {
+					if (!context.studioId || !context.timeline) {
 						return []
-					} else {
-						const studio = fetchStudioLight(newData.studioId)
-						if (!studio) return []
-
-						const routes = getActiveRoutes(studio)
-						const routedTimeline = getRoutedTimeline(newData.timeline.timeline, routes)
-
-						return [
-							{
-								_id: newData.timeline._id,
-								mappingsHash: studio.mappingsHash,
-								timelineHash: newData.timeline.timelineHash,
-								timeline: routedTimeline,
-							},
-						]
 					}
+
+					let changedData = false
+					let invalidateTimeline = false
+
+					if (context.invalidateStudio) {
+						context.invalidateStudio = false
+						context.studio = fetchStudioLight(context.studioId)
+						context.routes = context.studio ? getActiveRoutes(context.studio) : undefined
+
+						invalidateTimeline = true
+					}
+					if (!context.studio) return []
+					if (!context.routes) return []
+
+					if (context.timelineHash !== context.timeline.timelineHash) {
+						invalidateTimeline = true
+					}
+
+					if (invalidateTimeline) {
+						context.timelineHash = context.timeline.timelineHash
+						context.routedTimeline = getRoutedTimeline(context.timeline.timeline, context.routes)
+						changedData = true
+					}
+
+					return [
+						{
+							_id: context.timeline._id,
+							mappingsHash: context.studio.mappingsHash,
+							timelineHash: context.timeline.timelineHash,
+							timeline: context.routedTimeline,
+
+							changedData,
+						},
+					]
 				},
 				(newData) => {
-					pub.updatedDocs(newData)
-				}
+					if (newData.length) {
+						// Only update the publication if any data has changed:
+						let changedData = false
+						for (const data of newData) {
+							if (data.changedData) {
+								changedData = true
+								break
+							}
+						}
+						if (changedData) {
+							pub.updatedDocs(newData)
+						} else {
+						}
+					} else {
+						pub.updatedDocs(newData)
+					}
+				},
+				0 // ms
 			)
 			pub.onStop(() => {
 				observer.stop()

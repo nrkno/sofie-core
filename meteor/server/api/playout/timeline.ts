@@ -19,6 +19,7 @@ import {
 	TimelineObjPartAbstract,
 	StatObjectMetadata,
 	OnGenerateTimelineObjExt,
+	TimelineComplete,
 } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -64,6 +65,7 @@ import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
 import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { FastTrackObservers, triggerFastTrackObserver } from '../../publications/fastTrack'
 
 export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 	const playlists = cache.getActiveRundownPlaylists()
@@ -239,12 +241,16 @@ function processAndSaveTimelineObjects(
 		}
 	})
 
-	cache.Timeline.replace({
+	const newTimeline: TimelineComplete = {
 		_id: studio._id,
 		timelineHash: getRandomId(), // randomized on every timeline change
 		generated: getCurrentTime(),
 		timeline: timelineObjs,
-	})
+	}
+
+	cache.Timeline.replace(newTimeline)
+	// Also do a fast-track for the timeline to be published faster:
+	triggerFastTrackObserver(FastTrackObservers.TIMELINE, [studio._id], newTimeline)
 
 	logger.debug('updateTimeline done!')
 }
