@@ -33,6 +33,10 @@ export interface PlaylistTimingBase {
 
 export interface PlaylistTimingNone {
 	type: PlaylistTimingType.None
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
 }
 
 export interface PlaylistTimingForwardTime extends PlaylistTimingBase {
@@ -96,7 +100,7 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 /** The Rundown sent from Core */
 export interface IBlueprintRundownDB<TMetadata = unknown>
 	extends IBlueprintRundown<TMetadata>,
-		IBlueprintRundownDBData {}
+	IBlueprintRundownDBData { }
 /** Properties added to a rundown in Core */
 export interface IBlueprintRundownDBData {
 	_id: string

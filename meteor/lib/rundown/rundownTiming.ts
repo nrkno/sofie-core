@@ -18,6 +18,7 @@ import {
 	PlaylistTimingType,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
+import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import {
 	findPartInstanceInMapOrWrapToTemporary,
@@ -26,8 +27,8 @@ import {
 	wrapPartToTemporaryInstance,
 } from '../collections/PartInstances'
 import { Part, PartId } from '../collections/Parts'
-import { RundownPlaylist } from '../collections/RundownPlaylists'
-import { Rundown } from '../collections/Rundowns'
+import { DBRundownPlaylist, RundownPlaylist } from '../collections/RundownPlaylists'
+import { DBRundown, Rundown } from '../collections/Rundowns'
 import { SegmentId } from '../collections/Segments'
 import { unprotectString, literal, protectString, getCurrentTime } from '../lib'
 import { Settings } from '../Settings'
@@ -572,7 +573,7 @@ export class RundownTimingCalculator {
 }
 
 export interface RundownTimingContext {
-	/** This is the total duration of the palylist as planned (using expectedDurations). */
+	/** This is the total duration of the playlist as planned (using expectedDurations). */
 	totalPlaylistDuration?: number
 	/** This is the content remaining to be played in the playlist (based on the expectedDurations).  */
 	remainingPlaylistDuration?: number
@@ -710,13 +711,16 @@ export namespace PlaylistTiming {
 		}
 
 		const diff = isPlaylistTimingNone(timing)
-			? (this.props.timingDurations.asPlayedPlaylistDuration || 0) -
-			  (this.props.timingDurations.totalPlaylistDuration ?? 0)
+			? (timingContext.asPlayedPlaylistDuration || 0) -
+			  (timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
 			: frontAnchor + (timingContext.remainingPlaylistDuration || 0) - backAnchor
 		return diff
 	}
 
-	export function sortTiminings(a: Rundown | RundownPlaylist, b: Rundown | RundownPlaylist): number {
+	export function sortTiminings(
+		a: ReadonlyDeep<DBRundown> | ReadonlyDeep<DBRundownPlaylist>,
+		b: ReadonlyDeep<DBRundown> | ReadonlyDeep<DBRundownPlaylist>
+	): number {
 		// Compare start times, then allow rundowns with start time to be first
 		if (
 			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&
