@@ -276,6 +276,19 @@ $dashboard-button-height: 5.625em;
 		@include floated-overlay();
 		@include missing-overlay();
 
+		$dashboard-panel__button__border-width: 2px;
+
+		&.selected {
+			box-shadow: $dashboard-panel__button__border-width $dashboard-panel__button__border-width 0
+					var(--adlib-item-selected-color),
+				($dashboard-panel__button__border-width * -1) ($dashboard-panel__button__border-width * -1) 0
+					var(--adlib-item-selected-color),
+				($dashboard-panel__button__border-width * -1) $dashboard-panel__button__border-width 0
+					var(--adlib-item-selected-color),
+				$dashboard-panel__button__border-width ($dashboard-panel__button__border-width * -1) 0
+					var(--adlib-item-selected-color);
+		}
+
 		&.live {
 			@keyframes button-flash {
 				0% {
@@ -304,6 +317,12 @@ $dashboard-button-height: 5.625em;
 				z-index: 10;
 				// animation: 2s button-flash normal infinite;
 			}
+
+			box-shadow: $dashboard-panel__button__border-width $dashboard-panel__button__border-width 0 $general-live-color,
+				($dashboard-panel__button__border-width * -1) ($dashboard-panel__button__border-width * -1) 0
+					$general-live-color,
+				($dashboard-panel__button__border-width * -1) $dashboard-panel__button__border-width 0 $general-live-color,
+				$dashboard-panel__button__border-width ($dashboard-panel__button__border-width * -1) 0 $general-live-color;
 		}
 
 		&.disabled {
@@ -319,11 +338,6 @@ $dashboard-button-height: 5.625em;
 				z-index: 10;
 				// animation: 2s button-flash normal infinite;
 			}
-		}
-
-		&.selected {
-			box-shadow: 2px 2px 0 var(--adlib-item-selected-color), -2px -2px 0 var(--adlib-item-selected-color),
-				-2px 2px 0 var(--adlib-item-selected-color), 2px -2px 0 var(--adlib-item-selected-color);
 		}
 
 		&:focus {
