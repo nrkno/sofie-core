@@ -32,6 +32,7 @@ import { LoggerInstance } from './index'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
 import { sendTrace } from './influxdb'
+import { FinishedTrace } from 'timeline-state-resolver/dist/lib'
 const debug = Debug('playout-gateway')
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -243,8 +244,16 @@ export class TSRHandler {
 				.catch((e) => {
 					this.logger.error('Error in reportResolveDone', e)
 				})
+			
+			sendTrace({
+				measurement: 'playout-gateway.tlResolveDone',
+				tags: {},
+				start: Date.now() - resolveDuration,
+				duration: resolveDuration,
+				ended: Date.now()
+			})
 		})
-		this.tsr.on('timeTrace', (trace: Record<string, any>) => sendTrace(trace))
+		this.tsr.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
 
 		this.logger.debug('tsr init')
 		await this.tsr.init()
@@ -267,13 +276,13 @@ export class TSRHandler {
 
 		const timelineObserver = this._coreHandler.core.observe('studioTimeline')
 		timelineObserver.added = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings(true)
 		}
 		timelineObserver.changed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings(true)
 		}
 		timelineObserver.removed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings(true)
 		}
 		this._observers.push(timelineObserver)
 
@@ -331,6 +340,7 @@ export class TSRHandler {
 				mappingsHash: string
 				timelineHash: string
 				timeline: TimelineObjGeneric[]
+				generated: number
 		  }
 		| undefined {
 		const studioId = this._getStudioId()
@@ -392,12 +402,12 @@ export class TSRHandler {
 			this._triggerUpdateDevices()
 		}
 	}
-	private _triggerupdateTimelineAndMappings() {
+	private _triggerupdateTimelineAndMappings(fromTlChange?: boolean) {
 		if (!this._initialized) return
 
-		this._updateTimelineAndMappings()
+		this._updateTimelineAndMappings(fromTlChange)
 	}
-	private _updateTimelineAndMappings() {
+	private _updateTimelineAndMappings(fromTlChange?: boolean) {
 		const timeline = this.getTimeline()
 		const mappingsObject = this.getMappings()
 
@@ -418,6 +428,17 @@ export class TSRHandler {
 		}
 
 		this.logger.debug(`Trigger new resolving`)
+		if (fromTlChange) {
+			const trace = {
+				measurement: 'playout-gateway:timelineReceived',
+				start: timeline.generated,
+				tags: {},
+				ended: Date.now(),
+				duration: Date.now() - timeline.generated
+			}
+			sendTrace(trace)
+		}
+
 
 		const transformedTimeline = this._transformTimeline(timeline.timeline)
 		this.tsr.timelineHash = timeline.timelineHash
@@ -800,7 +821,7 @@ export class TSRHandler {
 				}
 			})
 
-			await device.device.on('timeTrace', (trace: Record<string, any>) => sendTrace(trace))
+			await device.device.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
 
 			// now initialize it
 			await this.tsr.initDevice(deviceId, options)
