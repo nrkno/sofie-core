@@ -87,7 +87,8 @@ meteorCustomPublishArray(
 								mappingsHash: studio.mappingsHash,
 								timelineHash: newData.timeline.timelineHash,
 								timeline: routedTimeline,
-								generated: newData.timeline.generated
+								generated: newData.timeline.generated,
+								published: Date.now()
 							},
 						]
 					}
