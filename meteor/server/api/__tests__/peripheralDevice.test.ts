@@ -37,7 +37,7 @@ const { ServerPlayoutAPI: _ActualServerPlayoutAPI } = jest.requireActual('../pla
 import { ServerPlayoutAPI } from '../playout/playout'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { Timeline, TimelineEnableExt } from '../../../lib/collections/Timeline'
+import { Timeline, TimelineEnableExt, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
@@ -431,11 +431,11 @@ describe('test peripheralDevice general API methods', () => {
 			_id: env.studio._id,
 		})
 		expect(studioTimeline).toBeTruthy()
+		const timeline0 = studioTimeline && (JSON.parse(studioTimeline.timelineBlob) as Array<TimelineObjGeneric>)
 		const timelineObjs =
 			(studioTimeline &&
-				studioTimeline.timeline.filter(
-					(x) => x.enable && !Array.isArray(x.enable) && x.enable.start === 'now'
-				)) ||
+				timeline0 &&
+				timeline0.filter((x) => x.enable && !Array.isArray(x.enable) && x.enable.start === 'now')) ||
 			[]
 		expect(timelineObjs.length).toBe(1)
 		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
@@ -449,8 +449,9 @@ describe('test peripheralDevice general API methods', () => {
 			_id: env.studio._id,
 		})
 		const prevIds = timelineObjs.map((x) => x.id)
-		const timelineUpdatedObjs =
-			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
+		const timeline1 =
+			updatedStudioTimeline && (JSON.parse(updatedStudioTimeline.timelineBlob) as Array<TimelineObjGeneric>)
+		const timelineUpdatedObjs = (timeline1 && timeline1.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
 		timelineUpdatedObjs.forEach((tlObj) => {
 			expect(Array.isArray(tlObj.enable)).toBeFalsy()
 			const enable = tlObj.enable as TimelineEnableExt

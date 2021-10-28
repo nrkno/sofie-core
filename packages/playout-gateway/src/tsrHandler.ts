@@ -328,7 +328,7 @@ export class TSRHandler {
 				_id: string // Studio id
 				mappingsHash: string
 				timelineHash: string
-				timeline: TimelineObjGeneric[]
+				timelineBlob: string
 		  }
 		| undefined {
 		const studioId = this._getStudioId()
@@ -417,7 +417,9 @@ export class TSRHandler {
 
 		this.logger.debug(`Trigger new resolving`)
 
-		const transformedTimeline = this._transformTimeline(timeline.timeline)
+		const transformedTimeline = this._transformTimeline(
+			JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>
+		)
 		this.tsr.timelineHash = timeline.timelineHash
 		this.tsr.setTimelineAndMappings(transformedTimeline, mappingsObject.mappings)
 	}

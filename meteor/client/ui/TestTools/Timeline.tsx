@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Timeline } from '../../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { Time, applyToArray, clone } from '../../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
@@ -71,10 +71,12 @@ export const ComponentTimelineSimulate = withTracker<
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
 		const tlComplete = Timeline.findOne(props.studioId)
+		const timelineObj = tlComplete && (JSON.parse(tlComplete.timelineBlob) as Array<TimelineObjGeneric>)
 		console.log('regen timeline', tlComplete?.timelineHash, tlComplete?.generated)
 		const timeline =
 			(tlComplete &&
-				tlComplete.timeline
+				timelineObj &&
+				timelineObj
 					.map((o) => {
 						const obj = clone(o)
 						applyToArray(o.enable, (enable) => {

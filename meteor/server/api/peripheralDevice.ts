@@ -7,7 +7,7 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, getRandomId, applyToArray, stringifyObjects } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
+import { Timeline, TimelineComplete, TimelineHash, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -288,7 +288,8 @@ export namespace ServerPeripheralDeviceAPI {
 		let lastTakeTime: number | undefined
 
 		// ------------------------------
-		const timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
+		const timeline = cache.Timeline.findOne(cache.Studio.doc._id)
+		const timelineObjs = (timeline && (JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)) || []
 		let tlChanged = false
 
 		_.each(results, (o) => {
@@ -359,7 +360,7 @@ export namespace ServerPeripheralDeviceAPI {
 				cache.Studio.doc._id,
 				{
 					$set: {
-						timeline: timelineObjs,
+						timelineBlob: JSON.stringify(timelineObjs),
 						timelineHash: getRandomId(),
 						generated: getCurrentTime(),
 					},

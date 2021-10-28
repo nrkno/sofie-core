@@ -55,7 +55,9 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 		if (isTimelineComplete(o)) {
 			if (o.generated) o.generated = 12345
 
-			_.each(o.timeline, (obj) => {
+			const timeline = JSON.parse(o.timelineBlob) as Array<TimelineObjGeneric>
+
+			_.each(timeline, (obj) => {
 				const statObjMetadata = obj.metaData as Partial<StatObjectMetadata> | undefined
 				if (statObjMetadata?.versions?.core) {
 					// re-write the core version to something static, so tests won't fail just because the version has changed
@@ -83,7 +85,7 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 }
 function isTimelineComplete(o): o is TimelineComplete {
 	const o2 = o as TimelineComplete
-	return !!(o2.timeline && o2._id && o2.generated)
+	return !!(o2.timelineBlob && o2._id && o2.generated)
 }
 // function isTimelineObj(o): o is TimelineObjGeneric {
 // 	return o.enable && o._id && o.id && o.studioId

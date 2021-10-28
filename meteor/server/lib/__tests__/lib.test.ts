@@ -31,7 +31,7 @@ describe('server/lib', () => {
 			_id: protectString('myStudio'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
-			timeline: mystudioObjs,
+			timelineBlob: JSON.stringify(mystudioObjs),
 		})
 
 		const mystudio2Objs: Array<TimelineObjGeneric> = [
@@ -49,7 +49,7 @@ describe('server/lib', () => {
 			_id: protectString('myStudio2'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
-			timeline: mystudio2Objs,
+			timelineBlob: JSON.stringify(mystudio2Objs),
 		})
 
 		const options: SaveIntoDbHooks<any, any> = {
@@ -112,9 +112,10 @@ describe('server/lib', () => {
 		).toEqual(1)
 		const abc = Timeline.findOne(protectString('myStudio')) as TimelineComplete
 		expect(abc).toBeTruthy()
-		expect(abc.timeline).toHaveLength(2)
-		expect(abc.timeline[0].classes).toEqual(undefined)
-		expect(abc.timeline[0].layer).toEqual('L2')
+		const timeline = JSON.parse(abc.timelineBlob) as Array<TimelineObjGeneric>
+		expect(timeline).toHaveLength(2)
+		expect(timeline[0].classes).toEqual(undefined)
+		expect(timeline[0].layer).toEqual('L2')
 
 		expect(
 			Timeline.find({

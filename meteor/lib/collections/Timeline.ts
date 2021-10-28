@@ -149,8 +149,8 @@ export interface TimelineComplete {
 	timelineHash: TimelineHash
 	/** Timestamp when the timeline is generated */
 	generated: Time
-	/** Array containing all timeline-objects */
-	timeline: Array<TimelineObjGeneric>
+	/** serialized JSON Array containing all timeline-objects */
+	timelineBlob: string
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')

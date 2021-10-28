@@ -210,10 +210,11 @@ function processAndSaveTimelineObjects(
 		setNowToTimeInObjects(timelineObjs, theNowTime)
 	}
 
+	const timeline = cache.Timeline.findOne({
+		_id: studio._id,
+	})
 	const oldTimelineObjsMap = normalizeArray(
-		cache.Timeline.findOne({
-			_id: studio._id,
-		})?.timeline ?? [],
+		(timeline && (JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)) ?? [],
 		'id'
 	)
 
@@ -243,7 +244,7 @@ function processAndSaveTimelineObjects(
 		_id: studio._id,
 		timelineHash: getRandomId(), // randomized on every timeline change
 		generated: getCurrentTime(),
-		timeline: timelineObjs,
+		timelineBlob: JSON.stringify(timelineObjs),
 	})
 
 	logger.debug('updateTimeline done!')

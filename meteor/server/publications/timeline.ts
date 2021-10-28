@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { Timeline, getRoutedTimeline, TimelineComplete } from '../../lib/collections/Timeline'
+import { Timeline, getRoutedTimeline, TimelineComplete, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/typings/meteor'
@@ -79,7 +79,8 @@ meteorCustomPublishArray(
 						if (!studio) return []
 
 						const routes = getActiveRoutes(studio)
-						const routedTimeline = getRoutedTimeline(newData.timeline.timeline, routes)
+						const timeline = JSON.parse(newData.timeline.timelineBlob) as Array<TimelineObjGeneric>
+						const routedTimeline = getRoutedTimeline(timeline, routes)
 
 						return [
 							{
