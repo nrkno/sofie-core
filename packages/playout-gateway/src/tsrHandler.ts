@@ -244,13 +244,13 @@ export class TSRHandler {
 				.catch((e) => {
 					this.logger.error('Error in reportResolveDone', e)
 				})
-			
+
 			sendTrace({
 				measurement: 'playout-gateway.tlResolveDone',
 				tags: {},
 				start: Date.now() - resolveDuration,
 				duration: resolveDuration,
-				ended: Date.now()
+				ended: Date.now(),
 			})
 		})
 		this.tsr.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
@@ -341,6 +341,7 @@ export class TSRHandler {
 				timelineHash: string
 				timeline: TimelineObjGeneric[]
 				generated: number
+				published: number
 		  }
 		| undefined {
 		const studioId = this._getStudioId()
@@ -434,11 +435,17 @@ export class TSRHandler {
 				start: timeline.generated,
 				tags: {},
 				ended: Date.now(),
-				duration: Date.now() - timeline.generated
+				duration: Date.now() - timeline.generated,
 			}
 			sendTrace(trace)
+			sendTrace({
+				measurement: 'playout-gateway:timelinePublicationLatency',
+				start: timeline.published,
+				tags: {},
+				ended: Date.now(),
+				duration: Date.now() - timeline.published,
+			})
 		}
-
 
 		const transformedTimeline = this._transformTimeline(timeline.timeline)
 		this.tsr.timelineHash = timeline.timelineHash
