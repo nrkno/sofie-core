@@ -410,7 +410,10 @@ export class RundownTimingCalculator {
 				// if outOfOrderTiming is true, count parts before current part towards remaining rundown duration
 				// if false (default), past unplayed parts will not count towards remaining time
 				if (!lastStartedPlayback && !partInstance.part.floated && partCounts && !partIsUntimed) {
-					remainingRundownDuration += partExpectedDuration || 0
+					// this needs to use partInstance.part.expectedDuration as opposed to partExpectedDuration, because
+					// partExpectedDuration is affected by displayGroups, and if it hasn't played yet then it shouldn't
+					// add any duration to the "remaining" time pool
+					remainingRundownDuration += partInstance.part.expectedDuration || 0
 					// item is onAir right now, and it's is currently shorter than expectedDuration
 				} else if (
 					lastStartedPlayback &&
@@ -419,7 +422,7 @@ export class RundownTimingCalculator {
 					lastStartedPlayback + partExpectedDuration > now &&
 					!partIsUntimed
 				) {
-					remainingRundownDuration += partExpectedDuration - (now - lastStartedPlayback)
+					remainingRundownDuration += Math.max(0, partExpectedDuration - (now - lastStartedPlayback))
 				}
 
 				if (!rundownExpectedDurations[unprotectString(partInstance.part.rundownId)]) {
@@ -693,10 +696,11 @@ export namespace PlaylistTiming {
 	}
 
 	export function getDiff(
-		playlist: Pick<RundownPlaylist, 'timing' | 'startedPlayback'>,
+		playlist: Pick<RundownPlaylist, 'timing' | 'startedPlayback' | 'activationId'>,
 		timingContext: RundownTimingContext
 	): number | undefined {
-		const { timing, startedPlayback } = playlist
+		const { timing, startedPlayback, activationId } = playlist
+		const active = !!activationId
 		const currentTime = timingContext.currentTime || getCurrentTime()
 		let frontAnchor: number = currentTime
 		let backAnchor: number = currentTime
@@ -710,10 +714,24 @@ export namespace PlaylistTiming {
 			backAnchor = timing.expectedEnd
 		}
 
-		const diff = isPlaylistTimingNone(timing)
+		let diff = isPlaylistTimingNone(timing)
 			? (timingContext.asPlayedPlaylistDuration || 0) -
 			  (timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
 			: frontAnchor + (timingContext.remainingPlaylistDuration || 0) - backAnchor
+
+		// handle special cases
+
+		// the rundown has been played out and now has been deactivated
+		if (!active && startedPlayback) {
+			if (isPlaylistTimingForwardTime(timing)) {
+				// we want to know how heavy/light we were compared to the original plan
+				diff =
+					(timingContext.asPlayedPlaylistDuration || 0) -
+					(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
+				// TODO: take the optional expectedEnd into account
+			}
+		}
+
 		return diff
 	}
 

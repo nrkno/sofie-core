@@ -115,7 +115,17 @@ export const PlaylistEndTiming = withTranslation()(
 									})}
 								>
 									{!this.props.hideDiffLabel && <span className="timing-clock-label right">{t('Diff')}</span>}
-									{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true)}
+									{RundownUtils.formatDiffToTimecode(
+										overUnderClock,
+										true,
+										false,
+										true,
+										true,
+										true,
+										undefined,
+										true,
+										true
+									)}
 								</span>
 							) : null
 						) : null}

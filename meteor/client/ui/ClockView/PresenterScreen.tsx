@@ -526,7 +526,11 @@ export class PresenterScreenBase extends MeteorReactComponent<
 								</div>
 								<div className="presenter-screen__part__piece-name">
 									{currentPart && currentPart.instance.part.autoNext ? (
-										<img className="presenter-screen__part__auto-next-icon" src="/icons/auto-presenter-screen.svg" />
+										<img
+											className="presenter-screen__part__auto-next-icon"
+											src="/icons/auto-presenter-screen.svg"
+											alt="Autonext"
+										/>
 									) : null}
 									{nextPart && nextShowStyleBaseId && nextPart.instance.part.title ? (
 										<PieceNameContainer
@@ -552,7 +556,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 								over: Math.floor(overUnderClock / 1000) >= 0,
 							})}
 						>
-							{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true)}
+							{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true, true)}
 						</div>
 					</div>
 				</div>
