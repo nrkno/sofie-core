@@ -37,7 +37,7 @@ import { MeteorMock } from '../../__mocks__/meteor'
 
 describe('lib/lib', () => {
 	afterEachInFiber(() => {
-		MeteorMock.mockSetServerEnvironment()
+		MeteorMock.isClient = false
 	})
 	testInFiber('getHash', () => {
 		const h0 = getHash('abc')
@@ -71,9 +71,9 @@ describe('lib/lib', () => {
 	})
 	testInFiber('getCurrentTime', () => {
 		systemTime.diff = 5439
-		MeteorMock.mockSetClientEnvironment()
+		MeteorMock.isClient = true
 		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1)
-		MeteorMock.mockSetServerEnvironment()
+		MeteorMock.isClient = false
 		expect(getCurrentTime() / 1000).toBeCloseTo(Date.now() / 1000, 1)
 	})
 	testInFiber('literal', () => {
