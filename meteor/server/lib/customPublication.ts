@@ -74,7 +74,7 @@ class CustomPublishArray {
 				this._docs[id] = _.clone(newDoc)
 
 				this._publication.added(id, newDoc)
-			} else if (!_.isEqual(this._docs[id], newDoc)) {
+			} else if ((this._docs[id].mappingsHash !== newDoc.mappingsHash) || !_.isEqual(this._docs[id], newDoc)) {
 				// changed
 
 				this._publication.changed(id, newDoc)
