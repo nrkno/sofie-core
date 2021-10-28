@@ -92,8 +92,8 @@ export const DashboardActionButtonGroup = withTranslation()(
 				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, reason),
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
-						let noticeLevel: NoticeLevel = NoticeLevel.NOTIFICATION
-						let message: string = t('Successfully stored snapshot')
+						const noticeLevel: NoticeLevel = NoticeLevel.NOTIFICATION
+						const message: string = t('Successfully stored snapshot')
 						const notification: Notification = new Notification(undefined, noticeLevel, message, 'StoreSnapshot')
 						NotificationCenter.push(notification)
 					}
