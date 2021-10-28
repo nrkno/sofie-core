@@ -489,7 +489,7 @@ export namespace ServerPlayoutAdLibAPI {
 				return b.enable.start - a.enable.start
 			})
 
-		const piece: Piece = piecesSortedAsc[0]
+		const piece: Piece | undefined = piecesSortedAsc.shift()
 		if (!piece) {
 			return
 		}
