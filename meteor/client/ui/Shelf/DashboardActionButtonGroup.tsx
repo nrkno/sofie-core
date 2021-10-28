@@ -5,10 +5,11 @@ import { DashboardActionButton } from './DashboardActionButton'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]
@@ -80,6 +81,26 @@ export const DashboardActionButtonGroup = withTranslation()(
 			}
 		}
 
+		storeSnapshot = (e: React.SyntheticEvent<HTMLElement>) => {
+			const { t } = this.props
+			const playlistId: RundownPlaylistId = this.props.playlist._id
+			const reason: string = 'Taken by user'
+			doUserAction(
+				t,
+				e,
+				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
+				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, reason),
+				(err, snapshotId) => {
+					if (!err && snapshotId) {
+						const noticeLevel: NoticeLevel = NoticeLevel.NOTIFICATION
+						const message: string = t('Successfully stored snapshot')
+						const notification: Notification = new Notification(undefined, noticeLevel, message, 'StoreSnapshot')
+						NotificationCenter.push(notification)
+					}
+				}
+			)
+		}
+
 		private onButtonUp = (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => {
 			switch (button.type) {
 				case ActionButtonType.TAKE:
@@ -105,6 +126,9 @@ export const DashboardActionButtonGroup = withTranslation()(
 					break
 				case ActionButtonType.KLAR_ON_AIR:
 					this.klarOnAir(e)
+					break
+				case ActionButtonType.STORE_SNAPSHOT:
+					this.storeSnapshot(e)
 					break
 			}
 		}
