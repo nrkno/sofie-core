@@ -59,8 +59,7 @@ export function endTrace(trace: Trace): FinishedTrace {
 }
 
 export function sendTrace(trace: FinishedTrace) {
-	console.log('hullo', trace)
-	if (!client) return
+	if (!client || Number.isNaN(trace.duration)) return
 
 	const point = {
 		measurement: trace.measurement,
