@@ -79,7 +79,7 @@ describe('server/lib', () => {
 			[
 				{
 					_id: protectString('myStudio'),
-					timeline: [
+					timelineBlob: JSON.stringify([
 						{
 							id: 'abc',
 							enable: {
@@ -99,7 +99,7 @@ describe('server/lib', () => {
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
 							objectType: TimelineObjType.RUNDOWN,
 						}, // remove abc2
-					],
+					]),
 				},
 			],
 			options
