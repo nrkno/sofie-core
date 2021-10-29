@@ -498,21 +498,21 @@ function buildTimelineObjsForRundown(
 
 		// Find all the infinites in each of the selected parts
 		const currentInfinitePieceIds = new Set(
-			_.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
+			_.compact(currentInfinitePieces.map((l) => l.infinite?.infiniteInstanceId))
 		)
-		const nextPartInfinites = new Map<PieceInstanceInfinite['infinitePieceId'], PieceInstanceWithTimings>()
+		const nextPartInfinites = new Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings>()
 		if (partInstancesInfo.current.partInstance.part.autoNext && partInstancesInfo.next) {
 			partInstancesInfo.next.pieceInstances.forEach((piece) => {
 				if (piece.infinite) {
-					nextPartInfinites.set(piece.infinite.infinitePieceId, piece)
+					nextPartInfinites.set(piece.infinite.infiniteInstanceId, piece)
 				}
 			})
 		}
 
-		const previousPartInfinites: Map<PieceInstanceInfinite['infinitePieceId'], PieceInstanceWithTimings> =
+		const previousPartInfinites: Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings> =
 			partInstancesInfo.previous
 				? normalizeArrayToMapFunc(partInstancesInfo.previous.pieceInstances, (inst) =>
-						inst.infinite ? inst.infinite.infinitePieceId : undefined
+						inst.infinite ? inst.infinite.infiniteInstanceId : undefined
 				  )
 				: new Map()
 
@@ -604,8 +604,8 @@ function generateCurrentInfinitePieceObjects(
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	currentPartInfo: SelectedPartInstanceTimelineInfo,
 	nextPartInfo: SelectedPartInstanceTimelineInfo | undefined,
-	previousPartInfinites: Map<PieceInstanceInfinite['infinitePieceId'], PieceInstanceWithTimings>,
-	nextPartInfinites: Map<PieceInstanceInfinite['infinitePieceId'], PieceInstanceWithTimings>,
+	previousPartInfinites: Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings>,
+	nextPartInfinites: Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings>,
 	currentPartGroup: TimelineObjGroupPart,
 	piece: PieceInstanceWithTimings,
 	currentTime: Time
@@ -624,7 +624,7 @@ function generateCurrentInfinitePieceObjects(
 
 	const groupClasses: string[] = ['current_part']
 	// If the previousPart also contains another segment of this infinite piece, then we label our new one as such
-	if (previousPartInfinites.get(piece.infinite.infinitePieceId)) {
+	if (previousPartInfinites.get(piece.infinite.infiniteInstanceId)) {
 		groupClasses.push('continues_infinite')
 	}
 
@@ -645,7 +645,7 @@ function generateCurrentInfinitePieceObjects(
 	// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
 	const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) =>
 		enable.duration !== undefined || enable.end !== undefined
-	const infiniteInNextPart = nextPartInfinites[unprotectString(piece.infinite.infinitePieceId)]
+	const infiniteInNextPart = nextPartInfinites.get(piece.infinite.infiniteInstanceId)
 	if (
 		infiniteInNextPart &&
 		!hasDurationOrEnd(infiniteGroup.enable) &&
@@ -658,16 +658,10 @@ function generateCurrentInfinitePieceObjects(
 	// If this piece does not continue in the next part, then set it to end with the part it belongs to
 	if (nextPartInfo && currentPartInfo.partInstance.part.autoNext && infiniteGroup.enable.duration === undefined) {
 		if (piece.infinite) {
-			const infinitePieceId = piece.infinite.infinitePieceId
+			const infiniteInstanceId = piece.infinite.infiniteInstanceId
 			const nextItem = nextPartInfo.pieceInstances.find(
-				(p) => p.infinite && p.infinite.infinitePieceId === infinitePieceId
+				(p) => p.infinite && p.infinite.infiniteInstanceId === infiniteInstanceId
 			)
-			// const nextItem = cache.PieceInstances.findFetch(
-			// 	(p) =>
-			// 		p.partInstanceId === nextPartInstanceId &&
-			// 		p.infinite &&
-			// 		p.infinite.infinitePieceId === piece.infinite?.infinitePieceId
-			// )
 			if (!nextItem) {
 				infiniteGroup.enable.end = `#${currentPartGroup.id}.end`
 			}
@@ -724,7 +718,7 @@ function generatePreviousPartInstanceObjects(
 
 		// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
 		const previousContinuedPieces = previousPartInfo.pieceInstances.filter(
-			(pi) => !pi.infinite || !currentInfinitePieceIds.has(pi.infinite.infinitePieceId)
+			(pi) => !pi.infinite || !currentInfinitePieceIds.has(pi.infinite.infiniteInstanceId)
 		)
 
 		const groupClasses: string[] = ['previous_part']
@@ -765,7 +759,7 @@ function generateNextPartInstanceObjects(
 	}
 
 	const nextPieceInstances = nextPartInfo?.pieceInstances.filter(
-		(i) => !i.infinite || !currentInfinitePieceIds.has(i.infinite.infinitePieceId)
+		(i) => !i.infinite || !currentInfinitePieceIds.has(i.infinite.infiniteInstanceId)
 	)
 
 	const groupClasses: string[] = ['next_part']
