@@ -24,7 +24,7 @@ let prevDisplayTime: number | undefined = undefined
  * @extends React.Component<WithTiming<{}>>
  */
 export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
-	isHighResolution: true,
+	isHighResolution: false,
 })(
 	class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
 		render() {

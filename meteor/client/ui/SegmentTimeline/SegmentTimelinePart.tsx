@@ -1088,7 +1088,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 export const SegmentTimelinePart = withTranslation()(
 	withTiming<IProps & WithTranslation, IState>((props: IProps) => {
 		return {
-			isHighResolution: false,
+			isHighResolution: 'sortof',
 			filter: (durations: RundownTimingContext) => {
 				durations = durations || {}
 

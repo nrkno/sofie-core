@@ -363,6 +363,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 	class SegmentTimelineContainer extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
 		static contextTypes = {
 			durations: PropTypes.object.isRequired,
+			lowResDurations: PropTypes.object.isRequired,
 		}
 
 		isVisible: boolean
