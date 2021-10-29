@@ -214,7 +214,10 @@ function processAndSaveTimelineObjects(
 		_id: studio._id,
 	})
 	const oldTimelineObjsMap = normalizeArray(
-		(timeline && (JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)) ?? [],
+		(timeline &&
+			timeline.timelineBlob !== undefined &&
+			(JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)) ||
+			[],
 		'id'
 	)
 

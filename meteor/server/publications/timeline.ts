@@ -87,7 +87,7 @@ meteorCustomPublishArray(
 								_id: newData.timeline._id,
 								mappingsHash: studio.mappingsHash,
 								timelineHash: newData.timeline.timelineHash,
-								timeline: routedTimeline,
+								timelineBlob: JSON.stringify(routedTimeline),
 							},
 						]
 					}

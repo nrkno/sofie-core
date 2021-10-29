@@ -417,9 +417,9 @@ export class TSRHandler {
 
 		this.logger.debug(`Trigger new resolving`)
 
-		const transformedTimeline = this._transformTimeline(
-			JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>
-		)
+		const transformedTimeline = timeline.timelineBlob
+			? this._transformTimeline(JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)
+			: []
 		this.tsr.timelineHash = timeline.timelineHash
 		this.tsr.setTimelineAndMappings(transformedTimeline, mappingsObject.mappings)
 	}
