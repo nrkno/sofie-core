@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { allowAccessToStudio } from './lib/security'
-import { StudioId, Studios, Studio } from '../../lib/collections/Studios'
+import { StudioId } from '../../lib/collections/Studios'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { logNotAllowed } from './lib/lib'
 import {
@@ -15,6 +15,7 @@ import { Settings } from '../../lib/Settings'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
+import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
 
 type StudioContent = { studioId: StudioId }
 export namespace StudioReadAccess {
@@ -45,7 +46,7 @@ export interface StudioContentAccess {
 	userId: UserId | null
 	organizationId: OrganizationId | null
 	studioId: StudioId | null
-	studio: Studio | null
+	studio: StudioLight | null
 	cred: ResolvedCredentials | Credentials
 }
 
@@ -102,7 +103,7 @@ export namespace StudioContentWriteAccess {
 				userId: null,
 				organizationId: null,
 				studioId: studioId,
-				studio: Studios.findOne(studioId) || null,
+				studio: fetchStudioLight(studioId) || null,
 				cred: cred0,
 			}
 		}

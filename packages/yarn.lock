@@ -4505,6 +4505,11 @@ inflight@^1.0.4:
     once "^1.3.0"
     wrappy "1"
 
+influx@^5.9.2:
+  version "5.9.2"
+  resolved "https://registry.yarnpkg.com/influx/-/influx-5.9.2.tgz#10711f7573058b1f0752c57f8f2ab13dbab9788a"
+  integrity sha512-N2YRIQiwCO60BzmzEzTxyWj/hDNsce2CLSmki8S1qbRwwuKecfvC6n0OwJrFV70lk5CpU/sLsOZFIy6PP01nOA==
+
 inherits@2, inherits@^2.0.1, inherits@^2.0.3, inherits@^2.0.4, inherits@~2.0.1, inherits@~2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
@@ -8517,10 +8522,10 @@ timeline-state-resolver-types@6.2.0-release37.4:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-release37.7:
-  version "6.2.0-release37.7"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.7.tgz#e990dc1dae349d20d0a8237851b1447b46110ced"
-  integrity sha512-/kmi5yWEe4QvqWS24hGHQ2Ui+aTJX1CwgzYA4YR4bxUdD0fiTRACiv+frfR0iiRkv8KWfgsg3GlnlGjnwEF/5A==
+timeline-state-resolver@6.2.0-nightly-release37-20211028-120809-9041aea0c.0:
+  version "6.2.0-nightly-release37-20211028-120809-9041aea0c.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-nightly-release37-20211028-120809-9041aea0c.0.tgz#b34254f55ab368d2c25c9a92e7b8108c1d9591f6"
+  integrity sha512-CULHcVbfSkMc0B2mCXV8VHafAh2wWC3Ng2YC2pTFPjWs+aIDKdoIX1+sUFeWiL0mjHstkShK6nbOW4RTUtFtRg==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "^2.3.0"

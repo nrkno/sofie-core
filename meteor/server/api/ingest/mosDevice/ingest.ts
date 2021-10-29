@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, canRundownBeUpdated, getPartId, getRundownId } from '../lib'
+import { canRundownBeUpdated, fetchStudioIdFromDevice, getPartId, getRundownId } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -103,15 +103,15 @@ export async function handleMosRundownData(
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	isCreateAction: boolean
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrder.ID)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
+	const rundownId = getRundownIdFromMosRO(studioId, mosRunningOrder.ID)
 	const rundownExternalId = parseMosString(mosRunningOrder.ID)
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
 	return runIngestOperationWithCache(
 		'handleMosRundownData',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !isCreateAction, []))
@@ -172,13 +172,13 @@ export async function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(mosRunningOrderBase.ID)
 
 	return runIngestOperationWithCache(
 		'handleMosRundownMetadata',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -207,14 +207,14 @@ export async function handleMosFullStory(
 	// @ts-ignore
 	// logger.debug(story)
 
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const partExternalId = parseMosString(story.ID)
 	const rundownExternalId = parseMosString(story.RunningOrderId)
 
 	return runIngestOperationWithCache(
 		'handleMosFullStory',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -255,13 +255,13 @@ export async function handleMosDeleteStory(
 ): Promise<void> {
 	if (stories.length === 0) return
 
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
-	const rundownId = getRundownId(studio, rundownExternalId)
+	const rundownId = getRundownId(studioId, rundownExternalId)
 	return runIngestOperationWithCache(
 		'handleMosDeleteStory',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -328,13 +328,13 @@ export async function handleMosInsertParts(
 	// inserts stories and all of their defined items before the referenced story in a Running Order
 	// ...and roStoryReplace message replaces the referenced story with another story or stories
 
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
-	const rundownId = getRundownId(studio, rundownExternalId)
+	const rundownId = getRundownId(studioId, rundownExternalId)
 	return runIngestOperationWithCache(
 		'handleMosInsertParts',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -396,7 +396,7 @@ export async function handleMosSwapStories(
 	story0: MOS.MosString128,
 	story1: MOS.MosString128
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const story0Str = parseMosString(story0)
 	const story1Str = parseMosString(story1)
@@ -408,10 +408,10 @@ export async function handleMosSwapStories(
 	}
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
-	const rundownId = getRundownId(studio, rundownExternalId)
+	const rundownId = getRundownId(studioId, rundownExternalId)
 	return runIngestOperationWithCache(
 		'handleMosSwapStories',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -454,13 +454,13 @@ export async function handleMosMoveStories(
 	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
-	const rundownId = getRundownId(studio, rundownExternalId)
+	const rundownId = getRundownId(studioId, rundownExternalId)
 	return runIngestOperationWithCache(
 		'handleMosMoveStories',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {

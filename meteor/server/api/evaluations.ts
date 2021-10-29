@@ -2,12 +2,12 @@ import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
 import { getCurrentTime, getRandomId } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
-import { Studios } from '../../lib/collections/Studios'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
+import { fetchStudioLight } from '../../lib/collections/optimizations'
 
 export function saveEvaluation(methodContext: MethodContext, evaluation: EvaluationBase): void {
 	const allowedCred = OrganizationContentWriteAccess.evaluation({ userId: methodContext.userId })
@@ -25,7 +25,7 @@ export function saveEvaluation(methodContext: MethodContext, evaluation: Evaluat
 	})
 
 	Meteor.defer(() => {
-		const studio = Studios.findOne(evaluation.studioId)
+		const studio = fetchStudioLight(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
 		const webhookUrls = _.compact((studio.settings.slackEvaluationUrls || '').split(','))
