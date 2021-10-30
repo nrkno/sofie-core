@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.35.1-7](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-6...v1.35.1-7) (2021-10-30)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
 ## [1.35.1-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.35.1-3) (2021-09-07)
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration

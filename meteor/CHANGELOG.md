@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.35.1-7](///compare/v1.35.1-6...v1.35.1-7) (2021-10-30)
+
+
+### Bug Fixes
+
+* update node version in docker to 12.22.6 86e6589
+
 ### [1.35.1-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.35.1-3) (2021-09-07)
 
 
