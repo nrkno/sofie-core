@@ -1,6 +1,6 @@
 import * as Influx from 'influx'
 import { Meteor } from 'meteor/meteor'
-const PackageInfo = require('../package.json')
+const PackageInfo = require('../../../package.json')
 
 const config = {
 	host: process.env.INFLUX_HOST || Meteor.settings.influxHost,

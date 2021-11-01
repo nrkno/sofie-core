@@ -88,7 +88,7 @@ meteorCustomPublishArray(
 								timelineHash: newData.timeline.timelineHash,
 								timeline: routedTimeline,
 								generated: newData.timeline.generated,
-								published: Date.now()
+								published: Date.now(),
 							},
 						]
 					}
