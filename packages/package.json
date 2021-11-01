@@ -11,6 +11,7 @@
 		]
 	},
 	"scripts": {
+		"prepare": "cd .. && husky install",
 		"postinstall": "yarn lerna bootstrap",
 		"build": "yarn lerna run build",
 		"watch": "lerna run --parallel build:main -- --watch --preserveWatchOutput",
@@ -28,7 +29,7 @@
 		"docs:serve": "lerna run --scope sofie-documentation --stream start"
 	},
 	"devDependencies": {
-		"@sofie-automation/code-standard-preset": "^0.4.2",
+		"@sofie-automation/code-standard-preset": "0.5.0",
 		"@types/ejson": "^2.1.3",
 		"@types/got": "^9.6.12",
 		"@types/jest": "^26.0.24",
@@ -50,11 +51,6 @@
 		"typescript": "~4.2"
 	},
 	"name": "packages",
-	"husky": {
-		"hooks": {
-			"pre-commit": "lerna run --concurrency 1 --stream precommit --since HEAD --exclude-dependents"
-		}
-	},
 	"resolutions": {
 		"node-license-validator/**/minimist": "^1.2.3",
 		"lerna/**/trim-newlines": "^4.0.1"

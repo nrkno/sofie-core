@@ -1,0 +1,10 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# lint meteor
+cd meteor
+meteor npx --no-install lint-staged
+
+# lint the packages
+cd ../packages
+yarn lerna run --concurrency 1 --stream precommit --exclude-dependents
