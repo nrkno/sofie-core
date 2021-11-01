@@ -24,7 +24,8 @@
 		"buildstart": "yarn build && yarn start",
 		"buildinspect": "yarn build && yarn inspect",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
+		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"watch": "jest --watch",
@@ -70,7 +71,7 @@
 			"prettier --write"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint --fix"
+			"yarn lint:raw --fix"
 		]
 	},
 	"devDependencies": {
