@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.35.1-8](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-7...v1.35.1-8) (2021-11-01)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
 ## [1.35.1-7](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-6...v1.35.1-7) (2021-10-30)
 
 
