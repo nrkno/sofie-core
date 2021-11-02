@@ -100,7 +100,7 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 /** The Rundown sent from Core */
 export interface IBlueprintRundownDB<TMetadata = unknown>
 	extends IBlueprintRundown<TMetadata>,
-	IBlueprintRundownDBData { }
+		IBlueprintRundownDBData {}
 /** Properties added to a rundown in Core */
 export interface IBlueprintRundownDBData {
 	_id: string
