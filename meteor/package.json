@@ -166,10 +166,10 @@
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
 		"*.{css,json,md,scss}": [
-			"prettier --write"
+			"prettier"
 		],
 		"*.{ts,tsx,js,jsx}": [
-			"npm run lint:raw -- --fix"
+			"npm run lint:raw"
 		]
 	},
 	"meteor": {
