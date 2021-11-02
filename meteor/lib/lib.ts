@@ -126,7 +126,7 @@ const systemTime = {
  * @return {Time}
  */
 export function getCurrentTime(): Time {
-	return Math.floor(Date.now() - (Meteor.isServer ? 0 : systemTime.diff))
+	return Math.floor(Date.now() - systemTime.diff)
 }
 export { systemTime }
 
