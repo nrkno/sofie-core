@@ -7,5 +7,6 @@ Meteor.startup(() => {
 
 	systemTime.diff = 0
 	systemTime.stdDev = 0
+	systemTime.lastSync = Date.now()
 	systemTime.hasBeenSet = true
 })

@@ -113,10 +113,12 @@ export async function MeteorPromiseCall(callName: string, ...args: any[]): Promi
 export type Time = number
 export type TimeDuration = number
 
+// The diff is currently only used client-side
 const systemTime = {
 	hasBeenSet: false,
 	diff: 0,
 	stdDev: 9999,
+	lastSync: 0,
 }
 /**
  * Returns the current (synced) time
