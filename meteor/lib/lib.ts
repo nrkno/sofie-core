@@ -990,7 +990,7 @@ export function extendMandadory<A, B extends A>(original: A, extendObj: Differen
 	return _.extend(original, extendObj)
 }
 
-export function trimIfString<T extends any>(value: T): T | string {
+export function trimIfString<T>(value: T): T | string {
 	if (_.isString(value)) return value.trim()
 	return value
 }
@@ -1087,7 +1087,7 @@ export function unpartialString<T extends ProtectedString<any>>(str: T | Partial
 	return str as any
 }
 
-export function isPromise<T extends any>(val: any): val is Promise<T> {
+export function isPromise<T>(val: any): val is Promise<T> {
 	return _.isObject(val) && typeof val.then === 'function' && typeof val.catch === 'function'
 }
 
@@ -1103,7 +1103,7 @@ export function assertNever(_never: never): void {
  * @param a
  * @param b
  */
-export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
+export function equalSets<T>(a: Set<T>, b: Set<T>): boolean {
 	if (a === b) return true
 	if (a.size !== b.size) return false
 	for (const val of a.values()) {
