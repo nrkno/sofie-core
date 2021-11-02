@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -52,6 +53,7 @@ export interface IDashboardButtonProps {
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
+export const HOVER_TIMEOUT = 5000
 
 interface IState {
 	label: string
@@ -74,6 +76,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	} | null = null
 	private _labelEl: HTMLTextAreaElement
 	private pointerId: number | null = null
+	private hoverTimeout: number | null = null
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
@@ -91,6 +94,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			this.setState({
 				label: this.props.piece.name,
 			})
+		}
+	}
+
+	componentWillUnmount() {
+		super.componentWillUnmount()
+		if (this.hoverTimeout) {
+			clearTimeout(this.hoverTimeout)
+			this.hoverTimeout = null
 		}
 	}
 
@@ -243,7 +254,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.element = el
 	}
 
-	private handleOnMouseEnter = (_e: React.MouseEvent<HTMLDivElement>) => {
+	private handleOnPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
 			this.positionAndSize = {
@@ -253,11 +264,18 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				height,
 			}
 		}
-		this.setState({ isHovered: true })
+		if (e.pointerType === 'mouse') {
+			this.setState({ isHovered: true })
+			this.startHoverTimeout()
+		}
 	}
 
-	private handleOnMouseLeave = (_e: React.MouseEvent<HTMLDivElement>) => {
+	private handleOnPointerLeave = (_e: React.PointerEvent<HTMLDivElement>) => {
 		this.setState({ isHovered: false })
+		if (this.hoverTimeout) {
+			Meteor.clearTimeout(this.hoverTimeout)
+			this.hoverTimeout = null
+		}
 		this.positionAndSize = null
 	}
 
@@ -270,6 +288,17 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.setState({
 			timePosition: timePercentage * sourceDuration,
 		})
+		if (this.hoverTimeout) {
+			Meteor.clearTimeout(this.hoverTimeout)
+			this.startHoverTimeout()
+		}
+	}
+
+	private startHoverTimeout = () => {
+		this.hoverTimeout = Meteor.setTimeout(() => {
+			this.hoverTimeout = null
+			this.setState({ isHovered: false })
+		}, HOVER_TIMEOUT)
 	}
 
 	private onNameChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -416,8 +445,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onDoubleClick={this.handleDoubleClick}
 				ref={this.setRef}
 				onMouseDown={this.handleOnMouseDown}
-				onMouseEnter={this.handleOnMouseEnter}
-				onMouseLeave={this.handleOnMouseLeave}
+				onPointerEnter={this.handleOnPointerEnter}
+				onPointerLeave={this.handleOnPointerLeave}
 				onMouseMove={this.handleOnMouseMove}
 				onPointerDown={this.handleOnPointerDown}
 				onPointerUp={this.handleOnPointerUp}
