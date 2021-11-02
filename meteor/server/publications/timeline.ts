@@ -156,7 +156,6 @@ meteorCustomPublishArray(
 						}
 						if (changedData) {
 							pub.updatedDocs(newData)
-						} else {
 						}
 					} else {
 						pub.updatedDocs(newData)
