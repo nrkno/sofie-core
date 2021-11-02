@@ -339,6 +339,8 @@ export class TSRHandler {
 				_id: string // Studio id
 				mappingsHash: string
 				timelineHash: string
+				// this is the old way of storing the timeline, kept for backwards-compatibility
+				timeline?: TimelineObjGeneric[]
 				timelineBlob: string
 				generated: number
 				published: number
@@ -449,6 +451,8 @@ export class TSRHandler {
 
 		const transformedTimeline = timeline.timelineBlob
 			? this._transformTimeline(JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)
+			: timeline.timeline
+			? this._transformTimeline(timeline.timeline)
 			: []
 		this.tsr.timelineHash = timeline.timelineHash
 		this.tsr.setTimelineAndMappings(transformedTimeline, mappingsObject.mappings)
