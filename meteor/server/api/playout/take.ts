@@ -55,7 +55,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const pBlueprint = pShowStyle.then(async (s) => loadShowStyleBlueprint(s))
 
 	if (currentPartInstance) {
-		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition
+		const allowTransition = previousPartInstance && !previousPartInstance.part.disableNextPartInTransition
 		const start = currentPartInstance.timings?.startedPlayback
 
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
@@ -316,7 +316,7 @@ export function updatePartInstanceOnTake(
 		$set: {
 			isTaken: true,
 			// set transition properties to what will be used to generate timeline later:
-			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableOutTransition,
+			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableNextPartInTransition,
 		},
 	}
 	if (previousPartEndState) {

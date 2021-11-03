@@ -50,7 +50,7 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	transitionPrerollDuration: true,
 	transitionKeepaliveDuration: true,
 	transitionDuration: true,
-	disableOutTransition: true,
+	disableNextPartInTransition: true,
 	outTransitionDuration: null,
 	expectedDuration: true,
 	budgetDuration: true,

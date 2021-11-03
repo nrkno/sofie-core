@@ -485,7 +485,7 @@ export function setupRundownWithInTransitionDisabled(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId, { disableOutTransition: true })
+	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId, { disableNextPartInTransition: true })
 
 	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
 		transitionDuration: 1000,

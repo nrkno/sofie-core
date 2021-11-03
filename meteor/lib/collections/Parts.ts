@@ -51,7 +51,7 @@ export class Part implements DBPart {
 	public transitionPrerollDuration?: number | null
 	public transitionKeepaliveDuration?: number | null
 	public transitionDuration?: number | null
-	public disableOutTransition?: boolean
+	public disableNextPartInTransition?: boolean
 	public outTransitionDuration?: number | null
 	public expectedDuration?: number
 	public budgetDuration?: number

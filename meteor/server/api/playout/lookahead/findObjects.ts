@@ -94,7 +94,7 @@ export function findLookaheadObjectsForPart(
 	let classesFromPreviousPart: string[] = []
 	if (previousPart && currentPartInstanceId && partInstanceId) {
 		// If we have a previous and not at the start of the rundown
-		allowTransition = !previousPart.disableOutTransition
+		allowTransition = !previousPart.disableNextPartInTransition
 		classesFromPreviousPart = previousPart.classesForNext || []
 	}
 

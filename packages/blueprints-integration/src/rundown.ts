@@ -155,8 +155,8 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	transitionKeepaliveDuration?: number | null
 	/** How long the transition is active for (used to block another take from happening) */
 	transitionDuration?: number | null
-	/** Should we block a transition at the out of this Part */
-	disableOutTransition?: boolean
+	/** Should we block the inTransition when starting the next Part */
+	disableNextPartInTransition?: boolean
 
 	/** How long to keep this part alive after taken out */
 	outTransitionDuration?: number | null

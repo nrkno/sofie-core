@@ -710,7 +710,7 @@ function buildTimelineObjsForRundown(
 			const groupClasses: string[] = ['next_part']
 			const transProps = getTransformTransitionProps(
 				partInstancesInfo.next.partInstance,
-				!partInstancesInfo.current.partInstance.part.disableOutTransition
+				!partInstancesInfo.current.partInstance.part.disableNextPartInTransition
 			)
 			timelineObjs.push(
 				nextPartGroup,
@@ -993,7 +993,7 @@ function transformPartIntoTimeline(
 }
 
 function calcPartKeepaliveDuration(fromPart: Part, toPart: Part, relativeToFrom: boolean): number {
-	const allowTransition: boolean = !fromPart.disableOutTransition
+	const allowTransition: boolean = !fromPart.disableNextPartInTransition
 	if (!allowTransition) {
 		return fromPart.autoNextOverlap || 0
 	}
@@ -1029,7 +1029,7 @@ function calcPartTargetDuration(prevPart: Part | undefined, currentPart: Part): 
 	const rawExpectedDuration =
 		(currentPart.expectedDuration || 0) - lengthAdjustment + (currentPart.autoNextOverlap || 0)
 
-	if (!prevPart || prevPart.disableOutTransition) {
+	if (!prevPart || prevPart.disableNextPartInTransition) {
 		return rawExpectedDuration + (currentPart.prerollDuration || 0)
 	}
 
@@ -1041,7 +1041,7 @@ function calcPartOverlapDuration(fromPart: Part, toPart: Part): number {
 	if (fromPart.outTransitionDuration) {
 		overlapDuration = fromPart.outTransitionDuration
 	} else {
-		const allowTransition: boolean = !fromPart.disableOutTransition
+		const allowTransition: boolean = !fromPart.disableNextPartInTransition
 		if (allowTransition && toPart.transitionPrerollDuration) {
 			overlapDuration = calcPartKeepaliveDuration(fromPart, toPart, true)
 		}
