@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.37.0-in-testing.13](///compare/v1.37.0-testing.12...v1.37.0-in-testing.13) (2021-11-02)
+
+
+### Bug Fixes
+
+* Added text outline + subtle shadow to the live segment name at top of the presenter/clock screen, as the white text didn't show up too weel on the red background when viewed on the actual screens in the actual studios. 1a2a731
+* **Dashboard:** do not show hoverscrub when operating using touch and timeout when using a mouse ([#611](undefined/undefined/undefined/issues/611)) d5e7ad3
+* disabled Pieces don't look disabled anymore bdf9c94
+* dont generate lookahead objects for infinite piece continuations bdd5291
+* Implemented the  live segment header contrast improvements from the clock/presenter screen. b860cbd
+* Improved visibility of the freeze frame indicator on the clock/presenter screen. d6944ad
+* infinite continuation of onEnd pieceinstance not preserving startedPlayback time 92deed2
+* Removed awkward left indent of the icon on the clock/presenter screen, and in the process made the icon more visible while taking up the same amount of space. 57032d8
+* restore the red border around a live AdLib in the Dashboard b41b17d
+* **Shelf:** zebra stripes going all the way through a list item 4f6c770
+
 ## [1.37.0-in-testing.11](///compare/v1.35.1-4...v1.37.0-in-testing.11) (2021-10-22)
 
 

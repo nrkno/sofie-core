@@ -28,15 +28,15 @@ import {
 	omit,
 	unprotectString,
 	unprotectObjectArray,
-	normalizeArrayFunc,
 	clone,
 	normalizeArray,
 	getRandomId,
 	applyToArray,
 	protectString,
 	waitForPromise,
+	normalizeArrayToMapFunc,
 } from '../../../lib/lib'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
@@ -49,7 +49,7 @@ import { prefixAllObjectIds } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstanceInfinite } from '../../../lib/collections/PieceInstances'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
@@ -438,18 +438,14 @@ function setNowToTimeInObjects(timelineObjs: Array<TimelineObjGeneric>, now: Tim
 
 function buildTimelineObjsForRundown(
 	cache: CacheForPlayout,
-	activeRundown: Rundown,
+	_activeRundown: Rundown,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo
 ): (TimelineObjRundown & OnGenerateTimelineObjExt)[] {
 	const span = profiler.startSpan('buildTimelineObjsForRundown')
-	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
-	let currentPartGroup: (TimelineObjGroupPart & OnGenerateTimelineObjExt) | undefined
-	let previousPartGroup: (TimelineObjGroupPart & OnGenerateTimelineObjExt) | undefined
+	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
 	const activePlaylist = cache.Playlist.doc
 	const currentTime = getCurrentTime()
-
-	// let currentPieces: Array<Piece> = []
 
 	timelineObjs.push(
 		literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
@@ -488,64 +484,48 @@ function buildTimelineObjsForRundown(
 			logger.warning(`Previous PartInstance "${activePlaylist.previousPartInstanceId}" not found!`)
 	}
 
+	if (!partInstancesInfo.next && !partInstancesInfo.current) {
+		// maybe at the end of the show
+		logger.info(`No next part and no current part set on RundownPlaylist "${activePlaylist._id}".`)
+	}
+
 	// Currently playing:
 	if (partInstancesInfo.current) {
 		const [currentInfinitePieces, currentNormalItems] = _.partition(
 			partInstancesInfo.current.pieceInstances,
 			(l) => !!(l.infinite && (l.piece.lifespan !== PieceLifespan.WithinPart || l.infinite.fromHold))
 		)
-		const currentInfinitePieceIds = _.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
 
+		// Find all the infinites in each of the selected parts
+		const currentInfinitePieceIds = new Set(
+			_.compact(currentInfinitePieces.map((l) => l.infinite?.infiniteInstanceId))
+		)
+		const nextPartInfinites = new Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings>()
+		if (partInstancesInfo.current.partInstance.part.autoNext && partInstancesInfo.next) {
+			partInstancesInfo.next.pieceInstances.forEach((piece) => {
+				if (piece.infinite) {
+					nextPartInfinites.set(piece.infinite.infiniteInstanceId, piece)
+				}
+			})
+		}
+
+		const previousPartInfinites: Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings> =
+			partInstancesInfo.previous
+				? normalizeArrayToMapFunc(partInstancesInfo.previous.pieceInstances, (inst) =>
+						inst.infinite ? inst.infinite.infiniteInstanceId : undefined
+				  )
+				: new Map()
+
+		// Start generating objects
 		if (partInstancesInfo.previous) {
-			const previousPartLastStarted = partInstancesInfo.previous.partInstance.timings?.startedPlayback
-			if (previousPartLastStarted) {
-				const prevPartOverlapDuration = calcPartKeepaliveDuration(
-					partInstancesInfo.previous.partInstance.part,
-					partInstancesInfo.current.partInstance.part,
-					true
+			timelineObjs.push(
+				...generatePreviousPartInstanceObjects(
+					activePlaylist,
+					partInstancesInfo.previous,
+					partInstancesInfo.current,
+					currentInfinitePieceIds
 				)
-
-				const currentPartGroupId = getPartGroupId(partInstancesInfo.current.partInstance)
-
-				const previousPartGroupEnable = {
-					start: previousPartLastStarted,
-					end: `#${currentPartGroupId}.start + ${prevPartOverlapDuration}`,
-				}
-				// If autonext with an overlap, keep the previous line alive for the specified overlap
-				if (
-					partInstancesInfo.previous.partInstance.part.autoNext &&
-					partInstancesInfo.previous.partInstance.part.autoNextOverlap
-				) {
-					previousPartGroupEnable.end = `#${currentPartGroupId}.start + ${
-						partInstancesInfo.previous.partInstance.part.autoNextOverlap || 0
-					}`
-				}
-				previousPartGroup = createPartGroup(partInstancesInfo.previous.partInstance, previousPartGroupEnable)
-				previousPartGroup.priority = -1
-
-				// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
-				const previousContinuedPieces = partInstancesInfo.previous.pieceInstances.filter(
-					(pi) => !pi.infinite || currentInfinitePieceIds.indexOf(pi.infinite.infinitePieceId) < 0
-				)
-
-				const groupClasses: string[] = ['previous_part']
-				let prevObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = [previousPartGroup]
-				const transProps = getTransformTransitionProps(partInstancesInfo.previous.partInstance)
-				prevObjs = prevObjs.concat(
-					transformPartIntoTimeline(
-						activePlaylist._id,
-						partInstancesInfo.previous.partInstance.part._id,
-						previousContinuedPieces,
-						groupClasses,
-						previousPartGroup,
-						partInstancesInfo.previous.nowInPart,
-						false,
-						transProps,
-						activePlaylist.holdState
-					)
-				)
-				timelineObjs = timelineObjs.concat(prevObjs)
-			}
+			)
 		}
 
 		const isFollowed = partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext
@@ -561,110 +541,26 @@ function buildTimelineObjsForRundown(
 			// If we are recalculating the currentPart, then ensure it doesnt think it is starting now
 			currentPartEnable.start = partInstancesInfo.current.partInstance.timings.startedPlayback
 		}
-		currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
-
-		const nextPartInfinites: { [infiniteId: string]: PieceInstance | undefined } = {}
-		if (partInstancesInfo.current.partInstance.part.autoNext && partInstancesInfo.next) {
-			partInstancesInfo.next.pieceInstances.forEach((piece) => {
-				if (piece.infinite) {
-					nextPartInfinites[unprotectString(piece.infinite.infinitePieceId)] = piece
-				}
-			})
-		}
-
-		const previousPartInfinites = partInstancesInfo.previous
-			? normalizeArrayFunc(partInstancesInfo.previous.pieceInstances, (inst) =>
-					inst.infinite ? unprotectString(inst.infinite.infinitePieceId) : ''
-			  )
-			: {}
+		const currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 
 		// any continued infinite lines need to skip the group, as they need a different start trigger
-		for (let i = 0; i < currentInfinitePieces.length; i++) {
-			const piece = currentInfinitePieces[i]
-			if (!piece.infinite) {
-				// Type guard, should never be hit
-				continue
-			}
-
-			const infiniteGroup = createPartGroup(partInstancesInfo.current.partInstance, {
-				start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
-				duration: piece.piece.enable.duration || undefined,
-			})
-			infiniteGroup.id = getPartGroupId(protectString<PartInstanceId>(unprotectString(piece._id))) + '_infinite' // This doesnt want to belong to a part, so force the ids
-			infiniteGroup.priority = 1
-
-			const groupClasses: string[] = ['current_part']
-			// If the previousPart also contains another segment of this infinite piece, then we label our new one as such
-			if (previousPartInfinites[unprotectString(piece.infinite.infinitePieceId)]) {
-				groupClasses.push('continues_infinite')
-			}
-
-			let nowInParent = partInstancesInfo.current.nowInPart
-			let isAbsoluteInfinitePartGroup = false
-			if (piece.startedPlayback) {
-				// Make the start time stick
-				infiniteGroup.enable = { start: piece.startedPlayback }
-				nowInParent = currentTime - piece.startedPlayback
-				isAbsoluteInfinitePartGroup = true
-
-				// If an absolute time has been set by a hotkey, then update the duration to be correct
-				if (piece.userDuration && piece.piece.enable.start !== 'now') {
-					infiniteGroup.enable.duration = piece.userDuration.end - piece.piece.enable.start
-				}
-			}
-
-			// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
-			const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) =>
-				enable.duration !== undefined || enable.end !== undefined
-			const infiniteInNextPart = nextPartInfinites[unprotectString(piece.infinite.infinitePieceId)]
-			if (
-				infiniteInNextPart &&
-				!hasDurationOrEnd(infiniteGroup.enable) &&
-				hasDurationOrEnd(infiniteInNextPart.piece.enable)
-			) {
-				// infiniteGroup.enable.end = infiniteInNextPart.piece.enable.end
-				infiniteGroup.enable.duration = infiniteInNextPart.piece.enable.duration
-			}
-
-			// If this piece does not continue in the next part, then set it to end with the part it belongs to
-			if (
-				partInstancesInfo.next &&
-				partInstancesInfo.current.partInstance.part.autoNext &&
-				infiniteGroup.enable.duration === undefined
-			) {
-				const nextPartInstanceId = partInstancesInfo.next.partInstance._id
-				const nextItem = cache.PieceInstances.findFetch(
-					(p) =>
-						p.partInstanceId === nextPartInstanceId &&
-						p.infinite &&
-						p.infinite.infinitePieceId === piece.infinite?.infinitePieceId
-				)
-				if (!nextItem) {
-					infiniteGroup.enable.end = `#${currentPartGroup.id}.end`
-				}
-			}
-
-			// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
-			const isOriginOfInfinite = piece.piece.startPartId !== partInstancesInfo.current.partInstance.part._id
-			timelineObjs = timelineObjs.concat(
-				infiniteGroup,
-				transformPartIntoTimeline(
-					activePlaylist._id,
-					partInstancesInfo.current.partInstance.part._id,
-					[piece],
-					groupClasses,
-					infiniteGroup,
-					nowInParent,
-					isAbsoluteInfinitePartGroup,
-					undefined,
-					activePlaylist.holdState,
-					isOriginOfInfinite
+		for (const infinitePiece of currentInfinitePieces) {
+			timelineObjs.push(
+				...generateCurrentInfinitePieceObjects(
+					activePlaylist,
+					partInstancesInfo.current,
+					partInstancesInfo.next,
+					previousPartInfinites,
+					nextPartInfinites,
+					currentPartGroup,
+					infinitePiece,
+					currentTime
 				)
 			)
 		}
 
 		const groupClasses: string[] = ['current_part']
-		const transProps = getTransformTransitionProps(partInstancesInfo.current.partInstance, undefined)
+		const transitionProps = getTransformTransitionProps(partInstancesInfo.current.partInstance)
 		timelineObjs.push(
 			currentPartGroup,
 			createPartGroupFirstObject(
@@ -681,7 +577,7 @@ function buildTimelineObjsForRundown(
 				currentPartGroup,
 				partInstancesInfo.current.nowInPart,
 				false,
-				transProps,
+				transitionProps,
 				activePlaylist.holdState,
 				undefined,
 				partInstancesInfo.previous?.partInstance.part.outTransitionDuration
@@ -690,58 +586,211 @@ function buildTimelineObjsForRundown(
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext) {
-			const nextPartGroup = createPartGroup(partInstancesInfo.next.partInstance, {})
-			if (currentPartGroup) {
-				const overlapDuration = calcPartOverlapDuration(
-					partInstancesInfo.current.partInstance.part,
-					partInstancesInfo.next.partInstance.part
-				)
-
-				nextPartGroup.enable = {
-					start: `#${currentPartGroup.id}.end - ${overlapDuration}`,
-					duration: nextPartGroup.enable.duration,
-				}
-			}
-
-			const nextPieceInstances = partInstancesInfo.next?.pieceInstances.filter(
-				(i) => !i.infinite || currentInfinitePieceIds.indexOf(i.infinite.infinitePieceId) === -1
-			)
-
-			const groupClasses: string[] = ['next_part']
-			const transProps = getTransformTransitionProps(
-				partInstancesInfo.next.partInstance,
-				!partInstancesInfo.current.partInstance.part.disableNextPartInTransition
-			)
 			timelineObjs.push(
-				nextPartGroup,
-				createPartGroupFirstObject(
-					activePlaylist._id,
-					partInstancesInfo.next.partInstance,
-					nextPartGroup,
-					partInstancesInfo.current.partInstance
-				),
-				...transformPartIntoTimeline(
-					activePlaylist._id,
-					partInstancesInfo.next.partInstance.part._id,
-					nextPieceInstances,
-					groupClasses,
-					nextPartGroup,
-					0,
-					false,
-					transProps
+				...generateNextPartInstanceObjects(
+					activePlaylist,
+					partInstancesInfo.current,
+					partInstancesInfo.next,
+					currentPartGroup,
+					currentInfinitePieceIds
 				)
 			)
 		}
 	}
 
-	if (!partInstancesInfo.next && !partInstancesInfo.current) {
-		// maybe at the end of the show
-		logger.info(`No next part and no current part set on RundownPlaylist "${activePlaylist._id}".`)
-	}
-
 	if (span) span.end()
 	return timelineObjs
 }
+
+function generateCurrentInfinitePieceObjects(
+	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	currentPartInfo: SelectedPartInstanceTimelineInfo,
+	nextPartInfo: SelectedPartInstanceTimelineInfo | undefined,
+	previousPartInfinites: Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings>,
+	nextPartInfinites: Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings>,
+	currentPartGroup: TimelineObjGroupPart,
+	piece: PieceInstanceWithTimings,
+	currentTime: Time
+): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
+	if (!piece.infinite) {
+		// Type guard, should never be hit
+		return []
+	}
+
+	const infiniteGroup = createPartGroup(currentPartInfo.partInstance, {
+		start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
+		duration: piece.piece.enable.duration || undefined,
+	})
+	infiniteGroup.id = getPartGroupId(protectString<PartInstanceId>(unprotectString(piece._id))) + '_infinite' // This doesnt want to belong to a part, so force the ids
+	infiniteGroup.priority = 1
+
+	const groupClasses: string[] = ['current_part']
+	// If the previousPart also contains another segment of this infinite piece, then we label our new one as such
+	if (previousPartInfinites.get(piece.infinite.infiniteInstanceId)) {
+		groupClasses.push('continues_infinite')
+	}
+
+	let nowInParent = currentPartInfo.nowInPart
+	let isAbsoluteInfinitePartGroup = false
+	if (piece.startedPlayback) {
+		// Make the start time stick
+		infiniteGroup.enable = { start: piece.startedPlayback }
+		nowInParent = currentTime - piece.startedPlayback
+		isAbsoluteInfinitePartGroup = true
+
+		// If an absolute time has been set by a hotkey, then update the duration to be correct
+		if (piece.userDuration && piece.piece.enable.start !== 'now') {
+			infiniteGroup.enable.duration = piece.userDuration.end - piece.piece.enable.start
+		}
+	}
+
+	// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
+	const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) =>
+		enable.duration !== undefined || enable.end !== undefined
+	const infiniteInNextPart = nextPartInfinites.get(piece.infinite.infiniteInstanceId)
+	if (
+		infiniteInNextPart &&
+		!hasDurationOrEnd(infiniteGroup.enable) &&
+		hasDurationOrEnd(infiniteInNextPart.piece.enable)
+	) {
+		// infiniteGroup.enable.end = infiniteInNextPart.piece.enable.end
+		infiniteGroup.enable.duration = infiniteInNextPart.piece.enable.duration
+	}
+
+	// If this piece does not continue in the next part, then set it to end with the part it belongs to
+	if (nextPartInfo && currentPartInfo.partInstance.part.autoNext && infiniteGroup.enable.duration === undefined) {
+		if (piece.infinite) {
+			const infiniteInstanceId = piece.infinite.infiniteInstanceId
+			const nextItem = nextPartInfo.pieceInstances.find(
+				(p) => p.infinite && p.infinite.infiniteInstanceId === infiniteInstanceId
+			)
+			if (!nextItem) {
+				infiniteGroup.enable.end = `#${currentPartGroup.id}.end`
+			}
+		}
+	}
+
+	// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
+	const isOriginOfInfinite = piece.piece.startPartId !== currentPartInfo.partInstance.part._id
+	return [
+		infiniteGroup,
+		...transformPartIntoTimeline(
+			activePlaylist._id,
+			currentPartInfo.partInstance.part._id,
+			[piece],
+			groupClasses,
+			infiniteGroup,
+			nowInParent,
+			isAbsoluteInfinitePartGroup,
+			undefined,
+			activePlaylist.holdState,
+			isOriginOfInfinite
+		),
+	]
+}
+
+function generatePreviousPartInstanceObjects(
+	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	previousPartInfo: SelectedPartInstanceTimelineInfo,
+	currentPartInfo: SelectedPartInstanceTimelineInfo,
+	currentInfinitePieceIds: Set<PieceInstanceInfinite['infinitePieceId']>
+): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
+	const previousPartLastStarted = previousPartInfo.partInstance.timings?.startedPlayback
+	if (previousPartLastStarted) {
+		const prevPartOverlapDuration = calcPartKeepaliveDuration(
+			previousPartInfo.partInstance.part,
+			currentPartInfo.partInstance.part,
+			true
+		)
+
+		const currentPartGroupId = getPartGroupId(currentPartInfo.partInstance)
+
+		const previousPartGroupEnable = {
+			start: previousPartLastStarted,
+			end: `#${currentPartGroupId}.start + ${prevPartOverlapDuration}`,
+		}
+		// If autonext with an overlap, keep the previous line alive for the specified overlap
+		if (previousPartInfo.partInstance.part.autoNext && previousPartInfo.partInstance.part.autoNextOverlap) {
+			previousPartGroupEnable.end = `#${currentPartGroupId}.start + ${
+				previousPartInfo.partInstance.part.autoNextOverlap || 0
+			}`
+		}
+		const previousPartGroup = createPartGroup(previousPartInfo.partInstance, previousPartGroupEnable)
+		previousPartGroup.priority = -1
+
+		// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
+		const previousContinuedPieces = previousPartInfo.pieceInstances.filter(
+			(pi) => !pi.infinite || !currentInfinitePieceIds.has(pi.infinite.infiniteInstanceId)
+		)
+
+		const groupClasses: string[] = ['previous_part']
+		const transiitonProps = getTransformTransitionProps(previousPartInfo.partInstance)
+
+		return [
+			previousPartGroup,
+			...transformPartIntoTimeline(
+				activePlaylist._id,
+				previousPartInfo.partInstance.part._id,
+				previousContinuedPieces,
+				groupClasses,
+				previousPartGroup,
+				previousPartInfo.nowInPart,
+				false,
+				transiitonProps,
+				activePlaylist.holdState
+			),
+		]
+	} else {
+		return []
+	}
+}
+
+function generateNextPartInstanceObjects(
+	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	currentPartInfo: SelectedPartInstanceTimelineInfo,
+	nextPartInfo: SelectedPartInstanceTimelineInfo,
+	currentPartGroup: TimelineObjGroupPart,
+	currentInfinitePieceIds: Set<PieceInstanceInfinite['infinitePieceId']>
+): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
+	const nextPartGroup = createPartGroup(nextPartInfo.partInstance, {})
+
+	const overlapDuration = calcPartOverlapDuration(currentPartInfo.partInstance.part, nextPartInfo.partInstance.part)
+	nextPartGroup.enable = {
+		start: `#${currentPartGroup.id}.end - ${overlapDuration}`,
+		duration: nextPartGroup.enable.duration,
+	}
+
+	const nextPieceInstances = nextPartInfo?.pieceInstances.filter(
+		(i) => !i.infinite || !currentInfinitePieceIds.has(i.infinite.infiniteInstanceId)
+	)
+
+	const groupClasses: string[] = ['next_part']
+	const transitionProps = getTransformTransitionProps(
+		nextPartInfo.partInstance,
+		!currentPartInfo.partInstance.part.disableOutTransition
+	)
+
+	return [
+		nextPartGroup,
+		createPartGroupFirstObject(
+			activePlaylist._id,
+			nextPartInfo.partInstance,
+			nextPartGroup,
+			currentPartInfo.partInstance
+		),
+		...transformPartIntoTimeline(
+			activePlaylist._id,
+			nextPartInfo.partInstance.part._id,
+			nextPieceInstances,
+			groupClasses,
+			nextPartGroup,
+			0,
+			false,
+			transitionProps
+		),
+	]
+}
+
 function createPartGroup(
 	partInstance: PartInstance,
 	enable: TSR.Timeline.TimelineEnable
