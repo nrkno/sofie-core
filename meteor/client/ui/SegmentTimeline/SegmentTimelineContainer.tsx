@@ -922,12 +922,16 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		getShowAllTimeScale = () => {
-			if (!this.timelineDiv) return this.state.maxTimeScale
+			if (!this.timelineDiv || isLiveSegmentButLivePositionNotSet(this.state.isLiveSegment, this.state.livePosition)) {
+				return this.state.maxTimeScale
+			}
 
-			let newScale =
-				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
-				((computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1) -
-					(this.state.isLiveSegment ? this.state.livePosition : 0))
+			const elementWidth: number = getElementWidth(this.timelineDiv)
+			const elementWidthOr1: number = elementWidth - TIMELINE_RIGHT_PADDING || 1
+			const segmentDisplayDurationOr1: number =
+				computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1
+			const livePositionOr0: number = this.state.isLiveSegment ? this.state.livePosition : 0
+			let newScale = elementWidthOr1 / (segmentDisplayDurationOr1 - livePositionOr0)
 			newScale = Math.min(MINIMUM_ZOOM_FACTOR, newScale)
 			if (!Number.isFinite(newScale) || newScale === 0) {
 				newScale = FALLBACK_ZOOM_FACTOR
@@ -1037,6 +1041,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 	}
 )
+
+function isLiveSegmentButLivePositionNotSet(isLiveSegment: boolean, livePosition: number): boolean {
+	return isLiveSegment && livePosition === 0
+}
 
 function getMinimumReactivePieceNotesForPart(
 	studio: Studio,
