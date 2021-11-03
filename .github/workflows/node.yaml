@@ -82,27 +82,6 @@ jobs:
           meteor npm run validate:prod-dependencies
         env:
           CI: true
-  validate-all-dependencies-core:
-    name: Validate all Core dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/setup-meteor
-      - name: restore node_modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-      - name: Validate all dependencies for vulnerabilities
-        run: |
-          yarn
-          cd meteor
-          meteor npm run validate:all-dependencies
-        env:
-          CI: true
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
     name: Build Core and publish docker image
@@ -284,7 +263,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -318,7 +297,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -337,8 +316,8 @@ jobs:
         env:
           CI: true
 
-  typedoc-libs:
-    name: Generate Libs Typedoc
+  publish-docs:
+    name: Publish Docs
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
@@ -351,110 +330,30 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn build
+        env:
+          CI: true
+      - name: Run docusaurus
+        run: |
+          cd packages/documentation
+          yarn docs:build
         env:
           CI: true
       - name: Run typedoc
         run: |
           cd packages
-          yarn docs
+          yarn docs:typedoc
+          cp docs documentation/build/typedoc -R
         env:
           CI: true
       - name: Publish
-        # only run for release tags
-        # TODO - we should only do this if the latest release
-        if: contains(github.ref, 'refs/tags/')
+        if: github.ref == 'refs/heads/master' # always publish for just the master branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./packages/docs
-
-  prerelease-libs:
-    name: Prerelease Lib
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    # only run for branches
-    if: contains(github.ref, 'refs/heads/')
-
-    needs:
-      - test-packages
-
-    strategy:
-      fail-fast: false
-      matrix:
-        package-name: [blueprints-integration, server-core-integration]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - name: Check release is desired
-        # TODO - or if something changed? perhaps always on the releaseX branches?
-        id: do-publish
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "No Token"
-          elif ! git log --format=oneline -n 1 | grep -q "\[publish\]"; then
-            echo "Skip"
-          else
-            echo "Publish prerelease"
-            echo ::set-output name=publish::"1"
-          fi
-      - name: Prepare Environment
-        if: ${{ steps.do-publish.outputs.publish }}
-        run: |
-          cd packages 
-          yarn install
-        env:
-          CI: true
-      - name: Get the Prerelease tag
-        id: prerelease-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
-        with:
-          remove-version-tag-prefix: false
-      - name: Bump version
-        if: ${{ steps.do-publish.outputs.publish }}
-        run: |
-          cd packages
-          COMMIT_TIMESTAMP=$(git log -1 --pretty=format:%ct HEAD)
-          COMMIT_DATE=$(date -d @$COMMIT_TIMESTAMP +%Y%m%d-%H%M%S)
-          GIT_HASH=$(git rev-parse --short HEAD)
-          PRERELEASE_TAG=nightly-$(echo "${{ steps.prerelease-tag.outputs.tag }}" | sed -r 's/[^a-z0-9]+/-/gi')
-          yarn set-version prerelease --preid $PRERELEASE_TAG-$COMMIT_DATE-$GIT_HASH
-        env:
-          CI: true
-      - name: Build
-        if: ${{ steps.do-publish.outputs.publish }}
-        run: |
-          cd packages
-          yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
-        env:
-          CI: true
-      - name: Publish to NPM
-        id: publish-npm
-        if: ${{ steps.do-publish.outputs.publish }}
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-          cd packages/${{ matrix.package-name }}
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
-          echo ::set-output name=version::$NEW_VERSION
-        env:
-          CI: true
-      - name: Post published prerelease lib version comment in PR
-        if: ${{ steps.do-publish.outputs.publish }}
-        uses: mshick/add-pr-comment@v1
-        with:
-          message: |
-            ⚡ Published prerelease version **${{ matrix.package-name }}@${{ steps.publish-npm.outputs.version }}** to NPM
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CI: true
+          publish_dir: ./packages/documentation/build
 
   release-libs:
     name: Release Lib
@@ -511,7 +410,7 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -557,7 +456,7 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
         env:
           CI: true
@@ -594,11 +493,5 @@ jobs:
         run: |
           cd packages
           yarn validate:dependencies
-        env:
-          CI: true
-      - name: Validate dev dependencies
-        run: |
-          cd packages
-          yarn validate:dev-dependencies
         env:
           CI: true

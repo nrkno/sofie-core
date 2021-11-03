@@ -2,6 +2,437 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.37.0-in-testing.11](///compare/v1.35.1-4...v1.37.0-in-testing.11) (2021-10-22)
+
+
+### Features
+
+* add CoreSystem option set log-level at runtime. 8aa2e7e
+* add fileflowProfile to Quantel accessor properties [publish] 5f72ed0
+* add GUI to set the fileflowURL in Package containers 2faea86
+* Add PackageContainerStatuses, used by Package Manager to report on statuses of the PackageContainers and Monitors. [publish] dac1cdb
+* add sisyfos channel by label mapping 6e6d997
+* allow setting a fileflow URL for Quantel Accessors 22c6af5
+* cache local storage UI flags ([#587](undefined/undefined/undefined/issues/587)) df4edae
+* don't track preceeding Parts for labels, just skip labels if not statring in a given Part 5b8da8f
+* ignore media statuses 76f8f01
+* implement notInVision 3d30dba
+* improve hoverscrub inspector for Pilot items e22da7d
+* improve update times on segment following current one 37a89d4
+* improve update times on segment following current one ([#573](undefined/undefined/undefined/issues/573)) c8335c4
+* initial implementation of new infinite styling c206349
+* new infinites styling only for super-infinites (rundown/showstyle-length) ba49436
+* pieces can specify how to be direct-played ([#574](undefined/undefined/undefined/issues/574)) a61a22b
+* prevent all F-keys by default 2585d1f
+* Rundown View Layouts with options to change the visibility state of source layers/output groups ([#592](undefined/undefined/undefined/issues/592)) c18a234
+* shelffollowsonair=0 can disable automatic scrolling in Shelf 96a3b99
+* use sourcelayer LOCAL for EVS content 3b87a90
+
+
+### Bug Fixes
+
+* "reset rundown" Triggered Action doesn't cause the Rundown View to scroll to top, like it used to with hotkeys c417989
+* 0 freeze frame detected within the clip (apply 75c042705454c850605c28cc3cffd64a53cac884 for package-manager 6aea2fc
+* add bucketId property to ExpectedPackages, so that they are easilly removed when removing a Bucket ad9f948
+* add option on each device to debug-log that separately bc113b6
+* add priority & prevStatusReasons into package workStatuses de73fd1
+* add studioId to MediaObjects queries to ensure that db-indexes are used in MongoDB c6080f6
+* add try-catch blacks to catch possible GUI erros ab7536a
+* adlibs with `currentPieceTags` being an empty array always shown as on-air 91bac55
+* allways show left label on live parts of super-infinite pieces d90511d
+* bug in snapshot restore f646ce3
+* clean out bucket-adlib-actions upon emptying of bucket 428b1fc
+* don't emit slowFullfilledCommands as errors 7b9b2ef
+* double-click to take adlib not detecting pieces having stopped properly ab53cfa
+* enable scrolling of panels in standalone shelf views f99c88e
+* filtersTitle swapped for dashboard and rundown layouts ([#595](undefined/undefined/undefined/issues/595)) 13885d2
+* getUnfinishedPieceInstancesReactive not considering interactions between infinite pieces ([#580](undefined/undefined/undefined/issues/580)) 2f0d8a5
+* has-remote-items and has-guest-items title styling causes a 1px shift when segment becomes next/onAir 5040123
+* hidden segments shown in shelf lists even if containing 0 adlibs ([#596](undefined/undefined/undefined/issues/596)) 61a156b
+* improve infinite styling 9fd2629
+* increase upload file limit 5ab3f9e
+* inspector and buckets show up on "standalone shelf" views 5718876
+* isRundownLayout & isDashboardLayout are too lenient 18ab862
+* issue with script green line 53ef623
+* it's not possible to select bucket adlibs and rename them ([#576](undefined/undefined/undefined/issues/576)) 9d7c1e9
+* KeyF doesn't type out characters in text fields 31e4e20
+* maxWidth on labels cd088a1
+* migrations for ActionTriggers used the wrong key for activate/deactivate 8af440c
+* minor adjustments in reportPartInstanceHasStarted to account for edge-cases 2d1ea6c
+* missing sourcelayers in action triggers list 5a92f23
+* mos-gw: filter out heartbeat log-lines 20b1e94
+* move Control+KeyF to only happen when simulateTriggerBinding is falsy a1ef238
+* naming changes after QA ddd20c9
+* one touch in dashboard on a touchscreen triggers action twice (once as pointerup once as click) a836f2d
+* PGW update TSR dep 264b136
+* pieces that weren't infinite would show up as infinite a5caf4b
+* Playout-gateway: Improved debug-logging of devices a18dc70
+* Playout-gateway: update TSR dep (possible fix for quantel-rename port issue) 7be8b3c
+* **playout-gateway:** add option purgeUnknownElements, introduced in TSR 9cd9e7c
+* potential fix for crazy timeline 59fd6c0
+* PQueue not waiting for promise to resolve 4f680f2
+* prevent default F10 behavior 31658e0
+* prevent default on F12 and Control+KeyF dcf734a
+* prevent default on F5 & Control+F5 05a9eb2
+* prevent tsr going into init loop cca5b48
+* preventDefault on Enter and NumpadEnter (non-globally) e37cb6d
+* Prompter does not update when script is edited ([#554](undefined/undefined/undefined/issues/554)) 0b08858
+* PubSub.packageContainerPackageStatuses and PubSub.packageContainerStatuses have the same value causing weird bugs c725143
+* refactor subscriptions so that queries use mongodb indexes 71d3025
+* single setTimeout for triggerUpdateDevice 1031cbd
+* source layer rank should be used when flattening output groups 75c6116
+* Timeline can sometimes crash when displaying a Transition Piece 0143680
+* touch-interface "TAKE" button not behaving the same way as other "TAKE" buttons 8880e5e
+* **TriggersHandler:** individual keys may be blocked by Combos set up (f.g. Home blocked by Control+Home) 346cd48
+* update atem-connection - allow upload to atem clips 3 & 4 5f9e014
+* update node version in docker to 12.22.6 4c0fe5e
+* update sorensen to fix a bug when window loses focus with keys pressed 8bceaa1
+* update tsr for atem-state 94d2482
+* update version numbers for r35 and r36 migrations 7566e68
+* useMouseContext getPartContext callback didn't include all dependencies b9a95be
+* when showing ViewLayout the header is displayed broken into two lines 7c41bef
+
+## [1.37.0-in-testing.0](///compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
+
+
+### Features
+
+* Action Triggers ([#553](undefined/undefined/undefined/issues/553)) 35e2b1a
+* add content and source layer types for EVS ff86d17
+* add custom timeline rendering for EVS items 1efdd6a
+* add evs type to source layer settings list 300c1ba
+
+
+### Bug Fixes
+
+* add color code property to EvsContent c9d34db
+* add missing settings attribute quantel transformerURL 3e8e6d3
+* add missing subscription for graphics f6a67bb
+* add missing support for HTTP_PROXY e52a8b8
+* add missing TSR device options and layer mapping options ([#552](undefined/undefined/undefined/issues/552)) 3632509
+* Add package data into RundownPlaylist-snapshot 0787e41
+* add publication for PackageInfos 59dee32
+* add temporary package manager status page 43eabb2
+* add temporary package manager status page c423d3c
+* add upsertMany method to collections c3b6f45
+* AdLibs from other Rundowns in a Playlist can't be started, even uf they use the same ShowStyleVariant ([#555](undefined/undefined/undefined/issues/555)) 54801c4
+* after refreshing a rundown, the timeline can scroll out of viewport d62efa3
+* Assign ranks according to playlist order by rundownExternalId 28143e5
+* better logging of client-side errors feef0d6
+* bug fix: Can't perform a React state update on an unmounted component 673e760
+* cache the result of the method getMediaObjectIssues 935faab
+* change so that expectations that are not matched with any source/target are still published. b292b94
+* clean up the setIntervals upon unmounting of the component 960e007
+* DRY:ed the expectedPackage.sideEffect generation. Also changed StudioPackageContainerContext into a StudioContext in order to provide the data needed. ba488eb
+* evs channel color code dd20f55
+* fill in ids of unnamed expectedPackages. This is so that the GUI can easily map expectedPackages to PackageInfos. 78a27a9
+* filter the UnfinishedPieceInstances and NextPieces on playlist.activationId becd2c9
+* fix ids of docs when importing snapshot 2ee9e3b
+* fix issue with local vs global expectedPackage._id 10a9166
+* hardcoded ENPS in "Use ENPS order" label 3449651
+* issues in notifyCurrentPlayingPart 64f7432
+* MOS-Gateway: update mos-connection version (to fix whitespace-issue when messages are being split in several packages) c949f9f
+* moveNext when using segmentDelta 038d58c
+* ordering of Package statuses 7f1c177
+* PM: use PackageContainerPackage status to determine if the preview is available. fb1abac
+* potential fix for "blinking yellow line" in enps 00a69cc
+* prompter infinites ([#549](undefined/undefined/undefined/issues/549)) 0c88272
+* rename registered name of collection PackageContainerPackageStatuses 6c5a701
+* send PLAY before STOP story status 39e7e84
+* set PackageContainerPackageStatus.packageId to ExpectedPackageId 723ea78
+* thumbnail for expectedPackage 6a23499
+* tie PackageContainerPackageStatus to the device it came from. And add method for clearing that out upon device connect. [publish] 6a3c4c5
+* use rundown.externalId instead of _id, to align better with what comes from blueprints 07a2e83
+
+## [1.36.0-in-testing.9](///compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+
+
+### Bug Fixes
+
+* **Presenter screen:** getSelectedPartInstances on undefined crashes view d050844
+* **Presenter screen:** getSelectedPartInstances on undefined crashes view 654f36a
+
+## [1.36.0-in-testing.8](///compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
+
+
+### Features
+
+* expected end time / back time ([#540](undefined/undefined/undefined/issues/540)) 84e1092
+
+## [1.36.0-in-testing.7](///compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
+
+## [1.36.0-in-testing.6](///compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
+
+
+### Features
+
+* rewrite syncFunction to be promise and p-queue based ([#543](undefined/undefined/undefined/issues/543)) 0de96b0
+
+
+### Bug Fixes
+
+* repeating script can occur in prompter in some situations 8b192d3
+* repeating script can occur in prompter in some situations 4f2b850
+* repeating script can occur in prompter in some situations 3b73994
+
+## [1.36.0-in-testing.4](///compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
+
+## [1.36.0-in-testing.3](///compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
+
+## [1.36.0-in-testing.2](///compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
+
+## [1.36.0-in-testing.1](///compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
+
+## [1.36.0-in-testing.0](///compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
+
+
+### Features
+
+* add "Troubleshoot" button for Package Manager in GUI, used to data-dump and troubleshoot things in Package Manager 76919ff
+* add checkbox to blueprints and peripheral devices to disable version checks. The flag gets unset whenever the blueprint/device changes its version e2ffccb
+* add FTP package accessors type to blueprint-integrations 412d2f1
+* Apply rundown header / view layouts to rundown d1f2838
+* blueprint getPackageInfo implementation based on cache 74b40ad
+* Describe rundown view and shelf layouts through manifests 3773b1e
+* expand FTP accessor with options for explicit login and encrypted connections [publish] a4e77bd
+* implement async wrapper to TransformedCollection ([#528](undefined/undefined/undefined/issues/528)) 301d306
+* initial implementation of new Package Manager GUI 93f2b8c
+* package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy 52592b6
+* package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) 191fcde
+* refactor lookahead logic to remove amount of loop iterations 6648ff6
+* Remove delayed initialisation from DbCacheReadObject b15f306
+* Remove lazy initialisation from DbCacheReadCollection, making the class be fully synchronous 209c36b
+* remove old expectedVersion migrations c664433
+* rework gateway version check to looser, and not check process version 1a01393
+* rework the blueprint version checks to be looser around ^1.32.1 vs 1.32.0 1375437
+* Scope layouts to their settings section 9bbcc22
+* Select mini shelf layout in rundown view f0c602f
+* Select rundown layout from lobby and use selected layouts as defaults 63b8764
+* show Viz loading status in MSE on the Piece ([#538](undefined/undefined/undefined/issues/538)) 2c1d3a3
+* Skeleton of rundown layout registry 9680210
+* speed and re-rendering optimisations 89a93a1
+* speed and re-rendering optimisations a0a0d6c
+* speedoptimize - added CURRENT_TIME_GRANULARITY const 4edd282
+* update typescript to 4.2 to match meteor-babel 94788fb
+* when showing *On Air On* in Segment header, and not active, use expectedStart and not current time as base 6d6cf38
+
+
+### Bug Fixes
+
+* add created property to expectedPackages 5f05199
+* AfterBroadcastForm crashes when sending evaluations 2dddb22
+* CacheObject missing transforms 02207f1
+* Cannot use 'in' operator to search for 'getIfLoaded' ac0038c
+* catch/ignore async logged errors when running tests 4b51ab9
+* Filter supported elements ff82d13
+* fix bug in displayFormattedTime ea4a666
+* Fixes after rebase 08aa9b6
+* improve Package statuses GUI page [publish] 4985606
+* infinite pieces losing their startedPlayback time on their second take 4fbde9d
+* invalid notifications ([#545](undefined/undefined/undefined/issues/545)) f414831
+* iterateDeeply for arrays [publish] 9a64fd3
+* Lint errors 1b67f7f
+* orphaned parts cause the Segment Timeline component to scroll beyond the timeline 3113937
+* package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] 22b29d9
+* Package status GUI updates cdcafde
+* pixelPosition should be a const cc9a0cf
+* plumb in pieceId when executing an action a8ccdea
+* PM add WorkStatusState, for stronger typings [publish] 51788bc
+* Post-rebase 52ec5d8
+* prevPartId was initialized with = '' instead of null 3cbb8ee
+* prioritize showing end of script Piece right-hand label 8ea0f4f
+* reinsert isExpectedToPlay in SegmentTimelineContainer and raised SIMULATED_PLAYBACK_HARD_MARGIN to 3500 2b0861d
+* remove duplicate migration 8ad5512
+* rundown baseline objects should trigger listenToPackageInfoUpdates 84ea181
+* scrollLeft gave flickering when pressing take. 14b05c3
+* scrollLeft gave flickering when pressing take. 644dc17
+* search bar cleared when switching tabs in shelf ([#544](undefined/undefined/undefined/issues/544)) f7a4ee0
+* sending an evaluation on a looping rundown deactivates it c88b9c0
+* setState missing 1be49cd
+* setState missing 2482600
+* show adlibs for hidden layers when dev flags makes the layers visible 587c17b
+* solid background behind right-hand-side Piece labels to cover any stray left-hand-side labels 68d3acb
+* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props b52ebf3
+* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props 16487c6
+* timeline not considering userDuration for pieces properly 9afa233
+* update data-store dep (fixing a bug where device-apps/gateways wouldn't work when started from a different drive than C (on windows) 9a9846b
+* Update Package Manager GUI, add "working state" to the icons 5dcedea
+* various typescript errors 0d08d87
+
+## [1.37.0-in-testing.0](///compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
+
+
+### Features
+
+* Action Triggers ([#553](undefined/undefined/undefined/issues/553)) 35e2b1a
+
+
+### Bug Fixes
+
+* add missing settings attribute quantel transformerURL 3e8e6d3
+* add missing subscription for graphics f6a67bb
+* add missing support for HTTP_PROXY e52a8b8
+* add missing TSR device options and layer mapping options ([#552](undefined/undefined/undefined/issues/552)) 3632509
+* add publication for PackageInfos 59dee32
+* add temporary package manager status page 43eabb2
+* add temporary package manager status page c423d3c
+* AdLibs from other Rundowns in a Playlist can't be started, even uf they use the same ShowStyleVariant ([#555](undefined/undefined/undefined/issues/555)) 54801c4
+* after refreshing a rundown, the timeline can scroll out of viewport d62efa3
+* Assign ranks according to playlist order by rundownExternalId 28143e5
+* better logging of client-side errors feef0d6
+* bug fix: Can't perform a React state update on an unmounted component 673e760
+* change so that expectations that are not matched with any source/target are still published. b292b94
+* DRY:ed the expectedPackage.sideEffect generation. Also changed StudioPackageContainerContext into a StudioContext in order to provide the data needed. ba488eb
+* fill in ids of unnamed expectedPackages. This is so that the GUI can easily map expectedPackages to PackageInfos. 78a27a9
+* filter the UnfinishedPieceInstances and NextPieces on playlist.activationId becd2c9
+* fix issue with local vs global expectedPackage._id 10a9166
+* hardcoded ENPS in "Use ENPS order" label 3449651
+* issues in notifyCurrentPlayingPart 64f7432
+* MOS-Gateway: update mos-connection version (to fix whitespace-issue when messages are being split in several packages) c949f9f
+* moveNext when using segmentDelta 52f5ffb
+* moveNext when using segmentDelta 038d58c
+* ordering of Package statuses 7f1c177
+* PM: use PackageContainerPackage status to determine if the preview is available. fb1abac
+* potential fix for "blinking yellow line" in enps 00a69cc
+* prompter infinites ([#549](undefined/undefined/undefined/issues/549)) 0c88272
+* rename registered name of collection PackageContainerPackageStatuses 6c5a701
+* send PLAY before STOP story status 39e7e84
+* thumbnail for expectedPackage 6a23499
+* tie PackageContainerPackageStatus to the device it came from. And add method for clearing that out upon device connect. [publish] 6a3c4c5
+* use rundown.externalId instead of _id, to align better with what comes from blueprints 07a2e83
+
+## [1.36.0-in-testing.9](///compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+
+
+### Bug Fixes
+
+* **Presenter screen:** getSelectedPartInstances on undefined crashes view d050844
+* **Presenter screen:** getSelectedPartInstances on undefined crashes view 654f36a
+
+## [1.36.0-in-testing.8](///compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
+
+
+### Features
+
+* expected end time / back time ([#540](undefined/undefined/undefined/issues/540)) 84e1092
+
+## [1.36.0-in-testing.7](///compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
+
+## [1.36.0-in-testing.6](///compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
+
+
+### Features
+
+* rewrite syncFunction to be promise and p-queue based ([#543](undefined/undefined/undefined/issues/543)) 0de96b0
+
+
+### Bug Fixes
+
+* repeating script can occur in prompter in some situations 8b192d3
+* repeating script can occur in prompter in some situations 4f2b850
+* repeating script can occur in prompter in some situations 3b73994
+
+## [1.36.0-in-testing.4](///compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
+
+## [1.36.0-in-testing.3](///compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
+
+## [1.36.0-in-testing.2](///compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
+
+## [1.36.0-in-testing.1](///compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
+
+## [1.36.0-in-testing.0](///compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
+
+
+### Features
+
+* add "Troubleshoot" button for Package Manager in GUI, used to data-dump and troubleshoot things in Package Manager 76919ff
+* add checkbox to blueprints and peripheral devices to disable version checks. The flag gets unset whenever the blueprint/device changes its version e2ffccb
+* add FTP package accessors type to blueprint-integrations 412d2f1
+* Apply rundown header / view layouts to rundown d1f2838
+* blueprint getPackageInfo implementation based on cache 74b40ad
+* Describe rundown view and shelf layouts through manifests 3773b1e
+* expand FTP accessor with options for explicit login and encrypted connections [publish] a4e77bd
+* implement async wrapper to TransformedCollection ([#528](undefined/undefined/undefined/issues/528)) 301d306
+* initial implementation of new Package Manager GUI 93f2b8c
+* package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy 52592b6
+* package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) 191fcde
+* refactor lookahead logic to remove amount of loop iterations 6648ff6
+* Remove delayed initialisation from DbCacheReadObject b15f306
+* Remove lazy initialisation from DbCacheReadCollection, making the class be fully synchronous 209c36b
+* remove old expectedVersion migrations c664433
+* rework gateway version check to looser, and not check process version 1a01393
+* rework the blueprint version checks to be looser around ^1.32.1 vs 1.32.0 1375437
+* Scope layouts to their settings section 9bbcc22
+* Select mini shelf layout in rundown view f0c602f
+* Select rundown layout from lobby and use selected layouts as defaults 63b8764
+* show Viz loading status in MSE on the Piece ([#538](undefined/undefined/undefined/issues/538)) 2c1d3a3
+* Skeleton of rundown layout registry 9680210
+* speed and re-rendering optimisations 89a93a1
+* speed and re-rendering optimisations a0a0d6c
+* speedoptimize - added CURRENT_TIME_GRANULARITY const 4edd282
+* update typescript to 4.2 to match meteor-babel 94788fb
+* when showing *On Air On* in Segment header, and not active, use expectedStart and not current time as base 6d6cf38
+
+
+### Bug Fixes
+
+* add created property to expectedPackages 5f05199
+* AfterBroadcastForm crashes when sending evaluations 2dddb22
+* CacheObject missing transforms 02207f1
+* Cannot use 'in' operator to search for 'getIfLoaded' ac0038c
+* catch/ignore async logged errors when running tests 4b51ab9
+* Filter supported elements ff82d13
+* fix bug in displayFormattedTime ea4a666
+* Fixes after rebase 08aa9b6
+* improve Package statuses GUI page [publish] 4985606
+* infinite pieces losing their startedPlayback time on their second take 4fbde9d
+* invalid notifications ([#545](undefined/undefined/undefined/issues/545)) f414831
+* iterateDeeply for arrays [publish] 9a64fd3
+* Lint errors 1b67f7f
+* orphaned parts cause the Segment Timeline component to scroll beyond the timeline 3113937
+* package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] 22b29d9
+* Package status GUI updates cdcafde
+* pixelPosition should be a const cc9a0cf
+* plumb in pieceId when executing an action a8ccdea
+* PM add WorkStatusState, for stronger typings [publish] 51788bc
+* Post-rebase 52ec5d8
+* prevPartId was initialized with = '' instead of null 3cbb8ee
+* prioritize showing end of script Piece right-hand label 8ea0f4f
+* reinsert isExpectedToPlay in SegmentTimelineContainer and raised SIMULATED_PLAYBACK_HARD_MARGIN to 3500 2b0861d
+* remove duplicate migration 8ad5512
+* rundown baseline objects should trigger listenToPackageInfoUpdates 84ea181
+* scrollLeft gave flickering when pressing take. 14b05c3
+* scrollLeft gave flickering when pressing take. 644dc17
+* search bar cleared when switching tabs in shelf ([#544](undefined/undefined/undefined/issues/544)) f7a4ee0
+* sending an evaluation on a looping rundown deactivates it c88b9c0
+* setState missing 1be49cd
+* setState missing 2482600
+* show adlibs for hidden layers when dev flags makes the layers visible 587c17b
+* solid background behind right-hand-side Piece labels to cover any stray left-hand-side labels 68d3acb
+* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props b52ebf3
+* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props 16487c6
+* timeline not considering userDuration for pieces properly 9afa233
+* update data-store dep (fixing a bug where device-apps/gateways wouldn't work when started from a different drive than C (on windows) 9a9846b
+* Update Package Manager GUI, add "working state" to the icons 5dcedea
+* various typescript errors 0d08d87
+
+## [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+### [1.35.1-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.35.1-3) (2021-09-07)
+
+
+### Bug Fixes
+
+* orphaned parts unable to continue adlib onEnd infinites ([c38a3a1](https://github.com/nrkno/tv-automation-server-core/commit/c38a3a12c98019baf79ec4167e34b29b66bf6dfb))
+
+### [1.35.1-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.35.1-2) (2021-08-10)
+
+
+### Bug Fixes
+
+* **Presenter screen:** getSelectedPartInstances on undefined crashes view ([d050844](https://github.com/nrkno/tv-automation-server-core/commit/d0508440e5ed805100780980e958b97d02356116))
+
+## [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.7...v1.36.0-in-testing.8) (2021-08-10)
+
 ## [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.6...v1.36.0-in-testing.7) (2021-07-20)
 
 

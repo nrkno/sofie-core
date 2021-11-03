@@ -8,12 +8,14 @@ import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { getPresenterScreenReactive, PresenterScreenBase, RundownOverviewTrackedProps } from './PresenterScreen'
+import { StudioId } from '../../../lib/collections/Studios'
 
 interface TimeMap {
 	[key: string]: number
 }
 
 interface RundownOverviewProps {
+	studioId: StudioId
 	playlistId: RundownPlaylistId
 	segmentLiveDurations?: TimeMap
 }

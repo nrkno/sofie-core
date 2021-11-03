@@ -27,6 +27,8 @@ $segment-item-disabled-color: #c9c9c9;
 $segment-nextline-shade-width: 1.875rem;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
 
+$segment-editorialline-color: rgba(255, 255, 255, 0.25);
+
 $rundown-divider-color: #000000;
 $rundown-divider-background-color: #dddddd;
 
@@ -519,6 +521,7 @@ svg.icon {
 	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.7);
 
 	--segment-layer-height: #{$segment-layer-height};
+	--infinite-piece-background-line-height: #{$segment-layer-height / 8};
 	border-radius: $segment-border-radius;
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
@@ -643,6 +646,7 @@ svg.icon {
 			.segment-timeline__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+					margin-bottom: -1px;
 				}
 			}
 		}
@@ -663,8 +667,27 @@ svg.icon {
 			.segment-timeline__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+					margin-bottom: -1px;
 				}
 			}
+		}
+	}
+
+	&.has-break {
+		width: 12.5rem;
+
+		.segment-timeline__title {
+			background: $rundown-divider-background-color;
+
+			h2 {
+				color: $rundown-divider-color;
+			}
+		}
+
+		// Add a tiny bit of padding so the break text doesn't look squashed against the side of the segment container
+		.segment-timeline__timeUntil,
+		.segment-timeline__timeUntil__label {
+			padding-right: 0.3vw;
 		}
 	}
 
@@ -1206,6 +1229,14 @@ svg.icon {
 		}
 	}
 
+	.segment-timeline__editorialline {
+		border-left: 2px dashed $segment-editorialline-color;
+		position: absolute;
+		top: calc(2.3em - 13px);
+		left: 0;
+		bottom: 1.2em;
+	}
+
 	/** This is a child element of the .segment-timeline__timeline-container.
 	    This is the parent of all segment items
 	*/
@@ -1319,7 +1350,7 @@ svg.icon {
 				background: $segment-background-color;
 				height: 100%;
 				top: 0;
-				min-width: 200%;
+				min-width: 100vw;
 				z-index: 0;
 			}
 
@@ -1500,6 +1531,11 @@ svg.icon {
 				}
 			}
 
+			&.budget-gap {
+				flex: 1;
+				z-index: -1;
+			}
+
 			&:not(.live) {
 				.segment-timeline__part__nextline.auto-next:not(.segment-timeline__part__nextline--endline),
 				.segment-timeline__part__nextline.invalid:not(.segment-timeline__part__nextline--endline) {
@@ -1666,6 +1702,7 @@ svg.icon {
 				min-height: $segment-layer-height;
 				border-bottom: 0px solid $segment-layer-separator-color;
 				transform-style: preserve-3d;
+				overflow: hidden;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
 
@@ -1675,6 +1712,7 @@ svg.icon {
 					line-height: $segment-layer-height;
 					border-bottom: 2px solid $segment-layer-separator-color;
 					transform-style: preserve-3d;
+					overflow: hidden;
 
 					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 						$output-layer-group-collapse-animation-duration border ease-in-out;
@@ -1685,7 +1723,6 @@ svg.icon {
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
 						transform-style: preserve-3d;
-						overflow: hidden;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
@@ -1694,14 +1731,14 @@ svg.icon {
 							transform: translate3d(0, 0, 10px);
 						}
 
-						@include item-type-colors();
+						@include piece-colors();
 
-						&.disabled {
-							background: $segment-item-disabled-background;
-							color: $segment-item-disabled-color;
-						}
 						&.next-is-touching {
 							border-right: 1px solid $segment-timeline-background-color;
+							overflow: hidden;
+						}
+						&.super-infinite {
+							overflow: hidden;
 						}
 
 						&.next-is-touching:hover {
@@ -2021,7 +2058,6 @@ svg.icon {
 					padding: 0 0.3em;
 					overflow: hidden;
 					text-overflow: clip;
-					background: inherit;
 
 					> * {
 						position: relative;
@@ -2101,6 +2137,16 @@ svg.icon {
 					object-position: center center;
 					margin-left: 0.5em;
 				}
+
+				.segment-timeline__piece__label__colored-mark {
+					font-size: 600%;
+					line-height: 23px;
+					width: 25px;
+				}
+			}
+
+			.segment-timeline__piece:not(.infinite) .segment-timeline__piece__label.right-side {
+				background: inherit;
 			}
 
 			// Layer-item appendages are parts of a layer item going beyond the layer (usually, across the entire timeline)
@@ -2138,6 +2184,12 @@ svg.icon {
 				background-color: $part-identifier;
 				border-radius: 0 10px 10px 0;
 				color: $part-identifier-text;
+			}
+
+			&.gap {
+				.segment-timeline__layer {
+					border-bottom: none;
+				}
 			}
 		}
 	}
@@ -2911,7 +2963,6 @@ svg.icon {
 		margin-bottom: 6px;
 
 		> .mini-inspector__sub-header {
-			margin-left: 0.5em;
 			font-weight: 300;
 		}
 	}
@@ -2957,6 +3008,11 @@ svg.icon {
 		&.text-broken {
 			display: block;
 		}
+	}
+	.mini-inspector__full-text + .mini-inspector__full-text:not(.text-broken),
+	.mini-inspector__system + .mini-inspector__full-text:not(.text-broken) {
+		margin-top: 1em;
+		display: block;
 	}
 	.mini-inspector__in-point {
 		margin-right: 1em;

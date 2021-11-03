@@ -5,7 +5,7 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
-import { SegmentTimelinePart } from '../SegmentTimelinePart'
+import { SegmentTimelinePart } from '../Parts/SegmentTimelinePart'
 
 export const SegmentTimelinePartHoverPreview = ({
 	t,

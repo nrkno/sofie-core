@@ -193,7 +193,7 @@ function updateServerTime(retries: number = 0) {
 		})
 }
 Meteor.startup(() => {
-	if (!env.JEST_WORKER_ID) {
+	if (!Meteor.isTest) {
 		setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: ['Starting up...'] })
 		Meteor.setInterval(() => {
 			updateServerTime()

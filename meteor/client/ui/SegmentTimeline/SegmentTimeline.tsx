@@ -10,7 +10,7 @@ import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
-import { SegmentTimelinePart } from './SegmentTimelinePart'
+import { SegmentTimelinePart } from './Parts/SegmentTimelinePart'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
@@ -22,23 +22,25 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { NoteType, SegmentNote } from '../../../lib/api/notes'
+import { SegmentNote } from '../../../lib/api/notes'
 import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
-import { literal, unprotectString } from '../../../lib/lib'
+import { literal, protectString, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
+import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 interface IProps {
 	id: string
@@ -67,6 +69,7 @@ interface IProps {
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number
+	displayLiveLineCounter: boolean
 	autoNextPart: boolean
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
@@ -75,10 +78,13 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
+	budgetDuration?: number
+	showCountdownToSegment: boolean
+	fixedSegmentDuration: boolean | undefined
 }
 interface IStateHeader {
 	timelineWidth: number
@@ -283,6 +289,24 @@ function SegmentTimelineZoomButtons(props: IProps) {
 }
 
 export const SEGMENT_TIMELINE_ELEMENT_ID = 'rundown__segment__'
+
+export const BUDGET_GAP_PART = {
+	partId: protectString('gap'),
+	instance: wrapPartToTemporaryInstance(protectString(''), {
+		_id: protectString('gap'),
+		_rank: 0,
+		segmentId: protectString(''),
+		rundownId: protectString(''),
+		externalId: 'gap',
+		gap: true,
+		title: 'gap',
+		invalid: true,
+	}),
+	pieces: [],
+	renderedDuration: 0,
+	startsAt: 0,
+	willProbablyAutoNext: false,
+}
 
 export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
 	static whyDidYouRender = true
@@ -569,8 +593,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				this.props.maxTimeScale,
 				Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1)))
 			)
-			if (this.timeline?.parentElement) {
-				const clientPositon = this.timeline.parentElement.getBoundingClientRect()
+			if (this.timeline) {
+				const clientPositon = this.timeline.getBoundingClientRect()
 				let zoomOffset = Math.max(0, e.clientX - clientPositon.x) / this.state.timelineWidth
 
 				const currentlyVisibleArea = this.state.timelineWidth / this.props.timeScale
@@ -659,6 +683,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return {
 			transform: 'translate3d(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px, 0, 0.1px)',
 			willChange: 'transform',
+			minWidth:
+				this.props.budgetDuration !== undefined
+					? `calc(${this.convertTimeToPixels(this.props.budgetDuration).toString()}px + 100vW)`
+					: undefined,
 		}
 	}
 
@@ -700,11 +728,13 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						{t('On Air')}
 					</div>
 					<div className="segment-timeline__liveline__timecode">
-						<CurrentPartRemaining
-							currentPartInstanceId={this.props.playlist.currentPartInstanceId}
-							speaking={getAllowSpeaking()}
-							heavyClassName="overtime"
-						/>
+						{this.props.displayLiveLineCounter && (
+							<CurrentPartRemaining
+								currentPartInstanceId={this.props.playlist.currentPartInstanceId}
+								speaking={getAllowSpeaking()}
+								heavyClassName="overtime"
+							/>
+						)}
 						{this.props.autoNextPart ? (
 							<div className="rundown-view__part__icon rundown-view__part__icon--auto-next"></div>
 						) : (
@@ -823,6 +853,42 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		})
 	}
 
+	renderBudgetGapPart() {
+		return (
+			<>
+				{this.props.budgetDuration !== undefined && (
+					<SegmentTimelinePart
+						segment={this.props.segment}
+						playlist={this.props.playlist}
+						studio={this.props.studio}
+						collapsedOutputs={this.props.collapsedOutputs}
+						scrollLeft={this.props.scrollLeft}
+						timeScale={this.props.timeScale}
+						autoNextPart={this.props.autoNextPart}
+						followLiveLine={this.props.followLiveLine}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						livePosition={this.props.livePosition}
+						onScroll={this.props.onScroll}
+						onCollapseOutputToggle={this.props.onCollapseOutputToggle}
+						onFollowLiveLine={this.props.onFollowLiveLine}
+						onContextMenu={this.props.onContextMenu}
+						relative={false}
+						onPieceClick={this.props.onItemClick}
+						onPieceDoubleClick={this.props.onItemDoubleClick}
+						scrollWidth={this.state.timelineWidth / this.props.timeScale}
+						firstPartInSegment={this.props.parts[0]}
+						lastPartInSegment={this.props.parts[this.props.parts.length - 1]}
+						isLastSegment={this.props.isLastSegment}
+						isLastInSegment={false}
+						isAfterLastValidInSegmentAndItsLive={false}
+						isBudgetGap={true}
+						part={BUDGET_GAP_PART}
+					/>
+				)}
+			</>
+		)
+	}
+
 	renderEndOfSegment() {
 		return <div className="segment-timeline__part segment-timeline__part--end-of-segment"></div>
 	}
@@ -894,17 +960,26 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
+	renderEditorialLine() {
+		if (this.props.budgetDuration !== undefined) {
+			const lineStyle = {
+				left: this.props.budgetDuration * this.props.timeScale - this.props.scrollLeft * this.props.timeScale + 'px',
+			}
+			return <div className="segment-timeline__editorialline" style={lineStyle}></div>
+		}
+	}
+
 	render() {
 		const notes: Array<SegmentNote> = this.props.segmentNotes
 
 		const { t } = this.props
 
 		const criticalNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteType.ERROR) return ++prev
+			if (item.type === NoteSeverity.ERROR) return ++prev
 			return prev
 		}, 0)
 		const warningNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteType.WARNING) return ++prev
+			if (item.type === NoteSeverity.WARNING) return ++prev
 			return prev
 		}, 0)
 
@@ -978,7 +1053,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
 									onClick={() =>
-										this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(this.props.segment._id, NoteType.ERROR)
+										this.props.onHeaderNoteClick &&
+										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.ERROR)
 									}
 								>
 									<CriticalIconSmall />
@@ -990,7 +1066,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
 									onClick={() =>
 										this.props.onHeaderNoteClick &&
-										this.props.onHeaderNoteClick(this.props.segment._id, NoteType.WARNING)
+										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.WARNING)
 									}
 								>
 									<WarningIconSmall />
@@ -1019,27 +1095,32 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
 							<SegmentDuration
+								segmentId={this.props.segment._id}
 								parts={this.props.parts}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+								fixed={this.props.fixedSegmentDuration}
 							/>
 						)}
 				</div>
 				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
-					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && (
-						<PartCountdown
-							partId={countdownToPartId}
-							hideOnZero={!useTimeOfDayCountdowns}
-							useWallClock={useTimeOfDayCountdowns}
-							playlist={this.props.playlist}
-							label={
-								useTimeOfDayCountdowns ? (
-									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-								) : (
-									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-								)
-							}
-						/>
-					)}
+					{this.props.playlist &&
+						this.props.parts &&
+						this.props.parts.length > 0 &&
+						this.props.showCountdownToSegment && (
+							<PartCountdown
+								partId={countdownToPartId}
+								hideOnZero={!useTimeOfDayCountdowns}
+								useWallClock={useTimeOfDayCountdowns}
+								playlist={this.props.playlist}
+								label={
+									useTimeOfDayCountdowns ? (
+										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+									) : (
+										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+									)
+								}
+							/>
+						)}
 					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}
@@ -1055,18 +1136,20 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					})}
 					onMouseDown={this.onTimelineMouseDown}
 					onTouchStartCapture={this.onTimelineTouchStart}
+					ref={this.setTimelineRef}
 				>
 					<div
 						className="segment-timeline__timeline"
 						key={this.props.segment._id + '-timeline'}
-						ref={this.setTimelineRef}
 						style={this.timelineStyle()}
 					>
 						<ErrorBoundary>
 							{this.renderTimeline()}
+							{this.renderBudgetGapPart()}
 							{this.renderEndOfSegment()}
 						</ErrorBoundary>
 					</div>
+					{this.renderEditorialLine()}
 					{this.renderLiveLine()}
 				</div>
 				<ErrorBoundary>

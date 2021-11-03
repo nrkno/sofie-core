@@ -57,6 +57,7 @@ import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/R
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
@@ -79,6 +80,15 @@ import {
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
+import {
+	ExpectedPackageWorkStatus,
+	ExpectedPackageWorkStatuses,
+} from '../../lib/collections/ExpectedPackageWorkStatuses'
+import {
+	PackageContainerPackageStatusDB,
+	PackageContainerPackageStatuses,
+} from '../../lib/collections/PackageContainerPackageStatus'
+import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -120,6 +130,10 @@ interface RundownPlaylistSnapshot {
 	expectedMediaItems: Array<ExpectedMediaItem>
 	expectedPlayoutItems: Array<ExpectedPlayoutItem>
 	expectedPackages: Array<ExpectedPackageDB>
+
+	expectedPackageWorkStatuses: Array<ExpectedPackageWorkStatus>
+	packageContainerPackageStatuses: Array<PackageContainerPackageStatusDB>
+	packageInfos: Array<PackageInfoDB>
 }
 interface SystemSnapshot {
 	version: string
@@ -130,6 +144,7 @@ interface SystemSnapshot {
 	showStyleVariants: Array<ShowStyleVariant>
 	blueprints?: Array<Blueprint> // optional, to be backwards compatible
 	rundownLayouts?: Array<RundownLayoutBase> // optional, to be backwards compatible
+	triggeredActions?: Array<DBTriggeredActions> // optional, to be backwards compatible
 	devices: Array<PeripheralDevice>
 	deviceCommands: Array<PeripheralDeviceCommand>
 	coreSystem: ICoreSystem
@@ -197,11 +212,24 @@ async function createRundownPlaylistSnapshot(
 		..._.compact(adLibPieces.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
 		..._.compact(baselineAdlibs.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
 	]
-	const mediaObjects = await MediaObjects.findFetchAsync({ mediaId: { $in: mediaObjectIds } })
+	const mediaObjects = await MediaObjects.findFetchAsync({
+		studioId: playlist.studioId,
+		mediaId: { $in: mediaObjectIds },
+	})
 	const expectedMediaItems = await ExpectedMediaItems.findFetchAsync({ partId: { $in: parts.map((i) => i._id) } })
 	const expectedPlayoutItems = await ExpectedPlayoutItems.findFetchAsync({ rundownId: { $in: rundownIds } })
 	const expectedPackages = await ExpectedPackages.findFetchAsync({ rundownId: { $in: rundownIds } })
 	const baselineObjs = await RundownBaselineObjs.findFetchAsync({ rundownId: { $in: rundownIds } })
+
+	const expectedPackageWorkStatuses = await ExpectedPackageWorkStatuses.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+	const packageContainerPackageStatuses = await PackageContainerPackageStatuses.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+	const packageInfos = await PackageInfos.findFetchAsync({
+		studioId: playlist.studioId,
+	})
 
 	logger.info(`Snapshot generation done`)
 	return {
@@ -235,6 +263,9 @@ async function createRundownPlaylistSnapshot(
 		expectedMediaItems,
 		expectedPlayoutItems,
 		expectedPackages,
+		expectedPackageWorkStatuses,
+		packageContainerPackageStatuses,
+		packageInfos,
 	}
 }
 
@@ -261,6 +292,7 @@ async function createSystemSnapshot(
 	let queryShowStyleBases: MongoQuery<ShowStyleBase> = {}
 	let queryShowStyleVariants: MongoQuery<ShowStyleVariant> = {}
 	let queryRundownLayouts: MongoQuery<RundownLayoutBase> = {}
+	let queryTriggeredActions: MongoQuery<DBTriggeredActions> = {}
 	let queryDevices: MongoQuery<PeripheralDevice> = {}
 	let queryBlueprints: MongoQuery<Blueprint> = {}
 
@@ -285,14 +317,16 @@ async function createSystemSnapshot(
 
 	queryShowStyleVariants = { showStyleBaseId: { $in: showStyleBaseIds } }
 	queryRundownLayouts = { showStyleBaseId: { $in: showStyleBaseIds } }
+	queryTriggeredActions = { showStyleBaseIds: { $in: [null, ...showStyleBaseIds] } }
 
 	if (studioId) queryDevices = { studioId: studioId }
 	else if (organizationId) queryDevices = { organizationId: organizationId }
 
-	const [showStyleVariants, rundownLayouts, devices] = await Promise.all([
+	const [showStyleVariants, rundownLayouts, devices, triggeredActions] = await Promise.all([
 		ShowStyleVariants.findFetchAsync(queryShowStyleVariants),
 		RundownLayouts.findFetchAsync(queryRundownLayouts),
 		PeripheralDevices.findFetchAsync(queryDevices),
+		TriggeredActions.findFetchAsync(queryTriggeredActions),
 	])
 
 	if (studioId) {
@@ -331,6 +365,7 @@ async function createSystemSnapshot(
 		showStyleVariants,
 		blueprints,
 		rundownLayouts,
+		triggeredActions,
 		devices,
 		coreSystem,
 		deviceCommands: deviceCommands,
@@ -685,6 +720,13 @@ export async function restoreFromRundownPlaylistSnapshot(
 		piece.startSegmentId = segmentIdMap[unprotectString(piece.startSegmentId)]
 		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
 	})
+	_.each(snapshot.adLibPieces, (piece) => {
+		const oldId = piece._id
+		piece.rundownId = rundownIdMap[unprotectString(piece.rundownId)]
+		if (piece.partId) piece.partId = partIdMap[unprotectString(piece.partId)]
+		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
+	})
+
 	const pieceInstanceIdMap: { [key: string]: PieceInstanceId } = {}
 	_.each(snapshot.pieceInstances, (pieceInstance) => {
 		const oldId = pieceInstance._id
@@ -792,12 +834,7 @@ export async function restoreFromRundownPlaylistSnapshot(
 		saveIntoDb(
 			ExpectedPlayoutItems,
 			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPlayoutItems || [], true)
-		),
-		saveIntoDb(
-			ExpectedPackages,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPackages || [], true)
+			updateItemIds(snapshot.expectedPlayoutItems || [], false)
 		),
 	])
 
@@ -830,6 +867,7 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 			saveIntoDb(ShowStyleVariants, {}, snapshot.showStyleVariants),
 			snapshot.blueprints ? saveIntoDb(Blueprints, {}, snapshot.blueprints) : null,
 			snapshot.rundownLayouts ? saveIntoDb(RundownLayouts, {}, snapshot.rundownLayouts) : null,
+			snapshot.triggeredActions ? saveIntoDb(TriggeredActions, {}, snapshot.triggeredActions) : null,
 			saveIntoDb(PeripheralDevices, studioId ? { studioId: studioId } : {}, snapshot.devices),
 			saveIntoDb(CoreSystem, {}, [snapshot.coreSystem]),
 		]))

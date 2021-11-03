@@ -3,7 +3,12 @@ import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
-import { ExpectedPackageStatusAPI, IngestPlaylist, TSR } from '@sofie-automation/blueprints-integration'
+import {
+	ExpectedPackageStatusAPI,
+	IngestPlaylist,
+	TSR,
+	StatusCode as BPStatusCode,
+} from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
@@ -105,6 +110,11 @@ export interface NewPeripheralDeviceAPI {
 	dataRundownDelete(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<void>
 	dataRundownCreate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown): Promise<void>
 	dataRundownUpdate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown): Promise<void>
+	dataRundownMetaDataUpdate(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		ingestRundown: Omit<IngestRundown, 'segments'>
+	): Promise<void>
 	dataSegmentGet(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
@@ -320,6 +330,7 @@ export interface NewPeripheralDeviceAPI {
 			  }
 		)[]
 	): Promise<void>
+	removeAllPackageContainerPackageStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
 	fetchPackageInfoMetadata(
 		deviceId: PeripheralDeviceId,
@@ -399,6 +410,7 @@ export enum PeripheralDeviceAPIMethods {
 	'dataRundownDelete' = 'peripheralDevice.rundown.rundownDelete',
 	'dataRundownCreate' = 'peripheralDevice.rundown.rundownCreate',
 	'dataRundownUpdate' = 'peripheralDevice.rundown.rundownUpdate',
+	'dataRundownMetaDataUpdate' = 'peripheralDevice.rundown.rundownMetaDataUpdate',
 	'dataSegmentGet' = 'peripheralDevice.rundown.segmentGet',
 	'dataSegmentDelete' = 'peripheralDevice.rundown.segmentDelete',
 	'dataSegmentCreate' = 'peripheralDevice.rundown.segmentCreate',
@@ -409,7 +421,6 @@ export enum PeripheralDeviceAPIMethods {
 	'dataPartUpdate' = 'peripheralDevice.rundown.partUpdate',
 
 	'resyncRundown' = 'peripheralDevice.mos.roResync',
-	'resyncSegment' = 'peripheralDevice.mos.segmentResync',
 
 	'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',
@@ -424,6 +435,11 @@ export enum PeripheralDeviceAPIMethods {
 	'removeAllExpectedPackageWorkStatusOfDevice' = 'peripheralDevice.packageManager.removeAllExpectedPackageWorkStatusOfDevice',
 
 	'updatePackageContainerPackageStatuses' = 'peripheralDevice.packageManager.updatePackageContainerPackageStatuses',
+	'removeAllPackageContainerPackageStatusesOfDevice' = 'peripheralDevice.packageManager.removeAllPackageContainerPackageStatusesOfDevice',
+
+	'updatePackageContainerStatuses' = 'peripheralDevice.packageManager.updatePackageContainerStatuses',
+	'removeAllPackageContainerStatusesOfDevice' = 'peripheralDevice.packageManager.removeAllPackageContainerStatusesOfDevice',
+
 	'fetchPackageInfoMetadata' = 'peripheralDevice.packageManager.fetchPackageInfoMetadata',
 	'updatePackageInfo' = 'peripheralDevice.packageManager.updatePackageInfo',
 	'removePackageInfo' = 'peripheralDevice.packageManager.removePackageInfo',
@@ -455,19 +471,12 @@ export interface MediaWorkFlowStepRevision {
 	_rev: string
 }
 export namespace PeripheralDeviceAPI {
-	export enum StatusCode {
-		UNKNOWN = 0, // Status unknown
-		GOOD = 1, // All good and green
-		WARNING_MINOR = 2, // Everything is not OK, operation is not affected
-		WARNING_MAJOR = 3, // Everything is not OK, operation might be affected
-		BAD = 4, // Operation affected, possible to recover
-		FATAL = 5, // Operation affected, not possible to recover without manual interference
-	}
+	export const StatusCode = BPStatusCode
 
 	// Note The actual type of a device is determined by the Category, Type and SubType
 
 	export interface StatusObject {
-		statusCode: StatusCode
+		statusCode: BPStatusCode
 		messages?: Array<string>
 	}
 	// Note The actual type of a device is determined by the Category, Type and SubType

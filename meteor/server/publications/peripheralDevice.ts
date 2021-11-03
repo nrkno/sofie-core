@@ -15,12 +15,7 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { MappingsExtWithPackage, routeExpectedPackages, Studio, StudioId, Studios } from '../../lib/collections/Studios'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
-import {
-	ExpectedPackageDB,
-	ExpectedPackages,
-	getPreviewPackageSettings,
-	getThumbnailPackageSettings,
-} from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDB, ExpectedPackages, getSideEffect } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
 import {
 	ExpectedPackage,
@@ -127,7 +122,6 @@ meteorCustomPublishArray(
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 		token: string
 	) {
-		logger.info(`Pub.expectedPackagesForDevice: publication`)
 		if (
 			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
 		) {
@@ -503,6 +497,12 @@ function generateExpectedPackages(
 						logger.warn(
 							`Pub.expectedPackagesForDevice: Source package container "${packageSource.containerId}" not found`
 						)
+						// Add a placeholder source, it's used to provide users with a hint of what's wrong
+						combinedSources.push({
+							containerId: packageSource.containerId,
+							accessors: {},
+							label: `PackageContainer missing in config: ${packageSource.containerId}`,
+						})
 					}
 				}
 
@@ -517,9 +517,6 @@ function generateExpectedPackages(
 						packageContainerId = containerId
 						break // just picking the first one found, for now
 					}
-				}
-				if (!packageContainerId) {
-					logger.warn(`Pub.expectedPackagesForDevice: No package container found for "${mappingDeviceId}"`)
 				}
 
 				const combinedTargets: PackageContainerOnPackage[] = []
@@ -536,38 +533,31 @@ function generateExpectedPackages(
 							containerId: packageContainerId,
 						})
 					}
+				} else {
+					logger.warn(`Pub.expectedPackagesForDevice: No package container found for "${mappingDeviceId}"`)
+					// Add a placeholder target, it's used to provide users with a hint of what's wrong
+					combinedTargets.push({
+						containerId: '__placeholder-target',
+						accessors: {},
+						label: `No target found for Device "${mappingDeviceId}", Layer "${layerName}"`,
+					})
 				}
 
-				if (combinedSources.length) {
-					if (combinedTargets.length) {
-						expectedPackage.sideEffect = deepExtend(
-							{},
-							literal<ExpectedPackage.Base['sideEffect']>({
-								previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
-								thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
-								previewPackageSettings: getPreviewPackageSettings(
-									expectedPackage as ExpectedPackage.Any
-								),
-								thumbnailPackageSettings: getThumbnailPackageSettings(
-									expectedPackage as ExpectedPackage.Any
-								),
-							}),
-							expectedPackage.sideEffect
-						)
-
-						routedExpectedPackages.push({
-							expectedPackage: unprotectObject(expectedPackage),
-							sources: combinedSources,
-							targets: combinedTargets,
-							priority: priority,
-							playoutDeviceId: mapping.deviceId,
-						})
-					} else {
-						logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)
-					}
-				} else {
+				if (!combinedSources.length) {
 					logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
 				}
+				if (!combinedTargets.length) {
+					logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)
+				}
+				expectedPackage.sideEffect = getSideEffect(expectedPackage, studio)
+
+				routedExpectedPackages.push({
+					expectedPackage: unprotectObject(expectedPackage),
+					sources: combinedSources,
+					targets: combinedTargets,
+					priority: priority,
+					playoutDeviceId: mapping.deviceId,
+				})
 			}
 		}
 	}

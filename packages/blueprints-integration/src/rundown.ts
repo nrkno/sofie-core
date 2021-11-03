@@ -4,6 +4,8 @@ import { ExpectedPackage } from './package'
 import { SomeTimelineContent } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
+import { ActionUserData } from './action'
+import { NoteSeverity } from './lib'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -112,6 +114,13 @@ export interface IBlueprintRundownDBData {
 	airStatus?: string
 }
 
+export interface IBlueprintSegmentRundown<TMetadata = unknown> {
+	externalId: string
+
+	/** Arbitrary data storage for plugins */
+	metaData?: TMetadata
+}
+
 /** The Segment generated from Blueprint */
 export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-presentable name (Slug) for the Title */
@@ -138,9 +147,9 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	autoNext?: boolean
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
-	/** How long to before this part is ready to take over from the previous */
+	/** How long until this part is ready to take over from the previous */
 	prerollDuration?: number
-	/** How long to before this part is ready to take over from the previous (during transition) */
+	/** How long until this part is ready to take over from the previous (during transition) */
 	transitionPrerollDuration?: number | null
 	/** How long to keep the old part alive during the transition */
 	transitionKeepaliveDuration?: number | null
@@ -154,6 +163,9 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
+
+	/** Budget duration of this part, in milliseconds */
+	budgetDuration?: number
 
 	/** Whether this segment line supports being used in HOLD */
 	holdMode?: PartHoldMode
@@ -204,12 +216,15 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 *
 	 * @type {{
 	 * 		message: ITranslatableMessage,
+	 *      severity?: NoteSeverity
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
 		message: ITranslatableMessage
+		/** Set the severity of the displayed invalid part note */
+		severity?: NoteSeverity
 		color?: string
 	}
 
@@ -286,6 +301,25 @@ export interface PieceTransition {
 	duration: number
 }
 
+export enum IBlueprintDirectPlayType {
+	AdLibPiece = 'adlib',
+	AdLibAction = 'action',
+}
+export interface IBlueprintDirectPlayBase {
+	type: IBlueprintDirectPlayType
+}
+export interface IBlueprintDirectPlayAdLibPiece extends IBlueprintDirectPlayBase {
+	type: IBlueprintDirectPlayType.AdLibPiece
+}
+export interface IBlueprintDirectPlayAdLibAction extends IBlueprintDirectPlayBase {
+	type: IBlueprintDirectPlayType.AdLibAction
+	/** Id of the action */
+	actionId: string
+	/** Properties defining the action behaviour */
+	userData: ActionUserData
+}
+export type IBlueprintDirectPlay = IBlueprintDirectPlayAdLibPiece | IBlueprintDirectPlayAdLibAction
+
 export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** ID of the source object in the gateway */
 	externalId: string
@@ -329,6 +363,9 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
 
+	/** Allow this part to be direct played (eg, by double clicking in the rundown timeline view) */
+	allowDirectPlay?: IBlueprintDirectPlay
+
 	/**
 	 * An array of which Packages this Piece uses. This is used by a Package Manager to ensure that the Package is in place for playout.
 	 * @todo
@@ -365,6 +402,9 @@ export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGen
 	isTransition?: boolean
 	isOutTransition?: boolean
 	extendOnHold?: boolean
+
+	/** Whether the piece affects the output of the Studio or is describing an invisible state within the Studio */
+	notInVision?: boolean
 }
 export interface IBlueprintPieceDB<TMetadata = unknown> extends IBlueprintPiece<TMetadata> {
 	_id: string
@@ -426,10 +466,21 @@ export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintA
 }
 
 export enum PieceLifespan {
+	/** The Piece will only exist in it's designated Part. As soon as the playhead leaves the Part, the Piece will stop */
 	WithinPart = 'part-only',
+	/** The Piece will only exist in it's designated Segment. It will begin playing when taken and will stop when the
+	 * playhead leaves the Segment */
 	OutOnSegmentChange = 'segment-change',
+	/** The Piece will only exist in it's designated Segment. It will begin playing when taken and will stop when the
+	 * playhead leaves the Segment or the playhead moves before the beginning of the Piece */
 	OutOnSegmentEnd = 'segment-end',
+	/** The Piece will only exist in it's designated Rundown. It will begin playing when taken and will stop when the
+	 * playhead leaves the Rundown */
 	OutOnRundownChange = 'rundown-change',
+	/** The Piece will only exist in it's designated Rundown. It will begin playing when taken and will stop when the
+	 * playhead leaves the Rundown or the playhead moves before the beginning of the Piece */
 	OutOnRundownEnd = 'rundown-end',
+	/** The Piece will only exist while the ShowStyle doesn't change. It will begin playing when taken and will stop
+	 * when the playhead leaves the Rundown into a new Rundown with a different ShowStyle */
 	OutOnShowStyleEnd = 'showstyle-end',
 }

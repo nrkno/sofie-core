@@ -52,11 +52,11 @@ export async function pushWorkToQueue<T>(
 	const queueTime = getCurrentTime()
 
 	// Wrap the execution with a bindEnvironment, to make Meteor happy
-	const wrappedFcn = async () => {
+	const wrappedFcn = Meteor.bindEnvironment(async () => {
 		// Remove self from pending list
 		queueInfo?.pendingJobNames?.shift()
 
-		logger.debug(`syncFunction "${jobContext}"("${queueName}") begun execution - ${jobId}`)
+		logger.verbose(`syncFunction "${jobContext}"("${queueName}") begun execution - ${jobId}`)
 
 		// Check if we have been waiting a long time
 		const waitTime = getCurrentTime() - queueTime
@@ -77,14 +77,14 @@ export async function pushWorkToQueue<T>(
 			Meteor.defer(() => reject(e))
 		}
 
-		logger.debug(`syncFunction "${jobContext}"("${queueName}") done - ${jobId}`)
+		logger.verbose(`syncFunction "${jobContext}"("${queueName}") done - ${jobId}`)
 		if (timedOut) {
 			const endTime = getCurrentTime()
 			logger.error(
 				`syncFunction "${jobContext}"("${queueName}") completed after timeout. took ${endTime - queueTime}ms`
 			)
 		}
-	}
+	})
 
 	const waitingOnFunctionsStr = queueInfo.pendingJobNames.join(', ')
 	queueInfo.pendingJobNames.push(jobContext)
@@ -93,13 +93,10 @@ export async function pushWorkToQueue<T>(
 
 	return (
 		queueInfo.queue
-			.add(
-				Meteor.bindEnvironment(async () => wrappedFcn()),
-				{
-					timeout,
-					priority,
-				}
-			)
+			.add(async () => wrappedFcn(), {
+				timeout,
+				priority,
+			})
 			.catch((e) => {
 				// Ignore the timeout, we simply want to log it and let it finish
 				if (e.toString().indexOf('TimeoutError') !== -1) {

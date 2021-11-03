@@ -29,6 +29,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { getUser, User } from '../../lib/collections/Users'
 import { Settings as MeteorSettings } from '../../lib/Settings'
 import { getAllowConfigure } from '../lib/localStorage'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 class WelcomeToSettings extends React.Component {
 	render() {
@@ -81,7 +82,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			this.state = {}
 		}
 
-		statusCodeString(statusCode: PeripheralDeviceAPI.StatusCode) {
+		statusCodeString(statusCode: StatusCode) {
 			const t = this.props.t
 
 			switch (statusCode) {

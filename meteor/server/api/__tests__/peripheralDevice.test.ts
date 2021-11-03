@@ -10,11 +10,19 @@ import { Pieces } from '../../../lib/collections/Pieces'
 
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
-import { getCurrentTime, literal, protectString, ProtectedString, waitTime, getRandomId } from '../../../lib/lib'
+import {
+	getCurrentTime,
+	literal,
+	protectString,
+	ProtectedString,
+	waitTime,
+	getRandomId,
+	LogLevel,
+} from '../../../lib/lib'
 import * as MOS from 'mos-connection'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { setLoggerLevel } from '../../../server/api/logger'
+import { setLogLevel } from '../../logging'
 import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import {
 	IngestDeviceSettings,
@@ -161,7 +169,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('initialize', () => {
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 
@@ -243,7 +251,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('pingWithCommand and functionReply', () => {
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 
 		let resultErr = undefined
 		let resultMessage = undefined
@@ -296,7 +304,7 @@ describe('test peripheralDevice general API methods', () => {
 		)
 		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
 		const currentPartInstance = playlist?.getSelectedPartInstances()?.currentPartInstance as PartInstance
@@ -321,7 +329,7 @@ describe('test peripheralDevice general API methods', () => {
 		)
 		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
 		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
@@ -347,7 +355,7 @@ describe('test peripheralDevice general API methods', () => {
 		)
 		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
 		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
@@ -381,7 +389,7 @@ describe('test peripheralDevice general API methods', () => {
 		)
 		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
 		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
@@ -415,7 +423,7 @@ describe('test peripheralDevice general API methods', () => {
 		)
 		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
 		expect(playlist?.activationId).toBeTruthy()
@@ -455,14 +463,14 @@ describe('test peripheralDevice general API methods', () => {
 
 	testInFiber('killProcess with a rundown present', () => {
 		// test this does not shutdown because Rundown stored
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		expect(() => Meteor.call(PeripheralDeviceAPIMethods.killProcess, device._id, device.token, true)).toThrow(
 			`[400] Unable to run killProcess: Rundowns not empty!`
 		)
 	})
 
 	testInFiber('testMethod', () => {
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const result = Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european')
 		expect(result).toBe('european')
 		expect(() =>
@@ -472,7 +480,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	/*
 	testInFiber('timelineTriggerTime', () => {
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = [
 			{ id: 'wibble', time: getCurrentTime() }, { id: 'wobble', time: getCurrentTime() - 100 }]
 		Meteor.call(PeripheralDeviceAPIMethods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
@@ -480,7 +488,7 @@ describe('test peripheralDevice general API methods', () => {
 	*/
 
 	testInFiber('requestUserAuthToken', () => {
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 
 		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
@@ -505,7 +513,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	// Should only really work for SpreadsheetDevice
 	testInFiber('storeAccessToken', () => {
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		expect(() =>
 			Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'http://auth.url/')
 		).toThrow('[400] can only store access token for peripheral device of spreadsheet type')
@@ -527,7 +535,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('uninitialize', async () => {
-		if (DEBUG) setLoggerLevel('debug')
+		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		Meteor.call(PeripheralDeviceAPIMethods.unInitialize, device._id, device.token)
 		expect(PeripheralDevices.findOne()).toBeFalsy()
 

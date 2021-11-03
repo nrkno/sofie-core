@@ -24,7 +24,6 @@ export enum RundownAPIMethods { // Using our own method definition, to catch ext
 
 	'removeRundown' = 'rundown.removeRundown',
 	'resyncRundown' = 'rundown.resyncRundown',
-	'resyncSegment' = 'rundown.resyncSegment',
 	'unsyncRundown' = 'rundown.unsyncRundown',
 	'moveRundown' = 'rundown.moveRundown',
 	'restoreRundownsInPlaylistToDefaultOrder' = 'rundown.restoreRundownsInPlaylistToDefaultOrder',

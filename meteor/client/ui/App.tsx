@@ -19,6 +19,8 @@ import {
 	setUIZoom,
 	getUIZoom,
 	setShowHiddenSourceLayers,
+	setIgnorePieceContentStatus,
+	setShelfFollowsOnAir,
 } from '../lib/localStorage'
 import Status from './Status'
 import { Settings as SettingsView } from './Settings'
@@ -87,6 +89,7 @@ export const App = translateWithTracker(() => {
 				if (params['develop']) setAllowDeveloper(params['develop'] === '1')
 				if (params['testing']) setAllowTesting(params['testing'] === '1')
 				if (params['service']) setAllowService(params['service'] === '1')
+				if (params['shelffollowsonair']) setShelfFollowsOnAir(params['shelffollowsonair'] === '1')
 
 				if (params['admin']) {
 					const val = params['admin'] === '1'
@@ -104,6 +107,9 @@ export const App = translateWithTracker(() => {
 			}
 			if (params['show_hidden_source_layers']) {
 				setShowHiddenSourceLayers(params['show_hidden_source_layers'] === '1')
+			}
+			if (params['ignore_piece_content_status']) {
+				setIgnorePieceContentStatus(params['ignore_piece_content_status'] === '1')
 			}
 
 			if (!this.props.user) {
@@ -157,7 +163,7 @@ export const App = translateWithTracker(() => {
 				document.querySelector('.rundown.active') === null
 			) {
 				// forceReload is marked as deprecated, but it's still usable
-				// tslint:disable-next-line
+				// @ts-ignore
 				setTimeout(() => window.location.reload(true))
 			}
 		}

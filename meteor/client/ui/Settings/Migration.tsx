@@ -11,6 +11,7 @@ import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/
 import * as _ from 'underscore'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { MeteorCall } from '../../../lib/api/methods'
+import { checkForOldDataAndCleanUp } from './SystemManagement'
 
 interface IProps {}
 interface IState {
@@ -167,6 +168,9 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 						})
 
 						this.updateVersions()
+						if (r.migrationCompleted) {
+							this.checkForOldData()
+						}
 					})
 					.catch((err) => {
 						logger.error(err)
@@ -187,6 +191,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 						})
 
 						this.updateVersions()
+						this.checkForOldData()
 					})
 					.catch((err) => {
 						logger.error(err)
@@ -214,6 +219,9 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 						})
 				},
 			})
+		}
+		checkForOldData() {
+			checkForOldDataAndCleanUp(this.props.t, 3)
 		}
 		renderManualSteps() {
 			if (this.state.migration) {

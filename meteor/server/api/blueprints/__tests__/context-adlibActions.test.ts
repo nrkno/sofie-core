@@ -918,7 +918,7 @@ describe('Test blueprint api context', () => {
 					innerStartAdLibPieceMock.mockImplementationOnce(innerStartAdLibPieceOrig)
 
 					const newPieceInstanceId = context.insertPiece('current', { externalId: 'input1' } as any)._id
-					expect(newPieceInstanceId).toMatch(/randomId([0-9]+)_part0_0_instance_randomId([0-9]+)/)
+					expect(newPieceInstanceId).toMatch(/randomId(\d+)_part0_0_instance_randomId(\d+)/)
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 					expect(postProcessPiecesMock).toHaveBeenCalledWith(
 						expect.anything(),

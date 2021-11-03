@@ -266,6 +266,11 @@ export const Collections: { [name: string]: AsyncTransformedCollection<any, any>
 export function registerCollection(name: string, collection: AsyncTransformedCollection<any, any>) {
 	Collections[name] = collection
 }
+export function getCollectionKey(collection: AsyncTransformedCollection<any, any>): string {
+	const o = Object.entries(Collections).find(([_key, col]) => col === collection)
+	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
+	return o[0] // collectionName
+}
 // export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
 // 	function getCollectionIndexes(collection: TransformedCollection<any, any>, cb) {
 // 		let raw = collection.rawCollection()
@@ -374,7 +379,24 @@ export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1
 	}
 	const cache = cacheResultCache[name]
 	if (!cache || cache.ttl < Date.now()) {
-		const value = fcn()
+		const value: T = fcn()
+		cacheResultCache[name] = {
+			ttl: Date.now() + limitTime,
+			value: value,
+		}
+		return value
+	} else {
+		return cache.value
+	}
+}
+/** Cache the result of function for a limited time */
+export async function cacheResultAsync<T>(name: string, fcn: () => Promise<T>, limitTime: number = 1000): Promise<T> {
+	if (Math.random() < 0.01) {
+		Meteor.setTimeout(cleanOldCacheResult, 10000)
+	}
+	const cache = cacheResultCache[name]
+	if (!cache || cache.ttl < Date.now()) {
+		const value: Promise<T> = fcn()
 		cacheResultCache[name] = {
 			ttl: Date.now() + limitTime,
 			value: value,
@@ -632,7 +654,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 				}
 			}
 		} catch (e) {
-			logger.warn(e || e.reason || e.toString()) // todo: why this logs empty message for TypeError (or any Error)?
+			logger.warn(e || (e as any).reason || (e as any).toString()) // todo: why this logs empty message for TypeError (or any Error)?
 			ok = false
 		}
 	})
@@ -968,7 +990,7 @@ export function extendMandadory<A, B extends A>(original: A, extendObj: Differen
 	return _.extend(original, extendObj)
 }
 
-export function trimIfString<T extends any>(value: T): T | string {
+export function trimIfString<T>(value: T): T | string {
 	if (_.isString(value)) return value.trim()
 	return value
 }
@@ -1065,7 +1087,7 @@ export function unpartialString<T extends ProtectedString<any>>(str: T | Partial
 	return str as any
 }
 
-export function isPromise<T extends any>(val: any): val is Promise<T> {
+export function isPromise<T>(val: any): val is Promise<T> {
 	return _.isObject(val) && typeof val.then === 'function' && typeof val.catch === 'function'
 }
 
@@ -1081,7 +1103,7 @@ export function assertNever(_never: never): void {
  * @param a
  * @param b
  */
-export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
+export function equalSets<T>(a: Set<T>, b: Set<T>): boolean {
 	if (a === b) return true
 	if (a.size !== b.size) return false
 	for (const val of a.values()) {
@@ -1129,4 +1151,13 @@ export function generateTranslation(key: string, args?: { [k: string]: any }): I
 		key,
 		args,
 	}
+}
+
+export enum LogLevel {
+	SILLY = 'silly',
+	DEBUG = 'debug',
+	VERBOSE = 'verbose',
+	INFO = 'info',
+	WARN = 'warn',
+	ERROR = 'error',
 }

@@ -121,6 +121,9 @@ body.prompter-scrollbar {
 			//border-bottom: 0.2em solid #f55;
 			background: $general-live-color;
 			color: #fff;
+			-webkit-text-stroke: black;
+			-webkit-text-stroke-width: 0.025em;
+			text-shadow: 0px 0px 20px #00000044;
 		}
 		&.next {
 			//border-bottom: 0.2em solid #5f5;

@@ -42,6 +42,7 @@ import './collections/Studios'
 import './collections/Timeline'
 import './collections/UserActionsLog'
 import './collections/Users'
+import './collections/TriggeredActions'
 
 import './Settings'
 import './systemTime'

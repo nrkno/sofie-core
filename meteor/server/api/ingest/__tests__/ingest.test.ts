@@ -67,7 +67,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	testInFiber('dataRundownCreate', () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 
 		expect(Rundowns.findOne()).toBeFalsy()
 
@@ -459,6 +459,40 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const parts0 = Parts.find({ rundownId: rundown._id, segmentId: segments[0]._id }).fetch()
 		expect(parts0).toHaveLength(1)
 		expect(parts0[0].externalId).toBe('part1')
+
+		const parts1 = Parts.find({ rundownId: rundown._id, segmentId: segments[1]._id }).fetch()
+		expect(parts1).toHaveLength(1)
+	})
+
+	testInFiber('dataRundownMetaDataUpdate change name, does not remove segments', () => {
+		expect(Rundowns.findOne()).toBeTruthy()
+		const rundownData: Omit<IngestRundown, 'segments'> = {
+			externalId: externalId,
+			name: 'MyMockRundownRenamed',
+			type: 'mock',
+		}
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownMetaDataUpdate, device._id, device.token, rundownData)
+
+		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundownPlaylist).toMatchObject({
+			externalId: rundown._id,
+			name: rundownData.name,
+		})
+		expect(RundownPlaylists.find().count()).toBe(1)
+
+		expect(rundown).toMatchObject({
+			externalId: rundownData.externalId,
+			name: rundownData.name,
+			playlistId: rundownPlaylist._id,
+		})
+		expect(Rundowns.find().count()).toBe(1)
+
+		const segments = Segments.find({ rundownId: rundown._id }).fetch()
+		expect(segments).toHaveLength(2)
+
+		const parts0 = Parts.find({ rundownId: rundown._id, segmentId: segments[0]._id }).fetch()
+		expect(parts0).toHaveLength(1)
 
 		const parts1 = Parts.find({ rundownId: rundown._id, segmentId: segments[1]._id }).fetch()
 		expect(parts1).toHaveLength(1)

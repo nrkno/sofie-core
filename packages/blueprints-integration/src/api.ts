@@ -71,6 +71,12 @@ export interface BlueprintManifestBase {
 
 export interface SystemBlueprintManifest extends BlueprintManifestBase {
 	blueprintType: BlueprintManifestType.SYSTEM
+
+	/** A list of Migration steps related to the Core system */
+	coreMigrations: MigrationStep[]
+
+	/** Translations connected to the studio (as stringified JSON) */
+	translations?: string
 }
 
 export interface StudioBlueprintManifest extends BlueprintManifestBase {
@@ -133,7 +139,6 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/**
 	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment() )
-	 * Warning: This is currently an experimental api, and is likely to break in the next release
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,

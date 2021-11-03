@@ -31,7 +31,7 @@ export interface ExpectedPackageWorkStatusFromPackage
 export const ExpectedPackageWorkStatuses = createMongoCollection<ExpectedPackageWorkStatus, ExpectedPackageWorkStatus>(
 	'expectedPackageWorkStatuses'
 )
-registerCollection('ExpectedPackageStatuses', ExpectedPackageWorkStatuses)
+registerCollection('ExpectedPackageWorkStatuses', ExpectedPackageWorkStatuses)
 
 registerIndex(ExpectedPackageWorkStatuses, {
 	studioId: 1,

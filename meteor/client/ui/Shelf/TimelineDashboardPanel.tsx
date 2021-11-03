@@ -17,7 +17,7 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import {
 	DashboardPanelInner,
-	dashboardElementPosition,
+	dashboardElementStyle,
 	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
 	getUnfinishedPieceInstancesGrouped,
@@ -33,9 +33,10 @@ export const TimelineDashboardPanel = translateWithTracker<
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
+			props.playlist,
+			props.showStyleBase
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),
@@ -93,7 +94,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 					)
 
 					return (
-						<div className="dashboard-panel dashboard-panel--timeline-style" style={dashboardElementPosition(filter)}>
+						<div className="dashboard-panel dashboard-panel--timeline-style" style={dashboardElementStyle(filter)}>
 							<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
 							{filter.enableSearch && (
 								<AdLibPanelToolbar onFilterChange={this.onFilterChange} searchFilter={this.state.searchFilter} />

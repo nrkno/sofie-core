@@ -25,7 +25,7 @@ import { Settings } from '../../../lib/Settings'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PartId } from '../../../lib/collections/Parts'
-import { NoteType, RundownNote } from '../../../lib/api/notes'
+import { RundownNote } from '../../../lib/api/notes'
 import {
 	PlaylistLock,
 	PlayoutLockFunctionPriority,
@@ -39,6 +39,7 @@ import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/ru
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { Studio } from '../../../lib/collections/Studios'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -118,7 +119,7 @@ export async function CommitIngestOperation(
 								notes: [
 									...clone<RundownNote[]>(rundown.notes ?? []),
 									{
-										type: NoteType.WARNING,
+										type: NoteSeverity.WARNING,
 										message: getTranslatedMessage(
 											ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN
 										),
@@ -378,9 +379,8 @@ async function generatePlaylistAndRundownsCollectionInner(
 		// Update the ranks of the rundowns
 		if (!newPlaylist.rundownRanksAreSetInSofie) {
 			// Update the rundown ranks
-			for (const [id, rank] of Object.entries(newRundownOrder)) {
-				const id2 = protectString(id)
-				rundownsCollection.update(id2, { $set: { _rank: rank } })
+			for (const [externalId, rank] of Object.entries(newRundownOrder)) {
+				rundownsCollection.update({ externalId: externalId }, { $set: { _rank: rank } })
 			}
 		} else if (changedRundownId) {
 			// This rundown is new, so push to the end of the manually ordered playlist
