@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-08-25T12:50:08.421Z\n"
-"PO-Revision-Date: 2021-08-25T12:50:08.421Z\n"
+"POT-Creation-Date: 2021-11-03T11:04:37.940Z\n"
+"PO-Revision-Date: 2021-11-03T11:04:37.940Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -123,6 +123,11 @@ msgid "Evaluation"
 msgstr ""
 
 msgid "Please take a minute to fill in this form."
+msgstr ""
+
+msgid ""
+"Be aware that while filling out the form keyboard and streamdeck commands "
+"will not be executed!"
 msgstr ""
 
 msgid "Did you have any problems with the broadcast?"
@@ -294,6 +299,9 @@ msgstr ""
 msgid "On Air Start Time"
 msgstr ""
 
+msgid "Expected End Time"
+msgstr ""
+
 msgid "Last updated"
 msgstr ""
 
@@ -333,12 +341,6 @@ msgid "Migrations"
 msgstr ""
 
 msgid "Documentation is available at"
-msgstr ""
-
-msgid "Use {{nrcsName}} order"
-msgstr ""
-
-msgid "Using ENPS order"
 msgstr ""
 
 msgid "Using local Sofie order"
@@ -451,13 +453,10 @@ msgstr ""
 msgid "Planned Start"
 msgstr ""
 
+msgid "Expected Start"
+msgstr ""
+
 msgid "Hold"
-msgstr ""
-
-msgid "Planned End"
-msgstr ""
-
-msgid "Diff"
 msgstr ""
 
 msgid "Next Loop at"
@@ -466,43 +465,10 @@ msgstr ""
 msgid "Expected End"
 msgstr ""
 
-msgid "Take"
+msgid "Diff"
 msgstr ""
 
-msgid "Undo Hold"
-msgstr ""
-
-msgid "Activate (On-Air)"
-msgstr ""
-
-msgid "Deactivate"
-msgstr ""
-
-msgid "Activate (Rehearsal)"
-msgstr ""
-
-msgid "Reset Rundown"
-msgstr ""
-
-msgid "Move Next forwards"
-msgstr ""
-
-msgid "Move Next to the following segment"
-msgstr ""
-
-msgid "Move Next to the previous segment"
-msgstr ""
-
-msgid "Move Next backwards"
-msgstr ""
-
-msgid "Disable the next element"
-msgstr ""
-
-msgid "Undo Disable the next element"
-msgstr ""
-
-msgid "Log Error"
+msgid "Next Break"
 msgstr ""
 
 msgid "Could not find a Piece that can be disabled."
@@ -514,6 +480,12 @@ msgstr ""
 msgid ""
 "The rundown you are trying to execute a take on is inactive, would you like "
 "to activate this rundown?"
+msgstr ""
+
+msgid "Activate (Rehearsal)"
+msgstr ""
+
+msgid "Activate (On-Air)"
 msgstr ""
 
 msgid "Failed to activate"
@@ -567,6 +539,15 @@ msgstr ""
 msgid "Prepare Studio and Activate (Rehearsal)"
 msgstr ""
 
+msgid "Deactivate"
+msgstr ""
+
+msgid "Take"
+msgstr ""
+
+msgid "Reset Rundown"
+msgstr ""
+
 msgid "Reload {{nrcsName}} Data"
 msgstr ""
 
@@ -580,15 +561,6 @@ msgid "Add ?studio=1 to the URL to enter studio mode"
 msgstr ""
 
 msgid "Error"
-msgstr ""
-
-msgid "Go to On Air line"
-msgstr ""
-
-msgid "Rewind segments to start"
-msgstr ""
-
-msgid "Show entire current segment"
 msgstr ""
 
 msgid "Cancel currently pressed hotkey"
@@ -698,6 +670,9 @@ msgid "({{time}} ago)"
 msgstr ""
 
 msgid "Planned Duration"
+msgstr ""
+
+msgid "Planned End"
 msgstr ""
 
 msgid ""
@@ -823,6 +798,15 @@ msgstr ""
 msgid "Off"
 msgstr ""
 
+msgid "Auto"
+msgstr ""
+
+msgid "Show End"
+msgstr ""
+
+msgid "Loops to top"
+msgstr ""
+
 msgid "Set this part as <strong>Next</strong>"
 msgstr ""
 
@@ -841,9 +825,6 @@ msgstr ""
 msgid "Clear queued segment"
 msgstr ""
 
-msgid "Resync Segment"
-msgstr ""
-
 msgid "On Air"
 msgstr ""
 
@@ -854,15 +835,6 @@ msgid "On Air In"
 msgstr ""
 
 msgid "Unsynced"
-msgstr ""
-
-msgid "Auto"
-msgstr ""
-
-msgid "Show End"
-msgstr ""
-
-msgid "Loops to top"
 msgstr ""
 
 msgid "Parts Duration"
@@ -1205,7 +1177,36 @@ msgstr ""
 msgid "Attached Subdevices"
 msgstr ""
 
-msgid "End of Show Text"
+msgid "Expected End text"
+msgstr ""
+
+msgid "Text to show above countdown to end of show"
+msgstr ""
+
+msgid "Hide Expected End timing when a break is next"
+msgstr ""
+
+msgid ""
+"While there are still breaks coming up in the show, hide the Expected End "
+"timers"
+msgstr ""
+
+msgid "Show next break timing"
+msgstr ""
+
+msgid "Whether to show countdown to next break"
+msgstr ""
+
+msgid "Last rundown is not break"
+msgstr ""
+
+msgid "Don't treat the end of the last rundown in a playlist as a break"
+msgstr ""
+
+msgid "Next Break text"
+msgstr ""
+
+msgid "Text to show above countdown to next break"
 msgstr ""
 
 msgid "Expose as user selectable layout"
@@ -1220,6 +1221,12 @@ msgstr ""
 msgid "Rundown Header Layout"
 msgstr ""
 
+msgid "Select visible Source Layers"
+msgstr ""
+
+msgid "Select visible Output Groups"
+msgstr ""
+
 msgid "Expose layout as a standalone page"
 msgstr ""
 
@@ -1227,6 +1234,214 @@ msgid "Open shelf by default"
 msgstr ""
 
 msgid "Default shelf height"
+msgstr ""
+
+msgid "This action has an invalid combination of filters"
+msgstr ""
+
+msgid "Force"
+msgstr ""
+
+msgid "Rehearsal"
+msgstr ""
+
+msgid "Undo"
+msgstr ""
+
+msgid "Segments: {{delta}}"
+msgstr ""
+
+msgid "Parts: {{delta}}"
+msgstr ""
+
+msgid "Open"
+msgstr ""
+
+msgid "Toggle"
+msgstr ""
+
+msgid "On"
+msgstr ""
+
+msgid "Activate Rundown"
+msgstr ""
+
+msgid "Ad-Lib"
+msgstr ""
+
+msgid "Deactivate Rundown"
+msgstr ""
+
+msgid "Disable next Piece"
+msgstr ""
+
+msgid "Move Next"
+msgstr ""
+
+msgid "Reload NRCS Data"
+msgstr ""
+
+msgid "Resync with NRCS"
+msgstr ""
+
+msgid "Shelf"
+msgstr ""
+
+msgid "Rewind Segments to start"
+msgstr ""
+
+msgid "Go to On Air line"
+msgstr ""
+
+msgid "Show entire On Air Segment"
+msgstr ""
+
+msgid "Force (deactivate others)"
+msgstr ""
+
+msgid "Move Segments"
+msgstr ""
+
+msgid "By Segments"
+msgstr ""
+
+msgid "Move Parts"
+msgstr ""
+
+msgid "By Parts"
+msgstr ""
+
+msgid "State"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Ad-Lib Action"
+msgstr ""
+
+msgid "Clear Source Layer"
+msgstr ""
+
+msgid "Sticky Piece"
+msgstr ""
+
+msgid "Global AdLibs"
+msgstr ""
+
+msgid "Label"
+msgstr ""
+
+msgid "Limit"
+msgstr ""
+
+msgid "Output Layer"
+msgstr ""
+
+msgid "Part"
+msgstr ""
+
+msgid "Pick"
+msgstr ""
+
+msgid "Pick last"
+msgstr ""
+
+msgid "Segment"
+msgstr ""
+
+msgid "Source Layer"
+msgstr ""
+
+msgid "Source Layer Type"
+msgstr ""
+
+msgid "Tag"
+msgstr ""
+
+msgid "Not Global"
+msgstr ""
+
+msgid "Only Global"
+msgstr ""
+
+msgid "OnAir"
+msgstr ""
+
+msgid "Now active rundown"
+msgstr ""
+
+msgid "View"
+msgstr ""
+
+msgid "Executes within the currently open Rundown, requires a Client-side trigger."
+msgstr ""
+
+msgid "Select Action"
+msgstr ""
+
+msgid ""
+"No Ad-Lib matches in the current state of Rundown: "
+"\"{{rundownPlaylistName}}\""
+msgstr ""
+
+msgid "No matching Rundowns available to be used for preview"
+msgstr ""
+
+msgid "Multilingual description, editing will overwrite"
+msgstr ""
+
+msgid "Optional description of the action"
+msgstr ""
+
+msgid "Triggered Actions uploaded successfully."
+msgstr ""
+
+msgid "Triggered Actions failed to upload: {{errorMessage}}"
+msgstr ""
+
+msgid "Append or Replace"
+msgstr ""
+
+msgid ""
+"Do you want to append these to existing Action Triggers, or do you want to "
+"replace them?"
+msgstr ""
+
+msgid "Append"
+msgstr ""
+
+msgid "Action Triggers"
+msgstr ""
+
+msgid "Find Trigger..."
+msgstr ""
+
+msgid "No matching Action Trigger."
+msgstr ""
+
+msgid "No Action Triggers set up."
+msgstr ""
+
+msgid "System-wide"
+msgstr ""
+
+msgid "Upload stored Action Triggers"
+msgstr ""
+
+msgid "Download Action Triggers"
+msgstr ""
+
+msgid "On release"
+msgstr ""
+
+msgid "Empty"
+msgstr ""
+
+msgid "Hotkey"
+msgstr ""
+
+msgid "Trigger Type"
 msgstr ""
 
 msgid "Failed to update config: {{errorMessage}}"
@@ -1274,6 +1489,42 @@ msgstr ""
 msgid "More settings specific to this studio can be found here"
 msgstr ""
 
+msgid "There was an error: {{error}}"
+msgstr ""
+
+msgid "Package Manager status"
+msgstr ""
+
+msgid "Reload statuses"
+msgstr ""
+
+msgid "Package Manager"
+msgstr ""
+
+msgid "Expectation Manager"
+msgstr ""
+
+msgid "Statistics"
+msgstr ""
+
+msgid "Connected Workers"
+msgstr ""
+
+msgid "WorkForce"
+msgstr ""
+
+msgid "Kill (debug)"
+msgstr ""
+
+msgid "Connected Expectation Managers"
+msgstr ""
+
+msgid "Connected App Containers"
+msgstr ""
+
+msgid "No status loaded"
+msgstr ""
+
 msgid "Peripheral Device is outdated"
 msgstr ""
 
@@ -1289,6 +1540,11 @@ msgid "Restart this Device?"
 msgstr ""
 
 msgid "Check the console for troubleshooting data from device \"{{deviceName}}\"!"
+msgstr ""
+
+msgid ""
+"There was an error when troubleshooting the device: \"{{deviceName}}\": "
+"{{errorMessage}}"
 msgstr ""
 
 msgid "Generic Properties"
@@ -1396,9 +1652,6 @@ msgid "Are you sure you want to delete the shelf layout \"{{name}}\"?"
 msgstr ""
 
 msgid "Action Buttons"
-msgstr ""
-
-msgid "Label"
 msgstr ""
 
 msgid "Icon"
@@ -1535,22 +1788,13 @@ msgstr ""
 msgid "Display on Presenter's Screen"
 msgstr ""
 
-msgid "Shortcut List"
-msgstr ""
-
-msgid "Clear Shortcut"
-msgstr ""
-
-msgid "Assign Hotkeys to Global AdLibs"
+msgid "Pieces on this layer can be cleared"
 msgstr ""
 
 msgid "Pieces on this layer are sticky"
 msgstr ""
 
 msgid "Only Pieces present in rundown are sticky"
-msgstr ""
-
-msgid "Activate Sticky Piece Shortcut"
 msgstr ""
 
 msgid "Allow disabling of Pieces"
@@ -1937,7 +2181,7 @@ msgstr ""
 msgid "ISA URLs"
 msgstr ""
 
-msgid "URLs to the ISAs (in order of importance)"
+msgid "URLs to the ISAs, in order of importance (comma separated)"
 msgstr ""
 
 msgid "Zone ID"
@@ -1952,13 +2196,28 @@ msgstr ""
 msgid "Server id (Can be omitted for sources, as clip-searches are zone-wide.)"
 msgstr ""
 
+msgid "Quantel transformer URL"
+msgstr ""
+
+msgid "URL to the Quantel HTTP transformer"
+msgstr ""
+
+msgid "Quantel FileFlow URL"
+msgstr ""
+
+msgid "URL to the Quantel FileFlow Manager"
+msgstr ""
+
+msgid "Quantel FileFlow Profile name"
+msgstr ""
+
+msgid "Profile name to be used by FileFlow when exporting the clips"
+msgstr ""
+
 msgid "Allow Read access"
 msgstr ""
 
 msgid "Allow Write access"
-msgstr ""
-
-msgid "Package Manager"
 msgstr ""
 
 msgid "Studio Settings"
@@ -2045,6 +2304,12 @@ msgid "Installation name"
 msgstr ""
 
 msgid "This name will be shown in the title bar of the window"
+msgstr ""
+
+msgid "Logging level"
+msgstr ""
+
+msgid "This affects how much is logged to the console on the server"
 msgstr ""
 
 msgid "System-wide Notification Message"
@@ -2157,12 +2422,6 @@ msgid "Are you sure you want to delete this Bucket?"
 msgstr ""
 
 msgid "Are you sure you want to empty (remove all adlibs inside) this Bucket?"
-msgstr ""
-
-msgid "Toggle Shelf"
-msgstr ""
-
-msgid "Escape from filter search"
 msgstr ""
 
 msgid "Start this AdLib"
@@ -2321,10 +2580,19 @@ msgstr ""
 msgid "Package Status"
 msgstr ""
 
-msgid "Created"
+msgid "Package container status"
 msgstr ""
 
-msgid "Info"
+msgid "Id"
+msgstr ""
+
+msgid "Work status"
+msgstr ""
+
+msgid "Restart All jobs"
+msgstr ""
+
+msgid "Created"
 msgstr ""
 
 msgid "Ready"
@@ -2342,13 +2610,19 @@ msgstr ""
 msgid "Work description"
 msgstr ""
 
-msgid "Work status"
-msgstr ""
-
 msgid "Work status reason"
 msgstr ""
 
 msgid "Technical reason: {{reason}}"
+msgstr ""
+
+msgid "Previous work status reasons"
+msgstr ""
+
+msgid "Priority"
+msgstr ""
+
+msgid "Not Connected"
 msgstr ""
 
 msgid "Do you want to restart CasparCG Server?"
@@ -2412,9 +2686,6 @@ msgstr ""
 msgid "Sofie Automation Server Core will restart in {{time}}s..."
 msgstr ""
 
-msgid "Not Connected"
-msgstr ""
-
 msgid "Execution time*"
 msgstr ""
 
@@ -2422,9 +2693,6 @@ msgid "User ID"
 msgstr ""
 
 msgid "Client IP"
-msgstr ""
-
-msgid "Action"
 msgstr ""
 
 msgid "Method"
@@ -2533,16 +2801,16 @@ msgstr ""
 msgid "{{frames}} {{type}} frame detected in clip"
 msgstr ""
 
-msgid "{{sourceLayer}} is missing a file path"
-msgstr ""
-
-msgid "Clip doesn't have audio & video"
-msgstr ""
-
 msgid "black"
 msgstr ""
 
 msgid "freeze"
+msgstr ""
+
+msgid "{{sourceLayer}} is missing a file path"
+msgstr ""
+
+msgid "Clip doesn't have audio & video"
 msgstr ""
 
 msgid "{{sourceLayer}} is being ingested"
@@ -2560,6 +2828,33 @@ msgstr ""
 msgid ""
 "The Rundown was attempted to be moved out of the Playlist when it was on "
 "Air. Move it back and try again later."
+msgstr ""
+
+msgid "Toggle Shelf"
+msgstr ""
+
+msgid "Undo Hold"
+msgstr ""
+
+msgid "Disable the next element"
+msgstr ""
+
+msgid "Undo Disable the next element"
+msgstr ""
+
+msgid "Move Next forwards"
+msgstr ""
+
+msgid "Move Next to the following segment"
+msgstr ""
+
+msgid "Move Next backwards"
+msgstr ""
+
+msgid "Move Next to the previous segment"
+msgstr ""
+
+msgid "Rewind segments to start"
 msgstr ""
 
 msgctxt "°°°°°°plural"
