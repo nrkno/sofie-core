@@ -8,6 +8,7 @@ import {
 	SystemAPI,
 	BenchmarkResult,
 	SystemBenchmarkResults,
+	PerformanceTestResult,
 } from '../../lib/api/system'
 import { getAllIndexes } from '../../lib/database'
 import { Meteor } from 'meteor/meteor'
@@ -57,6 +58,7 @@ import { getBundle as getTranslationBundleInner } from './translationsBundles'
 import { TranslationsBundle, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ClientAPI } from '../../lib/api/client'
+import { runAllPerformanceTests } from '../performance/performanceTests'
 
 function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -575,7 +577,8 @@ async function doSystemBenchmarkInner() {
 							data4: 'wvklwjnserolvjwn3erlkvjwnerlkvn',
 							data5: '3oig23oi45ugnf2o3iu4nf2o3iu4nf',
 							data6: '5g2987543hg9285hg3',
-							data7: '20359gj2834hf2390874fh203874hf02387h4f02837h4f0238h028h428734f0273h4f08723h4tpo2n,mnbsdfljbvslfkvnkjgv',
+							data7:
+								'20359gj2834hf2390874fh203874hf02387h4f02837h4f0238h028h428734f0273h4f08723h4tpo2n,mnbsdfljbvslfkvnkjgv',
 						}
 					}),
 					prop0: 'asdf',
@@ -603,7 +606,8 @@ async function doSystemBenchmarkInner() {
 					objs: _.range(0, 100).map((j) => {
 						return {
 							id: 'innerObj' + j,
-							data0: 'asdfkawhbeckjawhefkjashvdfckasdf9q37246fg2w9375fhg209485hf0238757h834h08273h50235h4gf+0237h5u7hg2475hg082475hgt',
+							data0:
+								'asdfkawhbeckjawhefkjashvdfckasdf9q37246fg2w9375fhg209485hf0238757h834h08273h50235h4gf+0237h5u7hg2475hg082475hgt',
 						}
 					}),
 					prop0: i,
@@ -752,6 +756,10 @@ CPU JSON stringifying:       ${avg.cpuStringifying} ms (${comparison.cpuStringif
 		results: avg,
 	}
 }
+function runPerformanceTests(context: MethodContext): Promise<PerformanceTestResult[]> {
+	SystemWriteAccess.coreSystem(context)
+	return runAllPerformanceTests()
+}
 
 function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
 	check(bundleId, String)
@@ -769,6 +777,9 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	}
 	async doSystemBenchmark(runCount: number = 1) {
 		return doSystemBenchmark(this, runCount)
+	}
+	async runPerformanceTests() {
+		return runPerformanceTests(this)
 	}
 	async getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
 		return makePromise(() => getTranslationBundle(this, bundleId))
