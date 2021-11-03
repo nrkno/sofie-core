@@ -354,12 +354,12 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	 * @deprecated replaced by .expectedPackages
 	 */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
-	/** When queued, should the adlib autonext */
-	adlibAutoNext?: boolean
-	/** When queued, how much overlap with the next part */
-	adlibAutoNextOverlap?: number
-	/** When queued, block transition at the end of the part */
-	adlibDisableOutTransition?: boolean
+	// /** When queued, should the adlib autonext */
+	// adlibAutoNext?: boolean
+	// /** When queued, how much overlap with the next part */
+	// adlibAutoNextOverlap?: number
+	// /** When queued, block transition at the end of the part */
+	// adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
 
