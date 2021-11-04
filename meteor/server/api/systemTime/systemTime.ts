@@ -5,7 +5,6 @@ import { systemTime, getCurrentTime } from '../../../lib/lib'
 import { setSystemStatus } from '../../systemStatus/systemStatus'
 import { logger } from '../../logging'
 import { TimeDiff, DiffTimeResult } from '../../../lib/api/peripheralDevice'
-import { env } from 'process'
 import { StatusCode } from '../../../lib/api/systemStatus'
 
 /** How often the system-time should be updated */
