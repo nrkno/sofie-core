@@ -796,18 +796,16 @@ const EditAttributeDropdownText = wrapEditAttribute(
 					/>
 
 					<datalist id={this._id}>
-						{this.getOptions(true).map((o, j) =>
+						{this.getOptions(false).map((o, j) =>
 							Array.isArray(o.value) ? (
 								<optgroup key={j} label={o.name}>
 									{o.value.map((v, i) => (
-										<option key={i} value={v + ''}>
-											{v}
-										</option>
+										<option key={i} value={v + ''}></option>
 									))}
 								</optgroup>
 							) : (
 								<option key={o.i} value={o.value + ''}>
-									{o.name}
+									{o.value !== o.name ? o.name : null}
 								</option>
 							)
 						)}

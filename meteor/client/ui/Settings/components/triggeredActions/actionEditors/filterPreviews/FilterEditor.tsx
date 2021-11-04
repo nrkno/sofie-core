@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react'
 import classNames from 'classnames'
 import { usePopper } from 'react-popper'
-import { EditAttribute } from '../../../../../../lib/EditAttribute'
+import { EditAttribute, EditAttributeType } from '../../../../../../lib/EditAttribute'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { sameWidth } from '../../../../../../lib/popperUtils'
@@ -16,7 +16,7 @@ interface IProps {
 	value: any
 	final?: boolean
 	readonly?: boolean
-	type: 'toggle' | 'text' | 'int' | 'dropdown' | 'multiselect'
+	type: EditAttributeType
 	values?: Record<string, any>
 	onChangeField: (newField: any) => void
 	onChange: (newValue: any) => void
