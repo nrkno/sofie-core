@@ -3,7 +3,17 @@
 
 # lint meteor
 cd meteor
-meteor npx --no-install lint-staged
+
+# check if we're on a windows machine
+DUMMY=$(where meteor.bat)
+IS_WINDOWS=$?
+
+if [ $IS_WINDOWS == 0 ]
+then
+	meteor.bat npx --no-install lint-staged
+else
+	meteor npx --no-install lint-staged
+fi
 
 # lint the packages
 cd ../packages
