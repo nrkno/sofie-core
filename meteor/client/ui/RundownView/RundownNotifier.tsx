@@ -92,9 +92,11 @@ class RundownViewNotifier extends WithManagedTracker {
 		this._unsentExternalMessageStatusDep = new Tracker.Dependency()
 		this._notesDep = new Tracker.Dependency()
 
-		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
-			return this._notificationList
-		})
+		this._notifier = NotificationCenter.registerNotifier(
+			(): NotificationList => {
+				return this._notificationList
+			}
+		)
 
 		this.autorun(() => {
 			if (playlistId) {
@@ -494,8 +496,11 @@ class RundownViewNotifier extends WithManagedTracker {
 				name: 1,
 				content: 1,
 				startPartId: 1,
+				expectedPackages: 1,
 			},
-		}) as ReactiveVar<Pick<Piece, '_id' | 'sourceLayerId' | 'outputLayerId' | 'name' | 'content' | 'startPartId'>[]>
+		}) as ReactiveVar<
+			Pick<Piece, '_id' | 'sourceLayerId' | 'outputLayerId' | 'name' | 'content' | 'startPartId' | 'expectedPackages'>[]
+		>
 
 		this.autorun(() => {
 			const rundownIds: RundownId[] = reactiveData
