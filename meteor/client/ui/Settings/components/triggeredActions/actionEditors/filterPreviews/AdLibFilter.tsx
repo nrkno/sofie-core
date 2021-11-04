@@ -303,13 +303,12 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 			// tags are a special case because we need to search the database for available options
 			// we should have the data subscribed already
 			if (link.field === 'tag') {
-				return _.chain(
-					RundownBaselineAdLibActions.find()
-						.map((action) => action.display.tags)
-						.concat(AdLibActions.find().map((action) => action.display.tags))
-						.concat(RundownBaselineAdLibPieces.find().map((piece) => piece.tags))
-						.concat(AdLibPieces.find().map((piece) => piece.tags))
-				)
+				return _.chain([
+					...RundownBaselineAdLibActions.find().map((action) => action.display.tags),
+					...AdLibActions.find().map((action) => action.display.tags),
+					...RundownBaselineAdLibPieces.find().map((piece) => piece.tags),
+					...AdLibPieces.find().map((piece) => piece.tags),
+				])
 					.flatten()
 					.compact()
 					.uniq()
