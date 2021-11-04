@@ -10,7 +10,7 @@ import {
 } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../../../../../lib/collections/ShowStyleBases'
 import { flatten, normalizeArray } from '../../../../../lib/lib'
 import { createAction, isPreviewableAction } from '../../../../../lib/api/triggers/actionFactory'
 import { PreviewContext } from './TriggeredActionsEditor'
@@ -59,8 +59,14 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 		}),
 		end: (_, monitor) => {
 			if (monitor.didDrop()) {
-				const dropResult = monitor.getDropResult()
-				if (dropResult) {
+				const dropResult = monitor.getDropResult() as
+					| {
+							overId: TriggeredActionId
+							overRank?: number
+							overShowStyleBaseId?: ShowStyleBaseId
+					  }
+					| undefined
+				if (dropResult && dropResult.overRank !== undefined && dropResult.overShowStyleBaseId) {
 					let pairRank =
 						TriggeredActions.findOne(
 							{
