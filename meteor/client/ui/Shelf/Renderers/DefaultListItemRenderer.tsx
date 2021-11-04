@@ -4,21 +4,12 @@ import { RundownAPI } from '../../../../lib/api/rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
+import { getIAdLibListItemType } from '../../../lib/triggers/getIAdLibListItemType'
 
 export const DefaultListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
 ) => {
-	const type = props.adLibListItem.isAction
-		? props.adLibListItem.isGlobal
-			? 'rundownBaselineAdLibAction'
-			: 'adLibAction'
-		: props.adLibListItem.isClearSourceLayer
-		? 'clearSourceLayer'
-		: props.adLibListItem.isSticky
-		? 'sticky'
-		: props.adLibListItem.isGlobal
-		? 'rundownBaselineAdLibItem'
-		: 'adLibPiece'
+	const type = getIAdLibListItemType(props.adLibListItem)
 
 	return (
 		<>

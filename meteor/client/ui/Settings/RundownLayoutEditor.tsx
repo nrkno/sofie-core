@@ -135,6 +135,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						rank: 0,
 						rundownBaseline: false,
 						showThumbnailsInList: false,
+						showHotkeysInList: false,
 						hideDuplicates: false,
 						default: false,
 						nextInCurrentPart: false,

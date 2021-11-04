@@ -122,19 +122,34 @@ export default withTranslation()(
 								</label>
 							</div>
 							{isList && (
-								<div className="mod mvs mhs">
-									<label className="field">
-										{t('Show thumbnails next to list items')}
-										<EditAttribute
-											modifiedClassName="bghl"
-											attribute={`filters.${index}.showThumbnailsInList`}
-											obj={item}
-											type="checkbox"
-											collection={RundownLayouts}
-											className="mod mas"
-										/>
-									</label>
-								</div>
+								<>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Show thumbnails next to list items')}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`filters.${index}.showThumbnailsInList`}
+												obj={item}
+												type="checkbox"
+												collection={RundownLayouts}
+												className="mod mas"
+											/>
+										</label>
+									</div>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Show assigned hotkeys next to list items')}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`filters.${index}.showHotkeysInList`}
+												obj={item}
+												type="checkbox"
+												collection={RundownLayouts}
+												className="mod mas"
+											/>
+										</label>
+									</div>
+								</>
 							)}
 							<div className="mod mvs mhs">
 								<label className="field">

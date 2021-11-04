@@ -13,6 +13,7 @@ import { assertNever, protectString } from '../../../../lib/lib'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
 import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
+import { getIAdLibListItemType } from '../../../lib/triggers/getIAdLibListItemType'
 
 export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -120,17 +121,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 		[props.adLibListItem]
 	)
 
-	const type = props.adLibListItem.isAction
-		? props.adLibListItem.isGlobal
-			? 'rundownBaselineAdLibAction'
-			: 'adLibAction'
-		: props.adLibListItem.isClearSourceLayer
-		? 'clearSourceLayer'
-		: props.adLibListItem.isSticky
-		? 'sticky'
-		: props.adLibListItem.isGlobal
-		? 'rundownBaselineAdLibItem'
-		: 'adLibPiece'
+	const type = getIAdLibListItemType(props.adLibListItem)
 
 	return (
 		<>

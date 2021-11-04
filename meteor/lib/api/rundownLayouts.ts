@@ -369,6 +369,7 @@ export namespace RundownLayoutsAPI {
 			displayStyle: PieceDisplayStyle.BUTTONS,
 			currentSegment: false,
 			showThumbnailsInList: false,
+			showHotkeysInList: false,
 			nextInCurrentPart: false,
 			oneNextPerSourceLayer: false,
 			hideDuplicates: false,

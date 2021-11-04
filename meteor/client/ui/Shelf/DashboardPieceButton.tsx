@@ -28,6 +28,8 @@ import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
 import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ActionAdLibHotkeyPreview } from '../../lib/triggers/ActionAdLibHotkeyPreview'
+import { getIAdLibListItemType } from '../../lib/triggers/getIAdLibListItemType'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -47,6 +49,7 @@ export interface IDashboardButtonProps {
 	isSelected?: boolean
 	queueAllAdlibs?: boolean
 	showThumbnailsInList?: boolean
+	showHotkeysInList?: boolean
 	editableName?: boolean
 	onNameChanged?: (e: any, value: string) => void
 	toggleOnSingleClick?: boolean
@@ -248,6 +251,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				</>
 			)
 		}
+	}
+
+	renderHotkey() {
+		const type = getIAdLibListItemType(this.props.piece)
+
+		return <ActionAdLibHotkeyPreview targetId={this.props.piece._id as any} type={type} />
 	}
 
 	private setRef = (el: HTMLDivElement | null) => {
@@ -462,7 +471,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					: this.props.layer.type === SourceLayerType.GRAPHICS || this.props.layer.type === SourceLayerType.LOWER_THIRD
 					? this.renderGraphics(/*(isButtons || (isList && this.props.showThumbnailsInList)*/)
 					: null}
-
+				{isList && this.props.showHotkeysInList && this.renderHotkey()}
 				{this.props.editableName ? (
 					<textarea
 						className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"

@@ -10,6 +10,7 @@ import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positio
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
+import { getIAdLibListItemType } from '../../../lib/triggers/getIAdLibListItemType'
 
 export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -82,17 +83,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 		}
 	}
 
-	const type = props.adLibListItem.isAction
-		? props.adLibListItem.isGlobal
-			? 'rundownBaselineAdLibAction'
-			: 'adLibAction'
-		: props.adLibListItem.isClearSourceLayer
-		? 'clearSourceLayer'
-		: props.adLibListItem.isSticky
-		? 'sticky'
-		: props.adLibListItem.isGlobal
-		? 'rundownBaselineAdLibItem'
-		: 'adLibPiece'
+	const type = getIAdLibListItemType(props.adLibListItem)
 
 	return (
 		<>
