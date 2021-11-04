@@ -1,7 +1,12 @@
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { IBlueprintPartDB, NoteSeverity, PartHoldMode } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPartDB,
+	IBlueprintPartInTransition,
+	NoteSeverity,
+	PartHoldMode,
+} from '@sofie-automation/blueprints-integration'
 import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -47,10 +52,11 @@ export class Part implements DBPart {
 	}
 	public autoNext?: boolean
 	public autoNextOverlap?: number
-	public prerollDuration?: number
-	public transitionPrerollDuration?: number | null
-	public transitionKeepaliveDuration?: number | null
-	public transitionDuration?: number | null
+	public inTransition?: IBlueprintPartInTransition
+	// public prerollDuration?: number
+	// public transitionPrerollDuration?: number | null
+	// public transitionKeepaliveDuration?: number | null
+	// public transitionDuration?: number | null
 	public disableNextPartInTransition?: boolean
 	public outTransitionDuration?: number | null
 	public expectedDuration?: number

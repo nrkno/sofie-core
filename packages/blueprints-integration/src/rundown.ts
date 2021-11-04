@@ -137,6 +137,16 @@ export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegm
 	_id: string
 }
 
+/** Timings for the inTransition, when supported and allowed */
+export interface IBlueprintPartInTransition {
+	/** Duration this transition block a take for. After this time, another take is allowed which may cut this transition off early */
+	blockTakeDuration: number
+	/** Duration the previous part be kept playing once the transition is started. Typically the duration of it remaining in-vision */
+	previousPartKeepaliveDuration: number
+	/** Duration the pieces of the part should be delayed for once the transition starts. Typically the duration until the new part is in-vision */
+	partContentDelayDuration: number
+}
+
 export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	/** The story title */
 	title: string
@@ -147,14 +157,19 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	autoNext?: boolean
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
-	/** How long until this part is ready to take over from the previous */
-	prerollDuration?: number
-	/** How long until this part is ready to take over from the previous (during transition) */
-	transitionPrerollDuration?: number | null
-	/** How long to keep the old part alive during the transition */
-	transitionKeepaliveDuration?: number | null
-	/** How long the transition is active for (used to block another take from happening) */
-	transitionDuration?: number | null
+	// /** How long until this part is ready to take over from the previous */
+	// prerollDuration?: number
+
+	// /** How long until this part is ready to take over from the previous (during transition) */
+	// transitionPrerollDuration?: number | null
+	// /** How long to keep the old part alive during the transition */
+	// transitionKeepaliveDuration?: number | null
+	// /** How long the transition is active for (used to block another take from happening) */
+	// transitionDuration?: number | null
+
+	/** Timings for the inTransition, when supported and allowed */
+	inTransition?: IBlueprintPartInTransition
+
 	/** Should we block the inTransition when starting the next Part */
 	disableNextPartInTransition?: boolean
 
@@ -346,8 +361,14 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 		outTransition?: PieceTransition
 	}
 
-	/** Duration to preroll/overlap when running this adlib */
-	adlibPreroll?: number
+	/**
+	 * How long this piece needs to prepare its content before it will have an effect on the output.
+	 * This allows for flows such as starting a clip playing, then cutting to it after some ms once the player is outputting frames.
+	 */
+	prerollDuration?: number
+
+	// /** Duration to preroll/overlap when running this adlib */
+	// adlibPreroll?: number
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
 	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.

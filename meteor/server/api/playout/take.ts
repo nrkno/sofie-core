@@ -19,7 +19,7 @@ import { PartEndState, ShowStyleBlueprintManifest, VTContent } from '@sofie-auto
 import { getResolvedPieces } from './pieces'
 import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
-import { PartInstance, unprotectPartInstance } from '../../../lib/collections/PartInstances'
+import { DBPartInstance, PartInstance, unprotectPartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartInstanceHasStarted } from '../blueprints/events'
@@ -29,6 +29,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { isAnyQueuedWorkRunning } from '../../codeControl'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import { calculatePartTimings } from './timings'
 
 export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	const span = profiler.startSpan('takeNextPartInner')
@@ -61,9 +62,9 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
 		if (
 			allowTransition &&
-			currentPartInstance.part.transitionDuration &&
+			currentPartInstance.part.inTransition &&
 			start &&
-			now < start + currentPartInstance.part.transitionDuration
+			now < start + currentPartInstance.part.inTransition.blockTakeDuration
 		) {
 			return ClientAPI.responseError('Cannot take during a transition')
 		}
@@ -313,11 +314,16 @@ export function updatePartInstanceOnTake(
 	}
 
 	const partInstanceM: any = {
-		$set: {
+		$set: literal<Partial<DBPartInstance>>({
 			isTaken: true,
-			// set transition properties to what will be used to generate timeline later:
-			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableNextPartInTransition,
-		},
+			// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
+			partPlayoutTimings: calculatePartTimings(
+				cache.Playlist.doc.holdState,
+				currentPartInstance,
+				takePartInstance,
+				cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id)
+			),
+		}),
 	}
 	if (previousPartEndState) {
 		partInstanceM.$set.previousPartEndState = previousPartEndState

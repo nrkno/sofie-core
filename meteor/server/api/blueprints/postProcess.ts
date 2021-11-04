@@ -12,6 +12,7 @@ import {
 	IBlueprintActionManifest,
 	ICommonContext,
 	IShowStyleContext,
+	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
@@ -64,6 +65,15 @@ export function postProcessPieces(
 			startPartId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			invalid: setInvalid ?? false,
+		}
+
+		if (piece.isTransition || piece.isOutTransition) {
+			// transition pieces must not be infinite, lets enforce that
+			piece.lifespan = PieceLifespan.WithinPart
+		}
+		if (piece.extendOnHold) {
+			// HOLD pieces must not be infinite, as they become that when being held
+			piece.lifespan = PieceLifespan.WithinPart
 		}
 
 		if (!piece.externalId && !piece.isTransition)

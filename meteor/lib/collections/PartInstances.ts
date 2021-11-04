@@ -20,6 +20,7 @@ import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
 import { RundownPlaylistActivationId } from './RundownPlaylists'
 import { PartialDeep } from 'type-fest'
+import { PartCalculatedTimings } from '../../server/api/playout/timings'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
@@ -68,8 +69,8 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	part: DBPart
 
-	/** The transition props as used when entering this PartInstance */
-	allowedToUseTransition?: boolean
+	/** Once taken, we should have timings for how the part interacts with the one before */
+	partPlayoutTimings?: PartCalculatedTimings
 }
 
 export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
@@ -106,7 +107,7 @@ export class PartInstance implements DBPartInstance {
 	public segmentId: SegmentId
 	public rundownId: RundownId
 
-	public allowedToUseTransition?: boolean
+	public partPlayoutTimings?: PartCalculatedTimings
 
 	public orphaned?: 'adlib-part' | 'deleted'
 
