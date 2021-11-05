@@ -502,7 +502,8 @@ svg.icon {
 }
 
 // A component for displaying the segments (ENPS Stories/NKR Titles)
-.segment-timeline {
+.segment-timeline,
+.segment-storyboard {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
@@ -526,11 +527,14 @@ svg.icon {
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
 	.segment-timeline__output-layers,
-	.segment-timeline__timeline {
+	.segment-timeline__timeline,
+	.segment-storyboard__output-layers,
+	.segment-storyboard__timeline {
 		padding: $segment-timeline-padding;
 	}
 
-	.segment-timeline__title {
+	.segment-timeline__title,
+	.segment-storyboard__title {
 		display: grid;
 		grid-template-columns: auto;
 		grid-template-rows: [title-title] min-content [title-notifications] 1fr [title-identifiers] min-content [end];
@@ -561,7 +565,8 @@ svg.icon {
 			grid-row: title-title / title-notifications;
 		}
 
-		.segment-timeline__title__notes {
+		.segment-timeline__title__notes,
+		.segment-storyboard__title__notes {
 			margin: 0 0 0.5em;
 			padding: 0.5em;
 			line-height: 1.4em;
@@ -569,7 +574,8 @@ svg.icon {
 			font-weight: 400;
 			grid-row: title-notifications / title-identifiers;
 
-			> .segment-timeline__title__notes__note {
+			> .segment-timeline__title__notes__note,
+			> .segment-storyboard__title__notes__note {
 				position: relative;
 				padding-left: 20px;
 				cursor: pointer;
@@ -586,7 +592,8 @@ svg.icon {
 					width: 1.6em;
 				}
 
-				> .segment-timeline__title__notes__count {
+				> .segment-timeline__title__notes__count,
+				> .segment-storyboard__title__notes__count {
 					display: inline-block;
 					min-width: 1.1em;
 					line-height: 1.1em;
@@ -601,22 +608,26 @@ svg.icon {
 					padding: 0 2px 0 0.3em;
 				}
 
-				> svg.type-warning + .segment-timeline__title__notes__count {
+				> svg.type-warning + .segment-timeline__title__notes__count,
+				> svg.type-warning + .segment-storyboard__title__notes__count {
 					background: yellow;
 					color: #000;
 				}
 
-				> svg.type-critical + .segment-timeline__title__notes__count {
+				> svg.type-critical + .segment-timeline__title__notes__count,
+				> svg.type-critical + .segment-storyboard__title__notes__count {
 					background: red;
 					color: #fff;
 				}
 			}
 		}
 
-		.segment-timeline__part-identifiers {
+		.segment-timeline__part-identifiers,
+		.segment-storyboard__part-identifiers {
 			grid-row: title-identifiers / end;
 
-			.segment-timeline__part-identifiers__identifier {
+			.segment-timeline__part-identifiers__identifier,
+			.segment-storyboard__part-identifiers__identifier {
 				margin: 2.5px;
 				padding: 0 10px 0 10px;
 				background-color: $part-identifier;
@@ -627,13 +638,15 @@ svg.icon {
 	}
 
 	&.has-identifiers {
-		.segment-timeline__title__notes {
+		.segment-timeline__title__notes,
+		.segment-storyboard__title__notes {
 			margin: 0;
 		}
 	}
 
 	&.has-guest-items {
-		.segment-timeline__title {
+		.segment-timeline__title,
+		.segment-storyboard__title {
 			background: $segment-title-background-color-guest;
 
 			> h2 {
@@ -643,7 +656,8 @@ svg.icon {
 
 		&.live,
 		&.next {
-			.segment-timeline__title {
+			.segment-timeline__title,
+			.segment-storyboard__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 					margin-bottom: -1px;
@@ -654,7 +668,8 @@ svg.icon {
 
 	// the live and next states are the states of the entire segment component
 	&.has-remote-items {
-		.segment-timeline__title {
+		.segment-timeline__title,
+		.segment-storyboard__title {
 			background: $segment-title-background-color-remote;
 
 			> h2 {
@@ -664,7 +679,8 @@ svg.icon {
 
 		&.live,
 		&.next {
-			.segment-timeline__title {
+			.segment-timeline__title,
+			.segment-storyboard__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 					margin-bottom: -1px;
@@ -676,7 +692,8 @@ svg.icon {
 	&.has-break {
 		width: 12.5rem;
 
-		.segment-timeline__title {
+		.segment-timeline__title,
+		.segment-storyboard__title {
 			background: $rundown-divider-background-color;
 
 			h2 {
@@ -686,13 +703,16 @@ svg.icon {
 
 		// Add a tiny bit of padding so the break text doesn't look squashed against the side of the segment container
 		.segment-timeline__timeUntil,
-		.segment-timeline__timeUntil__label {
+		.segment-timeline__timeUntil__label,
+		.segment-storyboard__timeUntil,
+		.segment-storyboard__timeUntil__label {
 			padding-right: 0.3vw;
 		}
 	}
 
 	&.live {
-		.segment-timeline__title {
+		.segment-timeline__title,
+		.segment-storyboard__title {
 			color: $segment-title-text-color-live;
 			font-weight: 500;
 			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
@@ -701,7 +721,8 @@ svg.icon {
 	}
 
 	&.next {
-		.segment-timeline__title {
+		.segment-timeline__title,
+		.segment-storyboard__title {
 			font-weight: 500;
 			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 			background: $segment-title-background-color-next;
@@ -709,7 +730,8 @@ svg.icon {
 	}
 
 	&.queued {
-		.segment-timeline__title {
+		.segment-timeline__title,
+		.segment-storyboard__title {
 			position: relative;
 			&::after {
 				content: ' ';
@@ -726,7 +748,8 @@ svg.icon {
 	}
 
 	&.has-played {
-		.segment-timeline__title {
+		.segment-timeline__title,
+		.segment-storyboard__title {
 			font-weight: 200;
 			background: $segment-title-background-color-has-played;
 		}
@@ -734,13 +757,16 @@ svg.icon {
 
 	// mos-id is a utility element, so that we can quickly check the mos Id of a segment using the inspector
 	// let's hide it in the UI
-	.segment-timeline__mos-id {
+	.segment-timeline__mos-id,
+	.segment-storyboard__mos-id {
 		display: none;
 	}
 
 	// This is the display in the top-left corner of the segment
 	.segment-timeline__timeUntil,
-	.segment-timeline__duration {
+	.segment-timeline__duration,
+	.segment-storyboard__timeUntil,
+	.segment-storyboard__duration {
 		position: relative;
 		display: block;
 		margin: 0;
@@ -767,7 +793,9 @@ svg.icon {
 		}
 
 		> .segment-timeline__timeUntil__label,
-		> .segment-timeline__duration__label {
+		> .segment-timeline__duration__label,
+		> .segment-storyboard__timeUntil__label,
+		> .segment-storyboard__duration__label {
 			text-transform: uppercase;
 			display: block;
 			position: absolute;
@@ -779,33 +807,42 @@ svg.icon {
 			font-weight: 400;
 		}
 	}
-	.segment-timeline__duration {
+	.segment-timeline__duration,
+	.segment-storyboard__duration {
 		text-align: left;
 		margin-left: 0.5em;
 
-		> .segment-timeline__duration__label {
+		> .segment-timeline__duration__label,
+		> .segment-storyboard__duration__label {
 			text-align: left;
 			left: 0;
 			right: auto;
 		}
 	}
-	.segment-timeline__timeUntil {
+	.segment-timeline__timeUntil,
+	.segment-storyboard__timeUntil {
 		color: #888;
 	}
 
 	&.time-of-day-countdowns {
-		.segment-timeline__duration {
+		.segment-timeline__duration,
+		.segment-storyboard__duration {
 			color: #888;
 		}
-		.segment-timeline__timeUntil {
+		.segment-timeline__timeUntil,
+		.segment-storyboard__timeUntil {
 			color: #fff;
 			font-weight: 500;
 		}
 	}
 
-	.segment-timeline__unsynced {
+	.segment-timeline__unsynced,
+	.segment-storyboard__unsynced {
 		text-transform: uppercase;
 	}
+}
+
+.segment-timeline {
 	.segment-timeline__timeline-zoom-buttons {
 		position: relative;
 		display: flex;
