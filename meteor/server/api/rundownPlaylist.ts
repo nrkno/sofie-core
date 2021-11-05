@@ -501,16 +501,16 @@ function sortDefaultRundownInPlaylistOrder(
 	rundowns: ReadonlyDeep<Array<DBRundown>>
 ): ReadonlyDeep<Array<IBlueprintRundown>> {
 	return mongoFindOptions<ReadonlyDeep<DBRundown>, ReadonlyDeep<DBRundown>>(rundowns).sort((a, b) => {
-		let timingSorting = PlaylistTiming.sortTiminings(a, b)
+		const timingSorting = PlaylistTiming.sortTiminings(a, b)
 		if (timingSorting !== 0) return timingSorting
 
-		let nameSorting = a.name.localeCompare(b.name)
+		const nameSorting = a.name.localeCompare(b.name)
 		if (nameSorting !== 0) return nameSorting
 
-		let externalIdSorting = a.externalId.localeCompare(b.externalId)
+		const externalIdSorting = a.externalId.localeCompare(b.externalId)
 		if (externalIdSorting !== 0) return externalIdSorting
 
-		let idSorting = unprotectString(a._id).localeCompare(unprotectString(b._id))
+		const idSorting = unprotectString(a._id).localeCompare(unprotectString(b._id))
 		return idSorting
 	})
 }
