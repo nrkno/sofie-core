@@ -118,7 +118,8 @@ export function setupPart2(
 	rundownId: RundownId,
 	rundown: DBRundown,
 	segment0: DBSegment,
-	partPropsOverride: Partial<DBPart> = {}
+	partPropsOverride: Partial<DBPart> = {},
+	piece0PropsOverride: Partial<Piece> = {}
 ) {
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -150,6 +151,8 @@ export function setupPart2(
 		content: {
 			timelineObjects: [],
 		},
+
+		...piece0PropsOverride,
 	}
 	Pieces.insert(piece010)
 
@@ -163,7 +166,7 @@ export function setupRundownWithPreroll(
 ): RundownId {
 	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
-	setupPart2(env, rundownId, rundown, segment0, { prerollDuration: 500 })
+	setupPart2(env, rundownId, rundown, segment0, {}, { prerollDuration: 500 })
 
 	return rundownId
 }
@@ -176,9 +179,11 @@ export function setupRundownWithInTransition(
 	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
 	setupPart2(env, rundownId, rundown, segment0, {
-		transitionDuration: 1000,
-		transitionKeepaliveDuration: 1000,
-		transitionPrerollDuration: 0,
+		inTransition: {
+			blockTakeDuration: 1000,
+			previousPartKeepaliveDuration: 1000,
+			partContentDelayDuration: 0,
+		},
 	})
 
 	return rundownId
@@ -192,9 +197,11 @@ export function setupRundownWithInTransitionPlannedPiece(
 	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
 	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
-		transitionDuration: 1000,
-		transitionKeepaliveDuration: 1000,
-		transitionPrerollDuration: 500,
+		inTransition: {
+			blockTakeDuration: 1000,
+			previousPartKeepaliveDuration: 1000,
+			partContentDelayDuration: 500,
+		},
 	})
 
 	const piece011: Piece = {
@@ -253,9 +260,11 @@ export function setupRundownWithInTransitionPreroll(
 	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
 	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
-		transitionDuration: 1000,
-		transitionKeepaliveDuration: 1000,
-		transitionPrerollDuration: 500,
+		inTransition: {
+			blockTakeDuration: 1000,
+			previousPartKeepaliveDuration: 1000,
+			partContentDelayDuration: 500,
+		},
 	})
 
 	const piece011: Piece = {
@@ -290,12 +299,22 @@ export function setupRundownWithInTransitionPrerollAndPreroll(
 ): RundownId {
 	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId)
 
-	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
-		transitionDuration: 1000,
-		transitionKeepaliveDuration: 1000,
-		transitionPrerollDuration: 500,
-		prerollDuration: 250,
-	})
+	const { part01 } = setupPart2(
+		env,
+		rundownId,
+		rundown,
+		segment0,
+		{
+			inTransition: {
+				blockTakeDuration: 1000,
+				previousPartKeepaliveDuration: 1000,
+				partContentDelayDuration: 500,
+			},
+		},
+		{
+			prerollDuration: 250,
+		}
+	)
 
 	const piece011: Piece = {
 		_id: protectString(rundownId + '_piece011'),
@@ -351,9 +370,11 @@ export function setupRundownWithInTransitionExistingInfinite(
 	Pieces.insert(piece002)
 
 	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
-		transitionDuration: 1000,
-		transitionKeepaliveDuration: 1000,
-		transitionPrerollDuration: 500,
+		inTransition: {
+			blockTakeDuration: 1000,
+			previousPartKeepaliveDuration: 1000,
+			partContentDelayDuration: 500,
+		},
 	})
 
 	const piece011: Piece = {
@@ -389,9 +410,11 @@ export function setupRundownWithInTransitionNewInfinite(
 	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId)
 
 	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
-		transitionDuration: 1000,
-		transitionKeepaliveDuration: 1000,
-		transitionPrerollDuration: 500,
+		inTransition: {
+			blockTakeDuration: 1000,
+			previousPartKeepaliveDuration: 1000,
+			partContentDelayDuration: 500,
+		},
 	})
 
 	const piece011: Piece = {
@@ -448,9 +471,11 @@ export function setupRundownWithInTransitionEnableHold(
 	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId, { holdMode: PartHoldMode.FROM })
 
 	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
-		transitionDuration: 1000,
-		transitionKeepaliveDuration: 1000,
-		transitionPrerollDuration: 500,
+		inTransition: {
+			blockTakeDuration: 1000,
+			previousPartKeepaliveDuration: 1000,
+			partContentDelayDuration: 500,
+		},
 
 		holdMode: PartHoldMode.TO,
 	})
@@ -488,9 +513,11 @@ export function setupRundownWithInTransitionDisabled(
 	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId, { disableNextPartInTransition: true })
 
 	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
-		transitionDuration: 1000,
-		transitionKeepaliveDuration: 1000,
-		transitionPrerollDuration: 500,
+		inTransition: {
+			blockTakeDuration: 1000,
+			previousPartKeepaliveDuration: 1000,
+			partContentDelayDuration: 500,
+		},
 	})
 
 	const piece011: Piece = {
@@ -587,7 +614,7 @@ export function setupRundownWithOutTransitionAndPreroll(
 	}
 	Pieces.insert(piece002)
 
-	setupPart2(env, rundownId, rundown, segment0, { prerollDuration: 250 })
+	setupPart2(env, rundownId, rundown, segment0, {}, { prerollDuration: 250 })
 
 	return rundownId
 }
@@ -624,7 +651,7 @@ export function setupRundownWithOutTransitionAndPreroll2(
 	}
 	Pieces.insert(piece002)
 
-	setupPart2(env, rundownId, rundown, segment0, { prerollDuration: 1000 })
+	setupPart2(env, rundownId, rundown, segment0, {}, { prerollDuration: 1000 })
 
 	return rundownId
 }
@@ -662,9 +689,11 @@ export function setupRundownWithOutTransitionAndInTransition(
 	Pieces.insert(piece002)
 
 	const { part01 } = setupPart2(env, rundownId, rundown, segment0, {
-		transitionDuration: 500,
-		transitionKeepaliveDuration: 250,
-		transitionPrerollDuration: 300,
+		inTransition: {
+			blockTakeDuration: 500,
+			previousPartKeepaliveDuration: 250,
+			partContentDelayDuration: 300,
+		},
 	})
 
 	const piece011: Piece = {
