@@ -83,13 +83,15 @@ function getPackagePreviewUrl(
 				(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
 				accessor.baseUrl
 			) {
-				// TODO: add fiter for accessor.networkId ?
-				return [
-					accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
-					encodeURIComponent(
-						packagePreviewPath.replace(/^\//, '') // trim leading slash
-					),
-				].join('/')
+				// Currently we only support public accessors (ie has no networkId set)
+				if (!accessor.networkId) {
+					return [
+						accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
+						encodeURIComponent(
+							packagePreviewPath.replace(/^\//, '') // trim leading slash
+						),
+					].join('/')
+				}
 			}
 		}
 	}
