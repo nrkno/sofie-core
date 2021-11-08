@@ -131,7 +131,7 @@ export const DevicePackageManagerSettings = translateWithTracker<
 										<h3 className="">{t('Package Manager')}</h3>
 										<table className="table">
 											<tbody>
-												{Object.entries(this.state.status.packageManager).map(([key, value]) => {
+												{Object.entries(this.state.status.packageManager || {}).map(([key, value]) => {
 													return (
 														<tr key={key}>
 															<td>{key}</td>
@@ -144,8 +144,8 @@ export const DevicePackageManagerSettings = translateWithTracker<
 									</div>
 									<div className="col c12 rl-c6">
 										<h3 className="">{t('Expectation Manager')}</h3>
-										<div>Id: {this.state.status.expectationManager.id}</div>
-										{this.state.status.expectationManager.updated ? (
+										<div>Id: {this.state.status.expectationManager?.id}</div>
+										{this.state.status.expectationManager?.updated ? (
 											<div>
 												{t('Updated')}: {new Date(this.state.status.expectationManager.updated).toLocaleString()}
 											</div>
@@ -154,7 +154,7 @@ export const DevicePackageManagerSettings = translateWithTracker<
 											<h4 className="">{t('Statistics')}</h4>
 											<table className="table">
 												<tbody>
-													{Object.entries(this.state.status.expectationManager.expectationStatistics).map(
+													{Object.entries(this.state.status.expectationManager?.expectationStatistics || {}).map(
 														([key, value]) => {
 															return (
 																<tr key={key}>
@@ -171,7 +171,7 @@ export const DevicePackageManagerSettings = translateWithTracker<
 											<h4 className="">{t('Times')}</h4>
 											<table className="table">
 												<tbody>
-													{Object.entries(this.state.status.expectationManager.times || {}).map(([key, value]) => {
+													{Object.entries(this.state.status.expectationManager?.times || {}).map(([key, value]) => {
 														return (
 															<tr key={key}>
 																<td>{key}</td>
@@ -184,12 +184,14 @@ export const DevicePackageManagerSettings = translateWithTracker<
 										</div>
 										<div>
 											<h4 className="">{t('Connected Workers')}</h4>
-											<TableFromObjectArray dataObjs={this.state.status.expectationManager.workerAgents} />
+											<TableFromObjectArray dataObjs={this.state.status.expectationManager?.workerAgents} />
 										</div>
-										<div>
-											<h4 className="">{t('Work-in-progress')}</h4>
-											<TableFromObjectArray dataObjs={this.state.status.expectationManager.worksInProgress} />
-										</div>
+									</div>
+								</div>
+								<div className="row">
+									<div className="col c12">
+										<h4 className="">{t('Work-in-progress')}</h4>
+										<TableFromObjectArray dataObjs={this.state.status.expectationManager?.worksInProgress} />
 									</div>
 								</div>
 								<div className="row">
@@ -198,7 +200,7 @@ export const DevicePackageManagerSettings = translateWithTracker<
 										<div className="col c12 rl-c12">
 											<h4 className="">{t('Connected Workers')}</h4>
 											<TableFromObjectArray
-												dataObjs={this.state.status.workforce.workerAgents}
+												dataObjs={this.state.status.workforce?.workerAgents}
 												rowFcn={(workerAgent) => (
 													<button className="btn btn-secondary btn-tight" onClick={() => this.killApp(workerAgent.id)}>
 														{t('Kill (debug)')}
@@ -254,10 +256,10 @@ export const DevicePackageManagerSettings = translateWithTracker<
 
 // Note: These interfaces are copied from Package Manager. To be replaced with shared types later..
 interface Status {
-	packageManager: PackageManagerStatus
-	workforce: WorkforceStatus
-	expectationManager: ExpectationManagerStatus
-	updated: number
+	packageManager?: PackageManagerStatus
+	workforce?: WorkforceStatus
+	expectationManager?: ExpectationManagerStatus
+	updated?: number
 }
 interface PackageManagerStatus {
 	workforceURL: string
@@ -317,7 +319,7 @@ interface ExpectationManagerStatus {
 }
 
 interface TableFromObjectArrayData<T> {
-	dataObjs: { [key: string]: T }[]
+	dataObjs: { [key: string]: T }[] | undefined
 	rowFcn?: (dataObj: T) => JSX.Element
 }
 
