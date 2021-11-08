@@ -523,6 +523,7 @@ function buildTimelineObjsForRundown(
 			partInstancesInfo.current.pieceInstances
 		)
 
+		// The startTime of this start is used as the reference point for the calculated timings, so we can use 'now' and everything will lie after this point
 		const currentPartEnable: TSR.Timeline.TimelineEnable = { start: 'now' }
 		if (partInstancesInfo.current.partInstance.timings?.startedPlayback) {
 			// If we are recalculating the currentPart, then ensure it doesnt think it is starting now
@@ -543,7 +544,6 @@ function buildTimelineObjsForRundown(
 				...generatePreviousPartInstanceObjects(
 					activePlaylist,
 					partInstancesInfo.previous,
-					partInstancesInfo.current,
 					currentInfinitePieceIds,
 					currentPartGroup.id,
 					currentPartInstanceTimings
@@ -584,8 +584,8 @@ function buildTimelineObjsForRundown(
 				currentPartGroup,
 				partInstancesInfo.current.nowInPart,
 				currentPartInstanceTimings,
-				activePlaylist.holdState === RundownHoldState.ACTIVE
-				// partInstancesInfo.previous?.partInstance.part.outTransitionDuration
+				activePlaylist.holdState === RundownHoldState.ACTIVE,
+				partInstancesInfo.current.partInstance.part.outTransitionDuration ?? null
 			)
 		)
 
@@ -724,7 +724,6 @@ function generateCurrentInfinitePieceObjects(
 function generatePreviousPartInstanceObjects(
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	previousPartInfo: SelectedPartInstanceTimelineInfo,
-	currentPartInfo: SelectedPartInstanceTimelineInfo,
 	currentInfinitePieceIds: Set<PieceInstanceInfinite['infinitePieceId']>,
 	currentPartGroupId: string,
 	currentPartInstanceTimings: PartCalculatedTimings
@@ -756,7 +755,8 @@ function generatePreviousPartInstanceObjects(
 				previousPartGroup,
 				previousPartInfo.nowInPart,
 				getPartTimingsOrDefaults(previousPartInfo.partInstance, previousPartInfo.pieceInstances),
-				activePlaylist.holdState === RundownHoldState.ACTIVE
+				activePlaylist.holdState === RundownHoldState.ACTIVE,
+				previousPartInfo.partInstance.part.outTransitionDuration ?? null
 			),
 		]
 	} else {
@@ -806,7 +806,8 @@ function generateNextPartInstanceObjects(
 			nextPartGroup,
 			0,
 			currentToNextTimings,
-			false
+			false,
+			nextPartInfo.partInstance.part.outTransitionDuration ?? null
 		),
 	]
 }
@@ -940,8 +941,8 @@ function transformPartIntoTimeline(
 	parentGroup: TimelineObjGroupPart & OnGenerateTimelineObjExt,
 	nowInParentGroup: number,
 	partTimings: PartCalculatedTimings,
-	isInHold: boolean
-	// outTransitionDuration: number | null
+	isInHold: boolean,
+	outTransitionDuration: number | null
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const span = profiler.startSpan('transformPartIntoTimeline')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
@@ -961,11 +962,9 @@ function transformPartIntoTimeline(
 					duration: pieceInstance.piece.enable.duration,
 				}
 			}
-		} else if (pieceInstance.piece.isOutTransition) {
-			// TODO - this might get a bit stale. should this be any more concrete than this?
-			// Note: partTimings.outTransitionStart is expected to be negative here (I think)
+		} else if (pieceInstance.piece.isOutTransition && outTransitionDuration) {
 			pieceEnable = {
-				start: `#${parentGroup.id}.end + ${partTimings.outTransitionStart}`,
+				start: `#${parentGroup.id}.end - ${outTransitionDuration}`,
 			}
 		} else {
 			pieceEnable = getPieceEnableInsidePart(pieceInstance, partTimings)
