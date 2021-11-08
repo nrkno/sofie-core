@@ -2070,7 +2070,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		renderSegments() {
 			if (!this.props.matchedSegments) {
-				return <div></div>
+				return null
 			}
 
 			let globalIndex = 0
@@ -2233,49 +2233,51 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		onRestartPlayout = (e: React.MouseEvent<HTMLButtonElement>) => {
 			const { t } = this.props
 
-			if (this.props.studio) {
-				const attachedPlayoutGateways = PeripheralDevices.find({
-					studioId: this.props.studio._id,
-					connected: true,
-					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				}).fetch()
-				if (attachedPlayoutGateways.length === 0) {
-					NotificationCenter.push(
-						new Notification(
-							undefined,
-							NoticeLevel.CRITICAL,
-							t(
-								'There are no Playout\xa0Gateways connected and attached to this studio. Please contact the system administrator to start the Playout Gateway.'
-							),
-							'RundownView'
-						)
-					)
-					return
-				}
-				attachedPlayoutGateways.forEach((item) => {
-					PeripheralDevicesAPI.restartDevice(item, e)
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }),
-									'RundownView'
-								)
-							)
-						})
-						.catch(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.CRITICAL,
-									t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }),
-									'RundownView'
-								)
-							)
-						})
-				})
+			if (!this.props.studio) {
+				return
 			}
+
+			const attachedPlayoutGateways = PeripheralDevices.find({
+				studioId: this.props.studio._id,
+				connected: true,
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			}).fetch()
+			if (attachedPlayoutGateways.length === 0) {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.CRITICAL,
+						t(
+							'There are no Playout\xa0Gateways connected and attached to this studio. Please contact the system administrator to start the Playout Gateway.'
+						),
+						'RundownView'
+					)
+				)
+				return
+			}
+			attachedPlayoutGateways.forEach((item) => {
+				PeripheralDevicesAPI.restartDevice(item, e)
+					.then(() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }),
+								'RundownView'
+							)
+						)
+					})
+					.catch(() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.CRITICAL,
+								t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }),
+								'RundownView'
+							)
+						)
+					})
+			})
 		}
 
 		onRestartCasparCG = (device: PeripheralDevice) => {
@@ -2315,33 +2317,35 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		onTakeRundownSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
 			const { t } = this.props
-			if (this.props.playlist) {
-				const playlistId = this.props.playlist._id
-				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
-				doUserAction(
-					t,
-					e,
-					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-					(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, 'User requested log at' + getCurrentTime()),
-					() => {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.NOTIFICATION,
-								doneMessage,
-								'userAction',
-								undefined,
-								false,
-								undefined,
-								undefined,
-								5000
-							)
-						)
-						return false
-					},
-					doneMessage
-				)
+			if (!this.props.playlist) {
+				return
 			}
+
+			const playlistId = this.props.playlist._id
+			const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
+			doUserAction(
+				t,
+				e,
+				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
+				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, 'User requested log at' + getCurrentTime()),
+				() => {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.NOTIFICATION,
+							doneMessage,
+							'userAction',
+							undefined,
+							false,
+							undefined,
+							undefined,
+							5000
+						)
+					)
+					return false
+				},
+				doneMessage
+			)
 		}
 
 		onShelfChangeExpanded = (value: boolean) => {
@@ -2370,289 +2374,230 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			return true
 		}
 
-		render() {
+		renderRundownView(
+			studio: DBStudio,
+			playlist: RundownPlaylist,
+			showStyleBase: ShowStyleBase,
+			showStyleVariant: ShowStyleVariant
+		) {
 			const { t } = this.props
 
-			if (this.state.subsReady) {
-				if (
-					this.props.playlist &&
-					this.props.studio &&
-					this.props.showStyleBase &&
-					this.props.showStyleVariant &&
-					!this.props.onlyShelf
-				) {
-					const selectedPiece = this.state.selectedPiece
-					const selectedPieceRundown: Rundown | undefined =
-						(selectedPiece &&
-							RundownUtils.isPieceInstance(selectedPiece) &&
-							this.props.rundowns.find((r) => r._id === selectedPiece?.instance.rundownId)) ||
-						undefined
+			const selectedPiece = this.state.selectedPiece
+			const selectedPieceRundown: Rundown | undefined =
+				(selectedPiece &&
+					RundownUtils.isPieceInstance(selectedPiece) &&
+					this.props.rundowns.find((r) => r._id === selectedPiece?.instance.rundownId)) ||
+				undefined
 
-					return (
-						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
-							<StudioContext.Provider value={this.props.studio}>
-								<div
-									className={ClassNames('rundown-view', {
-										'notification-center-open': this.state.isNotificationsCenterOpen !== undefined,
-										'rundown-view--studio-mode': this.state.studioMode,
-									})}
-									style={this.getStyle()}
-									onWheelCapture={this.onWheel}
-									onContextMenu={this.onContextMenuTop}
+			return (
+				<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
+					<StudioContext.Provider value={this.props.studio}>
+						<div
+							className={ClassNames('rundown-view', {
+								'notification-center-open': this.state.isNotificationsCenterOpen !== undefined,
+								'rundown-view--studio-mode': this.state.studioMode,
+							})}
+							style={this.getStyle()}
+							onWheelCapture={this.onWheel}
+							onContextMenu={this.onContextMenuTop}
+						>
+							<ErrorBoundary>
+								{this.state.studioMode && !Settings.disableBlurBorder && (
+									<KeyboardFocusIndicator>
+										<div
+											className={ClassNames('rundown-view__focus-lost-frame', {
+												'rundown-view__focus-lost-frame--reduce-animation': Meteor.isDevelopment,
+											})}
+										></div>
+									</KeyboardFocusIndicator>
+								)}
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<RundownRightHandControls
+									isFollowingOnAir={this.state.followLiveSegments}
+									onFollowOnAir={this.onGoToLiveSegment}
+									onRewindSegments={this.onRewindSegments}
+									isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
+									onToggleNotifications={this.onToggleNotifications}
+									isSupportPanelOpen={this.state.isSupportPanelOpen}
+									onToggleSupportPanel={this.onToggleSupportPanel}
+									isStudioMode={this.state.studioMode}
+									onTake={this.onTake}
+									studioRouteSets={studio.routeSets}
+									studioRouteSetExclusivityGroups={studio.routeSetExclusivityGroups}
+									onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
+								/>
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<SorensenContext.Consumer>
+									{(sorensen) =>
+										sorensen &&
+										this.props.studio &&
+										this.props.showStyleBase && (
+											<TriggersHandler
+												rundownPlaylistId={this.props.rundownPlaylistId}
+												showStyleBaseId={this.props.showStyleBase._id}
+												currentRundownId={this.props.currentRundown?._id || null}
+												currentPartId={this.props.currentPartInstance?.part._id || null}
+												nextPartId={this.props.nextPartInstance?.part._id || null}
+												currentSegmentPartIds={this.props.currentSegmentPartIds}
+												nextSegmentPartIds={this.props.nextSegmentPartIds}
+												sorensen={sorensen}
+												global={this.isHotkeyAllowed}
+											/>
+										)
+									}
+								</SorensenContext.Consumer>
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<VelocityReact.VelocityTransitionGroup
+									enter={{
+										animation: {
+											translateX: ['0%', '100%'],
+										},
+										easing: 'ease-out',
+										duration: 300,
+									}}
+									leave={{
+										animation: {
+											translateX: ['100%', '0%'],
+										},
+										easing: 'ease-in',
+										duration: 500,
+									}}
 								>
-									<ErrorBoundary>
-										{this.state.studioMode && !Settings.disableBlurBorder && (
-											<KeyboardFocusIndicator>
-												<div
-													className={ClassNames('rundown-view__focus-lost-frame', {
-														'rundown-view__focus-lost-frame--reduce-animation': Meteor.isDevelopment,
-													})}
-												></div>
-											</KeyboardFocusIndicator>
-										)}
-									</ErrorBoundary>
-									<ErrorBoundary>
-										<RundownRightHandControls
-											isFollowingOnAir={this.state.followLiveSegments}
-											onFollowOnAir={this.onGoToLiveSegment}
-											onRewindSegments={this.onRewindSegments}
-											isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
-											onToggleNotifications={this.onToggleNotifications}
-											isSupportPanelOpen={this.state.isSupportPanelOpen}
-											onToggleSupportPanel={this.onToggleSupportPanel}
-											isStudioMode={this.state.studioMode}
-											onTake={this.onTake}
-											studioRouteSets={this.props.studio.routeSets}
-											studioRouteSetExclusivityGroups={this.props.studio.routeSetExclusivityGroups}
-											onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
-										/>
-									</ErrorBoundary>
-									<ErrorBoundary>
-										<SorensenContext.Consumer>
-											{(sorensen) =>
-												sorensen &&
-												this.props.studio &&
-												this.props.showStyleBase && (
-													<TriggersHandler
-														rundownPlaylistId={this.props.rundownPlaylistId}
-														showStyleBaseId={this.props.showStyleBase._id}
-														currentRundownId={this.props.currentRundown?._id || null}
-														currentPartId={this.props.currentPartInstance?.part._id || null}
-														nextPartId={this.props.nextPartInstance?.part._id || null}
-														currentSegmentPartIds={this.props.currentSegmentPartIds}
-														nextSegmentPartIds={this.props.nextSegmentPartIds}
-														sorensen={sorensen}
-														global={this.isHotkeyAllowed}
-													/>
-												)
-											}
-										</SorensenContext.Consumer>
-									</ErrorBoundary>
-									<ErrorBoundary>
-										<VelocityReact.VelocityTransitionGroup
-											enter={{
-												animation: {
-													translateX: ['0%', '100%'],
-												},
-												easing: 'ease-out',
-												duration: 300,
-											}}
-											leave={{
-												animation: {
-													translateX: ['100%', '0%'],
-												},
-												easing: 'ease-in',
-												duration: 500,
-											}}
-										>
-											{this.state.isNotificationsCenterOpen && (
-												<NotificationCenterPanel filter={this.state.isNotificationsCenterOpen} />
-											)}
-										</VelocityReact.VelocityTransitionGroup>
-										<VelocityReact.VelocityTransitionGroup
-											enter={{
-												animation: {
-													translateX: ['0%', '100%'],
-												},
-												easing: 'ease-out',
-												duration: 300,
-											}}
-											leave={{
-												animation: {
-													translateX: ['100%', '0%'],
-												},
-												easing: 'ease-in',
-												duration: 500,
-											}}
-										>
-											{this.state.isSupportPanelOpen && (
-												<SupportPopUp>
-													<hr />
-													<button className="btn btn-secondary" onClick={this.onToggleHotkeys}>
-														{t('Show Hotkeys')}
+									{this.state.isNotificationsCenterOpen && (
+										<NotificationCenterPanel filter={this.state.isNotificationsCenterOpen} />
+									)}
+								</VelocityReact.VelocityTransitionGroup>
+								<VelocityReact.VelocityTransitionGroup
+									enter={{
+										animation: {
+											translateX: ['0%', '100%'],
+										},
+										easing: 'ease-out',
+										duration: 300,
+									}}
+									leave={{
+										animation: {
+											translateX: ['100%', '0%'],
+										},
+										easing: 'ease-in',
+										duration: 500,
+									}}
+								>
+									{this.state.isSupportPanelOpen && (
+										<SupportPopUp>
+											<hr />
+											<button className="btn btn-secondary" onClick={this.onToggleHotkeys}>
+												{t('Show Hotkeys')}
+											</button>
+											<hr />
+											<button className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
+												{t('Take a Snapshot')}
+											</button>
+											<hr />
+											{this.state.studioMode && (
+												<>
+													<button className="btn btn-secondary" onClick={this.onRestartPlayout}>
+														{t('Restart Playout')}
 													</button>
 													<hr />
-													<button className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
-														{t('Take a Snapshot')}
-													</button>
-													<hr />
-													{this.state.studioMode && (
-														<>
-															<button className="btn btn-secondary" onClick={this.onRestartPlayout}>
-																{t('Restart Playout')}
-															</button>
-															<hr />
-														</>
-													)}
-													{this.state.studioMode &&
-														this.props.casparCGPlayoutDevices &&
-														this.props.casparCGPlayoutDevices.map((i) => (
-															<React.Fragment key={unprotectString(i._id)}>
-																<button className="btn btn-secondary" onClick={() => this.onRestartCasparCG(i)}>
-																	{t('Restart {{device}}', { device: i.name })}
-																</button>
-																<hr />
-															</React.Fragment>
-														))}
-												</SupportPopUp>
+												</>
 											)}
-										</VelocityReact.VelocityTransitionGroup>
-									</ErrorBoundary>
-									<ErrorBoundary>
-										{this.state.studioMode && (
-											<Prompt
-												when={!!this.props.playlist.activationId}
-												message={t('This rundown is now active. Are you sure you want to exit this screen?')}
-											/>
-										)}
-									</ErrorBoundary>
-									<ErrorBoundary>
-										<RundownHeader
-											playlist={this.props.playlist}
-											studio={this.props.studio}
-											rundownIds={this.props.rundowns.map((r) => r._id)}
-											firstRundown={this.props.rundowns[0]}
-											onActivate={this.onActivate}
-											studioMode={this.state.studioMode}
-											onRegisterHotkeys={this.onRegisterHotkeys}
-											inActiveRundownView={this.props.inActiveRundownView}
-											currentRundown={this.state.currentRundown || this.props.rundowns[0]}
-											layout={this.state.rundownHeaderLayout}
-											showStyleBase={this.props.showStyleBase}
-											showStyleVariant={this.props.showStyleVariant}
-										/>
-									</ErrorBoundary>
-									<ErrorBoundary>
-										<NoraPreviewRenderer />
-									</ErrorBoundary>
-									<ErrorBoundary>
-										<SegmentContextMenu
-											contextMenuContext={this.state.contextMenuContext}
-											playlist={this.props.playlist}
-											onSetNext={this.onSetNext}
-											onSetNextSegment={this.onSetNextSegment}
-											studioMode={this.state.studioMode}
-											enablePlayFromAnywhere={!!this.props.studio.settings.enablePlayFromAnywhere}
-										/>
-									</ErrorBoundary>
-									<ErrorBoundary>
-										{this.state.isClipTrimmerOpen &&
-											this.state.selectedPiece &&
-											RundownUtils.isPieceInstance(this.state.selectedPiece) &&
-											this.props.studio &&
-											this.props.playlist &&
-											(selectedPieceRundown === undefined ? (
-												<ModalDialog
-													onAccept={() => this.setState({ selectedPiece: undefined })}
-													title={t('Rundown not found')}
-													acceptText={t('Close')}
-												>
-													{t('Rundown for piece "{{pieceLabel}}" could not be found.', {
-														pieceLabel: this.state.selectedPiece.instance.piece.name,
-													})}
-												</ModalDialog>
-											) : (
-												<ClipTrimDialog
-													studio={this.props.studio}
-													playlistId={this.props.playlist._id}
-													rundown={selectedPieceRundown}
-													selectedPiece={this.state.selectedPiece.instance.piece}
-													onClose={() => this.setState({ isClipTrimmerOpen: false })}
-												/>
-											))}
-									</ErrorBoundary>
-									{this.renderSegmentsList()}
-									<ErrorBoundary>
-										{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
-											<AfterBroadcastForm playlist={this.props.playlist} />
-										)}
-									</ErrorBoundary>
-									<ErrorBoundary>
-										<PointerLockCursor />
-									</ErrorBoundary>
-									<ErrorBoundary>
-										<Shelf
-											buckets={this.props.buckets}
-											isExpanded={
-												this.state.isInspectorShelfExpanded ||
-												(!this.state.wasShelfResizedByUser && this.state.shelfLayout?.openByDefault)
-											}
-											onChangeExpanded={this.onShelfChangeExpanded}
-											hotkeys={this.state.usedHotkeys}
-											playlist={this.props.playlist}
-											showStyleBase={this.props.showStyleBase}
-											showStyleVariant={this.props.showStyleVariant}
-											studioMode={this.state.studioMode}
-											onChangeBottomMargin={this.onChangeBottomMargin}
-											onRegisterHotkeys={this.onRegisterHotkeys}
-											rundownLayout={this.state.shelfLayout}
-											shelfDisplayOptions={this.props.shelfDisplayOptions}
-											bucketDisplayFilter={this.props.bucketDisplayFilter}
-											studio={this.props.studio}
-										/>
-									</ErrorBoundary>
-									<ErrorBoundary>
-										{this.props.playlist && this.props.studio && this.props.showStyleBase && (
-											<RundownNotifier
-												playlistId={this.props.playlist._id}
-												studio={this.props.studio}
-												showStyleBase={this.props.showStyleBase}
-											/>
-										)}
-									</ErrorBoundary>
-								</div>
-								{
-									// USE IN CASE OF DEBUGGING EMERGENCY
-									/* getDeveloperMode() && <div id='debug-console' className='debug-console' style={{
-							background: 'rgba(255,255,255,0.7)',
-							color: '#000',
-							position: 'fixed',
-							top: '0',
-							right: '0',
-							zIndex: 10000,
-							pointerEvents: 'none'
-						}}>
-						</div> */
-								}
-							</StudioContext.Provider>
-						</RundownTimingProvider>
-					)
-				} else if (
-					this.props.playlist &&
-					this.props.studio &&
-					this.props.showStyleBase &&
-					this.props.showStyleVariant &&
-					this.props.onlyShelf
-				) {
-					return (
-						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
+											{this.state.studioMode &&
+												this.props.casparCGPlayoutDevices &&
+												this.props.casparCGPlayoutDevices.map((i) => (
+													<React.Fragment key={unprotectString(i._id)}>
+														<button className="btn btn-secondary" onClick={() => this.onRestartCasparCG(i)}>
+															{t('Restart {{device}}', { device: i.name })}
+														</button>
+														<hr />
+													</React.Fragment>
+												))}
+										</SupportPopUp>
+									)}
+								</VelocityReact.VelocityTransitionGroup>
+							</ErrorBoundary>
+							<ErrorBoundary>
+								{this.state.studioMode && (
+									<Prompt
+										when={!!playlist.activationId}
+										message={t('This rundown is now active. Are you sure you want to exit this screen?')}
+									/>
+								)}
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<RundownHeader
+									playlist={playlist}
+									studio={studio}
+									rundownIds={this.props.rundowns.map((r) => r._id)}
+									firstRundown={this.props.rundowns[0]}
+									onActivate={this.onActivate}
+									studioMode={this.state.studioMode}
+									onRegisterHotkeys={this.onRegisterHotkeys}
+									inActiveRundownView={this.props.inActiveRundownView}
+									currentRundown={this.state.currentRundown || this.props.rundowns[0]}
+									layout={this.state.rundownHeaderLayout}
+									showStyleBase={showStyleBase}
+									showStyleVariant={showStyleVariant}
+								/>
+							</ErrorBoundary>
 							<ErrorBoundary>
 								<NoraPreviewRenderer />
 							</ErrorBoundary>
 							<ErrorBoundary>
+								<SegmentContextMenu
+									contextMenuContext={this.state.contextMenuContext}
+									playlist={this.props.playlist}
+									onSetNext={this.onSetNext}
+									onSetNextSegment={this.onSetNextSegment}
+									studioMode={this.state.studioMode}
+									enablePlayFromAnywhere={!!studio.settings.enablePlayFromAnywhere}
+								/>
+							</ErrorBoundary>
+							<ErrorBoundary>
+								{this.state.isClipTrimmerOpen &&
+									this.state.selectedPiece &&
+									RundownUtils.isPieceInstance(this.state.selectedPiece) &&
+									this.props.studio &&
+									this.props.playlist &&
+									(selectedPieceRundown === undefined ? (
+										<ModalDialog
+											onAccept={() => this.setState({ selectedPiece: undefined })}
+											title={t('Rundown not found')}
+											acceptText={t('Close')}
+										>
+											{t('Rundown for piece "{{pieceLabel}}" could not be found.', {
+												pieceLabel: this.state.selectedPiece.instance.piece.name,
+											})}
+										</ModalDialog>
+									) : (
+										<ClipTrimDialog
+											studio={studio}
+											playlistId={playlist._id}
+											rundown={selectedPieceRundown}
+											selectedPiece={this.state.selectedPiece.instance.piece}
+											onClose={() => this.setState({ isClipTrimmerOpen: false })}
+										/>
+									))}
+							</ErrorBoundary>
+							{this.renderSegmentsList()}
+							<ErrorBoundary>
+								{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
+									<AfterBroadcastForm playlist={playlist} />
+								)}
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<PointerLockCursor />
+							</ErrorBoundary>
+							<ErrorBoundary>
 								<Shelf
 									buckets={this.props.buckets}
-									isExpanded={this.state.isInspectorShelfExpanded}
+									isExpanded={
+										this.state.isInspectorShelfExpanded ||
+										(!this.state.wasShelfResizedByUser && this.state.shelfLayout?.openByDefault)
+									}
 									onChangeExpanded={this.onShelfChangeExpanded}
 									hotkeys={this.state.usedHotkeys}
 									playlist={this.props.playlist}
@@ -2662,53 +2607,136 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									onChangeBottomMargin={this.onChangeBottomMargin}
 									onRegisterHotkeys={this.onRegisterHotkeys}
 									rundownLayout={this.state.shelfLayout}
-									studio={this.props.studio}
-									fullViewport={true}
 									shelfDisplayOptions={this.props.shelfDisplayOptions}
 									bucketDisplayFilter={this.props.bucketDisplayFilter}
+									studio={this.props.studio}
 								/>
 							</ErrorBoundary>
-						</RundownTimingProvider>
-					)
-				} else {
-					return (
-						<div className="rundown-view rundown-view--unpublished">
-							<div className="rundown-view__label">
-								<p>
-									{!this.props.playlist
-										? t('This rundown has been unpublished from Sofie.')
-										: !this.props.studio
-										? t('Error: The studio of this Rundown was not found.')
-										: !this.props.rundowns.length
-										? t('This playlist is empty')
-										: !this.props.showStyleBase || !this.props.showStyleVariant
-										? t('Error: The ShowStyle of this Rundown was not found.')
-										: t('Unknown error')}
-								</p>
-								<p>
-									<Route
-										render={({ history }) => (
-											<button
-												className="btn btn-primary"
-												onClick={() => {
-													history.push('/rundowns')
-												}}
-											>
-												{t('Return to list')}
-											</button>
-										)}
+							<ErrorBoundary>
+								{this.props.playlist && this.props.studio && this.props.showStyleBase && (
+									<RundownNotifier
+										playlistId={this.props.playlist._id}
+										studio={this.props.studio}
+										showStyleBase={this.props.showStyleBase}
 									/>
-								</p>
-							</div>
+								)}
+							</ErrorBoundary>
 						</div>
-					)
-				}
-			} else {
+						{
+							// USE IN CASE OF DEBUGGING EMERGENCY
+							/* getDeveloperMode() && <div id='debug-console' className='debug-console' style={{
+					background: 'rgba(255,255,255,0.7)',
+					color: '#000',
+					position: 'fixed',
+					top: '0',
+					right: '0',
+					zIndex: 10000,
+					pointerEvents: 'none'
+				}}>
+				</div> */
+						}
+					</StudioContext.Provider>
+				</RundownTimingProvider>
+			)
+		}
+
+		renderDetachedShelf() {
+			return (
+				<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
+					<ErrorBoundary>
+						<NoraPreviewRenderer />
+					</ErrorBoundary>
+					<ErrorBoundary>
+						<Shelf
+							buckets={this.props.buckets}
+							isExpanded={this.state.isInspectorShelfExpanded}
+							onChangeExpanded={this.onShelfChangeExpanded}
+							hotkeys={this.state.usedHotkeys}
+							playlist={this.props.playlist}
+							showStyleBase={this.props.showStyleBase}
+							showStyleVariant={this.props.showStyleVariant}
+							studioMode={this.state.studioMode}
+							onChangeBottomMargin={this.onChangeBottomMargin}
+							onRegisterHotkeys={this.onRegisterHotkeys}
+							rundownLayout={this.state.shelfLayout}
+							studio={this.props.studio}
+							fullViewport={true}
+							shelfDisplayOptions={this.props.shelfDisplayOptions}
+							bucketDisplayFilter={this.props.bucketDisplayFilter}
+						/>
+					</ErrorBoundary>
+				</RundownTimingProvider>
+			)
+		}
+
+		renderDataMissing() {
+			const { t } = this.props
+
+			return (
+				<div className="rundown-view rundown-view--unpublished">
+					<div className="rundown-view__label">
+						<p>
+							{!this.props.playlist
+								? t('This rundown has been unpublished from Sofie.')
+								: !this.props.studio
+								? t('Error: The studio of this Rundown was not found.')
+								: !this.props.rundowns.length
+								? t('This playlist is empty')
+								: !this.props.showStyleBase || !this.props.showStyleVariant
+								? t('Error: The ShowStyle of this Rundown was not found.')
+								: t('Unknown error')}
+						</p>
+						<p>
+							<Route
+								render={({ history }) => (
+									<button
+										className="btn btn-primary"
+										onClick={() => {
+											history.push('/rundowns')
+										}}
+									>
+										{t('Return to list')}
+									</button>
+								)}
+							/>
+						</p>
+					</div>
+				</div>
+			)
+		}
+
+		render() {
+			if (this.state.subsReady) {
 				return (
 					<div className="rundown-view rundown-view--loading">
 						<Spinner />
 					</div>
 				)
+			}
+
+			if (
+				this.props.playlist &&
+				this.props.studio &&
+				this.props.showStyleBase &&
+				this.props.showStyleVariant &&
+				!this.props.onlyShelf
+			) {
+				return this.renderRundownView(
+					this.props.studio,
+					this.props.playlist,
+					this.props.showStyleBase,
+					this.props.showStyleVariant
+				)
+			} else if (
+				this.props.playlist &&
+				this.props.studio &&
+				this.props.showStyleBase &&
+				this.props.showStyleVariant &&
+				this.props.onlyShelf
+			) {
+				return this.renderDetachedShelf()
+			} else {
+				return this.renderDataMissing()
 			}
 		}
 	}
