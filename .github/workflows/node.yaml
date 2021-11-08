@@ -61,48 +61,6 @@ jobs:
         env:
           CI: true
 
-  validate-prod-dependencies-core:
-    name: Validate Core production dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/setup-meteor
-      - name: restore node_modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-      - name: Validate production dependencies for vulnerabilities and compatible licenses
-        run: |
-          yarn
-          cd meteor
-          meteor npm run validate:prod-dependencies
-        env:
-          CI: true
-  validate-all-dependencies-core:
-    name: Validate all Core dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/setup-meteor
-      - name: restore node_modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-      - name: Validate all dependencies for vulnerabilities
-        run: |
-          yarn
-          cd meteor
-          meteor npm run validate:all-dependencies
-        env:
-          CI: true
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
     name: Build Core and publish docker image
@@ -529,76 +487,5 @@ jobs:
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
-        env:
-          CI: true
-
-  validate-prod-dependencies-packages:
-    name: Validate Package production dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-
-    strategy:
-      fail-fast: false
-      matrix:
-        package-name:
-          [
-            blueprints-integration,
-            server-core-integration,
-            playout-gateway,
-            mos-gateway,
-          ]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - name: Prepare Environment
-        run: |
-          cd packages 
-          yarn install
-        env:
-          CI: true
-      - name: Validate production dependencies
-        run: |
-          cd packages/${{ matrix.package-name }}
-          if ! git log --format=oneline -n 1 | grep -q "\[ignore-audit\]"; then
-            yarn validate:dependencies
-          else
-            echo "Skipping audit"
-          fi
-        env:
-          CI: true
-
-  validate-all-dependencies-packages:
-    name: Validate all Package dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - name: Prepare Environment
-        run: |
-          cd packages
-          yarn install
-        env:
-          CI: true
-      - name: Validate production dependencies
-        run: |
-          cd packages
-          yarn validate:dependencies
-        env:
-          CI: true
-      - name: Validate dev dependencies
-        run: |
-          cd packages
-          yarn validate:dev-dependencies
         env:
           CI: true
