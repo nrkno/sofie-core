@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -10,20 +10,25 @@ import {
 	// PartUi,
 	withResolvedSegment,
 	IProps as IResolvedSegmentProps,
-	// ITrackedProps as ITrackedResolvedSegmentProps,
+	ITrackedProps as ITrackedResolvedSegmentProps,
 } from '../SegmentContainer/withResolvedSegment'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
+import { SegmentStoryboard } from './SegmentStoryboard'
+import { unprotectString } from '../../../lib/lib'
 
 interface IProps extends IResolvedSegmentProps {
 	id: string
 }
 
-export const SegmentStoryboardContainer = withResolvedSegment(function SegmentStoryboardContainer({
+export const LIVELINE_HISTORY_SIZE = 1
+
+export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function SegmentStoryboardContainer({
 	rundownId,
 	rundownIdsBefore,
 	segmentId,
 	segmentsIdsBefore,
-}: IProps) {
+	...props
+}: IProps & ITrackedResolvedSegmentProps) {
 	const partIds = useTracker(
 		() =>
 			Parts.find(
@@ -42,7 +47,7 @@ export const SegmentStoryboardContainer = withResolvedSegment(function SegmentSt
 	useSubscription(
 		PubSub.pieces,
 		{
-			startRundownId: this.props.rundownId,
+			startRundownId: rundownId,
 			startPartId: {
 				$in: partIds,
 			},
@@ -115,6 +120,72 @@ export const SegmentStoryboardContainer = withResolvedSegment(function SegmentSt
 			})
 	}, [segmentId, rundownId, segmentsIdsBefore.values(), rundownIdsBefore.values()])
 
+	const [scrollLeft] = useState(0)
+	const [livePosition] = useState(0)
+
+	const isLiveSegment = useTracker(
+		() => {
+			if (!props.playlist.currentPartInstanceId || !props.playlist.activationId) {
+				return false
+			}
+
+			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId)
+			if (!currentPartInstance) {
+				return false
+			}
+
+			return currentPartInstance.segmentId === segmentId
+		},
+		[segmentId, props.playlist.activationId, props.playlist.currentPartInstanceId],
+		false
+	)
+
+	const isNextSegment = useTracker(
+		() => {
+			if (!props.playlist.nextPartInstanceId || !props.playlist.activationId) {
+				return false
+			}
+
+			const partInstance = PartInstances.findOne(props.playlist.nextPartInstanceId, {
+				fields: {
+					//@ts-ignore
+					segmentId: 1,
+					'part._id': 1,
+				},
+			})
+			if (!partInstance) {
+				return false
+			}
+
+			return partInstance.segmentId === segmentId
+		},
+		[segmentId, props.playlist.activationId, props.playlist.nextPartInstanceId],
+		false
+	)
+
+	const autoNextPart = useTracker(
+		() => {
+			if (!props.playlist.currentPartInstanceId || !props.playlist.activationId) {
+				return false
+			}
+
+			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId, {
+				fields: {
+					//@ts-ignore
+					'part.autoNext': 1,
+					'part.expectedDuration': 1,
+				},
+			})
+			if (!currentPartInstance) {
+				return false
+			}
+
+			return !!(currentPartInstance.part.autoNext && currentPartInstance.part.expectedDuration)
+		},
+		[segmentId, props.playlist.activationId, props.playlist.currentPartInstanceId],
+		false
+	)
+
 	useEffect(() => {
 		SpeechSynthesiser.init()
 
@@ -123,5 +194,48 @@ export const SegmentStoryboardContainer = withResolvedSegment(function SegmentSt
 		// RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, onGoToPartInstance)
 	}, [])
 
-	return <></>
+	const segmentRef = React.createRef<HTMLDivElement>()
+
+	if (props.segmentui === undefined) {
+		return null
+	}
+
+	return (
+		<SegmentStoryboard
+			id={props.id}
+			ref={segmentRef}
+			key={unprotectString(props.segmentui._id)}
+			segment={props.segmentui}
+			studio={props.studio}
+			parts={props.parts}
+			segmentNotes={props.segmentNotes}
+			onItemClick={props.onPieceClick}
+			onItemDoubleClick={props.onPieceDoubleClick}
+			scrollLeft={scrollLeft}
+			playlist={props.playlist}
+			followLiveSegments={props.followLiveSegments}
+			isLiveSegment={isLiveSegment}
+			isNextSegment={isNextSegment}
+			isQueuedSegment={props.playlist.nextSegmentId === props.segmentui._id}
+			hasRemoteItems={props.hasRemoteItems}
+			hasGuestItems={props.hasGuestItems}
+			autoNextPart={autoNextPart}
+			hasAlreadyPlayed={props.hasAlreadyPlayed}
+			followLiveLine={props.followLiveSegments}
+			liveLineHistorySize={LIVELINE_HISTORY_SIZE}
+			livePosition={livePosition}
+			displayLiveLineCounter={props.displayLiveLineCounter}
+			onContextMenu={props.onContextMenu}
+			onFollowLiveLine={this.onFollowLiveLine}
+			onShowEntireSegment={this.onShowEntireSegment}
+			onZoomChange={this.onZoomChange}
+			onScroll={this.onScroll}
+			isLastSegment={props.isLastSegment}
+			lastValidPartIndex={props.lastValidPartIndex}
+			onHeaderNoteClick={props.onHeaderNoteClick}
+			budgetDuration={props.budgetDuration}
+			showCountdownToSegment={props.showCountdownToSegment}
+			fixedSegmentDuration={props.fixedSegmentDuration}
+		/>
+	)
 })

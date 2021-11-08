@@ -1,0 +1,22 @@
+@import '../../styles/variables';
+
+.segment-storyboard {
+	.segment-storyboard__part-list__container {
+		position: relative;
+		overflow: hidden;
+		grid-column: timeline / end;
+		grid-row: header / zoom-area;
+	}
+
+	.segment-storyboard__part-list {
+		position: relative;
+		display: flex;
+
+		> .segment-storyboard__part {
+			flex: 0 0;
+			min-width: 10rem;
+			margin-right: 10px;
+			margin-top: $segment-header-height;
+		}
+	}
+}

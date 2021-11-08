@@ -231,7 +231,7 @@ export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 type IWrappedComponent<IProps, IState, TrackedProps> =
 	| React.ComponentClass<IProps & TrackedProps, IState>
 	// | (new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>)
-	| ((props: IProps & TrackedProps) => JSX.Element)
+	| ((props: IProps & TrackedProps) => JSX.Element | null)
 export function withTracker<IProps, IState, TrackedProps>(
 	autorunFunction: (props: IProps) => TrackedProps,
 	checkUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean,

@@ -96,9 +96,9 @@ export interface ITrackedProps {
 
 type IWrappedComponent<IProps, IState, TrackedProps> =
 	| React.ComponentClass<IProps & TrackedProps, IState>
-	| ((props: IProps & TrackedProps) => JSX.Element)
+	| ((props: IProps & TrackedProps) => JSX.Element | null)
 
-export function withResolvedSegment<IState, T extends IProps>(
+export function withResolvedSegment<T extends IProps, IState = {}>(
 	WrappedComponent: IWrappedComponent<T, IState, ITrackedProps>
 ) {
 	return withTracker<T, IState, ITrackedProps>(
