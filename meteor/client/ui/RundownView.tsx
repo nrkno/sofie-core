@@ -2011,7 +2011,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			segmentIdsBeforeSegment: Set<SegmentId>,
 			rundownIdsBefore: RundownId[]
 		) {
-			return localStorage.get('useStoryboard') === '1' ? ( // TODO: This is just a temporary switch
+			return localStorage.getItem('useStoryboard') === '1' ? ( // TODO: This is just a temporary switch
 				<SegmentStoryboardContainer
 					id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 					studio={studio}
@@ -2706,7 +2706,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		render() {
-			if (this.state.subsReady) {
+			if (!this.state.subsReady) {
 				return (
 					<div className="rundown-view rundown-view--loading">
 						<Spinner />
