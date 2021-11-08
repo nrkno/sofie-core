@@ -105,7 +105,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		}
 	}, [triggerFilter])
 
-	const systemTriggeredActions = useTracker(
+	const systemTriggeredActionIds = useTracker(
 		() =>
 			TriggeredActions.find(
 				Object.assign(
@@ -127,11 +127,14 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					sort: {
 						_rank: 1,
 					},
+					fields: {
+						_id: 1,
+					},
 				}
-			).fetch(),
+			).map((triggeredAction) => triggeredAction._id),
 		[parsedTriggerFilter]
 	)
-	const showTriggeredActions = useTracker(
+	const showTriggeredActionIds = useTracker(
 		() =>
 			TriggeredActions.find(
 				Object.assign(
@@ -153,8 +156,11 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					sort: {
 						_rank: 1,
 					},
+					fields: {
+						_id: 1,
+					},
 				}
-			).fetch(),
+			).map((triggeredAction) => triggeredAction._id),
 		[showStyleBaseId, parsedTriggerFilter]
 	)
 
@@ -426,7 +432,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					onChange={(e) => setTriggerFilter(e.target.value)}
 				/>
 			</div>
-			{showTriggeredActions?.length === 0 && systemTriggeredActions?.length === 0 ? (
+			{showTriggeredActionIds?.length === 0 && systemTriggeredActionIds?.length === 0 ? (
 				parsedTriggerFilter ? (
 					<p className="mod mhn subtle">{t('No matching Action Trigger.')}</p>
 				) : (
@@ -434,25 +440,25 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				)
 			) : null}
 			<div className={classNames('mod mhn', parsedTriggerFilter ? 'mbn' : undefined)}>
-				{showTriggeredActions?.map((triggeredAction) => (
+				{showTriggeredActionIds?.map((triggeredActionId) => (
 					<TriggeredActionEntry
-						key={unprotectString(triggeredAction._id)}
-						triggeredAction={triggeredAction}
-						selected={selectedTriggeredActionId === triggeredAction._id}
+						key={unprotectString(triggeredActionId)}
+						triggeredActionId={triggeredActionId}
+						selected={selectedTriggeredActionId === triggeredActionId}
 						locked={!!parsedTriggerFilter}
-						onEdit={() => onEditEntry(triggeredAction._id)}
-						onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
-						onDuplicate={() => onDuplicateEntry(triggeredAction._id)}
+						onEdit={() => onEditEntry(triggeredActionId)}
+						onRemove={() => onRemoveTriggeredAction(triggeredActionId)}
+						onDuplicate={() => onDuplicateEntry(triggeredActionId)}
 						showStyleBase={showStyleBase}
 						previewContext={rundownPlaylist ? previewContext : null}
-						onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
+						onFocus={() => setSelectedTriggeredActionId(triggeredActionId)}
 					/>
 				))}
 			</div>
 			{showStyleBaseId !== null ? (
 				<>
 					<div className={classNames('mod mhn', parsedTriggerFilter ? 'mtn' : undefined)}>
-						{(systemTriggeredActions?.length ?? 0) > 0 && !parsedTriggerFilter ? (
+						{(systemTriggeredActionIds?.length ?? 0) > 0 && !parsedTriggerFilter ? (
 							<h3
 								className="mhn mvs clickable disable-select"
 								onClick={() => setSystemWideCollapsed(!systemWideCollapsed)}
@@ -467,18 +473,18 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 							</h3>
 						) : null}
 						{!systemWideCollapsed || parsedTriggerFilter
-							? systemTriggeredActions?.map((triggeredAction) => (
+							? systemTriggeredActionIds?.map((triggeredActionId) => (
 									<TriggeredActionEntry
-										key={unprotectString(triggeredAction._id)}
-										triggeredAction={triggeredAction}
-										selected={selectedTriggeredActionId === triggeredAction._id}
+										key={unprotectString(triggeredActionId)}
+										triggeredActionId={triggeredActionId}
+										selected={selectedTriggeredActionId === triggeredActionId}
 										locked={!!parsedTriggerFilter}
-										onEdit={() => onEditEntry(triggeredAction._id)}
-										onRemove={() => onRemoveTriggeredAction(triggeredAction._id)}
-										onDuplicate={() => onDuplicateEntry(triggeredAction._id)}
+										onEdit={() => onEditEntry(triggeredActionId)}
+										onRemove={() => onRemoveTriggeredAction(triggeredActionId)}
+										onDuplicate={() => onDuplicateEntry(triggeredActionId)}
 										showStyleBase={showStyleBase}
 										previewContext={rundownPlaylist ? previewContext : null}
-										onFocus={() => setSelectedTriggeredActionId(triggeredAction._id)}
+										onFocus={() => setSelectedTriggeredActionId(triggeredActionId)}
 									/>
 							  ))
 							: null}
