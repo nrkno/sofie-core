@@ -157,15 +157,6 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	autoNext?: boolean
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
-	// /** How long until this part is ready to take over from the previous */
-	// prerollDuration?: number
-
-	// /** How long until this part is ready to take over from the previous (during transition) */
-	// transitionPrerollDuration?: number | null
-	// /** How long to keep the old part alive during the transition */
-	// transitionKeepaliveDuration?: number | null
-	// /** How long the transition is active for (used to block another take from happening) */
-	// transitionDuration?: number | null
 
 	/** Timings for the inTransition, when supported and allowed */
 	inTransition?: IBlueprintPartInTransition
@@ -367,8 +358,6 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	 */
 	prerollDuration?: number
 
-	// /** Duration to preroll/overlap when running this adlib */
-	// adlibPreroll?: number
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
 	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
@@ -420,8 +409,12 @@ export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGen
 	virtual?: boolean
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string // TODO - is this useful to define from the blueprints?
+
+	/** Whether this piece is an in transition piece, and should only be included when the part transition is used */
 	isTransition?: boolean
+	/** Whether this piece is an out transition piece, and should be pushed to the end of the part, to be run just before the part ends */
 	isOutTransition?: boolean
+	/** Whether this piece should be extended into the next part when HOLD is used */
 	extendOnHold?: boolean
 
 	/** Whether the piece affects the output of the Studio or is describing an invisible state within the Studio */
