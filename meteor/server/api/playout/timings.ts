@@ -1,13 +1,15 @@
 import { IBlueprintPartInTransition } from '@sofie-automation/blueprints-integration'
 import { DBPartInstance } from '../../../lib/collections/PartInstances'
+import { DBPart } from '../../../lib/collections/Parts'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { Piece } from '../../../lib/collections/Pieces'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
 
 /**
  * Calculate the total pre-roll duration of a PartInstance
  * Note: once the part has been taken this should not be recalculated. Doing so may result in the timings shifting
  */
-function calculatePartPreroll(pieces: PieceInstance[]): number {
+function calculatePartPreroll(pieces: CalculateTimingsPieceInstance[]): number {
 	const candidates: number[] = []
 	for (const piece of pieces) {
 		if (piece.piece.isTransition) {
@@ -36,14 +38,22 @@ export interface PartCalculatedTimings {
 	fromPartRemaining: number // How long after the start of toPartGroup should fromPartGroup continue?
 }
 
+export type CalculateTimingsPieceInstance = { piece: Pick<Piece, 'enable' | 'prerollDuration' | 'isTransition'> }
+export type CalculateTimingsFromPartInstance = {
+	part: Pick<DBPart, 'autoNext' | 'autoNextOverlap' | 'disableNextPartInTransition' | 'outTransitionDuration'>
+}
+export type CalculateTimingsToPartInstance = {
+	part: Pick<DBPart, 'inTransition'>
+}
+
 /**
  * Calculate the timings of the period where the parts can overlap.
  */
 export function calculatePartTimings(
 	holdState: RundownHoldState | undefined,
-	fromPartInstance: DBPartInstance | undefined,
-	toPartInstance: DBPartInstance,
-	toPieceInstances: PieceInstance[]
+	fromPartInstance: CalculateTimingsFromPartInstance | undefined,
+	toPartInstance: CalculateTimingsToPartInstance,
+	toPieceInstances: CalculateTimingsPieceInstance[]
 	// toPartPreroll: number
 ): PartCalculatedTimings {
 	// If in a hold, we cant do the transition
