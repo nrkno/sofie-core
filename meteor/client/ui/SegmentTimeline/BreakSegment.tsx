@@ -27,11 +27,11 @@ class BreakSegmentInner extends MeteorReactComponent<Translated<IProps>, IState>
 	}
 
 	componentDidMount() {
-		window.addEventListener(RundownTiming.Events.timeupdate, this.updateTimecode)
+		window.addEventListener(RundownTiming.Events.timeupdateLR, this.updateTimecode)
 	}
 
 	componentWillUnmount() {
-		window.removeEventListener(RundownTiming.Events.timeupdate, this.updateTimecode)
+		window.removeEventListener(RundownTiming.Events.timeupdateLR, this.updateTimecode)
 	}
 
 	updateTimecode() {

@@ -14,6 +14,7 @@ import _ from 'underscore'
 import { DBSegment } from '../../../../lib/collections/Segments'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
+const LOW_RESOLUTION_TIMING_DECIMATOR = 15
 
 // LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
 
@@ -161,7 +162,7 @@ export const RundownTimingProvider = withTracker<
 		refreshDecimator: number
 
 		private timingCalculator: RundownTimingCalculator = new RundownTimingCalculator()
-		private lastLowResTime: number = 0
+		private lastSyncedTime: number = 0
 
 		constructor(props: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
 			super(props)
@@ -188,13 +189,20 @@ export const RundownTimingProvider = withTracker<
 			this.updateDurations(calmedDownNow, false)
 			this.dispatchHREvent(calmedDownNow)
 
-			const lowResNow = Math.floor(now / 1000) * 1000
-			const isLowResolution = Math.abs(lowResNow - this.lastLowResTime) >= 1000
+			const isLowResolution = this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0
 			if (isLowResolution) {
-				this.lastLowResTime = lowResNow
-				this.updateDurations(lowResNow, true)
-				this.dispatchEvent(lowResNow)
+				this.dispatchLREvent(calmedDownNow)
 			}
+
+			const syncedEventTimeNow = Math.floor(now / 1000) * 1000
+			const isSynced = Math.abs(syncedEventTimeNow - this.lastSyncedTime) >= 1000
+			if (isSynced) {
+				this.lastSyncedTime = syncedEventTimeNow
+				this.updateDurations(syncedEventTimeNow, true)
+				this.dispatchSyncedEvent(syncedEventTimeNow)
+			}
+
+			this.refreshDecimator++
 		}
 
 		componentDidMount() {
@@ -238,8 +246,18 @@ export const RundownTimingProvider = withTracker<
 			window.dispatchEvent(event)
 		}
 
-		dispatchEvent(now: number) {
-			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdate, {
+		dispatchLREvent(now: number) {
+			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateLR, {
+				detail: {
+					currentTime: now,
+				},
+				cancelable: false,
+			})
+			window.dispatchEvent(event)
+		}
+
+		dispatchSyncedEvent(now: number) {
+			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateSynced, {
 				detail: {
 					currentTime: now,
 				},

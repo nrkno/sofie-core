@@ -14,7 +14,12 @@ import {
 	LIVE_LINE_TIME_PADDING,
 } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { WithTiming, withTiming } from '../RundownView/RundownTiming/withTiming'
+import {
+	TimingDataResolution,
+	TimingTickResolution,
+	WithTiming,
+	withTiming,
+} from '../RundownView/RundownTiming/withTiming'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
 
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
@@ -1088,7 +1093,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 export const SegmentTimelinePart = withTranslation()(
 	withTiming<IProps & WithTranslation, IState>((props: IProps) => {
 		return {
-			isHighResolution: 'sortof',
+			tickResolution: TimingTickResolution.Synced,
+			dataResolution: TimingDataResolution.High,
 			filter: (durations: RundownTimingContext) => {
 				durations = durations || {}
 
