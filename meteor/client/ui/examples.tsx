@@ -191,7 +191,7 @@ interface WithTimingComponentState {
 	myState0: string
 }
 const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingComponentState>({
-	dataResolution: TimingDataResolution.Low,
+	dataResolution: TimingDataResolution.Synced,
 	tickResolution: TimingTickResolution.Synced,
 })(
 	class WithTimingComponent extends React.Component<WithTiming<WithTimingComponentProps>, WithTimingComponentState> {

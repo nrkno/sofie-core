@@ -29,7 +29,7 @@ const MarkerCountdownText = withTranslation()(
 	>({
 		filter: 'currentTime',
 		tickResolution: TimingTickResolution.Low,
-		dataResolution: TimingDataResolution.Low,
+		dataResolution: TimingDataResolution.Synced,
 	})(function MarkerCountdown(
 		props: Translated<
 			WithTiming<{

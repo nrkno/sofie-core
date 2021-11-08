@@ -14,7 +14,7 @@ export enum TimingTickResolution {
 }
 
 export enum TimingDataResolution {
-	Low = 0,
+	Synced = 0,
 	High,
 }
 
@@ -48,7 +48,7 @@ export function withTiming<IProps, IState>(
 ) => new (props: IProps, context: any) => React.Component<IProps, IState> {
 	let expandedOptions: WithTimingOptions = {
 		tickResolution: TimingTickResolution.Synced,
-		dataResolution: TimingDataResolution.Low,
+		dataResolution: TimingDataResolution.Synced,
 		...(typeof options === 'function' ? {} : options),
 	}
 
@@ -121,7 +121,7 @@ export function withTiming<IProps, IState>(
 				if (
 					!!this.filterGetter &&
 					highResDurations.isLowResolution &&
-					expandedOptions.dataResolution !== TimingDataResolution.Low
+					expandedOptions.dataResolution !== TimingDataResolution.Synced
 				) {
 					this.isDirty = true
 				}
@@ -158,7 +158,7 @@ function rundownTimingDataFromDataResolution(
 	switch (resolution) {
 		case TimingDataResolution.High:
 			return durations.highResDurations
-		case TimingDataResolution.Low:
+		case TimingDataResolution.Synced:
 			return durations.lowResDurations
 	}
 }

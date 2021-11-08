@@ -25,7 +25,7 @@ let prevDisplayTime: number | undefined = undefined
  */
 export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 	tickResolution: TimingTickResolution.Synced,
-	dataResolution: TimingDataResolution.Low,
+	dataResolution: TimingDataResolution.Synced,
 })(
 	class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
 		render() {
