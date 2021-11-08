@@ -61,14 +61,14 @@ export function calculatePartTimings(
 
 	const toPartPreroll = calculatePartPreroll(toPieceInstances)
 
-	let inTransition: IBlueprintPartInTransition | undefined
+	let inTransition: Omit<IBlueprintPartInTransition, 'blockTakeDuration'> | undefined
 	let allowTransitionPiece: boolean | undefined
 	if (fromPartInstance && !isInHold) {
 		if (fromPartInstance.part.autoNext && fromPartInstance.part.autoNextOverlap) {
 			// An auto-next with overlap is essentially a simple transition, so we treat it as one
 			allowTransitionPiece = false
 			inTransition = {
-				blockTakeDuration: fromPartInstance.part.autoNextOverlap,
+				// blockTakeDuration: fromPartInstance.part.autoNextOverlap,
 				partContentDelayDuration: 0,
 				previousPartKeepaliveDuration: fromPartInstance.part.autoNextOverlap,
 			}
