@@ -55,7 +55,8 @@ import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/se
 import { StudioContentWriteAccess } from '../../security/studio'
 import {
 	afterTake,
-	resetPreviousSegmentAndClearNextSegmentId,
+	clearNextSegmentId,
+	resetPreviousSegment,
 	takeNextPartInnerSync,
 	updatePartInstanceOnTake,
 } from './take'
@@ -315,7 +316,8 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		nextPartId: PartId | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined
+		nextTimeOffset?: number | undefined,
+		clearNextSegment?: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 		if (nextPartId) check(nextPartId, String)
@@ -334,7 +336,7 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" cannot change next during hold!`)
 			},
 			async (cache) => {
-				await setNextPartInner(cache, nextPartId, setManually, nextTimeOffset)
+				await setNextPartInner(cache, nextPartId, setManually, nextTimeOffset, clearNextSegment)
 
 				return ClientAPI.responseSuccess(undefined)
 			}
@@ -345,7 +347,8 @@ export namespace ServerPlayoutAPI {
 		cache: CacheForPlayout,
 		nextPartId: PartId | DBPart | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined
+		nextTimeOffset?: number | undefined,
+		clearNextSegment?: boolean
 	): Promise<void> {
 		const playlist = cache.Playlist.doc
 		if (!playlist.activationId) throw new Meteor.Error(501, `Rundown Playlist "${playlist._id}" is not active!`)
@@ -362,6 +365,9 @@ export namespace ServerPlayoutAPI {
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 
+		if (clearNextSegment) {
+			libSetNextSegment(cache, null)
+		}
 		await libsetNextPart(cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
 
 		// update lookahead and the next part when we have an auto-next
@@ -944,7 +950,8 @@ export namespace ServerPlayoutAPI {
 							currentPartInstance
 						)
 
-						resetPreviousSegmentAndClearNextSegmentId(cache)
+						clearNextSegmentId(cache, currentPartInstance)
+						resetPreviousSegment(cache)
 
 						// Update the next partinstance
 						const nextPart = selectNextPart(
