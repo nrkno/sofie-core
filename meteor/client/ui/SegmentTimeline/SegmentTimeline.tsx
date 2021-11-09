@@ -120,11 +120,11 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 
 	componentDidMount() {
 		this.checkTimingChange()
-		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
+		window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}
 
 	componentWillUnmount() {
-		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
+		window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}
 
 	onTimeupdate = () => {

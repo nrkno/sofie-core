@@ -363,6 +363,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 	class SegmentTimelineContainer extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
 		static contextTypes = {
 			durations: PropTypes.object.isRequired,
+			lowResDurations: PropTypes.object.isRequired,
 		}
 
 		isVisible: boolean
@@ -889,7 +890,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		startLive = () => {
-			window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+			window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onAirLineRefresh)
 			// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
 			// is viewport. This seems like an implementation bug and IntersectionObserver is
 			// an Experimental Feature in Chrome, so this might change in the future.
@@ -903,7 +904,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		stopLive = () => {
-			window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+			window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onAirLineRefresh)
 			if (this.intersectionObserver) {
 				this.intersectionObserver.disconnect()
 				this.intersectionObserver = undefined

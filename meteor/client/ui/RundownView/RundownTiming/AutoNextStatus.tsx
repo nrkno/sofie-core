@@ -1,9 +1,10 @@
 import * as React from 'react'
-import { withTiming, WithTiming } from './withTiming'
+import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
 
 export const AutoNextStatus = withTiming<{}, {}>({
 	filter: 'currentPartWillAutoNext',
-	isHighResolution: true,
+	dataResolution: TimingDataResolution.High,
+	tickResolution: TimingTickResolution.High,
 })(
 	class AutoNextStatus extends React.Component<WithTiming<{}>> {
 		render() {
