@@ -140,6 +140,9 @@ export function withTiming<IProps, IState>(
 	}
 }
 
+/**
+ * Finds the Rundown Timing Event that corresponds to a given TimingTickResolution
+ */
 function rundownTimingEventFromTickResolution(resolution: TimingTickResolution): RundownTiming.Events {
 	switch (resolution) {
 		case TimingTickResolution.High:
@@ -151,6 +154,9 @@ function rundownTimingEventFromTickResolution(resolution: TimingTickResolution):
 	}
 }
 
+/**
+ * Returns the durations corresponding to a given TimingDataResolution
+ */
 function rundownTimingDataFromDataResolution(
 	resolution: TimingDataResolution,
 	durations: { highResDurations: RundownTimingContext; lowResDurations: RundownTimingContext }
