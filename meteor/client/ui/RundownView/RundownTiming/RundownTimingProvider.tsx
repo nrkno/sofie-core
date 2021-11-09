@@ -237,7 +237,7 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		dispatchHREvent(now: number) {
-			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateHR, {
+			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateHighResolution, {
 				detail: {
 					currentTime: now,
 				},
@@ -247,7 +247,7 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		dispatchLREvent(now: number) {
-			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateLR, {
+			const event = new CustomEvent<TimeEventArgs>(RundownTiming.Events.timeupdateLowResolution, {
 				detail: {
 					currentTime: now,
 				},

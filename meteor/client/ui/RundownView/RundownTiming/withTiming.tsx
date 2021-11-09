@@ -118,11 +118,7 @@ export function withTiming<IProps, IState>(
 				// To bring it back to sync, we mark the component as dirty, which will
 				// force an update on the next low resoluton tick, regardless of what
 				// the filter says.
-				if (
-					!!this.filterGetter &&
-					highResDurations.isLowResolution &&
-					expandedOptions.dataResolution !== TimingDataResolution.Synced
-				) {
+				if (componentIsDirty(this.filterGetter, highResDurations, expandedOptions.dataResolution)) {
 					this.isDirty = true
 				}
 
@@ -140,15 +136,23 @@ export function withTiming<IProps, IState>(
 	}
 }
 
+function componentIsDirty(
+	filterGetter: (...args: any[]) => any | undefined,
+	highResDurations: RundownTimingContext,
+	dataResolution: TimingDataResolution
+) {
+	return this.filterGetter && highResDurations.isLowResolution && dataResolution !== TimingDataResolution.Synced
+}
+
 /**
  * Finds the Rundown Timing Event that corresponds to a given TimingTickResolution
  */
 function rundownTimingEventFromTickResolution(resolution: TimingTickResolution): RundownTiming.Events {
 	switch (resolution) {
 		case TimingTickResolution.High:
-			return RundownTiming.Events.timeupdateHR
+			return RundownTiming.Events.timeupdateHighResolution
 		case TimingTickResolution.Low:
-			return RundownTiming.Events.timeupdateLR
+			return RundownTiming.Events.timeupdateLowResolution
 		case TimingTickResolution.Synced:
 			return RundownTiming.Events.timeupdateSynced
 	}
