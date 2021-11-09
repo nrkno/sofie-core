@@ -270,10 +270,20 @@ export async function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (newNextPartInstance) {
 			newInstanceId = newNextPartInstance._id
+			cache.PartInstances.update(newInstanceId, {
+				$set: {
+					consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
+				},
+			})
 			await syncPlayheadInfinitesForNextPartInstance(cache)
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
+			cache.PartInstances.update(newInstanceId, {
+				$set: {
+					consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
+				},
+			})
 			await syncPlayheadInfinitesForNextPartInstance(cache)
 		} else {
 			// Create new isntance
