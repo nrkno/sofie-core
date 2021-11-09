@@ -92,6 +92,8 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	if (!takeRundown)
 		throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
+	clearNextSegmentId(cache, takePartInstance)
+
 	const nextPart = selectNextPart(
 		cache.Playlist.doc,
 		takePartInstance,
@@ -144,7 +146,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		})
 	}
 
-	resetPreviousSegmentAndClearNextSegmentId(cache)
+	resetPreviousSegment(cache)
 
 	// Once everything is synced, we can choose the next part
 	await libsetNextPart(cache, nextPart)
@@ -168,12 +170,10 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	return ClientAPI.responseSuccess(undefined)
 }
 
-export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout) {
-	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-
+export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInstance?: PartInstance) {
 	if (
-		currentPartInstance?.consumesNextSegmentId &&
-		cache.Playlist.doc.nextSegmentId === currentPartInstance.segmentId
+		takeOrCurrentPartInstance?.consumesNextSegmentId &&
+		cache.Playlist.doc.nextSegmentId === takeOrCurrentPartInstance.segmentId
 	) {
 		// clear the nextSegmentId if the newly taken partInstance says it was selected because of it
 		cache.Playlist.update({
@@ -182,6 +182,10 @@ export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout
 			},
 		})
 	}
+}
+
+export function resetPreviousSegment(cache: CacheForPlayout) {
+	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the playlist is looping and
 	// If the previous and current part are not in the same segment, then we have just left a segment
