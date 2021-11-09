@@ -296,7 +296,7 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 }
 
 @mixin missing-overlay {
-	&.source-broken,
+	/* &.source-broken,
 	&.source-missing {
 		&::after {
 			content: ' ';
@@ -338,7 +338,7 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 				transparent 5px
 			);
 		}
-	}
+	} */
 
 	// Don't treat an unknown state as an issue
 	/*  {

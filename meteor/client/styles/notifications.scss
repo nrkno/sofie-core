@@ -16,6 +16,13 @@
 	pointer-events: none;
 	max-height: 1000px;
 
+	visibility: visible;
+
+	&.notification-pop-ups--empty {
+		visibility: hidden;
+		transition: 0s visibility 5s;
+	}
+
 	.notification-pop-up {
 		font-size: 0.9em;
 		letter-spacing: 0.3px;

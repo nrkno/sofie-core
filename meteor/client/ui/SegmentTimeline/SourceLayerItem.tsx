@@ -175,7 +175,7 @@ export const SourceLayerItem = withTranslation()(
 									Math.floor(liveLineHistoryWithMargin).toString() +
 									'px, 0, 0) ' +
 									'translate3d(-100%, 0, 5px)',
-								willChange: 'transform',
+								// willChange: 'transform',
 							}
 						} else if (
 							this.state.rightAnchoredWidth < this.state.elementWidth &&
@@ -209,7 +209,7 @@ export const SourceLayerItem = withTranslation()(
 									Math.floor(liveLineHistoryWithMargin).toString() +
 									'px, 0, 0) ' +
 									'translate3d(-100%, 0, 5px)',
-								willChange: 'transform',
+								// willChange: 'transform',
 							}
 						} else {
 							return {
@@ -252,7 +252,7 @@ export const SourceLayerItem = withTranslation()(
 											  )
 									).toString() +
 									'px,  0, 5px)',
-								willChange: 'transform',
+								// willChange: 'transform',
 							}
 						} else {
 							return {
@@ -317,7 +317,7 @@ export const SourceLayerItem = withTranslation()(
 
 						return {
 							transform: 'translate3d(' + Math.floor(targetPos).toString() + 'px,  0, 15px)',
-							willChange: 'transform',
+							// willChange: 'transform',
 						}
 					}
 				}

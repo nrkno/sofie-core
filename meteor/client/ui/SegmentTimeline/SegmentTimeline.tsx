@@ -658,7 +658,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	timelineStyle() {
 		return {
 			transform: 'translate3d(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px, 0, 0.1px)',
-			willChange: 'transform',
 		}
 	}
 
@@ -1064,7 +1063,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					>
 						<ErrorBoundary>
 							{this.renderTimeline()}
-							{this.renderEndOfSegment()}
+							{/* this.renderEndOfSegment() */}
 						</ErrorBoundary>
 					</div>
 					{this.renderLiveLine()}

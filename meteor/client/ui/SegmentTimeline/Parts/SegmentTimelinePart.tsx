@@ -575,39 +575,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				>
 					{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
 					{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
-
-					<div
-						className={ClassNames('segment-timeline__part__nextline', {
-							// This is the base, basic line
-							'auto-next':
-								(this.state.isNext && this.props.autoNextPart) ||
-								(!this.state.isNext && this.props.part.willProbablyAutoNext),
-							invalid: innerPart.invalid && !innerPart.gap,
-							floated: innerPart.floated,
-							offset: !!this.props.playlist.nextTimeOffset,
-						})}
-					>
-						<div
-							className={ClassNames('segment-timeline__part__nextline__label', {
-								'segment-timeline__part__nextline__label--thin':
-									(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
-							})}
-						>
-							{innerPart.invalid && !innerPart.gap ? null : (
-								<React.Fragment>
-									{((this.state.isNext && this.props.autoNextPart) ||
-										(!this.state.isNext && this.props.part.willProbablyAutoNext)) &&
-										t('Auto') + ' '}
-									{(this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive) && t('Next')}
-								</React.Fragment>
-							)}
-							{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && CARRIAGE_RETURN_ICON}
-							{this.props.isAfterLastValidInSegmentAndItsLive && this.props.playlist.loop && <LoopingIcon />}
-						</div>
-						{(!this.props.relative || this.props.isPreview) && this.props.part.instance.part.identifier && (
-							<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
-						)}
-					</div>
 					{this.props.playlist.nextTimeOffset &&
 						this.state.isNext && ( // This is the off-set line
 							<div
@@ -665,6 +632,38 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					)}
 					{this.renderTimelineOutputGroups(this.props.part)}
 					{this.renderEndOfSegment(t, innerPart, isEndOfShow, isEndOfLoopingShow)}
+					<div
+						className={ClassNames('segment-timeline__part__nextline', {
+							// This is the base, basic line
+							'auto-next':
+								(this.state.isNext && this.props.autoNextPart) ||
+								(!this.state.isNext && this.props.part.willProbablyAutoNext),
+							invalid: innerPart.invalid && !innerPart.gap,
+							floated: innerPart.floated,
+							offset: !!this.props.playlist.nextTimeOffset,
+						})}
+					>
+						<div
+							className={ClassNames('segment-timeline__part__nextline__label', {
+								'segment-timeline__part__nextline__label--thin':
+									(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext,
+							})}
+						>
+							{innerPart.invalid && !innerPart.gap ? null : (
+								<React.Fragment>
+									{((this.state.isNext && this.props.autoNextPart) ||
+										(!this.state.isNext && this.props.part.willProbablyAutoNext)) &&
+										t('Auto') + ' '}
+									{(this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive) && t('Next')}
+								</React.Fragment>
+							)}
+							{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && CARRIAGE_RETURN_ICON}
+							{this.props.isAfterLastValidInSegmentAndItsLive && this.props.playlist.loop && <LoopingIcon />}
+						</div>
+						{(!this.props.relative || this.props.isPreview) && this.props.part.instance.part.identifier && (
+							<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
+						)}
+					</div>
 				</div>
 			)
 		} else {
