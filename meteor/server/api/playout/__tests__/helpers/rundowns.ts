@@ -252,7 +252,7 @@ export function setupRundownWithInTransitionPlannedPiece(
 	return rundownId
 }
 
-export function setupRundownWithInTransitionPreroll(
+export function setupRundownWithInTransitionContentDelay(
 	env: DefaultEnvironment,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
@@ -292,7 +292,7 @@ export function setupRundownWithInTransitionPreroll(
 	return rundownId
 }
 
-export function setupRundownWithInTransitionPrerollAndPreroll(
+export function setupRundownWithInTransitionContentDelayAndPreroll(
 	env: DefaultEnvironment,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
