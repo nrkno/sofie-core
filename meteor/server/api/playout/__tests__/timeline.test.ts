@@ -9,7 +9,7 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import '../api'
-import { Timeline, TimelineComplete } from '../../../../lib/collections/Timeline'
+import { Timeline, TimelineComplete, TimelineEnableExt } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
@@ -32,12 +32,91 @@ import {
 	setupRundownWithOutTransitionAndInTransition,
 	setupRundownWithOutTransitionEnableHold,
 } from './helpers/rundowns'
-import { PartInstance } from '../../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../../../lib/collections/PartInstances'
+import { getPartGroupId, getPieceGroupId } from '../../../../lib/rundown/timeline'
+import { normalizeArrayToMap, protectString, unprotectString } from '../../../../lib/lib'
+import { PieceInstances } from '../../../../lib/collections/PieceInstances'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 
 function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
 	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
 	expect(playlist).toBeTruthy()
 	return { userId: null, organizationId: null, studioId: null, playlist: playlist, cred: {} }
+}
+
+interface PartTimelineTimings {
+	previousPart: TimelineEnableExt
+	currentPieces: { [id: string]: TimelineEnableExt | TimelineEnableExt[] | null }
+	currentInfinitePieces: {
+		[id: string]: {
+			partGroup: TimelineEnableExt | TimelineEnableExt[]
+			pieceGroup: TimelineEnableExt | TimelineEnableExt[]
+		} | null
+	}
+	previousOutTransition: TimelineEnableExt | TimelineEnableExt[] | null | undefined
+}
+
+async function checkTimingsRaw(
+	rundownId: RundownId,
+	timeline: TimelineComplete | undefined,
+	currentPartInstance: PartInstance,
+	previousPartInstance: PartInstance,
+	timings: PartTimelineTimings
+) {
+	const objs = normalizeArrayToMap(timeline?.timeline ?? [], 'id')
+
+	// previous part group
+	const prevPartTlObj = objs.get(getPartGroupId(previousPartInstance))
+	expect(prevPartTlObj).toBeTruthy()
+	expect(prevPartTlObj?.enable).toMatchObject(timings.previousPart)
+
+	// current part group is assumed to start at now
+
+	// Current pieces
+	const currentPieces = await PieceInstances.findFetchAsync({
+		partInstanceId: currentPartInstance._id,
+	})
+	const targetCurrentPieces: PartTimelineTimings['currentPieces'] = {}
+	const targetCurrentInfinitePieces: PartTimelineTimings['currentInfinitePieces'] = {}
+	for (const piece of currentPieces) {
+		const entryId = unprotectString(piece.piece._id).substring(unprotectString(rundownId).length + 1)
+
+		if (piece.piece.lifespan === PieceLifespan.WithinPart) {
+			const pieceObj = objs.get(getPieceGroupId(piece))
+
+			targetCurrentPieces[entryId] = pieceObj ? pieceObj.enable : null
+		} else {
+			const partGroupId = getPartGroupId(protectString<PartInstanceId>(unprotectString(piece._id))) + '_infinite'
+			const partObj = objs.get(partGroupId)
+			if (!partObj) {
+				targetCurrentInfinitePieces[entryId] = null
+			} else {
+				const pieceObj = objs.get(getPieceGroupId(piece))
+
+				targetCurrentInfinitePieces[entryId] = {
+					partGroup: partObj.enable,
+					pieceGroup: pieceObj?.enable ?? [],
+				}
+			}
+		}
+	}
+	expect(timings.currentPieces).toEqual(targetCurrentPieces)
+	expect(timings.currentInfinitePieces).toEqual(targetCurrentInfinitePieces)
+
+	// Previous pieces
+	const previousPieces = await PieceInstances.findFetchAsync({
+		partInstanceId: previousPartInstance._id,
+	})
+	let previousOutTransition: PartTimelineTimings['previousOutTransition']
+	for (const piece of previousPieces) {
+		if (piece.piece.isOutTransition) {
+			if (previousOutTransition !== undefined) throw new Error('Too many out transition pieces were found')
+
+			const pieceObj = objs.get(getPieceGroupId(piece))
+			previousOutTransition = pieceObj?.enable ?? null
+		}
+	}
+	expect(timings.previousOutTransition).toEqual(previousOutTransition)
 }
 
 describe('Timeline', () => {
@@ -155,8 +234,9 @@ describe('Timeline', () => {
 				rundownId: RundownId,
 				timeline: TimelineComplete,
 				currentPartInstance: PartInstance,
-				previousPartInstance: PartInstance
-			) => void,
+				previousPartInstance: PartInstance,
+				checkTimings: (timings: PartTimelineTimings) => Promise<void>
+			) => Promise<void>,
 			timeout?: number
 		) {
 			testInFiber(
@@ -244,7 +324,10 @@ describe('Timeline', () => {
 						const timeline = Timeline.findOne(getRundown0().studioId)
 						expect(timeline).toBeTruthy()
 
-						fcn(rundownId0, timeline!, currentPartInstance!, previousPartInstance!)
+						const checkTimings = async (timings: PartTimelineTimings) =>
+							checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, timings)
+
+						await fcn(rundownId0, timeline!, currentPartInstance!, previousPartInstance!, checkTimings)
 					}
 
 					{
@@ -266,66 +349,37 @@ describe('Timeline', () => {
 		testTransition(
 			'Basic inTransition',
 			setupRundownWithInTransition,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended by 1000ms due to transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
+					currentPieces: {
+						// pieces are delayed by the content delay
+						piece010: { start: 0 },
+					},
+					currentInfinitePieces: {},
+					previousOutTransition: undefined,
 				})
-
-				// pieces are not delayed due to no transition preroll
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({ start: 0 })
 			}
 		)
 
 		testTransition(
 			'Basic inTransition with planned pieces',
 			setupRundownWithInTransitionPlannedPiece,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
-				})
-
-				// transition piece
-				const newPartTransitionPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece011'
-				)
-				expect(newPartTransitionPieceTlObj).toBeTruthy()
-				expect(newPartTransitionPieceTlObj?.enable).toMatchObject({
-					start: 0,
-				})
-
-				// pieces are delayed by the transition preroll
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({
-					start: 500,
-				})
-
-				// pieces are delayed by the transition preroll
-				const newPartPlannedPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece012'
-				)
-				expect(newPartPlannedPieceTlObj).toBeTruthy()
-				expect(newPartPlannedPieceTlObj?.enable).toMatchObject({
-					// note: 1000 is known to be incorrect here but we accept it as "historically correct" for regression testing
-					// start: 1000,
-					start: 1500,
-					// start: `#piece_group_${currentPartInstance?._id}_${rundownId0}_piece011.start + 500 + 1000`,
+			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended by 1000ms due to transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
+					currentPieces: {
+						// pieces are delayed by the content delay
+						piece010: { start: 500 },
+						// transition piece
+						piece011: { start: 0 },
+						// pieces are delayed by the content delay
+						piece012: { start: 1500, duration: 1000 },
+					},
+					currentInfinitePieces: {},
+					previousOutTransition: undefined,
 				})
 			}
 		)
@@ -333,54 +387,35 @@ describe('Timeline', () => {
 		testTransition(
 			'Preroll',
 			setupRundownWithPreroll,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended due to preroll
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 500`,
+			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended due to preroll
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 500` },
+					currentPieces: {
+						// main piece
+						piece010: { start: 0 },
+					},
+					currentInfinitePieces: {},
+					previousOutTransition: undefined,
 				})
-
-				// primary piece is not delayed due to no transitio
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({ start: 0 })
 			}
 		)
 
 		testTransition(
 			'Basic inTransition with contentDelay',
 			setupRundownWithInTransitionContentDelay,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended due to preroll and transition keepalive
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
-				})
-
-				// pieces are delayed by the contents delay
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({
-					start: 500,
-				})
-
-				// transition piece
-				const newPartTransitionPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece011'
-				)
-				expect(newPartTransitionPieceTlObj).toBeTruthy()
-				expect(newPartTransitionPieceTlObj?.enable).toMatchObject({
-					start: 0,
+			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended due to preroll and transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
+					currentPieces: {
+						// pieces are delayed by the content delay
+						piece010: { start: 500 },
+						// transition piece
+						piece011: { start: 0 },
+					},
+					currentInfinitePieces: {},
+					previousOutTransition: undefined,
 				})
 			}
 		)
@@ -388,32 +423,18 @@ describe('Timeline', () => {
 		testTransition(
 			'Basic inTransition with contentDelay + preroll',
 			setupRundownWithInTransitionContentDelayAndPreroll,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended due to preroll and transition keepalive
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
-				})
-
-				// pieces are delayed by the transition preroll
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({
-					start: 250,
-				})
-
-				// transition piece
-				const newPartTransitionPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece011'
-				)
-				expect(newPartTransitionPieceTlObj).toBeTruthy()
-				expect(newPartTransitionPieceTlObj?.enable).toMatchObject({
-					start: 0,
+			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended due to preroll and transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
+					currentPieces: {
+						// pieces are delayed by the content delay
+						piece010: { start: 250 },
+						// transition piece
+						piece011: { start: 0 },
+					},
+					currentInfinitePieces: {},
+					previousOutTransition: undefined,
 				})
 			}
 		)
@@ -421,65 +442,50 @@ describe('Timeline', () => {
 		testTransition(
 			'inTransition with existing infinites',
 			setupRundownWithInTransitionExistingInfinite,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended due to transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
+					currentPieces: {
+						// pieces are delayed by the content delay
+						piece010: { start: 500 },
+						// transition piece
+						piece011: { start: 0 },
+					},
+					currentInfinitePieces: {
+						piece002: {
+							// No delay applied as it started before this part, so should be left untouched
+							partGroup: { start: `#part_group_${currentPartInstance?._id}.start` },
+							pieceGroup: { start: 0 },
+						},
+					},
+					previousOutTransition: undefined,
 				})
-
-				// pieces are delayed by the transition preroll
-				// console.log(
-				// 	JSON.stringify(
-				// 		timeline.timeline.map((o) => o.id),
-				// 		undefined,
-				// 		2
-				// 	)
-				// )
-				// looking for: part_group_randomId9002_part0_1_randomId9012_randomId9002_piece001_infinite
-				const infPieceTlObj = timeline?.timeline.find(
-					(tlObj) =>
-						tlObj.id ===
-						'part_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece002_continue_infinite'
-				)
-				expect(infPieceTlObj).toBeTruthy()
-				expect(infPieceTlObj?.enable).toMatchObject({
-					start: `#part_group_${currentPartInstance?._id}.start`,
-				})
-
-				// TODO - what about the pieceGroup inside of the partGroup??
 			}
 		)
 
 		testTransition(
 			'inTransition with new infinite',
 			setupRundownWithInTransitionNewInfinite,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended due to transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
+					currentPieces: {
+						// pieces are delayed by the content delay
+						piece010: { start: 500 },
+						// transition piece
+						piece011: { start: 0 },
+					},
+					currentInfinitePieces: {
+						piece012: {
+							// Delay get applied to the pieceGroup inside the partGroup
+							partGroup: { start: `#${getPartGroupId(currentPartInstance)}.start` },
+							pieceGroup: { start: 500 },
+						},
+					},
+					previousOutTransition: undefined,
 				})
-
-				// pieces are delayed by the transition preroll
-				const infPieceTlObj = timeline?.timeline.find(
-					(tlObj) =>
-						tlObj.id === 'part_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece012_infinite'
-				)
-				expect(infPieceTlObj).toBeTruthy()
-				expect(infPieceTlObj?.enable).toMatchObject({
-					// note: no delay is known to be incorrect here but we accept it as "historically correct" for regression testing
-					start: `#part_group_${currentPartInstance?._id}.start`,
-					// start: `#part_group_${currentPartInstance?._id}.start + 500`,
-				})
-
-				// TODO - what about the pieceGroup inside of the partGroup??
 			}
 		)
 
@@ -561,25 +567,17 @@ describe('Timeline', () => {
 				const timeline = Timeline.findOne(getRundown0().studioId)
 				expect(timeline).toBeTruthy()
 
-				// old part ends immediately
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					// end: `#part_group_${currentPartInstance?._id}.start`,
-					// note: this seems incorrect? why extend during hold??
-					// end: `#part_group_${currentPartInstance?._id}.start + 1000`,
-					end: `#part_group_${currentPartInstance?._id}.start + 0`,
-				})
-
-				// pieces are not delayed
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({
-					start: 0,
+				await checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, {
+					// old part ends immediately
+					previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 0` },
+					currentPieces: {
+						// pieces are not delayed
+						piece010: { start: 0 },
+						// no in transition
+						piece011: null,
+					},
+					currentInfinitePieces: {},
+					previousOutTransition: undefined,
 				})
 			}
 
@@ -599,28 +597,19 @@ describe('Timeline', () => {
 		testTransition(
 			'inTransition disabled',
 			setupRundownWithInTransitionDisabled,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is not extended
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({ end: `#part_group_${currentPartInstance?._id}.start + 0` })
-
-				// pieces are not delayed
-				const infPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(infPieceTlObj).toBeTruthy()
-				expect(infPieceTlObj?.enable).toMatchObject({
-					start: 0,
+			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is not extended
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 0` },
+					currentPieces: {
+						// pieces are not delayed
+						piece010: { start: 0 },
+						// no transition piece
+						piece011: null,
+					},
+					currentInfinitePieces: {},
+					previousOutTransition: undefined,
 				})
-
-				// no transition piece
-				const newPartTransitionPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece011'
-				)
-				expect(newPartTransitionPieceTlObj).toBeFalsy()
 			}
 		)
 	})
@@ -637,8 +626,9 @@ describe('Timeline', () => {
 				rundownId: RundownId,
 				timeline: TimelineComplete,
 				currentPartInstance: PartInstance,
-				previousPartInstance: PartInstance
-			) => void,
+				previousPartInstance: PartInstance,
+				checkTimings: (timings: PartTimelineTimings) => Promise<void>
+			) => void | Promise<void>,
 			timeout?: number
 		) {
 			testInFiber(
@@ -725,7 +715,10 @@ describe('Timeline', () => {
 						const timeline = Timeline.findOne(getRundown0().studioId)
 						expect(timeline).toBeTruthy()
 
-						fcn(rundownId0, timeline!, currentPartInstance!, previousPartInstance!)
+						const checkTimings = async (timings: PartTimelineTimings) =>
+							checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, timings)
+
+						await fcn(rundownId0, timeline!, currentPartInstance!, previousPartInstance!, checkTimings)
 					}
 
 					{
@@ -747,134 +740,81 @@ describe('Timeline', () => {
 		testTransition(
 			'Basic outTransition',
 			setupRundownWithOutTransition,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+			async (_rundownId0, _timeline, currentPartInstance, previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended by 1000ms due to transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
+					currentPieces: {
+						// pieces are delayed by outTransition time
+						piece010: { start: 1000 },
+					},
+					currentInfinitePieces: {},
+					// outTransitionPiece is inserted
+					previousOutTransition: {
+						start: `#${getPartGroupId(previousPartInstance)}.end - 1000`,
+					},
 				})
-
-				// outTransitionPiece is inserted
-				const outTransitionPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + previousPartInstance?._id + '_' + rundownId0 + '_piece002'
-				)
-				expect(outTransitionPieceTlObj).toBeTruthy()
-				expect(outTransitionPieceTlObj?.enable).toMatchObject({
-					start: `#part_group_${previousPartInstance?._id}.end - 1000`,
-				})
-
-				// pieces are delayed by outTransition time
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({ start: 1000 })
 			}
 		)
 
 		testTransition(
 			'outTransition + preroll',
 			setupRundownWithOutTransitionAndPreroll,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+			async (_rundownId0, _timeline, currentPartInstance, previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended by 1000ms due to transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
+					currentPieces: {
+						// pieces are delayed by outTransition time
+						piece010: { start: 750 }, /// 1000ms out transition, 250ms preroll
+					},
+					currentInfinitePieces: {},
+					// outTransitionPiece is inserted
+					previousOutTransition: {
+						start: `#${getPartGroupId(previousPartInstance)}.end - 1000`,
+					},
 				})
-
-				// outTransitionPiece is inserted
-				const outTransitionPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + previousPartInstance?._id + '_' + rundownId0 + '_piece002'
-				)
-				expect(outTransitionPieceTlObj).toBeTruthy()
-				expect(outTransitionPieceTlObj?.enable).toMatchObject({
-					start: `#part_group_${previousPartInstance?._id}.end - 1000`,
-				})
-
-				// pieces are delayed by outTransition time
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({ start: 750 }) /// 1000ms out transition, 250ms preroll
 			}
 		)
 
 		testTransition(
 			'outTransition + preroll (2)',
 			setupRundownWithOutTransitionAndPreroll2,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended by 1000ms due to preroll
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 1000`,
+			async (_rundownId0, _timeline, currentPartInstance, previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended by 1000ms due to transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
+					currentPieces: {
+						// pieces are delayed by outTransition time
+						piece010: { start: 0 }, /// 250ms out transition, 1000ms preroll. preroll takes precedence
+					},
+					currentInfinitePieces: {},
+					// outTransitionPiece is inserted
+					previousOutTransition: {
+						start: `#${getPartGroupId(previousPartInstance)}.end - 250`,
+					},
 				})
-
-				// outTransitionPiece is inserted
-				const outTransitionPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + previousPartInstance?._id + '_' + rundownId0 + '_piece002'
-				)
-				expect(outTransitionPieceTlObj).toBeTruthy()
-				expect(outTransitionPieceTlObj?.enable).toMatchObject({
-					start: `#part_group_${previousPartInstance?._id}.end - 250`,
-				})
-
-				// pieces are delayed by outTransition time
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({ start: 0 }) /// 250ms out transition, 1000ms preroll. preroll takes precedence
 			}
 		)
 
 		testTransition(
 			'outTransition + inTransition',
 			setupRundownWithOutTransitionAndInTransition,
-			(rundownId0, timeline, currentPartInstance, previousPartInstance) => {
-				// old part is extended by 1000ms due to transition keepalive
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					end: `#part_group_${currentPartInstance?._id}.start + 600`, // 600ms outtransiton & 250ms transition keepalive
-				})
-
-				// outTransitionPiece is inserted
-				const outTransitionPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + previousPartInstance?._id + '_' + rundownId0 + '_piece002'
-				)
-				expect(outTransitionPieceTlObj).toBeTruthy()
-				expect(outTransitionPieceTlObj?.enable).toMatchObject({
-					start: `#part_group_${previousPartInstance?._id}.end - 600`,
-				})
-
-				// in transition is delayed by outTransition time
-				const inTransPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece011'
-				)
-				expect(inTransPieceTlObj).toBeTruthy()
-				expect(inTransPieceTlObj?.enable).toMatchObject({
-					start: 350,
-				}) // 600 - 250 = 350
-
-				// pieces are delayed by in transition preroll time
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({
-					start: 650, // inTransPieceTlObj + 300 contentDelay
+			async (_rundownId0, _timeline, currentPartInstance, previousPartInstance, checkTimings) => {
+				await checkTimings({
+					// old part is extended by 1000ms due to transition keepalive
+					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 600` }, // 600ms outtransiton & 250ms transition keepalive
+					currentPieces: {
+						// pieces are delayed by in transition preroll time
+						piece010: { start: 650 }, // inTransPieceTlObj + 300 contentDelay
+						// in transition is delayed by outTransition time
+						piece011: { start: 350, duration: 500 }, // 600 - 250 = 350
+					},
+					currentInfinitePieces: {},
+					// outTransitionPiece is inserted
+					previousOutTransition: {
+						start: `#${getPartGroupId(previousPartInstance)}.end - 600`,
+					},
 				})
 			}
 		)
@@ -956,24 +896,13 @@ describe('Timeline', () => {
 				const timeline = Timeline.findOne(getRundown0().studioId)
 				expect(timeline).toBeTruthy()
 
-				// old part ends immediately
-				const oldPartTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'part_group_' + previousPartInstance?._id
-				)
-				expect(oldPartTlObj).toBeTruthy()
-				expect(oldPartTlObj?.enable).toMatchObject({
-					// note: this seems odd, but the pieces are delayed to compensate
-					end: `#part_group_${currentPartInstance?._id}.start + 500`,
-				})
-
-				// pieces are not delayed
-				const newPartPieceTlObj = timeline?.timeline.find(
-					(tlObj) => tlObj.id === 'piece_group_' + currentPartInstance?._id + '_' + rundownId0 + '_piece010'
-				)
-				expect(newPartPieceTlObj).toBeTruthy()
-				expect(newPartPieceTlObj?.enable).toMatchObject({
-					// note: Offset matches extension of previous partGroup
-					start: 500,
+				await checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, {
+					previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 500` }, // note: this seems odd, but the pieces are delayed to compensate
+					currentPieces: {
+						piece010: { start: 500 }, // note: Offset matches extension of previous partGroup
+					},
+					currentInfinitePieces: {},
+					previousOutTransition: undefined,
 				})
 			}
 
