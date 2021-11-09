@@ -549,6 +549,9 @@ class RundownViewNotifier extends WithManagedTracker {
 								mediaId: mediaId.toUpperCase(),
 							})
 						}
+
+						if (!this.subscriptionsReady()) return
+
 						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
 						if (status !== RundownAPI.PieceStatusCode.UNKNOWN || message) {
 							localStatus.push({
