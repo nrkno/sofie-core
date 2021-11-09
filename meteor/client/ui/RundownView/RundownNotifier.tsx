@@ -544,14 +544,13 @@ class RundownViewNotifier extends WithManagedTracker {
 					// we don't want this to be in a non-reactive context, so we manage this computation manually
 					this._mediaStatusComps[unprotectString(piece._id)] = Tracker.autorun(() => {
 						const mediaId = getMediaObjectMediaId(piece, sourceLayer)
-						let handle: Meteor.SubscriptionHandle | undefined
 						if (mediaId) {
-							handle = this.subscribe(PubSub.mediaObjects, studio._id, {
+							this.subscribe(PubSub.mediaObjects, studio._id, {
 								mediaId: mediaId.toUpperCase(),
 							})
 						}
 
-						if (!handle?.ready()) return
+						if (!this.subscriptionsReady()) return
 
 						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
 						if (status !== RundownAPI.PieceStatusCode.UNKNOWN || message) {
