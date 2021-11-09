@@ -442,12 +442,20 @@
 }
 
 .rundown-view + .notification-pop-ups {
-	transition: right 1s ease-out, visibility 0s 5s;
+	transition: right 1s ease-out;
+
+	&.notification-pop-ups--empty {
+		transition: right 1s ease-out, visibility 0s 5s;
+	}
 }
 
 .rundown-view.notification-center-open + .notification-pop-ups {
 	right: 460px;
-	transition: right 1s ease-out, visibility 0s 5s;
+	transition: right 1s ease-out;
+
+	&.notification-pop-ups--empty {
+		transition: right 1s ease-out, visibility 0s 5s;
+	}
 }
 
 @media screen and (max-width: 1600px) {
