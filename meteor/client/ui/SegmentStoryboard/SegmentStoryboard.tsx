@@ -19,6 +19,7 @@ import { UIStateStorage } from '../../lib/UIStateStorage'
 import { literal, unprotectString } from '../../../lib/lib'
 import { scrollToPart } from '../../lib/viewPort'
 import { StoryboardPart } from './StoryboardPart'
+import { RundownHoldState } from '../../../lib/collections/Rundowns'
 
 interface IProps {
 	id: string
@@ -48,7 +49,7 @@ interface IProps {
 	liveLineHistorySize: number
 	livePosition: number
 	displayLiveLineCounter: boolean
-	autoNextPart: boolean
+	currentPartWillAutoNext: boolean
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
@@ -254,9 +255,20 @@ export const SegmentStoryboard = React.memo(
 				<div className="segment-storyboard__mos-id">{props.segment.externalId}</div>
 				<div className="segment-storyboard__part-list__container">
 					<div className="segment-storyboard__part-list">
-						{props.parts.map((part) => (
-							<StoryboardPart key={unprotectString(part.instance._id)} part={part} />
-						))}
+						{props.parts.map((part) => {
+							const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
+							const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
+							return (
+								<StoryboardPart
+									key={unprotectString(part.instance._id)}
+									part={part}
+									isLivePart={isLivePart}
+									isNextPart={isNextPart}
+									inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
+									currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
+								/>
+							)
+						})}
 					</div>
 				</div>
 			</div>

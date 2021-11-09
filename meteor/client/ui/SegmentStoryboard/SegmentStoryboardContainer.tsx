@@ -163,7 +163,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		false
 	)
 
-	const autoNextPart = useTracker(
+	const currentPartWillAutoNext = useTracker(
 		() => {
 			if (!props.playlist.currentPartInstanceId || !props.playlist.activationId) {
 				return false
@@ -219,7 +219,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			isQueuedSegment={props.playlist.nextSegmentId === props.segmentui._id}
 			hasRemoteItems={props.hasRemoteItems}
 			hasGuestItems={props.hasGuestItems}
-			autoNextPart={autoNextPart}
+			currentPartWillAutoNext={currentPartWillAutoNext}
 			hasAlreadyPlayed={props.hasAlreadyPlayed}
 			followLiveLine={props.followLiveSegments}
 			liveLineHistorySize={LIVELINE_HISTORY_SIZE}

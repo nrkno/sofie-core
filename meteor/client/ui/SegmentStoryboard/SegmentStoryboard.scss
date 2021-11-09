@@ -1,22 +1,80 @@
+@import '../../styles/colorScheme';
 @import '../../styles/variables';
+@import '../../styles/itemTypeColors';
 
 .segment-storyboard {
-	.segment-storyboard__part-list__container {
+	> .segment-storyboard__part-list__container {
 		position: relative;
 		overflow: hidden;
-		grid-column: timeline / end;
+		grid-column: segment-group-controls / end;
 		grid-row: header / zoom-area;
 	}
 
-	.segment-storyboard__part-list {
-		position: relative;
-		display: flex;
+	> .segment-storyboard__part-list__container {
+		> .segment-storyboard__part-list {
+			position: relative;
+			display: flex;
+			padding-left: $segment-group-controls-width;
 
-		> .segment-storyboard__part {
-			flex: 0 0;
-			min-width: 10rem;
-			margin-right: 10px;
-			margin-top: $segment-header-height;
+			> .segment-storyboard__part {
+				position: relative;
+				flex: 0 0;
+				min-width: 10rem;
+				margin-top: $segment-header-height;
+				padding: 1.3em 0.3em 0;
+
+				> .segment-storyboard__part__title {
+					position: absolute;
+					top: 1.3em;
+					width: 100%;
+				}
+
+				> .segment-storyboard__part__next-line {
+					position: absolute;
+					top: 0;
+					left: 0;
+					bottom: 0;
+					width: 0;
+					border-left: 2px solid $part-start-color;
+
+					&.segment-storyboard__part__next-line--autonext {
+						border-left: 1px solid $part-start-color;
+					}
+
+					&.segment-storyboard__part__next-line--live {
+						border-left-color: $general-live-color;
+					}
+
+					&.segment-storyboard__part__next-line--next {
+						border-left-color: $general-next-color;
+					}
+				}
+
+				> .segment-storyboard__part__next-line-label {
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					text-transform: uppercase;
+					font-weight: bold;
+					line-height: 0.9em;
+					background: $segment-background-color;
+					white-space: nowrap;
+					word-wrap: none;
+					color: $part-start-color;
+					padding: 0.1em 0.3em;
+
+					&.segment-storyboard__part__next-line-label--live {
+						background: $general-live-color;
+						color: #fff;
+					}
+
+					&.segment-storyboard__part__next-line-label--next {
+						background: $general-next-color;
+						color: #000;
+					}
+				}
+			}
 		}
 	}
 }

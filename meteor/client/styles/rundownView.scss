@@ -6,7 +6,6 @@ $output-layer-group-line: 1px solid #5c5c5c;
 $output-layer-group-collapse-animation-duration: 0.3s;
 
 $segment-header-width: 12.5rem;
-$segment-background-color: #000;
 $segment-timeline-background-color: #1f1f1f;
 $segment-mini-inspector-background: #474747;
 $segment-mini-inspector-timeline-background: #151515;
@@ -19,7 +18,6 @@ $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
 $segment-title-background-color-guest: $general-live-guest-color;
 $segment-title-background-color-has-played: #2c2c2c;
-$part-start-color: #a5a5a5;
 $segment-item-disabled-background: #898989;
 $segment-item-disabled-color: #c9c9c9;
 
@@ -506,7 +504,7 @@ svg.icon {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] $segment-header-width [segment-group-controls] 120px [timeline] auto [end]; // 120px [future-timeline-end]
+	grid-template-columns: [segment-name] $segment-header-width [segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;
