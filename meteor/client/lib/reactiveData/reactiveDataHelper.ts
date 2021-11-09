@@ -161,8 +161,10 @@ export abstract class WithManagedTracker {
 		}, 2000) // wait for a couple of seconds, before unsubscribing
 	}
 
-	protected subscribe(sub: PubSub, ...args: any[]) {
-		this._subs.push(Meteor.subscribe(sub, ...args))
+	protected subscribe(sub: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
+		const handle = Meteor.subscribe(sub, ...args)
+		this._subs.push(handle)
+		return handle
 	}
 
 	protected autorun(
