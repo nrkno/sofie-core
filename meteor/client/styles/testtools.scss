@@ -47,5 +47,9 @@
 .testtools-timelinetable {
 	& > tbody > tr {
 		border-bottom: 1px solid #000;
+
+		& > td {
+			padding: 0 5px;
+		}
 	}
 }
