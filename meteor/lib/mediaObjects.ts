@@ -14,7 +14,7 @@ import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
 import { NoteType } from './api/notes'
 import { PackageInfos } from './collections/PackageInfos'
-import { protectString, unprotectString } from './lib'
+import { assertNever, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric } from './collections/Pieces'
@@ -232,6 +232,16 @@ export function checkPieceContentStatus(
 						if (!packageOnPackageContainer) {
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 							messages.push(
+								t(`Clip "{{fileName}}" has not been looked up by Sofie yet`, {
+									fileName: packageName,
+								})
+							)
+						} else if (
+							packageOnPackageContainer.status.status ===
+							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
+						) {
+							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							messages.push(
 								t(
 									`Clip "{{fileName}}" can't be played because it isn't present on the playout system`,
 									{
@@ -272,11 +282,14 @@ export function checkPieceContentStatus(
 									}
 								)
 							)
-						} else {
+						} else if (
+							packageOnPackageContainer.status.status ===
+							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY
+						) {
 							packageInfos[expectedPackage._id] = {
 								packageName,
 							}
-							// ok:
+							// Fetch scan-info about the package:
 							PackageInfos.find({
 								studioId: studio._id,
 								packageId: getExpectedPackageId(piece._id, expectedPackage._id),
@@ -290,6 +303,8 @@ export function checkPieceContentStatus(
 									packageInfos[expectedPackage._id].deepScan = packageInfo.payload
 								}
 							})
+						} else {
+							assertNever(packageOnPackageContainer.status.status)
 						}
 					}
 				}
