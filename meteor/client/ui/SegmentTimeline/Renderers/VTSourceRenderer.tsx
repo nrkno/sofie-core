@@ -308,15 +308,19 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
 				// TODO: support multiple packages:
-				if (piece.contentPackageInfos[0]?.deepScan?.scenes) {
-					return _.compact(
-						piece.contentPackageInfos[0].deepScan.scenes.map((i) => {
-							if (i < itemDuration) {
-								return i * 1000
+				const contentPackageInfos = Object.values(piece.contentPackageInfos)
+				if (contentPackageInfos[0]?.deepScan?.scenes) {
+					const scenes = _.compact(
+						contentPackageInfos[0].deepScan.scenes.map((i) => {
+							const sceneTime = i * 1000
+							if (sceneTime < itemDuration) {
+								return sceneTime
 							}
 							return undefined
 						})
 					) // convert into milliseconds
+
+					return scenes
 				}
 			} else {
 				// Fallback to media objects:
@@ -343,8 +347,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
 				// TODO: support multiple packages:
-				if (piece.contentPackageInfos[0]?.deepScan?.freezes) {
-					items = piece.contentPackageInfos[0].deepScan.freezes
+				const contentPackageInfos = Object.values(piece.contentPackageInfos)
+				if (contentPackageInfos[0]?.deepScan?.freezes) {
+					items = contentPackageInfos[0].deepScan.freezes
 						.filter((i) => i.start < itemDuration)
 						.map((i): PackageInfo.Anomaly => {
 							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
@@ -376,10 +381,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				let items: Array<PackageInfo.Anomaly> = []
 				// add blacks
 				// TODO: support multiple packages:
-				if (piece.contentPackageInfos[0]?.deepScan?.blacks) {
+				const contentPackageInfos = Object.values(piece.contentPackageInfos)
+				if (contentPackageInfos[0]?.deepScan?.blacks) {
 					items = [
 						...items,
-						...piece.contentPackageInfos[0].deepScan.blacks
+						...contentPackageInfos[0].deepScan.blacks
 							.filter((i) => i.start < itemDuration)
 							.map((i): PackageInfo.Anomaly => {
 								return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
