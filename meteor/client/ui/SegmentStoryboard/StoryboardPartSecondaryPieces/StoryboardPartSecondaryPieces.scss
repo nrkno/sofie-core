@@ -1,0 +1,18 @@
+$source-layer-height: 1rem;
+
+.segment-storyboard__part__output-group {
+	min-height: $source-layer-height;
+}
+
+.segment-storyboard__part__source-layer {
+	min-height: $source-layer-height;
+	display: flex;
+}
+
+.segment-storyboard__part__piece {
+	flex: 1 1;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	line-height: $source-layer-height;
+}

@@ -44,7 +44,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		[segmentId]
 	)
 
-	useSubscription(
+	const piecesReady = useSubscription(
 		PubSub.pieces,
 		{
 			startRundownId: rundownId,
@@ -74,7 +74,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		[segmentId]
 	)
 
-	useSubscription(
+	const pieceInstancesReady = useSubscription(
 		PubSub.pieceInstances,
 		{
 			rundownId: rundownId,
@@ -200,6 +200,8 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		return null
 	}
 
+	const subscriptionsReady = piecesReady && pieceInstancesReady
+
 	return (
 		<SegmentStoryboard
 			id={props.id}
@@ -236,6 +238,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			budgetDuration={props.budgetDuration}
 			showCountdownToSegment={props.showCountdownToSegment}
 			fixedSegmentDuration={props.fixedSegmentDuration}
+			subscriptionsReady={subscriptionsReady}
 		/>
 	)
 })

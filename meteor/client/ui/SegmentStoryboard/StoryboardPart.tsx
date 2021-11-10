@@ -2,22 +2,26 @@ import classNames from 'classnames'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { PartExtended } from '../../../lib/Rundown'
+import { IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
+import { StoryboardPartSecondaryPieces } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { StoryboardPartThumbnail } from './StoryboardPartThumbnail/StoryboardPartThumbnail'
 
 interface IProps {
 	part: PartExtended
+	outputLayers: Record<string, IOutputLayerUi>
 	isLivePart: boolean
 	isNextPart: boolean
 	inHold: boolean
 	currentPartWillAutonext: boolean
 }
 
-export function StoryboardPart({ part, isLivePart, isNextPart, currentPartWillAutonext }: IProps) {
+export function StoryboardPart({ part, isLivePart, isNextPart, currentPartWillAutonext, outputLayers }: IProps) {
 	const { t } = useTranslation()
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
 	return (
-		<div className="segment-storyboard__part">
+		<div className="segment-storyboard__part" data-obj-id={part.instance._id}>
 			<StoryboardPartThumbnail part={part} />
+			<StoryboardPartSecondaryPieces part={part} outputLayers={outputLayers} />
 			<div className="segment-storyboard__part__title">{part.instance.part.title}</div>
 			<div
 				className={classNames('segment-storyboard__part__next-line', {

@@ -20,6 +20,7 @@ import { literal, unprotectString } from '../../../lib/lib'
 import { scrollToPart } from '../../lib/viewPort'
 import { StoryboardPart } from './StoryboardPart'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
+import classNames from 'classnames'
 
 interface IProps {
 	id: string
@@ -63,6 +64,7 @@ interface IProps {
 	budgetDuration?: number
 	showCountdownToSegment: boolean
 	fixedSegmentDuration: boolean | undefined
+	subscriptionsReady: boolean
 }
 
 export const SegmentStoryboard = React.memo(
@@ -254,7 +256,11 @@ export const SegmentStoryboard = React.memo(
 				</div>
 				<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
 				<div className="segment-storyboard__part-list__container">
-					<div className="segment-storyboard__part-list">
+					<div
+						className={classNames('segment-storyboard__part-list', {
+							loading: !props.subscriptionsReady,
+						})}
+					>
 						{props.parts.map((part) => {
 							const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
 							const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
@@ -266,6 +272,7 @@ export const SegmentStoryboard = React.memo(
 									isNextPart={isNextPart}
 									inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
 									currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
+									outputLayers={props.segment.outputLayers}
 								/>
 							)
 						})}
