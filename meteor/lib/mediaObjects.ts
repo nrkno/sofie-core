@@ -386,6 +386,7 @@ export function checkPieceContentStatus(
 								t: i18next.TFunction
 							) => {
 								if (anomalies.length === 1) {
+									/** Number of frames */
 									const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
 									if (anomalies[0].start === 0) {
 										messages.push(
@@ -404,7 +405,7 @@ export function checkPieceContentStatus(
 												count: freezeStartsAt,
 											})
 										)
-									} else {
+									} else if (frames > 0) {
 										messages.push(
 											t('{{frames}} {{type}} frame detected within the clip', {
 												frames,
