@@ -33,7 +33,7 @@ export function StoryboardPart({ part, isLivePart, isNextPart, currentPartWillAu
 					'segment-storyboard__part__next-line-label--live': isLivePart,
 				})}
 			>
-				{isLivePart ? t('On Air') : isNextPart ? (willBeAutoNextedInto ? t('Auto') : t('Next')) : null}
+				{isLivePart ? t('On Air') : willBeAutoNextedInto ? t('Auto') : isNextPart ? t('Next') : null}
 			</div>
 		</div>
 	)

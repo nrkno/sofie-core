@@ -24,6 +24,7 @@
 				padding: 1.3em 0.3em 0;
 
 				> .segment-storyboard__part__title {
+					display: none;
 					position: absolute;
 					top: 1.3em;
 					width: 100%;
@@ -58,7 +59,6 @@
 					text-transform: uppercase;
 					font-weight: bold;
 					line-height: 0.9em;
-					background: $segment-background-color;
 					white-space: nowrap;
 					word-wrap: none;
 					color: $part-start-color;
@@ -72,6 +72,10 @@
 					&.segment-storyboard__part__next-line-label--next {
 						background: $general-next-color;
 						color: #000;
+					}
+
+					&.segment-storyboard__part__next-line-label--autonext {
+						font-weight: 400;
 					}
 				}
 			}

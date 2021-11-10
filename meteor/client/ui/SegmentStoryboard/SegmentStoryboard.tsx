@@ -142,7 +142,7 @@ export const SegmentStoryboard = React.memo(
 		return (
 			<div
 				id={props.id}
-				className={ClassNames('segment-storyboard', {
+				className={ClassNames('segment-timeline', 'segment-storyboard', {
 					live: props.isLiveSegment,
 					next: !props.isLiveSegment && props.isNextSegment,
 					queued: props.isQueuedSegment,
@@ -168,48 +168,48 @@ export const SegmentStoryboard = React.memo(
 					id="segment-timeline-context-menu"
 					collect={getSegmentContext}
 					attributes={{
-						className: 'segment-storyboard__title',
+						className: 'segment-timeline__title',
 					}}
 					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag="div"
 				>
 					<h2
-						className={'segment-storyboard__title__label' + (props.segment.identifier ? ' identifier' : '')}
+						className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
 						data-identifier={props.segment.identifier}
 					>
 						{props.segment.name}
 					</h2>
 					{(criticalNotes > 0 || warningNotes > 0) && (
-						<div className="segment-storyboard__title__notes">
+						<div className="segment-timeline__title__notes">
 							{criticalNotes > 0 && (
 								<div
-									className="segment-storyboard__title__notes__note segment-storyboard__title__notes__note--critical"
+									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
 									onClick={() =>
 										props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.ERROR)
 									}
 								>
 									<CriticalIconSmall />
-									<div className="segment-storyboard__title__notes__count">{criticalNotes}</div>
+									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
 								</div>
 							)}
 							{warningNotes > 0 && (
 								<div
-									className="segment-storyboard__title__notes__note segment-storyboard__title__notes__note--warning"
+									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
 									onClick={() =>
 										props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.WARNING)
 									}
 								>
 									<WarningIconSmall />
-									<div className="segment-storyboard__title__notes__count">{warningNotes}</div>
+									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
 								</div>
 							)}
 						</div>
 					)}
 					{identifiers.length > 0 && (
-						<div className="segment-storyboard__part-identifiers">
+						<div className="segment-timeline__part-identifiers">
 							{identifiers.map((ident) => (
 								<div
-									className="segment-storyboard__part-identifiers__identifier"
+									className="segment-timeline__part-identifiers__identifier"
 									key={ident.partId + ''}
 									onClick={() => onClickPartIdent(ident.partId)}
 								>
@@ -219,7 +219,7 @@ export const SegmentStoryboard = React.memo(
 						</div>
 					)}
 				</ContextMenuTrigger>
-				<div className="segment-storyboard__duration" tabIndex={0}>
+				<div className="segment-timeline__duration" tabIndex={0}>
 					{props.playlist &&
 						props.parts &&
 						props.parts.length > 0 &&
@@ -227,12 +227,12 @@ export const SegmentStoryboard = React.memo(
 							<SegmentDuration
 								segmentId={props.segment._id}
 								parts={props.parts}
-								label={<span className="segment-storyboard__duration__label">{t('Duration')}</span>}
+								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={props.fixedSegmentDuration}
 							/>
 						)}
 				</div>
-				<div className="segment-storyboard__timeUntil" onClick={onTimeUntilClick}>
+				<div className="segment-timeline__timeUntil" onClick={onTimeUntilClick}>
 					{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
 						<PartCountdown
 							partId={countdownToPartId}
@@ -241,18 +241,18 @@ export const SegmentStoryboard = React.memo(
 							playlist={props.playlist}
 							label={
 								useTimeOfDayCountdowns ? (
-									<span className="segment-storyboard__timeUntil__label">{t('On Air At')}</span>
+									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
 								) : (
-									<span className="segment-storyboard__timeUntil__label">{t('On Air In')}</span>
+									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
 								)
 							}
 						/>
 					)}
 					{Settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
-						<span className="segment-storyboard__unsynced">{t('Unsynced')}</span>
+						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}
 				</div>
-				<div className="segment-storyboard__mos-id">{props.segment.externalId}</div>
+				<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
 				<div className="segment-storyboard__part-list__container">
 					<div className="segment-storyboard__part-list">
 						{props.parts.map((part) => {
