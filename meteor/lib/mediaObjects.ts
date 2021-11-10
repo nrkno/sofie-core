@@ -278,8 +278,8 @@ export function checkPieceContentStatus(
 							}
 							// ok:
 							PackageInfos.find({
-								studio: studio._id,
-								packageId: protectString(expectedPackage._id),
+								studioId: studio._id,
+								packageId: getExpectedPackageId(piece._id, expectedPackage._id),
 								type: {
 									$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN] as any,
 								},
