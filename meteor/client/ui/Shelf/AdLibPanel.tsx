@@ -529,6 +529,7 @@ function actionToAdLibPieceUi(
 		nextPieceTags: action.display.nextPieceTags,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
 		uniquenessId: action.display.uniquenessId,
+		expectedPackages: action.expectedPackages,
 	})
 }
 

@@ -508,8 +508,11 @@ class RundownViewNotifier extends WithManagedTracker {
 				name: 1,
 				content: 1,
 				startPartId: 1,
+				expectedPackages: 1,
 			},
-		}) as ReactiveVar<Pick<Piece, '_id' | 'sourceLayerId' | 'outputLayerId' | 'name' | 'content' | 'startPartId'>[]>
+		}) as ReactiveVar<
+			Pick<Piece, '_id' | 'sourceLayerId' | 'outputLayerId' | 'name' | 'content' | 'startPartId' | 'expectedPackages'>[]
+		>
 
 		this.autorun(() => {
 			const rundownIds: RundownId[] = reactiveData

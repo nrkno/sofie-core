@@ -428,6 +428,7 @@ function processTimelineObjects(studio: ReadonlyDeep<Studio>, timelineObjs: Arra
  * @param now The time to set the "now":s to
  */
 function setNowToTimeInObjects(timelineObjs: Array<TimelineObjGeneric>, now: Time): void {
+	// TODO - this should use deNowifyTimeline from pieces.ts instead. This implementation is flawed in that pieceGroups using 'now' will end up being offset about 30 years into the future
 	_.each(timelineObjs, (o) => {
 		applyToArray(o.enable, (enable) => {
 			if (enable.start === 'now') {
