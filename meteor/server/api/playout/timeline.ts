@@ -64,6 +64,7 @@ import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
 import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { endTrace, sendTrace, startTrace } from '../integration/influx'
 
 export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 	const playlists = cache.getActiveRundownPlaylists()
@@ -341,6 +342,7 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 				)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, timelineObjs)
 				try {
+					const influxTrace = startTrace('blueprints:onTimelineGenerate')
 					const tlGenRes = await showStyleBlueprintManifest.onTimelineGenerate(
 						context,
 						timelineObjs,
@@ -348,6 +350,7 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 						currentPartInstance?.previousPartEndState,
 						unprotectObjectArray(resolvedPieces.pieces)
 					)
+					sendTrace(endTrace(influxTrace))
 					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
 							...(object as OnGenerateTimelineObjExt),
