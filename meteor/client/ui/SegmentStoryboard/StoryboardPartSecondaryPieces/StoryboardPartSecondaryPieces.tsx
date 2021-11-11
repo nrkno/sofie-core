@@ -25,7 +25,12 @@ export function StoryboardPartSecondaryPieces({ part, outputLayers }: IProps) {
 					return (
 						<div key={outputLayer._id} className="segment-storyboard__part__output-group" data-obj-id={outputLayer._id}>
 							{sourceLayers.map((sourceLayer) => (
-								<StoryboardSourceLayer key={sourceLayer._id} sourceLayer={sourceLayer} pieces={part.pieces} />
+								<StoryboardSourceLayer
+									key={sourceLayer._id}
+									sourceLayer={sourceLayer}
+									pieces={part.pieces}
+									partId={part.partId}
+								/>
 							))}
 						</div>
 					)

@@ -15,12 +15,13 @@ import {
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentStoryboard } from './SegmentStoryboard'
 import { unprotectString } from '../../../lib/lib'
+import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
+
+export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
 interface IProps extends IResolvedSegmentProps {
 	id: string
 }
-
-export const LIVELINE_HISTORY_SIZE = 1
 
 export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function SegmentStoryboardContainer({
 	rundownId,
@@ -120,9 +121,6 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			})
 	}, [segmentId, rundownId, segmentsIdsBefore.values(), rundownIdsBefore.values()])
 
-	const [scrollLeft] = useState(0)
-	const [livePosition] = useState(0)
-
 	const isLiveSegment = useTracker(
 		() => {
 			if (!props.playlist.currentPartInstanceId || !props.playlist.activationId) {
@@ -188,10 +186,6 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 	useEffect(() => {
 		SpeechSynthesiser.init()
-
-		// RundownViewEventBus.on(RundownViewEvents.REWIND_SEGMENTS, onRewindSegment)
-		// RundownViewEventBus.on(RundownViewEvents.GO_TO_PART, onGoToPart)
-		// RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, onGoToPartInstance)
 	}, [])
 
 	const segmentRef = React.createRef<HTMLDivElement>()
@@ -201,6 +195,40 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 	}
 
 	const subscriptionsReady = piecesReady && pieceInstancesReady
+
+	// We are only interested in when subscriptionsReady turns *true* the first time. It can turn false later
+	// and then back to true (when re-subscribing, say when you re-next a Part), but we're not interested in those
+	// cases and it's a "false" signal for us.
+	const [initialSubscriptionsReady, setInitialSubscriptionsReady] = useState(subscriptionsReady)
+
+	// The following set up is supposed to avoid a flash of "empty" parts while Pieces and PieceInstances are streaming in.
+	// One could think that it would be enough to wait for "subscriptionsReady" to turn to *true*, but one would be wrong.
+	// There _could_ be a short amount of time when the subscriptions are ready, but the trackers haven't
+	// finished autorunning, and then `withResolvedSegment` needs some time to re-resolve the entire Segment.
+	// In that window of time it is possible that `withResolvedSegment` will actually return a Segment with just
+	// rundown-spanning infinites, therefore we need to filter them out as well.
+	// Ultimately, it is possible that the `firstNonInvalidPart` is in fact empty, so we need to set up a Timeout
+	// so that we show the Part as-is.
+	const firstNonInvalidPart = props.parts.find((part) => !part.instance.part.invalid)
+	useEffect(() => {
+		if (subscriptionsReady === true) {
+			if (
+				firstNonInvalidPart?.pieces !== undefined &&
+				firstNonInvalidPart?.pieces.filter((piece) => !piece.hasOriginInPreceedingPart).length > 0
+			) {
+				setInitialSubscriptionsReady(subscriptionsReady)
+			} else {
+				// we can't wait for the pieces to appear forever
+				const timeout = setTimeout(() => {
+					setInitialSubscriptionsReady(subscriptionsReady)
+				}, 1000)
+
+				return () => {
+					clearTimeout(timeout)
+				}
+			}
+		}
+	}, [subscriptionsReady, firstNonInvalidPart?.pieces.length])
 
 	return (
 		<SegmentStoryboard
@@ -213,9 +241,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			segmentNotes={props.segmentNotes}
 			onItemClick={props.onPieceClick}
 			onItemDoubleClick={props.onPieceDoubleClick}
-			scrollLeft={scrollLeft}
 			playlist={props.playlist}
-			followLiveSegments={props.followLiveSegments}
 			isLiveSegment={isLiveSegment}
 			isNextSegment={isNextSegment}
 			isQueuedSegment={props.playlist.nextSegmentId === props.segmentui._id}
@@ -225,7 +251,6 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			hasAlreadyPlayed={props.hasAlreadyPlayed}
 			followLiveLine={props.followLiveSegments}
 			liveLineHistorySize={LIVELINE_HISTORY_SIZE}
-			livePosition={livePosition}
 			displayLiveLineCounter={props.displayLiveLineCounter}
 			onContextMenu={props.onContextMenu}
 			onFollowLiveLine={this.onFollowLiveLine}
@@ -238,7 +263,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			budgetDuration={props.budgetDuration}
 			showCountdownToSegment={props.showCountdownToSegment}
 			fixedSegmentDuration={props.fixedSegmentDuration}
-			subscriptionsReady={subscriptionsReady}
+			subscriptionsReady={initialSubscriptionsReady}
 		/>
 	)
 })

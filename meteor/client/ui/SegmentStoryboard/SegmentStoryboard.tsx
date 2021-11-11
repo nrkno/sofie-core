@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import ClassNames from 'classnames'
+import React, { useCallback, useEffect, useState } from 'react'
+import * as VelocityReact from 'velocity-react'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentNote } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -21,13 +21,15 @@ import { scrollToPart } from '../../lib/viewPort'
 import { StoryboardPart } from './StoryboardPart'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import classNames from 'classnames'
+import RundownViewEventBus, { RundownViewEvents } from '../RundownView/RundownViewEventBus'
+
+export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
 interface IProps {
 	id: string
 	key: string
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	followLiveSegments: boolean
 	studio: Studio
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
@@ -39,7 +41,6 @@ interface IProps {
 	// collapsedOutputs: {
 	// 	[key: string]: boolean
 	// }
-	scrollLeft: number
 	hasAlreadyPlayed: boolean
 	hasGuestItems: boolean
 	hasRemoteItems: boolean
@@ -48,7 +49,6 @@ interface IProps {
 	isQueuedSegment: boolean
 	followLiveLine: boolean
 	liveLineHistorySize: number
-	livePosition: number
 	displayLiveLineCounter: boolean
 	currentPartWillAutoNext: boolean
 	onScroll: (scrollLeft: number, event: any) => void
@@ -67,8 +67,12 @@ interface IProps {
 	subscriptionsReady: boolean
 }
 
+const PART_WIDTH = 160 // Must match SCSS: $segment-storyboard-part-width
+
 export const SegmentStoryboard = React.memo(
 	React.forwardRef<HTMLDivElement, IProps>(function SegmentStoryboard(props: IProps, ref) {
+		const [scrollLeft, setScrollLeft] = useState(0)
+		const [animateScrollLeft] = useState(true)
 		const { t } = useTranslation()
 		const notes: Array<SegmentNote> = props.segmentNotes
 
@@ -141,10 +145,60 @@ export const SegmentStoryboard = React.memo(
 			})
 		}
 
+		let nextPartIndex = -1
+		let currentPartIndex = -1
+
+		const parts = props.parts.map((part, index) => {
+			const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
+			const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
+
+			if (isLivePart) currentPartIndex = index
+			if (isNextPart) nextPartIndex = index
+
+			return (
+				<StoryboardPart
+					key={unprotectString(part.instance._id)}
+					part={part}
+					isLivePart={isLivePart}
+					isNextPart={isNextPart}
+					inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
+					currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
+					outputLayers={props.segment.outputLayers}
+					subscriptionsReady={props.subscriptionsReady}
+				/>
+			)
+		})
+
+		useEffect(() => {
+			if (props.followLiveLine) {
+				if (nextPartIndex >= 0 && currentPartIndex >= 0) {
+					setScrollLeft(Math.max(0, currentPartIndex * PART_WIDTH - props.liveLineHistorySize))
+				} else if (nextPartIndex >= 0) {
+					setScrollLeft(Math.max(0, nextPartIndex * PART_WIDTH - props.liveLineHistorySize))
+				} else if (currentPartIndex >= 0) {
+					setScrollLeft(Math.max(0, currentPartIndex * PART_WIDTH - props.liveLineHistorySize))
+				}
+			}
+		}, [currentPartIndex, nextPartIndex, props.followLiveLine])
+
+		const onRewindSegment = useCallback(() => {
+			setScrollLeft(0)
+		}, [])
+
+		useEffect(() => {
+			RundownViewEventBus.on(RundownViewEvents.REWIND_SEGMENTS, onRewindSegment)
+			// RundownViewEventBus.on(RundownViewEvents.GO_TO_PART, onGoToPart)
+			// RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, onGoToPartInstance)
+
+			return () => {
+				RundownViewEventBus.off(RundownViewEvents.REWIND_SEGMENTS, onRewindSegment)
+			}
+		}, [onRewindSegment])
+
 		return (
 			<div
 				id={props.id}
-				className={ClassNames('segment-timeline', 'segment-storyboard', {
+				className={classNames('segment-timeline', 'segment-storyboard', {
 					live: props.isLiveSegment,
 					next: !props.isLiveSegment && props.isNextSegment,
 					queued: props.isQueuedSegment,
@@ -166,118 +220,114 @@ export const SegmentStoryboard = React.memo(
 				data-obj-id={props.segment._id}
 				ref={ref}
 			>
-				<ContextMenuTrigger
-					id="segment-timeline-context-menu"
-					collect={getSegmentContext}
-					attributes={{
-						className: 'segment-timeline__title',
-					}}
-					holdToDisplay={contextMenuHoldToDisplayTime()}
-					renderTag="div"
-				>
-					<h2
-						className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
-						data-identifier={props.segment.identifier}
+				<StudioContext.Provider value={props.studio}>
+					<ContextMenuTrigger
+						id="segment-timeline-context-menu"
+						collect={getSegmentContext}
+						attributes={{
+							className: 'segment-timeline__title',
+						}}
+						holdToDisplay={contextMenuHoldToDisplayTime()}
+						renderTag="div"
 					>
-						{props.segment.name}
-					</h2>
-					{(criticalNotes > 0 || warningNotes > 0) && (
-						<div className="segment-timeline__title__notes">
-							{criticalNotes > 0 && (
-								<div
-									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
-									onClick={() =>
-										props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.ERROR)
-									}
-								>
-									<CriticalIconSmall />
-									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
-								</div>
+						<h2
+							className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
+							data-identifier={props.segment.identifier}
+						>
+							{props.segment.name}
+						</h2>
+						{(criticalNotes > 0 || warningNotes > 0) && (
+							<div className="segment-timeline__title__notes">
+								{criticalNotes > 0 && (
+									<div
+										className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
+										onClick={() =>
+											props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.ERROR)
+										}
+									>
+										<CriticalIconSmall />
+										<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
+									</div>
+								)}
+								{warningNotes > 0 && (
+									<div
+										className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
+										onClick={() =>
+											props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.WARNING)
+										}
+									>
+										<WarningIconSmall />
+										<div className="segment-timeline__title__notes__count">{warningNotes}</div>
+									</div>
+								)}
+							</div>
+						)}
+						{identifiers.length > 0 && (
+							<div className="segment-timeline__part-identifiers">
+								{identifiers.map((ident) => (
+									<div
+										className="segment-timeline__part-identifiers__identifier"
+										key={ident.partId + ''}
+										onClick={() => onClickPartIdent(ident.partId)}
+									>
+										{ident.ident}
+									</div>
+								))}
+							</div>
+						)}
+					</ContextMenuTrigger>
+					<div className="segment-timeline__duration" tabIndex={0}>
+						{props.playlist &&
+							props.parts &&
+							props.parts.length > 0 &&
+							(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
+								<SegmentDuration
+									segmentId={props.segment._id}
+									parts={props.parts}
+									label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+									fixed={props.fixedSegmentDuration}
+								/>
 							)}
-							{warningNotes > 0 && (
-								<div
-									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
-									onClick={() =>
-										props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.WARNING)
-									}
-								>
-									<WarningIconSmall />
-									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
-								</div>
-							)}
-						</div>
-					)}
-					{identifiers.length > 0 && (
-						<div className="segment-timeline__part-identifiers">
-							{identifiers.map((ident) => (
-								<div
-									className="segment-timeline__part-identifiers__identifier"
-									key={ident.partId + ''}
-									onClick={() => onClickPartIdent(ident.partId)}
-								>
-									{ident.ident}
-								</div>
-							))}
-						</div>
-					)}
-				</ContextMenuTrigger>
-				<div className="segment-timeline__duration" tabIndex={0}>
-					{props.playlist &&
-						props.parts &&
-						props.parts.length > 0 &&
-						(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
-							<SegmentDuration
-								segmentId={props.segment._id}
-								parts={props.parts}
-								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
-								fixed={props.fixedSegmentDuration}
+					</div>
+					<div className="segment-timeline__timeUntil" onClick={onTimeUntilClick}>
+						{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
+							<PartCountdown
+								partId={countdownToPartId}
+								hideOnZero={!useTimeOfDayCountdowns}
+								useWallClock={useTimeOfDayCountdowns}
+								playlist={props.playlist}
+								label={
+									useTimeOfDayCountdowns ? (
+										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+									) : (
+										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+									)
+								}
 							/>
 						)}
-				</div>
-				<div className="segment-timeline__timeUntil" onClick={onTimeUntilClick}>
-					{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
-						<PartCountdown
-							partId={countdownToPartId}
-							hideOnZero={!useTimeOfDayCountdowns}
-							useWallClock={useTimeOfDayCountdowns}
-							playlist={props.playlist}
-							label={
-								useTimeOfDayCountdowns ? (
-									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-								) : (
-									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-								)
-							}
-						/>
-					)}
-					{Settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
-						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-					)}
-				</div>
-				<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
-				<div className="segment-storyboard__part-list__container">
-					<div
-						className={classNames('segment-storyboard__part-list', {
-							loading: !props.subscriptionsReady,
-						})}
-					>
-						{props.parts.map((part) => {
-							const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
-							const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
-							return (
-								<StoryboardPart
-									key={unprotectString(part.instance._id)}
-									part={part}
-									isLivePart={isLivePart}
-									isNextPart={isNextPart}
-									inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
-									currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
-									outputLayers={props.segment.outputLayers}
-								/>
-							)
-						})}
+						{Settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
+							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
+						)}
 					</div>
-				</div>
+					<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
+					<div className="segment-storyboard__part-list__container">
+						<VelocityReact.VelocityComponent
+							animation={{
+								translateX: `-${scrollLeft}px`,
+							}}
+							duration={animateScrollLeft ? 100 : 0}
+						>
+							<div
+								className={classNames('segment-storyboard__part-list', {
+									loading: !props.subscriptionsReady,
+								})}
+							>
+								{parts}
+							</div>
+						</VelocityReact.VelocityComponent>
+						<div className="segment-storyboard__history-shade"></div>
+					</div>
+				</StudioContext.Provider>
 			</div>
 		)
 	})

@@ -3,6 +3,8 @@
 @import '../../styles/itemTypeColors';
 
 .segment-storyboard {
+	$segment-storyboard-part-width: 160px;
+
 	> .segment-storyboard__part-list__container {
 		position: relative;
 		overflow: hidden;
@@ -19,7 +21,7 @@
 			> .segment-storyboard__part {
 				position: relative;
 				flex: 0 0;
-				min-width: 10rem;
+				min-width: $segment-storyboard-part-width;
 				margin-top: $segment-header-height;
 				padding: 1.3em 0.3em 0;
 
@@ -74,11 +76,20 @@
 						color: #000;
 					}
 
-					&.segment-storyboard__part__next-line-label--autonext {
+					&:not(.segment-storyboard__part__next-line-label--next):not(.segment-storyboard__part__next-line-label--live).segment-storyboard__part__next-line-label--autonext {
 						font-weight: 400;
 					}
 				}
 			}
+		}
+
+		> .segment-storyboard__history-shade {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100px;
+			bottom: 0;
+			background: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
 		}
 	}
 }

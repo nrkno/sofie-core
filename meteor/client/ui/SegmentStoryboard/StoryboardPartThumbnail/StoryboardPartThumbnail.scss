@@ -1,11 +1,17 @@
+@import '../../../styles/variables';
 @import '../../../styles/itemTypeColors';
 
 .segment-storyboard__part__thumbnail {
 	@include item-type-colors();
 	@include missing-overlay();
 
+	position: relative;
 	width: 100%;
 	height: 6rem;
 	border-radius: 4px;
 	overflow: hidden;
+
+	&.segment-storyboard__part__thumbnail--placeholder {
+		background: lighten($segment-background-color, 10%);
+	}
 }

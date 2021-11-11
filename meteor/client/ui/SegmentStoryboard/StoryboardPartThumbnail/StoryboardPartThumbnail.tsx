@@ -1,7 +1,7 @@
-import classNames from 'classnames'
 import React, { useEffect, useState } from 'react'
 import { PartExtended, PieceExtended } from '../../../../lib/Rundown'
-import { RundownUtils } from '../../../lib/rundown'
+import StudioContext from '../../RundownView/StudioContext'
+import { StoryboardPartThumbnailInner } from './StoryboardPartThumbnailInner'
 
 interface IProps {
 	part: PartExtended
@@ -27,13 +27,17 @@ export function StoryboardPartThumbnail({ part }: IProps) {
 		setMainPiece(newMainPiece)
 	}, [part.pieces])
 
-	const typeClass = mainPiece?.sourceLayer?.type
-		? RundownUtils.getSourceLayerClassName(mainPiece?.sourceLayer?.type)
-		: ''
-
-	return (
-		<div className={classNames('segment-storyboard__part__thumbnail', typeClass)}>
-			{mainPiece?.instance.piece.name} ({mainPiece?.sourceLayer?.abbreviation || mainPiece?.sourceLayer?.name})
-		</div>
-	)
+	return mainPiece ? (
+		<StudioContext.Consumer>
+			{(studio) => (
+				<StoryboardPartThumbnailInner
+					piece={mainPiece}
+					isLiveLine={false}
+					layer={mainPiece?.sourceLayer}
+					studio={studio}
+					partId={part.partId}
+				/>
+			)}
+		</StudioContext.Consumer>
+	) : null
 }

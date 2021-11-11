@@ -1,4 +1,11 @@
-$source-layer-height: 1rem;
+@import '../../../styles/itemTypeColors';
+
+$source-layer-height: 1.2rem;
+$source-layer-margin: 0.1em;
+
+.segment-storyboard__part__secondary-pieces {
+	margin-top: 0.3em;
+}
 
 .segment-storyboard__part__output-group {
 	min-height: $source-layer-height;
@@ -7,12 +14,27 @@ $source-layer-height: 1rem;
 .segment-storyboard__part__source-layer {
 	min-height: $source-layer-height;
 	display: flex;
+	margin-bottom: $source-layer-margin;
 }
 
 .segment-storyboard__part__piece {
+	@include item-type-colors();
+	@include missing-overlay();
+
+	position: relative;
 	flex: 1 1;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	line-height: $source-layer-height;
+	font-size: 1em;
+	margin-bottom: $source-layer-margin;
+	padding: 0 0.2em;
+	border-radius: 3px;
+
+	margin-right: $source-layer-margin;
+
+	&:last-child {
+		margin-right: 0;
+	}
 }
