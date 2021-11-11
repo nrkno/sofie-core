@@ -1,6 +1,6 @@
 {
 	"name": "playout-gateway",
-	"version": "1.37.0-in-testing.0",
+	"version": "1.38.0-in-development",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
@@ -24,7 +24,8 @@
 		"buildstart": "yarn build && yarn start",
 		"buildinspect": "yarn build && yarn inspect",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
+		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"watch": "jest --watch",
@@ -56,21 +57,22 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.37.0-in-testing.0",
-		"@sofie-automation/server-core-integration": "1.37.0-in-testing.0",
+		"@sofie-automation/blueprints-integration": "1.38.0-in-development",
+		"@sofie-automation/server-core-integration": "1.38.0-in-development",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
-		"timeline-state-resolver": "6.2.0-release37.6",
+		"influx": "^5.9.2",
+		"timeline-state-resolver": "6.3.0-nightly-release38-20211111-093452-09c27a8be.0",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
 		"winston": "^2.4.2"
 	},
 	"lint-staged": {
-		"*.{js,css,json,md,scss}": [
-			"prettier --write"
+		"*.{css,json,md,scss}": [
+			"prettier"
 		],
-		"*.{ts,tsx}": [
-			"yarn lint --fix"
+		"*.{ts,tsx,js,jsx}": [
+			"yarn lint:raw"
 		]
 	},
 	"devDependencies": {

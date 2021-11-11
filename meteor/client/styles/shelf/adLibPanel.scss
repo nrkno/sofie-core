@@ -194,6 +194,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 				max-width: 4.5em;
 				text-align: center;
 				padding: 0 !important;
+				position: relative;
 
 				@include item-type-colors();
 				@include missing-overlay();

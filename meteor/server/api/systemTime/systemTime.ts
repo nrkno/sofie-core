@@ -5,7 +5,6 @@ import { systemTime, getCurrentTime } from '../../../lib/lib'
 import { setSystemStatus } from '../../systemStatus/systemStatus'
 import { logger } from '../../logging'
 import { TimeDiff, DiffTimeResult } from '../../../lib/api/peripheralDevice'
-import { env } from 'process'
 import { StatusCode } from '../../../lib/api/systemStatus'
 
 /** How often the system-time should be updated */
@@ -193,7 +192,7 @@ function updateServerTime(retries: number = 0) {
 		})
 }
 Meteor.startup(() => {
-	if (!env.JEST_WORKER_ID) {
+	if (!Meteor.isTest) {
 		setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: ['Starting up...'] })
 		Meteor.setInterval(() => {
 			updateServerTime()

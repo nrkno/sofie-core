@@ -61,6 +61,11 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 @mixin piece-colors {
 	&:not(.super-infinite) {
 		@include item-type-colors();
+
+		&.disabled {
+			background: $segment-item-disabled-background;
+			color: $segment-item-disabled-color;
+		}
 	}
 
 	&.super-infinite {
@@ -91,6 +96,17 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 					background-repeat: repeat-x, no-repeat;
 					background-position: 0 0, 0 0;
 				}
+			}
+
+			&.disabled {
+				--infinite-piece-background-image: linear-gradient(
+					to bottom,
+					#{$segment-item-disabled-background},
+					#{$segment-item-disabled-background} var(--infinite-piece-background-line-height, 4px),
+					transparent var(--infinite-piece-background-line-height, 4px)
+				);
+
+				color: $segment-item-disabled-color;
 			}
 		}
 
@@ -125,6 +141,23 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 						background-repeat: repeat-x, no-repeat;
 					}
 				}
+			}
+
+			&.disabled {
+				--infinite-piece-starts-background-image: linear-gradient(
+					135deg,
+					#{$segment-item-disabled-background},
+					#{$segment-item-disabled-background} calc(var(--segment-layer-height) / 2),
+					transparent calc(var(--segment-layer-height) / 2)
+				);
+				--infinite-piece-background-image: linear-gradient(
+					to bottom,
+					#{$segment-item-disabled-background},
+					#{$segment-item-disabled-background} var(--infinite-piece-background-line-height, 4px),
+					transparent var(--infinite-piece-background-line-height, 4px)
+				);
+
+				color: $segment-item-disabled-color;
 			}
 		}
 

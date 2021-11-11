@@ -158,7 +158,8 @@ export interface RoutedTimeline {
 	mappingsHash: MappingsHash | undefined
 	timelineHash: TimelineHash | undefined
 	timeline: TimelineObjGeneric[]
-	generated: number
+	generated: Time
+	published: Time
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')

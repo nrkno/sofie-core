@@ -280,67 +280,71 @@ describe('codeControl', () => {
 		expect(res).toEqual(['result yo run0', 'result yo run0'])
 	})
 
-	testInFiber('pushWorkToQueue, 2 queues', async () => {
-		// Running in two parallel queues, run0 and run1:
+	testInFiber(
+		'pushWorkToQueue, 2 queues',
+		async () => {
+			// Running in two parallel queues, run0 and run1:
 
-		const res: any[] = []
-		async function doIt(name: string): Promise<void> {
-			return pushWorkToQueue(name, '1', async () => takesALongTimeInnerAsync(name)).then((v) => {
-				res.push(v)
-			})
-		}
+			const res: any[] = []
+			async function doIt(name: string): Promise<void> {
+				return pushWorkToQueue(name, '1', async () => takesALongTimeInnerAsync(name)).then((v) => {
+					res.push(v)
+				})
+			}
 
-		// First, just run them sequentially
-		Meteor.setTimeout(() => {
-			waitForPromise(doIt('run0'))
-			waitForPromise(doIt('run0'))
-			waitForPromise(doIt('run1'))
-			waitForPromise(doIt('run1'))
-		}, 10)
+			// First, just run them sequentially
+			Meteor.setTimeout(() => {
+				waitForPromise(doIt('run0'))
+				waitForPromise(doIt('run0'))
+				waitForPromise(doIt('run1'))
+				waitForPromise(doIt('run1'))
+			}, 10)
 
-		jest.advanceTimersByTime(350)
-		await runTimersUntilNow()
-		expect(res).toEqual(['result yo run0'])
-		jest.advanceTimersByTime(300)
-		await runTimersUntilNow()
-		expect(res).toEqual(['result yo run0', 'result yo run0'])
-		jest.advanceTimersByTime(300)
-		await runTimersUntilNow()
-		expect(res).toEqual(['result yo run0', 'result yo run0', 'result yo run1'])
-		jest.advanceTimersByTime(300)
-		await runTimersUntilNow()
-		expect(res).toEqual(['result yo run0', 'result yo run0', 'result yo run1', 'result yo run1'])
+			jest.advanceTimersByTime(350)
+			await runTimersUntilNow()
+			expect(res).toEqual(['result yo run0'])
+			jest.advanceTimersByTime(300)
+			await runTimersUntilNow()
+			expect(res).toEqual(['result yo run0', 'result yo run0'])
+			jest.advanceTimersByTime(300)
+			await runTimersUntilNow()
+			expect(res).toEqual(['result yo run0', 'result yo run0', 'result yo run1'])
+			jest.advanceTimersByTime(300)
+			await runTimersUntilNow()
+			expect(res).toEqual(['result yo run0', 'result yo run0', 'result yo run1', 'result yo run1'])
 
-		// Run them in parallell, the 2 queues should kick in now:
-		res.length = 0
+			// Run them in parallell, the 2 queues should kick in now:
+			res.length = 0
 
-		let ps
-		Meteor.setTimeout(() => {
-			ps = [
-				// queue run0
-				doIt('run0'),
-				doIt('run0'),
-				// queue run1
-				doIt('run1'),
-				doIt('run1'),
-			]
-		}, 10)
-		jest.advanceTimersByTime(0)
-		await runTimersUntilNow()
-		expect(res).toHaveLength(0)
-		expect(ps).toBeUndefined()
-		jest.advanceTimersByTime(15)
-		await runTimersUntilNow()
-		expect(ps).toHaveLength(4)
+			let ps
+			Meteor.setTimeout(() => {
+				ps = [
+					// queue run0
+					doIt('run0'),
+					doIt('run0'),
+					// queue run1
+					doIt('run1'),
+					doIt('run1'),
+				]
+			}, 10)
+			jest.advanceTimersByTime(0)
+			await runTimersUntilNow()
+			expect(res).toHaveLength(0)
+			expect(ps).toBeUndefined()
+			jest.advanceTimersByTime(15)
+			await runTimersUntilNow()
+			expect(ps).toHaveLength(4)
 
-		jest.advanceTimersByTime(350)
-		await runTimersUntilNow()
-		expect(res).toMatchObject(['result yo run0', 'result yo run1'])
+			jest.advanceTimersByTime(350)
+			await runTimersUntilNow()
+			expect(res).toMatchObject(['result yo run0', 'result yo run1'])
 
-		jest.advanceTimersByTime(300)
-		await runTimersUntilNow()
-		expect(res).toMatchObject(['result yo run0', 'result yo run1', 'result yo run0', 'result yo run1'])
-	})
+			jest.advanceTimersByTime(300)
+			await runTimersUntilNow()
+			expect(res).toMatchObject(['result yo run0', 'result yo run1', 'result yo run0', 'result yo run1'])
+		},
+		10000
+	)
 	describe('waitTime', () => {
 		let $nowOriginal
 		let $setTimeoutOriginal

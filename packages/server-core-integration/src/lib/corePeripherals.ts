@@ -131,6 +131,7 @@ export namespace PeripheralDeviceAPI {
 		'dataRundownDelete' = 'peripheralDevice.rundown.rundownDelete',
 		'dataRundownCreate' = 'peripheralDevice.rundown.rundownCreate',
 		'dataRundownUpdate' = 'peripheralDevice.rundown.rundownUpdate',
+		'dataRundownMetaDataUpdate' = 'peripheralDevice.rundown.rundownMetaDataUpdate',
 		'dataSegmentGet' = 'peripheralDevice.rundown.segmentGet',
 		'dataSegmentDelete' = 'peripheralDevice.rundown.segmentDelete',
 		'dataSegmentCreate' = 'peripheralDevice.rundown.segmentCreate',
