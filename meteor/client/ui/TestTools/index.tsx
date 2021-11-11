@@ -7,6 +7,7 @@ import { TimelineView, TimelineStudioSelect } from './Timeline'
 import { UserLogPlayerPage, UserLogRundownSelect } from './UserLogPlayer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
+import { MappingsStudioSelect, MappingsView } from './Mappings'
 
 interface IStatusMenuProps {
 	match?: any
@@ -25,6 +26,13 @@ const StatusMenu = withTranslation()(
 						to={'/testTools/timeline'}
 					>
 						<h3>{t('Timeline')}</h3>
+					</NavLink>
+					<NavLink
+						activeClassName="selectable-selected"
+						className="testTools-menu__testTools-menu-item selectable clickable"
+						to={'/testTools/mappings'}
+					>
+						<h3>{t('Mappings')}</h3>
 					</NavLink>
 					<NavLink
 						activeClassName="selectable-selected"
@@ -70,6 +78,8 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 							<Switch>
 								<Route path="/testTools/timeline/:studioId" component={TimelineView} />
 								<Route path="/testTools/timeline" component={TimelineStudioSelect} />
+								<Route path="/testTools/mappings/:studioId" component={MappingsView} />
+								<Route path="/testTools/mappings" component={MappingsStudioSelect} />
 								<Route path="/testTools/userlogplayer/:rundownPlaylistId" component={UserLogPlayerPage} />
 								<Route path="/testTools/userlogplayer" component={UserLogRundownSelect} />
 								<Redirect to="/testTools/timeline" />

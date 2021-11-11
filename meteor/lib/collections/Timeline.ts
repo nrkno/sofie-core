@@ -1,7 +1,7 @@
 import { registerCollection, ProtectedString, Time } from '../lib'
 import { TimelineObjectCoreExt, TSR, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { StudioId, ResultingMappingRoutes } from './Studios'
+import { StudioId, ResultingMappingRoutes, MappingsHash } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId, PieceInstanceInfiniteId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
@@ -151,6 +151,15 @@ export interface TimelineComplete {
 	generated: Time
 	/** Array containing all timeline-objects */
 	timeline: Array<TimelineObjGeneric>
+}
+
+export interface RoutedTimeline {
+	_id: StudioId
+	mappingsHash: MappingsHash | undefined
+	timelineHash: TimelineHash | undefined
+	timeline: TimelineObjGeneric[]
+	generated: Time
+	published: Time
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')

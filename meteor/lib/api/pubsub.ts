@@ -54,6 +54,8 @@ export enum PubSub {
 	// custom publications:
 	mappingsForDevice = 'mappingsForDevice',
 	timelineForDevice = 'timelineForDevice',
+	mappingsForStudio = 'mappingsForStudio',
+	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
 }
 
