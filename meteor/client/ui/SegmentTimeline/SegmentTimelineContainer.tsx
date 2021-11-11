@@ -311,7 +311,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.timeScale !== nextProps.timeScale ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
 			!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers) ||
-			props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys
+			props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys ||
+			!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces)
 		) {
 			return true
 		}
