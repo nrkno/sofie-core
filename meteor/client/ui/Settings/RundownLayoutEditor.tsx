@@ -17,7 +17,6 @@ import {
 	DashboardLayoutActionButton,
 	RundownLayoutElementType,
 	RundownLayoutId,
-	CustomizableRegions,
 } from '../../../lib/collections/RundownLayouts'
 import {
 	CustomizableRegionLayout,
@@ -62,8 +61,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	const rundownLayouts = RundownLayouts.find({
 		showStyleBaseId: props.showStyleBase._id,
 		userId: { $exists: false },
-		type: { $in: layoutTypes },
-		regionId: props.customRegion._id as CustomizableRegions,
 	}).fetch()
 
 	return {
