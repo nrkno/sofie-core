@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -188,7 +188,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		SpeechSynthesiser.init()
 	}, [])
 
-	const segmentRef = React.createRef<HTMLDivElement>()
+	const segmentRef = useRef<HTMLDivElement | null>(null)
 
 	if (props.segmentui === undefined) {
 		return null
