@@ -229,16 +229,10 @@ export function checkPieceContentStatus(
 							expectedPackage.content.guid ||
 							expectedPackage._id
 
-						if (!packageOnPackageContainer) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-							messages.push(
-								t(`Clip "{{fileName}}" has not been looked up by Sofie yet`, {
-									fileName: packageName,
-								})
-							)
-						} else if (
+						if (
+							!packageOnPackageContainer ||
 							packageOnPackageContainer.status.status ===
-							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
+								ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
 						) {
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 							messages.push(
