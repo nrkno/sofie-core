@@ -24,7 +24,7 @@
 		"validate:release:packages": "cd packages && yarn validate:dependencies && yarn lint && yarn test",
 		"meteor": "cd meteor && meteor",
 		"reset": "meteor node scripts/reset.js",
-		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn test:packages && yarn test:meteor && yarn lint:packages && yarn lint:meteor"
+		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn lint:packages && yarn lint:meteor && yarn test:packages && yarn test:meteor"
 	},
 	"devDependencies": {
 		"rimraf": "^3.0.2"
