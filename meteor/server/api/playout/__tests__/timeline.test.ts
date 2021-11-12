@@ -36,7 +36,8 @@ import { PartInstance, PartInstanceId } from '../../../../lib/collections/PartIn
 import { getPartGroupId, getPieceGroupId } from '../../../../lib/rundown/timeline'
 import { normalizeArrayToMap, protectString, unprotectString } from '../../../../lib/lib'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
+import { PartId } from '../../../../lib/collections/Parts'
 
 function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
 	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
@@ -119,6 +120,90 @@ async function checkTimingsRaw(
 	expect(timings.previousOutTransition).toEqual(previousOutTransition)
 }
 
+async function doTakePart(
+	playlistId: RundownPlaylistId,
+	previousPartId: PartId | null,
+	currentPartId: PartId | null,
+	nextPartId: PartId | null
+) {
+	await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId)
+
+	const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
+	expect(playlist).toBeTruthy()
+
+	const { currentPartInstance, nextPartInstance, previousPartInstance } = playlist.getSelectedPartInstances()
+
+	if (currentPartId) {
+		expect(currentPartInstance).toBeTruthy()
+		expect(currentPartInstance!.part._id).toEqual(currentPartId)
+	} else {
+		expect(currentPartInstance).toBeFalsy()
+	}
+
+	if (previousPartId) {
+		expect(previousPartInstance).toBeTruthy()
+		expect(previousPartInstance!.part._id).toEqual(previousPartId)
+	} else {
+		expect(previousPartInstance).toBeFalsy()
+	}
+
+	if (nextPartId) {
+		expect(nextPartInstance).toBeTruthy()
+		expect(nextPartInstance!.part._id).toEqual(nextPartId)
+	} else {
+		expect(nextPartInstance).toBeFalsy()
+	}
+
+	return { currentPartInstance, nextPartInstance, previousPartInstance }
+}
+
+async function doActivatePlaylist(playlistId: RundownPlaylistId, nextPartId: PartId) {
+	await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId, false)
+
+	const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
+	expect(playlist).toBeTruthy()
+
+	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+	expect(currentPartInstance).toBeFalsy()
+	expect(nextPartInstance).toBeTruthy()
+	expect(nextPartInstance!.part._id).toEqual(nextPartId)
+	expect(playlist).toMatchObject({
+		activationId: expect.stringMatching(/^randomId/),
+		rehearsal: false,
+		currentPartInstanceId: null,
+		// nextPartInstanceId: parts[0]._id,
+	})
+}
+
+async function doDeactivatePlaylist(playlistId: RundownPlaylistId) {
+	await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId)
+
+	const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
+	expect(playlist).toBeTruthy()
+
+	// Ensure this is defined to something, for the jest matcher
+	playlist.activationId = playlist.activationId ?? undefined
+
+	expect(playlist).toMatchObject({
+		activationId: undefined,
+		currentPartInstanceId: null,
+		nextPartInstanceId: null,
+	})
+}
+
+async function doUpdateTimeline(playlistId: RundownPlaylistId, forceNowToTime?: Time) {
+	await runPlayoutOperationWithCache(
+		null,
+		'updateTimeline',
+		playlistId,
+		PlayoutLockFunctionPriority.USER_PLAYOUT,
+		null,
+		async (cache) => {
+			await updateTimeline(cache, forceNowToTime)
+		}
+	)
+}
+
 describe('Timeline', () => {
 	let env: DefaultEnvironment
 	beforeEach(async () => {
@@ -153,200 +238,109 @@ describe('Timeline', () => {
 			rehearsal: false,
 		})
 
-		{
-			// Prepare and activate in rehersal:
-			await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-			expect(currentPartInstance).toBeFalsy()
-			expect(nextPartInstance).toBeTruthy()
-			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
-			expect(getPlaylist0()).toMatchObject({
-				activationId: expect.stringMatching(/^randomId/),
-				rehearsal: false,
-				currentPartInstanceId: null,
-				// nextPartInstanceId: parts[0]._id,
-			})
-		}
+		// Prepare and activate in rehersal:
+		await doActivatePlaylist(playlistId0, parts[0]._id)
 
-		{
-			// Take the first Part:
-			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-			expect(currentPartInstance).toBeTruthy()
-			expect(nextPartInstance).toBeTruthy()
-			expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
-			expect(nextPartInstance!.part._id).toEqual(parts[1]._id)
-			// expect(getPlaylist0()).toMatchObject({
-			// 	currentPartInstanceId: parts[0]._id,
-			// 	nextPartInstanceId: parts[1]._id,
-			// })
-		}
+		// Take the first Part:
+		await doTakePart(playlistId0, null, parts[0]._id, parts[1]._id)
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updateTimeline',
-			getRundown0().playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => {
-				await updateTimeline(cache)
-			}
-		)
-
+		// Regenerate the timeline, and check it against snapshot
+		await doUpdateTimeline(playlistId0)
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updateTimeline',
-			getRundown0().playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => {
-				const currentTime = 100 * 1000
-				await updateTimeline(cache, currentTime)
-			}
-		)
-
+		// Regenerate the timeline, with a now time, and check it against snapshot
+		await doUpdateTimeline(playlistId0, 100 * 1000)
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 
-		{
-			// Deactivate rundown:
-			await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
-			expect(getPlaylist0()).toMatchObject({
-				activationId: undefined,
-				currentPartInstanceId: null,
-				nextPartInstanceId: null,
-			})
-		}
+		// Deactivate rundown:
+		await doDeactivatePlaylist(playlistId0)
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 	})
 
-	describe('In transitions', () => {
-		function testTransition(
-			name: string,
-			customRundownFactory: (
-				env: DefaultEnvironment,
-				playlistId: RundownPlaylistId,
-				rundownId: RundownId
-			) => RundownId,
-			fcn: (
-				rundownId: RundownId,
-				timeline: TimelineComplete,
-				currentPartInstance: PartInstance,
-				previousPartInstance: PartInstance,
-				checkTimings: (timings: PartTimelineTimings) => Promise<void>
-			) => Promise<void>,
-			timeout?: number
-		) {
-			testInFiber(
-				name,
-				async () => {
-					const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
-						env,
-						undefined,
-						customRundownFactory
-					)
-					expect(rundownId0).toBeTruthy()
-					expect(playlistId0).toBeTruthy()
+	function testTransitionTimings(
+		name: string,
+		customRundownFactory: (
+			env: DefaultEnvironment,
+			playlistId: RundownPlaylistId,
+			rundownId: RundownId
+		) => RundownId,
+		fcn: (
+			rundownId: RundownId,
+			timeline: TimelineComplete,
+			currentPartInstance: PartInstance,
+			previousPartInstance: PartInstance,
+			checkTimings: (timings: PartTimelineTimings) => Promise<void>
+		) => Promise<void>,
+		timeout?: number
+	) {
+		testInFiber(
+			name,
+			async () => {
+				const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
+					env,
+					undefined,
+					customRundownFactory
+				)
+				expect(rundownId0).toBeTruthy()
+				expect(playlistId0).toBeTruthy()
 
-					const getRundown0 = () => {
-						return Rundowns.findOne(rundownId0) as Rundown
-					}
-					const getPlaylist0 = () => {
-						const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
-						playlist.activationId = playlist.activationId ?? undefined
-						return playlist
-					}
-					expect(getRundown0()).toBeTruthy()
-					expect(getPlaylist0()).toBeTruthy()
+				const rundown = Rundowns.findOne(rundownId0) as Rundown
+				expect(rundown).toBeTruthy()
 
-					const parts = getRundown0().getParts()
+				{
+					const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+					expect(playlist).toBeTruthy()
 
-					expect(getPlaylist0()).toMatchObject({
+					// Ensure this is defined to something, for the jest matcher
+					playlist.activationId = playlist.activationId ?? undefined
+
+					expect(playlist).toMatchObject({
 						activationId: undefined,
 						rehearsal: false,
 					})
+				}
 
-					{
-						// Prepare and activate in rehersal:
-						await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
-						const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-						expect(currentPartInstance).toBeFalsy()
-						expect(nextPartInstance).toBeTruthy()
-						expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
-						expect(getPlaylist0()).toMatchObject({
-							activationId: expect.stringMatching(/^randomId/),
-							rehearsal: false,
-							currentPartInstanceId: null,
-							// nextPartInstanceId: parts[0]._id,
-						})
-					}
+				const parts = rundown.getParts()
 
-					{
-						// Take the first Part:
-						await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-						const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-						expect(currentPartInstance).toBeTruthy()
-						expect(nextPartInstance).toBeTruthy()
-						expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
-						expect(nextPartInstance!.part._id).toEqual(parts[1]._id)
-						// expect(getPlaylist0()).toMatchObject({
-						// 	currentPartInstanceId: parts[0]._id,
-						// 	nextPartInstanceId: parts[1]._id,
-						// })
-					}
+				// Prepare and activate in rehersal:
+				await doActivatePlaylist(playlistId0, parts[0]._id)
 
-					{
-						// Take the second Part:
-						await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-						const { currentPartInstance, previousPartInstance } = getPlaylist0().getSelectedPartInstances()
-						expect(previousPartInstance).toBeTruthy()
-						expect(currentPartInstance).toBeTruthy()
-						expect(previousPartInstance!.part._id).toEqual(parts[0]._id)
-						expect(currentPartInstance!.part._id).toEqual(parts[1]._id)
-						// expect(getPlaylist0()).toMatchObject({
-						// 	currentPartInstanceId: parts[0]._id,
-						// 	nextPartInstanceId: parts[1]._id,
-						// })
+				// Take the first Part:
+				await doTakePart(playlistId0, null, parts[0]._id, parts[1]._id)
 
-						await runPlayoutOperationWithCache(
-							null,
-							'updateTimeline',
-							getRundown0().playlistId,
-							PlayoutLockFunctionPriority.USER_PLAYOUT,
-							null,
-							async (cache) => {
-								await updateTimeline(cache)
-							}
-						)
+				{
+					// Take the second Part:
+					const { currentPartInstance, previousPartInstance } = await doTakePart(
+						playlistId0,
+						parts[0]._id,
+						parts[1]._id,
+						null
+					)
 
-						const timeline = Timeline.findOne(getRundown0().studioId)
-						expect(timeline).toBeTruthy()
+					await doUpdateTimeline(playlistId0)
 
-						const checkTimings = async (timings: PartTimelineTimings) =>
-							checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, timings)
+					// Check the calculated timings
+					const timeline = Timeline.findOne(env.studio._id)
+					expect(timeline).toBeTruthy()
 
-						await fcn(rundownId0, timeline!, currentPartInstance!, previousPartInstance!, checkTimings)
-					}
+					const checkTimings = async (timings: PartTimelineTimings) =>
+						checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, timings)
 
-					{
-						// Deactivate rundown:
-						await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
-						expect(getPlaylist0()).toMatchObject({
-							activationId: undefined,
-							currentPartInstanceId: null,
-							nextPartInstanceId: null,
-						})
-					}
+					await fcn(rundownId0, timeline!, currentPartInstance!, previousPartInstance!, checkTimings)
+				}
 
-					expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
-				},
-				timeout
-			)
-		}
+				// Deactivate rundown:
+				await doDeactivatePlaylist(playlistId0)
 
-		testTransition(
+				expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
+			},
+			timeout
+		)
+	}
+
+	describe('In transitions', () => {
+		testTransitionTimings(
 			'Basic inTransition',
 			setupRundownWithInTransition,
 			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
@@ -363,7 +357,7 @@ describe('Timeline', () => {
 			}
 		)
 
-		testTransition(
+		testTransitionTimings(
 			'Basic inTransition with planned pieces',
 			setupRundownWithInTransitionPlannedPiece,
 			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
@@ -384,7 +378,7 @@ describe('Timeline', () => {
 			}
 		)
 
-		testTransition(
+		testTransitionTimings(
 			'Preroll',
 			setupRundownWithPreroll,
 			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
@@ -401,7 +395,7 @@ describe('Timeline', () => {
 			}
 		)
 
-		testTransition(
+		testTransitionTimings(
 			'Basic inTransition with contentDelay',
 			setupRundownWithInTransitionContentDelay,
 			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
@@ -420,7 +414,7 @@ describe('Timeline', () => {
 			}
 		)
 
-		testTransition(
+		testTransitionTimings(
 			'Basic inTransition with contentDelay + preroll',
 			setupRundownWithInTransitionContentDelayAndPreroll,
 			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
@@ -439,7 +433,7 @@ describe('Timeline', () => {
 			}
 		)
 
-		testTransition(
+		testTransitionTimings(
 			'inTransition with existing infinites',
 			setupRundownWithInTransitionExistingInfinite,
 			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
@@ -464,7 +458,7 @@ describe('Timeline', () => {
 			}
 		)
 
-		testTransition(
+		testTransitionTimings(
 			'inTransition with new infinite',
 			setupRundownWithInTransitionNewInfinite,
 			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
@@ -498,73 +492,45 @@ describe('Timeline', () => {
 			expect(rundownId0).toBeTruthy()
 			expect(playlistId0).toBeTruthy()
 
-			const getRundown0 = () => {
-				return Rundowns.findOne(rundownId0) as Rundown
-			}
-			const getPlaylist0 = () => {
-				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
-				playlist.activationId = playlist.activationId ?? undefined
-				return playlist
-			}
-			expect(getRundown0()).toBeTruthy()
-			expect(getPlaylist0()).toBeTruthy()
-
-			const parts = getRundown0().getParts()
-
-			expect(getPlaylist0()).toMatchObject({
-				activationId: undefined,
-				rehearsal: false,
-			})
+			const rundown = Rundowns.findOne(rundownId0) as Rundown
+			expect(rundown).toBeTruthy()
 
 			{
-				// Prepare and activate in rehersal:
-				await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
-				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-				expect(currentPartInstance).toBeFalsy()
-				expect(nextPartInstance).toBeTruthy()
-				expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
-				expect(getPlaylist0()).toMatchObject({
-					activationId: expect.stringMatching(/^randomId/),
+				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+				expect(playlist).toBeTruthy()
+
+				// Ensure this is defined to something, for the jest matcher
+				playlist.activationId = playlist.activationId ?? undefined
+
+				expect(playlist).toMatchObject({
+					activationId: undefined,
 					rehearsal: false,
-					currentPartInstanceId: null,
-					// nextPartInstanceId: parts[0]._id,
 				})
 			}
 
-			{
-				// Take the first Part:
-				await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-				expect(currentPartInstance).toBeTruthy()
-				expect(nextPartInstance).toBeTruthy()
-				expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
-				expect(nextPartInstance!.part._id).toEqual(parts[1]._id)
+			const parts = rundown.getParts()
 
-				// activate hold mode
-				await ServerPlayoutAPI.activateHold(DEFAULT_ACCESS(playlistId0), playlistId0)
-			}
+			// Prepare and activate in rehersal:
+			await doActivatePlaylist(playlistId0, parts[0]._id)
+
+			// Take the first Part:
+			await doTakePart(playlistId0, null, parts[0]._id, parts[1]._id)
+
+			// activate hold mode
+			await ServerPlayoutAPI.activateHold(DEFAULT_ACCESS(playlistId0), playlistId0)
 
 			{
 				// Take the second Part:
-				await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-				const { currentPartInstance, previousPartInstance } = getPlaylist0().getSelectedPartInstances()
-				expect(previousPartInstance).toBeTruthy()
-				expect(currentPartInstance).toBeTruthy()
-				expect(previousPartInstance!.part._id).toEqual(parts[0]._id)
-				expect(currentPartInstance!.part._id).toEqual(parts[1]._id)
-
-				await runPlayoutOperationWithCache(
-					null,
-					'updateTimeline',
-					getRundown0().playlistId,
-					PlayoutLockFunctionPriority.USER_PLAYOUT,
-					null,
-					async (cache) => {
-						await updateTimeline(cache)
-					}
+				const { currentPartInstance, previousPartInstance } = await doTakePart(
+					playlistId0,
+					parts[0]._id,
+					parts[1]._id,
+					null
 				)
 
-				const timeline = Timeline.findOne(getRundown0().studioId)
+				await doUpdateTimeline(playlistId0)
+
+				const timeline = Timeline.findOne(env.studio._id)
 				expect(timeline).toBeTruthy()
 
 				await checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, {
@@ -581,20 +547,13 @@ describe('Timeline', () => {
 				})
 			}
 
-			{
-				// Deactivate rundown:
-				await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
-				expect(getPlaylist0()).toMatchObject({
-					activationId: undefined,
-					currentPartInstanceId: null,
-					nextPartInstanceId: null,
-				})
-			}
+			// Deactivate rundown:
+			await doDeactivatePlaylist(playlistId0)
 
 			expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 		})
 
-		testTransition(
+		testTransitionTimings(
 			'inTransition disabled',
 			setupRundownWithInTransitionDisabled,
 			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
@@ -615,129 +574,7 @@ describe('Timeline', () => {
 	})
 
 	describe('Out transitions', () => {
-		function testTransition(
-			name: string,
-			customRundownFactory: (
-				env: DefaultEnvironment,
-				playlistId: RundownPlaylistId,
-				rundownId: RundownId
-			) => RundownId,
-			fcn: (
-				rundownId: RundownId,
-				timeline: TimelineComplete,
-				currentPartInstance: PartInstance,
-				previousPartInstance: PartInstance,
-				checkTimings: (timings: PartTimelineTimings) => Promise<void>
-			) => void | Promise<void>,
-			timeout?: number
-		) {
-			testInFiber(
-				name,
-				async () => {
-					const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
-						env,
-						undefined,
-						customRundownFactory
-					)
-					expect(rundownId0).toBeTruthy()
-					expect(playlistId0).toBeTruthy()
-					const getRundown0 = () => {
-						return Rundowns.findOne(rundownId0) as Rundown
-					}
-					const getPlaylist0 = () => {
-						const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
-						playlist.activationId = playlist.activationId ?? undefined
-						return playlist
-					}
-					expect(getRundown0()).toBeTruthy()
-					expect(getPlaylist0()).toBeTruthy()
-
-					const parts = getRundown0().getParts()
-
-					expect(getPlaylist0()).toMatchObject({
-						activationId: undefined,
-						rehearsal: false,
-					})
-
-					{
-						// Prepare and activate in rehersal:
-						await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
-						const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-						expect(currentPartInstance).toBeFalsy()
-						expect(nextPartInstance).toBeTruthy()
-						expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
-						expect(getPlaylist0()).toMatchObject({
-							activationId: expect.stringMatching(/^randomId/),
-							rehearsal: false,
-							currentPartInstanceId: null,
-							// nextPartInstanceId: parts[0]._id,
-						})
-					}
-
-					{
-						// Take the first Part:
-						await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-						const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-						expect(currentPartInstance).toBeTruthy()
-						expect(nextPartInstance).toBeTruthy()
-						expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
-						expect(nextPartInstance!.part._id).toEqual(parts[1]._id)
-						// expect(getPlaylist0()).toMatchObject({
-						// 	currentPartInstanceId: parts[0]._id,
-						// 	nextPartInstanceId: parts[1]._id,
-						// })
-					}
-
-					{
-						// Take the second Part:
-						await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-						const { currentPartInstance, previousPartInstance } = getPlaylist0().getSelectedPartInstances()
-						expect(previousPartInstance).toBeTruthy()
-						expect(currentPartInstance).toBeTruthy()
-						expect(previousPartInstance!.part._id).toEqual(parts[0]._id)
-						expect(currentPartInstance!.part._id).toEqual(parts[1]._id)
-						// expect(getPlaylist0()).toMatchObject({
-						// 	currentPartInstanceId: parts[0]._id,
-						// 	nextPartInstanceId: parts[1]._id,
-						// })
-
-						await runPlayoutOperationWithCache(
-							null,
-							'updateTimeline',
-							getRundown0().playlistId,
-							PlayoutLockFunctionPriority.USER_PLAYOUT,
-							null,
-							async (cache) => {
-								await updateTimeline(cache)
-							}
-						)
-
-						const timeline = Timeline.findOne(getRundown0().studioId)
-						expect(timeline).toBeTruthy()
-
-						const checkTimings = async (timings: PartTimelineTimings) =>
-							checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, timings)
-
-						await fcn(rundownId0, timeline!, currentPartInstance!, previousPartInstance!, checkTimings)
-					}
-
-					{
-						// Deactivate rundown:
-						await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
-						expect(getPlaylist0()).toMatchObject({
-							activationId: undefined,
-							currentPartInstanceId: null,
-							nextPartInstanceId: null,
-						})
-					}
-
-					expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
-				},
-				timeout
-			)
-		}
-
-		testTransition(
+		testTransitionTimings(
 			'Basic outTransition',
 			setupRundownWithOutTransition,
 			async (_rundownId0, _timeline, currentPartInstance, previousPartInstance, checkTimings) => {
@@ -757,7 +594,7 @@ describe('Timeline', () => {
 			}
 		)
 
-		testTransition(
+		testTransitionTimings(
 			'outTransition + preroll',
 			setupRundownWithOutTransitionAndPreroll,
 			async (_rundownId0, _timeline, currentPartInstance, previousPartInstance, checkTimings) => {
@@ -777,7 +614,7 @@ describe('Timeline', () => {
 			}
 		)
 
-		testTransition(
+		testTransitionTimings(
 			'outTransition + preroll (2)',
 			setupRundownWithOutTransitionAndPreroll2,
 			async (_rundownId0, _timeline, currentPartInstance, previousPartInstance, checkTimings) => {
@@ -797,7 +634,7 @@ describe('Timeline', () => {
 			}
 		)
 
-		testTransition(
+		testTransitionTimings(
 			'outTransition + inTransition',
 			setupRundownWithOutTransitionAndInTransition,
 			async (_rundownId0, _timeline, currentPartInstance, previousPartInstance, checkTimings) => {
@@ -827,73 +664,46 @@ describe('Timeline', () => {
 			)
 			expect(rundownId0).toBeTruthy()
 			expect(playlistId0).toBeTruthy()
-			const getRundown0 = () => {
-				return Rundowns.findOne(rundownId0) as Rundown
-			}
-			const getPlaylist0 = () => {
-				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
-				playlist.activationId = playlist.activationId ?? undefined
-				return playlist
-			}
-			expect(getRundown0()).toBeTruthy()
-			expect(getPlaylist0()).toBeTruthy()
 
-			const parts = getRundown0().getParts()
-
-			expect(getPlaylist0()).toMatchObject({
-				activationId: undefined,
-				rehearsal: false,
-			})
+			const rundown = Rundowns.findOne(rundownId0) as Rundown
+			expect(rundown).toBeTruthy()
 
 			{
-				// Prepare and activate in rehersal:
-				await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
-				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-				expect(currentPartInstance).toBeFalsy()
-				expect(nextPartInstance).toBeTruthy()
-				expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
-				expect(getPlaylist0()).toMatchObject({
-					activationId: expect.stringMatching(/^randomId/),
+				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+				expect(playlist).toBeTruthy()
+
+				// Ensure this is defined to something, for the jest matcher
+				playlist.activationId = playlist.activationId ?? undefined
+
+				expect(playlist).toMatchObject({
+					activationId: undefined,
 					rehearsal: false,
-					currentPartInstanceId: null,
-					// nextPartInstanceId: parts[0]._id,
 				})
 			}
 
-			{
-				// Take the first Part:
-				await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-				expect(currentPartInstance).toBeTruthy()
-				expect(nextPartInstance).toBeTruthy()
-				expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
-				expect(nextPartInstance!.part._id).toEqual(parts[1]._id)
+			const parts = rundown.getParts()
 
-				// activate hold mode
-				await ServerPlayoutAPI.activateHold(DEFAULT_ACCESS(playlistId0), playlistId0)
-			}
+			// Prepare and activate in rehersal:
+			await doActivatePlaylist(playlistId0, parts[0]._id)
+
+			// Take the first Part:
+			await doTakePart(playlistId0, null, parts[0]._id, parts[1]._id)
+
+			// activate hold mode
+			await ServerPlayoutAPI.activateHold(DEFAULT_ACCESS(playlistId0), playlistId0)
 
 			{
 				// Take the second Part:
-				await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-				const { currentPartInstance, previousPartInstance } = getPlaylist0().getSelectedPartInstances()
-				expect(previousPartInstance).toBeTruthy()
-				expect(currentPartInstance).toBeTruthy()
-				expect(previousPartInstance!.part._id).toEqual(parts[0]._id)
-				expect(currentPartInstance!.part._id).toEqual(parts[1]._id)
-
-				await runPlayoutOperationWithCache(
-					null,
-					'updateTimeline',
-					getRundown0().playlistId,
-					PlayoutLockFunctionPriority.USER_PLAYOUT,
-					null,
-					async (cache) => {
-						await updateTimeline(cache)
-					}
+				const { currentPartInstance, previousPartInstance } = await doTakePart(
+					playlistId0,
+					parts[0]._id,
+					parts[1]._id,
+					null
 				)
 
-				const timeline = Timeline.findOne(getRundown0().studioId)
+				await doUpdateTimeline(playlistId0)
+
+				const timeline = Timeline.findOne(env.studio._id)
 				expect(timeline).toBeTruthy()
 
 				await checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, {
@@ -906,15 +716,8 @@ describe('Timeline', () => {
 				})
 			}
 
-			{
-				// Deactivate rundown:
-				await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0)
-				expect(getPlaylist0()).toMatchObject({
-					activationId: undefined,
-					currentPartInstanceId: null,
-					nextPartInstanceId: null,
-				})
-			}
+			// Deactivate rundown:
+			await doDeactivatePlaylist(playlistId0)
 
 			expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 		})

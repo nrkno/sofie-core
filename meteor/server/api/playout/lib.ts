@@ -575,7 +575,7 @@ export function substituteObjectIds(
 export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 	objList: T[],
 	prefix: string,
-	ignoreOriginal?: boolean
+	ignoreOriginal?: never
 ): T[] {
 	const getUpdatePrefixedId = (o: T) => {
 		let id = o.id

@@ -49,7 +49,7 @@ import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { prefixAllObjectIds } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { DBPartInstance, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstanceInfinite } from '../../../lib/collections/PieceInstances'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
@@ -533,12 +533,15 @@ function buildTimelineObjsForRundown(
 			// If we are recalculating the currentPart, then ensure it doesnt think it is starting now
 			currentPartEnable.start = partInstancesInfo.current.partInstance.timings.startedPlayback
 		}
-		if (partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext) {
-			const duration = calcPartTargetDuration(partInstancesInfo.current.partInstance, currentPartInstanceTimings)
-			if (duration !== undefined) {
-				// If there is a valid autonext out of the part, then calculate the duration
-				currentPartEnable.duration = duration
-			}
+
+		if (
+			partInstancesInfo.next &&
+			partInstancesInfo.current.partInstance.part.autoNext &&
+			partInstancesInfo.current.partInstance.part.expectedDuration !== undefined
+		) {
+			// If there is a valid autonext out of the current part, then calculate the duration
+			currentPartEnable.duration =
+				partInstancesInfo.current.partInstance.part.expectedDuration + currentPartInstanceTimings.toPartDelay
 		}
 		const currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 
@@ -593,8 +596,8 @@ function buildTimelineObjsForRundown(
 			)
 		)
 
-		// only add the next objects into the timeline if the next segment is autoNext
-		if (partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext) {
+		// only add the next objects into the timeline if the current partgroup has a duration, and can autoNext
+		if (partInstancesInfo.next && currentPartEnable.duration) {
 			timelineObjs.push(
 				...generateNextPartInstanceObjects(
 					activePlaylist,
@@ -1052,17 +1055,9 @@ function transformPieceGroupAndObjects(
 			})
 		}
 
-		// TODO - should this be ignoreOriginal? this used to be setting that for the previousPartInstance. If changing, lookahead.ts getStartOfObjectRef() will need updating
+		// This `prefixAllObjectIds` call needs to match the one in, lookahead.ts getStartOfObjectRef() will need updating
 		timelineObjs.push(...prefixAllObjectIds(pieceObjects, unprotectString(pieceInstance._id)))
 	}
 
 	return timelineObjs
-}
-
-function calcPartTargetDuration(partInstance: DBPartInstance, timings: PartCalculatedTimings): number | undefined {
-	if (partInstance.part.expectedDuration === undefined) {
-		return undefined
-	}
-
-	return partInstance.part.expectedDuration + timings.toPartDelay
 }
