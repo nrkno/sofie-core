@@ -1,12 +1,21 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import { PartExtended } from '../../../lib/Rundown'
-import { IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
+import { IOutputLayerUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { StoryboardPartSecondaryPieces } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { StoryboardPartThumbnail } from './StoryboardPartThumbnail/StoryboardPartThumbnail'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { getElementDocumentOffset } from '../../utils/positions'
+import { IContextMenuContext } from '../RundownView'
+import { literal } from '../../../lib/lib'
+import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
+import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
+import { getAllowSpeaking } from '../../lib/localStorage'
 
 interface IProps {
+	segment: SegmentUi
 	part: PartExtended
 	outputLayers: Record<string, IOutputLayerUi>
 	isLivePart: boolean
@@ -14,20 +23,56 @@ interface IProps {
 	inHold: boolean
 	currentPartWillAutonext: boolean
 	subscriptionsReady: boolean
+	displayLiveLineCounter: boolean
+	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
 
 export function StoryboardPart({
+	segment,
 	part,
 	isLivePart,
 	isNextPart,
 	currentPartWillAutonext,
 	outputLayers,
 	subscriptionsReady,
+	displayLiveLineCounter,
+	onContextMenu,
 }: IProps) {
 	const { t } = useTranslation()
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
+
+	const getPartContext = useCallback(() => {
+		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + part.instance._id)
+		const partDocumentOffset = getElementDocumentOffset(partElement)
+
+		const ctx = literal<IContextMenuContext>({
+			segment: segment,
+			part: part,
+			partDocumentOffset: partDocumentOffset || undefined,
+			timeScale: 1,
+			mousePosition: { top: 0, left: 0 },
+			partStartsAt: 100,
+		})
+
+		if (onContextMenu && typeof onContextMenu === 'function') {
+			onContextMenu(ctx)
+		}
+
+		return ctx
+	}, [segment, part])
+
 	return (
-		<div className="segment-storyboard__part" data-obj-id={part.instance._id}>
+		<ContextMenuTrigger
+			id="segment-timeline-context-menu"
+			attributes={{
+				className: 'segment-storyboard__part',
+				//@ts-ignore A Data attribue is perfectly fine
+				'data-layer-id': part.instance._id,
+				id: SegmentTimelinePartElementId + part.instance._id,
+			}}
+			holdToDisplay={contextMenuHoldToDisplayTime()}
+			collect={getPartContext}
+		>
 			{subscriptionsReady ? (
 				<>
 					<StoryboardPartThumbnail part={part} />
@@ -57,6 +102,14 @@ export function StoryboardPart({
 			>
 				{isLivePart ? t('On Air') : willBeAutoNextedInto ? t('Auto') : isNextPart ? t('Next') : null}
 			</div>
-		</div>
+			<div className="segment-storyboard__identifier">{part.instance.part.identifier}</div>
+			{isLivePart && displayLiveLineCounter && (
+				<CurrentPartRemaining
+					currentPartInstanceId={part.instance._id}
+					speaking={getAllowSpeaking()}
+					heavyClassName="overtime"
+				/>
+			)}
+		</ContextMenuTrigger>
 	)
 }

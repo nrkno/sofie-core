@@ -14,4 +14,24 @@
 	&.segment-storyboard__part__thumbnail--placeholder {
 		background: lighten($segment-background-color, 10%);
 	}
+
+	> .segment-storyboard__thumbnail__icon {
+		opacity: 0.15;
+		text-align: center;
+		font-size: 3em;
+		margin-top: 0.25em;
+	}
+
+	> .segment-storyboard__thumbnail__label {
+		&.segment-storyboard__thumbnail__label--lg {
+			text-align: center;
+			font-weight: 500;
+			font-size: 1.2em;
+			text-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+		}
+	}
+
+	&.remote > .segment-storyboard__thumbnail__icon {
+		opacity: 0.4;
+	}
 }

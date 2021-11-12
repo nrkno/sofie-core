@@ -155,16 +155,21 @@ export const SegmentStoryboard = React.memo(
 			if (isLivePart) currentPartIndex = index
 			if (isNextPart) nextPartIndex = index
 
+			if (part.instance.part.invalid && part.instance.part.gap) return null
+
 			return (
 				<StoryboardPart
 					key={unprotectString(part.instance._id)}
+					segment={props.segment}
 					part={part}
 					isLivePart={isLivePart}
 					isNextPart={isNextPart}
+					displayLiveLineCounter={props.displayLiveLineCounter}
 					inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
 					currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
 					outputLayers={props.segment.outputLayers}
 					subscriptionsReady={props.subscriptionsReady}
+					onContextMenu={props.onContextMenu}
 				/>
 			)
 		})
