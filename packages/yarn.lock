@@ -8109,6 +8109,11 @@ inflight@^1.0.4:
     once "^1.3.0"
     wrappy "1"
 
+influx@^5.9.2:
+  version "5.9.2"
+  resolved "https://registry.yarnpkg.com/influx/-/influx-5.9.2.tgz#10711f7573058b1f0752c57f8f2ab13dbab9788a"
+  integrity sha512-N2YRIQiwCO60BzmzEzTxyWj/hDNsce2CLSmki8S1qbRwwuKecfvC6n0OwJrFV70lk5CpU/sLsOZFIy6PP01nOA==
+
 inherits@2, inherits@2.0.4, inherits@^2.0.0, inherits@^2.0.1, inherits@^2.0.3, inherits@^2.0.4, inherits@~2.0.1, inherits@~2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
@@ -10131,7 +10136,12 @@ minimist-options@4.1.0, minimist-options@^4.0.2:
     is-plain-obj "^1.1.0"
     kind-of "^6.0.3"
 
-minimist@^0.1.0, minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
+minimist@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-0.1.0.tgz#99df657a52574c21c9057497df742790b2b4c0de"
+  integrity sha1-md9lelJXTCHJBXSX33QnkLK0wN4=
+
+minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
@@ -14187,17 +14197,17 @@ timeline-state-resolver-types@6.3.0-nightly-release38-20211022-090801-9264c02ad.
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver-types@6.3.0-nightly-release38-20211022-115732-2c75df103.0:
-  version "6.3.0-nightly-release38-20211022-115732-2c75df103.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.3.0-nightly-release38-20211022-115732-2c75df103.0.tgz#853332e292c6b4531e8d417fb4feda8d830412f9"
-  integrity sha512-7gpSZT4ZH/ZiGYx8Efh93ugfZoocNz9WXjKfd9OrNJqKwIfUQdMYzdVkSdBiAGUGsG2m+Qctr3G7aQTXtlz4Fw==
+timeline-state-resolver-types@6.3.0-nightly-release38-20211111-093452-09c27a8be.0:
+  version "6.3.0-nightly-release38-20211111-093452-09c27a8be.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.3.0-nightly-release38-20211111-093452-09c27a8be.0.tgz#7f87fba33bd8c3c7dee81accb58df16221fcb691"
+  integrity sha512-s9gOSXDevgI2v0oK6uFfaaCWybtB1veg3UWwfBIIpDeFhpt1LbjFQALVtffDFMavsVxPBtCXnXRr+xtvaP0EZw==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.3.0-nightly-release38-20211022-115732-2c75df103.0:
-  version "6.3.0-nightly-release38-20211022-115732-2c75df103.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.3.0-nightly-release38-20211022-115732-2c75df103.0.tgz#739ffd235d952015581e719b7604fecf8f5d846b"
-  integrity sha512-9BZJynfwieKU0axur0yd8lCBwSqcCr7+fag3k1kJabYx7yAt0ls0w+KkypPncYHbgX5TY4oQtVizfVizP6mP4g==
+timeline-state-resolver@6.3.0-nightly-release38-20211111-093452-09c27a8be.0:
+  version "6.3.0-nightly-release38-20211111-093452-09c27a8be.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.3.0-nightly-release38-20211111-093452-09c27a8be.0.tgz#a8773df8d7dfbb1390ae00252c0cca0b5084ee9f"
+  integrity sha512-blTLCTvN/F3YDcBwljUo01dOhy3LbpX/VskgjgaJqCpiN1hHWkOSy0+rMOTawvCGkFonY4WkTrzLxuxonwgCtA==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "^2.3.0"
@@ -14219,7 +14229,7 @@ timeline-state-resolver@6.3.0-nightly-release38-20211022-115732-2c75df103.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.2"
     threadedclass "^1.0.0"
-    timeline-state-resolver-types "6.3.0-nightly-release38-20211022-115732-2c75df103.0"
+    timeline-state-resolver-types "6.3.0-nightly-release38-20211111-093452-09c27a8be.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
@@ -14349,7 +14359,7 @@ trim-newlines@^3.0.0:
   resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-3.0.1.tgz#260a5d962d8b752425b32f3a7db0dcacd176c144"
   integrity sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==
 
-trim-newlines@^4.0.1, trim-newlines@^4.0.2:
+trim-newlines@^4.0.2:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-4.0.2.tgz#d6aaaf6a0df1b4b536d183879a6b939489808c7c"
   integrity sha512-GJtWyq9InR/2HRiLZgpIKv+ufIKrVrvjQWEj7PxAXNc5dwbNJkqhAUoAGgzRmULAnoOM5EIpveYd3J2VeSAIew==
