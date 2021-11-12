@@ -31,13 +31,17 @@ import {
 	setupRundownWithOutTransitionAndPreroll2,
 	setupRundownWithOutTransitionAndInTransition,
 	setupRundownWithOutTransitionEnableHold,
+	setupRundownBase,
 } from './helpers/rundowns'
 import { PartInstance, PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { getPartGroupId, getPieceGroupId } from '../../../../lib/rundown/timeline'
-import { normalizeArrayToMap, protectString, unprotectString } from '../../../../lib/lib'
-import { PieceInstances } from '../../../../lib/collections/PieceInstances'
+import { literal, normalizeArrayToMap, protectString, unprotectString } from '../../../../lib/lib'
+import { PieceInstance, PieceInstances } from '../../../../lib/collections/PieceInstances'
 import { PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
-import { PartId } from '../../../../lib/collections/Parts'
+import { Part, PartId } from '../../../../lib/collections/Parts'
+import { ServerPlayoutAdLibAPI } from '../adlib'
+import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
+import { RundownAPI } from '../../../../lib/api/rundown'
 
 function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
 	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
@@ -46,7 +50,7 @@ function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPl
 }
 
 interface PartTimelineTimings {
-	previousPart: TimelineEnableExt
+	previousPart: TimelineEnableExt | null
 	currentPieces: { [id: string]: TimelineEnableExt | TimelineEnableExt[] | null }
 	currentInfinitePieces: {
 		[id: string]: {
@@ -57,19 +61,27 @@ interface PartTimelineTimings {
 	previousOutTransition: TimelineEnableExt | TimelineEnableExt[] | null | undefined
 }
 
+/**
+ * Check the timings of objects in the timeline to an expected result
+ * Note: this ensures that every piece for the currentPartInstance is accounted for in the expected result
+ */
 async function checkTimingsRaw(
 	rundownId: RundownId,
 	timeline: TimelineComplete | undefined,
 	currentPartInstance: PartInstance,
-	previousPartInstance: PartInstance,
-	timings: PartTimelineTimings
+	previousPartInstance: PartInstance | undefined,
+	expectedTimings: PartTimelineTimings
 ) {
 	const objs = normalizeArrayToMap(timeline?.timeline ?? [], 'id')
 
 	// previous part group
-	const prevPartTlObj = objs.get(getPartGroupId(previousPartInstance))
-	expect(prevPartTlObj).toBeTruthy()
-	expect(prevPartTlObj?.enable).toMatchObject(timings.previousPart)
+	const prevPartTlObj = previousPartInstance ? objs.get(getPartGroupId(previousPartInstance)) : undefined
+	if (expectedTimings.previousPart) {
+		expect(prevPartTlObj).toBeTruthy()
+		expect(prevPartTlObj?.enable).toMatchObject(expectedTimings.previousPart)
+	} else {
+		expect(prevPartTlObj).toBeFalsy()
+	}
 
 	// current part group is assumed to start at now
 
@@ -80,7 +92,9 @@ async function checkTimingsRaw(
 	const targetCurrentPieces: PartTimelineTimings['currentPieces'] = {}
 	const targetCurrentInfinitePieces: PartTimelineTimings['currentInfinitePieces'] = {}
 	for (const piece of currentPieces) {
-		const entryId = unprotectString(piece.piece._id).substring(unprotectString(rundownId).length + 1)
+		let entryId = unprotectString(piece.piece._id)
+		if (entryId.startsWith(unprotectString(rundownId)))
+			entryId = entryId.substring(unprotectString(rundownId).length + 1)
 
 		if (piece.piece.lifespan === PieceLifespan.WithinPart) {
 			const pieceObj = objs.get(getPieceGroupId(piece))
@@ -101,30 +115,35 @@ async function checkTimingsRaw(
 			}
 		}
 	}
-	expect(timings.currentPieces).toEqual(targetCurrentPieces)
-	expect(timings.currentInfinitePieces).toEqual(targetCurrentInfinitePieces)
+	expect(targetCurrentPieces).toEqual(expectedTimings.currentPieces)
+	expect(targetCurrentInfinitePieces).toEqual(expectedTimings.currentInfinitePieces)
 
-	// Previous pieces
-	const previousPieces = await PieceInstances.findFetchAsync({
-		partInstanceId: previousPartInstance._id,
-	})
-	let previousOutTransition: PartTimelineTimings['previousOutTransition']
-	for (const piece of previousPieces) {
-		if (piece.piece.isOutTransition) {
-			if (previousOutTransition !== undefined) throw new Error('Too many out transition pieces were found')
+	if (previousPartInstance) {
+		// Previous pieces
+		const previousPieces = await PieceInstances.findFetchAsync({
+			partInstanceId: previousPartInstance._id,
+		})
+		let previousOutTransition: PartTimelineTimings['previousOutTransition']
+		for (const piece of previousPieces) {
+			if (piece.piece.isOutTransition) {
+				if (previousOutTransition !== undefined) throw new Error('Too many out transition pieces were found')
 
-			const pieceObj = objs.get(getPieceGroupId(piece))
-			previousOutTransition = pieceObj?.enable ?? null
+				const pieceObj = objs.get(getPieceGroupId(piece))
+				previousOutTransition = pieceObj?.enable ?? null
+			}
 		}
+		expect(previousOutTransition).toEqual(expectedTimings.previousOutTransition)
+	} else {
+		expect(expectedTimings.previousOutTransition).toBeFalsy()
 	}
-	expect(timings.previousOutTransition).toEqual(previousOutTransition)
 }
 
+/** Perform a take and check the the selected part ids are as expected */
 async function doTakePart(
 	playlistId: RundownPlaylistId,
-	previousPartId: PartId | null,
-	currentPartId: PartId | null,
-	nextPartId: PartId | null
+	expectedPreviousPartId: PartId | null,
+	expectedCurrentPartId: PartId | null,
+	expectedNextPartId: PartId | null
 ) {
 	await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId)
 
@@ -133,23 +152,23 @@ async function doTakePart(
 
 	const { currentPartInstance, nextPartInstance, previousPartInstance } = playlist.getSelectedPartInstances()
 
-	if (currentPartId) {
+	if (expectedCurrentPartId) {
 		expect(currentPartInstance).toBeTruthy()
-		expect(currentPartInstance!.part._id).toEqual(currentPartId)
+		expect(currentPartInstance!.part._id).toEqual(expectedCurrentPartId)
 	} else {
 		expect(currentPartInstance).toBeFalsy()
 	}
 
-	if (previousPartId) {
+	if (expectedPreviousPartId) {
 		expect(previousPartInstance).toBeTruthy()
-		expect(previousPartInstance!.part._id).toEqual(previousPartId)
+		expect(previousPartInstance!.part._id).toEqual(expectedPreviousPartId)
 	} else {
 		expect(previousPartInstance).toBeFalsy()
 	}
 
-	if (nextPartId) {
+	if (expectedNextPartId) {
 		expect(nextPartInstance).toBeTruthy()
-		expect(nextPartInstance!.part._id).toEqual(nextPartId)
+		expect(nextPartInstance!.part._id).toEqual(expectedNextPartId)
 	} else {
 		expect(nextPartInstance).toBeFalsy()
 	}
@@ -157,6 +176,7 @@ async function doTakePart(
 	return { currentPartInstance, nextPartInstance, previousPartInstance }
 }
 
+/** Perform an activate and check the next part id is as expected */
 async function doActivatePlaylist(playlistId: RundownPlaylistId, nextPartId: PartId) {
 	await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId, false)
 
@@ -175,6 +195,7 @@ async function doActivatePlaylist(playlistId: RundownPlaylistId, nextPartId: Par
 	})
 }
 
+/** Perform an activate and check the selected part ids are cleared */
 async function doDeactivatePlaylist(playlistId: RundownPlaylistId) {
 	await ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId)
 
@@ -191,6 +212,7 @@ async function doDeactivatePlaylist(playlistId: RundownPlaylistId) {
 	})
 }
 
+/** perform an update of the timeline */
 async function doUpdateTimeline(playlistId: RundownPlaylistId, forceNowToTime?: Time) {
 	await runPlayoutOperationWithCache(
 		null,
@@ -202,6 +224,12 @@ async function doUpdateTimeline(playlistId: RundownPlaylistId, forceNowToTime?: 
 			await updateTimeline(cache, forceNowToTime)
 		}
 	)
+}
+
+interface SelectedPartInstances {
+	currentPartInstance: PartInstance | undefined
+	nextPartInstance: PartInstance | undefined
+	previousPartInstance: PartInstance | undefined
 }
 
 describe('Timeline', () => {
@@ -265,9 +293,9 @@ describe('Timeline', () => {
 			playlistId: RundownPlaylistId,
 			rundownId: RundownId
 		) => RundownId,
-		fcn: (
+		checkFcn: (
 			rundownId: RundownId,
-			timeline: TimelineComplete,
+			timeline: null,
 			currentPartInstance: PartInstance,
 			previousPartInstance: PartInstance,
 			checkTimings: (timings: PartTimelineTimings) => Promise<void>
@@ -276,67 +304,94 @@ describe('Timeline', () => {
 	) {
 		testInFiber(
 			name,
-			async () => {
-				const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
-					env,
-					undefined,
-					customRundownFactory
-				)
-				expect(rundownId0).toBeTruthy()
-				expect(playlistId0).toBeTruthy()
+			async () =>
+				runTimelineTimings(
+					customRundownFactory,
+					async (playlistId, rundownId, parts, getPartInstances, checkTimings) => {
+						// Take the first Part:
+						await doTakePart(playlistId, null, parts[0]._id, parts[1]._id)
 
-				const rundown = Rundowns.findOne(rundownId0) as Rundown
-				expect(rundown).toBeTruthy()
+						// Take the second Part:
+						await doTakePart(playlistId, parts[0]._id, parts[1]._id, null)
 
-				{
-					const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
-					expect(playlist).toBeTruthy()
-
-					// Ensure this is defined to something, for the jest matcher
-					playlist.activationId = playlist.activationId ?? undefined
-
-					expect(playlist).toMatchObject({
-						activationId: undefined,
-						rehearsal: false,
-					})
-				}
-
-				const parts = rundown.getParts()
-
-				// Prepare and activate in rehersal:
-				await doActivatePlaylist(playlistId0, parts[0]._id)
-
-				// Take the first Part:
-				await doTakePart(playlistId0, null, parts[0]._id, parts[1]._id)
-
-				{
-					// Take the second Part:
-					const { currentPartInstance, previousPartInstance } = await doTakePart(
-						playlistId0,
-						parts[0]._id,
-						parts[1]._id,
-						null
-					)
-
-					await doUpdateTimeline(playlistId0)
-
-					// Check the calculated timings
-					const timeline = Timeline.findOne(env.studio._id)
-					expect(timeline).toBeTruthy()
-
-					const checkTimings = async (timings: PartTimelineTimings) =>
-						checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, timings)
-
-					await fcn(rundownId0, timeline!, currentPartInstance!, previousPartInstance!, checkTimings)
-				}
-
-				// Deactivate rundown:
-				await doDeactivatePlaylist(playlistId0)
-
-				expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
-			},
+						// Run the result check
+						const { currentPartInstance, previousPartInstance } = getPartInstances()
+						await checkFcn(rundownId, null, currentPartInstance!, previousPartInstance!, checkTimings)
+					}
+				),
 			timeout
 		)
+	}
+
+	async function runTimelineTimings(
+		customRundownFactory: (
+			env: DefaultEnvironment,
+			playlistId: RundownPlaylistId,
+			rundownId: RundownId
+		) => RundownId,
+		fcn: (
+			playlistId: RundownPlaylistId,
+			rundownId: RundownId,
+			parts: Part[],
+			getPartInstances: () => SelectedPartInstances,
+			checkTimings: (timings: PartTimelineTimings) => Promise<void>
+		) => Promise<void>
+	) {
+		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
+			env,
+			undefined,
+			customRundownFactory
+		)
+		expect(rundownId0).toBeTruthy()
+		expect(playlistId0).toBeTruthy()
+
+		const rundown = Rundowns.findOne(rundownId0) as Rundown
+		expect(rundown).toBeTruthy()
+
+		{
+			const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			expect(playlist).toBeTruthy()
+
+			// Ensure this is defined to something, for the jest matcher
+			playlist.activationId = playlist.activationId ?? undefined
+
+			expect(playlist).toMatchObject({
+				activationId: undefined,
+				rehearsal: false,
+			})
+		}
+
+		const parts = rundown.getParts()
+
+		// Prepare and activate in rehersal:
+		await doActivatePlaylist(playlistId0, parts[0]._id)
+
+		const getPartInstances = () => {
+			const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			expect(playlist).toBeTruthy()
+			return playlist.getSelectedPartInstances()
+		}
+
+		const checkTimings = async (timings: PartTimelineTimings) => {
+			// Check the calculated timings
+			const timeline = Timeline.findOne(env.studio._id)
+			expect(timeline).toBeTruthy()
+
+			// console.log('objs', JSON.stringify(timeline?.timeline?.map((o) => o.id) || [], undefined, 4))
+
+			await doUpdateTimeline(playlistId0)
+
+			const { currentPartInstance, previousPartInstance } = getPartInstances()
+			return checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance, timings)
+		}
+
+		// Run the required steps
+		await fcn(playlistId0, rundownId0, parts, getPartInstances, checkTimings)
+
+		// Deactivate rundown:
+		await doDeactivatePlaylist(playlistId0)
+
+		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 	}
 
 	describe('In transitions', () => {
@@ -483,75 +538,34 @@ describe('Timeline', () => {
 			}
 		)
 
-		testInFiber('inTransition is disabled during hold', async () => {
-			const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
-				env,
-				undefined,
-				setupRundownWithInTransitionEnableHold
+		testInFiber('inTransition is disabled during hold', async () =>
+			runTimelineTimings(
+				setupRundownWithInTransitionEnableHold,
+				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
+					// Take the first Part:
+					await doTakePart(playlistId, null, parts[0]._id, parts[1]._id)
+
+					// activate hold mode
+					await ServerPlayoutAPI.activateHold(DEFAULT_ACCESS(playlistId), playlistId)
+
+					await doTakePart(playlistId, parts[0]._id, parts[1]._id, null)
+
+					const { currentPartInstance } = getPartInstances()
+					await checkTimings({
+						// old part ends immediately
+						previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 0` },
+						currentPieces: {
+							// pieces are not delayed
+							piece010: { start: 0 },
+							// no in transition
+							piece011: null,
+						},
+						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
+				}
 			)
-			expect(rundownId0).toBeTruthy()
-			expect(playlistId0).toBeTruthy()
-
-			const rundown = Rundowns.findOne(rundownId0) as Rundown
-			expect(rundown).toBeTruthy()
-
-			{
-				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
-				expect(playlist).toBeTruthy()
-
-				// Ensure this is defined to something, for the jest matcher
-				playlist.activationId = playlist.activationId ?? undefined
-
-				expect(playlist).toMatchObject({
-					activationId: undefined,
-					rehearsal: false,
-				})
-			}
-
-			const parts = rundown.getParts()
-
-			// Prepare and activate in rehersal:
-			await doActivatePlaylist(playlistId0, parts[0]._id)
-
-			// Take the first Part:
-			await doTakePart(playlistId0, null, parts[0]._id, parts[1]._id)
-
-			// activate hold mode
-			await ServerPlayoutAPI.activateHold(DEFAULT_ACCESS(playlistId0), playlistId0)
-
-			{
-				// Take the second Part:
-				const { currentPartInstance, previousPartInstance } = await doTakePart(
-					playlistId0,
-					parts[0]._id,
-					parts[1]._id,
-					null
-				)
-
-				await doUpdateTimeline(playlistId0)
-
-				const timeline = Timeline.findOne(env.studio._id)
-				expect(timeline).toBeTruthy()
-
-				await checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, {
-					// old part ends immediately
-					previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 0` },
-					currentPieces: {
-						// pieces are not delayed
-						piece010: { start: 0 },
-						// no in transition
-						piece011: null,
-					},
-					currentInfinitePieces: {},
-					previousOutTransition: undefined,
-				})
-			}
-
-			// Deactivate rundown:
-			await doDeactivatePlaylist(playlistId0)
-
-			expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
-		})
+		)
 
 		testTransitionTimings(
 			'inTransition disabled',
@@ -656,70 +670,281 @@ describe('Timeline', () => {
 			}
 		)
 
-		testInFiber('outTransition is disabled during hold', async () => {
-			const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
-				env,
-				undefined,
-				setupRundownWithOutTransitionEnableHold
+		testInFiber('outTransition is disabled during hold', async () =>
+			runTimelineTimings(
+				setupRundownWithOutTransitionEnableHold,
+				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
+					// Take the first Part:
+					await doTakePart(playlistId, null, parts[0]._id, parts[1]._id)
+
+					// activate hold mode
+					await ServerPlayoutAPI.activateHold(DEFAULT_ACCESS(playlistId), playlistId)
+
+					await doTakePart(playlistId, parts[0]._id, parts[1]._id, null)
+
+					const { currentPartInstance } = getPartInstances()
+					await checkTimings({
+						previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 500` }, // note: this seems odd, but the pieces are delayed to compensate
+						currentPieces: {
+							piece010: { start: 500 }, // note: Offset matches extension of previous partGroup
+						},
+						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
+				}
 			)
-			expect(rundownId0).toBeTruthy()
-			expect(playlistId0).toBeTruthy()
+		)
+	})
 
-			const rundown = Rundowns.findOne(rundownId0) as Rundown
-			expect(rundown).toBeTruthy()
+	describe('Adlib pieces', () => {
+		async function doStartAdlibPiece(
+			playlistId: RundownPlaylistId,
+			currentPartInstance: PartInstance,
+			adlibSource: AdLibPiece
+		) {
+			await runPlayoutOperationWithCache(
+				null,
+				'updateTimeline',
+				playlistId,
+				PlayoutLockFunctionPriority.USER_PLAYOUT,
+				null,
+				async (cache) => {
+					const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId) as Rundown
+					expect(rundown).toBeTruthy()
 
-			{
-				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
-				expect(playlist).toBeTruthy()
+					await ServerPlayoutAdLibAPI.innerStartOrQueueAdLibPiece(
+						cache,
+						rundown,
+						false,
+						currentPartInstance,
+						adlibSource
+					)
+				}
+			)
+		}
 
-				// Ensure this is defined to something, for the jest matcher
-				playlist.activationId = playlist.activationId ?? undefined
+		async function doSimulatePiecePlaybackTimings(
+			playlistId: RundownPlaylistId,
+			currentPartInstance: PartInstance,
+			adlibbedPieceId: string,
+			time: Time
+		) {
+			const pieceInstance = PieceInstances.findOne({
+				partInstanceId: currentPartInstance!._id,
+				'piece._id': adlibbedPieceId,
+			}) as PieceInstance
+			expect(pieceInstance).toBeTruthy()
 
-				expect(playlist).toMatchObject({
-					activationId: undefined,
-					rehearsal: false,
-				})
-			}
+			await ServerPlayoutAPI.timelineTriggerTimeForStudioId(env.studio._id, [
+				{
+					id: getPieceGroupId(pieceInstance),
+					time: time,
+				},
+			])
 
-			const parts = rundown.getParts()
+			await doUpdateTimeline(playlistId)
+		}
 
-			// Prepare and activate in rehersal:
-			await doActivatePlaylist(playlistId0, parts[0]._id)
+		//
+		testInFiber('Current part with preroll', async () =>
+			runTimelineTimings(
+				(env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId): RundownId => {
+					setupRundownBase(
+						env,
+						playlistId,
+						rundownId,
+						{},
+						{
+							piece0: { prerollDuration: 500 },
+							piece1: { prerollDuration: 50, sourceLayerId: env.showStyleBase.sourceLayers[3]._id },
+						}
+					)
 
-			// Take the first Part:
-			await doTakePart(playlistId0, null, parts[0]._id, parts[1]._id)
+					return rundownId
+				},
+				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
+					// Take the only Part:
+					await doTakePart(playlistId, null, parts[0]._id, null)
 
-			// activate hold mode
-			await ServerPlayoutAPI.activateHold(DEFAULT_ACCESS(playlistId0), playlistId0)
+					// Should look normal for now
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: { start: 0 }, // This one gave the preroll
+							piece001: { start: 450 },
+						},
+						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
 
-			{
-				// Take the second Part:
-				const { currentPartInstance, previousPartInstance } = await doTakePart(
-					playlistId0,
-					parts[0]._id,
-					parts[1]._id,
-					null
-				)
+					const { currentPartInstance } = getPartInstances()
+					expect(currentPartInstance).toBeTruthy()
 
-				await doUpdateTimeline(playlistId0)
+					// Insert an adlib piece
+					await doStartAdlibPiece(
+						playlistId,
+						currentPartInstance!,
+						literal<AdLibPiece>({
+							_id: protectString('adlib1'),
+							rundownId: currentPartInstance!.rundownId,
+							status: RundownAPI.PieceStatusCode.OK,
+							externalId: 'fake',
+							name: 'Adlibbed piece',
+							lifespan: PieceLifespan.WithinPart,
+							sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+							outputLayerId: env.showStyleBase.outputLayers[0]._id,
+							content: {
+								timelineObjects: [],
+							},
+							_rank: 0,
+						})
+					)
 
-				const timeline = Timeline.findOne(env.studio._id)
-				expect(timeline).toBeTruthy()
+					const adlibbedPieceId = 'randomId9017'
 
-				await checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance!, {
-					previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 500` }, // note: this seems odd, but the pieces are delayed to compensate
-					currentPieces: {
-						piece010: { start: 500 }, // note: Offset matches extension of previous partGroup
-					},
-					currentInfinitePieces: {},
-					previousOutTransition: undefined,
-				})
-			}
+					// The adlib should be starting at 'now'
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: {
+								start: 0, // This one gave the preroll
+								end: `#piece_group_${currentPartInstance!._id}_${
+									currentPartInstance!.rundownId
+								}_piece000_cap_now.start`,
+							},
+							piece001: { start: 450 },
+							[adlibbedPieceId]: {
+								// Our adlibbed piece
+								start: 'now',
+							},
+						},
+						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
 
-			// Deactivate rundown:
-			await doDeactivatePlaylist(playlistId0)
+					const pieceOffset = 12560
+					// Simulate the piece timing confirmation from playout-gateway
+					await doSimulatePiecePlaybackTimings(playlistId, currentPartInstance!, adlibbedPieceId, pieceOffset)
 
-			expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
-		})
+					// Now we have a concrete time
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: {
+								start: 0, // This one gave the preroll
+								end: pieceOffset, // This is expected to match the start of the adlib
+							},
+							piece001: { start: 450 },
+							[adlibbedPieceId]: {
+								// Our adlibbed piece
+								start: pieceOffset,
+							},
+						},
+						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
+				}
+			)
+		)
+
+		testInFiber('Current part with preroll and adlib preroll', async () =>
+			runTimelineTimings(
+				(env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId): RundownId => {
+					setupRundownBase(
+						env,
+						playlistId,
+						rundownId,
+						{},
+						{
+							piece0: { prerollDuration: 500 },
+							piece1: { prerollDuration: 50, sourceLayerId: env.showStyleBase.sourceLayers[3]._id },
+						}
+					)
+
+					return rundownId
+				},
+				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
+					// Take the only Part:
+					await doTakePart(playlistId, null, parts[0]._id, null)
+
+					// Should look normal for now
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: { start: 0 }, // This one gave the preroll
+							piece001: { start: 450 },
+						},
+						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
+
+					const { currentPartInstance } = getPartInstances()
+					expect(currentPartInstance).toBeTruthy()
+
+					// Insert an adlib piece
+					await doStartAdlibPiece(
+						playlistId,
+						currentPartInstance!,
+						literal<AdLibPiece>({
+							_id: protectString('adlib1'),
+							rundownId: currentPartInstance!.rundownId,
+							status: RundownAPI.PieceStatusCode.OK,
+							externalId: 'fake',
+							name: 'Adlibbed piece',
+							lifespan: PieceLifespan.WithinPart,
+							sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+							outputLayerId: env.showStyleBase.outputLayers[0]._id,
+							content: {
+								timelineObjects: [],
+							},
+							_rank: 0,
+							prerollDuration: 340,
+						})
+					)
+
+					const adlibbedPieceId = 'randomId9017'
+
+					// The adlib should be starting at 'now'
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: {
+								start: 0, // This one gave the preroll
+								end: `#piece_group_${currentPartInstance!._id}_${adlibbedPieceId}.start + 340`,
+							},
+							piece001: { start: 450 },
+							[adlibbedPieceId]: {
+								// Our adlibbed piece
+								start: 'now',
+							},
+						},
+						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
+
+					const pieceOffset = 12560
+					// Simulate the piece timing confirmation from playout-gateway
+					await doSimulatePiecePlaybackTimings(playlistId, currentPartInstance!, adlibbedPieceId, pieceOffset)
+
+					// Now we have a concrete time
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: {
+								start: 0, // This one gave the preroll
+								end: pieceOffset + 340,
+							},
+							piece001: { start: 450 },
+							[adlibbedPieceId]: {
+								// Our adlibbed piece
+								start: pieceOffset,
+							},
+						},
+						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
+				}
+			)
+		)
 	})
 })

@@ -331,7 +331,7 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		)
 	}
-	async function innerStartOrQueueAdLibPiece(
+	export async function innerStartOrQueueAdLibPiece(
 		cache: CacheForPlayout,
 		rundown: Rundown,
 		queue: boolean,

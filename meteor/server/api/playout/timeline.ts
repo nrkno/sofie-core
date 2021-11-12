@@ -923,12 +923,11 @@ function getPieceEnableInsidePart(
 	partTimings: PartCalculatedTimings
 ): IBlueprintPiece['enable'] {
 	const pieceEnable = { ...pieceInstance.piece.enable }
-	if (typeof pieceEnable.start === 'number') {
+	if (typeof pieceEnable.start === 'number' && !pieceInstance.adLibSourceId) {
 		// timed pieces should be offset based on the preroll of the part
-		// TODO - will adlibs behave correctly because of their update of the start time?
 		pieceEnable.start += partTimings.toPartDelay
 
-		if (!pieceInstance.adLibSourceId && pieceInstance.piece.prerollDuration) {
+		if (pieceInstance.piece.prerollDuration) {
 			// Offset pre-programmed pieces by their own preroll
 			pieceEnable.start -= pieceInstance.piece.prerollDuration
 

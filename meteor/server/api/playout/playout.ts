@@ -10,6 +10,7 @@ import {
 	unprotectString,
 	isStringOrProtectedString,
 	getRandomId,
+	applyToArray,
 } from '../../../lib/lib'
 import { StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
@@ -67,6 +68,7 @@ import {
 	runPlayoutOperationWithCacheFromStudioOperation,
 	runPlayoutOperationWithCache,
 	PlayoutLockFunctionPriority,
+	runPlayoutOperationWithLockFromStudioOperation,
 } from './lockFunction'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
@@ -79,6 +81,9 @@ import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { profiler } from '../profiler'
 import { MongoQuery } from '../../../lib/typings/meteor'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PieceGroupMetadata } from '../../../lib/rundown/pieces'
+import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1043,6 +1048,144 @@ export namespace ServerPlayoutAPI {
 			}
 		)
 	}
+
+	/**
+	 * Triggered from Playout-gateway when TSR has some concrete values to use instead of 'now'
+	 */
+	export async function timelineTriggerTimeForStudioId(
+		studioId: StudioId,
+		results: PeripheralDeviceAPI.TimelineTriggerTimeResult
+	): Promise<void> {
+		await runStudioOperationWithCache(
+			'timelineTriggerTime',
+			studioId,
+			StudioLockFunctionPriority.CALLBACK_PLAYOUT,
+			async (studioCache) => {
+				const activePlaylists = studioCache.getActiveRundownPlaylists()
+
+				if (activePlaylists.length === 1) {
+					const activePlaylist = activePlaylists[0]
+					const playlistId = activePlaylist._id
+					await runPlayoutOperationWithLockFromStudioOperation(
+						'timelineTriggerTime',
+						studioCache,
+						activePlaylist,
+						PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
+						async () => {
+							const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
+
+							// We only need the PieceInstances, so load just them
+							const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(PieceInstances, {
+								rundownId: { $in: rundownIDs },
+							})
+
+							// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
+							timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)
+
+							await pieceInstanceCache.updateDatabaseWithData()
+						}
+					)
+				} else {
+					timelineTriggerTimeInner(studioCache, results, undefined, undefined)
+				}
+			}
+		)
+	}
+
+	function timelineTriggerTimeInner(
+		cache: CacheForStudio,
+		results: PeripheralDeviceAPI.TimelineTriggerTimeResult,
+		pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance> | undefined,
+		activePlaylist: RundownPlaylist | undefined
+	) {
+		let lastTakeTime: number | undefined
+
+		// ------------------------------
+		const timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
+		let tlChanged = false
+
+		_.each(results, (o) => {
+			check(o.id, String)
+
+			logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
+
+			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
+			if (obj) {
+				applyToArray(obj.enable, (enable) => {
+					if (enable.start === 'now') {
+						enable.start = o.time
+						enable.setFromNow = true
+
+						tlChanged = true
+					}
+				})
+
+				// TODO - we should do the same for the partInstance.
+				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
+
+				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
+				if (objPieceId && activePlaylist && pieceInstanceCache) {
+					logger.info('Update PieceInstance: ', {
+						pieceId: objPieceId,
+						time: new Date(o.time).toTimeString(),
+					})
+
+					const pieceInstance = pieceInstanceCache.findOne(objPieceId)
+					if (
+						pieceInstance &&
+						pieceInstance.dynamicallyInserted &&
+						pieceInstance.piece.enable.start === 'now'
+					) {
+						pieceInstanceCache.update(pieceInstance._id, {
+							$set: {
+								'piece.enable.start': o.time,
+							},
+						})
+
+						const takeTime = pieceInstance.dynamicallyInserted
+						if (takeTime) {
+							lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+						}
+					}
+				}
+			}
+		})
+
+		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
+			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
+			const remainingNowPieces = pieceInstanceCache.findFetch({
+				partInstanceId: activePlaylist.currentPartInstanceId,
+				dynamicallyInserted: { $exists: true },
+				disabled: { $ne: true },
+			})
+			for (const piece of remainingNowPieces) {
+				const pieceTakeTime = piece.dynamicallyInserted
+				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
+					// Disable and hide the instance
+					pieceInstanceCache.update(piece._id, {
+						$set: {
+							disabled: true,
+							hidden: true,
+						},
+					})
+				}
+			}
+		}
+		if (tlChanged) {
+			cache.Timeline.update(
+				cache.Studio.doc._id,
+				{
+					$set: {
+						timeline: timelineObjs,
+						timelineHash: getRandomId(),
+						generated: getCurrentTime(),
+					},
+				},
+				true
+			)
+		}
+	}
+
 	/**
 	 * Make a copy of a piece and start playing it now
 	 */

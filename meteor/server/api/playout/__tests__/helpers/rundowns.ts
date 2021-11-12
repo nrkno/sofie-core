@@ -12,7 +12,8 @@ export function setupRundownBase(
 	env: DefaultEnvironment,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	partPropsOverride: Partial<DBPart> = {}
+	partPropsOverride: Partial<DBPart> = {},
+	piecePropsOverride: { piece0: Partial<Piece>; piece1: Partial<Piece> } = { piece0: {}, piece1: {} }
 ) {
 	const rundown: DBRundown = {
 		peripheralDeviceId: env.ingestDevice._id,
@@ -86,6 +87,7 @@ export function setupRundownBase(
 		content: {
 			timelineObjects: [],
 		},
+		...piecePropsOverride.piece0,
 	}
 	Pieces.insert(piece000)
 
@@ -107,6 +109,7 @@ export function setupRundownBase(
 		content: {
 			timelineObjects: [],
 		},
+		...piecePropsOverride.piece1,
 	}
 	Pieces.insert(piece001)
 
