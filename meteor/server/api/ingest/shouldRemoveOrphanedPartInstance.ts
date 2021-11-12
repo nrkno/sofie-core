@@ -10,6 +10,7 @@ import { clone, literal, unprotectObject, unprotectObjectArray } from '../../../
 import { logger } from '../../logging'
 import { RemoveOrphanedPartInstanceContext } from '../blueprints/context/removeOrphanedPartInstance'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
+import { isTooCloseToAutonext } from '../playout/lib'
 
 export async function shouldRemoveOrphanedPartInstance(
 	cache: CacheForPlayout,
@@ -73,7 +74,10 @@ export async function shouldRemoveOrphanedPartInstance(
 		})
 	}
 
-	if (orphanedPartInstanceContext.instanceIsRemoved()) {
+	if (
+		orphanedPartInstanceContext.instanceIsRemoved() &&
+		!isTooCloseToAutonext(playlistPartInstances.currentPartInstance)
+	) {
 		cache.PartInstances.update(orphanedPartInstance._id, {
 			$set: {
 				reset: true,
