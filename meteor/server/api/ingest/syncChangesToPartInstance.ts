@@ -11,7 +11,7 @@ import { Part } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { unprotectObject, unprotectObjectArray, literal, clone } from '../../../lib/lib'
+import { unprotectObject, unprotectObjectArray, literal, clone, stringifyError } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { logger } from '../../logging'
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
@@ -135,8 +135,8 @@ export async function syncChangesToPartInstances(
 
 					// If the blueprint function throws, no changes will be synced to the cache:
 					syncContext.applyChangesToCache(cache)
-				} catch (e) {
-					logger.error(e)
+				} catch (err) {
+					logger.error(`Error in showStyleBlueprint.syncIngestUpdateToPartInstance: ${stringifyError(err)}`)
 				}
 
 				// Save notes:

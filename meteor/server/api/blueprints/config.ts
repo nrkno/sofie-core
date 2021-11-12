@@ -16,7 +16,7 @@ import {
 	ShowStyleVariant,
 	ShowStyleVariants,
 } from '../../../lib/collections/ShowStyleVariants'
-import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
+import { protectString, objectPathGet, objectPathSet, stringifyError } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
 import { ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
@@ -98,13 +98,18 @@ export function preprocessStudioConfig(studio: ReadonlyDeep<Studio>, blueprint?:
 	// Expose special values as defined in the studio
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
-	if (blueprint && blueprint.preprocessConfig) {
-		const context = new CommonContext({
-			name: `preprocessStudioConfig`,
-			identifier: `studioId=${studio._id}`,
-		})
-		res = blueprint.preprocessConfig(context, res)
+	try {
+		if (blueprint && blueprint.preprocessConfig) {
+			const context = new CommonContext({
+				name: `preprocessStudioConfig`,
+				identifier: `studioId=${studio._id}`,
+			})
+			res = blueprint.preprocessConfig(context, res)
+		}
+	} catch (err) {
+		logger.error(`Error in studioBlueprint.preprocessConfig: ${stringifyError(err)}`)
 	}
+
 	return res
 }
 
@@ -119,11 +124,15 @@ export function preprocessShowStyleConfig(
 		res = showStyle.blueprintConfig
 	}
 	if (blueprint && blueprint.preprocessConfig) {
-		const context = new CommonContext({
-			name: `preprocessShowStyleConfig`,
-			identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
-		})
-		res = blueprint.preprocessConfig(context, res)
+		try {
+			const context = new CommonContext({
+				name: `preprocessShowStyleConfig`,
+				identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
+			})
+			res = blueprint.preprocessConfig(context, res)
+		} catch (err) {
+			logger.error(`Error in showStyleBlueprint.preprocessConfig: ${stringifyError(err)}`)
+		}
 	}
 	return res
 }

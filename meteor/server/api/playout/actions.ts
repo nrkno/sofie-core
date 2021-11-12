@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { getCurrentTime, getRandomId, makePromise } from '../../../lib/lib'
+import { getCurrentTime, getRandomId, makePromise, stringifyError } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownEventContext } from '../blueprints/context'
 import { setNextPart, onPartHasStoppedPlaying, selectNextPart, LOW_PRIO_DEFER_TIME, resetRundownPlaylist } from './lib'
@@ -100,8 +100,13 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 		const { blueprint } = await loadShowStyleBlueprint(showStyle)
 		const context = new RundownEventContext(cache.Studio.doc, showStyle, rundown)
 		await context.wipeCache()
-		if (blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.onRundownActivate(context)).catch(logger.error)
+
+		try {
+			if (blueprint.onRundownActivate) {
+				await blueprint.onRundownActivate(context)
+			}
+		} catch (err) {
+			logger.error(`Error in showStyleBlueprint.onRundownActivate: ${stringifyError(err)}`)
 		}
 	})
 }
@@ -114,10 +119,12 @@ export async function deactivateRundownPlaylist(cache: CacheForPlayout): Promise
 		if (rundown) {
 			const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
 			const { blueprint } = await loadShowStyleBlueprint(showStyle)
-			if (blueprint.onRundownDeActivate) {
-				Promise.resolve(
-					blueprint.onRundownDeActivate(new RundownEventContext(cache.Studio.doc, showStyle, rundown))
-				).catch(logger.error)
+			try {
+				if (blueprint.onRundownDeActivate) {
+					await blueprint.onRundownDeActivate(new RundownEventContext(cache.Studio.doc, showStyle, rundown))
+				}
+			} catch (err) {
+				logger.error(`Error in showStyleBlueprint.onRundownDeActivate: ${stringifyError(err)}`)
 			}
 		}
 	})
