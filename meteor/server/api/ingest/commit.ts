@@ -39,6 +39,7 @@ import { getTranslatedMessage, ServerTranslatedMesssages } from '../../../lib/ru
 import { getShowStyleCompoundForRundown } from '../showStyles'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { Studio } from '../../../lib/collections/Studios'
+import { shouldRemoveOrphanedPartInstance } from './shouldRemoveOrphanedPartInstance'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -264,6 +265,8 @@ export async function CommitIngestOperation(
 							blueprint.blueprint,
 							newRundown
 						)
+
+						await shouldRemoveOrphanedPartInstance(playoutCache, showStyle, blueprint.blueprint, newRundown)
 
 						playoutCache.deferAfterSave(() => {
 							// Run in the background, we don't want to hold onto the lock to do this

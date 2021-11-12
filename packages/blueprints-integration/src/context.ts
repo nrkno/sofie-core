@@ -225,6 +225,10 @@ export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserCont
 	updatePartInstance(props: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance
 }
 
+export interface IRemoveOrphanedPartInstanceContext extends IRundownUserContext {
+	removePartInstance (): void
+}
+
 /** Events */
 
 export interface IEventContext {
