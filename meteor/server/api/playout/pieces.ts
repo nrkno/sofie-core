@@ -31,7 +31,7 @@ import { prefixAllObjectIds } from './lib'
 import { RundownPlaylistActivationId, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata, PieceTimelineMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -299,7 +299,12 @@ export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTi
 
 		// We know the time of the parent, or there are too many enable times for it
 		if (groupAbsoluteStart !== null || count !== 1) {
-			if ('partInstanceId' in obj && obj.isGroup && obj.children && obj.children.length) {
+			if (
+				'partInstanceId' in (obj as TimelineContentObject & { partInstanceId?: PartInstanceId }) &&
+				obj.isGroup &&
+				obj.children &&
+				obj.children.length
+			) {
 				// This should be piece groups, which are allowed to use 'now'
 				for (const childObj of obj.children) {
 					applyToArray(childObj.enable, (enable: TimelineEnable) => {
