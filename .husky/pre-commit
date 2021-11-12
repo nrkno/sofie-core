@@ -5,15 +5,14 @@
 cd meteor
 
 # check if we're on a windows machine
-DUMMY=$(where meteor.bat)
+DUMMY=$(command -v where)
 IS_WINDOWS=$?
 
-if [ $IS_WINDOWS == 0 ]
-then
+if [ "$IS_WINDOWS" = "0" ]; then
 	meteor.bat npx --no-install lint-staged
 else
 	meteor npx --no-install lint-staged
-fi
+fi;
 
 # lint the packages
 cd ../packages
