@@ -38,6 +38,7 @@ import {
 	IStudioBaselineContext,
 	IShowStyleUserContext,
 	IBlueprintSegmentRundown,
+	IRundownUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -304,6 +305,38 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		this.rundown = rundownToSegmentRundown(rundown)
 		this._rundown = rundown
 		this.playlistId = rundown.playlistId
+	}
+}
+
+export class RundownUserContext extends RundownContext implements IRundownUserContext {
+	public readonly notes: INoteBase[] = []
+	private readonly tempSendNotesIntoBlackHole: boolean
+
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
 	}
 }
 
