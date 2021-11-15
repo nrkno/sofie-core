@@ -73,6 +73,7 @@ export function StoryboardPart({
 			holdToDisplay={contextMenuHoldToDisplayTime()}
 			collect={getPartContext}
 		>
+			<div className="segment-storyboard__identifier">{part.instance.part.identifier}</div>
 			{subscriptionsReady ? (
 				<>
 					<StoryboardPartThumbnail part={part} />
@@ -102,13 +103,14 @@ export function StoryboardPart({
 			>
 				{isLivePart ? t('On Air') : willBeAutoNextedInto ? t('Auto') : isNextPart ? t('Next') : null}
 			</div>
-			<div className="segment-storyboard__identifier">{part.instance.part.identifier}</div>
 			{isLivePart && displayLiveLineCounter && (
-				<CurrentPartRemaining
-					currentPartInstanceId={part.instance._id}
-					speaking={getAllowSpeaking()}
-					heavyClassName="overtime"
-				/>
+				<div className="segment-storyboard__liveline">
+					<CurrentPartRemaining
+						currentPartInstanceId={part.instance._id}
+						speaking={getAllowSpeaking()}
+						heavyClassName="overtime"
+					/>
+				</div>
 			)}
 		</ContextMenuTrigger>
 	)

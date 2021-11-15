@@ -1,3 +1,5 @@
+@import 'colorScheme';
+
 $fullscreen-controls__button--radius: 3.125rem;
 
 $statusbar-width: 3.75rem;
@@ -12,6 +14,9 @@ $segment-group-controls-width: 120px;
 
 $part-start-color: #a5a5a5;
 $segment-background-color: #000;
+
+$liveline-timecode-color: $general-countdown-to-next-color; //$general-live-color;
+$hold-status-color: $liveline-timecode-color;
 
 @function rem($pixels, $context: $browser-context) {
 	@return #{$pixels/$context}rem;
