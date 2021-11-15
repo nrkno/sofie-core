@@ -394,6 +394,7 @@ export function convertAdLibToPieceInstance(
 			...(_.omit(adLibPiece, '_rank', 'expectedDuration', 'partId', 'rundownId') as PieceInstancePiece), // TODO - this could be typed stronger
 			_id: protectString(newPieceId),
 			startPartId: partInstance.part._id,
+			pieceType: IBlueprintPieceType.Normal,
 			enable: {
 				start: queue ? 0 : 'now',
 				duration: !queue && adLibPiece.lifespan === PieceLifespan.WithinPart ? duration : undefined,

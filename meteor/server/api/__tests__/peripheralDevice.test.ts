@@ -18,6 +18,7 @@ import {
 	waitTime,
 	getRandomId,
 	LogLevel,
+	normalizeArrayToMap,
 } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
@@ -37,7 +38,7 @@ const { ServerPlayoutAPI: _ActualServerPlayoutAPI } = jest.requireActual('../pla
 import { ServerPlayoutAPI } from '../playout/playout'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { Timeline, TimelineEnableExt } from '../../../lib/collections/Timeline'
+import { Timeline, TimelineComplete, TimelineEnableExt, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
@@ -428,36 +429,46 @@ describe('test peripheralDevice general API methods', () => {
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
 		expect(playlist?.activationId).toBeTruthy()
+
 		const studioTimeline = Timeline.findOne({
 			_id: env.studio._id,
-		})
+		}) as TimelineComplete
 		expect(studioTimeline).toBeTruthy()
-		const timelineObjs =
-			(studioTimeline &&
-				studioTimeline.timeline.filter(
-					(x) => x.enable && !Array.isArray(x.enable) && x.enable.start === 'now'
-				)) ||
-			[]
-		expect(timelineObjs.length).toBe(1)
-		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
-			id: tObj.id,
-			time: getCurrentTime(),
-		}))
+
+		const nowTimelineObjs = studioTimeline.timeline.filter(
+			(x) => x.enable && !Array.isArray(x.enable) && x.enable.start === 'now'
+		)
+		expect(nowTimelineObjs.length).toBe(1)
+
+		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = nowTimelineObjs.map(
+			(tObj) => ({
+				id: tObj.id,
+				time: getCurrentTime(),
+			})
+		)
+
+		// Let the call through to the real implementation
+		;(ServerPlayoutAPI.timelineTriggerTimeForStudioId as jest.Mock).mockImplementationOnce(
+			ActualServerPlayoutAPI.timelineTriggerTimeForStudioId
+		)
 
 		Meteor.call(PeripheralDeviceAPIMethods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
 
 		const updatedStudioTimeline = Timeline.findOne({
 			_id: env.studio._id,
-		})
-		const prevIds = timelineObjs.map((x) => x.id)
-		const timelineUpdatedObjs =
-			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
-		timelineUpdatedObjs.forEach((tlObj) => {
+		}) as TimelineComplete
+		expect(updatedStudioTimeline).toBeTruthy()
+
+		const updatedObjectMap = normalizeArrayToMap(updatedStudioTimeline.timeline, 'id')
+		for (const prevObj of nowTimelineObjs) {
+			const tlObj = updatedObjectMap.get(prevObj.id) as TimelineObjGeneric
+			expect(tlObj).toBeTruthy()
+
 			expect(Array.isArray(tlObj.enable)).toBeFalsy()
 			const enable = tlObj.enable as TimelineEnableExt
 			expect(enable.setFromNow).toBe(true)
 			expect(enable.start).toBeGreaterThan(0)
-		})
+		}
 
 		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})

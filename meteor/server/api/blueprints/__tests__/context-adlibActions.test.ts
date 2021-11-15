@@ -360,7 +360,7 @@ describe('Test blueprint api context', () => {
 					expect(partInstances).toHaveLength(5)
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
 					expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toBeUndefined()
@@ -445,7 +445,7 @@ describe('Test blueprint api context', () => {
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstances[2]._id } })
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
 					expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toBeUndefined()
@@ -528,7 +528,7 @@ describe('Test blueprint api context', () => {
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstances[2]._id } })
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
 					expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toBeUndefined()
@@ -616,7 +616,7 @@ describe('Test blueprint api context', () => {
 					await cache.saveAllToDatabase()
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
 					expect(context.findLastScriptedPieceOnLayer(sourceLayerIds[0])).toBeUndefined()
@@ -646,7 +646,7 @@ describe('Test blueprint api context', () => {
 					expect(pieceInstances).toHaveLength(10)
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// Set Part 1 as current part
 					// as any to bypass readonly
@@ -699,7 +699,7 @@ describe('Test blueprint api context', () => {
 					expect(partInstances).toHaveLength(2)
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// Set Part 1 as current part
 					// as any to bypass readonly
@@ -733,7 +733,7 @@ describe('Test blueprint api context', () => {
 					expect(pieceInstances).toHaveLength(10)
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// Set Part 2 as current part
 					// as any to bypass readonly
