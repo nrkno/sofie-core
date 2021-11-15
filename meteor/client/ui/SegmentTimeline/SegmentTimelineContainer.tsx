@@ -741,8 +741,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 				return {
 					scrollLeft,
-					timeScale: newScale ?? this.state.timeScale,
-					showingAllSegment: newScale !== undefined ? false : this.state.showingAllSegment,
+					timeScale: newScale ?? state.timeScale,
+					showingAllSegment: newScale !== undefined ? false : state.showingAllSegment,
 				}
 			})
 		}
