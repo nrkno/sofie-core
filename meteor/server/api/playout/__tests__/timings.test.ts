@@ -1,3 +1,4 @@
+import { IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import {} from 'type-fest'
 import { RundownHoldState } from '../../../../lib/collections/Rundowns'
 import { literal } from '../../../../lib/lib'
@@ -10,21 +11,21 @@ describe('Part Playout Timings', () => {
 				piece: {
 					enable: { start: 0 },
 					prerollDuration: 0,
-					isTransition: false,
+					pieceType: IBlueprintPieceType.Normal,
 				},
 			},
 			{
 				piece: {
 					enable: { start: 5000 },
 					prerollDuration: 1000,
-					isTransition: false,
+					pieceType: IBlueprintPieceType.Normal,
 				},
 			},
 			{
 				piece: {
 					enable: { start: 0 },
 					prerollDuration: 500, // Ignored
-					isTransition: true,
+					pieceType: IBlueprintPieceType.InTransition,
 				},
 			},
 		]
@@ -33,28 +34,28 @@ describe('Part Playout Timings', () => {
 				piece: {
 					enable: { start: 0 },
 					prerollDuration: 500,
-					isTransition: false,
+					pieceType: IBlueprintPieceType.Normal,
 				},
 			},
 			{
 				piece: {
 					enable: { start: 0 },
 					prerollDuration: 150,
-					isTransition: false,
+					pieceType: IBlueprintPieceType.Normal,
 				},
 			},
 			{
 				piece: {
 					enable: { start: 5000 },
 					prerollDuration: 1000,
-					isTransition: false,
+					pieceType: IBlueprintPieceType.Normal,
 				},
 			},
 			{
 				piece: {
 					enable: { start: 0 },
 					prerollDuration: 500, // Ignored
-					isTransition: true,
+					pieceType: IBlueprintPieceType.InTransition,
 				},
 			},
 		]

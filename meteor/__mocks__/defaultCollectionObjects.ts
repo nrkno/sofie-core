@@ -8,7 +8,7 @@ import { DBRundown, RundownId } from '../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../lib/collections/Segments'
 import { PartId, DBPart } from '../lib/collections/Parts'
 import { RundownAPI } from '../lib/api/rundown'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PieceId, Piece } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
@@ -128,6 +128,7 @@ export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: Segm
 		name: 'Default Piece',
 		status: RundownAPI.PieceStatusCode.OK,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		enable: {
 			start: 0,

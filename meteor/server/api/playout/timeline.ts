@@ -8,8 +8,8 @@ import {
 	OnGenerateTimelineObj,
 	TimelineObjClassesCore,
 	IBlueprintPiece,
-	IBlueprintPartInTransition,
 	IBlueprintPartOutTransition,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../../../lib/logging'
@@ -631,7 +631,7 @@ function generateCurrentInfinitePieceObjects(
 		// Type guard, should never be hit
 		return []
 	}
-	if (pieceInstance.disabled || pieceInstance.piece.isTransition || pieceInstance.piece.isOutTransition) {
+	if (pieceInstance.disabled || pieceInstance.piece.pieceType !== IBlueprintPieceType.Normal) {
 		// Can't be generated as infinites
 		return []
 	}
@@ -900,7 +900,8 @@ export function hasPieceInstanceDefinitelyEnded(
 	nowInPart: number
 ): boolean {
 	if (nowInPart <= 0) return false
-	if (pieceInstance.piece.hasSideEffects || pieceInstance.piece.isOutTransition) return false
+	if (pieceInstance.piece.hasSideEffects || pieceInstance.piece.pieceType === IBlueprintPieceType.OutTransition)
+		return false
 
 	let relativeEnd: number | undefined
 	if (typeof pieceInstance.resolvedEndCap === 'number') {
@@ -959,23 +960,32 @@ function transformPartIntoTimeline(
 		if (pieceInstance.disabled) continue
 
 		let pieceEnable: TSR.Timeline.TimelineEnable | undefined
-		if (pieceInstance.piece.isTransition) {
-			if (typeof partTimings.inTransitionStart === 'number') {
-				// Respect the start time of the piece, in case there is a reason for it being non-zero
-				const startOffset =
-					typeof pieceInstance.piece.enable.start === 'number' ? pieceInstance.piece.enable.start : 0
+		switch (pieceInstance.piece.pieceType) {
+			case IBlueprintPieceType.InTransition:
+				if (typeof partTimings.inTransitionStart === 'number') {
+					// Respect the start time of the piece, in case there is a reason for it being non-zero
+					const startOffset =
+						typeof pieceInstance.piece.enable.start === 'number' ? pieceInstance.piece.enable.start : 0
 
-				pieceEnable = {
-					start: partTimings.inTransitionStart + startOffset,
-					duration: pieceInstance.piece.enable.duration,
+					pieceEnable = {
+						start: partTimings.inTransitionStart + startOffset,
+						duration: pieceInstance.piece.enable.duration,
+					}
 				}
-			}
-		} else if (pieceInstance.piece.isOutTransition && outTransition) {
-			pieceEnable = {
-				start: `#${parentGroup.id}.end - ${outTransition.duration}`,
-			}
-		} else {
-			pieceEnable = getPieceEnableInsidePart(pieceInstance, partTimings)
+				break
+			case IBlueprintPieceType.OutTransition:
+				if (outTransition) {
+					pieceEnable = {
+						start: `#${parentGroup.id}.end - ${outTransition.duration}`,
+					}
+				}
+				break
+			case IBlueprintPieceType.Normal:
+				pieceEnable = getPieceEnableInsidePart(pieceInstance, partTimings)
+				break
+			default:
+				assertNever(pieceInstance.piece.pieceType)
+				break
 		}
 
 		// Not able to enable this piece

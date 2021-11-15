@@ -17,7 +17,7 @@ import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
-import { PartHoldMode } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportPartInstanceHasStarted,
@@ -667,7 +667,7 @@ export namespace ServerPlayoutAPI {
 							sourceLayer &&
 							sourceLayer.allowDisable &&
 							!piece.piece.virtual &&
-							!piece.piece.isTransition
+							piece.piece.pieceType === IBlueprintPieceType.Normal
 						)
 							return true
 						return false

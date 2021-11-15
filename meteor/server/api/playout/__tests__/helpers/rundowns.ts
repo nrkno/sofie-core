@@ -1,4 +1,4 @@
-import { PartHoldMode, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PartHoldMode, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime, protectString } from '../../../../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../../../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../../../../lib/collections/Segments'
@@ -77,6 +77,7 @@ export function setupRundownBase(
 		startPartId: part00._id,
 		name: 'Piece 000',
 		status: RundownAPI.PieceStatusCode.OK,
+		pieceType: IBlueprintPieceType.Normal,
 		enable: {
 			start: 0,
 		},
@@ -99,6 +100,7 @@ export function setupRundownBase(
 		startPartId: part00._id,
 		name: 'Piece 001',
 		status: RundownAPI.PieceStatusCode.OK,
+		pieceType: IBlueprintPieceType.Normal,
 		enable: {
 			start: 0,
 		},
@@ -144,6 +146,7 @@ export function setupPart2(
 		startPartId: part01._id,
 		name: 'Piece 010',
 		status: RundownAPI.PieceStatusCode.OK,
+		pieceType: IBlueprintPieceType.Normal,
 		enable: {
 			start: 0,
 		},
@@ -225,7 +228,7 @@ export function setupRundownWithInTransitionPlannedPiece(
 		content: {
 			timelineObjects: [],
 		},
-		isTransition: true,
+		pieceType: IBlueprintPieceType.InTransition,
 	}
 	Pieces.insert(piece011)
 
@@ -238,6 +241,7 @@ export function setupRundownWithInTransitionPlannedPiece(
 		startPartId: part01._id,
 		name: 'Piece 012',
 		status: RundownAPI.PieceStatusCode.OK,
+		pieceType: IBlueprintPieceType.Normal,
 		enable: {
 			start: 1000,
 			duration: 1000,
@@ -288,7 +292,7 @@ export function setupRundownWithInTransitionContentDelay(
 		content: {
 			timelineObjects: [],
 		},
-		isTransition: true,
+		pieceType: IBlueprintPieceType.InTransition,
 	}
 	Pieces.insert(piece011)
 
@@ -337,7 +341,7 @@ export function setupRundownWithInTransitionContentDelayAndPreroll(
 		content: {
 			timelineObjects: [],
 		},
-		isTransition: true,
+		pieceType: IBlueprintPieceType.InTransition,
 	}
 	Pieces.insert(piece011)
 
@@ -359,6 +363,7 @@ export function setupRundownWithInTransitionExistingInfinite(
 		startPartId: part00._id,
 		name: 'Piece 002',
 		status: RundownAPI.PieceStatusCode.OK,
+		pieceType: IBlueprintPieceType.Normal,
 		enable: {
 			start: 0,
 		},
@@ -398,7 +403,7 @@ export function setupRundownWithInTransitionExistingInfinite(
 		content: {
 			timelineObjects: [],
 		},
-		isTransition: true,
+		pieceType: IBlueprintPieceType.InTransition,
 	}
 	Pieces.insert(piece011)
 
@@ -438,7 +443,7 @@ export function setupRundownWithInTransitionNewInfinite(
 		content: {
 			timelineObjects: [],
 		},
-		isTransition: true,
+		pieceType: IBlueprintPieceType.InTransition,
 	}
 	Pieces.insert(piece011)
 
@@ -450,6 +455,7 @@ export function setupRundownWithInTransitionNewInfinite(
 		startPartId: part01._id,
 		name: 'Piece 012',
 		status: RundownAPI.PieceStatusCode.OK,
+		pieceType: IBlueprintPieceType.Normal,
 		enable: {
 			start: 0,
 		},
@@ -501,7 +507,7 @@ export function setupRundownWithInTransitionEnableHold(
 		content: {
 			timelineObjects: [],
 		},
-		isTransition: true,
+		pieceType: IBlueprintPieceType.InTransition,
 	}
 	Pieces.insert(piece011)
 
@@ -541,7 +547,7 @@ export function setupRundownWithInTransitionDisabled(
 		content: {
 			timelineObjects: [],
 		},
-		isTransition: true,
+		pieceType: IBlueprintPieceType.InTransition,
 	}
 	Pieces.insert(piece011)
 
@@ -565,7 +571,7 @@ export function setupRundownWithOutTransition(
 		startPartId: part00._id,
 		name: 'Piece 002',
 		status: RundownAPI.PieceStatusCode.OK,
-		isOutTransition: true,
+		pieceType: IBlueprintPieceType.OutTransition,
 		enable: {
 			start: 0, // will be overwritten
 			duration: 1000,
@@ -602,7 +608,7 @@ export function setupRundownWithOutTransitionAndPreroll(
 		startPartId: part00._id,
 		name: 'Piece 002',
 		status: RundownAPI.PieceStatusCode.OK,
-		isOutTransition: true,
+		pieceType: IBlueprintPieceType.OutTransition,
 		enable: {
 			start: 0, // will be overwritten
 			duration: 1000,
@@ -639,7 +645,7 @@ export function setupRundownWithOutTransitionAndPreroll2(
 		startPartId: part00._id,
 		name: 'Piece 002',
 		status: RundownAPI.PieceStatusCode.OK,
-		isOutTransition: true,
+		pieceType: IBlueprintPieceType.OutTransition,
 		enable: {
 			start: 0, // will be overwritten
 			duration: 250,
@@ -676,7 +682,7 @@ export function setupRundownWithOutTransitionAndInTransition(
 		startPartId: part00._id,
 		name: 'Piece 002',
 		status: RundownAPI.PieceStatusCode.OK,
-		isOutTransition: true,
+		pieceType: IBlueprintPieceType.OutTransition,
 		enable: {
 			start: 0, // will be overwritten
 			duration: 600,
@@ -707,7 +713,7 @@ export function setupRundownWithOutTransitionAndInTransition(
 		startPartId: part01._id,
 		name: 'Piece 011',
 		status: RundownAPI.PieceStatusCode.OK,
-		isTransition: true,
+		pieceType: IBlueprintPieceType.InTransition,
 		enable: {
 			start: 0,
 			duration: 500,

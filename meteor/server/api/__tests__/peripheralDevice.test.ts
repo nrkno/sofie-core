@@ -42,7 +42,7 @@ import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
-import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
@@ -139,6 +139,7 @@ describe('test peripheralDevice general API methods', () => {
 			startRundownId: rundownID,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			lifespan: PieceLifespan.WithinPart,
+			pieceType: IBlueprintPieceType.Normal,
 			invalid: false,
 			content: { timelineObjects: [] },
 		})

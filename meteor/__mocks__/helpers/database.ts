@@ -24,6 +24,7 @@ import {
 	IBlueprintPiece,
 	TriggerType,
 	PlayoutActions,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -597,6 +598,7 @@ export function setupDefaultRundown(
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		content: {
 			timelineObjects: [],
@@ -618,6 +620,7 @@ export function setupDefaultRundown(
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		content: {
 			timelineObjects: [],
@@ -668,6 +671,7 @@ export function setupDefaultRundown(
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		content: {
 			timelineObjects: [],

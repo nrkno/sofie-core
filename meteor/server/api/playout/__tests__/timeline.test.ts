@@ -37,7 +37,7 @@ import { PartInstance, PartInstanceId } from '../../../../lib/collections/PartIn
 import { getPartGroupId, getPieceGroupId } from '../../../../lib/rundown/timeline'
 import { literal, normalizeArrayToMap, protectString, unprotectString } from '../../../../lib/lib'
 import { PieceInstance, PieceInstances } from '../../../../lib/collections/PieceInstances'
-import { PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { Part, PartId } from '../../../../lib/collections/Parts'
 import { ServerPlayoutAdLibAPI } from '../adlib'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
@@ -125,7 +125,7 @@ async function checkTimingsRaw(
 		})
 		let previousOutTransition: PartTimelineTimings['previousOutTransition']
 		for (const piece of previousPieces) {
-			if (piece.piece.isOutTransition) {
+			if (piece.piece.pieceType === IBlueprintPieceType.OutTransition) {
 				if (previousOutTransition !== undefined) throw new Error('Too many out transition pieces were found')
 
 				const pieceObj = objs.get(getPieceGroupId(piece))

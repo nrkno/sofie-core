@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { PieceLifespan, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import {
 	getCurrentTime,
 	literal,
@@ -693,6 +693,7 @@ export namespace ServerPlayoutAdLibAPI {
 									name: '',
 									startPartId: currentPartInstance.part._id,
 									status: RundownAPI.PieceStatusCode.UNKNOWN,
+									pieceType: IBlueprintPieceType.Normal,
 									virtual: true,
 									content: {
 										timelineObjects: [],

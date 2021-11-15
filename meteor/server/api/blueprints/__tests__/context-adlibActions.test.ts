@@ -6,7 +6,12 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import { protectString, unprotectString, getRandomId, getCurrentTime, clone } from '../../../../lib/lib'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
-import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPart,
+	IBlueprintPiece,
+	IBlueprintPieceType,
+	PieceLifespan,
+} from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
@@ -106,6 +111,7 @@ describe('Test blueprint api context', () => {
 							index: o,
 						} as any,
 						lifespan: PieceLifespan.WithinPart,
+						pieceType: IBlueprintPieceType.Normal,
 						invalid: false,
 					},
 				})
@@ -378,6 +384,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -409,6 +416,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -461,6 +469,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -485,6 +494,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -541,6 +551,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -568,6 +579,7 @@ describe('Test blueprint api context', () => {
 								prop2: '5',
 							},
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],

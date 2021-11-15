@@ -3,7 +3,7 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { PieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { literal, protectString, getCurrentTime } from '../../../lib/lib'
-import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { getPlayheadTrackingInfinitesForPart, processAndPrunePieceInstanceTimings } from '../infinites'
 import { Piece } from '../../../lib/collections/Pieces'
 import { PartInstance, PartInstanceId } from '../../collections/PartInstances'
@@ -43,6 +43,7 @@ describe('Infinites', () => {
 				status: -1,
 				virtual: clearOrAdlib === true,
 				content: { timelineObjects: [] },
+				pieceType: IBlueprintPieceType.Normal,
 			}),
 			dynamicallyInserted: clearOrAdlib === true ? getCurrentTime() : clearOrAdlib || undefined,
 			infinite,
@@ -454,6 +455,7 @@ describe('Infinites', () => {
 					status: -1,
 					virtual: clear,
 					content: { timelineObjects: [] },
+					pieceType: IBlueprintPieceType.Normal,
 				}),
 				dynamicallyInserted: clear ? getCurrentTime() : undefined,
 				infinite: {

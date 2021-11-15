@@ -1,4 +1,4 @@
-import { IBlueprintPartInTransition } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPartInTransition, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { DBPartInstance } from '../../../lib/collections/PartInstances'
 import { DBPart } from '../../../lib/collections/Parts'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
@@ -12,7 +12,7 @@ import { RundownHoldState } from '../../../lib/collections/Rundowns'
 function calculatePartPreroll(pieces: CalculateTimingsPieceInstance[]): number {
 	const candidates: number[] = []
 	for (const piece of pieces) {
-		if (piece.piece.isTransition) {
+		if (piece.piece.pieceType !== IBlueprintPieceType.Normal) {
 			// Ignore preroll for transition pieces
 			continue
 		}
@@ -38,7 +38,7 @@ export interface PartCalculatedTimings {
 	fromPartRemaining: number // How long after the start of toPartGroup should fromPartGroup continue?
 }
 
-export type CalculateTimingsPieceInstance = { piece: Pick<Piece, 'enable' | 'prerollDuration' | 'isTransition'> }
+export type CalculateTimingsPieceInstance = { piece: Pick<Piece, 'enable' | 'prerollDuration' | 'pieceType'> }
 export type CalculateTimingsFromPartInstance = {
 	part: Pick<DBPart, 'autoNext' | 'autoNextOverlap' | 'disableNextPartInTransition' | 'outTransition'>
 }
