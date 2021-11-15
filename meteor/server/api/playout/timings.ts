@@ -40,7 +40,7 @@ export interface PartCalculatedTimings {
 
 export type CalculateTimingsPieceInstance = { piece: Pick<Piece, 'enable' | 'prerollDuration' | 'isTransition'> }
 export type CalculateTimingsFromPartInstance = {
-	part: Pick<DBPart, 'autoNext' | 'autoNextOverlap' | 'disableNextPartInTransition' | 'outTransitionDuration'>
+	part: Pick<DBPart, 'autoNext' | 'autoNextOverlap' | 'disableNextPartInTransition' | 'outTransition'>
 }
 export type CalculateTimingsToPartInstance = {
 	part: Pick<DBPart, 'inTransition'>
@@ -81,7 +81,7 @@ export function calculatePartTimings(
 	// Try and convert the transition
 	if (!inTransition || !fromPartInstance) {
 		// The amount to delay the part 'switch' to, to ensure the outTransition has time to complete as well as any prerolls for part B
-		const takeOffset = Math.max(0, fromPartInstance?.part?.outTransitionDuration ?? 0, toPartPreroll)
+		const takeOffset = Math.max(0, fromPartInstance?.part?.outTransition?.duration ?? 0, toPartPreroll)
 
 		return {
 			inTransitionStart: null, // No transition to use
@@ -92,8 +92,8 @@ export function calculatePartTimings(
 		}
 	} else {
 		// The amount of time needed to complete the outTransition before the 'take' point
-		const outTransitionTime = fromPartInstance.part.outTransitionDuration
-			? fromPartInstance.part.outTransitionDuration - inTransition.previousPartKeepaliveDuration
+		const outTransitionTime = fromPartInstance.part.outTransition
+			? fromPartInstance.part.outTransition.duration - inTransition.previousPartKeepaliveDuration
 			: 0
 
 		// The amount of time needed to preroll Part B before the 'take' point

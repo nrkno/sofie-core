@@ -554,7 +554,7 @@ export function setupRundownWithOutTransition(
 	rundownId: RundownId
 ): RundownId {
 	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, {
-		outTransitionDuration: 1000,
+		outTransition: { duration: 1000 },
 	})
 
 	const piece002: Piece = {
@@ -591,7 +591,7 @@ export function setupRundownWithOutTransitionAndPreroll(
 	rundownId: RundownId
 ): RundownId {
 	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, {
-		outTransitionDuration: 1000,
+		outTransition: { duration: 1000 },
 	})
 
 	const piece002: Piece = {
@@ -628,7 +628,7 @@ export function setupRundownWithOutTransitionAndPreroll2(
 	rundownId: RundownId
 ): RundownId {
 	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, {
-		outTransitionDuration: 250,
+		outTransition: { duration: 250 },
 	})
 
 	const piece002: Piece = {
@@ -665,7 +665,7 @@ export function setupRundownWithOutTransitionAndInTransition(
 	rundownId: RundownId
 ): RundownId {
 	const { rundown, segment0, part00 } = setupRundownBase(env, playlistId, rundownId, {
-		outTransitionDuration: 600,
+		outTransition: { duration: 600 },
 	})
 
 	const piece002: Piece = {
@@ -732,7 +732,7 @@ export function setupRundownWithOutTransitionEnableHold(
 ): RundownId {
 	const { rundown, segment0 } = setupRundownBase(env, playlistId, rundownId, {
 		holdMode: PartHoldMode.FROM,
-		outTransitionDuration: 500,
+		outTransition: { duration: 500 },
 	})
 
 	setupPart2(env, rundownId, rundown, segment0, { holdMode: PartHoldMode.TO })

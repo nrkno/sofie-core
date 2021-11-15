@@ -108,7 +108,7 @@ describe('Part Playout Timings', () => {
 						undefined,
 						{
 							part: {
-								outTransitionDuration: 289,
+								outTransition: { duration: 289 },
 							},
 						},
 						{
@@ -157,7 +157,7 @@ describe('Part Playout Timings', () => {
 							part: {
 								autoNext: true,
 								autoNextOverlap: 452,
-								outTransitionDuration: 256,
+								outTransition: { duration: 256 },
 							},
 						},
 						{
@@ -182,7 +182,7 @@ describe('Part Playout Timings', () => {
 							part: {
 								autoNext: true,
 								autoNextOverlap: 452,
-								outTransitionDuration: 2256,
+								outTransition: { duration: 2256 },
 							},
 						},
 						{
@@ -246,7 +246,7 @@ describe('Part Playout Timings', () => {
 						undefined,
 						{
 							part: {
-								outTransitionDuration: 289,
+								outTransition: { duration: 289 },
 							},
 						},
 						{
@@ -269,7 +269,7 @@ describe('Part Playout Timings', () => {
 						undefined,
 						{
 							part: {
-								outTransitionDuration: 823,
+								outTransition: { duration: 823 },
 							},
 						},
 						{
@@ -318,7 +318,7 @@ describe('Part Playout Timings', () => {
 							part: {
 								autoNext: true,
 								autoNextOverlap: 452,
-								outTransitionDuration: 256,
+								outTransition: { duration: 256 },
 							},
 						},
 						{
@@ -343,7 +343,7 @@ describe('Part Playout Timings', () => {
 							part: {
 								autoNext: true,
 								autoNextOverlap: 452,
-								outTransitionDuration: 2256,
+								outTransition: { duration: 2256 },
 							},
 						},
 						{
@@ -590,7 +590,7 @@ describe('Part Playout Timings', () => {
 					undefined,
 					{
 						part: {
-							outTransitionDuration: 200,
+							outTransition: { duration: 200 },
 						},
 					},
 					{
@@ -618,7 +618,7 @@ describe('Part Playout Timings', () => {
 					undefined,
 					{
 						part: {
-							outTransitionDuration: 987,
+							outTransition: { duration: 987 },
 						},
 					},
 					{

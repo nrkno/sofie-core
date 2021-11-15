@@ -147,6 +147,12 @@ export interface IBlueprintPartInTransition {
 	partContentDelayDuration: number
 }
 
+/** Timings for the outTransition, when supported and allowed */
+export interface IBlueprintPartOutTransition {
+	/** How long to keep this part alive after taken out  */
+	duration: number
+}
+
 export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	/** The story title */
 	title: string
@@ -164,8 +170,8 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	/** Should we block the inTransition when starting the next Part */
 	disableNextPartInTransition?: boolean
 
-	/** How long to keep this part alive after taken out */
-	outTransitionDuration?: number | null
+	/** Timings for the outTransition, when supported and allowed */
+	outTransition?: IBlueprintPartOutTransition
 
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number

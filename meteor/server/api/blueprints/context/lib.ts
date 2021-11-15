@@ -48,7 +48,7 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	autoNextOverlap: true,
 	inTransition: true,
 	disableNextPartInTransition: true,
-	outTransitionDuration: true,
+	outTransition: true,
 	expectedDuration: true,
 	budgetDuration: true,
 	holdMode: true,

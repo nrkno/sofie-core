@@ -4,6 +4,7 @@ import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStr
 import {
 	IBlueprintPartDB,
 	IBlueprintPartInTransition,
+	IBlueprintPartOutTransition,
 	NoteSeverity,
 	PartHoldMode,
 } from '@sofie-automation/blueprints-integration'
@@ -54,7 +55,7 @@ export class Part implements DBPart {
 	public autoNextOverlap?: number
 	public inTransition?: IBlueprintPartInTransition
 	public disableNextPartInTransition?: boolean
-	public outTransitionDuration?: number | null
+	public outTransition?: IBlueprintPartOutTransition
 	public expectedDuration?: number
 	public budgetDuration?: number
 	public holdMode?: PartHoldMode

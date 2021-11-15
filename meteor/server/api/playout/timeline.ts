@@ -8,6 +8,8 @@ import {
 	OnGenerateTimelineObj,
 	TimelineObjClassesCore,
 	IBlueprintPiece,
+	IBlueprintPartInTransition,
+	IBlueprintPartOutTransition,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../../../lib/logging'
@@ -592,7 +594,7 @@ function buildTimelineObjsForRundown(
 				partInstancesInfo.current.nowInPart,
 				currentPartInstanceTimings,
 				activePlaylist.holdState === RundownHoldState.ACTIVE,
-				partInstancesInfo.current.partInstance.part.outTransitionDuration ?? null
+				partInstancesInfo.current.partInstance.part.outTransition ?? null
 			)
 		)
 
@@ -763,7 +765,7 @@ function generatePreviousPartInstanceObjects(
 				previousPartInfo.nowInPart,
 				getPartTimingsOrDefaults(previousPartInfo.partInstance, previousPartInfo.pieceInstances),
 				activePlaylist.holdState === RundownHoldState.ACTIVE,
-				previousPartInfo.partInstance.part.outTransitionDuration ?? null
+				previousPartInfo.partInstance.part.outTransition ?? null
 			),
 		]
 	} else {
@@ -814,7 +816,7 @@ function generateNextPartInstanceObjects(
 			0,
 			currentToNextTimings,
 			false,
-			nextPartInfo.partInstance.part.outTransitionDuration ?? null
+			nextPartInfo.partInstance.part.outTransition ?? null
 		),
 	]
 }
@@ -948,7 +950,7 @@ function transformPartIntoTimeline(
 	nowInParentGroup: number,
 	partTimings: PartCalculatedTimings,
 	isInHold: boolean,
-	outTransitionDuration: number | null
+	outTransition: IBlueprintPartOutTransition | null
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const span = profiler.startSpan('transformPartIntoTimeline')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
@@ -968,9 +970,9 @@ function transformPartIntoTimeline(
 					duration: pieceInstance.piece.enable.duration,
 				}
 			}
-		} else if (pieceInstance.piece.isOutTransition && outTransitionDuration) {
+		} else if (pieceInstance.piece.isOutTransition && outTransition) {
 			pieceEnable = {
-				start: `#${parentGroup.id}.end - ${outTransitionDuration}`,
+				start: `#${parentGroup.id}.end - ${outTransition.duration}`,
 			}
 		} else {
 			pieceEnable = getPieceEnableInsidePart(pieceInstance, partTimings)
