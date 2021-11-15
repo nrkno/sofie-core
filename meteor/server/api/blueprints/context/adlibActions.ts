@@ -25,6 +25,7 @@ import {
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPieceDB,
+	Time,
 } from '@sofie-automation/blueprints-integration'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
@@ -502,6 +503,24 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		this.takeAfterExecute = take
 
 		return this.takeAfterExecute
+	}
+
+	blockTakeUntil(time: Time | null): void {
+		if (time !== null && (time < getCurrentTime() || typeof time !== 'number'))
+			throw new Error('Cannot block taking out of the current part, to a time in the past')
+
+		const partInstanceId = this._cache.Playlist.doc.currentPartInstanceId
+		if (!partInstanceId) {
+			throw new Error('Cannot block take when there is no part playing')
+		}
+		this._cache.PartInstances.update(partInstanceId, (doc) => {
+			if (time) {
+				doc.blockTakeUntil = time
+			} else {
+				delete doc.blockTakeUntil
+			}
+			return doc
+		})
 	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {

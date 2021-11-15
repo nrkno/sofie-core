@@ -59,6 +59,13 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		const allowTransition = previousPartInstance && !previousPartInstance.part.disableNextPartInTransition
 		const start = currentPartInstance.timings?.startedPlayback
 
+		if (currentPartInstance.blockTakeUntil && currentPartInstance.blockTakeUntil > getCurrentTime()) {
+			// Adlib-actions can arbitrarily block takes from being done
+			const remainingMs = currentPartInstance.blockTakeUntil - getCurrentTime()
+			logger.debug(`Take is blocked until ${currentPartInstance.blockTakeUntil}. Which is in: ${remainingMs}`)
+			return ClientAPI.responseError(`Cannot perform take for ${remainingMs}ms`)
+		}
+
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
 		if (
 			allowTransition &&

@@ -110,6 +110,7 @@ export class PartInstance implements DBPartInstance {
 	public partPlayoutTimings?: PartCalculatedTimings
 
 	public orphaned?: 'adlib-part' | 'deleted'
+	public blockTakeUntil?: number
 
 	constructor(document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {

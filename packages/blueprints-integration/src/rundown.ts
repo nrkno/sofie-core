@@ -281,6 +281,9 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 
 	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
 	orphaned?: 'adlib-part' | 'deleted'
+
+	/** If taking out of the current part is blocked, this is the time it is blocked until */
+	blockTakeUntil?: number
 }
 
 export interface IBlueprintPartInstanceTimings {
