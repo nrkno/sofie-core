@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import { PartExtended } from '../../../lib/Rundown'
@@ -13,6 +13,8 @@ import { literal } from '../../../lib/lib'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { getAllowSpeaking } from '../../lib/localStorage'
+import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../RundownView/RundownViewEventBus'
+import { Meteor } from 'meteor/meteor'
 
 interface IProps {
 	className?: string
@@ -43,6 +45,7 @@ export function StoryboardPart({
 	onContextMenu,
 }: IProps) {
 	const { t } = useTranslation()
+	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
 
 	const getPartContext = useCallback(() => {
@@ -65,6 +68,31 @@ export function StoryboardPart({
 		return ctx
 	}, [segment, part])
 
+	const highlightTimeout = useRef<number | null>(null)
+	const onHighlight = useCallback(
+		(e: HighlightEvent) => {
+			if (e.partId == part.partId) {
+				// && !e.pieceId
+				setHighlight(true)
+				if (highlightTimeout.current) Meteor.clearTimeout(highlightTimeout.current)
+				highlightTimeout.current = Meteor.setTimeout(() => setHighlight(false), 5000)
+			}
+		},
+		[part.partId]
+	)
+	useEffect(() => {
+		return () => {
+			if (highlightTimeout.current) Meteor.clearTimeout(highlightTimeout.current)
+		}
+	}, [])
+	useEffect(() => {
+		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, onHighlight)
+
+		return () => {
+			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, onHighlight)
+		}
+	}, [onHighlight])
+
 	const isInvalid = part.instance.part.invalid
 	const isFloated = part.instance.part.floated
 
@@ -76,6 +104,7 @@ export function StoryboardPart({
 					'segment-storyboard__part',
 					{
 						squished: !!style,
+						'invert-flash': highlight,
 					},
 					className
 				),

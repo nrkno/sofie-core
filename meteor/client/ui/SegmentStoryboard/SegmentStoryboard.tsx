@@ -21,7 +21,12 @@ import { scrollToPart } from '../../lib/viewPort'
 import { StoryboardPart } from './StoryboardPart'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import classNames from 'classnames'
-import RundownViewEventBus, { RundownViewEvents } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	GoToPartEvent,
+	GoToPartInstanceEvent,
+	HighlightEvent,
+	RundownViewEvents,
+} from '../RundownView/RundownViewEventBus'
 import { getElementWidth } from '../../utils/dimensions'
 import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
 import { Meteor } from 'meteor/meteor'
@@ -82,6 +87,7 @@ export const SegmentStoryboard = React.memo(
 		const { t } = useTranslation()
 		const notes: Array<SegmentNote> = props.segmentNotes
 		const [squishedHover, setSquishedHover] = useState(false)
+		const [highlight, setHighlight] = useState(false)
 		const squishedHoverTimeout = useRef<number | null>(null)
 
 		const identifiers: Array<{ partId: PartId; ident?: string }> = props.parts
@@ -122,7 +128,6 @@ export const SegmentStoryboard = React.memo(
 				!!props.playlist.timeOfDayCountdowns
 			)
 		)
-		const [highlight] = useState(false)
 
 		const getSegmentContext = (_props) => {
 			const ctx = literal<IContextMenuContext>({
@@ -240,15 +245,55 @@ export const SegmentStoryboard = React.memo(
 			setScrollLeft(0)
 		}, [])
 
+		const onGoToPart = useCallback(
+			(e: GoToPartEvent) => {
+				const idx = renderedParts.findIndex((partInstance) => e.partId === partInstance.partId)
+				if (idx >= 0) {
+					setScrollLeft(PART_WIDTH * idx)
+				}
+			},
+			[renderedParts]
+		)
+
+		const onGoToPartInstance = useCallback(
+			(e: GoToPartInstanceEvent) => {
+				const idx = renderedParts.findIndex((partInstance) => partInstance.instance._id === e.partInstanceId)
+				if (idx >= 0) {
+					setScrollLeft(PART_WIDTH * idx)
+				}
+			},
+			[renderedParts]
+		)
+
+		const highlightTimeout = useRef<number | null>(null)
+		const onHighlight = useCallback(
+			(e: HighlightEvent) => {
+				if (props.segment._id === e.segmentId && !e.partId) {
+					setHighlight(true)
+					if (highlightTimeout.current) Meteor.clearTimeout(highlightTimeout.current)
+					highlightTimeout.current = Meteor.setTimeout(() => setHighlight(false), 5000)
+				}
+			},
+			[props.segment._id]
+		)
+		useEffect(() => {
+			return () => {
+				if (highlightTimeout.current) Meteor.clearTimeout(highlightTimeout.current)
+			}
+		}, [])
 		useEffect(() => {
 			RundownViewEventBus.on(RundownViewEvents.REWIND_SEGMENTS, onRewindSegment)
-			// RundownViewEventBus.on(RundownViewEvents.GO_TO_PART, onGoToPart)
-			// RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, onGoToPartInstance)
+			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART, onGoToPart)
+			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, onGoToPartInstance)
+			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, onHighlight)
 
 			return () => {
 				RundownViewEventBus.off(RundownViewEvents.REWIND_SEGMENTS, onRewindSegment)
+				RundownViewEventBus.off(RundownViewEvents.GO_TO_PART, onGoToPart)
+				RundownViewEventBus.off(RundownViewEvents.GO_TO_PART_INSTANCE, onGoToPartInstance)
+				RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, onHighlight)
 			}
-		}, [onRewindSegment])
+		}, [onRewindSegment, onGoToPart, onGoToPartInstance, onHighlight])
 
 		useLayoutEffect(() => {
 			let resizeObserver: ResizeObserver | undefined
