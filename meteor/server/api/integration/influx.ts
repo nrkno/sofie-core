@@ -33,7 +33,7 @@ const client = config.host
 	: undefined
 
 const versions = getVersions()
-let timeout: NodeJS.Timeout | undefined = undefined
+let timeout: number | undefined = undefined
 let bufferedTraces: Influx.IPoint[] = []
 
 export interface Trace {
@@ -87,13 +87,13 @@ export function sendTrace(trace: FinishedTrace) {
 
 	if (bufferedTraces.length >= 2500) {
 		if (timeout) {
-			clearTimeout(timeout)
+			Meteor.clearTimeout(timeout)
 			timeout = undefined
 		}
-		setTimeout(() => emptyBuffers()) // make sure this doesnt run synchronous
+		Meteor.setTimeout(() => emptyBuffers(), 0) // make sure this doesnt run synchronous
 	} else {
 		if (!timeout) {
-			timeout = setTimeout(() => {
+			timeout = Meteor.setTimeout(() => {
 				emptyBuffers()
 				timeout = undefined
 			}, 30 * 1000)
