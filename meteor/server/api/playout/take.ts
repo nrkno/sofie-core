@@ -8,6 +8,7 @@ import {
 	literal,
 	clone,
 	getRandomId,
+	stringifyError,
 } from '../../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { setNextPart as libsetNextPart, isTooCloseToAutonext, selectNextPart, LOW_PRIO_DEFER_TIME } from './lib'
@@ -242,8 +243,8 @@ function afterTakeUpdateTimingsAndEvents(
 		if (isFirstTake && takeRundown) {
 			if (blueprint.onRundownFirstTake) {
 				const span = profiler.startSpan('blueprint.onRundownFirstTake')
-				waitForPromise(
-					Promise.resolve(
+				try {
+					waitForPromise(
 						blueprint.onRundownFirstTake(
 							new PartEventContext(
 								'onRundownFirstTake',
@@ -253,21 +254,25 @@ function afterTakeUpdateTimingsAndEvents(
 								takePartInstance
 							)
 						)
-					).catch(logger.error)
-				)
+					)
+				} catch (err) {
+					logger.error(`Error in showStyleBlueprint.onRundownFirstTake: ${stringifyError(err)}`)
+				}
 				if (span) span.end()
 			}
 		}
 
 		if (blueprint.onPostTake && takeRundown) {
 			const span = profiler.startSpan('blueprint.onPostTake')
-			waitForPromise(
-				Promise.resolve(
+			try {
+				waitForPromise(
 					blueprint.onPostTake(
 						new PartEventContext('onPostTake', cache.Studio.doc, showStyle, takeRundown, takePartInstance)
 					)
-				).catch(logger.error)
-			)
+				)
+			} catch (err) {
+				logger.error(`Error in showStyleBlueprint.onPostTake: ${stringifyError(err)}`)
+			}
 			if (span) span.end()
 		}
 	}
@@ -286,30 +291,35 @@ export function updatePartInstanceOnTake(
 	// TODO - the state could change after this sampling point. This should be handled properly
 	let previousPartEndState: PartEndState | undefined = undefined
 	if (blueprint.getEndStateForPart && currentPartInstance) {
-		const time = getCurrentTime()
-		const resolvedPieces = getResolvedPieces(cache, showStyle, currentPartInstance)
+		try {
+			const time = getCurrentTime()
+			const resolvedPieces = getResolvedPieces(cache, showStyle, currentPartInstance)
 
-		const span = profiler.startSpan('blueprint.getEndStateForPart')
-		const context = new RundownContext(
-			{
-				name: `${playlist.name}`,
-				identifier: `playlist=${playlist._id},currentPartInstance=${
-					currentPartInstance._id
-				},execution=${getRandomId()}`,
-			},
-			cache.Studio.doc,
-			showStyle,
-			takeRundown
-		)
-		previousPartEndState = blueprint.getEndStateForPart(
-			context,
-			playlist.previousPersistentState,
-			unprotectPartInstance(clone(currentPartInstance)),
-			unprotectObjectArray(resolvedPieces),
-			time
-		)
-		if (span) span.end()
-		logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+			const span = profiler.startSpan('blueprint.getEndStateForPart')
+			const context = new RundownContext(
+				{
+					name: `${playlist.name}`,
+					identifier: `playlist=${playlist._id},currentPartInstance=${
+						currentPartInstance._id
+					},execution=${getRandomId()}`,
+				},
+				cache.Studio.doc,
+				showStyle,
+				takeRundown
+			)
+			previousPartEndState = blueprint.getEndStateForPart(
+				context,
+				playlist.previousPersistentState,
+				unprotectPartInstance(clone(currentPartInstance)),
+				unprotectObjectArray(resolvedPieces),
+				time
+			)
+			if (span) span.end()
+			logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+		} catch (err) {
+			logger.error(`Error in showStyleBlueprint.getEndStateForPart: ${stringifyError(err)}`)
+			previousPartEndState = undefined
+		}
 	}
 
 	const partInstanceM: any = {

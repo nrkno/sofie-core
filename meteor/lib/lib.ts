@@ -1214,3 +1214,26 @@ export enum LogLevel {
 	WARN = 'warn',
 	ERROR = 'error',
 }
+/** Make a string out of an error, including any additional data such as stack trace if available */
+export function stringifyError(error: unknown, noStack = false): string {
+	let str: string
+
+	if (error && typeof error === 'object' && (error as Error | Meteor.Error).message) {
+		str = `${(error as Error | Meteor.Error).message}`
+	} else if (error && typeof error === 'object' && (error as Meteor.Error).reason) {
+		str = `${(error as Meteor.Error).reason}`
+	} else {
+		str = `${error}`
+	}
+
+	if (error && typeof error === 'object' && (error as any).details) {
+		str = `${(error as any).details}`
+	}
+
+	if (!noStack) {
+		if (error && typeof error === 'object' && (error as any).stack) {
+			str += ', ' + (error as any).stack
+		}
+	}
+	return str
+}

@@ -10,6 +10,7 @@ import {
 	unprotectString,
 	isStringOrProtectedString,
 	getRandomId,
+	stringifyError,
 } from '../../../lib/lib'
 import { StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
@@ -1158,7 +1159,12 @@ export namespace ServerPlayoutAPI {
 
 						logger.debug(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-						blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+						try {
+							blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+						} catch (err) {
+							logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
+							// TODO: should we throw here?
+						}
 					}
 				)
 			}

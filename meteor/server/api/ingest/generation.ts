@@ -1,4 +1,4 @@
-import { BlueprintResultRundown } from '@sofie-automation/blueprints-integration'
+import { BlueprintResultRundown, BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { ReadonlyDeep } from 'type-fest'
@@ -16,7 +16,7 @@ import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collectio
 import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, stringifyError, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { logChanges, saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
@@ -128,11 +128,45 @@ export async function calculateSegmentsFromIngestData(
 				rundown,
 				watchedPackages
 			)
+			let blueprintSegment0: BlueprintResultSegment | null = null
+			try {
+				blueprintSegment0 = blueprint.blueprint.getSegment(context, ingestSegment)
+			} catch (err) {
+				logger.error(`Error in showStyleBlueprint.getSegment: ${stringifyError(err)}`)
+				blueprintSegment0 = null
+			}
 
-			const blueprintRes = blueprint.blueprint.getSegment(context, ingestSegment)
+			if (!blueprintSegment0) {
+				// Something went wrong when generating the segment
+
+				const newSegment = literal<DBSegment>({
+					_id: segmentId,
+					rundownId: rundown._id,
+					externalId: ingestSegment.externalId,
+					externalModified: ingestSegment.modified,
+					_rank: ingestSegment.rank,
+					notes: [
+						{
+							type: NoteSeverity.ERROR,
+							message: {
+								key: 'Internal Error generating segment',
+								namespaces: [unprotectString(blueprint.blueprintId)],
+							},
+							origin: {
+								name: '', // TODO
+							},
+						},
+					],
+					name: ingestSegment.name,
+				})
+				res.segments.push(newSegment)
+
+				continue // Don't generate any content for the faulty segment
+			}
+			const blueprintSegment: BlueprintResultSegment = blueprintSegment0
 
 			// Ensure all parts have a valid externalId set on them
-			const knownPartExternalIds = blueprintRes.parts.map((p) => p.part.externalId)
+			const knownPartExternalIds = blueprintSegment.parts.map((p) => p.part.externalId)
 
 			const segmentNotes: SegmentNote[] = []
 			for (const note of context.notes) {
@@ -153,7 +187,7 @@ export async function calculateSegmentsFromIngestData(
 			}
 
 			const newSegment = literal<DBSegment>({
-				...blueprintRes.segment,
+				...blueprintSegment.segment,
 				_id: segmentId,
 				rundownId: rundown._id,
 				externalId: ingestSegment.externalId,
@@ -163,7 +197,7 @@ export async function calculateSegmentsFromIngestData(
 			})
 			res.segments.push(newSegment)
 
-			blueprintRes.parts.forEach((blueprintPart, i) => {
+			blueprintSegment.parts.forEach((blueprintPart, i) => {
 				const partId = getPartId(rundown._id, blueprintPart.part.externalId)
 
 				const notes: PartNote[] = []
@@ -209,7 +243,7 @@ export async function calculateSegmentsFromIngestData(
 				res.parts.push(part)
 
 				// This ensures that it doesn't accidently get played while hidden
-				if (blueprintRes.segment.isHidden) {
+				if (blueprintSegment.segment.isHidden) {
 					part.invalid = true
 				}
 
@@ -248,7 +282,7 @@ export async function calculateSegmentsFromIngestData(
 			})
 
 			// If the segment has no parts, then hide it
-			if (blueprintRes.parts.length === 0) {
+			if (blueprintSegment.parts.length === 0) {
 				newSegment.isHidden = true
 			}
 		}
@@ -414,7 +448,7 @@ export async function updateRundownFromIngestData(
 	cache: CacheForIngest,
 	ingestRundown: LocalIngestRundown,
 	peripheralDevice: PeripheralDevice | undefined
-): Promise<CommitIngestData> {
+): Promise<CommitIngestData | null> {
 	const span = profiler.startSpan('ingest.rundownInput.updateRundownFromIngestData')
 
 	// canBeUpdated is to be run by the callers
@@ -442,7 +476,7 @@ export async function updateRundownFromIngestData(
 	const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
 	// Call blueprints, get rundown
-	const { dbRundownData, rundownRes } = await getRundownFromIngestData(
+	const rundownData = await getRundownFromIngestData(
 		cache,
 		ingestRundown,
 		peripheralDevice,
@@ -450,7 +484,12 @@ export async function updateRundownFromIngestData(
 		showStyleBlueprint,
 		allRundownWatchedPackages
 	)
+	if (!rundownData) {
+		// We got no rundown, abort:
+		return null
+	}
 
+	const { dbRundownData, rundownRes } = rundownData
 	// Save rundown and baseline
 	const dbRundown = await saveChangesForRundown(cache, dbRundownData, rundownRes, showStyle)
 
@@ -487,7 +526,7 @@ export async function getRundownFromIngestData(
 	showStyle: SelectedShowStyleVariant,
 	showStyleBlueprint: WrappedShowStyleBlueprint,
 	allRundownWatchedPackages: WatchedPackagesHelper
-): Promise<{ dbRundownData: DBRundown; rundownRes: BlueprintResultRundown }> {
+): Promise<{ dbRundownData: DBRundown; rundownRes: BlueprintResultRundown } | null> {
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
 
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(
@@ -505,7 +544,18 @@ export async function getRundownFromIngestData(
 		showStyle.compound,
 		rundownBaselinePackages
 	)
-	const rundownRes = showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
+	let rundownRes: BlueprintResultRundown | null = null
+	try {
+		rundownRes = showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.getRundown: ${stringifyError(err)}`)
+		rundownRes = null
+	}
+
+	if (rundownRes === null) {
+		// There was an error in the blueprint, abort:
+		return null
+	}
 
 	const translationNamespaces: string[] = []
 	if (showStyleBlueprint.blueprintId) {

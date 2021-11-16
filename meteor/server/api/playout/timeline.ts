@@ -35,6 +35,7 @@ import {
 	protectString,
 	waitForPromise,
 	normalizeArrayToMapFunc,
+	stringifyError,
 } from '../../../lib/lib'
 import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -118,13 +119,20 @@ export async function updateStudioTimeline(cache: CacheForStudio | CacheForPlayo
 		)
 
 		const blueprint = studioBlueprint.blueprint
-		studioBaseline = blueprint.getBaseline(
-			new StudioBaselineContext(
-				{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
-				studio,
-				watchedPackages
+		try {
+			studioBaseline = blueprint.getBaseline(
+				new StudioBaselineContext(
+					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+					studio,
+					watchedPackages
+				)
 			)
-		)
+		} catch (err) {
+			logger.error(`Error in studioBlueprint.getBaseline: ${stringifyError(err)}`)
+			studioBaseline = {
+				timelineObjects: [],
+			}
+		}
 		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
 
 		const id = `baseline_version`
@@ -363,8 +371,8 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 							trackedAbSessions: context.knownSessions,
 						},
 					})
-				} catch (e) {
-					logger.error(`Error in onTimelineGenerate during getTimelineRundown`, e)
+				} catch (err) {
+					logger.error(`Error in showStyleBlueprint.onTimelineGenerate: ${stringifyError(err)}`)
 				}
 			}
 
