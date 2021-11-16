@@ -17,7 +17,7 @@ import { Settings } from '../../../lib/Settings'
 import { useTranslation } from 'react-i18next'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { literal, unprotectString } from '../../../lib/lib'
-import { scrollToPart } from '../../lib/viewPort'
+import { lockPointer, scrollToPart, unlockPointer } from '../../lib/viewPort'
 import { StoryboardPart } from './StoryboardPart'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import classNames from 'classnames'
@@ -30,6 +30,7 @@ import RundownViewEventBus, {
 import { getElementWidth } from '../../utils/dimensions'
 import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
 import { Meteor } from 'meteor/meteor'
+import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -60,7 +61,6 @@ interface IProps {
 	displayLiveLineCounter: boolean
 	currentPartWillAutoNext: boolean
 	onScroll: (scrollLeft: number, event: any) => void
-	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onShowEntireSegment?: (event: any) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
@@ -83,7 +83,8 @@ export const SegmentStoryboard = React.memo(
 		const listRef = useRef<HTMLDivElement>(null)
 		const [listWidth, setListWidth] = useState(0)
 		const [scrollLeft, setScrollLeft] = useState(0)
-		const [animateScrollLeft] = useState(true)
+		const [grabbed, setGrabbed] = useState<{ clientX: number; clientY: number } | null>(null)
+		const [animateScrollLeft, setAnimateScrollLeft] = useState(true)
 		const { t } = useTranslation()
 		const notes: Array<SegmentNote> = props.segmentNotes
 		const [squishedHover, setSquishedHover] = useState(false)
@@ -242,7 +243,9 @@ export const SegmentStoryboard = React.memo(
 		}, [currentPartIndex, nextPartIndex, props.followLiveLine])
 
 		const onRewindSegment = useCallback(() => {
-			setScrollLeft(0)
+			if (!props.isLiveSegment) {
+				setScrollLeft(0)
+			}
 		}, [])
 
 		const onGoToPart = useCallback(
@@ -322,7 +325,7 @@ export const SegmentStoryboard = React.memo(
 			}
 		}, [listRef.current])
 
-		const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
+		const onSquishedPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
 				setSquishedHover(true)
 				squishedHoverTimeout.current = Meteor.setTimeout(() => setSquishedHover(false), HOVER_TIMEOUT)
@@ -336,14 +339,14 @@ export const SegmentStoryboard = React.memo(
 			}
 		}
 
-		const onPointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
+		const onSquishedPointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
 				clearSquishedHoverTimeout()
 				setSquishedHover(false)
 			}
 		}
 
-		const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+		const onSquishedPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
 				clearSquishedHoverTimeout()
 				setSquishedHover(true)
@@ -354,6 +357,57 @@ export const SegmentStoryboard = React.memo(
 		useEffect(() => {
 			return () => clearSquishedHoverTimeout()
 		}, [])
+
+		const onListPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+			if (e.pointerType === 'mouse') {
+				setGrabbed({
+					clientX: e.clientX,
+					clientY: e.clientY,
+				})
+				setAnimateScrollLeft(false)
+			}
+		}
+
+		useEffect(() => {
+			if (grabbed) {
+				const onListPointerRelease = () => {
+					setGrabbed(null)
+					setAnimateScrollLeft(true)
+				}
+				const onPointerLockChange = () => {
+					if (!document.pointerLockElement) {
+						setGrabbed(null)
+						setAnimateScrollLeft(true)
+					}
+				}
+				const onPointerMove = (e: PointerEvent) => {
+					setScrollLeft((value) => {
+						const newScrollLeft = Math.max(
+							0,
+							Math.min(value - e.movementX, PART_WIDTH * (renderedParts.length - 1) - PART_LIST_LEAD_IN / 2)
+						)
+						props.onScroll(newScrollLeft, e)
+						return newScrollLeft
+					})
+				}
+
+				document.addEventListener('pointerup', onListPointerRelease)
+				document.addEventListener('pointerlockchange', onPointerLockChange)
+				document.addEventListener('pointerlockerror', onListPointerRelease)
+				document.addEventListener('pointermove', onPointerMove)
+				lockPointer()
+				showPointerLockCursor(grabbed.clientX, grabbed.clientY)
+
+				return () => {
+					unlockPointer()
+					hidePointerLockCursor()
+					document.removeEventListener('pointerup', onListPointerRelease)
+					document.removeEventListener('pointerlockchange', onPointerLockChange)
+					document.removeEventListener('pointerlockerror', onListPointerRelease)
+					document.removeEventListener('pointermove', onPointerMove)
+				}
+			}
+		}, [grabbed, renderedParts.length, props.onScroll])
 
 		return (
 			<div
@@ -470,7 +524,7 @@ export const SegmentStoryboard = React.memo(
 						)}
 					</div>
 					<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
-					<div className="segment-storyboard__part-list__container" ref={listRef}>
+					<div className="segment-storyboard__part-list__container" ref={listRef} onPointerDown={onListPointerDown}>
 						<VelocityReact.VelocityComponent
 							animation={{
 								translateX: `-${scrollLeft}px`,
@@ -494,9 +548,9 @@ export const SegmentStoryboard = React.memo(
 									style={{
 										minWidth: `${spaceLeft}px`,
 									}}
-									onPointerEnter={onPointerEnter}
-									onPointerLeave={onPointerLeave}
-									onPointerMove={onPointerMove}
+									onPointerEnter={onSquishedPointerEnter}
+									onPointerLeave={onSquishedPointerLeave}
+									onPointerMove={onSquishedPointerMove}
 								>
 									{squishedParts}
 								</div>

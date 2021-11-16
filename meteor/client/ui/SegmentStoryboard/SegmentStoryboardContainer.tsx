@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -230,6 +230,12 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		}
 	}, [subscriptionsReady, firstNonInvalidPart?.pieces.length])
 
+	const onScroll = useCallback(() => {
+		if (isLiveSegment) {
+			if (props.onSegmentScroll) props.onSegmentScroll()
+		}
+	}, [props.onSegmentScroll, isLiveSegment])
+
 	return (
 		<SegmentStoryboard
 			id={props.id}
@@ -255,8 +261,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			onContextMenu={props.onContextMenu}
 			onFollowLiveLine={this.onFollowLiveLine}
 			onShowEntireSegment={this.onShowEntireSegment}
-			onZoomChange={this.onZoomChange}
-			onScroll={this.onScroll}
+			onScroll={onScroll}
 			isLastSegment={props.isLastSegment}
 			lastValidPartIndex={props.lastValidPartIndex}
 			onHeaderNoteClick={props.onHeaderNoteClick}
