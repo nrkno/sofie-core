@@ -3,6 +3,29 @@ import { NtpClient } from '../../typings/ntp-client'
 import { DiffTimeResult } from '../../../lib/api/peripheralDevice'
 
 /**
+ * Example usage:
+ * determineDiffTime({
+ * 	maxSampleCount: 20,
+ * 	minSampleCount: 10,
+ * 	maxAllowedDelay: 2000
+ * })
+ * .then((result) => {
+ * 	logger.debug('result', result)
+ * 	// if result.stdDev is less than one frame-time, we should be okay
+ * })
+ */
+
+export async function determineDiffTime(config?: Partial<Config>) {
+	return determineDiffTimeInner({
+		maxSampleCount: 20,
+		minSampleCount: 10,
+		maxAllowedDelay: 500,
+
+		...config,
+	})
+}
+
+/**
  * Send a number of calls to ntp-server, and calculate most-probable diff
  * compared to system time
  * https://stackoverflow.com/questions/1228089/how-does-the-network-time-protocol-work
@@ -114,24 +137,4 @@ interface Config {
 	maxTries?: number
 	host?: string
 	port?: number
-}
-
-// Example usage:
-// determineDiffTime({
-// 	maxSampleCount: 20,
-// 	minSampleCount: 10,
-// 	maxAllowedDelay: 2000
-// })
-// .then((result) => {
-// 	logger.debug('result', result)
-// 	// if result.stdDev is less than one frame-time, we should be okay
-// })
-export async function determineDiffTime(config?: Partial<Config>) {
-	return determineDiffTimeInner({
-		maxSampleCount: 20,
-		minSampleCount: 10,
-		maxAllowedDelay: 500,
-
-		...config,
-	})
 }

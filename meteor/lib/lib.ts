@@ -121,10 +121,8 @@ const systemTime = {
 	lastSync: 0,
 }
 /**
- * Returns the current (synced) time
- * On the server: It equals Date.now() because we're assuming the system clock is NTP-synced and accurate enough.
- * On the client: The synced time differs from Date.now() in that it uses a time synced with the Sofie server,
- * so it is unaffected of whether the client has a well-synced computer time or not.
+ * Returns the current (synced) time.
+ * If NTP-syncing is enabled, it'll be unaffected of whether the client has a well-synced computer time or not.
  * @return {Time}
  */
 export function getCurrentTime(): Time {

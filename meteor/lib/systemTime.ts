@@ -4,7 +4,7 @@ import { systemTime } from './lib'
 import { MeteorCall } from './api/methods'
 
 if (Meteor.isServer) {
-	// handled in systemTime
+	// Handled in server/api/systemTime/systemTime.ts
 } else {
 	/** How often the client should sync its time to the server [ms] */
 	const SYNC_TIME = 5 * 60 * 1000 // 5 minutes
