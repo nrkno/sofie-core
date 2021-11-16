@@ -157,7 +157,7 @@ export async function calculateSegmentsFromIngestData(
 							},
 						},
 					],
-					name: ingestSegment.externalId,
+					name: ingestSegment.name,
 				})
 				res.segments.push(newSegment)
 
