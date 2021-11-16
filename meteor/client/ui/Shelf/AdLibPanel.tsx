@@ -6,7 +6,7 @@ import { useTranslation, withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
+import { DBPart, PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
@@ -548,16 +548,18 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	const segments = props.playlist.getSegments()
 
-	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
+	const { uiSegments, liveSegment, uiPartSegmentMap, uiPartMap } = memoizedIsolatedAutorun(
 		(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, segments: Segment[]) => {
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
+			const uiPartMap = new Map<PartId, DBPart>()
 
 			if (!segments) {
 				return {
 					uiSegments: [],
 					liveSegment: undefined,
 					uiPartSegmentMap,
+					uiPartMap,
 				}
 			}
 
@@ -593,6 +595,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 						segment.parts.push(partInstance)
 
 						uiPartSegmentMap.set(part._id, segment)
+						uiPartMap.set(part._id, part)
 					}
 				})
 
@@ -620,6 +623,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 				uiSegments,
 				liveSegment,
 				uiPartSegmentMap,
+				uiPartMap,
 			}
 		},
 		'uiSegments',
@@ -674,11 +678,14 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					// @ts-ignore deep-property
 					sort: { 'display._rank': 1 },
 				}
-			).map((action) => {
-				return [action.partId, actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)] as [
-					PartId,
-					AdLibPieceUi
-				]
+			).map<{
+				partId: PartId
+				piece: AdLibPieceUi
+			}>((action) => {
+				return {
+					partId: action.partId,
+					piece: actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup),
+				}
 			}),
 		'adLibActions',
 		rundownIds,
@@ -686,15 +693,21 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	)
 
 	adlibActions.forEach((action) => {
-		const segment = uiPartSegmentMap.get(action[0])
-
+		const segment = uiPartSegmentMap.get(action.partId)
 		if (segment) {
-			segment.pieces.push(action[1])
+			segment.pieces.push(action.piece)
 		}
 	})
 
 	uiPartSegmentMap.forEach((segment) => {
-		segment.pieces = segment.pieces.sort((a, b) => a._rank - b._rank)
+		// First sort pieces by their rank:
+		segment.pieces = _.sortBy(segment.pieces, (piece) => piece._rank)
+
+		// Also sort pieces by their part rank:
+		segment.pieces = _.sortBy(segment.pieces, (piece) => {
+			const part = piece.partId && uiPartMap.get(piece.partId)
+			return part?._rank ?? Number.POSITIVE_INFINITY
+		})
 	})
 
 	let currentRundown: Rundown | undefined = undefined
