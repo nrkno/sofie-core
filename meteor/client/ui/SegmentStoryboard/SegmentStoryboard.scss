@@ -3,10 +3,9 @@
 @import '../../styles/itemTypeColors';
 
 $part-left-right-padding: 0.3rem;
+$segment-storyboard-part-width: 160px;
 
 .segment-storyboard {
-	$segment-storyboard-part-width: 160px;
-
 	> .segment-storyboard__part-list__container {
 		position: relative;
 		overflow: hidden;
@@ -20,102 +19,11 @@ $part-left-right-padding: 0.3rem;
 			display: flex;
 			padding-left: $segment-group-controls-width;
 
-			> .segment-storyboard__part {
+			> .segment-storyboard__part-list.segment-storyboard__part-list--squished-parts {
 				position: relative;
-				flex: 0 0;
-				min-width: $segment-storyboard-part-width;
-				margin-top: $segment-header-height;
-				padding: 1.3rem $part-left-right-padding 2.5rem;
-
-				> .segment-storyboard__part__title {
-					display: none;
-					position: absolute;
-					top: 1.3em;
-					width: 100%;
-				}
-
-				> .segment-storyboard__part__next-line {
-					position: absolute;
-					top: 0;
-					left: 0;
-					bottom: 0;
-					width: 0;
-					border-left: 2px solid $part-start-color;
-
-					&.segment-storyboard__part__next-line--autonext {
-						border-left: 1px solid $part-start-color;
-					}
-
-					&.segment-storyboard__part__next-line--live {
-						border-left-color: $general-live-color;
-					}
-
-					&.segment-storyboard__part__next-line--next {
-						border-left-color: $general-next-color;
-					}
-				}
-
-				> .segment-storyboard__part__next-line-label {
-					position: absolute;
-					top: 0;
-					left: 0;
-					right: 0;
-					text-transform: uppercase;
-					font-weight: bold;
-					line-height: 0.9em;
-					white-space: nowrap;
-					word-wrap: none;
-					color: $part-start-color;
-					padding: 0.1em 0.3em;
-
-					&.segment-storyboard__part__next-line-label--live {
-						background: $general-live-color;
-						color: #fff;
-					}
-
-					&.segment-storyboard__part__next-line-label--next {
-						background: $general-next-color;
-						color: #000;
-					}
-
-					&:not(.segment-storyboard__part__next-line-label--next):not(.segment-storyboard__part__next-line-label--live).segment-storyboard__part__next-line-label--autonext {
-						font-weight: 400;
-					}
-				}
-
-				> .segment-storyboard__identifier {
-					position: absolute;
-					bottom: 0;
-					left: 0;
-					z-index: -1;
-					padding: 0 10px 0 10px;
-					box-sizing: border-box;
-					background-color: $part-identifier;
-					border-radius: 0 10px 10px 0;
-					color: $part-identifier-text;
-				}
-
-				> .segment-storyboard__liveline {
-					position: absolute;
-					bottom: 0;
-					right: $part-left-right-padding;
-					text-align: right;
-					z-index: 2;
-
-					position: absolute;
-					font-size: 1.2em;
-					line-height: 1em;
-					font-weight: 500;
-					color: $liveline-timecode-color;
-					white-space: nowrap;
-					word-wrap: none;
-					opacity: 1;
-					background: $segment-background-color;
-
-					> .overtime {
-						color: $general-late-color;
-					}
-				}
+				display: block;
+				padding-left: 0;
+				margin: 0;
 			}
 		}
 
@@ -126,6 +34,191 @@ $part-left-right-padding: 0.3rem;
 			width: 100px;
 			bottom: 0;
 			background: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+		}
+	}
+}
+
+.segment-storyboard__part {
+	position: relative;
+	flex: 0 0;
+	min-width: $segment-storyboard-part-width;
+	margin-top: $segment-header-height;
+	padding: 1.3rem $part-left-right-padding 2.5rem;
+
+	> .segment-storyboard__part__title {
+		display: none;
+		position: absolute;
+		top: 1.3em;
+		width: 100%;
+	}
+
+	> .segment-storyboard__part__next-line {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		width: 0;
+		border-left: 2px solid $part-start-color;
+		z-index: 2;
+
+		&.segment-storyboard__part__next-line--autonext {
+			border-left: 1px solid $part-start-color;
+		}
+
+		&.segment-storyboard__part__next-line--live {
+			border-left-color: $general-live-color;
+		}
+
+		&.segment-storyboard__part__next-line--next {
+			border-left-color: $general-next-color;
+		}
+	}
+
+	> .segment-storyboard__part__next-line-label {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		text-transform: uppercase;
+		font-weight: bold;
+		line-height: 0.9em;
+		white-space: nowrap;
+		word-wrap: none;
+		color: $part-start-color;
+		padding: 0.1em 0.3em;
+		z-index: 2;
+
+		&.segment-storyboard__part__next-line-label--live {
+			background: $general-live-color;
+			color: #fff;
+		}
+
+		&.segment-storyboard__part__next-line-label--next {
+			background: $general-next-color;
+			color: #000;
+		}
+
+		&:not(.segment-storyboard__part__next-line-label--next):not(.segment-storyboard__part__next-line-label--live).segment-storyboard__part__next-line-label--autonext {
+			font-weight: 400;
+		}
+	}
+
+	> .segment-storyboard__identifier {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		z-index: -1;
+		padding: 0 10px 0 10px;
+		box-sizing: border-box;
+		background-color: $part-identifier;
+		border-radius: 0 10px 10px 0;
+		color: $part-identifier-text;
+	}
+
+	> .segment-storyboard__liveline {
+		position: absolute;
+		bottom: 0;
+		right: $part-left-right-padding;
+		text-align: right;
+		z-index: 2;
+
+		position: absolute;
+		font-size: 1.2em;
+		line-height: 1em;
+		font-weight: 500;
+		color: $liveline-timecode-color;
+		white-space: nowrap;
+		word-wrap: none;
+		opacity: 1;
+		background: $segment-background-color;
+
+		> .overtime {
+			color: $general-late-color;
+		}
+	}
+
+	--invalid-reason-color-transparent: transparent;
+	--invalid-reason-color-opaque: #{$ui-dark-color};
+
+	> .segment-storyboard__part__invalid-cover {
+		position: absolute;
+		top: 0;
+		left: 1px;
+		bottom: 0;
+		right: 1px;
+		z-index: 1;
+		pointer-events: none;
+		background-image: repeating-linear-gradient(
+				45deg,
+				var(--invalid-reason-color-transparent) 0%,
+				var(--invalid-reason-color-transparent) 5px,
+				var(--invalid-reason-color-opaque) 5px,
+				var(--invalid-reason-color-opaque) 10px
+			),
+			repeating-linear-gradient(
+				-45deg,
+				var(--invalid-reason-color-transparent) 0%,
+				var(--invalid-reason-color-transparent) 5px,
+				var(--invalid-reason-color-opaque) 5px,
+				var(--invalid-reason-color-opaque) 10px
+			);
+	}
+
+	> .segment-storyboard__part__floated-cover {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		z-index: 1;
+		pointer-events: none;
+		background-image: repeating-linear-gradient(
+			-45deg,
+			transparent 0%,
+			transparent 8px,
+			darken($part-start-color, 50%) 8px,
+			darken($part-start-color, 50%) 10px
+		);
+		backdrop-filter: saturate(0%) brightness(50%);
+	}
+}
+
+.segment-storyboard
+	> .segment-storyboard__part-list__container
+	> .segment-storyboard__part-list
+	> .segment-storyboard__part-list.segment-storyboard__part-list--squished-parts {
+	> .segment-storyboard__part {
+		max-width: $segment-storyboard-part-width;
+		position: absolute;
+		z-index: 1;
+
+		$squished-shadow: 0 0 10px rgba(0, 0, 0, 1);
+		transition: filter 0.2s 0s ease-out;
+
+		&.background {
+			filter: brightness(0.3);
+		}
+
+		> .segment-storyboard__identifier,
+		> .segment-storyboard__part__thumbnail,
+		> .segment-storyboard__part__secondary-pieces
+			> .segment-storyboard__part__output-group
+			> .segment-storyboard__part__source-layer
+			> .segment-storyboard__part__piece {
+			box-shadow: $squished-shadow;
+		}
+	}
+
+	&.hover {
+		--dupa: 'wołowa';
+		> .segment-storyboard__part {
+			filter: brightness(0.3);
+
+			&:hover {
+				filter: brightness(1);
+				transition: filter 0s;
+				z-index: 3;
+			}
 		}
 	}
 }

@@ -17,11 +17,11 @@ interface IProps {
 	piece: PieceExtended
 	studio: Studio | undefined
 	isLiveLine?: boolean
+	highlight?: boolean
 }
 
 export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
-	({ piece, layer, partId, studio }: IProps) => {
-		const [highlight] = useState(false)
+	({ piece, layer, partId, studio, highlight }: IProps) => {
 		const [hover, setHover] = useState(false)
 		const [origin, setOrigin] = useState<OffsetPosition>({ left: 0, top: 0 })
 		const [width, setWidth] = useState(0)

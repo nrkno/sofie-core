@@ -22,12 +22,31 @@
 		margin-top: 0.25em;
 	}
 
+	> .segment-storyboard__thumbnail__contents {
+		position: absolute;
+		display: flex;
+		flex-direction: column;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+
+		> .segment-storyboard__thumbnail__item {
+			flex: 1 1;
+			@include item-type-colors();
+		}
+	}
+
 	> .segment-storyboard__thumbnail__label {
 		&.segment-storyboard__thumbnail__label--lg {
+			position: absolute;
 			text-align: center;
 			font-weight: 500;
 			font-size: 1.2em;
 			text-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+			bottom: 0.2rem;
+			left: 0;
+			right: 0;
 		}
 	}
 

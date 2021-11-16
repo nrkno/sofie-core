@@ -344,7 +344,7 @@ export function useSubscription(sub: PubSub, ...args: any[]): boolean {
 			isReadyComp.stop()
 			setTimeout(() => {
 				subscription.stop()
-			}, 100)
+			}, 1000)
 		}
 	}, [stringifyObjects(args)])
 

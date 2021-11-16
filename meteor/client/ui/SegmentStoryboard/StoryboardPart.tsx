@@ -15,6 +15,7 @@ import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRe
 import { getAllowSpeaking } from '../../lib/localStorage'
 
 interface IProps {
+	className?: string
 	segment: SegmentUi
 	part: PartExtended
 	outputLayers: Record<string, IOutputLayerUi>
@@ -24,10 +25,12 @@ interface IProps {
 	currentPartWillAutonext: boolean
 	subscriptionsReady: boolean
 	displayLiveLineCounter: boolean
+	style?: React.CSSProperties
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
 
 export function StoryboardPart({
+	className,
 	segment,
 	part,
 	isLivePart,
@@ -36,6 +39,7 @@ export function StoryboardPart({
 	outputLayers,
 	subscriptionsReady,
 	displayLiveLineCounter,
+	style,
 	onContextMenu,
 }: IProps) {
 	const { t } = useTranslation()
@@ -61,14 +65,24 @@ export function StoryboardPart({
 		return ctx
 	}, [segment, part])
 
+	const isInvalid = part.instance.part.invalid
+	const isFloated = part.instance.part.floated
+
 	return (
 		<ContextMenuTrigger
 			id="segment-timeline-context-menu"
 			attributes={{
-				className: 'segment-storyboard__part',
+				className: classNames(
+					'segment-storyboard__part',
+					{
+						squished: !!style,
+					},
+					className
+				),
 				//@ts-ignore A Data attribue is perfectly fine
 				'data-layer-id': part.instance._id,
 				id: SegmentTimelinePartElementId + part.instance._id,
+				style: style,
 			}}
 			holdToDisplay={contextMenuHoldToDisplayTime()}
 			collect={getPartContext}
@@ -86,6 +100,8 @@ export function StoryboardPart({
 					<div className="segment-storyboard__part__output-group segment-storyboard__part__output-group--placeholder"></div>
 				</>
 			)}
+			{isInvalid ? <div className="segment-storyboard__part__invalid-cover"></div> : null}
+			{isFloated ? <div className="segment-storyboard__part__floated-cover"></div> : null}
 			<div className="segment-storyboard__part__title">{part.instance.part.title}</div>
 			<div
 				className={classNames('segment-storyboard__part__next-line', {
@@ -101,7 +117,15 @@ export function StoryboardPart({
 					'segment-storyboard__part__next-line-label--live': isLivePart,
 				})}
 			>
-				{isLivePart ? t('On Air') : willBeAutoNextedInto ? t('Auto') : isNextPart ? t('Next') : null}
+				{isLivePart
+					? t('On Air')
+					: willBeAutoNextedInto
+					? t('Auto')
+					: isNextPart
+					? t('Next')
+					: isInvalid
+					? t('Invalid')
+					: null}
 			</div>
 			{isLivePart && displayLiveLineCounter && (
 				<div className="segment-storyboard__liveline">

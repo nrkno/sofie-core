@@ -1,19 +1,19 @@
 @import '../../../styles/itemTypeColors';
 
 $source-layer-height: 1.2rem;
-$source-layer-margin: 0.1em;
+$source-layer-margin: 0.1rem;
 
 .segment-storyboard__part__secondary-pieces {
 	margin-top: 0.3em;
 }
 
 .segment-storyboard__part__output-group {
-	min-height: $source-layer-height;
+	min-height: $source-layer-height + $source-layer-margin * 2;
 }
 
 .segment-storyboard__part__source-layer {
-	min-height: $source-layer-height;
 	display: flex;
+	min-height: $source-layer-height;
 	margin-bottom: $source-layer-margin;
 }
 
