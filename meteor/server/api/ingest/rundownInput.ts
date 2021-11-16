@@ -531,7 +531,7 @@ export async function handleUpdatedRundownMetaDataInner(
 	const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
 	// Call blueprints, get rundown
-	const { dbRundownData, rundownRes } = await getRundownFromIngestData(
+	const rundownData = await getRundownFromIngestData(
 		cache,
 		ingestRundown,
 		peripheralDevice,
@@ -539,6 +539,12 @@ export async function handleUpdatedRundownMetaDataInner(
 		showStyleBlueprint,
 		allRundownWatchedPackages
 	)
+	if (!rundownData) {
+		// We got no rundown, abort:
+		return null
+	}
+
+	const { dbRundownData, rundownRes } = rundownData
 
 	// Save rundown and baseline
 	const dbRundown = await saveChangesForRundown(cache, dbRundownData, rundownRes, showStyle)

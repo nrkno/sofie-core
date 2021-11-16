@@ -31,8 +31,8 @@ import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { LoggerInstance } from './index'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
-import { sendTrace } from './influxdb'
-import { FinishedTrace } from 'timeline-state-resolver/dist/lib'
+import { FinishedTrace, sendTrace } from './influxdb'
+
 const debug = Debug('playout-gateway')
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

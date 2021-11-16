@@ -176,6 +176,8 @@ export const PackageStatus = withTranslation()(
 				return p2.content.filePath || unprotectString(this.props.package._id)
 			} else if (p2.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
 				return p2.content.title || p2.content.guid || unprotectString(this.props.package._id)
+			} else if (p2.type === ExpectedPackage.PackageType.JSON_DATA) {
+				return p2.content.path || unprotectString(this.props.package._id)
 			} else {
 				assertNever(p2)
 				return unprotectString(this.props.package._id)

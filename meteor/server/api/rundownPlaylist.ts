@@ -15,6 +15,7 @@ import {
 	getRank,
 	unprotectString,
 	mongoFindOptions,
+	stringifyError,
 } from '../../lib/lib'
 import * as _ from 'underscore'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
@@ -45,7 +46,11 @@ import { WrappedStudioBlueprint } from './blueprints/cache'
 import { StudioUserContext } from './blueprints/context'
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 import { Meteor } from 'meteor/meteor'
-import { BlueprintResultOrderedRundowns, IBlueprintRundown } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintResultOrderedRundowns,
+	BlueprintResultRundownPlaylist,
+	IBlueprintRundown,
+} from '@sofie-automation/blueprints-integration'
 import { MethodContext } from '../../lib/api/methods'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
@@ -54,6 +59,7 @@ import { Random } from 'meteor/random'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { checkAccessToPlaylist } from './lib'
 import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
+import { logger } from '../logging'
 
 export async function removeEmptyPlaylists(studioId: StudioId): Promise<void> {
 	return runStudioOperationWithCache(
@@ -139,8 +145,10 @@ export function produceRundownPlaylistInfoFromRundown(
 	playlistExternalId: string,
 	rundowns: ReadonlyDeep<Array<Rundown>>
 ): RundownPlaylistAndOrder {
-	const playlistInfo = studioBlueprint?.blueprint?.getRundownPlaylistInfo
-		? studioBlueprint.blueprint.getRundownPlaylistInfo(
+	let playlistInfo: BlueprintResultRundownPlaylist | null = null
+	try {
+		if (studioBlueprint?.blueprint?.getRundownPlaylistInfo) {
+			playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(
 				new StudioUserContext(
 					{
 						name: 'produceRundownPlaylistInfoFromRundown',
@@ -152,8 +160,12 @@ export function produceRundownPlaylistInfoFromRundown(
 					studio
 				),
 				unprotectObjectArray(clone<Array<Rundown>>(rundowns))
-		  )
-		: null
+			)
+		}
+	} catch (err) {
+		logger.error(`Error in studioBlueprint.getRundownPlaylistInfo: ${stringifyError(err)}`)
+		playlistInfo = null
+	}
 
 	const rundownsInDefaultOrder = sortDefaultRundownInPlaylistOrder(rundowns)
 
