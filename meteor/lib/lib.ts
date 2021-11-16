@@ -113,15 +113,16 @@ export async function MeteorPromiseCall(callName: string, ...args: any[]): Promi
 export type Time = number
 export type TimeDuration = number
 
+// The diff is currently only used client-side
 const systemTime = {
 	hasBeenSet: false,
 	diff: 0,
 	stdDev: 9999,
+	lastSync: 0,
 }
 /**
- * Returns the current (synced) time
- * The synced time differs from Date.now() in that it uses a time synced with the Sofie server,
- * so it is unaffected of whether the client has a well-synced computer time or not.
+ * Returns the current (synced) time.
+ * If NTP-syncing is enabled, it'll be unaffected of whether the client has a well-synced computer time or not.
  * @return {Time}
  */
 export function getCurrentTime(): Time {
