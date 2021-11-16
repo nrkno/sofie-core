@@ -13,7 +13,7 @@ async function determineDiffTimeInner(config?: Config): Promise<DiffTimeResult> 
 	const minSampleCount = config?.minSampleCount || 10
 	const maxAllowedDelay = config?.maxAllowedDelay || 500
 	const maxTries = config?.maxTries || 20
-	const host = config?.host || '0.se.pool.ntp.org'
+	const host = config?.host || '0.pool.ntp.org'
 	const port = config?.port || 123
 
 	return new Promise<Array<ServerTime>>((resolve, reject) => {
