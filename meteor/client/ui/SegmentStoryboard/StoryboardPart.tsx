@@ -29,6 +29,8 @@ interface IProps {
 	displayLiveLineCounter: boolean
 	style?: React.CSSProperties
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
+	onHoverOver?: () => void
+	onHoverOut?: () => void
 }
 
 export function StoryboardPart({
@@ -43,6 +45,8 @@ export function StoryboardPart({
 	displayLiveLineCounter,
 	style,
 	onContextMenu,
+	onHoverOver,
+	onHoverOut,
 }: IProps) {
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
@@ -112,6 +116,8 @@ export function StoryboardPart({
 				'data-layer-id': part.instance._id,
 				id: SegmentTimelinePartElementId + part.instance._id,
 				style: style,
+				onMouseEnter: onHoverOver,
+				onMouseLeave: onHoverOut,
 			}}
 			holdToDisplay={contextMenuHoldToDisplayTime()}
 			collect={getPartContext}

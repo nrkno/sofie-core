@@ -616,7 +616,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			e.stopPropagation()
 		} else if (
 			(!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) ||
-			// @ts-ignore
 			(e.ctrlKey && !e.metaKey && !e.shiftKey && e.altKey)
 		) {
 			// Alt + Scroll

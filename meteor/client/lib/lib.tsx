@@ -65,3 +65,23 @@ export const USER_AGENT_POINTER_PROPERTY = '--pointer'
 export enum UserAgentPointer {
 	NO_POINTER = 'no-pointer',
 }
+
+type MutableRef<T> = ((instance: T | null) => void) | React.MutableRefObject<T | null> | null
+
+export function useCombinedRefs<T>(initial, ...refs: MutableRef<T>[]) {
+	const targetRef = React.useRef<T>(initial)
+
+	React.useEffect(() => {
+		refs.forEach((ref) => {
+			if (!ref) return
+
+			if (typeof ref === 'function') {
+				ref(targetRef.current)
+			} else {
+				ref.current = targetRef.current
+			}
+		})
+	}, [refs])
+
+	return targetRef
+}

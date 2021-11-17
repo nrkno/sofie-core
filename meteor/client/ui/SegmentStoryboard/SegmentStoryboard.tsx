@@ -11,7 +11,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
-import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
 import { PartId } from '../../../lib/collections/Parts'
 import { Settings } from '../../../lib/Settings'
 import { useTranslation } from 'react-i18next'
@@ -80,6 +80,8 @@ const PART_LIST_LEAD_IN = 120 // Must match SCSS: .segment-storyboard__part-list
 
 export const SegmentStoryboard = React.memo(
 	React.forwardRef<HTMLDivElement, IProps>(function SegmentStoryboard(props: IProps, ref) {
+		const innerRef = useRef<HTMLDivElement>(null)
+		const combinedRef = useCombinedRefs(null, ref, innerRef)
 		const listRef = useRef<HTMLDivElement>(null)
 		const [listWidth, setListWidth] = useState(0)
 		const [scrollLeft, setScrollLeft] = useState(0)
@@ -87,7 +89,7 @@ export const SegmentStoryboard = React.memo(
 		const [animateScrollLeft, setAnimateScrollLeft] = useState(true)
 		const { t } = useTranslation()
 		const notes: Array<SegmentNote> = props.segmentNotes
-		const [squishedHover, setSquishedHover] = useState(false)
+		const [squishedHover, setSquishedHover] = useState<null | number>(null)
 		const [highlight, setHighlight] = useState(false)
 		const squishedHoverTimeout = useRef<number | null>(null)
 
@@ -212,14 +214,29 @@ export const SegmentStoryboard = React.memo(
 					outputLayers={props.segment.outputLayers}
 					subscriptionsReady={props.subscriptionsReady}
 					onContextMenu={props.onContextMenu}
-					className={index - fittingParts > 0 ? 'background' : undefined}
+					className={
+						squishedHover === null
+							? index - fittingParts > 0
+								? 'background'
+								: undefined
+							: squishedHover === index
+							? 'hover'
+							: undefined
+					}
 					style={
 						needsToBeSquished && squishedPartCardStride
 							? {
 									transform: `translate(${(index - fittingParts) * squishedPartCardStride}px, 0)`,
+									zIndex:
+										squishedHover !== null
+											? index <= squishedHover
+												? index
+												: renderedParts.length - index
+											: undefined,
 							  }
 							: undefined
 					}
+					onHoverOver={() => needsToBeSquished && setSquishedHover(index)}
 				/>
 			)
 
@@ -327,8 +344,7 @@ export const SegmentStoryboard = React.memo(
 
 		const onSquishedPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
-				setSquishedHover(true)
-				squishedHoverTimeout.current = Meteor.setTimeout(() => setSquishedHover(false), HOVER_TIMEOUT)
+				squishedHoverTimeout.current = Meteor.setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
 			}
 		}
 
@@ -342,15 +358,14 @@ export const SegmentStoryboard = React.memo(
 		const onSquishedPointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
 				clearSquishedHoverTimeout()
-				setSquishedHover(false)
+				setSquishedHover(null)
 			}
 		}
 
 		const onSquishedPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
 			if (e.pointerType === 'mouse') {
 				clearSquishedHoverTimeout()
-				setSquishedHover(true)
-				squishedHoverTimeout.current = Meteor.setTimeout(() => setSquishedHover(false), HOVER_TIMEOUT)
+				squishedHoverTimeout.current = Meteor.setTimeout(() => setSquishedHover(null), HOVER_TIMEOUT)
 			}
 		}
 
@@ -365,6 +380,36 @@ export const SegmentStoryboard = React.memo(
 					clientY: e.clientY,
 				})
 				setAnimateScrollLeft(false)
+			}
+		}
+
+		const onSegmentWheel = (e: WheelEvent) => {
+			let scrollDelta = 0
+			if (
+				(!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) ||
+				(e.ctrlKey && !e.metaKey && !e.shiftKey && e.altKey)
+			) {
+				// this.props.onScroll(Math.max(0, this.props.scrollLeft + e.deltaY / this.props.timeScale), e)
+				scrollDelta = e.deltaY * -1
+				e.preventDefault()
+			} else if (!e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
+				// no modifier
+				if (e.deltaX !== 0) {
+					// this.props.onScroll(Math.max(0, this.props.scrollLeft + e.deltaX / this.props.timeScale), e)
+					scrollDelta = e.deltaX * -1
+					e.preventDefault()
+				}
+			}
+
+			if (scrollDelta !== 0) {
+				setScrollLeft((value) => {
+					const newScrollLeft = Math.max(
+						0,
+						Math.min(value - scrollDelta, PART_WIDTH * (renderedParts.length - 1) - PART_LIST_LEAD_IN / 2)
+					)
+					props.onScroll(newScrollLeft, e)
+					return newScrollLeft
+				})
 			}
 		}
 
@@ -409,6 +454,19 @@ export const SegmentStoryboard = React.memo(
 			}
 		}, [grabbed, renderedParts.length, props.onScroll])
 
+		useLayoutEffect(() => {
+			const segment = innerRef.current
+			if (segment) {
+				segment.addEventListener('wheel', onSegmentWheel, {
+					passive: false,
+				})
+
+				return () => {
+					segment.removeEventListener('wheel', onSegmentWheel)
+				}
+			}
+		}, [innerRef.current])
+
 		return (
 			<div
 				id={props.id}
@@ -432,7 +490,7 @@ export const SegmentStoryboard = React.memo(
 					'time-of-day-countdowns': useTimeOfDayCountdowns,
 				})}
 				data-obj-id={props.segment._id}
-				ref={ref}
+				ref={combinedRef}
 			>
 				<StudioContext.Provider value={props.studio}>
 					<ContextMenuTrigger
@@ -542,7 +600,7 @@ export const SegmentStoryboard = React.memo(
 										'segment-storyboard__part-list',
 										'segment-storyboard__part-list--squished-parts',
 										{
-											hover: squishedHover,
+											hover: squishedHover !== null,
 										}
 									)}
 									style={{

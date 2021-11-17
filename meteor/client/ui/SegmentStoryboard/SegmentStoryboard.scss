@@ -42,8 +42,8 @@ $segment-storyboard-part-width: 160px;
 	position: relative;
 	flex: 0 0;
 	min-width: $segment-storyboard-part-width;
-	margin-top: $segment-header-height;
-	padding: 1.3rem $part-left-right-padding 2.5rem;
+	margin-top: 1em;
+	padding: 1.3rem $part-left-right-padding 1.5rem;
 
 	> .segment-storyboard__part__title {
 		display: none;
@@ -210,11 +210,10 @@ $segment-storyboard-part-width: 160px;
 	}
 
 	&.hover {
-		--dupa: 'wołowa';
 		> .segment-storyboard__part {
 			filter: brightness(0.3);
 
-			&:hover {
+			&.hover {
 				filter: brightness(1);
 				transition: filter 0s;
 				z-index: 3;
