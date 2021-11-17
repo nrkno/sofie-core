@@ -263,7 +263,7 @@ jobs:
       fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
-        node-version: [12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     # Gateways dont support node 10. but no tests to run anyway :)
     # if: "!(endsWith(matrix.package-name, 'gateway') & matrix.node-version == '10.x')"
