@@ -242,11 +242,16 @@ async function playoutLockFunctionInner<T>(
 
 		const fullCache = await CacheForPlayout.fromInit(initCache)
 
-		const res = await fcn(fullCache)
+		try {
+			const res = await fcn(fullCache)
 
-		await fullCache.saveAllToDatabase()
+			await fullCache.saveAllToDatabase()
 
-		return res
+			return res
+		} catch (err) {
+			fullCache.discardChanges()
+			throw err
+		}
 	}
 
 	if (options?.skipPlaylistLock) {
