@@ -159,7 +159,8 @@ export function produceRundownPlaylistInfoFromRundown(
 					},
 					studio
 				),
-				unprotectObjectArray(clone<Array<Rundown>>(rundowns))
+				unprotectObjectArray(clone<Array<Rundown>>(rundowns)),
+				playlistExternalId
 			)
 		}
 	} catch (err) {
