@@ -12,7 +12,6 @@ import { Studio } from '../../../lib/collections/Studios'
 import { useTranslation } from 'react-i18next'
 
 interface IStudioNamePanelProps {
-	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutStudioName
 	playlist: RundownPlaylist
