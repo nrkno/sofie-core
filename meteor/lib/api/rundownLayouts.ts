@@ -191,6 +191,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 			RundownLayoutElementType.NEXT_INFO,
+			RundownLayoutElementType.TEXT_LABEL,
 		],
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
