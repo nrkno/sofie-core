@@ -1163,7 +1163,7 @@ export namespace ServerPlayoutAPI {
 							blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
 						} catch (err) {
 							logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
-							// TODO: should we throw here?
+							throw err
 						}
 					}
 				)
