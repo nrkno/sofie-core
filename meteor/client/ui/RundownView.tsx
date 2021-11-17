@@ -1666,9 +1666,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			}
 
-			let uiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
-			let uiSegments: AdlibSegmentUi[] = []
-			let sourceLayerLookup: SourceLayerLookup = {}
+			const filteredUiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
+			const filteredUiSegments: AdlibSegmentUi[] = []
+			let resultSourceLayerLookup: SourceLayerLookup = {}
 			if (props.playlist && props.showStyleBase && props.studio) {
 				const { t, i18n, tReady } = props
 				let filter =
@@ -1680,7 +1680,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (filter && !RundownLayoutsAPI.isFilter(filter)) {
 					filter = undefined
 				}
-				;({ uiSegmentMap, uiSegments, sourceLayerLookup } = fetchAndFilter({
+				const { uiSegmentMap, uiSegments, sourceLayerLookup } = fetchAndFilter({
 					t,
 					i18n,
 					tReady,
@@ -1693,10 +1693,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					hotkeyGroup: 'minishelf',
 					selectedPiece: undefined,
 					filter,
-				}))
+				})
+				resultSourceLayerLookup = sourceLayerLookup
 				const liveSegment = uiSegments.find((i) => i.isLive === true)
 
-				Object.values(uiSegmentMap).forEach((segment) => {
+				for (const segment of uiSegmentMap.values()) {
 					const uniquenessIds = new Set<string>()
 					const filteredPieces = segment.pieces.filter((piece) =>
 						matchFilter(
@@ -1718,9 +1719,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						...segment,
 						pieces: filteredPieces,
 					}
-					uiSegmentMap.set(segment._id, filteredSegment)
-					uiSegments.push(filteredSegment)
-				})
+					if (filteredPieces.length) {
+						filteredUiSegmentMap.set(segment._id, filteredSegment)
+						filteredUiSegments.push(filteredSegment)
+					}
+				}
 			}
 
 			return {
@@ -1738,9 +1741,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						? selectedMiniShelfLayout
 						: undefined,
 				currentRundown,
-				uiSegmentMap,
-				uiSegments,
-				sourceLayerLookup,
+				uiSegmentMap: filteredUiSegmentMap,
+				uiSegments: filteredUiSegments,
+				sourceLayerLookup: resultSourceLayerLookup,
 			}
 		}
 
