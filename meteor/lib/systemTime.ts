@@ -15,25 +15,34 @@ if (Meteor.isServer) {
 	/** How much we assume a clock to drift over time [time unit per time unit] */
 	const ASSUMED_CLOCK_DRIFT = 5 / (3600 * 24) // We assume 5 seconds drift in a day for the system clock
 
-	// fetch time from server:
-	const updateDiffTime = () => {
-		// Calculate an "adjusted standard deviation", something that increases over time.
-		// Using this we can decide wether a new measurement is better or worse than previous one.
-		const currentSyncQuality = systemTime.stdDev + (Date.now() - systemTime.lastSync) * ASSUMED_CLOCK_DRIFT
+	/** How often the client should check if its time has jumped or been skewed [ms] */
+	const JUMP_CHECK_INTERVAL = 10 * 1000 // 10 seconds
 
-		// If the sync quality is better than the target, there's no need to re-sync it
-		if (currentSyncQuality > TARGET_TIME_SYNC_QUALITY) {
-			const sentTime = Date.now()
+	const timeJumpDetection = {
+		adjustedTime: Date.now(),
+		monotonicTime: performance.now(),
+	}
+
+	// fetch time from server:
+	const updateDiffTime = (force?: boolean) => {
+		// Calculate an "adjusted standard deviation", something that increases over time.
+		// Using this we can decide wether a new measurement is better or worse than previous one. (the lower, the better)
+		const currentSyncDegradation =
+			systemTime.stdDev + (performance.now() - systemTime.lastSync) * ASSUMED_CLOCK_DRIFT
+
+		// If the sync is assumed to have degraded enough, it's time to resync
+		if (currentSyncDegradation > TARGET_TIME_SYNC_QUALITY || force) {
+			const sentTime = performance.now()
 			MeteorCall.peripheralDevice
 				.getTimeDiff()
 				.then((stat) => {
-					const replyTime = Date.now()
+					const replyTime = performance.now()
 
-					const diff = (sentTime + replyTime) / 2 - stat.currentTime
-					const stdDev = Math.abs(sentTime - replyTime) / 2 // Not really a standard deviation calculation, but it's what we can do with just one measuring point..
+					const diff = Math.round(Date.now() + (sentTime - replyTime) / 2 - stat.currentTime)
+					const stdDev = Math.abs(Math.round(sentTime - replyTime)) / 2 // Not really a standard deviation calculation, but it's what we can do with just one measuring point..
 
 					// Only use the result if the stdDev is better than previous sync quality:
-					if (stdDev <= currentSyncQuality) {
+					if (stdDev <= currentSyncDegradation || force) {
 						// Only trace the result if the diff is different than the previous:
 						if (Math.abs(systemTime.diff - diff) > 10) {
 							logger.verbose(
@@ -46,13 +55,27 @@ if (Meteor.isServer) {
 						// Store the result into the global variable `systemTime` (used in getCurrentTime()):
 						systemTime.diff = diff
 						systemTime.stdDev = stdDev
-						systemTime.lastSync = Date.now()
+						systemTime.lastSync = performance.now()
 						systemTime.hasBeenSet = true
 					}
 				})
 				.catch((err) => {
 					logger.error(err)
 				})
+		}
+	}
+
+	const detectTimeJump = () => {
+		const adjustedTime = Date.now()
+		const monotonicTime = performance.now()
+		const currentDiff = adjustedTime - monotonicTime
+		const previousDiff = timeJumpDetection.adjustedTime - timeJumpDetection.monotonicTime
+		const syncDiff = Math.abs(currentDiff - previousDiff)
+		if (syncDiff > TARGET_TIME_SYNC_QUALITY) {
+			logger.verbose(`Time jump or skew of ${Math.round(syncDiff)} ms detected`)
+			timeJumpDetection.adjustedTime = adjustedTime
+			timeJumpDetection.monotonicTime = monotonicTime
+			updateDiffTime(true)
 		}
 	}
 
@@ -76,5 +99,11 @@ if (Meteor.isServer) {
 				updateDiffTime()
 			}
 		}, SYNC_TIME)
+
+		Meteor.setInterval(() => {
+			if (Meteor.status().connected) {
+				detectTimeJump()
+			}
+		}, JUMP_CHECK_INTERVAL)
 	})
 }
