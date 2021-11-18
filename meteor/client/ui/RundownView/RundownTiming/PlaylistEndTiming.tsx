@@ -46,6 +46,8 @@ export const PlaylistEndTiming = withTranslation()(
 					  (expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0)
 					: frontAnchor + (this.props.timingDurations.remainingPlaylistDuration || 0) - backAnchor
 
+				const floorTimeForDiff: boolean = diff > 0
+
 				return (
 					<React.Fragment>
 						{!this.props.hidePlannedEnd ? (
@@ -125,7 +127,7 @@ export const PlaylistEndTiming = withTranslation()(
 									})}
 								>
 									{!this.props.hideDiffLabel && <span className="timing-clock-label right">{t('Diff')}</span>}
-									{RundownUtils.formatDiffToTimecode(diff, true, false, true, true, true, undefined, true)}
+									{RundownUtils.formatDiffToTimecode(diff, true, false, true, true, false, undefined, floorTimeForDiff)}
 								</span>
 							) : null
 						) : null}
