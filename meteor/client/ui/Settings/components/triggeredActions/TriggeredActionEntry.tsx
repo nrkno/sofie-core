@@ -5,12 +5,12 @@ import { PlayoutActions, SourceLayerType, TriggerType } from '@sofie-automation/
 import classNames from 'classnames'
 import {
 	DBBlueprintTrigger,
+	TriggeredActionId,
 	TriggeredActions,
-	TriggeredActionsObj,
 } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../../../../../lib/collections/ShowStyleBases'
 import { flatten, normalizeArray } from '../../../../../lib/lib'
 import { createAction, isPreviewableAction } from '../../../../../lib/api/triggers/actionFactory'
 import { PreviewContext } from './TriggeredActionsEditor'
@@ -25,7 +25,7 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined
-	triggeredAction: TriggeredActionsObj
+	triggeredActionId: TriggeredActionId
 	selected?: boolean
 	previewContext: PreviewContext | null
 	locked?: boolean
@@ -42,14 +42,16 @@ export const TRIGGERED_ACTION_ENTRY_DRAG_TYPE = 'TriggeredActionEntry'
 export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEntry(
 	props: IProps
 ): React.ReactElement | null {
-	const { showStyleBase, triggeredAction, selected, locked, previewContext, onEdit, onRemove, onDuplicate } = props
+	const { showStyleBase, triggeredActionId, selected, locked, previewContext, onEdit, onRemove, onDuplicate } = props
+
+	const triggeredAction = useTracker(() => TriggeredActions.findOne(triggeredActionId), [triggeredActionId])
 
 	const { t } = useTranslation()
 	const [selectedTrigger, setSelectedTrigger] = useState(-1)
 	const [selectedAction, setSelectedAction] = useState(-1)
 
 	const [{ isDragging }, drag, dragPreview] = useDrag({
-		item: { id: triggeredAction._id, type: TRIGGERED_ACTION_ENTRY_DRAG_TYPE },
+		item: { id: triggeredActionId, type: TRIGGERED_ACTION_ENTRY_DRAG_TYPE },
 		// The collect function utilizes a "monitor" instance (see the Overview for what this is)
 		// to pull important pieces of state from the DnD system.
 		collect: (monitor) => ({
@@ -57,8 +59,14 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 		}),
 		end: (_, monitor) => {
 			if (monitor.didDrop()) {
-				const dropResult = monitor.getDropResult()
-				if (dropResult) {
+				const dropResult = monitor.getDropResult() as
+					| {
+							overId: TriggeredActionId
+							overRank?: number
+							overShowStyleBaseId?: ShowStyleBaseId
+					  }
+					| undefined
+				if (dropResult && dropResult.overRank !== undefined && dropResult.overShowStyleBaseId) {
 					let pairRank =
 						TriggeredActions.findOne(
 							{
@@ -72,7 +80,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 								},
 							}
 						)?._rank ?? -1000
-					if (pairRank === triggeredAction._rank) {
+					if (pairRank === triggeredAction?._rank) {
 						pairRank =
 							TriggeredActions.findOne(
 								{
@@ -88,7 +96,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 							)?._rank ?? dropResult.overRank + 1000
 					}
 					const newRank = (pairRank + dropResult.overRank) / 2
-					TriggeredActions.update(triggeredAction._id, {
+					TriggeredActions.update(triggeredActionId, {
 						$set: {
 							_rank: newRank,
 							showStyleBaseId: dropResult.overShowStyleBaseId,
@@ -110,9 +118,9 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 		drop: (item) => {
 			if (item.type === TRIGGERED_ACTION_ENTRY_DRAG_TYPE) {
 				return {
-					overId: triggeredAction._id,
-					overRank: triggeredAction._rank,
-					overShowStyleBaseId: triggeredAction.showStyleBaseId,
+					overId: triggeredActionId,
+					overRank: triggeredAction?._rank,
+					overShowStyleBaseId: triggeredAction?.showStyleBaseId,
 				}
 			}
 		},
@@ -121,7 +129,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 	const previewItems = useTracker(
 		() => {
 			try {
-				if (selected && showStyleBase) {
+				if (triggeredAction && selected && showStyleBase) {
 					const executableActions = triggeredAction.actions.map((value) => createAction(value, showStyleBase))
 					const ctx = previewContext
 					if (ctx && ctx.rundownPlaylist) {
@@ -152,84 +160,99 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 	}
 
 	function removeTrigger(index: number) {
-		triggeredAction.triggers.splice(index, 1)
+		if (triggeredAction) {
+			triggeredAction.triggers.splice(index, 1)
 
-		TriggeredActions.update(triggeredAction._id, {
-			$set: {
-				triggers: triggeredAction.triggers,
-			},
-		})
+			TriggeredActions.update(triggeredActionId, {
+				$set: {
+					triggers: triggeredAction.triggers,
+				},
+			})
 
-		setSelectedTrigger(-1)
+			setSelectedTrigger(-1)
+		}
 	}
 
 	function changeTrigger(index: number, newVal: DBBlueprintTrigger) {
-		triggeredAction.triggers.splice(index, 1, newVal)
+		if (triggeredAction) {
+			triggeredAction.triggers.splice(index, 1, newVal)
 
-		LAST_UP_SETTING = !!newVal.up
+			LAST_UP_SETTING = !!newVal.up
 
-		TriggeredActions.update(triggeredAction._id, {
-			$set: {
-				triggers: triggeredAction.triggers,
-			},
-		})
+			TriggeredActions.update(triggeredActionId, {
+				$set: {
+					triggers: triggeredAction.triggers,
+				},
+			})
 
-		setSelectedTrigger(-1)
+			setSelectedTrigger(-1)
+		}
 	}
 
 	function addTrigger() {
-		const index =
-			triggeredAction.triggers.push({
-				type: TriggerType.hotkey,
-				keys: '',
-				up: LAST_UP_SETTING,
-			}) - 1
+		if (triggeredAction) {
+			const index =
+				triggeredAction.triggers.push({
+					type: TriggerType.hotkey,
+					keys: '',
+					up: LAST_UP_SETTING,
+				}) - 1
 
-		TriggeredActions.update(triggeredAction._id, {
-			$set: {
-				triggers: triggeredAction.triggers,
-			},
-		})
+			TriggeredActions.update(triggeredActionId, {
+				$set: {
+					triggers: triggeredAction.triggers,
+				},
+			})
 
-		setSelectedTrigger(index)
-		setSelectedAction(-1)
+			setSelectedTrigger(index)
+			setSelectedAction(-1)
+		}
 	}
 
 	function addAction() {
-		const index =
-			triggeredAction.actions.push({
-				action: PlayoutActions.adlib,
-				filterChain: [],
-			}) - 1
+		if (triggeredAction) {
+			const index =
+				triggeredAction.actions.push({
+					action: PlayoutActions.adlib,
+					filterChain: [],
+				}) - 1
 
-		TriggeredActions.update(triggeredAction._id, {
-			$set: {
-				actions: triggeredAction.actions,
-			},
-		})
+			TriggeredActions.update(triggeredActionId, {
+				$set: {
+					actions: triggeredAction.actions,
+				},
+			})
 
-		setSelectedTrigger(-1)
-		setSelectedAction(index)
+			setSelectedTrigger(-1)
+			setSelectedAction(index)
+		}
 	}
 
 	function removeAction(index: number) {
-		triggeredAction.actions.splice(index, 1)
+		if (triggeredAction) {
+			triggeredAction.actions.splice(index, 1)
 
-		TriggeredActions.update(triggeredAction._id, {
-			$set: {
-				actions: triggeredAction.actions,
-			},
-		})
+			TriggeredActions.update(triggeredActionId, {
+				$set: {
+					actions: triggeredAction.actions,
+				},
+			})
 
-		setSelectedAction(-1)
+			setSelectedAction(-1)
+		}
 	}
 
 	useEffect(() => {
-		LAST_UP_SETTING =
-			selectedTrigger >= 0
-				? !!triggeredAction.triggers[selectedTrigger]?.up
-				: triggeredAction.triggers[triggeredAction.triggers.length - 1]?.up ?? LAST_UP_SETTING
-	}, [triggeredAction.triggers[triggeredAction.triggers.length - 1]?.up, selectedTrigger])
+		if (triggeredAction) {
+			LAST_UP_SETTING =
+				selectedTrigger >= 0
+					? !!triggeredAction.triggers[selectedTrigger]?.up
+					: triggeredAction.triggers[triggeredAction.triggers.length - 1]?.up ?? LAST_UP_SETTING
+		}
+	}, [triggeredAction, triggeredAction?.triggers[triggeredAction.triggers.length - 1]?.up, selectedTrigger])
+
+	// do not render anything until we get the triggered action from the collection
+	if (!triggeredAction) return null
 
 	return (
 		<div

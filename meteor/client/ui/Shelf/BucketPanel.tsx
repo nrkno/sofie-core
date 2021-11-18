@@ -207,6 +207,7 @@ export function actionToAdLibPieceUi(
 		currentPieceTags: action.display.currentPieceTags,
 		nextPieceTags: action.display.nextPieceTags,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
+		expectedPackages: action.expectedPackages,
 	})
 }
 

@@ -634,10 +634,10 @@ export namespace RundownUtils {
 				return userDurationNumber || item.renderedDuration || expectedDurationNumber
 			}
 
-			let lastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
+			// let lastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
 
 			partsE.forEach((part) => {
-				const thisLastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
+				// const thisLastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
 				if (part.pieces) {
 					// if an item is continued by another item, rendered duration may need additional resolution
 					part.pieces.forEach((item) => {
@@ -656,7 +656,7 @@ export namespace RundownUtils {
 					// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
 					// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
 					for (let i = 0; i < itemsByLayer.length; i++) {
-						const layerId = itemsByLayer[i][0]
+						// const layerId = itemsByLayer[i][0]
 						const layerItems = itemsByLayer[i][1]
 						// sort on rendered in-point and then on priority
 						const sortedItems = layerItems.sort(
@@ -669,17 +669,25 @@ export namespace RundownUtils {
 							const currentItem = sortedItems[i]
 							const previousItem = sortedItems[i - 1] as PieceExtended | undefined
 
-							const possibleBuddyPiece = lastPartPiecesBySourceLayer[layerId]
-							if (
-								possibleBuddyPiece &&
-								possibleBuddyPiece.instance.piece.lifespan !== PieceLifespan.WithinPart &&
-								currentItem.instance.infinite &&
-								possibleBuddyPiece.instance.infinite &&
-								(possibleBuddyPiece.instance.infinite.infiniteInstanceId ===
-									currentItem.instance.infinite.infiniteInstanceId ||
-									possibleBuddyPiece.instance.infinite.infinitePieceId ===
-										currentItem.instance.infinite.infinitePieceId)
-							) {
+							// This block, along with a some of the adjacent code has been removed at the request of
+							// Jesper Stærkær making all infinite pieces that do not start in a given Part lose their
+							// labels. I'm keeping it here, in case someone realizes this was a horrible mistake,
+							// and we can skip all of the head-scratching. -- Jan Starzak, 2021/10/14
+							//
+							// const possibleBuddyPiece = lastPartPiecesBySourceLayer[layerId]
+							// if (
+							// 	possibleBuddyPiece &&
+							// 	possibleBuddyPiece.instance.piece.lifespan !== PieceLifespan.WithinPart &&
+							// 	currentItem.instance.infinite &&
+							// 	possibleBuddyPiece.instance.infinite &&
+							// 	(possibleBuddyPiece.instance.infinite.infiniteInstanceId ===
+							// 		currentItem.instance.infinite.infiniteInstanceId ||
+							// 		possibleBuddyPiece.instance.infinite.infinitePieceId ===
+							// 			currentItem.instance.infinite.infinitePieceId)
+							// ) {
+							// 	currentItem.hasOriginInPreceedingPart = true
+							// }
+							if (currentItem.instance.piece.startPartId !== part.instance.part._id) {
 								currentItem.hasOriginInPreceedingPart = true
 							}
 
@@ -712,13 +720,13 @@ export namespace RundownUtils {
 
 							if (currentItem.renderedDuration === null && i === sortedItems.length - 1) {
 								// only if this is the very last piece on this layer
-								thisLastPartPiecesBySourceLayer[layerId] = currentItem
+								// thisLastPartPiecesBySourceLayer[layerId] = currentItem
 							}
 						}
 					}
 				}
 
-				lastPartPiecesBySourceLayer = thisLastPartPiecesBySourceLayer
+				// lastPartPiecesBySourceLayer = thisLastPartPiecesBySourceLayer
 			})
 
 			segmentExtended.outputLayers = outputLayers

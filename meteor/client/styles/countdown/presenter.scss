@@ -37,6 +37,9 @@
 				background: $general-live-color;
 				color: #fff;
 				border-top: 0.1em solid #fff;
+				-webkit-text-stroke: black;
+    			-webkit-text-stroke-width: 0.025em;
+				text-shadow: 0px 0px 20px #00000044;
 			}
 
 			&.next {
@@ -61,7 +64,7 @@
 		.presenter-screen__part__piece-icon {
 			grid-row: 2;
 			grid-column: 1;
-			padding: 1em;
+			padding: 0em;
 
 			text-align: center;
 			display: flex;

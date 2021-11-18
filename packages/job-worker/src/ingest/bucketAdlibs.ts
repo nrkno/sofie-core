@@ -77,7 +77,12 @@ async function emptyBucketInner(context: JobContext, id: BucketId): Promise<void
 		context.directCollections.ExpectedMediaItems.remove({ bucketId: id, studioId: context.studioId }),
 		context.directCollections.ExpectedPackages.remove({
 			studioId: context.studioId,
-			fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB, // TODO - what about bucket adlib actions?
+			fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB,
+			bucketId: id,
+		}),
+		context.directCollections.ExpectedPackages.remove({
+			studioId: context.studioId,
+			fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
 			bucketId: id,
 		}),
 	])

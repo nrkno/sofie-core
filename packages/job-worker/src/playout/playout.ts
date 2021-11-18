@@ -1265,10 +1265,10 @@ export async function handleUpdateTimelineAfterIngest(
 ): Promise<void> {
 	await runJobWithPlaylistLock(context, data, async (playlist, lock) => {
 		if (playlist && playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
-			//
+			// TODO - r37 added a retry mechanic to this. should that be kept?
 			await runWithPlaylistCache(context, playlist, lock, null, async (cache) => {
 				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-				if (!currentPartInstance?.timings?.startedPlayback) {
+				if (currentPartInstance && !currentPartInstance.timings?.startedPlayback) {
 					// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
 					// We mustn't run before that does, or we will get the timings in playout-gateway confused.
 				} else {

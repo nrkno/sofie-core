@@ -6,9 +6,8 @@ import { ProtectedString, protectString } from './protectedString'
 import * as objectPath from 'object-path'
 import * as crypto from 'crypto'
 import { Timecode } from 'timecode'
-import { Time } from '@sofie-automation/blueprints-integration'
 import { ISettings } from './settings'
-import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
+import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/blueprints-integration'
 
 export type TimeDuration = number
 
@@ -87,6 +86,15 @@ export async function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+/**
+ * Convert an array to a object, keyed on an id generator function.
+ * `undefined` key values will get filtered from the object
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArrayFuncFilter([{ a: 1, b: 2}], (o) => `${o.a + o.b}`)
+ * ```
+ */
 export function normalizeArrayFuncFilter<T>(
 	array: Array<T>,
 	getKey: (o: T) => string | undefined
@@ -100,6 +108,14 @@ export function normalizeArrayFuncFilter<T>(
 	}
 	return normalizedObject
 }
+/**
+ * Convert an array to a object, keyed on an id generator function.
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArrayFunc([{ a: 1, b: 2}], (o) => `${o.a + o.b}`)
+ * ```
+ */
 export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string): { [indexKey: string]: T } {
 	const normalizedObject: { [indexKey: string]: T } = {}
 	for (const obj of array) {
@@ -107,6 +123,14 @@ export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string)
 	}
 	return normalizedObject as { [key: string]: T }
 }
+/**
+ * Convert an array to a object, keyed on an `id` field.
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArray([{ a: '1', b: 2}], 'a')
+ * ```
+ */
 export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (const obj of array) {
@@ -114,10 +138,37 @@ export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexK
 	}
 	return normalizedObject as { [key: string]: T }
 }
+/**
+ * Convert an array to a Map, keyed on an `id` field.
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArrayToMap([{ a: '1', b: 2}], 'a')
+ * ```
+ */
 export function normalizeArrayToMap<T, K extends keyof T>(array: readonly T[], indexKey: K): Map<T[K], T> {
 	const normalizedObject = new Map<T[K], T>()
 	for (const item of array) {
 		normalizedObject.set(item[indexKey], item)
+	}
+	return normalizedObject
+}
+/**
+ * Convert an array to a Map, keyed on an id generator function.
+ * `undefined` key values will get filtered from the map
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArrayToMapFunc([{ a: 1, b: 2}], (o) => o.a + o.b)
+ * ```
+ */
+export function normalizeArrayToMapFunc<T, K>(array: Array<T>, getKey: (o: T) => K | undefined): Map<K, T> {
+	const normalizedObject = new Map<K, T>()
+	for (const item of array) {
+		const key = getKey(item)
+		if (key !== undefined) {
+			normalizedObject.set(key, item)
+		}
 	}
 	return normalizedObject
 }

@@ -470,7 +470,7 @@ function compareLabels(a: string | ITranslatableMessage, b: string | ITranslatab
 	const actualB = isTranslatableMessage(b) ? b.key : (b as string)
 	// can't use .localeCompare, because this needs to be locale-independent and always return
 	// the same sorting order, because that's being relied upon by limit & pick/pickEnd.
-	return actualA > actualB ? 1 : -1
+	return actualA >= actualB ? 1 : -1
 }
 
 /**

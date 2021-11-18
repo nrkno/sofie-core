@@ -3,6 +3,112 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.37.0-in-testing.13](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-testing.12...v1.37.0-in-testing.13) (2021-11-02)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.37.0-in-testing.11](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-4...v1.37.0-in-testing.11) (2021-10-22)
+
+
+### Bug Fixes
+
+* add priority & prevStatusReasons into package workStatuses ([de73fd1](https://github.com/nrkno/tv-automation-server-core/commit/de73fd10acbab04b2669eed97b631df7fd12ea50))
+* naming changes after QA ([ddd20c9](https://github.com/nrkno/tv-automation-server-core/commit/ddd20c9a7f9ca3a1807bb1171225441279a123c7))
+
+
+### Features
+
+* add fileflowProfile to Quantel accessor properties [publish] ([5f72ed0](https://github.com/nrkno/tv-automation-server-core/commit/5f72ed05976825ab659d3b2df110bd88c2cd28d1))
+* allow setting a fileflow URL for Quantel Accessors ([22c6af5](https://github.com/nrkno/tv-automation-server-core/commit/22c6af5999aad0a2f89688179a3f057432a40fb0))
+* ignore media statuses ([76f8f01](https://github.com/nrkno/tv-automation-server-core/commit/76f8f01172d8e2c60cff1a8f517b02af2f8e54cb))
+* implement notInVision ([3d30dba](https://github.com/nrkno/tv-automation-server-core/commit/3d30dba9210730b69fffc6ed6a201ad63ed088dd))
+* new infinites styling only for super-infinites (rundown/showstyle-length) ([ba49436](https://github.com/nrkno/tv-automation-server-core/commit/ba49436b5168d1804b06fca909f7c483eb5df80d))
+* pieces can specify how to be direct-played ([#574](https://github.com/nrkno/tv-automation-server-core/issues/574)) ([a61a22b](https://github.com/nrkno/tv-automation-server-core/commit/a61a22bd3502d885d6e290e65ebce67337daba42))
+* use sourcelayer LOCAL for EVS content ([3b87a90](https://github.com/nrkno/tv-automation-server-core/commit/3b87a909123ecdadaa98de1ec878390ca71ec1fc))
+
+
+
+# [1.37.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
+
+
+### Bug Fixes
+
+* add color code property to EvsContent ([c9d34db](https://github.com/nrkno/tv-automation-server-core/commit/c9d34db27f70271eba61b97121972637756f60d7))
+
+
+### Features
+
+* Action Triggers ([#553](https://github.com/nrkno/tv-automation-server-core/issues/553)) ([35e2b1a](https://github.com/nrkno/tv-automation-server-core/commit/35e2b1a7c3eab9381835d2811c1b7c49c9d3940e))
+* add content and source layer types for EVS ([ff86d17](https://github.com/nrkno/tv-automation-server-core/commit/ff86d17cd18fae0dd4c61c62ad6d193e6bb89912))
+* add custom timeline rendering for EVS items ([1efdd6a](https://github.com/nrkno/tv-automation-server-core/commit/1efdd6a70fcdb729f4ced2e522fa5c43a5811e32))
+
+
+
+# [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+
+
+
+# [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
+
+
+### Features
+
+* expected end time / back time ([#540](https://github.com/nrkno/tv-automation-server-core/issues/540)) ([84e1092](https://github.com/nrkno/tv-automation-server-core/commit/84e1092c31fc94d71b6047010138c133ce72a507))
+
+
+
+# [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
+
+
+
+# [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
+
+
+
+# [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
+
+
+### Bug Fixes
+
+* infinite pieces losing their startedPlayback time on their second take ([4fbde9d](https://github.com/nrkno/tv-automation-server-core/commit/4fbde9dfba3fcb5416707b24187b1b295825354c))
+* iterateDeeply for arrays [publish] ([9a64fd3](https://github.com/nrkno/tv-automation-server-core/commit/9a64fd347d715ca41b5b703415663fa02996fd5c))
+* package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] ([22b29d9](https://github.com/nrkno/tv-automation-server-core/commit/22b29d9ebe58e88db6438ad084d1f12182f6a4e5))
+* PM add WorkStatusState, for stronger typings [publish] ([51788bc](https://github.com/nrkno/tv-automation-server-core/commit/51788bc31a26ce720b829508399a4a20737f2b66))
+
+
+### Features
+
+* add FTP package accessors type to blueprint-integrations ([412d2f1](https://github.com/nrkno/tv-automation-server-core/commit/412d2f1ec86586860d56e07f311668332c7117e8))
+* blueprint getPackageInfo implementation based on cache ([74b40ad](https://github.com/nrkno/tv-automation-server-core/commit/74b40ad7925f97041697d6c5b9c91c7af3ff0f68))
+* expand FTP accessor with options for explicit login and encrypted connections [publish] ([a4e77bd](https://github.com/nrkno/tv-automation-server-core/commit/a4e77bd78b2184e335fb0e2762dbf5cfef1f1ad4))
+* package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy ([52592b6](https://github.com/nrkno/tv-automation-server-core/commit/52592b68b3bd6cb5fd49fb7803057d29e0c7d3f4))
+* package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) ([191fcde](https://github.com/nrkno/tv-automation-server-core/commit/191fcde244589859c248de8b3db6fe169d01a17b))
+* show Viz loading status in MSE on the Piece ([#538](https://github.com/nrkno/tv-automation-server-core/issues/538)) ([2c1d3a3](https://github.com/nrkno/tv-automation-server-core/commit/2c1d3a3e1fc86c8224aba0c05ce857e33cb6c9fc))
+
+
+
+
+
 # [1.37.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
 
 ### Features

@@ -60,27 +60,49 @@ export function reportPartInstanceHasStarted(
 	timestamp: Time
 ): void {
 	if (partInstance) {
-		cache.PartInstances.update(partInstance._id, {
-			$set: {
-				isTaken: true,
-				'timings.startedPlayback': timestamp,
-			},
+		let timestampUpdated = false
+		// If timings.startedPlayback has already been set, we shouldn't set it to another value:
+		if (!partInstance.timings?.startedPlayback) {
+			cache.PartInstances.update(partInstance._id, {
+				$set: {
+					isTaken: true,
+					'timings.startedPlayback': timestamp,
+				},
+			})
+			timestampUpdated = true
+
+			// Unset stoppedPlayback if it is set:
+			if (partInstance.timings?.stoppedPlayback) {
+				cache.PartInstances.update(partInstance._id, { $unset: { 'timings.stoppedPlayback': 1 } })
+			}
+		}
+		// Update the playlist:
+		cache.Playlist.update((playlist) => {
+			if (!playlist.rundownsStartedPlayback) {
+				playlist.rundownsStartedPlayback = {}
+			}
+
+			// If the partInstance is "untimed", it will not update the playlist's startedPlayback and will not count time in the GUI:
+			if (!partInstance.part.untimed) {
+				const rundownId = unprotectString(partInstance.rundownId)
+				if (!playlist.rundownsStartedPlayback[rundownId]) {
+					playlist.rundownsStartedPlayback[rundownId] = timestamp
+				}
+
+				if (!playlist.startedPlayback) {
+					playlist.startedPlayback = timestamp
+				}
+			}
+
+			return playlist
 		})
 
-		// Track on the playlist
-		cache.Playlist.update((pl) => {
-			if (!pl.rundownsStartedPlayback) pl.rundownsStartedPlayback = {}
-			const rundownId = unprotectString(partInstance.rundownId)
-			if (!pl.rundownsStartedPlayback[rundownId] && !partInstance.part.untimed)
-				pl.rundownsStartedPlayback[rundownId] = timestamp
-			if (!pl.startedPlayback && !partInstance.part.untimed) pl.startedPlayback = timestamp
-			return pl
-		})
-
-		cache.deferAfterSave(() => {
-			// Run in the background, we don't want to hold onto the lock to do this
-			handlePartInstanceTimingEvent(context, cache.PlaylistId, partInstance._id)
-		})
+		if (timestampUpdated) {
+			cache.deferAfterSave(() => {
+				// Run in the background, we don't want to hold onto the lock to do this
+				handlePartInstanceTimingEvent(context, cache.PlaylistId, partInstance._id)
+			})
+		}
 	}
 }
 export async function reportPartInstanceHasStopped(

@@ -1,4 +1,9 @@
-import { PieceId, RundownPlaylistActivationId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PieceId,
+	RundownPlaylistActivationId,
+	RundownPlaylistId,
+	PartInstanceId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	PieceInstance,
 	PieceInstancePiece,
@@ -261,29 +266,8 @@ export function getResolvedPiecesFromFullTimeline(
 		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))
 	}
 
-	const replaceNows = (obj: TimelineContentObject, parentAbsoluteStart: number) => {
-		let absoluteStart = parentAbsoluteStart
-
-		applyToArray(obj.enable, (enable: TimelineEnable) => {
-			if (enable.start === 'now') {
-				// Start is always relative to parent start, so we need to factor that when flattening the 'now
-				enable.start = Math.max(0, now - parentAbsoluteStart)
-				absoluteStart = now
-			} else if (typeof enable.start === 'number') {
-				absoluteStart += enable.start
-			} else {
-				// We can't resolve this here, so lets hope there are no 'now' inside and end
-				return
-			}
-		})
-
-		// Ensure any children have their 'now's updated
-		if (obj.isGroup && obj.children && obj.children.length) {
-			obj.children.forEach((ch) => replaceNows(ch, absoluteStart))
-		}
-	}
 	const transformedObjs = transformTimeline(objs)
-	transformedObjs.forEach((o) => replaceNows(o, 0))
+	deNowifyTimeline(transformedObjs, now)
 
 	const pieceInstanceMap = normalizeArray(pieceInstances, '_id')
 	const resolvedPieces = resolvePieceTimeline(transformedObjs, now, pieceInstanceMap, 'timeline')
@@ -292,6 +276,55 @@ export function getResolvedPiecesFromFullTimeline(
 	return {
 		pieces: resolvedPieces,
 		time: now,
+	}
+}
+
+/**
+ * Replace any start:'now' in the timeline with concrete times.
+ * This assumes that the structure is of a typical timeline, with 'now' being present at the root level, and one level deep.
+ * If the parent group of a 'now' is not using a numeric start value, it will not be fixed
+ */
+export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): void {
+	for (const obj of transformedObjs) {
+		let groupAbsoluteStart: number | null = null
+
+		// Anything at this level can use nowTime directly
+		let count = 0
+		applyToArray(obj.enable, (enable: TimelineEnable) => {
+			count++
+
+			if (enable.start === 'now') {
+				enable.start = nowTime
+				groupAbsoluteStart = nowTime
+			} else if (typeof enable.start === 'number') {
+				groupAbsoluteStart = enable.start
+			} else {
+				// We can't resolve this here, so lets hope there are no 'now' inside and end
+				groupAbsoluteStart = null
+			}
+		})
+
+		// We know the time of the parent, or there are too many enable times for it
+		if (groupAbsoluteStart !== null || count !== 1) {
+			if (
+				'partInstanceId' in (obj as TimelineContentObject & { partInstanceId?: PartInstanceId }) &&
+				obj.isGroup &&
+				obj.children &&
+				obj.children.length
+			) {
+				// This should be piece groups, which are allowed to use 'now'
+				for (const childObj of obj.children) {
+					applyToArray(childObj.enable, (enable: TimelineEnable) => {
+						if (enable.start === 'now' && groupAbsoluteStart !== null) {
+							// Start is always relative to parent start, so we need to factor that when flattening the 'now
+							enable.start = Math.max(0, nowTime - groupAbsoluteStart)
+						}
+					})
+
+					// Note: we don't need to go deeper, as current timeline structure doesn't allow there to be any 'now' in there
+				}
+			}
+		}
 	}
 }
 

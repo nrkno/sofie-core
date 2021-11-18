@@ -8,6 +8,7 @@ enum LocalStorageProperty {
 	TESTING = 'testingMode',
 	SPEAKING = 'speakingMode',
 	SERVICE = 'serviceMode',
+	SHELF_FOLLOWS_ON_AIR = 'shelfFollowsOnAir',
 	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
 	IGNORE_PIECE_CONTENT_STATUS = 'ignorePieceContentStatus',
 	UI_ZOOM_LEVEL = 'uiZoomLevel',
@@ -118,4 +119,12 @@ export function setIgnorePieceContentStatus(show: boolean) {
 }
 export function getIgnorePieceContentStatus(): boolean {
 	return localStorageGetCachedItem(LocalStorageProperty.IGNORE_PIECE_CONTENT_STATUS) === '1'
+}
+
+export function setShelfFollowsOnAir(followOnAir: boolean) {
+	localStorageSetCachedItem(LocalStorageProperty.SHELF_FOLLOWS_ON_AIR, followOnAir ? '1' : '0')
+}
+export function getShelfFollowsOnAir(): boolean {
+	// follows on air === true is the default
+	return localStorageGetCachedItem(LocalStorageProperty.SHELF_FOLLOWS_ON_AIR) !== '0'
 }

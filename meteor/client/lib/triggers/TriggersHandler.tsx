@@ -251,6 +251,19 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 
 	useEffect(() => {
 		const fKeys = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F12'] // not 'F11', because people use that apparently
+		const ctrlDigitKeys = [
+			// Ctrl+DigitX is a shortcut for switching Tabs in some browsers
+			'Digit1',
+			'Digit2',
+			'Digit3',
+			'Digit4',
+			'Digit5',
+			'Digit6',
+			'Digit7',
+			'Digit8',
+			'Digit9',
+			'Digit0',
+		]
 
 		if (initialized) {
 			localSorensen.bind('Escape', poisonHotkeys, {
@@ -272,10 +285,22 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					ordered: false,
 					preventDefaultPartials: false,
 				})
+				localSorensen.bind(['Enter', 'NumpadEnter'], preventDefault, {
+					global: false,
+					exclusive: true,
+				})
 				fKeys.forEach((key) =>
 					localSorensen.bind(key, preventDefault, {
 						exclusive: false,
 						global: true,
+					})
+				)
+				ctrlDigitKeys.forEach((key) =>
+					localSorensen.bind(`Control+${key}`, preventDefault, {
+						exclusive: true,
+						global: true,
+						ordered: true,
+						preventDefaultPartials: false,
 					})
 				)
 			}
@@ -285,7 +310,10 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			localSorensen.unbind('Escape', poisonHotkeys)
 			localSorensen.unbind('Control+KeyF', preventDefault)
 			localSorensen.unbind('Control+F5', preventDefault)
+			localSorensen.unbind('Enter', preventDefault)
+			localSorensen.unbind('NumpadEnter', preventDefault)
 			fKeys.forEach((key) => localSorensen.unbind(key, preventDefault))
+			ctrlDigitKeys.forEach((key) => localSorensen.unbind(`Control+${key}`, preventDefault))
 		}
 	}, [initialized]) // run once once Sorensen is initialized
 

@@ -1,10 +1,11 @@
-import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { logger } from './logging'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+
 import { AsyncTransformedCollection } from './collections/lib'
-import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { Meteor } from 'meteor/meteor'
+import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { logger } from './logging'
 
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
