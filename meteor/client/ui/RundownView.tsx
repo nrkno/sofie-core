@@ -1999,6 +1999,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		renderSegmentComponent(
+			index: number,
 			segment: DBSegment,
 			rundownAndSegments: MatchedSegment,
 			rundownPlaylist: RundownPlaylist,
@@ -2011,7 +2012,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			segmentIdsBeforeSegment: Set<SegmentId>,
 			rundownIdsBefore: RundownId[]
 		) {
-			return localStorage.getItem('useStoryboard') === '1' ? ( // TODO: This is just a temporary switch
+			return localStorage.getItem('useStoryboard') === '1' && (index + 1) % 3 !== 0 ? ( // TODO: This is just a temporary switch
 				<SegmentStoryboardContainer
 					id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 					studio={studio}
@@ -2125,6 +2126,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											width="auto"
 										>
 											{this.renderSegmentComponent(
+												segmentIndex,
 												segment,
 												rundownAndSegments,
 												this.props.playlist,

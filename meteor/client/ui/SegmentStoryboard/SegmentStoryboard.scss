@@ -35,6 +35,18 @@ $segment-storyboard-part-width: 160px;
 			bottom: 0;
 			background: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
 		}
+
+		> .segment-timeline__zoom-area {
+			margin-left: $segment-group-controls-width;
+
+			transition: 1s opacity, 0s visibility;
+
+			&.hidden {
+				opacity: 0;
+				transition: 1s opacity, 0s visibility 1s;
+				visibility: hidden;
+			}
+		}
 	}
 }
 

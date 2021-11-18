@@ -169,37 +169,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		return Math.round(this.props.timeScale * time)
 	}
 
-	renderZoomTimeline() {
-		return this.props.parts.map((part) => {
-			return (
-				<SegmentTimelinePart
-					key={unprotectString(part.partId)}
-					segment={this.props.segment}
-					playlist={this.props.playlist}
-					studio={this.props.studio}
-					collapsedOutputs={this.props.collapsedOutputs}
-					scrollLeft={0}
-					scrollWidth={1}
-					timeScale={1}
-					relative={true}
-					totalSegmentDuration={this.getSegmentDuration()}
-					part={part}
-					followLiveLine={this.props.followLiveLine}
-					autoNextPart={this.props.autoNextPart}
-					liveLineHistorySize={this.props.liveLineHistorySize}
-					livePosition={
-						part.instance._id === this.props.playlist.currentPartInstanceId && part.instance.timings?.startedPlayback
-							? this.props.livePosition - part.instance.timings.startedPlayback
-							: null
-					}
-					isLastInSegment={false}
-					isAfterLastValidInSegmentAndItsLive={false}
-					isLastSegment={false}
-				/>
-			)
-		})
-	}
-
 	render() {
 		return (
 			<div
@@ -211,7 +180,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 				})}
 			>
 				<div className="segment-timeline__zoom-area" onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
-					{/* <div className="segment-timeline__timeline">{this.renderZoomTimeline()}</div> */}
 					<SegmentTimelineZoomControls
 						scrollLeft={this.props.scrollLeft}
 						scrollWidth={this.props.timelineWidth / this.props.timeScale}

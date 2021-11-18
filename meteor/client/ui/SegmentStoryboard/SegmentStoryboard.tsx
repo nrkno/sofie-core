@@ -31,6 +31,7 @@ import { getElementWidth } from '../../utils/dimensions'
 import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
 import { Meteor } from 'meteor/meteor'
 import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
+import { SegmentScrollbar } from './SegmentScrollbar'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -169,6 +170,8 @@ export const SegmentStoryboard = React.memo(
 
 		const renderedParts = props.parts.filter((part) => !(part.instance.part.invalid && part.instance.part.gap))
 
+		const maxScrollLeft = PART_WIDTH * (renderedParts.length - 1) - PART_LIST_LEAD_IN / 2
+
 		let fittingParts = 1
 		let spaceLeft = 0
 		let modifier = 2
@@ -230,7 +233,7 @@ export const SegmentStoryboard = React.memo(
 									zIndex:
 										squishedHover !== null
 											? index <= squishedHover
-												? index
+												? renderedParts.length + index
 												: renderedParts.length - index
 											: undefined,
 							  }
@@ -374,7 +377,7 @@ export const SegmentStoryboard = React.memo(
 		}, [])
 
 		const onListPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-			if (e.pointerType === 'mouse') {
+			if (e.pointerType === 'mouse' && e.buttons === 0) {
 				setGrabbed({
 					clientX: e.clientX,
 					clientY: e.clientY,
@@ -403,10 +406,7 @@ export const SegmentStoryboard = React.memo(
 
 			if (scrollDelta !== 0) {
 				setScrollLeft((value) => {
-					const newScrollLeft = Math.max(
-						0,
-						Math.min(value - scrollDelta, PART_WIDTH * (renderedParts.length - 1) - PART_LIST_LEAD_IN / 2)
-					)
+					const newScrollLeft = Math.max(0, Math.min(value - scrollDelta, maxScrollLeft))
 					props.onScroll(newScrollLeft, e)
 					return newScrollLeft
 				})
@@ -427,10 +427,7 @@ export const SegmentStoryboard = React.memo(
 				}
 				const onPointerMove = (e: PointerEvent) => {
 					setScrollLeft((value) => {
-						const newScrollLeft = Math.max(
-							0,
-							Math.min(value - e.movementX, PART_WIDTH * (renderedParts.length - 1) - PART_LIST_LEAD_IN / 2)
-						)
+						const newScrollLeft = Math.max(0, Math.min(value - e.movementX, maxScrollLeft))
 						props.onScroll(newScrollLeft, e)
 						return newScrollLeft
 					})
@@ -584,15 +581,20 @@ export const SegmentStoryboard = React.memo(
 					<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
 					<div className="segment-storyboard__part-list__container" ref={listRef} onPointerDown={onListPointerDown}>
 						<VelocityReact.VelocityComponent
-							animation={{
-								translateX: `-${scrollLeft}px`,
-							}}
+							animation={
+								animateScrollLeft
+									? {
+											translateX: `-${scrollLeft}px`,
+									  }
+									: undefined
+							}
 							duration={animateScrollLeft ? 100 : 0}
 						>
 							<div
 								className={classNames('segment-storyboard__part-list', {
 									loading: !props.subscriptionsReady,
 								})}
+								style={!animateScrollLeft ? { transform: `translateX(-${scrollLeft}px)` } : undefined}
 							>
 								{parts}
 								<div
@@ -615,6 +617,13 @@ export const SegmentStoryboard = React.memo(
 							</div>
 						</VelocityReact.VelocityComponent>
 						<div className="segment-storyboard__history-shade"></div>
+						<div
+							className={classNames('segment-timeline__zoom-area', {
+								hidden: scrollLeft === 0 && !props.isLiveSegment,
+							})}
+						>
+							<SegmentScrollbar scrollLeft={scrollLeft} maxScrollLeft={maxScrollLeft} />
+						</div>
 					</div>
 				</StudioContext.Provider>
 			</div>

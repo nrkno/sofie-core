@@ -1007,20 +1007,6 @@ svg.icon {
 			left: 125px;
 			right: 125px;
 
-			.segment-timeline__zoom-area__controls__left-mask {
-				position: absolute;
-				top: 0;
-				left: 0;
-				bottom: 0;
-			}
-
-			.segment-timeline__zoom-area__controls__right-mask {
-				position: absolute;
-				top: 0;
-				right: 0;
-				bottom: 0;
-			}
-
 			.segment-timeline__zoom-area__controls__selected-area {
 				position: absolute;
 				border: 1px solid #333;

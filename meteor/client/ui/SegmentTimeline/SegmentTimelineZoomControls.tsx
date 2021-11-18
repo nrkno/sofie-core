@@ -285,20 +285,6 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		return (
 			<div className="segment-timeline__zoom-area__controls" ref={this.setParentRef}>
 				<div
-					className="segment-timeline__zoom-area__controls__left-mask"
-					style={{
-						width: Math.min(100, Math.max(0, (this.props.scrollLeft / maxScrollLeft) * 100)).toString() + '%',
-					}}
-					onClick={(e) => this.outsideZoomAreaClick(e)}
-				></div>
-				<div
-					className="segment-timeline__zoom-area__controls__right-mask"
-					style={{
-						width: Math.min(100, Math.max(0, (1 - this.props.scrollLeft / maxScrollLeft) * 100)).toString() + '%',
-					}}
-					onClick={(e) => this.outsideZoomAreaClick(e)}
-				></div>
-				<div
 					className="segment-timeline__zoom-area__controls__selected-area"
 					style={{
 						left: Math.max((this.props.scrollLeft / maxScrollLeft) * 100, 0).toString() + '%',

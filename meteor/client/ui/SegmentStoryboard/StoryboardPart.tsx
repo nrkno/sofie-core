@@ -155,7 +155,9 @@ export function StoryboardPart({
 				{isLivePart
 					? t('On Air')
 					: willBeAutoNextedInto
-					? t('Auto')
+					? isNextPart
+						? t('Auto Next')
+						: t('Auto')
 					: isNextPart
 					? t('Next')
 					: isInvalid
