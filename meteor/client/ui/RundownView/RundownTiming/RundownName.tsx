@@ -8,7 +8,7 @@ import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
-import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IRundownNameProps {
 	rundownPlaylist: RundownPlaylist

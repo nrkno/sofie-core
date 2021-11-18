@@ -35,7 +35,6 @@ import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
-import { isAnyQueuedWorkRunning } from '../codeControl'
 import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageWorkStatuses'
@@ -405,9 +404,10 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	return result
 }
 function isAllowedToRunCleanup(): string | void {
-	if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
+	// HACK: TODO - should we check this?
+	// if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
 
-	const studios = Studios.find().fetch()
+	const studios = Studios.find({}, { fields: { _id: 1 } }).fetch()
 	for (const studio of studios) {
 		const activePlaylist: RundownPlaylist | undefined = waitForPromise(
 			getActiveRundownPlaylistsInStudioFromDb(studio._id)

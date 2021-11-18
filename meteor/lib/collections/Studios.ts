@@ -9,7 +9,12 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { StudioId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-import { ResultingMappingRoutes, DBStudio, MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import {
+	ResultingMappingRoutes,
+	DBStudio,
+	MappingExt,
+	MappingsHash,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {

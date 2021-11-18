@@ -12,7 +12,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTranslation } from 'react-i18next'
 import { PlaylistEndTiming } from '../RundownView/RundownTiming/PlaylistEndTiming'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IPlaylistStartTimerPanelProps {
 	visible?: boolean

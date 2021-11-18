@@ -7,7 +7,7 @@ import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
 import ClassNames from 'classnames'
-import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IEndTimingProps {
 	rundownPlaylist: RundownPlaylist

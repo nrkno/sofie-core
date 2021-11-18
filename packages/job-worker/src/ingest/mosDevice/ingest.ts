@@ -1,7 +1,6 @@
 import { PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
-	IngestJobs,
 	MosDeleteStoryProps,
 	MosFullStoryProps,
 	MosInsertStoryProps,
