@@ -6,10 +6,10 @@ import {
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
 	IBlueprintResolvedPieceInstance,
-	IBlueprintRundownDB,
 	IBlueprintMutatablePart,
 	IBlueprintSegmentDB,
 	IBlueprintPieceDB,
+	IBlueprintSegmentRundown,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -58,6 +58,8 @@ export interface IUserNotesContext extends ICommonContext {
 	notifyUserError(message: string, params?: { [key: string]: any }): void
 	/** Display a notification to the user of an warning */
 	notifyUserWarning(message: string, params?: { [key: string]: any }): void
+	/** Display a notification to the user of a note */
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void
 }
 
 export function isUserNotesContext(obj: unknown): obj is IUserNotesContext {
@@ -65,9 +67,13 @@ export function isUserNotesContext(obj: unknown): obj is IUserNotesContext {
 		return false
 	}
 
-	const { notifyUserError, notifyUserWarning } = obj as any
+	const { notifyUserError, notifyUserWarning, notifyUserInfo } = obj as any
 
-	return typeof notifyUserError === 'function' && typeof notifyUserWarning === 'function'
+	return (
+		typeof notifyUserError === 'function' &&
+		typeof notifyUserWarning === 'function' &&
+		typeof notifyUserInfo === 'function'
+	)
 }
 
 /** Studio */
@@ -114,7 +120,7 @@ export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleCont
 
 export interface IRundownContext extends IShowStyleContext {
 	readonly rundownId: string
-	readonly rundown: Readonly<IBlueprintRundownDB>
+	readonly rundown: Readonly<IBlueprintSegmentRundown>
 }
 
 export interface IRundownUserContext extends IUserNotesContext, IRundownContext {}
@@ -124,6 +130,8 @@ export interface ISegmentUserContext extends IUserNotesContext, IRundownContext,
 	notifyUserError: (message: string, params?: { [key: string]: any }, partExternalId?: string) => void
 	/** Display a notification to the user of an warning */
 	notifyUserWarning: (message: string, params?: { [key: string]: any }, partExternalId?: string) => void
+	/** Display a notification to the user of a note */
+	notifyUserInfo: (message: string, params?: { [key: string]: any }, partExternalId?: string) => void
 }
 
 /** Actions */

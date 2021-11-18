@@ -6,6 +6,7 @@ import {
 	IngestRemoveRundownProps,
 	IngestRemoveSegmentProps,
 	IngestUpdatePartProps,
+	IngestUpdateRundownMetaDataProps,
 	IngestUpdateRundownProps,
 	IngestUpdateSegmentProps,
 	IngestUpdateSegmentRanksProps,
@@ -17,11 +18,26 @@ import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { CacheForIngest } from './cache'
-import { updateRundownFromIngestData, updateSegmentFromIngestData } from './generation'
+import {
+	getRundownFromIngestData,
+	resolveSegmentChangesForUpdatedRundown,
+	saveChangesForRundown,
+	saveSegmentChangesToCache,
+	updateRundownFromIngestData,
+	updateSegmentFromIngestData,
+	UpdateSegmentsResult,
+} from './generation'
 import { LocalIngestRundown, makeNewIngestPart, makeNewIngestRundown, makeNewIngestSegment } from './ingestCache'
-import { canRundownBeUpdated, canSegmentBeUpdated, getRundown, getSegmentId } from './lib'
+import { canRundownBeUpdated, canSegmentBeUpdated, extendIngestRundownCore, getRundown, getSegmentId } from './lib'
 import { CommitIngestData, runIngestJob, runWithRundownLock, UpdateIngestRundownAction } from './lock'
 import { removeRundownsFromDb } from '../rundownPlaylists'
+import { rundownToSegmentRundown, StudioUserContext } from '../blueprints/context'
+import { selectShowStyleVariant } from './rundown'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import _ = require('underscore')
 
 export async function handleRemovedRundown(context: JobContext, data: IngestRemoveRundownProps): Promise<void> {
 	return runIngestJob(
@@ -106,6 +122,35 @@ export async function handleUpdatedRundown(context: JobContext, data: IngestUpda
 		}
 	)
 }
+export async function handleUpdatedRundownMetaData(
+	context: JobContext,
+	data: IngestUpdateRundownMetaDataProps
+): Promise<void> {
+	return runIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				return {
+					...makeNewIngestRundown(data.ingestRundown),
+					segments: ingestRundown.segments,
+				}
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (context, cache, ingestRundown) => {
+			if (!ingestRundown) throw new Error(`handleUpdatedRundownMetaData lost the IngestRundown...`)
+
+			return handleUpdatedRundownMetaDataInner(
+				context,
+				cache,
+				ingestRundown,
+				data.peripheralDeviceId ?? cache.Rundown.doc?.peripheralDeviceId ?? null
+			)
+		}
+	)
+}
 export async function handleUpdatedRundownInner(
 	context: JobContext,
 	cache: CacheForIngest,
@@ -118,6 +163,104 @@ export async function handleUpdatedRundownInner(
 	logger.info(`${cache.Rundown.doc ? 'Updating' : 'Adding'} rundown ${cache.RundownId}`)
 
 	return updateRundownFromIngestData(context, cache, ingestRundown, peripheralDeviceId)
+}
+export async function handleUpdatedRundownMetaDataInner(
+	context: JobContext,
+	cache: CacheForIngest,
+	ingestRundown: LocalIngestRundown,
+	peripheralDeviceId: PeripheralDeviceId | null
+): Promise<CommitIngestData | null> {
+	if (!canRundownBeUpdated(cache.Rundown.doc, false)) return null
+	const existingRundown = cache.Rundown.doc
+	if (!existingRundown) {
+		throw new Error(`Rundown "${ingestRundown.externalId}" does not exist`)
+	}
+
+	const pPeripheralDevice = peripheralDeviceId
+		? context.directCollections.PeripheralDevices.findOne(peripheralDeviceId)
+		: undefined
+
+	const span = context.startSpan('ingest.rundownInput.handleUpdatedRundownMetaDataInner')
+
+	logger.info(`Updating rundown ${cache.RundownId}`)
+
+	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
+
+	const selectShowStyleContext = new StudioUserContext(
+		{
+			name: 'selectShowStyleVariant',
+			identifier: `studioId=${context.studio._id},rundownId=${cache.RundownId},ingestRundownId=${cache.RundownExternalId}`,
+			tempSendUserNotesIntoBlackHole: true,
+		},
+		context.studio,
+		context.getStudioBlueprintConfig()
+	)
+
+	// TODO-CONTEXT save any user notes from selectShowStyleContext
+	const showStyle = await selectShowStyleVariant(context, selectShowStyleContext, extendedIngestRundown)
+	if (!showStyle) {
+		logger.debug('Blueprint rejected the rundown')
+		throw new Error('Blueprint rejected the rundown')
+	}
+
+	const pAllRundownWatchedPackages = WatchedPackagesHelper.createForIngest(context, cache, undefined)
+
+	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyle.base._id)
+	const allRundownWatchedPackages = await pAllRundownWatchedPackages
+
+	// Call blueprints, get rundown
+	const rundownData = await getRundownFromIngestData(
+		context,
+		cache,
+		ingestRundown,
+		pPeripheralDevice,
+		showStyle,
+		showStyleBlueprint,
+		allRundownWatchedPackages
+	)
+	if (!rundownData) {
+		// We got no rundown, abort:
+		return null
+	}
+
+	const { dbRundownData, rundownRes } = rundownData
+
+	// Save rundown and baseline
+	const dbRundown = await saveChangesForRundown(context, cache, dbRundownData, rundownRes, showStyle)
+
+	let segmentChanges: UpdateSegmentsResult | undefined
+	let removedSegments: DBSegment[] | undefined
+	if (!_.isEqual(rundownToSegmentRundown(existingRundown), rundownToSegmentRundown(dbRundown))) {
+		logger.info(`MetaData of rundown ${dbRundown.externalId} has been modified, regenerating segments`)
+		const changes = await resolveSegmentChangesForUpdatedRundown(
+			context,
+			cache,
+			ingestRundown,
+			allRundownWatchedPackages
+		)
+		segmentChanges = changes.segmentChanges
+		removedSegments = changes.removedSegments
+	}
+
+	updateBaselineExpectedPackagesOnRundown(context, cache, rundownRes.baseline)
+
+	if (segmentChanges) {
+		saveSegmentChangesToCache(context, cache, segmentChanges, true)
+	}
+
+	logger.info(`Rundown ${dbRundown._id} update complete`)
+
+	span?.end()
+	return literal<CommitIngestData>({
+		changedSegmentIds: segmentChanges?.segments.map((s) => s._id) ?? [],
+		removedSegmentIds: removedSegments?.map((s) => s._id) ?? [],
+		renamedSegments: new Map(),
+
+		removeRundown: false,
+
+		showStyle: showStyle.compound,
+		blueprint: showStyleBlueprint,
+	})
 }
 export async function handleRegenerateRundown(context: JobContext, data: IngestRegenerateRundownProps): Promise<void> {
 	return runIngestJob(

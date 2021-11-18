@@ -17,6 +17,7 @@ import { BucketAdLibAction } from '../dataModel/BucketAdLibAction'
 export enum IngestJobs {
 	RemoveRundown = 'removeRundown',
 	UpdateRundown = 'updateRundown',
+	UpdateRundownMetaData = 'updateRundownMetaData',
 	RemoveSegment = 'removeSegment',
 	UpdateSegment = 'updateSegment',
 	UpdateSegmentRanks = 'updateSegmentRanks',
@@ -64,6 +65,9 @@ export interface IngestRemoveRundownProps extends IngestPropsBase {
 export interface IngestUpdateRundownProps extends IngestPropsBase {
 	ingestRundown: IngestRundown
 	isCreateAction: boolean
+}
+export interface IngestUpdateRundownMetaDataProps extends IngestPropsBase {
+	ingestRundown: Omit<IngestRundown, 'segments'>
 }
 export interface IngestRemoveSegmentProps extends IngestPropsBase {
 	segmentExternalId: string
@@ -178,6 +182,7 @@ export interface BucketEmptyProps {
 export type IngestJobFunc = {
 	[IngestJobs.RemoveRundown]: (data: IngestRemoveRundownProps) => void
 	[IngestJobs.UpdateRundown]: (data: IngestUpdateRundownProps) => void
+	[IngestJobs.UpdateRundownMetaData]: (data: IngestUpdateRundownMetaDataProps) => void
 	[IngestJobs.RemoveSegment]: (data: IngestRemoveSegmentProps) => void
 	[IngestJobs.UpdateSegment]: (data: IngestUpdateSegmentProps) => void
 	[IngestJobs.UpdateSegmentRanks]: (data: IngestUpdateSegmentRanksProps) => void

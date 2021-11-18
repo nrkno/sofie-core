@@ -1,8 +1,14 @@
-import { IBlueprintPartDB } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPartDB, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '../TranslatableMessage'
 import { ProtectedStringProperties } from '../protectedString'
 import { PartId, RundownId, SegmentId } from './Ids'
 import { PartNote } from './Notes'
+
+export interface PartInvalidReason {
+	message: ITranslatableMessage
+	level?: NoteSeverity
+	color?: string
+}
 
 /** A "Line" in NRK Lingo. */
 export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
@@ -20,10 +26,7 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	notes?: Array<PartNote>
 
 	/** Holds the user-facing explanation for why the part is invalid */
-	invalidReason?: {
-		message: ITranslatableMessage
-		color?: string
-	}
+	invalidReason?: PartInvalidReason
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string

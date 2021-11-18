@@ -27,10 +27,11 @@ import {
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from './expectedMediaItems'
 import { postProcessBucketAction, postProcessBucketAdLib } from '../blueprints/postProcess'
-import { omit } from '@sofie-automation/corelib/dist/lib'
+import { omit, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { logger } from '../logging'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -110,8 +111,16 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 		context.getShowStyleBlueprintConfig(showStyle),
 		watchedPackages
 	)
-	if (!blueprint.blueprint.getAdlibItem) throw new Error("This blueprint doesn't support ingest AdLibs")
-	const rawAdlib = blueprint.blueprint.getAdlibItem(context2, data.payload)
+
+	let rawAdlib: IBlueprintAdLibPiece | IBlueprintActionManifest | null = null
+	try {
+		if (blueprint.blueprint.getAdlibItem) {
+			rawAdlib = blueprint.blueprint.getAdlibItem(context2, data.payload)
+		}
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.getShowStyleVariantId: ${stringifyError(err)}`)
+		rawAdlib = null
+	}
 
 	const importVersions: RundownImportVersions = {
 		studio: studio._rundownVersionHash,

@@ -1,14 +1,16 @@
 import { createMongoCollection } from './lib'
-import { ResultingMappingRoutes } from './Studios'
-import { TimelineObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MappingsHash, ResultingMappingRoutes } from './Studios'
+import { StudioId, TimelineObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { TimelineObjId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
 	TimelineComplete,
+	TimelineHash,
 	TimelineObjGeneric,
 	updateLookaheadLayer,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { Time } from '@sofie-automation/blueprints-integration'
 export * from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 export function getRoutedTimeline(
@@ -47,6 +49,15 @@ export function getRoutedTimeline(
 		}
 	}
 	return outputTimelineObjs
+}
+
+export interface RoutedTimeline {
+	_id: StudioId
+	mappingsHash: MappingsHash | undefined
+	timelineHash: TimelineHash | undefined
+	timeline: TimelineObjGeneric[]
+	generated: Time
+	published: Time
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')

@@ -11,7 +11,7 @@
  * without knowing what particular case you are trying to solve.
  */
 
-import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
@@ -62,6 +62,7 @@ export class RundownTimingCalculator {
 	private partDisplayDurations: Record<string, number> = {}
 	private partDisplayDurationsNoPlayback: Record<string, number> = {}
 	private displayDurationGroups: Record<string, number> = {}
+	private segmentBudgetDurations: Record<string, number> = {}
 	private breakProps: {
 		props: BreakProps | undefined
 		state: string | undefined
@@ -100,6 +101,8 @@ export class RundownTimingCalculator {
 		let currentRemaining = 0
 		let startsAtAccumulator = 0
 		let displayStartsAtAccumulator = 0
+		let segmentDisplayDuration = 0
+		let segmentBudgetDurationLeft = 0
 
 		const rundownExpectedDurations: Record<string, number> = {}
 		const rundownAsPlayedDurations: Record<string, number> = {}
@@ -108,10 +111,13 @@ export class RundownTimingCalculator {
 		let breakIsLastRundown: boolean | undefined
 
 		Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
+		Object.keys(this.segmentBudgetDurations).forEach((key) => delete this.segmentBudgetDurations[key])
 		this.linearParts.length = 0
 
 		let nextAIndex = -1
 		let currentAIndex = -1
+
+		let lastSegmentId: SegmentId | undefined = undefined
 
 		if (playlist) {
 			const breakProps = currentRundown ? this.getRundownsBeforeNextBreak(rundowns, currentRundown) : undefined
@@ -121,8 +127,28 @@ export class RundownTimingCalculator {
 				breakIsLastRundown = breakProps.breakIsLastRundown
 			}
 
+			parts.forEach((origPart) => {
+				if (origPart.budgetDuration !== undefined) {
+					const segmentId = unprotectString(origPart.segmentId)
+					if (this.segmentBudgetDurations[segmentId] !== undefined) {
+						this.segmentBudgetDurations[unprotectString(origPart.segmentId)] += origPart.budgetDuration
+					} else {
+						this.segmentBudgetDurations[unprotectString(origPart.segmentId)] = origPart.budgetDuration
+					}
+				}
+			})
+
 			parts.forEach((origPart, itIndex) => {
 				const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
+
+				if (partInstance.segmentId !== lastSegmentId) {
+					lastSegmentId = partInstance.segmentId
+					segmentDisplayDuration = 0
+					if (segmentBudgetDurationLeft > 0) {
+						waitAccumulator += segmentBudgetDurationLeft
+					}
+					segmentBudgetDurationLeft = this.segmentBudgetDurations[unprotectString(partInstance.segmentId)]
+				}
 
 				// add piece to accumulator
 				const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1
@@ -224,6 +250,25 @@ export class RundownTimingCalculator {
 						Settings.defaultDisplayDuration
 					partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 					this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
+					if (this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] !== undefined) {
+						currentRemaining = Math.max(
+							0,
+							this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] -
+								segmentDisplayDuration -
+								(now - lastStartedPlayback)
+						)
+						segmentBudgetDurationLeft = 0
+					} else {
+						currentRemaining = Math.max(
+							0,
+							(partInstance.timings?.duration ||
+								(memberOfDisplayDurationGroup
+									? displayDurationFromGroup
+									: partInstance.part.expectedDuration) ||
+								0) -
+								(now - lastStartedPlayback)
+						)
+					}
 				} else {
 					partDuration =
 						(partInstance.timings?.duration || partInstance.part.expectedDuration || 0) - playOffset
@@ -338,11 +383,19 @@ export class RundownTimingCalculator {
 
 				// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 				// always add the full duration, in case by some manual intervention this segment should play twice
+				let waitDuration = 0
 				if (memberOfDisplayDurationGroup) {
-					waitAccumulator +=
+					waitDuration =
 						partInstance.timings?.duration || partDisplayDuration || partInstance.part.expectedDuration || 0
 				} else {
-					waitAccumulator += partInstance.timings?.duration || partInstance.part.expectedDuration || 0
+					waitDuration = partInstance.timings?.duration || partInstance.part.expectedDuration || 0
+				}
+				waitAccumulator +=
+					this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] !== undefined
+						? Math.min(waitDuration, Math.max(segmentBudgetDurationLeft, 0))
+						: waitDuration
+				if (this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] !== undefined) {
+					segmentBudgetDurationLeft -= waitDuration
 				}
 
 				// remaining is the sum of unplayed lines + whatever is left of the current segment
@@ -439,6 +492,7 @@ export class RundownTimingCalculator {
 			partDisplayStartsAt: this.partDisplayStartsAt,
 			partExpectedDurations: this.partExpectedDurations,
 			partDisplayDurations: this.partDisplayDurations,
+			segmentBudgetDurations: this.segmentBudgetDurations,
 			currentTime: now,
 			remainingTimeOnCurrentPart,
 			currentPartWillAutoNext,
@@ -505,7 +559,7 @@ export class RundownTimingCalculator {
 
 		this.breakProps.props = {
 			rundownsBeforeNextBreak: orderedRundowns.slice(currentRundownIndex, nextBreakIndex + 1),
-			breakIsLastRundown: nextBreakIndex === orderedRundowns.length,
+			breakIsLastRundown: nextBreakIndex === orderedRundowns.length - 1,
 		}
 	}
 }
@@ -545,6 +599,8 @@ export interface RundownTimingContext {
 	 * if the Part does not have an expected duration.
 	 */
 	partExpectedDurations?: Record<string, number>
+	/** Budget durations of segments (sum of parts budget durations). */
+	segmentBudgetDurations?: Record<string, number>
 	/** Remaining time on current part */
 	remainingTimeOnCurrentPart?: number
 	/** Current part will autoNext */

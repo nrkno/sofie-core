@@ -87,9 +87,14 @@ export async function runWithPlaylistCache<TRes>(
 
 	const fullCache = await CacheForPlayout.fromInit(context, initCache)
 
-	const res = await fcn(fullCache)
+	try {
+		const res = await fcn(fullCache)
 
-	await fullCache.saveAllToDatabase()
+		await fullCache.saveAllToDatabase()
 
-	return res
+		return res
+	} catch (err) {
+		fullCache.discardChanges()
+		throw err
+	}
 }

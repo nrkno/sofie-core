@@ -3,12 +3,11 @@ import { PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { PartId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBPart, isPartPlayable, PartInvalidReason } from '@sofie-automation/corelib/dist/dataModel/Part'
 export * from '@sofie-automation/corelib/dist/dataModel/Part'
 
 export class Part implements DBPart {
@@ -26,6 +25,7 @@ export class Part implements DBPart {
 	public transitionDuration?: number | null
 	public disableOutTransition?: boolean
 	public expectedDuration?: number
+	public budgetDuration?: number
 	public holdMode?: PartHoldMode
 	public shouldNotifyCurrentPlayingPart?: boolean
 	public classes?: string[]
@@ -33,10 +33,7 @@ export class Part implements DBPart {
 	public displayDurationGroup?: string
 	public displayDuration?: number
 	public invalid?: boolean
-	public invalidReason?: {
-		message: ITranslatableMessage
-		color?: string
-	}
+	public invalidReason?: PartInvalidReason
 	public untimed?: boolean
 	public floated?: boolean
 	public gap?: boolean

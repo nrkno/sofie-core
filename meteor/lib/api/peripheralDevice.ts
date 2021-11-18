@@ -111,6 +111,11 @@ export interface NewPeripheralDeviceAPI {
 	dataRundownDelete(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<void>
 	dataRundownCreate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown): Promise<void>
 	dataRundownUpdate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown): Promise<void>
+	dataRundownMetaDataUpdate(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		ingestRundown: Omit<IngestRundown, 'segments'>
+	): Promise<void>
 	dataSegmentGet(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
@@ -406,6 +411,7 @@ export enum PeripheralDeviceAPIMethods {
 	'dataRundownDelete' = 'peripheralDevice.rundown.rundownDelete',
 	'dataRundownCreate' = 'peripheralDevice.rundown.rundownCreate',
 	'dataRundownUpdate' = 'peripheralDevice.rundown.rundownUpdate',
+	'dataRundownMetaDataUpdate' = 'peripheralDevice.rundown.rundownMetaDataUpdate',
 	'dataSegmentGet' = 'peripheralDevice.rundown.segmentGet',
 	'dataSegmentDelete' = 'peripheralDevice.rundown.segmentDelete',
 	'dataSegmentCreate' = 'peripheralDevice.rundown.segmentCreate',

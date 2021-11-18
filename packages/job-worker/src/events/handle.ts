@@ -12,7 +12,7 @@ import { RundownDataChangedEventContext, RundownTimingEventContext } from '../bl
 import { IBlueprintExternalMessageQueueObj } from '@sofie-automation/blueprints-integration'
 import { protectString, unDeepString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
-import { getRandomId, omit, removeNullyProperties } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, omit, removeNullyProperties, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { ICollection, MongoModifier } from '../db'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -102,11 +102,11 @@ export async function handlePartInstanceTimings(context: JobContext, data: PartI
 				const messages = await blueprint.onRundownTimingEvent(context2)
 				await queueExternalMessages(context.directCollections.ExternalMessageQueue, rundown, playlist, messages)
 			} catch (error) {
-				logger.error(`Error in onRundownTimingEvent: ${error}`)
+				logger.error(`Error in onRundownTimingEvent: ${stringifyError(error)}`)
 			}
 		}
-	} catch (e) {
-		logger.error(`handlePartInstanceTimingEvent: ${e}`)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.onRundownTimingEvent: ${stringifyError(err)}`)
 	}
 }
 
@@ -212,8 +212,8 @@ export async function handleRundownDataHasChanged(context: JobContext, data: Run
 				await queueExternalMessages(context.directCollections.ExternalMessageQueue, rundown, playlist, messages)
 			}
 		}
-	} catch (e) {
-		logger.error(`reportRundownDataHasChanged: ${e}`)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.onRundownDataChangedEvent: ${stringifyError(err)}`)
 	}
 }
 

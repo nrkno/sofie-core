@@ -29,15 +29,16 @@ export async function MeteorPromiseCall(callName: string, ...args: any[]): Promi
 export type Time = number
 export type TimeDuration = number
 
+// The diff is currently only used client-side
 const systemTime = {
 	hasBeenSet: false,
 	diff: 0,
 	stdDev: 9999,
+	lastSync: 0,
 }
 /**
- * Returns the current (synced) time
- * The synced time differs from Date.now() in that it uses a time synced with the Sofie server,
- * so it is unaffected of whether the client has a well-synced computer time or not.
+ * Returns the current (synced) time.
+ * If NTP-syncing is enabled, it'll be unaffected of whether the client has a well-synced computer time or not.
  * @return {Time}
  */
 export function getCurrentTime(): Time {
@@ -126,6 +127,11 @@ export const Collections = new Map<CollectionName, AsyncTransformedCollection<an
 export function registerCollection(name: CollectionName, collection: AsyncTransformedCollection<any, any>) {
 	if (Collections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
 	Collections.set(name, collection)
+}
+export function getCollectionKey(collection: AsyncTransformedCollection<any, any>): string {
+	const o = Object.entries(Collections).find(([_key, col]) => col === collection)
+	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
+	return o[0] // collectionName
 }
 // export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
 // 	function getCollectionIndexes(collection: TransformedCollection<any, any>, cb) {
@@ -403,7 +409,7 @@ export function extendMandadory<A, B extends A>(original: A, extendObj: Differen
 	return _.extend(original, extendObj)
 }
 
-export function trimIfString<T extends any>(value: T): T | string {
+export function trimIfString<T>(value: T): T | string {
 	if (_.isString(value)) return value.trim()
 	return value
 }
@@ -441,7 +447,7 @@ export function isPromise<T extends any>(val: any): val is Promise<T> {
  * @param a
  * @param b
  */
-export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
+export function equalSets<T>(a: Set<T>, b: Set<T>): boolean {
 	if (a === b) return true
 	if (a.size !== b.size) return false
 	for (const val of a.values()) {
@@ -498,4 +504,5 @@ export enum LogLevel {
 	INFO = 'info',
 	WARN = 'warn',
 	ERROR = 'error',
+	NONE = 'crit',
 }

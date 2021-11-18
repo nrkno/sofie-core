@@ -252,7 +252,7 @@ export async function setNextPart(
 			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${getRandomId()}`)
 			const newTakeCount = currentPartInstance ? currentPartInstance.takeCount + 1 : 0 // Increment
 			const segmentPlayoutId: SegmentPlayoutId =
-				nextPart.segmentId === currentPartInstance?.segmentId
+				currentPartInstance && nextPart.segmentId === currentPartInstance.segmentId
 					? currentPartInstance.segmentPlayoutId
 					: getRandomId()
 

@@ -1,12 +1,9 @@
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { ITranslatableMessage } from '../TranslatableMessage'
 import { RundownId, SegmentId, PartId, PieceId } from './Ids'
 
-export enum NoteType {
-	WARNING = 1,
-	ERROR = 2,
-}
 export interface INoteBase {
-	type: NoteType
+	type: NoteSeverity
 	message: ITranslatableMessage
 }
 

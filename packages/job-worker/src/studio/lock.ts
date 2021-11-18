@@ -11,9 +11,14 @@ export async function runJobWithStudioCache<TRes>(
 ): Promise<TRes> {
 	const cache = await CacheForStudio.create(context)
 
-	const res = await fcn(cache)
+	try {
+		const res = await fcn(cache)
 
-	await cache.saveAllToDatabase()
+		await cache.saveAllToDatabase()
 
-	return res
+		return res
+	} catch (err) {
+		cache.discardChanges()
+		throw err
+	}
 }

@@ -10,7 +10,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { clone, literal } from '@sofie-automation/corelib/dist/lib'
+import { clone, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { unprotectObject, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import {
@@ -137,8 +137,8 @@ export async function syncChangesToPartInstances(
 
 					// If the blueprint function throws, no changes will be synced to the cache:
 					syncContext.applyChangesToCache(cache)
-				} catch (e) {
-					logger.error(e)
+				} catch (err) {
+					logger.error(`Error in showStyleBlueprint.syncIngestUpdateToPartInstance: ${stringifyError(err)}`)
 				}
 
 				// Save notes:

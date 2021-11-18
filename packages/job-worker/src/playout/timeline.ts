@@ -34,6 +34,7 @@ import {
 	normalizeArray,
 	normalizeArrayToMapFunc,
 	omit,
+	stringifyError,
 } from '@sofie-automation/corelib/dist/lib'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -58,6 +59,7 @@ import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
+import { endTrace, sendTrace, startTrace } from '../influx'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -93,14 +95,21 @@ export async function updateStudioTimeline(
 		})
 
 		const blueprint = studioBlueprint.blueprint
-		studioBaseline = blueprint.getBaseline(
-			new StudioBaselineContext(
-				{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
-				studio,
-				context.getStudioBlueprintConfig(),
-				watchedPackages
+		try {
+			studioBaseline = blueprint.getBaseline(
+				new StudioBaselineContext(
+					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+					studio,
+					context.getStudioBlueprintConfig(),
+					watchedPackages
+				)
 			)
-		)
+		} catch (err) {
+			logger.error(`Error in studioBlueprint.getBaseline: ${stringifyError(err)}`)
+			studioBaseline = {
+				timelineObjects: [],
+			}
+		}
 		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
 
 		const id = `baseline_version`
@@ -321,6 +330,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
 				try {
 					const span = context.startSpan('blueprint.onTimelineGenerate')
+					const influxTrace = startTrace('blueprints:onTimelineGenerate')
 					const tlGenRes = await blueprint.blueprint.onTimelineGenerate(
 						context2,
 						timelineObjs,
@@ -328,6 +338,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 						currentPartInstance?.previousPartEndState,
 						unprotectObjectArray(resolvedPieces.pieces)
 					)
+					sendTrace(endTrace(influxTrace))
 					if (span) span.end()
 					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
@@ -341,8 +352,8 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 							trackedAbSessions: context2.knownSessions,
 						},
 					})
-				} catch (e) {
-					logger.error(`Error in onTimelineGenerate during getTimelineRundown`, e)
+				} catch (err) {
+					logger.error(`Error in showStyleBlueprint.onTimelineGenerate: ${stringifyError(err)}`)
 				}
 			}
 

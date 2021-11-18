@@ -1,5 +1,5 @@
 import { SegmentId, PartId, RundownPlaylistId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownNote, NoteType } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
@@ -30,8 +30,15 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { getTranslatedMessage, ServerTranslatedMesssages } from '../notes'
 import _ = require('underscore')
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
+
+interface PlaylistIdPair {
+	id: RundownPlaylistId
+	/** The externalId of the playlist. This may only be null when there is a playlist being regenerated */
+	externalId: string | null
+}
 
 /**
  * Post-process some ingest changes.
@@ -61,16 +68,19 @@ export async function CommitIngestOperation(
 	const blueprint =
 		(data.showStyle ? data.blueprint : undefined) ?? (await context.getShowStyleBlueprint(showStyle._id))
 
-	const targetPlaylistId: [RundownPlaylistId, string] = (beforeRundown?.playlistIdIsSetInSofie
-		? [beforeRundown.playlistId, beforeRundown.externalId]
-		: undefined) ?? [
-		getPlaylistIdFromExternalId(context.studioId, rundown.playlistExternalId ?? unprotectString(rundown._id)),
-		rundown.playlistExternalId ?? unprotectString(rundown._id),
-	]
+	const targetPlaylistId: PlaylistIdPair = (beforeRundown?.playlistIdIsSetInSofie
+		? {
+				id: beforeRundown.playlistId,
+				externalId: null, // The id on the Rundown is not correct
+		  }
+		: undefined) ?? {
+		id: getPlaylistIdFromExternalId(context.studioId, rundown.playlistExternalId ?? unprotectString(rundown._id)),
+		externalId: rundown.playlistExternalId ?? unprotectString(rundown._id),
+	}
 
 	// Free the rundown from its old playlist, if it is moving
-	let trappedInPlaylistId: [RundownPlaylistId, string] | undefined
-	if (beforeRundown?.playlistId && (beforeRundown.playlistId !== targetPlaylistId[0] || data.removeRundown)) {
+	let trappedInPlaylistId: PlaylistIdPair | undefined
+	if (beforeRundown?.playlistId && (beforeRundown.playlistId !== targetPlaylistId.id || data.removeRundown)) {
 		const beforePlaylistId = beforeRundown.playlistId
 		await runJobWithPlaylistLock(
 			context,
@@ -82,11 +92,11 @@ export async function CommitIngestOperation(
 				if (oldPlaylist && !(await allowedToMoveRundownOutOfPlaylist(context, oldPlaylist, rundown))) {
 					// Don't allow removing currently playing rundown playlists:
 					logger.warn(
-						`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`
+						`Not allowing removal of currently playing rundown "${rundown._id}" from playlist "${beforePlaylistId}"`
 					)
 
 					// Discard proposed playlistId changes
-					trappedInPlaylistId = [oldPlaylist._id, oldPlaylist.externalId]
+					trappedInPlaylistId = { id: oldPlaylist._id, externalId: oldPlaylist.externalId }
 					ingestCache.Rundown.update({
 						$set: {
 							playlistId: oldPlaylist._id,
@@ -107,7 +117,7 @@ export async function CommitIngestOperation(
 								notes: [
 									...clone<RundownNote[]>(rundown.notes ?? []),
 									{
-										type: NoteType.WARNING,
+										type: NoteSeverity.WARNING,
 										message: getTranslatedMessage(
 											ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN
 										),
@@ -163,34 +173,33 @@ export async function CommitIngestOperation(
 
 	// Adopt the rundown into its new/retained playlist.
 	// We have to do the locking 'manually' because the playlist may not exist yet, but that is ok
-	const newPlaylistId: [RundownPlaylistId, string] = trappedInPlaylistId ?? targetPlaylistId
+	const newPlaylistId: PlaylistIdPair = trappedInPlaylistId ?? targetPlaylistId
 	{
 		// Check the new playlist belongs to the same studio
 		const tmpNewPlaylist: Pick<DBRundownPlaylist, 'studioId'> | undefined =
-			await context.directCollections.RundownPlaylists.findOne(newPlaylistId[0], {
+			await context.directCollections.RundownPlaylists.findOne(newPlaylistId.id, {
 				projection: {
 					studioId: 1,
 				},
 			})
 		if (tmpNewPlaylist) {
 			if (tmpNewPlaylist.studioId !== context.studioId)
-				throw new Error(`Rundown Playlist "${newPlaylistId[0]}" exists but belongs to another studio!`)
+				throw new Error(`Rundown Playlist "${newPlaylistId.id}" exists but belongs to another studio!`)
 		}
 	}
 
 	await runJobWithPlaylistLock(
 		context,
 		// 'ingest.commit.saveRundownToPlaylist',
-		{ playlistId: newPlaylistId[0] },
+		{ playlistId: newPlaylistId.id },
 		async (oldPlaylist, playlistLock) => {
 			// Ensure the rundown has the correct playlistId
-			ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId[0] } })
+			ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId.id } })
 
 			const [newPlaylist, rundownsCollection] = await generatePlaylistAndRundownsCollection(
 				context,
 				ingestCache,
-				newPlaylistId[0],
-				newPlaylistId[1],
+				newPlaylistId,
 				oldPlaylist
 			)
 
@@ -301,8 +310,7 @@ export async function CommitIngestOperation(
 async function generatePlaylistAndRundownsCollection(
 	context: JobContext,
 	ingestCache: CacheForIngest,
-	newPlaylistId: RundownPlaylistId,
-	newPlaylistExternalId: string,
+	newPlaylistIds: PlaylistIdPair,
 	existingPlaylist: ReadonlyDeep<DBRundownPlaylist> | undefined
 ): Promise<[DBRundownPlaylist, DbCacheWriteCollection<DBRundown>]> {
 	// Load existing playout data
@@ -313,15 +321,15 @@ async function generatePlaylistAndRundownsCollection(
 		context,
 		context.directCollections.Rundowns,
 		{
-			playlistId: newPlaylistId,
+			playlistId: newPlaylistIds.id,
 		}
 	)
 
 	const newPlaylist = generatePlaylistAndRundownsCollectionInner(
 		context,
 		finalRundown,
-		newPlaylistId,
-		newPlaylistExternalId,
+		newPlaylistIds.id,
+		newPlaylistIds.externalId ?? unprotectString(finalRundown._id),
 		existingPlaylist,
 		rundownsCollection
 	)

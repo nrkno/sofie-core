@@ -11,7 +11,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleUserContext, CommonContext, StudioUserContext, SegmentUserContext } from '../blueprints/context'
@@ -40,10 +40,11 @@ import {
 } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
-import { selectShowStyleVariant } from './rundown'
-import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { SelectedShowStyleVariant, selectShowStyleVariant } from './rundown'
+import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
+import { BlueprintResultRundown, BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -138,11 +139,45 @@ export async function calculateSegmentsFromIngestData(
 				rundown,
 				watchedPackages
 			)
+			let blueprintSegment0: BlueprintResultSegment | null = null
+			try {
+				blueprintSegment0 = blueprint.blueprint.getSegment(context2, ingestSegment)
+			} catch (err) {
+				logger.error(`Error in showStyleBlueprint.getSegment: ${stringifyError(err)}`)
+				blueprintSegment0 = null
+			}
 
-			const blueprintRes = blueprint.blueprint.getSegment(context2, ingestSegment)
+			if (!blueprintSegment0) {
+				// Something went wrong when generating the segment
+
+				const newSegment = literal<DBSegment>({
+					_id: segmentId,
+					rundownId: rundown._id,
+					externalId: ingestSegment.externalId,
+					externalModified: ingestSegment.modified,
+					_rank: ingestSegment.rank,
+					notes: [
+						{
+							type: NoteSeverity.ERROR,
+							message: {
+								key: 'Internal Error generating segment',
+								namespaces: [unprotectString(blueprint.blueprintId)],
+							},
+							origin: {
+								name: '', // TODO
+							},
+						},
+					],
+					name: ingestSegment.name,
+				})
+				res.segments.push(newSegment)
+
+				continue // Don't generate any content for the faulty segment
+			}
+			const blueprintSegment: BlueprintResultSegment = blueprintSegment0
 
 			// Ensure all parts have a valid externalId set on them
-			const knownPartExternalIds = blueprintRes.parts.map((p) => p.part.externalId)
+			const knownPartExternalIds = blueprintSegment.parts.map((p) => p.part.externalId)
 
 			const segmentNotes: SegmentNote[] = []
 			for (const note of context2.notes) {
@@ -163,7 +198,7 @@ export async function calculateSegmentsFromIngestData(
 			}
 
 			const newSegment = literal<DBSegment>({
-				...blueprintRes.segment,
+				...blueprintSegment.segment,
 				_id: segmentId,
 				rundownId: rundown._id,
 				externalId: ingestSegment.externalId,
@@ -173,7 +208,7 @@ export async function calculateSegmentsFromIngestData(
 			})
 			res.segments.push(newSegment)
 
-			blueprintRes.parts.forEach((blueprintPart, i) => {
+			blueprintSegment.parts.forEach((blueprintPart, i) => {
 				const partId = getPartId(rundown._id, blueprintPart.part.externalId)
 
 				const notes: PartNote[] = []
@@ -219,7 +254,7 @@ export async function calculateSegmentsFromIngestData(
 				res.parts.push(part)
 
 				// This ensures that it doesn't accidently get played while hidden
-				if (blueprintRes.segment.isHidden) {
+				if (blueprintSegment.segment.isHidden) {
 					part.invalid = true
 				}
 
@@ -260,7 +295,7 @@ export async function calculateSegmentsFromIngestData(
 			})
 
 			// If the segment has no parts, then hide it
-			if (blueprintRes.parts.length === 0) {
+			if (blueprintSegment.parts.length === 0) {
 				newSegment.isHidden = true
 			}
 		}
@@ -434,7 +469,7 @@ export async function updateRundownFromIngestData(
 	cache: CacheForIngest,
 	ingestRundown: LocalIngestRundown,
 	peripheralDeviceId: PeripheralDeviceId | null
-): Promise<CommitIngestData> {
+): Promise<CommitIngestData | null> {
 	const span = context.startSpan('ingest.rundownInput.updateRundownFromIngestData')
 
 	// canBeUpdated is to be run by the callers
@@ -466,6 +501,63 @@ export async function updateRundownFromIngestData(
 	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyle.base._id)
 	const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
+	// Call blueprints, get rundown
+	const rundownData = await getRundownFromIngestData(
+		context,
+		cache,
+		ingestRundown,
+		pPeripheralDevice,
+		showStyle,
+		showStyleBlueprint,
+		allRundownWatchedPackages
+	)
+	if (!rundownData) {
+		// We got no rundown, abort:
+		return null
+	}
+
+	const { dbRundownData, rundownRes } = rundownData
+	// Save rundown and baseline
+	const dbRundown = await saveChangesForRundown(context, cache, dbRundownData, rundownRes, showStyle)
+
+	// TODO - store notes from rundownNotesContext
+
+	const { segmentChanges, removedSegments } = await resolveSegmentChangesForUpdatedRundown(
+		context,
+		cache,
+		ingestRundown,
+		allRundownWatchedPackages
+	)
+
+	updateBaselineExpectedPackagesOnRundown(context, cache, rundownRes.baseline)
+
+	saveSegmentChangesToCache(context, cache, segmentChanges, true)
+
+	logger.info(`Rundown ${dbRundown._id} update complete`)
+
+	span?.end()
+	return literal<CommitIngestData>({
+		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
+		removedSegmentIds: removedSegments.map((s) => s._id),
+		renamedSegments: new Map(),
+
+		removeRundown: false,
+
+		showStyle: showStyle.compound,
+		blueprint: showStyleBlueprint,
+	})
+}
+export async function getRundownFromIngestData(
+	context: JobContext,
+	cache: CacheForIngest,
+	ingestRundown: LocalIngestRundown,
+	pPeripheralDevice: Promise<PeripheralDevice | undefined> | undefined,
+	showStyle: SelectedShowStyleVariant,
+	showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+	allRundownWatchedPackages: WatchedPackagesHelper
+): Promise<{ dbRundownData: DBRundown; rundownRes: BlueprintResultRundown } | null> {
+	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
+
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(
 		context,
 		(pkg) =>
@@ -484,7 +576,18 @@ export async function updateRundownFromIngestData(
 		context.getShowStyleBlueprintConfig(showStyle.compound),
 		rundownBaselinePackages
 	)
-	const rundownRes = showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
+	let rundownRes: BlueprintResultRundown | null = null
+	try {
+		rundownRes = showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.getRundown: ${stringifyError(err)}`)
+		rundownRes = null
+	}
+
+	if (rundownRes === null) {
+		// There was an error in the blueprint, abort:
+		return null
+	}
 
 	const translationNamespaces: string[] = []
 	if (showStyleBlueprint.blueprintId) {
@@ -545,6 +648,17 @@ export async function updateRundownFromIngestData(
 			? _.pick(cache.Rundown.doc, 'playlistId', '_rank', 'baselineModifyHash', 'airStatus', 'status')
 			: {}),
 	})
+
+	return { dbRundownData, rundownRes }
+}
+
+export async function saveChangesForRundown(
+	context: JobContext,
+	cache: CacheForIngest,
+	dbRundownData: DBRundown,
+	rundownRes: BlueprintResultRundown,
+	showStyle: SelectedShowStyleVariant
+): Promise<ReadonlyDeep<DBRundown>> {
 	const dbRundown = cache.Rundown.replace(dbRundownData)
 
 	// Save the baseline
@@ -605,8 +719,15 @@ export async function updateRundownFromIngestData(
 		})
 	}
 
-	// TODO - store notes from rundownNotesContext
+	return dbRundown
+}
 
+export async function resolveSegmentChangesForUpdatedRundown(
+	context: JobContext,
+	cache: CacheForIngest,
+	ingestRundown: LocalIngestRundown,
+	allRundownWatchedPackages: WatchedPackagesHelper
+): Promise<{ segmentChanges: UpdateSegmentsResult; removedSegments: DBSegment[] }> {
 	const segmentChanges = await calculateSegmentsFromIngestData(
 		context,
 		cache,
@@ -636,21 +757,5 @@ export async function updateRundownFromIngestData(
 		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 	}
 
-	updateBaselineExpectedPackagesOnRundown(context, cache, rundownRes.baseline)
-
-	saveSegmentChangesToCache(context, cache, segmentChanges, true)
-
-	logger.info(`Rundown ${dbRundown._id} update complete`)
-
-	span?.end()
-	return literal<CommitIngestData>({
-		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
-		removedSegmentIds: removedSegments.map((s) => s._id),
-		renamedSegments: new Map(),
-
-		removeRundown: false,
-
-		showStyle: showStyle.compound,
-		blueprint: showStyleBlueprint,
-	})
+	return { segmentChanges, removedSegments }
 }

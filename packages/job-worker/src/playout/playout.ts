@@ -55,7 +55,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBBase, ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { applyToArray, getRandomId, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, getRandomId, normalizeArrayToMap, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import {
 	afterTake,
@@ -1103,12 +1103,17 @@ export async function executeAction(context: JobContext, data: ExecuteActionProp
 
 					logger.info(`Executing AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
 
-					await blueprint.blueprint.executeAction(
-						actionContext,
-						data.actionId,
-						data.userData,
-						data.triggerMode
-					)
+					try {
+						await blueprint.blueprint.executeAction(
+							actionContext,
+							data.actionId,
+							data.userData,
+							data.triggerMode
+						)
+					} catch (err) {
+						logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
+						throw err
+					}
 				}
 			)
 		}

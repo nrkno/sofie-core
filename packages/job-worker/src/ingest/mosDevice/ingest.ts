@@ -26,7 +26,7 @@ import { fixIllegalObject, getPartIdFromMosStory, getSegmentExternalId, parseMos
 import { getCurrentTime } from '../../lib'
 import { normalizeArray, literal } from '@sofie-automation/corelib/dist/lib'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
-import { handleUpdatedRundownInner } from '../rundownInput'
+import { handleUpdatedRundownInner, handleUpdatedRundownMetaDataInner } from '../rundownInput'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -196,7 +196,7 @@ export async function handleMosRundownMetadata(context: JobContext, data: MosRun
 		async (context, cache, ingestRundown) => {
 			if (!ingestRundown) throw new Error(`handleMosRundownMetadata lost the IngestRundown...`)
 
-			return handleUpdatedRundownInner(context, cache, ingestRundown, false, data.peripheralDeviceId)
+			return handleUpdatedRundownMetaDataInner(context, cache, ingestRundown, data.peripheralDeviceId)
 		}
 	)
 }
@@ -218,28 +218,31 @@ export async function handleMosRundownStatus(context: JobContext, data: MosRundo
 }
 
 export async function handleMosRundownReadyToAir(context: JobContext, data: MosRundownReadyToAirProps): Promise<void> {
-	const rundownId = getRundownId(context.studio, data.rundownExternalId)
+	return runIngestJob(
+		context,
+		data,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				// No change
+				return ingestRundown
+			} else {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+		},
+		async (context, cache, ingestRundown) => {
+			if (!ingestRundown) throw new Error(`handleMosRundownReadyToAir lost the IngestRundown...`)
 
-	return runWithRundownLock(context, rundownId, async (rundown) => {
-		if (!rundown) throw new Error(`Rundown "${rundownId}" not found!`)
+			if (!cache.Rundown.doc || cache.Rundown.doc.airStatus === data.status) return null
 
-		if (!canRundownBeUpdated(rundown, false)) return
-
-		// Set the ready to air status of a Rundown
-		if (rundown.airStatus !== data.status) {
-			await context.directCollections.Rundowns.update(rundown._id, {
+			await cache.Rundown.update({
 				$set: {
 					airStatus: data.status,
 				},
 			})
 
-			// Trigger a regenerate
-			await context.queueIngestJob(IngestJobs.RegenerateRundown, {
-				rundownExternalId: rundown.externalId,
-				peripheralDeviceId: data.peripheralDeviceId,
-			})
+			return handleUpdatedRundownMetaDataInner(context, cache, ingestRundown, data.peripheralDeviceId)
 		}
-	})
+	)
 }
 
 export async function handleMosStoryStatus(context: JobContext, data: MosStoryStatusProps): Promise<void> {

@@ -7,7 +7,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
-import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { ISourceLayer, ITranslatableMessage, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import {
@@ -25,6 +25,7 @@ import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBa
 import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { preventDefault } from '../SorensenContext'
+import { logger } from '../../../lib/logging'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -327,7 +328,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					nextPartInstanceId: 1,
 					currentPartInstanceId: 1,
 				},
-			})
+			}) as
+				| Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'>
+				| undefined
 			if (playlist) {
 				setRundownPlaylistContext({
 					rundownPlaylist: playlist,
@@ -337,6 +340,8 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					currentSegmentPartIds: props.currentSegmentPartIds,
 					nextSegmentPartIds: props.nextSegmentPartIds,
 				})
+			} else {
+				logger.error(`TriggersHandler: Playlist ${props.rundownPlaylistId} not found`)
 			}
 		})
 	}, [

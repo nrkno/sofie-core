@@ -82,12 +82,17 @@ const $ = {
 	},
 }
 
+export class MeteorMock {
+	static isClient: boolean = false
+	static get isServer() {
+		return !MeteorMock.isClient
+	}
+}
+
 export namespace MeteorMock {
 	export const isTest: boolean = true
 
-	export const isClient: boolean = false
 	export const isCordova: boolean = false
-	export const isServer: boolean = true
 	export const isProduction: boolean = false
 	export const release: string = ''
 

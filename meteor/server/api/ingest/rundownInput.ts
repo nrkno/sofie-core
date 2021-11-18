@@ -97,6 +97,23 @@ export namespace RundownInput {
 			isCreateAction: false,
 		})
 	}
+	export async function dataRundownMetaDataUpdate(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		ingestRundown: Omit<IngestRundown, 'segments'>
+	): Promise<void> {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const studio = getStudioFromDevice(peripheralDevice)
+		logger.info('dataRundownMetaDataUpdate', ingestRundown)
+		check(ingestRundown, Object)
+
+		await runIngestOperation(studio._id, IngestJobs.UpdateRundownMetaData, {
+			rundownExternalId: ingestRundown.externalId,
+			peripheralDeviceId: peripheralDevice._id,
+			ingestRundown: ingestRundown,
+		})
+	}
 	export async function dataSegmentGet(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,

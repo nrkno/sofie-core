@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Timeline } from '../../../lib/collections/Timeline'
 import { Time, applyToArray, clone } from '../../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
@@ -11,6 +10,10 @@ import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
+import { Mongo } from 'meteor/mongo'
+import { RoutedTimeline } from '../../../lib/collections/Timeline'
+
+const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
 
 interface ITimelineViewProps {
 	match?: {
@@ -70,7 +73,7 @@ export const ComponentTimelineSimulate = withTracker<
 	try {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
-		const tlComplete = Timeline.findOne(props.studioId)
+		const tlComplete = StudioTimeline.findOne(props.studioId)
 		console.log('regen timeline', tlComplete?.timelineHash, tlComplete?.generated)
 		const timeline =
 			(tlComplete &&
@@ -125,9 +128,7 @@ export const ComponentTimelineSimulate = withTracker<
 			}
 		}
 		componentDidMount() {
-			this.subscribe(PubSub.timeline, {
-				_id: this.props.studioId,
-			})
+			this.subscribe(PubSub.timelineForStudio, this.props.studioId)
 		}
 		renderTimelineState(state: TimelineState) {
 			return _.map(

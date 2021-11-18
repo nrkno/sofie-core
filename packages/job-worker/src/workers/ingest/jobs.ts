@@ -21,6 +21,7 @@ import {
 	handleRemoveOrphanedSegemnts,
 	handleUpdatedPart,
 	handleUpdatedRundown,
+	handleUpdatedRundownMetaData,
 	handleUpdatedSegment,
 	handleUpdatedSegmentRanks,
 	handleUserRemoveRundown,
@@ -49,6 +50,7 @@ export type IngestJobHandlers = {
 export const ingestJobHandlers: IngestJobHandlers = {
 	[IngestJobs.RemoveRundown]: handleRemovedRundown,
 	[IngestJobs.UpdateRundown]: handleUpdatedRundown,
+	[IngestJobs.UpdateRundownMetaData]: handleUpdatedRundownMetaData,
 	[IngestJobs.RemoveSegment]: handleRemovedSegment,
 	[IngestJobs.UpdateSegment]: handleUpdatedSegment,
 	[IngestJobs.UpdateSegmentRanks]: handleUpdatedSegmentRanks,

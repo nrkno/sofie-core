@@ -1,5 +1,5 @@
 import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { INoteBase, NoteType } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -23,6 +23,7 @@ import {
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
+	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
@@ -77,7 +78,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
 		this.notes.push({
-			type: NoteType.ERROR,
+			type: NoteSeverity.ERROR,
 			message: {
 				key: message,
 				args: params,
@@ -86,7 +87,16 @@ export class SyncIngestUpdateToPartInstanceContext
 	}
 	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
 		this.notes.push({
-			type: NoteType.WARNING,
+			type: NoteSeverity.WARNING,
+			message: {
+				key: message,
+				args: params,
+			},
+		})
+	}
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		this.notes.push({
+			type: NoteSeverity.INFO,
 			message: {
 				key: message,
 				args: params,

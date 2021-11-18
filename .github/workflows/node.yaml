@@ -263,7 +263,7 @@ jobs:
       fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
-        node-version: [12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     # Gateways dont support node 10. but no tests to run anyway :)
     # if: "!(endsWith(matrix.package-name, 'gateway') & matrix.node-version == '10.x')"
@@ -295,8 +295,8 @@ jobs:
         env:
           CI: true
 
-  typedoc-libs:
-    name: Generate Libs Typedoc
+  publish-docs:
+    name: Publish Docs
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
@@ -314,20 +314,25 @@ jobs:
           yarn build
         env:
           CI: true
+      - name: Run docusaurus
+        run: |
+          cd packages/documentation
+          yarn docs:build
+        env:
+          CI: true
       - name: Run typedoc
         run: |
           cd packages
-          yarn docs
+          yarn docs:typedoc
+          cp docs documentation/build/typedoc -R
         env:
           CI: true
-      # - name: Publish
-      #   # only run for release tags
-      #   # TODO - we should only do this if the latest release
-      #   if: contains(github.ref, 'refs/tags/')
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./packages/docs
+      - name: Publish
+        if: github.ref == 'refs/heads/master' # always publish for just the master branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./packages/documentation/build
 
   release-libs:
     name: Release Lib

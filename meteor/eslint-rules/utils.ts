@@ -1,19 +1,20 @@
-/** https://github.com/jest-community/eslint-plugin-jest/blob/96031ecaab22a6550be0c9fc62fe96eec6bb0fff/src/rules/utils.ts */
-import { parse as parsePath } from 'path';
+/** https://github.com/jest-community/eslint-plugin-jest/blob/540326879df242daa3d96f43903178e36ba6b546/src/rules/utils.ts */
+// import { parse as parsePath } from 'path';
 import {
   AST_NODE_TYPES,
   ESLintUtils,
   TSESLint,
   TSESTree,
 } from '@typescript-eslint/experimental-utils';
-import { version } from '../../package.json';
+// import { version } from '../../package.json';
 
-const REPO_URL = 'https://github.com/jest-community/eslint-plugin-jest';
+// const REPO_URL = 'https://github.com/jest-community/eslint-plugin-jest';
 
 export const createRule = ESLintUtils.RuleCreator(name => {
-  const ruleName = parsePath(name).name;
+  return `local:${name}`
+  // const ruleName = parsePath(name).name;
 
-  return `${REPO_URL}/blob/v${version}/docs/rules/${ruleName}.md`;
+  // return `${REPO_URL}/blob/v${version}/docs/rules/${ruleName}.md`;
 });
 
 export type MaybeTypeCast<Expression extends TSESTree.Expression> =
@@ -211,7 +212,7 @@ interface KnownIdentifier<Name extends string> extends TSESTree.Identifier {
  *
  * @template V
  */
-const isIdentifier = <V extends string>(
+export const isIdentifier = <V extends string>(
   node: TSESTree.Node,
   name?: V,
 ): node is KnownIdentifier<V> =>
@@ -392,7 +393,7 @@ export interface NotNegatableParsedModifier<
   negation?: never;
 }
 
-type ParsedExpectModifier =
+export type ParsedExpectModifier =
   | NotNegatableParsedModifier
   | NegatableParsedModifier;
 
@@ -419,7 +420,6 @@ const reparseAsMatcher = (
    * If this matcher isn't called, this will be `null`.
    */
   arguments:
-    parsedMember.node.parent &&
     parsedMember.node.parent.type === AST_NODE_TYPES.CallExpression
       ? parsedMember.node.parent.arguments
       : null,
@@ -454,11 +454,9 @@ const reparseMemberAsModifier = (
     );
   }
 
-  const negation =
-    parsedMember.node.parent &&
-    isExpectMember(parsedMember.node.parent, ModifierName.not)
-      ? parsedMember.node.parent
-      : undefined;
+  const negation = isExpectMember(parsedMember.node.parent, ModifierName.not)
+    ? parsedMember.node.parent
+    : undefined;
 
   return {
     ...parsedMember,
@@ -507,7 +505,7 @@ export const parseExpectCall = <ExpectNode extends ExpectCall>(
 
   const memberNode = modifier.negation || modifier.node;
 
-  if (!memberNode.parent || !isExpectMember(memberNode.parent)) {
+  if (!isExpectMember(memberNode.parent)) {
     return expectation;
   }
 
@@ -685,7 +683,7 @@ const isTestCaseName = (node: TSESTree.LeftHandSideExpression) =>
   TestCaseName.hasOwnProperty(node.name);
 
 const isTestCaseProperty = (
-  node: TSESTree.Expression,
+  node: TSESTree.Expression | TSESTree.PrivateIdentifier,
 ): node is AccessorNode<TestCaseProperty> =>
   isSupportedAccessor(node) &&
   TestCaseProperty.hasOwnProperty(getAccessorValue(node));
@@ -741,7 +739,7 @@ const isDescribeAlias = (node: TSESTree.LeftHandSideExpression) =>
   DescribeAlias.hasOwnProperty(node.name);
 
 const isDescribeProperty = (
-  node: TSESTree.Expression,
+  node: TSESTree.Expression | TSESTree.PrivateIdentifier,
 ): node is AccessorNode<DescribeProperty> =>
   isSupportedAccessor(node) &&
   DescribeProperty.hasOwnProperty(getAccessorValue(node));

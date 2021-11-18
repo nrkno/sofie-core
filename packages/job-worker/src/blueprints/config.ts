@@ -9,7 +9,7 @@ import {
 	StudioBlueprintManifest,
 	TableConfigItemValue,
 } from '@sofie-automation/blueprints-integration'
-import { objectPathGet, objectPathSet } from '@sofie-automation/corelib/dist/lib'
+import { objectPathGet, objectPathSet, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { logger } from '../logging'
 import { CommonContext } from './context'
@@ -92,13 +92,18 @@ export function preprocessStudioConfig(
 	// Expose special values as defined in the studio
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
-	if (blueprint.preprocessConfig) {
-		const context = new CommonContext({
-			name: `preprocessStudioConfig`,
-			identifier: `studioId=${studio._id}`,
-		})
-		res = blueprint.preprocessConfig(context, res)
+	try {
+		if (blueprint.preprocessConfig) {
+			const context = new CommonContext({
+				name: `preprocessStudioConfig`,
+				identifier: `studioId=${studio._id}`,
+			})
+			res = blueprint.preprocessConfig(context, res)
+		}
+	} catch (err) {
+		logger.error(`Error in studioBlueprint.preprocessConfig: ${stringifyError(err)}`)
 	}
+
 	return res
 }
 
@@ -112,13 +117,19 @@ export function preprocessShowStyleConfig(
 	} else {
 		res = showStyle.blueprintConfig
 	}
-	if (blueprint.preprocessConfig) {
-		const context = new CommonContext({
-			name: `preprocessShowStyleConfig`,
-			identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
-		})
-		res = blueprint.preprocessConfig(context, res)
+
+	try {
+		if (blueprint.preprocessConfig) {
+			const context = new CommonContext({
+				name: `preprocessShowStyleConfig`,
+				identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
+			})
+			res = blueprint.preprocessConfig(context, res)
+		}
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.preprocessConfig: ${stringifyError(err)}`)
 	}
+
 	return res
 }
 

@@ -15,6 +15,7 @@ import { Settings } from '../../lib/Settings'
 import { resolveCredentials } from '../security/lib/credentials'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
+import { endTrace, sendTrace, startTrace } from './integration/influx'
 
 export namespace ServerClientAPI {
 	export function clientErrorReport(
@@ -41,6 +42,7 @@ export namespace ServerClientAPI {
 		fcn: () => Result | Promise<Result>
 	): Awaited<Result> {
 		const startTime = Date.now()
+		const influxTrace = startTrace('userFunction:' + methodName)
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
 
@@ -88,6 +90,8 @@ export namespace ServerClientAPI {
 					},
 				})
 			}
+
+			sendTrace(endTrace(influxTrace))
 
 			return result
 		} catch (e) {

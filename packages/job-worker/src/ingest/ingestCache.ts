@@ -16,6 +16,7 @@ import _ = require('underscore')
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { JobContext } from '../jobs'
 import { getPartId, getSegmentId } from './lib'
+import { SetOptional } from 'type-fest'
 
 interface LocalIngestBase {
 	modified: number
@@ -30,10 +31,10 @@ export interface LocalIngestPart extends IngestPart, LocalIngestBase {}
 export function isLocalIngestRundown(o: IngestRundown | LocalIngestRundown): o is LocalIngestRundown {
 	return 'modified' in o
 }
-export function makeNewIngestRundown(ingestRundown: IngestRundown): LocalIngestRundown {
+export function makeNewIngestRundown(ingestRundown: SetOptional<IngestRundown, 'segments'>): LocalIngestRundown {
 	return {
 		...ingestRundown,
-		segments: _.map(ingestRundown.segments, makeNewIngestSegment),
+		segments: ingestRundown.segments ? _.map(ingestRundown.segments, makeNewIngestSegment) : [],
 		modified: getCurrentTime(),
 	}
 }

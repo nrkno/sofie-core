@@ -12,7 +12,7 @@ import { PartEndState, VTContent } from '@sofie-automation/blueprints-integratio
 import { DBPartInstance, unprotectPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 import { getResolvedPieces } from './pieces'
-import { clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
 import { updateTimeline } from './timeline'
 import {
@@ -100,24 +100,21 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	if (blueprint.blueprint.onPreTake) {
 		const span = context.startSpan('blueprint.onPreTake')
 		try {
-			await Promise.resolve(
-				blueprint.blueprint.onPreTake(
-					new PartEventContext(
-						'onPreTake',
-						context.studio,
-						context.getStudioBlueprintConfig(),
-						showStyle,
-						context.getShowStyleBlueprintConfig(showStyle),
-						takeRundown,
-						takePartInstance
-					)
+			await blueprint.blueprint.onPreTake(
+				new PartEventContext(
+					'onPreTake',
+					context.studio,
+					context.getStudioBlueprintConfig(),
+					showStyle,
+					context.getShowStyleBlueprintConfig(showStyle),
+					takeRundown,
+					takePartInstance
 				)
-			).catch(logger.error)
-			if (span) span.end()
-		} catch (e) {
-			if (span) span.end()
-			logger.error(e)
+			)
+		} catch (err) {
+			logger.error(`Error in showStyleBlueprint.onPreTake: ${stringifyError(err)}`)
 		}
+		if (span) span.end()
 	}
 
 	updatePartInstanceOnTake(context, cache, showStyle, blueprint, takeRundown, takePartInstance, currentPartInstance)
@@ -245,8 +242,8 @@ async function afterTakeUpdateTimingsAndEvents(
 		if (isFirstTake && takeRundown) {
 			if (blueprint.blueprint.onRundownFirstTake) {
 				const span = context.startSpan('blueprint.onRundownFirstTake')
-				await Promise.resolve(
-					blueprint.blueprint.onRundownFirstTake(
+				try {
+					await blueprint.blueprint.onRundownFirstTake(
 						new PartEventContext(
 							'onRundownFirstTake',
 							context.studio,
@@ -257,15 +254,17 @@ async function afterTakeUpdateTimingsAndEvents(
 							takePartInstance
 						)
 					)
-				).catch(logger.error)
+				} catch (err) {
+					logger.error(`Error in showStyleBlueprint.onRundownFirstTake: ${stringifyError(err)}`)
+				}
 				if (span) span.end()
 			}
 		}
 
 		if (blueprint.blueprint.onPostTake && takeRundown) {
 			const span = context.startSpan('blueprint.onPostTake')
-			await Promise.resolve(
-				blueprint.blueprint.onPostTake(
+			try {
+				await blueprint.blueprint.onPostTake(
 					new PartEventContext(
 						'onPostTake',
 						context.studio,
@@ -276,7 +275,9 @@ async function afterTakeUpdateTimingsAndEvents(
 						takePartInstance
 					)
 				)
-			).catch(logger.error)
+			} catch (err) {
+				logger.error(`Error in showStyleBlueprint.onPostTake: ${stringifyError(err)}`)
+			}
 			if (span) span.end()
 		}
 	}
@@ -296,32 +297,37 @@ export function updatePartInstanceOnTake(
 	// TODO - the state could change after this sampling point. This should be handled properly
 	let previousPartEndState: PartEndState | undefined = undefined
 	if (blueprint.blueprint.getEndStateForPart && currentPartInstance) {
-		const time = getCurrentTime()
-		const resolvedPieces = getResolvedPieces(context, cache, showStyle, currentPartInstance)
+		try {
+			const time = getCurrentTime()
+			const resolvedPieces = getResolvedPieces(context, cache, showStyle, currentPartInstance)
 
-		const span = context.startSpan('blueprint.getEndStateForPart')
-		const context2 = new RundownContext(
-			{
-				name: `${playlist.name}`,
-				identifier: `playlist=${playlist._id},currentPartInstance=${
-					currentPartInstance._id
-				},execution=${getRandomId()}`,
-			},
-			context.studio,
-			context.getStudioBlueprintConfig(),
-			showStyle,
-			context.getShowStyleBlueprintConfig(showStyle),
-			takeRundown
-		)
-		previousPartEndState = blueprint.blueprint.getEndStateForPart(
-			context2,
-			playlist.previousPersistentState,
-			unprotectPartInstance(clone(currentPartInstance)),
-			unprotectObjectArray(resolvedPieces),
-			time
-		)
-		if (span) span.end()
-		logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+			const span = context.startSpan('blueprint.getEndStateForPart')
+			const context2 = new RundownContext(
+				{
+					name: `${playlist.name}`,
+					identifier: `playlist=${playlist._id},currentPartInstance=${
+						currentPartInstance._id
+					},execution=${getRandomId()}`,
+				},
+				context.studio,
+				context.getStudioBlueprintConfig(),
+				showStyle,
+				context.getShowStyleBlueprintConfig(showStyle),
+				takeRundown
+			)
+			previousPartEndState = blueprint.blueprint.getEndStateForPart(
+				context2,
+				playlist.previousPersistentState,
+				unprotectPartInstance(clone(currentPartInstance)),
+				unprotectObjectArray(resolvedPieces),
+				time
+			)
+			if (span) span.end()
+			logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+		} catch (err) {
+			logger.error(`Error in showStyleBlueprint.getEndStateForPart: ${stringifyError(err)}`)
+			previousPartEndState = undefined
+		}
 	}
 
 	const partInstanceM: any = {

@@ -1,5 +1,5 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
-import { NoteType, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Segments, DBSegment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { unprotectString, literal, generateTranslation, normalizeArrayToMap } from './lib'
@@ -7,6 +7,7 @@ import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
 import { RundownPlaylist } from './collections/RundownPlaylists'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 	const rundowns = Rundowns.find(
@@ -142,7 +143,7 @@ export function getBasicNotesForSegment(
 
 	if (segment.orphaned === 'deleted') {
 		notes.push({
-			type: NoteType.WARNING,
+			type: NoteSeverity.WARNING,
 			message: generateTranslation('Segment no longer exists in {{nrcs}}', {
 				nrcs: nrcsName,
 			}),
@@ -157,7 +158,7 @@ export function getBasicNotesForSegment(
 		const deletedPartInstances = partInstances.filter((p) => p.orphaned === 'deleted' && !p.reset)
 		if (deletedPartInstances.length > 0) {
 			notes.push({
-				type: NoteType.WARNING,
+				type: NoteSeverity.WARNING,
 				message: generateTranslation('The following parts no longer exist in {{nrcs}}: {{partNames}}', {
 					nrcs: nrcsName,
 					partNames: deletedPartInstances.map((p) => p.part.title).join(', '),
@@ -175,17 +176,15 @@ export function getBasicNotesForSegment(
 	for (const part of parts) {
 		const newNotes = part.notes?.slice() || []
 
-		// Temporarily disable showing invalidReason notifications
-		//		-- Jan Starzak, 2021/06/30
-		// if (part.invalidReason) {
-		// 	newNotes.push({
-		// 		type: NoteType.ERROR,
-		// 		message: part.invalidReason.message,
-		// 		origin: {
-		// 			name: part.title,
-		// 		},
-		// 	})
-		// }
+		if (part.invalidReason) {
+			newNotes.push({
+				type: part.invalidReason.level ?? NoteSeverity.ERROR,
+				message: part.invalidReason.message,
+				origin: {
+					name: part.title,
+				},
+			})
+		}
 
 		if (newNotes.length > 0) {
 			notes.push(

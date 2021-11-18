@@ -8,7 +8,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { assertNever, getRandomId, getRank, literal } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, getRandomId, getRank, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import {
@@ -41,7 +41,7 @@ import {
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceLifespan, SourceLayerType, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MongoQuery } from '../db'
@@ -91,16 +91,12 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 
 			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
 			if (!pieceToCopy.allowDirectPlay) {
-				// Not explicitly allowed, use legacy route
-				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-				if (sourceLayer && (sourceLayer.type !== SourceLayerType.LOWER_THIRD || sourceLayer.exclusiveGroup))
-					throw UserError.from(
-						new Error(
-							`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" cannot be direct played!`
-						),
-						UserErrorMessage.PieceAsAdlibNotDirectPlayable
-					)
-				await pieceTakeNowAsAdlib(context, cache, showStyleBase, partInstance, pieceToCopy, pieceInstanceToCopy)
+				throw UserError.from(
+					new Error(
+						`PieceInstance or Piece "${data.pieceInstanceIdOrPieceIdToCopy}" cannot be direct played!`
+					),
+					UserErrorMessage.PieceAsAdlibNotDirectPlayable
+				)
 			} else {
 				switch (pieceToCopy.allowDirectPlay.type) {
 					case IBlueprintDirectPlayType.AdLibPiece:
@@ -129,11 +125,17 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 									)}`
 								)
 
-								await blueprint.blueprint.executeAction(
-									actionContext,
-									executeProps.actionId,
-									executeProps.userData
-								)
+								try {
+									await blueprint.blueprint.executeAction(
+										actionContext,
+										executeProps.actionId,
+										executeProps.userData
+									)
+								} catch (err) {
+									logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
+									// TODO: should we throw here?
+									throw UserError.from(err, UserErrorMessage.InternalError)
+								}
 							}
 						)
 						break

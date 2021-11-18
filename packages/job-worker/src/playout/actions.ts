@@ -1,5 +1,5 @@
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import _ = require('underscore')
 import { JobContext } from '../jobs'
@@ -105,15 +105,21 @@ export async function activateRundownPlaylist(
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
-		const context2 = new RundownEventContext(
-			context.studio,
-			context.getStudioBlueprintConfig(),
-			showStyle,
-			context.getShowStyleBlueprintConfig(showStyle),
-			rundown
-		)
-		if (blueprint.blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.blueprint.onRundownActivate(context2)).catch(logger.error)
+
+		try {
+			if (blueprint.blueprint.onRundownActivate) {
+				const context2 = new RundownEventContext(
+					context.studio,
+					context.getStudioBlueprintConfig(),
+					showStyle,
+					context.getShowStyleBlueprintConfig(showStyle),
+					rundown
+				)
+
+				await blueprint.blueprint.onRundownActivate(context2)
+			}
+		} catch (err) {
+			logger.error(`Error in showStyleBlueprint.onRundownActivate: ${stringifyError(err)}`)
 		}
 	})
 }
@@ -126,15 +132,20 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 		if (rundown) {
 			const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
-			if (blueprint.blueprint.onRundownDeActivate) {
-				const context2 = new RundownEventContext(
-					context.studio,
-					context.getStudioBlueprintConfig(),
-					showStyle,
-					context.getShowStyleBlueprintConfig(showStyle),
-					rundown
-				)
-				Promise.resolve(blueprint.blueprint.onRundownDeActivate(context2)).catch(logger.error)
+
+			try {
+				if (blueprint.blueprint.onRundownDeActivate) {
+					const context2 = new RundownEventContext(
+						context.studio,
+						context.getStudioBlueprintConfig(),
+						showStyle,
+						context.getShowStyleBlueprintConfig(showStyle),
+						rundown
+					)
+					await blueprint.blueprint.onRundownDeActivate(context2)
+				}
+			} catch (err) {
+				logger.error(`Error in showStyleBlueprint.onRundownDeActivate: ${stringifyError(err)}`)
 			}
 		}
 	})

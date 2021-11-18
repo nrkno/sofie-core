@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/blueprints-integration",
-	"version": "1.37.0-in-testing.13",
+	"version": "1.38.0-in-development",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -17,7 +17,8 @@
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
+		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"watch": "jest --watch",
@@ -39,15 +40,15 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"timeline-state-resolver-types": "6.2.0-release37.4",
+		"timeline-state-resolver-types": "6.3.0-nightly-release38-20211022-090801-9264c02ad.0",
 		"tslib": "^2.3.1"
 	},
 	"lint-staged": {
-		"*.{js,css,json,md,scss}": [
-			"prettier --write"
+		"*.{css,json,md,scss}": [
+			"prettier"
 		],
-		"*.{ts,tsx}": [
-			"yarn lint --fix"
+		"*.{ts,tsx,js,jsx}": [
+			"yarn lint:raw"
 		]
 	}
 }

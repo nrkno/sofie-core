@@ -31,6 +31,8 @@ import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { LoggerInstance } from './index'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
+import { FinishedTrace, sendTrace } from './influxdb'
+
 const debug = Debug('playout-gateway')
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -242,7 +244,16 @@ export class TSRHandler {
 				.catch((e) => {
 					this.logger.error('Error in reportResolveDone', e)
 				})
+
+			sendTrace({
+				measurement: 'playout-gateway.tlResolveDone',
+				tags: {},
+				start: Date.now() - resolveDuration,
+				duration: resolveDuration,
+				ended: Date.now(),
+			})
 		})
+		this.tsr.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
 
 		this.logger.debug('tsr init')
 		await this.tsr.init()
@@ -265,13 +276,13 @@ export class TSRHandler {
 
 		const timelineObserver = this._coreHandler.core.observe('studioTimeline')
 		timelineObserver.added = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings(true)
 		}
 		timelineObserver.changed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings(true)
 		}
 		timelineObserver.removed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings(true)
 		}
 		this._observers.push(timelineObserver)
 
@@ -292,9 +303,12 @@ export class TSRHandler {
 			debug('triggerUpdateDevices from deviceObserver added')
 			this._triggerUpdateDevices()
 		}
-		deviceObserver.changed = () => {
-			debug('triggerUpdateDevices from deviceObserver changed')
-			this._triggerUpdateDevices()
+		deviceObserver.changed = (_id, _oldFields, _clearedFields, newFields) => {
+			// Only react to changes in the .settings property:
+			if (newFields['settings'] !== undefined) {
+				debug('triggerUpdateDevices from deviceObserver changed')
+				this._triggerUpdateDevices()
+			}
 		}
 		deviceObserver.removed = () => {
 			debug('triggerUpdateDevices from deviceObserver removed')
@@ -329,6 +343,8 @@ export class TSRHandler {
 				mappingsHash: string
 				timelineHash: string
 				timeline: TimelineObjGeneric[]
+				generated: number
+				published: number
 		  }
 		| undefined {
 		const studioId = this._getStudioId()
@@ -390,12 +406,12 @@ export class TSRHandler {
 			this._triggerUpdateDevices()
 		}
 	}
-	private _triggerupdateTimelineAndMappings() {
+	private _triggerupdateTimelineAndMappings(fromTlChange?: boolean) {
 		if (!this._initialized) return
 
-		this._updateTimelineAndMappings()
+		this._updateTimelineAndMappings(fromTlChange)
 	}
-	private _updateTimelineAndMappings() {
+	private _updateTimelineAndMappings(fromTlChange?: boolean) {
 		const timeline = this.getTimeline()
 		const mappingsObject = this.getMappings()
 
@@ -416,6 +432,23 @@ export class TSRHandler {
 		}
 
 		this.logger.debug(`Trigger new resolving`)
+		if (fromTlChange) {
+			const trace = {
+				measurement: 'playout-gateway:timelineReceived',
+				start: timeline.generated,
+				tags: {},
+				ended: Date.now(),
+				duration: Date.now() - timeline.generated,
+			}
+			sendTrace(trace)
+			sendTrace({
+				measurement: 'playout-gateway:timelinePublicationLatency',
+				start: timeline.published,
+				tags: {},
+				ended: Date.now(),
+				duration: Date.now() - timeline.published,
+			})
+		}
 
 		const transformedTimeline = this._transformTimeline(timeline.timeline)
 		this.tsr.timelineHash = timeline.timelineHash
@@ -797,6 +830,8 @@ export class TSRHandler {
 					this.logger.info('debug: ' + fixError(e), ...args)
 				}
 			})
+
+			await device.device.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
 
 			// now initialize it
 			await this.tsr.initDevice(deviceId, options)

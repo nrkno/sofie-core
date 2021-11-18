@@ -8,18 +8,20 @@ import { createShowStyleCompound } from '../showStyles'
 import _ = require('underscore')
 import { StudioUserContext } from '../blueprints/context'
 import { JobContext } from '../jobs'
-import { clone } from '@sofie-automation/corelib/dist/lib'
+import { clone, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
+
+export interface SelectedShowStyleVariant {
+	variant: ReadonlyDeep<DBShowStyleVariant>
+	base: ReadonlyDeep<DBShowStyleBase>
+	compound: ReadonlyDeep<ShowStyleCompound>
+}
 
 export async function selectShowStyleVariant(
 	context: JobContext,
 	blueprintContext: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
-): Promise<{
-	variant: ReadonlyDeep<DBShowStyleVariant>
-	base: ReadonlyDeep<DBShowStyleBase>
-	compound: ReadonlyDeep<ShowStyleCompound>
-} | null> {
+): Promise<SelectedShowStyleVariant | null> {
 	const studio = blueprintContext.studio
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
@@ -40,9 +42,20 @@ export async function selectShowStyleVariant(
 	const studioBlueprint = context.studioBlueprint
 	if (!studioBlueprint) throw new Error(`Studio "${studio._id}" does not have a blueprint`)
 
-	const showStyleId: ShowStyleBaseId | null = protectString(
-		studioBlueprint.blueprint.getShowStyleId(blueprintContext, unprotectObjectArray(showStyleBases), ingestRundown)
-	)
+	let showStyleId: ShowStyleBaseId | null = null
+	try {
+		showStyleId = protectString(
+			studioBlueprint.blueprint.getShowStyleId(
+				blueprintContext,
+				unprotectObjectArray(showStyleBases),
+				ingestRundown
+			)
+		)
+	} catch (err) {
+		logger.error(`Error in studioBlueprint.getShowStyleId: ${stringifyError(err)}`)
+		showStyleId = null
+	}
+
 	if (showStyleId === null) {
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned showStyleId = null`)
 		return null
@@ -64,13 +77,20 @@ export async function selectShowStyleVariant(
 	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyleBase._id)
 	if (!showStyleBlueprint) throw new Error(`ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 
-	const variantId: ShowStyleVariantId | null = protectString(
-		showStyleBlueprint.blueprint.getShowStyleVariantId(
-			blueprintContext,
-			unprotectObjectArray(showStyleVariants),
-			ingestRundown
+	let variantId: ShowStyleVariantId | null = null
+	try {
+		variantId = protectString(
+			showStyleBlueprint.blueprint.getShowStyleVariantId(
+				blueprintContext,
+				unprotectObjectArray(showStyleVariants),
+				ingestRundown
+			)
 		)
-	)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.getShowStyleVariantId: ${stringifyError(err)}`)
+		variantId = null
+	}
+
 	if (variantId === null) {
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned variantId = null in .getShowStyleVariantId`)
 		return null

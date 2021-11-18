@@ -3,12 +3,12 @@ import ClassNames from 'classnames'
 import { DBSegment, Segment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
-import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { extendMandadory, getCurrentTime } from '../../../lib/lib'
+import { Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { extendMandadory, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -21,6 +21,13 @@ import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Part } from '../../../lib/collections/Parts'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { DashboardLayout, RundownLayoutBase, RundownLayoutPresenterView, RundownLayouts } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
+import { parse as queryStringParse } from 'query-string'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -31,21 +38,31 @@ interface TimeMap {
 }
 
 interface RundownOverviewProps {
+	studioId: StudioId
 	playlistId: RundownPlaylistId
 	segmentLiveDurations?: TimeMap
 }
-interface RundownOverviewState {}
+interface RundownOverviewState {
+	presenterLayout: RundownLayoutPresenterView | undefined
+}
 export interface RundownOverviewTrackedProps {
+	studio: Studio | undefined
 	playlist?: RundownPlaylist
+	rundowns: Rundown[]
 	segments: Array<SegmentUi>
 	currentSegment: SegmentUi | undefined
 	currentPartInstance: PartUi | undefined
 	nextSegment: SegmentUi | undefined
 	nextPartInstance: PartUi | undefined
 	currentShowStyleBaseId: ShowStyleBaseId | undefined
+	currentShowStyleBase: ShowStyleBase | undefined
+	currentShowStyleVariantId: ShowStyleVariantId | undefined
+	currentShowStyleVariant: ShowStyleVariant | undefined
 	nextShowStyleBaseId: ShowStyleBaseId | undefined
 	showStyleBaseIds: ShowStyleBaseId[]
 	rundownIds: RundownId[]
+	rundownLayouts?: Array<RundownLayoutBase>
+	presenterLayoutId: RundownLayoutId | undefined
 }
 
 function getShowStyleBaseIdSegmentPartUi(
@@ -60,10 +77,16 @@ function getShowStyleBaseIdSegmentPartUi(
 	nextPartInstance: PartInstance | undefined
 ): {
 	showStyleBaseId: ShowStyleBaseId | undefined
+	showStyleBase: ShowStyleBase | undefined
+	showStyleVariantId: ShowStyleVariantId | undefined
+	showStyleVariant: ShowStyleVariant | undefined
 	segment: SegmentUi | undefined
 	partInstance: PartUi | undefined
 } {
 	let showStyleBaseId: ShowStyleBaseId | undefined = undefined
+	let showStyleBase: ShowStyleBase | undefined = undefined
+	let showStyleVariantId: ShowStyleVariantId | undefined = undefined
+	let showStyleVariant: ShowStyleVariant | undefined = undefined
 	let segment: SegmentUi | undefined = undefined
 	let partInstanceUi: PartUi | undefined = undefined
 
@@ -72,17 +95,20 @@ function getShowStyleBaseIdSegmentPartUi(
 			_id: 1,
 			_rank: 1,
 			showStyleBaseId: 1,
+			showStyleVariantId: 1,
 			name: 1,
 			timing: 1,
 		},
 	})
 	showStyleBaseId = currentRundown?.showStyleBaseId
+	showStyleVariantId = currentRundown?.showStyleVariantId
 
 	const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === partInstance.segmentId)
 	if (currentRundown && segmentIndex >= 0) {
 		const rundownOrder = playlist.getRundownIDs()
 		const rundownIndex = rundownOrder.indexOf(partInstance.rundownId)
-		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+		showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+		showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
 
 		if (showStyleBase) {
 			// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
@@ -113,13 +139,18 @@ function getShowStyleBaseIdSegmentPartUi(
 
 	return {
 		showStyleBaseId: showStyleBaseId,
+		showStyleBase,
+		showStyleVariantId,
+		showStyleVariant,
 		segment: segment,
 		partInstance: partInstanceUi,
 	}
 }
 
 export const getPresenterScreenReactive = (props: RundownOverviewProps): RundownOverviewTrackedProps => {
+	const studio = Studios.findOne(props.studioId)
 	let playlist: RundownPlaylist | undefined
+
 	if (props.playlistId)
 		playlist = RundownPlaylists.findOne(props.playlistId, {
 			fields: {
@@ -140,10 +171,16 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 	let currentSegment: SegmentUi | undefined = undefined
 	let currentPartInstanceUi: PartUi | undefined = undefined
 	let currentShowStyleBaseId: ShowStyleBaseId | undefined = undefined
+	let currentShowStyleBase: ShowStyleBase | undefined = undefined
+	let currentShowStyleVariantId: ShowStyleVariantId | undefined = undefined
+	let currentShowStyleVariant: ShowStyleVariant | undefined = undefined
 
 	let nextSegment: SegmentUi | undefined = undefined
 	let nextPartInstanceUi: PartUi | undefined = undefined
 	let nextShowStyleBaseId: ShowStyleBaseId | undefined = undefined
+
+	const params = queryStringParse(location.search)
+	const presenterLayoutId = protectString((params['presenterLayout'] as string) || '')
 
 	if (playlist) {
 		rundowns = playlist.getRundowns()
@@ -186,6 +223,9 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 				currentSegment = current.segment
 				currentPartInstanceUi = current.partInstance
 				currentShowStyleBaseId = current.showStyleBaseId
+				currentShowStyleBase = current.showStyleBase
+				currentShowStyleVariantId = current.showStyleVariantId
+				currentShowStyleVariant = current.showStyleVariant
 			}
 
 			if (nextPartInstance) {
@@ -204,16 +244,24 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 		}
 	}
 	return {
+		studio,
 		segments,
 		playlist,
+		rundowns,
 		showStyleBaseIds,
 		rundownIds,
 		currentSegment,
 		currentPartInstance: currentPartInstanceUi,
 		currentShowStyleBaseId,
+		currentShowStyleBase,
+		currentShowStyleVariantId,
+		currentShowStyleVariant,
 		nextSegment,
 		nextPartInstance: nextPartInstanceUi,
 		nextShowStyleBaseId,
+		rundownLayouts:
+			rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined,
+		presenterLayoutId,
 	}
 }
 
@@ -223,6 +271,13 @@ export class PresenterScreenBase extends MeteorReactComponent<
 > {
 	protected bodyClassList: string[] = ['dark', 'xdark']
 
+	constructor(props) {
+		super(props)
+		this.state = {
+			presenterLayout: undefined,
+		}
+	}
+
 	componentDidMount() {
 		document.body.classList.add(...this.bodyClassList)
 		this.subscribeToData()
@@ -230,6 +285,9 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 	protected subscribeToData() {
 		this.autorun(() => {
+			this.subscribe(PubSub.studios, {
+				_id: this.props.studioId,
+			})
 			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
 				fields: {
 					_id: 1,
@@ -239,6 +297,13 @@ export class PresenterScreenBase extends MeteorReactComponent<
 				this.subscribe(PubSub.rundowns, {
 					playlistId: playlist._id,
 				})
+				const rundowns = playlist.getRundowns(undefined, {
+					fields: {
+						_id: 1,
+						showStyleBaseId: 1,
+						showStyleVariantId: 1,
+					},
+				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
 
 				this.autorun(() => {
 					const rundownIds = playlist.getRundownIDs()
@@ -249,6 +314,13 @@ export class PresenterScreenBase extends MeteorReactComponent<
 							},
 						}) as Pick<Rundown, 'showStyleBaseId'>[]
 					).map((r) => r.showStyleBaseId)
+					const showStyleVariantIds = (
+						playlist!.getRundowns(undefined, {
+							fields: {
+								showStyleVariantId: 1,
+							},
+						}) as Pick<Rundown, 'showStyleVariantId'>[]
+					).map((r) => r.showStyleVariantId)
 
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIds },
@@ -263,6 +335,16 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					this.subscribe(PubSub.showStyleBases, {
 						_id: {
 							$in: showStyleBaseIds,
+						},
+					})
+					this.subscribe(PubSub.showStyleVariants, {
+						_id: {
+							$in: showStyleVariantIds,
+						},
+					})
+					this.subscribe(PubSub.rundownLayouts, {
+						showStyleBaseId: {
+							$in: rundowns.map((i) => i.showStyleBaseId),
 						},
 					})
 
@@ -305,12 +387,51 @@ export class PresenterScreenBase extends MeteorReactComponent<
 		})
 	}
 
+	static getDerivedStateFromProps(
+		props: Translated<RundownOverviewProps & RundownOverviewTrackedProps>
+	): Partial<RundownOverviewState> {
+		let selectedPresenterLayout: RundownLayoutBase | undefined = undefined
+
+		if (props.rundownLayouts) {
+			// first try to use the one selected by the user
+			if (props.presenterLayoutId) {
+				selectedPresenterLayout = props.rundownLayouts.find((i) => i._id === props.presenterLayoutId)
+			}
+
+			// if couldn't find based on id, try matching part of the name
+			if (props.presenterLayoutId && !selectedPresenterLayout) {
+				selectedPresenterLayout = props.rundownLayouts.find(
+					(i) => i.name.indexOf(unprotectString(props.presenterLayoutId!)) >= 0
+				)
+			}
+
+			// if still not found, use the first one
+			if (!selectedPresenterLayout) {
+				selectedPresenterLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForPresenterView(i))
+			}
+		}
+
+		return {
+			presenterLayout:
+				selectedPresenterLayout && RundownLayoutsAPI.isLayoutForPresenterView(selectedPresenterLayout)
+					? selectedPresenterLayout
+					: undefined,
+		}
+	}
+
 	componentWillUnmount() {
 		super.componentWillUnmount()
 		document.body.classList.remove(...this.bodyClassList)
 	}
 
 	render() {
+		if (this.state.presenterLayout && RundownLayoutsAPI.isDashboardLayout(this.state.presenterLayout)) {
+			return this.renderDashboardLayout(this.state.presenterLayout)
+		}
+		return this.renderDefaultLayout()
+	}
+
+	renderDefaultLayout() {
 		const { playlist, segments, currentShowStyleBaseId, nextShowStyleBaseId, playlistId } = this.props
 
 		if (playlist && playlistId && segments) {
@@ -426,6 +547,28 @@ export class PresenterScreenBase extends MeteorReactComponent<
 							{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true)}
 						</div>
 					</div>
+				</div>
+			)
+		}
+		return null
+	}
+
+	renderDashboardLayout(layout: DashboardLayout) {
+		const { studio, playlist, currentShowStyleBase, currentShowStyleVariant } = this.props
+
+		if (studio && playlist && currentShowStyleBase && currentShowStyleVariant) {
+			return (
+				<div className="presenter-screen">
+					<ShelfDashboardLayout
+						rundownLayout={layout}
+						playlist={playlist}
+						showStyleBase={currentShowStyleBase}
+						showStyleVariant={currentShowStyleVariant}
+						studio={studio}
+						studioMode={false}
+						shouldQueue={false}
+						selectedPiece={undefined}
+					/>
 				</div>
 			)
 		}

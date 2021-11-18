@@ -38,7 +38,7 @@ import './api/serviceMessages/api'
 
 // import all files that calls Meteor.startup:
 import './api/rest/rest'
-import './api/systemTime/systemTime'
+import './api/systemTime/startup'
 import './Connections'
 import './coreSystem'
 import './cronjobs'

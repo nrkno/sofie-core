@@ -10,7 +10,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
-import { unprotectString, getCurrentTime } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import {
 	IAdLibPanelProps,
 	AdLibFetchAndFilterProps,
@@ -28,17 +28,15 @@ import {
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
-import { invalidateAt } from '../../lib/invalidatingTime'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
+import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 
 interface IState {
 	outputLayers: {
@@ -70,11 +68,12 @@ interface DashboardPositionableElement {
 	y: number
 	width: number
 	height: number
+	scale?: number
 }
 
 type AdLibPieceUiWithNext = AdLibPieceUi & { isNext: boolean }
 
-export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
+export function dashboardElementStyle(el: DashboardPositionableElement): React.CSSProperties {
 	return {
 		width:
 			el.width >= 0
@@ -108,6 +107,7 @@ export function dashboardElementPosition(el: DashboardPositionableElement): Reac
 				: el.height < 0
 				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
 				: undefined,
+		fontSize: (el.scale || 1) * 1.5 + 'em',
 	}
 }
 
@@ -483,7 +483,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							'dashboard-panel--take': filter.displayTakeButtons,
 						})}
 						ref={this.setRef}
-						style={dashboardElementPosition(filter)}
+						style={dashboardElementStyle(filter)}
 					>
 						<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
 						{filter.enableSearch && (
@@ -565,68 +565,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		}
 		return null
 	}
-}
-
-export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: DBShowStyleBase) {
-	if (playlist.activationId && playlist.currentPartInstanceId) {
-		return memoizedIsolatedAutorun(
-			(playlistActivationId, currentPartInstanceId, showStyleBase) => {
-				const now = getCurrentTime()
-				let prospectivePieces: PieceInstance[] = []
-
-				const partInstance = PartInstances.findOne(currentPartInstanceId)
-
-				if (partInstance) {
-					prospectivePieces = PieceInstances.find({
-						partInstanceId: currentPartInstanceId,
-						playlistActivationId: playlistActivationId,
-					}).fetch()
-
-					const nowInPart = partInstance.timings?.startedPlayback ? now - partInstance.timings.startedPlayback : 0
-					prospectivePieces = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieces, nowInPart)
-
-					let nearestEnd = Number.POSITIVE_INFINITY
-					prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-						const piece = pieceInstance.piece
-
-						if (!pieceInstance.adLibSourceId && !piece.tags) {
-							// No effect on the data, so ignore
-							return false
-						}
-
-						let end: number | undefined
-						if (pieceInstance.stoppedPlayback) {
-							end = pieceInstance.stoppedPlayback
-						} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
-							end = pieceInstance.userDuration.end
-						} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
-							end = piece.enable.duration + pieceInstance.startedPlayback
-						}
-
-						if (end !== undefined) {
-							if (end > now) {
-								nearestEnd = Math.min(nearestEnd, end)
-								return true
-							} else {
-								return false
-							}
-						}
-						return true
-					})
-
-					if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
-				}
-
-				return prospectivePieces
-			},
-			'getUnfinishedPieceInstancesReactive',
-			playlist.activationId,
-			playlist.currentPartInstanceId,
-			showStyleBase
-		)
-	}
-
-	return []
 }
 
 export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[] {

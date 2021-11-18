@@ -27,7 +27,8 @@ import { MediaManagerIntegration } from './integration/mediaWorkFlows'
 import { MediaWorkFlowId, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import * as MOS from 'mos-connection'
-import { determineDiffTime, getTimeDiff } from './systemTime/systemTime'
+import { determineDiffTime } from './systemTime/systemTime'
+import { getTimeDiff } from './systemTime/api'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
@@ -743,6 +744,13 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	}
 	async dataRundownUpdate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
 		return RundownInput.dataRundownUpdate(this, deviceId, deviceToken, ingestRundown)
+	}
+	async dataRundownMetaDataUpdate(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		ingestRundown: Omit<IngestRundown, 'segments'>
+	) {
+		return RundownInput.dataRundownMetaDataUpdate(this, deviceId, deviceToken, ingestRundown)
 	}
 	async dataSegmentGet(
 		deviceId: PeripheralDeviceId,

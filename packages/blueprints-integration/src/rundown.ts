@@ -5,6 +5,7 @@ import { SomeTimelineContent } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
 import { ActionUserData } from './action'
+import { NoteSeverity } from './lib'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -113,6 +114,13 @@ export interface IBlueprintRundownDBData {
 	airStatus?: string
 }
 
+export interface IBlueprintSegmentRundown<TMetadata = unknown> {
+	externalId: string
+
+	/** Arbitrary data storage for plugins */
+	metaData?: TMetadata
+}
+
 /** The Segment generated from Blueprint */
 export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-presentable name (Slug) for the Title */
@@ -152,6 +160,9 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
+
+	/** Budget duration of this part, in milliseconds */
+	budgetDuration?: number
 
 	/** Whether this segment line supports being used in HOLD */
 	holdMode?: PartHoldMode
@@ -202,12 +213,15 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 *
 	 * @type {{
 	 * 		message: ITranslatableMessage,
+	 *      severity?: NoteSeverity
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
 		message: ITranslatableMessage
+		/** Set the severity of the displayed invalid part note */
+		severity?: NoteSeverity
 		color?: string
 	}
 
