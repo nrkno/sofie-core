@@ -12,7 +12,7 @@ import { Mongo } from 'meteor/mongo'
 import { isTranslatableMessage } from '../TranslatableMessage'
 import { AdLibAction, AdLibActions } from '../../collections/AdLibActions'
 import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
-import { PartId } from '../../collections/Parts'
+import { DBPart, PartId, Parts } from '../../collections/Parts'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../../collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../collections/RundownBaselineAdLibPieces'
 import {
@@ -26,6 +26,8 @@ import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { FindOptions, MongoSelector } from '../../typings/meteor'
 import { RundownId } from '../../collections/Rundowns'
+import _ from 'underscore'
+import { sortAdlibs } from '../../Rundown'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
@@ -50,6 +52,7 @@ type SomeAdLib = RundownBaselineAdLibItem | RundownBaselineAdLibAction | AdLibPi
 interface IWrappedAdLibType<T extends SomeAdLib, typeName extends string> {
 	_id: T['_id']
 	_rank: number
+	partId: PartId | null
 	type: typeName
 	label: string | ITranslatableMessage
 	sourceLayerId?: ISourceLayer['_id']
@@ -64,6 +67,7 @@ function wrapAdLibAction(adLib: AdLibAction, type: 'adLibAction'): IWrappedAdLib
 	return {
 		_id: adLib._id,
 		_rank: adLib.display?._rank || 0,
+		partId: adLib.partId,
 		type: type,
 		label: adLib.display.label,
 		sourceLayerId: (adLib.display as IBlueprintActionManifestDisplayContent).sourceLayerId,
@@ -79,7 +83,8 @@ function wrapRundownBaselineAdLibAction(
 ): IWrappedAdLib {
 	return {
 		_id: adLib._id,
-		_rank: adLib.display?._rank || 0,
+		_rank: adLib.display?._rank ?? 0,
+		partId: adLib.partId ?? null,
 		type: type,
 		label: adLib.display.label,
 		sourceLayerId: (adLib.display as IBlueprintActionManifestDisplayContent).sourceLayerId,
@@ -96,6 +101,7 @@ function wrapAdLibPiece<T extends RundownBaselineAdLibItem | AdLibPiece>(
 	return {
 		_id: adLib._id,
 		_rank: adLib._rank,
+		partId: adLib.partId ?? null,
 		type: type,
 		label: adLib.name,
 		sourceLayerId: adLib.sourceLayerId,
@@ -113,6 +119,7 @@ export type IWrappedAdLib =
 	| {
 			_id: ISourceLayer['_id']
 			_rank: number
+			partId: PartId | null
 			type: 'clearSourceLayer'
 			label: string | ITranslatableMessage
 			sourceLayerId: ISourceLayer['_id']
@@ -123,6 +130,7 @@ export type IWrappedAdLib =
 	| {
 			_id: ISourceLayer['_id']
 			_rank: number
+			partId: PartId | null
 			type: 'sticky'
 			label: string | ITranslatableMessage
 			sourceLayerId: ISourceLayer['_id']
@@ -465,14 +473,6 @@ function compileAdLibPieceFilter(
 	}
 }
 
-function compareLabels(a: string | ITranslatableMessage, b: string | ITranslatableMessage) {
-	const actualA = isTranslatableMessage(a) ? a.key : (a as string)
-	const actualB = isTranslatableMessage(b) ? b.key : (b as string)
-	// can't use .localeCompare, because this needs to be locale-independent and always return
-	// the same sorting order, because that's being relied upon by limit & pick/pickEnd.
-	return actualA >= actualB ? 1 : -1
-}
-
 /**
  * Compile the filter chain and return a reactive function that will return the result set for this adLib filter
  * @param filterChain
@@ -598,7 +598,7 @@ export function compileAdLibFilter(
 		}
 
 		{
-			let skip = adLibPieceTypeFilter.skip
+			let skip = adLibPieceTypeFilter.skip // TODO: should this be adLibActionTypeFilter  ??
 			const currentNextOverride: MongoSelector<AdLibActionType> = {}
 
 			if (partFilter) {
@@ -651,10 +651,21 @@ export function compileAdLibFilter(
 			}
 		}
 
-		let result: IWrappedAdLib[] = []
+		const partMap = new Map<PartId, DBPart>()
+		{
+			if (partFilter?.length) {
+				Parts.find({
+					_id: { $in: partFilter },
+				}).forEach((part) => {
+					partMap.set(part._id, part)
+				})
+			}
+		}
+
+		let adlibs: IWrappedAdLib[] = []
 
 		{
-			result = [
+			adlibs = [
 				...rundownBaselineAdLibItems,
 				...rundownBaselineAdLibActions,
 				...adLibPieces,
@@ -662,21 +673,32 @@ export function compileAdLibFilter(
 				...clearAdLibs,
 				...stickyAdLibs,
 			]
-			result = result.sort((a, b) => a._rank - b._rank || compareLabels(a.label, b.label))
+
+			// Sort the adliba:
+			adlibs = sortAdlibs(
+				adlibs.map((adlib) => ({
+					adlib: adlib,
+					label: adlib.label,
+					adlibRank: adlib._rank,
+					adlibId: adlib._id,
+					partRank: (adlib.partId && partMap.get(adlib.partId))?._rank ?? null,
+					segmentRank: 0, // TODO: should we take the segment rank into account?
+				}))
+			)
 
 			// finalize the process: apply limit and pick
 			if (adLibPieceTypeFilter.limit !== undefined) {
-				result = result.slice(0, adLibPieceTypeFilter.limit)
+				adlibs = adlibs.slice(0, adLibPieceTypeFilter.limit)
 			}
 			if (adLibPieceTypeFilter.pick !== undefined && adLibPieceTypeFilter.pick >= 0) {
-				result = [result[adLibPieceTypeFilter.pick]]
+				adlibs = [adlibs[adLibPieceTypeFilter.pick]]
 			} else if (adLibPieceTypeFilter.pick !== undefined && adLibPieceTypeFilter.pick < 0) {
-				result = [result[result.length + adLibPieceTypeFilter.pick]]
+				adlibs = [adlibs[adlibs.length + adLibPieceTypeFilter.pick]]
 			}
 		}
 
 		// remove any falsy values from the result set
-		return result.filter(Boolean)
+		return adlibs.filter(Boolean)
 	}
 }
 

@@ -61,6 +61,7 @@ import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { getShelfFollowsOnAir, getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { sortAdlibs } from '../../../lib/Rundown'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -700,14 +701,17 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	})
 
 	uiPartSegmentMap.forEach((segment) => {
-		// First sort pieces by their rank:
-		segment.pieces = _.sortBy(segment.pieces, (piece) => piece._rank)
-
-		// Also sort pieces by their part rank:
-		segment.pieces = _.sortBy(segment.pieces, (piece) => {
-			const part = piece.partId && uiPartMap.get(piece.partId)
-			return part?._rank ?? Number.POSITIVE_INFINITY
-		})
+		// Sort the pieces:
+		segment.pieces = sortAdlibs(
+			segment.pieces.map((piece) => ({
+				adlib: piece,
+				label: piece.adlibAction?.display?.label ?? piece.name,
+				adlibRank: piece._rank,
+				adlibId: piece._id,
+				partRank: (piece.partId && uiPartMap.get(piece.partId))?._rank ?? null,
+				segmentRank: segment._rank,
+			}))
+		)
 	})
 
 	let currentRundown: Rundown | undefined = undefined
