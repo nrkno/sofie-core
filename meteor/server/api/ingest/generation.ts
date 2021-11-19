@@ -21,7 +21,7 @@ import { PackageInfo } from '../../coreSystem'
 import { sumChanges, anythingChanged } from '../../lib/database'
 import { logger } from '../../logging'
 import { WrappedShowStyleBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import { CommonContext, SegmentUserContext, ShowStyleUserContext, StudioUserContext } from '../blueprints/context'
+import { SegmentUserContext, ShowStyleUserContext, StudioUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessPieces,
@@ -119,7 +119,7 @@ export async function calculateSegmentsFromIngestData(
 			const context = new SegmentUserContext(
 				{
 					name: `getSegment=${ingestSegment.name}`,
-					identifier: `rundownId=${rundown._id},segmentId=${segmentId}`,
+					identifier: `rundownId=${rundown._id},segmentId=${segmentId}`, // Note - this needs to not include the segmentId, because we want PieceIds to be persistant when moving across segments
 				},
 				cache.Studio.doc,
 				showStyle,
@@ -214,7 +214,6 @@ export async function calculateSegmentsFromIngestData(
 				// Update pieces
 				res.pieces.push(
 					...postProcessPieces(
-						context,
 						blueprintPart.pieces,
 						blueprint.blueprintId,
 						rundown._id,
@@ -226,17 +225,10 @@ export async function calculateSegmentsFromIngestData(
 					)
 				)
 				res.adlibPieces.push(
-					...postProcessAdLibPieces(
-						context,
-						blueprint.blueprintId,
-						rundown._id,
-						part._id,
-						blueprintPart.adLibPieces
-					)
+					...postProcessAdLibPieces(blueprint.blueprintId, rundown._id, part._id, blueprintPart.adLibPieces)
 				)
 				res.adlibActions.push(
 					...postProcessAdLibActions(
-						context,
 						blueprint.blueprintId,
 						rundown._id,
 						part._id,
@@ -517,10 +509,6 @@ export async function updateRundownFromIngestData(
 	const dbRundown = cache.Rundown.replace(dbRundownData)
 
 	// Save the baseline
-	const blueprintRundownContext = new CommonContext({
-		name: dbRundown.name,
-		identifier: `rundownId=${dbRundown._id}`,
-	})
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.timelineObjects.length} objects from baseline.`)
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
@@ -533,7 +521,6 @@ export async function updateRundownFromIngestData(
 				_id: protectString<RundownBaselineObjId>(Random.id(7)),
 				rundownId: dbRundown._id,
 				objects: postProcessRundownBaselineItems(
-					blueprintRundownContext,
 					showStyle.base.blueprintId,
 					rundownRes.baseline.timelineObjects
 				),
@@ -543,23 +530,12 @@ export async function updateRundownFromIngestData(
 		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
 			baselineAdlibPieces,
 			{},
-			postProcessAdLibPieces(
-				blueprintRundownContext,
-				showStyle.base.blueprintId,
-				dbRundown._id,
-				undefined,
-				rundownRes.globalAdLibPieces
-			)
+			postProcessAdLibPieces(showStyle.base.blueprintId, dbRundown._id, undefined, rundownRes.globalAdLibPieces)
 		),
 		saveIntoCache<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
 			baselineAdlibActions,
 			{},
-			postProcessGlobalAdLibActions(
-				blueprintRundownContext,
-				showStyle.base.blueprintId,
-				dbRundown._id,
-				rundownRes.globalActions || []
-			)
+			postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
 		)
 	)
 	if (anythingChanged(rundownBaselineChanges)) {
