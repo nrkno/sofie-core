@@ -3,26 +3,64 @@ import { logger } from './logging'
 import { systemTime } from './lib'
 import { MeteorCall } from './api/methods'
 
-if (Meteor.isServer) {
-	// handled in systemTime
-} else {
-	/** How often the client should sync its time to the server [ms] */
-	const SYNC_TIME = 5 * 60 * 1000 // 5 minutes
+/** How often the client should sync its time to the server [ms] */
+const SYNC_TIME = 5 * 60 * 1000 // 5 minutes
 
-	/** How good time sync quality we should strive for [ms] */
-	const TARGET_TIME_SYNC_QUALITY = 50 // 50 milliseconds
+/** How much we assume a clock to drift over time [time unit per time unit] */
+const ASSUMED_CLOCK_DRIFT = 5 / (3600 * 24) // We assume 5 seconds drift in a day for the system clock
 
-	/** How much we assume a clock to drift over time [time unit per time unit] */
-	const ASSUMED_CLOCK_DRIFT = 5 / (3600 * 24) // We assume 5 seconds drift in a day for the system clock
+/** How good time sync quality we should strive for [ms] */
+const TARGET_TIME_SYNC_QUALITY = 50 // 50 milliseconds
 
-	/** How often the client should check if its time has jumped or been skewed [ms] */
-	const JUMP_CHECK_INTERVAL = 10 * 1000 // 10 seconds
+/** How often we should check if its time has jumped or been skewed [ms] */
+const JUMP_CHECK_INTERVAL = 10 * 1000 // 10 seconds
 
-	const timeJumpDetection = {
-		adjustedTime: Date.now(),
-		monotonicTime: performance.now(),
+export class TimeJumpDetector {
+	private wallTime: number = TimeJumpDetector.getWallTime()
+	private monotonicTime: number = TimeJumpDetector.getMonotonicTime()
+
+	constructor(private jumpCheckInterval: number, private onJumpDetected: () => void) {}
+
+	public start() {
+		Meteor.setInterval(() => {
+			if (Meteor.isServer || Meteor.status().connected) {
+				this.detectTimeJump()
+			}
+		}, this.jumpCheckInterval)
 	}
 
+	private static getWallTime() {
+		return Date.now()
+	}
+
+	private static getMonotonicTime() {
+		return Meteor.isServer ? Number(process.hrtime.bigint() / BigInt(1000000)) : performance.now()
+	}
+
+	private detectTimeJump() {
+		const wallTime = TimeJumpDetector.getWallTime()
+		const monotonicTime = TimeJumpDetector.getMonotonicTime()
+		const currentDiff = wallTime - monotonicTime
+		const previousDiff = this.wallTime - this.monotonicTime
+		const syncDiff = Math.abs(currentDiff - previousDiff)
+		if (syncDiff > TARGET_TIME_SYNC_QUALITY) {
+			logger.verbose(`Time jump or skew of ${Math.round(syncDiff)} ms detected`)
+			this.wallTime = wallTime
+			this.monotonicTime = monotonicTime
+			this.onJumpDetected()
+		}
+	}
+}
+
+if (Meteor.isServer) {
+	// handled in systemTime, but we want to log jumps anyway
+	if (!Meteor.isTest) {
+		Meteor.startup(() => {
+			const timeJumpDetector = new TimeJumpDetector(JUMP_CHECK_INTERVAL * 6, () => {})
+			timeJumpDetector.start()
+		})
+	}
+} else {
 	// fetch time from server:
 	const updateDiffTime = (force?: boolean) => {
 		// Calculate an "adjusted standard deviation", something that increases over time.
@@ -65,20 +103,6 @@ if (Meteor.isServer) {
 		}
 	}
 
-	const detectTimeJump = () => {
-		const adjustedTime = Date.now()
-		const monotonicTime = performance.now()
-		const currentDiff = adjustedTime - monotonicTime
-		const previousDiff = timeJumpDetection.adjustedTime - timeJumpDetection.monotonicTime
-		const syncDiff = Math.abs(currentDiff - previousDiff)
-		if (syncDiff > TARGET_TIME_SYNC_QUALITY) {
-			logger.verbose(`Time jump or skew of ${Math.round(syncDiff)} ms detected`)
-			timeJumpDetection.adjustedTime = adjustedTime
-			timeJumpDetection.monotonicTime = monotonicTime
-			updateDiffTime(true)
-		}
-	}
-
 	Meteor.startup(() => {
 		// Run it once right away:
 		updateDiffTime()
@@ -100,10 +124,7 @@ if (Meteor.isServer) {
 			}
 		}, SYNC_TIME)
 
-		Meteor.setInterval(() => {
-			if (Meteor.status().connected) {
-				detectTimeJump()
-			}
-		}, JUMP_CHECK_INTERVAL)
+		const timeJumpDetector = new TimeJumpDetector(JUMP_CHECK_INTERVAL, () => updateDiffTime(true))
+		timeJumpDetector.start()
 	})
 }
