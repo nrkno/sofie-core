@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import * as VelocityReact from 'velocity-react'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentNote } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -32,6 +31,7 @@ import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
 import { Meteor } from 'meteor/meteor'
 import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
 import { SegmentScrollbar } from './SegmentScrollbar'
+import { OptionalVelocityComponent } from '../../lib/utilComponents'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -251,14 +251,14 @@ export const SegmentStoryboard = React.memo(
 		})
 
 		useEffect(() => {
-			if (props.followLiveLine) {
-				if (nextPartIndex >= 0 && currentPartIndex >= 0) {
-					setScrollLeft(Math.max(0, currentPartIndex * PART_WIDTH - props.liveLineHistorySize))
-				} else if (nextPartIndex >= 0) {
-					setScrollLeft(Math.max(0, nextPartIndex * PART_WIDTH - props.liveLineHistorySize))
-				} else if (currentPartIndex >= 0) {
-					setScrollLeft(Math.max(0, currentPartIndex * PART_WIDTH - props.liveLineHistorySize))
-				}
+			if (!props.followLiveLine) return
+
+			if (nextPartIndex >= 0 && currentPartIndex >= 0) {
+				setScrollLeft(Math.max(0, currentPartIndex * PART_WIDTH - props.liveLineHistorySize))
+			} else if (nextPartIndex >= 0) {
+				setScrollLeft(Math.max(0, nextPartIndex * PART_WIDTH - props.liveLineHistorySize))
+			} else if (currentPartIndex >= 0) {
+				setScrollLeft(Math.max(0, currentPartIndex * PART_WIDTH - props.liveLineHistorySize))
 			}
 		}, [currentPartIndex, nextPartIndex, props.followLiveLine])
 
@@ -319,29 +319,24 @@ export const SegmentStoryboard = React.memo(
 		}, [onRewindSegment, onGoToPart, onGoToPartInstance, onHighlight])
 
 		useLayoutEffect(() => {
-			let resizeObserver: ResizeObserver | undefined
+			if (!listRef.current) return
 
-			if (listRef.current) {
-				const width = getElementWidth(listRef.current)
-				if (width >= 0) {
-					setListWidth(width)
-				}
-
-				resizeObserver = new ResizeObserver((e) => {
-					if (e[0].target === listRef.current) {
-						const width = Math.floor(e[0].contentRect.width || 0)
-						setListWidth(width)
-					}
-				})
-
-				resizeObserver.observe(listRef.current)
+			const width = getElementWidth(listRef.current)
+			if (width >= 0) {
+				setListWidth(width)
 			}
 
-			return () => {
-				if (resizeObserver) {
-					resizeObserver.disconnect()
-					resizeObserver = undefined
+			const resizeObserver = new ResizeObserver((e) => {
+				if (e[0].target === listRef.current) {
+					const width = Math.floor(e[0].contentRect.width || 0)
+					setListWidth(width)
 				}
+			})
+
+			resizeObserver.observe(listRef.current)
+
+			return () => {
+				resizeObserver.disconnect()
 			}
 		}, [listRef.current])
 
@@ -377,7 +372,7 @@ export const SegmentStoryboard = React.memo(
 		}, [])
 
 		const onListPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-			if (e.pointerType === 'mouse' && e.buttons === 0) {
+			if (e.pointerType === 'mouse' && e.buttons === 1) {
 				setGrabbed({
 					clientX: e.clientX,
 					clientY: e.clientY,
@@ -414,55 +409,61 @@ export const SegmentStoryboard = React.memo(
 		}
 
 		useEffect(() => {
-			if (grabbed) {
-				const onListPointerRelease = () => {
+			if (!grabbed) return
+
+			const onListPointerRelease = () => {
+				setGrabbed(null)
+				setAnimateScrollLeft(true)
+			}
+			const onPointerLockChange = () => {
+				if (!document.pointerLockElement) {
 					setGrabbed(null)
 					setAnimateScrollLeft(true)
 				}
-				const onPointerLockChange = () => {
-					if (!document.pointerLockElement) {
-						setGrabbed(null)
-						setAnimateScrollLeft(true)
-					}
-				}
-				const onPointerMove = (e: PointerEvent) => {
-					setScrollLeft((value) => {
-						const newScrollLeft = Math.max(0, Math.min(value - e.movementX, maxScrollLeft))
-						props.onScroll(newScrollLeft, e)
-						return newScrollLeft
-					})
-				}
+			}
+			const onPointerMove = (e: PointerEvent) => {
+				setScrollLeft((value) => {
+					const newScrollLeft = Math.max(0, Math.min(value - e.movementX, maxScrollLeft))
+					props.onScroll(newScrollLeft, e)
+					return newScrollLeft
+				})
+			}
 
-				document.addEventListener('pointerup', onListPointerRelease)
-				document.addEventListener('pointerlockchange', onPointerLockChange)
-				document.addEventListener('pointerlockerror', onListPointerRelease)
-				document.addEventListener('pointermove', onPointerMove)
-				lockPointer()
-				showPointerLockCursor(grabbed.clientX, grabbed.clientY)
+			document.addEventListener('pointerup', onListPointerRelease)
+			document.addEventListener('pointercancel', onListPointerRelease)
+			document.addEventListener('pointerlockchange', onPointerLockChange)
+			document.addEventListener('pointerlockerror', onListPointerRelease)
+			document.addEventListener('pointermove', onPointerMove)
+			lockPointer()
+			showPointerLockCursor(grabbed.clientX, grabbed.clientY)
 
-				return () => {
-					unlockPointer()
-					hidePointerLockCursor()
-					document.removeEventListener('pointerup', onListPointerRelease)
-					document.removeEventListener('pointerlockchange', onPointerLockChange)
-					document.removeEventListener('pointerlockerror', onListPointerRelease)
-					document.removeEventListener('pointermove', onPointerMove)
-				}
+			return () => {
+				unlockPointer()
+				hidePointerLockCursor()
+				document.removeEventListener('pointerup', onListPointerRelease)
+				document.removeEventListener('pointercancel', onListPointerRelease)
+				document.removeEventListener('pointerlockchange', onPointerLockChange)
+				document.removeEventListener('pointerlockerror', onListPointerRelease)
+				document.removeEventListener('pointermove', onPointerMove)
 			}
 		}, [grabbed, renderedParts.length, props.onScroll])
 
 		useLayoutEffect(() => {
 			const segment = innerRef.current
-			if (segment) {
-				segment.addEventListener('wheel', onSegmentWheel, {
-					passive: false,
-				})
+			if (!segment) return
 
-				return () => {
-					segment.removeEventListener('wheel', onSegmentWheel)
-				}
+			segment.addEventListener('wheel', onSegmentWheel, {
+				passive: false,
+			})
+
+			return () => {
+				segment.removeEventListener('wheel', onSegmentWheel)
 			}
 		}, [innerRef.current])
+
+		const onScrollbarChange = useCallback((left: number) => {
+			setScrollLeft(left)
+		}, [])
 
 		return (
 			<div
@@ -580,19 +581,16 @@ export const SegmentStoryboard = React.memo(
 					</div>
 					<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
 					<div className="segment-storyboard__part-list__container" ref={listRef} onPointerDown={onListPointerDown}>
-						<VelocityReact.VelocityComponent
-							animation={
-								animateScrollLeft
-									? {
-											translateX: `-${scrollLeft}px`,
-									  }
-									: undefined
-							}
-							duration={animateScrollLeft ? 100 : 0}
+						<OptionalVelocityComponent
+							animation={{
+								translateX: `-${scrollLeft}px`,
+							}}
+							duration={100}
+							shouldAnimate={animateScrollLeft}
 						>
 							<div
 								className={classNames('segment-storyboard__part-list', {
-									loading: !props.subscriptionsReady,
+									loading: !props.subscriptionsReady /*  */,
 								})}
 								style={!animateScrollLeft ? { transform: `translateX(-${scrollLeft}px)` } : undefined}
 							>
@@ -615,14 +613,18 @@ export const SegmentStoryboard = React.memo(
 									{squishedParts}
 								</div>
 							</div>
-						</VelocityReact.VelocityComponent>
+						</OptionalVelocityComponent>
 						<div className="segment-storyboard__history-shade"></div>
 						<div
 							className={classNames('segment-timeline__zoom-area', {
 								hidden: scrollLeft === 0 && !props.isLiveSegment,
 							})}
 						>
-							<SegmentScrollbar scrollLeft={scrollLeft} maxScrollLeft={maxScrollLeft} />
+							<SegmentScrollbar
+								scrollLeft={scrollLeft}
+								maxScrollLeft={maxScrollLeft}
+								onScrollLeftChange={onScrollbarChange}
+							/>
 						</div>
 					</div>
 				</StudioContext.Provider>

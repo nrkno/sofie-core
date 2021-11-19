@@ -34,6 +34,9 @@ $source-layer-margin: 0.1rem;
 
 	margin-right: $source-layer-margin;
 
+	text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+	font-weight: 400;
+
 	&:last-child {
 		margin-right: 0;
 	}

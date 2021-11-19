@@ -16,7 +16,11 @@
     ],
     "theme_color": "#2d89ef",
     "background_color": "#252627",
-    "display": "minimal-ui",
+    "display": "standalone",
+    "display_override": [
+        "tabbed",
+        "minimal-ui"
+    ],
     "start_url": "/",
     "scope": "/"
 }
