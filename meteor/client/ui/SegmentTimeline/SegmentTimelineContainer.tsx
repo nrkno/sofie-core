@@ -580,7 +580,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
 			const partOffset =
 				nextPartDisplayStartsAt -
-					(this.props.parts.length > 0 ? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] ?? 0 : 0)
+				(this.props.parts.length > 0
+					? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] ?? 0
+					: 0)
 			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
 				this.props.playlist.nextPartInstanceId &&
