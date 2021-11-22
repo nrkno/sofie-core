@@ -6,9 +6,17 @@ interface IProps {
 	scrollLeft: number
 	maxScrollLeft: number
 	onScrollLeftChange?: (scrollLeft: number) => void
+	onScrollStart?: () => void
+	onScrollEnd?: () => void
 }
 
-export function SegmentScrollbar({ scrollLeft, maxScrollLeft, onScrollLeftChange }: IProps) {
+export function SegmentScrollbar({
+	scrollLeft,
+	maxScrollLeft,
+	onScrollLeftChange,
+	onScrollStart,
+	onScrollEnd,
+}: IProps) {
 	const ref = useRef<HTMLDivElement>(null)
 	const [grabbed, setGrabbed] = useState<{ pageX: number; pageY: number; initialScrollLeft: number } | null>(null)
 
@@ -16,6 +24,7 @@ export function SegmentScrollbar({ scrollLeft, maxScrollLeft, onScrollLeftChange
 		e.preventDefault()
 		e.stopPropagation()
 		setGrabbed({ pageX: e.pageX, pageY: e.pageY, initialScrollLeft: scrollLeft })
+		if (onScrollStart) onScrollStart()
 	}
 
 	useEffect(() => {
@@ -25,6 +34,7 @@ export function SegmentScrollbar({ scrollLeft, maxScrollLeft, onScrollLeftChange
 
 		const onPointerUp = () => {
 			setGrabbed(null)
+			if (onScrollEnd) onScrollEnd()
 		}
 		const onPointerMove = (e: PointerEvent) => {
 			if (onScrollLeftChange)

@@ -462,8 +462,16 @@ export const SegmentStoryboard = React.memo(
 		}, [innerRef.current])
 
 		const onScrollbarChange = useCallback((left: number) => {
-			setScrollLeft(left)
+			setScrollLeft(Math.max(0, Math.min(left, maxScrollLeft)))
 		}, [])
+
+		const onScrollbarScrollStart = () => {
+			setAnimateScrollLeft(false)
+		}
+
+		const onScrollbarScrollEnd = () => {
+			setAnimateScrollLeft(true)
+		}
 
 		return (
 			<div
@@ -624,6 +632,8 @@ export const SegmentStoryboard = React.memo(
 								scrollLeft={scrollLeft}
 								maxScrollLeft={maxScrollLeft}
 								onScrollLeftChange={onScrollbarChange}
+								onScrollStart={onScrollbarScrollStart}
+								onScrollEnd={onScrollbarScrollEnd}
 							/>
 						</div>
 					</div>
