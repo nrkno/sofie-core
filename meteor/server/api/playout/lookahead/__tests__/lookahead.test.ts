@@ -281,7 +281,7 @@ describe('Lookahead', () => {
 
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {
 			previous: {
-				partInstance: 'abc' as any,
+				partInstance: { _id: 'abc2', part: { _id: 'abc' } } as any,
 				nowInPart: 987,
 				pieceInstances: ['1', '2'] as any,
 			},
@@ -328,7 +328,7 @@ describe('Lookahead', () => {
 
 		// Add a next
 		partInstancesInfo.next = {
-			partInstance: 'nxt' as any,
+			partInstance: { _id: 'nxt2', part: { _id: 'nxt' } } as any,
 			nowInPart: -85,
 			pieceInstances: ['5'] as any,
 		}

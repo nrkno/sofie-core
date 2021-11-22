@@ -1,13 +1,14 @@
 import * as React from 'react'
 import { PieceGeneric } from '../../../../lib/collections/Pieces'
 import { SplitsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { RundownUtils } from '../../../lib/rundown'
 
 export default class SplitInputIcon extends React.Component<{
 	abbreviation?: string
 	piece?: PieceGeneric
 	hideLabel?: boolean
 }> {
-	getCameraLabel(piece: PieceGeneric | undefined) {
+	private getCameraLabel(piece: PieceGeneric | undefined) {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const camera = c.boxSourceConfiguration.find((i) => i.type === SourceLayerType.CAMERA)
@@ -27,34 +28,20 @@ export default class SplitInputIcon extends React.Component<{
 		}
 	}
 
-	getSourceType(type: SourceLayerType): string {
-		switch (type) {
-			case SourceLayerType.CAMERA:
-				return 'camera'
-			case SourceLayerType.REMOTE:
-				return 'remote'
-			case SourceLayerType.VT:
-				return 'vt'
-			case SourceLayerType.LOCAL:
-				return 'local'
-		}
-		return ''
-	}
-
-	getLeftSourceType(piece: PieceGeneric | undefined): string {
+	private getLeftSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const left = (c.boxSourceConfiguration && c.boxSourceConfiguration[0])?.type || SourceLayerType.CAMERA
-			return this.getSourceType(left)
+			return RundownUtils.getSourceLayerClassName(left)
 		}
 		return 'camera'
 	}
 
-	getRightSourceType(piece: PieceGeneric | undefined): string {
+	private getRightSourceType(piece: PieceGeneric | undefined): string {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const right = (c.boxSourceConfiguration && c.boxSourceConfiguration[1])?.type || SourceLayerType.REMOTE
-			const sourceType = this.getSourceType(right)
+			const sourceType = RundownUtils.getSourceLayerClassName(right)
 			return sourceType + (this.getLeftSourceType(piece) === sourceType ? ' second' : '')
 		}
 		return 'remote'

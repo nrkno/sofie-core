@@ -11,7 +11,6 @@ import { logger } from '../../logging'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
-import { Segment } from '../../../lib/collections/Segments'
 import { GenericDeviceActions } from './genericDevice/actions'
 import {
 	runPlayoutOperationWithLock,
@@ -38,19 +37,6 @@ export namespace IngestActions {
 			return GenericDeviceActions.reloadRundown(device, rundown)
 		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
 			return GenericDeviceActions.reloadRundown(device, rundown)
-		} else {
-			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
-		}
-	}
-
-	export function reloadSegment(rundown: Rundown, segment: Segment): TriggerReloadDataResponse {
-		const device = getPeripheralDeviceFromRundown(rundown)
-
-		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
-			// MOS doesn't support reloading a segment, so do the whole rundown
-			return MOSDeviceActions.reloadRundown(device, rundown)
-		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
-			return GenericDeviceActions.reloadSegment(device, rundown, segment)
 		} else {
 			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
 		}

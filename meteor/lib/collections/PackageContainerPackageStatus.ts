@@ -4,6 +4,7 @@ import { StudioId } from './Studios'
 import { registerIndex } from '../database'
 import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageId } from './ExpectedPackages'
+import { PeripheralDeviceId } from './PeripheralDevices'
 
 /**
  * The PackageContainerPackageStatuses-collection contains statuses about "a Package on a specific PackageContainer"
@@ -27,7 +28,10 @@ export interface PackageContainerPackageStatusDB {
 	containerId: string
 
 	/** The Package this status is for */
-	packageId: string
+	packageId: ExpectedPackageId
+
+	/** Which PeripheralDevice this update came from */
+	deviceId: PeripheralDeviceId
 
 	/** The status of the Package */
 	status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
@@ -45,6 +49,9 @@ registerIndex(PackageContainerPackageStatuses, {
 	studioId: 1,
 	containerId: 1,
 	packageId: 1,
+})
+registerIndex(PackageContainerPackageStatuses, {
+	deviceId: 1,
 })
 
 export function getPackageContainerPackageId(

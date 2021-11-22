@@ -5,7 +5,7 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
-import { SegmentTimelinePart } from '../SegmentTimelinePart'
+import { SegmentTimelinePart } from '../Parts/SegmentTimelinePart'
 
 export const SegmentTimelinePartHoverPreview = ({
 	t,
@@ -22,6 +22,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	isLastInSegment,
 	totalSegmentDuration,
 	parentTimeScale,
+	showDurationSourceLayers,
 }: {
 	t: TFunction
 	showMiniInspector: boolean
@@ -40,6 +41,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	isLastInSegment: boolean
 	totalSegmentDuration: number
 	parentTimeScale: number
+	showDurationSourceLayers?: Set<string>
 }) => {
 	const [miniInspectorEl, setMiniInnspectorEl] = useState<HTMLDivElement | null>(null)
 	const [containOffset, setContainOffset] = useState(0)
@@ -95,6 +97,7 @@ export const SegmentTimelinePartHoverPreview = ({
 							part={part}
 							isPreview={true}
 							isBudgetGap={false}
+							showDurationSourceLayers={showDurationSourceLayers}
 						/>
 					)
 				})}
@@ -122,6 +125,7 @@ export const SegmentTimelinePartHoverPreview = ({
 						isPreview={true}
 						cropDuration={followingPartPreviewDuration}
 						isBudgetGap={false}
+						showDurationSourceLayers={showDurationSourceLayers}
 					/>
 				)}
 				{!followingPart && isLastInSegment && (

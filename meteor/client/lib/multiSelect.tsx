@@ -229,7 +229,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 								style={style}
 								data-placement={placement}
 								className={ClassNames(
-									'expco subtle expco-popper',
+									'expco subtle expco-popper dropdown',
 									{
 										'expco-expanded': this.state.expanded,
 									},

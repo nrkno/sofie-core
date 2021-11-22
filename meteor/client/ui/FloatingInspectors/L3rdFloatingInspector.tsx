@@ -1,15 +1,12 @@
 import React from 'react'
 import * as _ from 'underscore'
-import { useTranslation } from 'react-i18next'
+// import { useTranslation } from 'react-i18next'
 
-import { RundownUtils } from '../../lib/rundown'
-import Moment from 'react-moment'
-
-import { PieceLifespan, NoraContent } from '@sofie-automation/blueprints-integration'
+import { NoraContent, GraphicsContent } from '@sofie-automation/blueprints-integration'
 
 import { NoraFloatingInspector } from './NoraFloatingInspector'
 import { FloatingInspector } from '../FloatingInspector'
-import { Time } from '../../../lib/lib'
+// import { Time } from '../../../lib/lib'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
 interface IProps {
@@ -18,7 +15,7 @@ interface IProps {
 	pieceRenderedIn: number | null
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	content: NoraContent | undefined
+	content: GraphicsContent | NoraContent | undefined
 	floatingInspectorStyle: React.CSSProperties
 	typeClass?: string
 	displayOn?: 'document' | 'viewport'
@@ -27,18 +24,20 @@ interface IProps {
 type KeyValue = { key: string; value: string }
 
 export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
-	content: noraContent,
+	content,
 	floatingInspectorStyle,
 	showMiniInspector,
 	itemElement,
 	piece,
-	pieceRenderedIn,
-	pieceRenderedDuration,
+	// pieceRenderedIn,
+	// pieceRenderedDuration,
 	typeClass,
 	displayOn,
 }) => {
-	const { t } = useTranslation()
-	const innerPiece = piece
+	// const { t } = useTranslation()
+	// const innerPiece = piece
+
+	const noraContent = (content as NoraContent)?.payload?.content ? (content as NoraContent | undefined) : undefined
 
 	let properties: Array<KeyValue> = []
 	if (noraContent && noraContent.payload && noraContent.payload.content) {
@@ -74,10 +73,14 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		) as Array<KeyValue>
 	}
 
-	const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
+	// const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
 
-	const templateName = noraContent?.payload?.metadata?.templateName
-	const templateVariant = noraContent?.payload?.metadata?.templateVariant
+	const graphicContent = (content as GraphicsContent)?.fileName ? (content as GraphicsContent | undefined) : undefined
+
+	const templateName = noraContent?.payload?.metadata?.templateName ?? piece.name
+	const templateVariant =
+		noraContent?.payload?.metadata?.templateVariant ??
+		(piece.name !== graphicContent?.fileName ? graphicContent?.fileName : undefined)
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector && !!itemElement ? (
@@ -88,8 +91,13 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle}>
 				{templateName && (
 					<div className="mini-inspector__header">
-						{templateName}
-						{templateVariant && <span className="mini-inspector__sub-header">{templateVariant}</span>}
+						<span>{templateName}</span>
+						{templateVariant && (
+							<>
+								{'\u2002' /* en-space for rythm */}
+								<span className="mini-inspector__sub-header">{templateVariant}</span>
+							</>
+						)}
 					</div>
 				)}
 				<table>
@@ -100,7 +108,9 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 								<td className="mini-inspector__value">{item.value}</td>
 							</tr>
 						))}
-						<tr>
+						{/* Disable the timing information for now, since it's not being used.
+							To be eventually removed, if noone complains -- Jan Starzak, 2021/09/30
+							<tr>
 							<td className="mini-inspector__row--timing"></td>
 							<td className="mini-inspector__row--timing">
 								<span className="mini-inspector__in-point">
@@ -141,7 +151,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 									</span>
 								)}
 							</td>
-						</tr>
+						</tr> */}
 					</tbody>
 				</table>
 			</div>

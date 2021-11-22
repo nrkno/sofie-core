@@ -29,7 +29,6 @@ describe('Expected Media Items', () => {
 	const rdExtId0 = 'rundown0'
 	const rdExtId1 = 'rundown1'
 	let rdId0: RundownId = protectString('rundown0')
-	// let rdId1: RundownId = protectString('rundown1')
 	const mockPart0: PartId = protectString('mockPart0')
 	const mockPiece0: PieceId = protectString('mockPiece0')
 	const mockPart1: PartId = protectString('mockPart1')

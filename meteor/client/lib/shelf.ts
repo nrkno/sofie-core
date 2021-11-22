@@ -1,4 +1,5 @@
 import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import _ from 'underscore'
 import { AdLibAction } from '../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { PartInstance } from '../../lib/collections/PartInstances'
@@ -7,7 +8,7 @@ import { PieceId } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ScanInfoForPackages } from '../../lib/mediaObjects'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
@@ -36,27 +37,7 @@ export interface AdlibSegmentUi extends DBSegment {
 	isNext: boolean
 }
 
-export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
-	if (
-		unfinishedAdLibIds.includes(adLib._id) ||
-		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
-}
-
-export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi) {
-	if (
-		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
-}
-
-export function getNextPiecesReactive(showsStyleBase: ShowStyleBase, playlist: RundownPlaylist): PieceInstance[] {
+export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase: ShowStyleBase): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (playlist.activationId && playlist.nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
@@ -91,15 +72,34 @@ export function getNextPiecesReactive(showsStyleBase: ShowStyleBase, playlist: R
 	return prospectivePieceInstances
 }
 
+export function getUnfinishedPieceInstancesGrouped(
+	playlist: RundownPlaylist,
+	showStyleBase: DBShowStyleBase
+): { unfinishedPieceInstances: PieceInstance[]; unfinishedAdLibIds: PieceId[]; unfinishedTags: string[] } {
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
+
+	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
+		.filter((piece) => !!piece.adLibSourceId)
+		.map((piece) => piece.adLibSourceId!)
+	const unfinishedTags: string[] = _.uniq(
+		unfinishedPieceInstances
+			.filter((piece) => !!piece.piece.tags)
+			.map((piece) => piece.piece.tags!)
+			.reduce((a, b) => a.concat(b), [])
+	)
+
+	return {
+		unfinishedPieceInstances,
+		unfinishedAdLibIds,
+		unfinishedTags,
+	}
+}
+
 export function getNextPieceInstancesGrouped(
-	showStyleBase: ShowStyleBase,
-	playlist: RundownPlaylist
-): {
-	nextAdLibIds: PieceId[]
-	nextTags: string[]
-	nextPieceInstances: PieceInstance[]
-} {
-	const nextPieceInstances = getNextPiecesReactive(showStyleBase, playlist)
+	playlist: RundownPlaylist,
+	showsStyleBase: DBShowStyleBase
+): { nextAdLibIds: PieceId[]; nextTags: string[]; nextPieceInstances: PieceInstance[] } {
+	const nextPieceInstances = getNextPiecesReactive(playlist, showsStyleBase)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -112,26 +112,28 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function getUnfinishedPieceInstancesGrouped(playlist: RundownPlaylist): {
-	unfinishedPieceInstances: PieceInstance[]
-	unfinishedAdLibIds: PieceId[]
-	unfinishedTags: string[]
-} {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, false)
-
-	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.adLibSourceId)
-		.map((piece) => piece.adLibSourceId!)
-	const unfinishedTags: string[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
-
-	return {
-		unfinishedPieceInstances,
-		unfinishedAdLibIds,
-		unfinishedTags,
+export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+	if (
+		unfinishedAdLibIds.includes(adLib._id) ||
+		(adLib.currentPieceTags &&
+			adLib.currentPieceTags.length > 0 &&
+			adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
+	) {
+		return true
 	}
+	return false
+}
+
+export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi) {
+	if (
+		nextAdLibIds.includes(adLib._id) ||
+		(adLib.nextPieceTags &&
+			adLib.nextPieceTags.length > 0 &&
+			adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
+	) {
+		return true
+	}
+	return false
 }
 
 export function isAdLibDisplayedAsOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {

@@ -232,11 +232,12 @@ export const AdLibRegionPanel = translateWithTracker<
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()
 		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
-			props.playlist
+			props.playlist,
+			props.showStyleBase
 		)
 		const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
-			props.showStyleBase,
-			props.playlist
+			props.playlist,
+			props.showStyleBase
 		)
 
 		// Pick thumbnails to display

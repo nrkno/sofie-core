@@ -18,7 +18,7 @@ import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { Studios, StudioId } from '../lib/collections/Studios'
-import { logger } from './logging'
+import { logger, LogLevel, setLogLevel } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
 import { pushWorkToQueue } from './codeControl'
@@ -67,9 +67,9 @@ function initializeCoreSystem() {
 	// Monitor database changes:
 	const systemCursor = getCoreSystemCursor()
 	systemCursor.observeChanges({
-		added: checkDatabaseVersions,
-		changed: checkDatabaseVersions,
-		removed: checkDatabaseVersions,
+		added: onCoreSystemChanged,
+		changed: onCoreSystemChanged,
+		removed: onCoreSystemChanged,
 	})
 
 	const observeBlueprintChanges = () => {
@@ -188,6 +188,10 @@ function checkDatabaseVersions() {
 		})
 		lastDatabaseVersionBlueprintIds = blueprintIds
 	}
+}
+function onCoreSystemChanged() {
+	checkDatabaseVersions()
+	updateLoggerLevel()
 }
 
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -391,11 +395,19 @@ function startInstrumenting() {
 		})
 	}
 }
+function updateLoggerLevel() {
+	const coreSystem = getCoreSystem()
+
+	if (coreSystem) {
+		setLogLevel(coreSystem.logLevel || LogLevel.SILLY)
+	}
+}
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		startupMessage()
 		initializeCoreSystem()
 		startInstrumenting()
+		updateLoggerLevel()
 	}
 })

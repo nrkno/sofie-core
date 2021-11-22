@@ -716,7 +716,7 @@ export interface RundownTimingContext {
 	/** Time when selected segments started playback. Contains only the current segment and the segment before, if we've just entered a new one */
 	segmentStartedPlayback?: Record<string, number>
 	/** Remaining time on current part */
-	remainingTimeOnCurrentPart?: number | undefined
+	remainingTimeOnCurrentPart?: number
 	/** Current part will autoNext */
 	currentPartWillAutoNext?: boolean
 	/** Current time of this calculation */
@@ -747,9 +747,13 @@ export function computeSegmentDuration(
 
 	return partIds.reduce((memo, partId) => {
 		const pId = unprotectString(partId)
-		const partDuration =
-			(partDurations ? (partDurations[pId] !== undefined ? partDurations[pId] : 0) : 0) ||
-			(display ? Settings.defaultDisplayDuration : 0)
+		let partDuration: number = 0
+		if (partDurations && partDurations[pId] !== undefined) {
+			partDuration = partDurations[pId]
+		}
+		if (!partDuration && display) {
+			partDuration = Settings.defaultDisplayDuration
+		}
 		return memo + partDuration
 	}, 0)
 }

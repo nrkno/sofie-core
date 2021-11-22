@@ -30,7 +30,8 @@ export interface BucketAdLibAction extends Omit<IBlueprintActionManifest, 'partI
 
 	// How this AdLib Action should be displayed to the User
 	display: IBlueprintActionManifest['display'] & {
-		label: ITranslatableMessage
+		// this property can be a string if the name is modified by the User
+		label: ITranslatableMessage | string
 		triggerLabel?: ITranslatableMessage
 		description?: ITranslatableMessage
 	}

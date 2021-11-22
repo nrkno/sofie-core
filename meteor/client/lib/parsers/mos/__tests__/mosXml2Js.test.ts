@@ -2,25 +2,6 @@ import { parseMosPluginMessageXml, fixMosData, generateMosPluginItemXml } from '
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-// function stripEmptyStrings(obj: any) {
-// 	if (_.isObject(obj)) {
-// 		const res = {}
-
-// 		for (const key in obj) {
-// 			if (Object.prototype.hasOwnProperty.call(obj, key)) {
-// 				const element = obj[key]
-// 				if (element !== '' || key === 'ObjectID') {
-// 					res[key] = element
-// 				}
-// 			}
-// 		}
-
-// 		return res
-// 	} else {
-// 		return obj
-// 	}
-// }
-
 describe('MOS XML to JavaScript object parser', () => {
 	describe('mosXml2Js', () => {
 		describe('Sample1', () => {

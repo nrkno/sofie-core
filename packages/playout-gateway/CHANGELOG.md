@@ -3,7 +3,151 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.37.0-in-testing.13](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-testing.12...v1.37.0-in-testing.13) (2021-11-02)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.37.0-in-testing.11](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-4...v1.37.0-in-testing.11) (2021-10-22)
+
+
+### Bug Fixes
+
+* add option on each device to debug-log that separately ([bc113b6](https://github.com/nrkno/tv-automation-server-core/commit/bc113b609eb964be5ea5ce88c9ab194ba3053f79))
+* don't emit slowFullfilledCommands as errors ([7b9b2ef](https://github.com/nrkno/tv-automation-server-core/commit/7b9b2ef1e7383a1d53584da492d666ff14fcd1e1))
+* PGW update TSR dep ([264b136](https://github.com/nrkno/tv-automation-server-core/commit/264b1362a714d599f31387bb5ca2699a7928ad84))
+* Playout-gateway: Improved debug-logging of devices ([a18dc70](https://github.com/nrkno/tv-automation-server-core/commit/a18dc7042baaa68eaca9b789c2c7abdcc7c69551))
+* Playout-gateway: update TSR dep (possible fix for quantel-rename port issue) ([7be8b3c](https://github.com/nrkno/tv-automation-server-core/commit/7be8b3c0f771a60b1682a5e31aded308364d1d9c))
+* **playout-gateway:** add option purgeUnknownElements, introduced in TSR ([9cd9e7c](https://github.com/nrkno/tv-automation-server-core/commit/9cd9e7c251ee2b17c5c31e2a229dfc3044266fd4))
+* prevent tsr going into init loop ([cca5b48](https://github.com/nrkno/tv-automation-server-core/commit/cca5b480f8060dcd70a94f55b6b636e66f1ff1ab))
+* single setTimeout for triggerUpdateDevice ([1031cbd](https://github.com/nrkno/tv-automation-server-core/commit/1031cbdbfb4a36f87ec4b2420b74677880c724b2))
+* update node version in docker to 12.22.6 ([4c0fe5e](https://github.com/nrkno/tv-automation-server-core/commit/4c0fe5e5a67dc482e092e052e48e463648dda7f1))
+* update tsr for atem-state ([94d2482](https://github.com/nrkno/tv-automation-server-core/commit/94d2482e9f846a46cbb9f10ab100107ef4a3239f))
+
+
+### Features
+
+* add sisyfos channel by label mapping ([6e6d997](https://github.com/nrkno/tv-automation-server-core/commit/6e6d997a848f8942a61e145d85acd52acdb41565))
+
+
+
+# [1.37.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
+
+
+### Bug Fixes
+
+* add missing TSR device options and layer mapping options ([#552](https://github.com/nrkno/tv-automation-server-core/issues/552)) ([3632509](https://github.com/nrkno/tv-automation-server-core/commit/3632509291c92343e629112a84799cceefac26a0))
+
+
+
 # [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+
+
+
+# [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
+
+
+
+# [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
+
+
+
+# [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
+
+
+
+# [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
+
+
+### Features
+
+* rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
+
+
+
+
+
+# [1.37.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
+
+
+### Bug Fixes
+
+* add missing TSR device options and layer mapping options ([#552](https://github.com/nrkno/tv-automation-server-core/issues/552)) ([3632509](https://github.com/nrkno/tv-automation-server-core/commit/3632509291c92343e629112a84799cceefac26a0))
+
+
+
+# [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+
+
+
+# [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
+
+
+
+# [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
+
+
+
+# [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
+
+
+
+# [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
+
+
+
+# [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
+
+
+### Features
+
+* rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
+
+
+
+
+
+# [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+## [1.35.1-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.35.1-3) (2021-09-07)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.35.1-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.35.1-2) (2021-08-10)
 
 **Note:** Version bump only for package playout-gateway
 

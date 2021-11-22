@@ -120,6 +120,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								panel={panel}
 								layout={rundownLayout}
 								playlist={props.playlist}
+								showStyleBase={props.showStyleBase}
 								visible={true}
 							/>
 						) : RundownLayoutsAPI.isPlaylistStartTimer(panel) ? (
@@ -127,7 +128,13 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 						) : RundownLayoutsAPI.isPlaylistEndTimer(panel) ? (
 							<PlaylistEndTimerPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						) : RundownLayoutsAPI.isEndWords(panel) ? (
-							<EndWordsPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+							<EndWordsPanel
+								key={panel._id}
+								playlist={props.playlist}
+								showStyleBase={props.showStyleBase}
+								layout={rundownLayout}
+								panel={panel}
+							/>
 						) : RundownLayoutsAPI.isSegmentTiming(panel) ? (
 							<SegmentTimingPanel
 								key={panel._id}
@@ -137,7 +144,13 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								showStyleBase={props.showStyleBase}
 							/>
 						) : RundownLayoutsAPI.isPartTiming(panel) ? (
-							<PartTimingPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+							<PartTimingPanel
+								key={panel._id}
+								playlist={props.playlist}
+								showStyleBase={props.showStyleBase}
+								layout={rundownLayout}
+								panel={panel}
+							/>
 						) : RundownLayoutsAPI.isTextLabel(panel) ? (
 							<TextLabelPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						) : RundownLayoutsAPI.isPlaylistName(panel) ? (
@@ -182,14 +195,6 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								showStyleBase={props.showStyleBase}
 								layout={rundownLayout}
 								panel={panel}
-							/>
-						) : RundownLayoutsAPI.isPieceCountdown(panel) ? (
-							<PieceCountdownPanel
-								key={panel._id}
-								panel={panel}
-								layout={rundownLayout}
-								playlist={props.playlist}
-								visible={true}
 							/>
 						) : RundownLayoutsAPI.isNextInfo(panel) ? (
 							<NextInfoPanel

@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import * as React from 'react'
 
-export { multilineText, isEventInInputField, loadScript }
+export { multilineText, isEventInInputField }
 
 function multilineText(txt: string) {
 	return _.map((txt + '').split('\n'), (line: string, i) => {
@@ -23,54 +23,12 @@ export function isTouchDevice(): boolean {
 	if (touchDeviceCache !== undefined) return touchDeviceCache
 
 	touchDeviceCache = false
-	if (window.matchMedia('(pointer: coarse)').matches) {
+	if (window.matchMedia('(any-pointer: coarse)').matches) {
 		touchDeviceCache = true
 	}
 	return touchDeviceCache
 }
 
-const loadScriptCache: {
-	[url: string]: {
-		status: 'loading' | 'ok'
-		callbacks: Array<(err?: any) => void>
-	}
-} = {}
-
-function doCallback(url: string, err?: any) {
-	loadScriptCache[url].callbacks.forEach((cb) => {
-		cb(err)
-	})
-	loadScriptCache[url].status = 'ok'
-}
-
-function loadScript(url: string, callback: (err?: any) => void) {
-	if ((loadScriptCache[url] || {}).status === 'ok') {
-		// already loaded
-		callback()
-		return
-	}
-
-	if ((loadScriptCache[url] || {}).status === 'loading') {
-		loadScriptCache[url].callbacks.push(callback)
-		return
-	}
-
-	loadScriptCache[url] = {
-		status: 'loading',
-		callbacks: [callback],
-	}
-
-	const script: HTMLScriptElement = document.createElement('script')
-	script.onerror = (error) => {
-		doCallback(url, error)
-	}
-	script.onload = () => {
-		doCallback(url)
-	}
-
-	document.head.appendChild(script)
-	script.src = url
-}
 /**
  * Wrapper around fetch(), which doesn't rejects the promise if the result is an error
  */

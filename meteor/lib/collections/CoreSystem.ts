@@ -1,5 +1,5 @@
 import { FindOptions } from '../typings/meteor'
-import { registerCollection, ProtectedString, protectString } from '../lib'
+import { registerCollection, ProtectedString, protectString, LogLevel } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import * as semver from 'semver'
@@ -71,6 +71,9 @@ export interface ICoreSystem {
 
 	/** A user-defined name for the installation */
 	name?: string
+
+	/** What log-level to set. Defaults to SILLY */
+	logLevel?: LogLevel
 
 	/** Service messages currently valid for this instance */
 	serviceMessages: {

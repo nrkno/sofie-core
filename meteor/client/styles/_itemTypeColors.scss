@@ -13,392 +13,249 @@ $segment-layer-background-remote: #e80064;
 $segment-layer-background-remote--second: darken($segment-layer-background-remote, 10%);
 $segment-layer-background-vt: #0a20ed;
 $segment-layer-background-vt--second: darken($segment-layer-background-vt, 10%);
-$segment-layer-background-local: #8d1010;
-$segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
 $segment-layer-background-script: #003600;
 $segment-layer-background-mic: #1e6820;
 $segment-layer-background-guest: #008a92;
+$segment-layer-background-local: #ba00e8;
+$segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
+
+$layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'remote', 'vt', 'local', 'script', 'mic',
+	'guest';
 
 @mixin item-type-text-outline($selectors) {
-	&.camera {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-camera),
-				-1px 1px 1px var(--segment-layer-background-camera), -1px -1px 1px var(--segment-layer-background-camera),
-				1px 1px 1px var(--segment-layer-background-camera), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-
-		&.second {
+	@each $layer-type in $layer-types {
+		&.#{$layer-type} {
 			#{$selectors} {
-				text-shadow: 1px -1px 1px var(--segment-layer-background-camera--second),
-					-1px 1px 1px var(--segment-layer-background-camera--second),
-					-1px -1px 1px var(--segment-layer-background-camera--second),
-					1px 1px 1px var(--segment-layer-background-camera--second), 1px 1px 3px rgba(0, 0, 0, 1),
+				text-shadow: 1px -1px 1px var(--segment-layer-background-#{$layer-type}),
+					-1px 1px 1px var(--segment-layer-background-#{$layer-type}),
+					-1px -1px 1px var(--segment-layer-background-#{$layer-type}),
+					1px 1px 1px var(--segment-layer-background-#{$layer-type}), 1px 1px 3px rgba(0, 0, 0, 1),
 					1px 1px 8px rgba(0, 0, 0, 1);
 			}
-		}
-	}
 
-	&.graphics {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-graphics),
-				-1px 1px 1px var(--segment-layer-background-graphics), -1px -1px 1px var(--segment-layer-background-graphics),
-				1px 1px 1px var(--segment-layer-background-graphics), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-
-		&.second {
-			#{$selectors} {
-				text-shadow: 1px -1px 1px var(--segment-layer-background-graphics--second),
-					-1px 1px 1px var(--segment-layer-background-graphics--second),
-					-1px -1px 1px var(--segment-layer-background-graphics--second),
-					1px 1px 1px var(--segment-layer-background-graphics--second), 1px 1px 3px rgba(0, 0, 0, 1),
-					1px 1px 8px rgba(0, 0, 0, 1);
+			&.second {
+				#{$selectors} {
+					text-shadow: 1px -1px 1px var(--segment-layer-background-#{$layer-type}--second),
+						-1px 1px 1px var(--segment-layer-background-#{$layer-type}--second),
+						-1px -1px 1px var(--segment-layer-background-#{$layer-type}--second),
+						1px 1px 1px var(--segment-layer-background-#{$layer-type}--second), 1px 1px 3px rgba(0, 0, 0, 1),
+						1px 1px 8px rgba(0, 0, 0, 1);
+				}
 			}
-		}
-	}
-
-	&.lower-third {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-lower-third),
-				-1px 1px 1px var(--segment-layer-background-lower-third),
-				-1px -1px 1px var(--segment-layer-background-lower-third),
-				1px 1px 1px var(--segment-layer-background-lower-third), 1px 1px 3px rgba(0, 0, 0, 1),
-				1px 1px 8px rgba(0, 0, 0, 1);
-		}
-
-		&.second {
-			#{$selectors} {
-				text-shadow: 1px -1px 1px var(--segment-layer-background-lower-third--second),
-					-1px 1px 1px var(--segment-layer-background-lower-third--second),
-					-1px -1px 1px var(--segment-layer-background-lower-third--second),
-					1px 1px 1px var(--segment-layer-background-lower-third--second), 1px 1px 3px rgba(0, 0, 0, 1),
-					1px 1px 8px rgba(0, 0, 0, 1);
-			}
-		}
-	}
-
-	&.live-speak {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-live-speak),
-				-1px 1px 1px var(--segment-layer-background-live-speak),
-				-1px -1px 1px var(--segment-layer-background-live-speak), 1px 1px 1px var(--segment-layer-background-live-speak),
-				1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-
-		&.second {
-			#{$selectors} {
-				text-shadow: 1px -1px 1px var(--segment-layer-background-live-speak--second),
-					-1px 1px 1px var(--segment-layer-background-live-speak--second),
-					-1px -1px 1px var(--segment-layer-background-live-speak--second),
-					1px 1px 1px var(--segment-layer-background-live-speak--second), 1px 1px 3px rgba(0, 0, 0, 1),
-					1px 1px 8px rgba(0, 0, 0, 1);
-			}
-		}
-	}
-
-	&.vt {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-vt), -1px 1px 1px var(--segment-layer-background-vt),
-				-1px -1px 1px var(--segment-layer-background-vt), 1px 1px 1px var(--segment-layer-background-vt),
-				1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-
-		&.second {
-			#{$selectors} {
-				text-shadow: 1px -1px 1px var(--segment-layer-background-vt--second),
-					-1px 1px 1px var(--segment-layer-background-vt--second),
-					-1px -1px 1px var(--segment-layer-background-vt--second),
-					1px 1px 1px var(--segment-layer-background-vt--second), 1px 1px 3px rgba(0, 0, 0, 1),
-					1px 1px 8px rgba(0, 0, 0, 1);
-			}
-		}
-	}
-
-	&.remote {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-remote),
-				-1px 1px 1px var(--segment-layer-background-remote), -1px -1px 1px var(--segment-layer-background-remote),
-				1px 1px 1px var(--segment-layer-background-remote), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-
-		&.second {
-			#{$selectors} {
-				text-shadow: 1px -1px 1px var(--segment-layer-background-remote--second),
-					-1px 1px 1px var(--segment-layer-background-remote--second),
-					-1px -1px 1px var(--segment-layer-background-remote--second),
-					1px 1px 1px var(--segment-layer-background-remote--second), 1px 1px 3px rgba(0, 0, 0, 1),
-					1px 1px 8px rgba(0, 0, 0, 1);
-			}
-		}
-	}
-
-	&.local {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-local),
-				-1px 1px 1px var(--segment-layer-background-local), -1px -1px 1px var(--segment-layer-background-local),
-				1px 1px 1px var(--segment-layer-background-local), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-
-		&.second {
-			#{$selectors} {
-				text-shadow: 1px -1px 1px var(--segment-layer-background-local--second),
-					-1px 1px 1px var(--segment-layer-background-local--second),
-					-1px -1px 1px var(--segment-layer-background-local--second),
-					1px 1px 1px var(--segment-layer-background-local--second), 1px 1px 3px rgba(0, 0, 0, 1),
-					1px 1px 8px rgba(0, 0, 0, 1);
-			}
-		}
-	}
-
-	&.script {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-script),
-				-1px 1px 1px var(--segment-layer-background-script), -1px -1px 1px var(--segment-layer-background-script),
-				1px 1px 1px var(--segment-layer-background-script), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-	}
-
-	&.mic {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-guest),
-				-1px 1px 1px var(--segment-layer-background-guest), -1px -1px 1px var(--segment-layer-background-guest),
-				1px 1px 1px var(--segment-layer-background-guest), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
-		}
-	}
-
-	&.unknown {
-		#{$selectors} {
-			text-shadow: 1px -1px 1px var(--segment-layer-background-unknown),
-				-1px 1px 1px var(--segment-layer-background-unknown), -1px -1px 1px var(--segment-layer-background-unknown),
-				1px 1px 1px var(--segment-layer-background-unknown), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
 		}
 	}
 }
 
 @mixin item-type-colors {
-	&.camera {
-		background: var(--segment-layer-background-camera);
+	@each $layer-type in $layer-types {
+		&.#{$layer-type} {
+			background: var(--segment-layer-background-#{$layer-type});
 
-		&.second {
-			background: var(--segment-layer-background-camera--second);
+			&.second {
+				background: var(--segment-layer-background-#{$layer-type}--second);
+			}
+		}
+	}
+}
+
+@mixin piece-colors {
+	&:not(.super-infinite) {
+		@include item-type-colors();
+
+		&.disabled {
+			background: $segment-item-disabled-background;
+			color: $segment-item-disabled-color;
 		}
 	}
 
-	&.graphics {
-		background: var(--segment-layer-background-graphics);
+	&.super-infinite {
+		@each $layer-type in $layer-types {
+			&.#{$layer-type} {
+				--infinite-piece-background-image: linear-gradient(
+					to bottom,
+					var(--segment-layer-background-#{$layer-type}),
+					var(--segment-layer-background-#{$layer-type}) var(--infinite-piece-background-line-height, 4px),
+					transparent var(--infinite-piece-background-line-height, 4px)
+				);
+				--infinite-piece-background-image--second: linear-gradient(
+					to bottom,
+					var(--segment-layer-background-#{$layer-type}--second),
+					var(--segment-layer-background-#{$layer-type}--second) var(--infinite-piece-background-line-height, 4px),
+					transparent var(--infinite-piece-background-line-height, 4px)
+				);
 
-		&.second {
-			background: var(--segment-layer-background-graphics--second);
+				background: none;
+				background-image: var(--infinite-piece-background-image);
+				background-size: 1px var(--segment-layer-height), 0 0;
+				background-repeat: repeat-x, no-repeat;
+				background-position: 0 0, 0 0;
+
+				&.second {
+					background-image: var(--infinite-piece-background-image--second);
+					background-size: 1px var(--segment-layer-height), 0 0;
+					background-repeat: repeat-x, no-repeat;
+					background-position: 0 0, 0 0;
+				}
+			}
+
+			&.disabled {
+				--infinite-piece-background-image: linear-gradient(
+					to bottom,
+					#{$segment-item-disabled-background},
+					#{$segment-item-disabled-background} var(--infinite-piece-background-line-height, 4px),
+					transparent var(--infinite-piece-background-line-height, 4px)
+				);
+
+				color: $segment-item-disabled-color;
+			}
 		}
-	}
 
-	&.lower-third {
-		background: var(--segment-layer-background-lower-third);
+		&.infinite-starts {
+			padding-left: calc(var(--segment-layer-height) / 2);
 
-		&.second {
-			background: var(--segment-layer-background-lower-third--second);
+			@each $layer-type in $layer-types {
+				&.#{$layer-type} {
+					--infinite-piece-starts-background-image: linear-gradient(
+						135deg,
+						var(--segment-layer-background-#{$layer-type}),
+						var(--segment-layer-background-#{$layer-type}) calc(var(--segment-layer-height) / 2),
+						transparent calc(var(--segment-layer-height) / 2)
+					);
+
+					background: none;
+					background-image: var(--infinite-piece-background-image), var(--infinite-piece-starts-background-image);
+					background-size: 1px var(--segment-layer-height), var(--segment-layer-height) var(--segment-layer-height);
+					background-repeat: repeat-x, no-repeat;
+
+					&.second {
+						--infinite-piece-starts-background-image: linear-gradient(
+							135deg,
+							var(--segment-layer-background-#{$layer-type}--second),
+							var(--segment-layer-background-#{$layer-type}--second) calc(var(--segment-layer-height) / 2),
+							transparent calc(var(--segment-layer-height) / 2)
+						);
+
+						background-image: var(--infinite-piece-background-image--second),
+							var(--infinite-piece-starts-background-image);
+						background-size: 1px var(--segment-layer-height), var(--segment-layer-height) var(--segment-layer-height);
+						background-repeat: repeat-x, no-repeat;
+					}
+				}
+			}
+
+			&.disabled {
+				--infinite-piece-starts-background-image: linear-gradient(
+					135deg,
+					#{$segment-item-disabled-background},
+					#{$segment-item-disabled-background} calc(var(--segment-layer-height) / 2),
+					transparent calc(var(--segment-layer-height) / 2)
+				);
+				--infinite-piece-background-image: linear-gradient(
+					to bottom,
+					#{$segment-item-disabled-background},
+					#{$segment-item-disabled-background} var(--infinite-piece-background-line-height, 4px),
+					transparent var(--infinite-piece-background-line-height, 4px)
+				);
+
+				color: $segment-item-disabled-color;
+			}
 		}
-	}
 
-	&.live-speak {
-		background: var(--segment-layer-background-live-speak);
-
-		&.second {
-			background: var(--segment-layer-background-live-speak--second);
+		&.super-infinite:not(.infinite-starts) {
+			opacity: 0.5;
 		}
-	}
 
-	&.vt {
-		background: var(--segment-layer-background-vt);
+		&.not-in-vision {
+			--not-in-vision-image: linear-gradient(
+				to right,
+				transparent,
+				transparent 2px,
+				#{$segment-timeline-background-color} 2px,
+				#{$segment-timeline-background-color} 10px
+			);
+			opacity: 0.8;
 
-		&.second {
-			background: var(--segment-layer-background-vt--second);
+			@each $layer-type in $layer-types {
+				&.#{$layer-type} {
+					background-image: var(--not-in-vision-image), none, var(--infinite-piece-background-image);
+					background-size: 10px var(--infinite-piece-background-line-height, 4px), 0 0, 1px var(--segment-layer-height);
+					background-repeat: repeat-x, no-repeat, repeat-x;
+					background-position: 0 0, 0 0, 0 0;
+
+					&.second {
+						background-image: var(--not-in-vision-image), none, var(--infinite-piece-background-image--second);
+						background-size: 10px var(--infinite-piece-background-line-height, 4px), 0 0,
+							1px var(--segment-layer-height);
+						background-repeat: repeat-x, no-repeat, repeat-x;
+						background-position: 0 0, 0 0, 0 0;
+					}
+				}
+			}
+
+			&.infinite-starts {
+				padding-left: calc(var(--segment-layer-height) / 2);
+
+				@each $layer-type in $layer-types {
+					&.#{$layer-type} {
+						background-image: var(--not-in-vision-image), var(--infinite-piece-starts-background-image),
+							var(--infinite-piece-background-image);
+						background-size: 10px var(--infinite-piece-background-line-height, 4px),
+							var(--segment-layer-height) var(--segment-layer-height), 1px var(--segment-layer-height);
+						background-repeat: repeat-x, no-repeat, repeat-x;
+
+						&.second {
+							background-image: var(--not-in-vision-image), var(--infinite-piece-starts-background-image),
+								var(--infinite-piece-background-image--second);
+							background-size: 10px var(--infinite-piece-background-line-height, 4px),
+								var(--segment-layer-height) var(--segment-layer-height), 1px var(--segment-layer-height);
+							background-repeat: repeat-x, no-repeat, repeat-x;
+						}
+					}
+				}
+			}
 		}
-	}
 
-	&.remote {
-		background: var(--segment-layer-background-remote);
+		@each $layer-type in $layer-types {
+			&.#{$layer-type} {
+				.segment-timeline__piece__label {
+					color: var(--segment-layer-background-#{$layer-type});
+				}
 
-		&.second {
-			background: var(--segment-layer-background-remote--second);
+				&.second {
+					.segment-timeline__piece__label {
+						color: var(--segment-layer-background-#{$layer-type}--second);
+					}
+				}
+			}
 		}
-	}
-
-	&.local {
-		background: var(--segment-layer-background-local);
-
-		&.second {
-			background: var(--segment-layer-background-local--second);
-		}
-	}
-
-	&.script {
-		background: var(--segment-layer-background-script);
-	}
-
-	&.mic {
-		background: var(--segment-layer-background-guest);
-	}
-
-	&.transition {
-		background: var(--segment-layer-background-unknown);
-	}
-
-	&.unknown {
-		background: var(--segment-layer-background-unknown);
 	}
 }
 
 @mixin item-type-borders {
-	&.camera {
-		border-color: var(--segment-layer-background-camera);
-	}
-
-	&.graphics {
-		border-color: var(--segment-layer-background-graphics);
-	}
-
-	&.lower-third {
-		border-color: var(--segment-layer-background-lower-third);
-	}
-
-	&.live-speak {
-		border-color: var(--segment-layer-background-live-speak);
-	}
-
-	&.vt {
-		border-color: var(--segment-layer-background-vt);
-	}
-
-	&.remote {
-		border-color: var(--segment-layer-background-remote);
-	}
-
-	&.local {
-		border-color: var(--segment-layer-background-local);
-	}
-
-	&.script {
-		border-color: var(--segment-layer-background-script);
-	}
-
-	&.mic {
-		border-color: var(--segment-layer-background-mic);
-	}
-
-	&.transition {
-		border-color: var(--segment-layer-background-unknown);
-	}
-
-	&.unknown {
-		border-color: var(--segment-layer-background-unknown);
+	@each $layer-type in $layer-types {
+		&.#{$layer-type} {
+			border-color: var(--segment-layer-background-#{$layer-type});
+		}
 	}
 }
 
 @mixin item-type-before-background {
-	&.camera::before {
-		background: var(--segment-layer-background-camera);
-	}
-
-	&.graphics::before {
-		background: var(--segment-layer-background-graphics);
-	}
-
-	&.lower-third::before {
-		background: var(--segment-layer-background-lower-third);
-	}
-
-	&.live-speak::before {
-		background: var(--segment-layer-background-live-speak);
-	}
-
-	&.vt::before {
-		background: var(--segment-layer-background-vt);
-	}
-
-	&.remote::before {
-		background: var(--segment-layer-background-remote);
-	}
-
-	&.script::before {
-		background: var(--segment-layer-background-script);
-	}
-
-	&.mic::before {
-		background: var(--segment-layer-background-mic);
-	}
-
-	&.transition::before {
-		background: var(--segment-layer-background-unknown);
-	}
-
-	&.unknown::before {
-		background: var(--segment-layer-background-unknown);
+	@each $layer-type in $layer-types {
+		&.#{$layer-type}::before {
+			background: var(--segment-layer-background-#{$layer-type});
+		}
 	}
 }
 
 @mixin item-type-colors-svg {
-	&.camera {
-		fill: var(--segment-layer-background-camera);
+	@each $layer-type in $layer-types {
+		&.#{$layer-type} {
+			fill: var(--segment-layer-background-#{$layer-type});
 
-		&.second {
-			fill: var(--segment-layer-background-camera--second);
+			&.second {
+				fill: var(--segment-layer-background-#{$layer-type}--second);
+			}
 		}
-	}
-
-	&.graphics {
-		fill: var(--segment-layer-background-graphics);
-
-		&.second {
-			fill: var(--segment-layer-background-graphics--second);
-		}
-	}
-
-	&.lower-third {
-		fill: var(--segment-layer-background-lower-third);
-	}
-
-	&.live-speak {
-		fill: var(--segment-layer-background-live-speak);
-	}
-
-	&.vt {
-		fill: var(--segment-layer-background-vt);
-
-		&.second {
-			fill: var(--segment-layer-background-vt--second);
-		}
-	}
-
-	&.transition {
-		fill: var(--segment-layer-background-unknown);
-	}
-
-	&.remote {
-		fill: var(--segment-layer-background-remote);
-
-		&.second {
-			fill: var(--segment-layer-background-remote--second);
-		}
-	}
-
-	&.local {
-		fill: var(--segment-layer-background-local);
-
-		&.second {
-			fill: var(--segment-layer-background-local--second);
-		}
-	}
-
-	&.script {
-		fill: var(--segment-layer-background-script);
-	}
-
-	&.mic {
-		fill: var(--segment-layer-background-mic);
-	}
-
-	&.unknown {
-		fill: var(--segment-layer-background-unknown);
 	}
 }
 

@@ -1,12 +1,10 @@
 import React from 'react'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../../../lib/api/rundownLayouts'
 import { RundownLayoutBase, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { unprotectString } from '../../../../../lib/lib'
 import { EditAttribute } from '../../../../lib/EditAttribute'
-import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
-import { Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 
 function filterLayouts(
 	rundownLayouts: RundownLayoutBase[],
@@ -16,252 +14,295 @@ function filterLayouts(
 }
 
 interface IProps {
+	showStyleBase: DBShowStyleBase
 	item: RundownLayoutBase
 	layouts: RundownLayoutBase[]
-	showStyleBase: ShowStyleBase
 }
 
-interface IState {}
-
-export default withTranslation()(
-	class RundownViewLayoutSettings extends MeteorReactComponent<Translated<IProps>, IState> {
-		render() {
-			const { t } = this.props
-
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Expose as user selectable layout')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'exposeAsSelectableLayout'}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Shelf Layout')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'shelfLayout'}
-								obj={this.props.item}
-								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.isLayoutForShelf)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input input-l dropdown"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mini Shelf Layout')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'miniShelfLayout'}
-								obj={this.props.item}
-								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.isLayoutForMiniShelf)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input input-l dropdown"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Rundown Header Layout')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'rundownHeaderLayout'}
-								obj={this.props.item}
-								options={filterLayouts(this.props.layouts, RundownLayoutsAPI.isLayoutForRundownHeader)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input input-l dropdown"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">{t('Live line countdown requires Source Layer')}</label>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`liveLineProps.requiredLayerIds`}
-							obj={this.props.item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`liveLineProps.requiredLayerIds`}
-							obj={this.props.item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
-							type="multiselect"
-							label={t('Disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
-						/>
-						<span className="text-s dimmed">
-							{t('One of these source layers must have an active piece for the live line countdown to be show')}
-						</span>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">{t('Also Require Source Layers')}</label>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`liveLineProps.additionalLayers`}
-							obj={this.props.item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`liveLineProps.additionalLayers`}
-							obj={this.props.item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
-							type="multiselect"
-							label={t('Disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
-						/>
-						<span className="text-s dimmed">
-							{t('Specify additional layers where at least one layer must have an active piece')}
-						</span>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Require All Additional Source Layers')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`liveLineProps.requireAllAdditionalSourcelayers`}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-							<span className="text-s dimmed">{t('All additional source layers must have active pieces')}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Hide Rundown Divider')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'hideRundownDivider'}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							></EditAttribute>
-							<span className="text-s dimmed">{t('Hide rundown divider between rundowns in a playlist')}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Show Breaks as Segments')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'showBreaksAsSegments'}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">{t('Segment countdown requires source layer')}</label>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`countdownToSegmentRequireLayers`}
-							obj={this.props.item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`countdownToSegmentRequireLayers`}
-							obj={this.props.item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
-							type="multiselect"
-							label={t('Disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
-						/>
-						<span className="text-s dimmed">
-							{t('One of these source layers must have a piece for the countdown to segment on-air to be show')}
-						</span>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Fixed duration in Segment header')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'fixedSegmentDuration'}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							></EditAttribute>
-							<span className="text-s dimmed">
-								{t(
-									'The segment duration in the segment header always displays the planned duration instead of acting as a counter'
-								)}
-							</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">{t('Display piece duration for source layers')}</label>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`showDurationSourceLayers`}
-							obj={this.props.item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`showDurationSourceLayers`}
-							obj={this.props.item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
-							type="multiselect"
-							label={t('Disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
-						/>
-						<span className="text-s dimmed">
-							{t('Piece on selected source layers will have a duration label shown')}
-						</span>
-					</div>
-				</React.Fragment>
-			)
+function undefinedOnEmptyArray(v: string[]): string[] | undefined {
+	if (Array.isArray(v)) {
+		if (v.length === 0) {
+			return undefined
+		} else {
+			return v
 		}
 	}
-)
+	return undefined
+}
+
+export default function RundownViewLayoutSettings({ showStyleBase, item, layouts }: IProps) {
+	const { t } = useTranslation()
+
+	return (
+		<>
+			<div className="mod mvs mhs">
+				<label className="field">
+					{t('Expose as user selectable layout')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'exposeAsSelectableLayout'}
+						obj={item}
+						type="checkbox"
+						collection={RundownLayouts}
+						className="mod mas"
+					></EditAttribute>
+				</label>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">
+					{t('Shelf Layout')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'shelfLayout'}
+						obj={item}
+						options={filterLayouts(layouts, RundownLayoutsAPI.isLayoutForShelf)}
+						type="dropdown"
+						collection={RundownLayouts}
+						className="input text-input input-l dropdown"
+					></EditAttribute>
+				</label>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">
+					{t('Mini Shelf Layout')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'miniShelfLayout'}
+						obj={item}
+						options={filterLayouts(layouts, RundownLayoutsAPI.isLayoutForMiniShelf)}
+						type="dropdown"
+						collection={RundownLayouts}
+						className="input text-input input-l dropdown"
+					></EditAttribute>
+				</label>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">
+					{t('Rundown Header Layout')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'rundownHeaderLayout'}
+						obj={item}
+						options={filterLayouts(layouts, RundownLayoutsAPI.isLayoutForRundownHeader)}
+						type="dropdown"
+						collection={RundownLayouts}
+						className="input text-input input-l dropdown"
+					></EditAttribute>
+				</label>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">{t('Live line countdown requires Source Layer')}</label>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`liveLineProps.requiredLayerIds`}
+					obj={this.props.item}
+					type="checkbox"
+					collection={RundownLayouts}
+					className="mod mas"
+					mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+					mutateUpdateValue={() => undefined}
+				/>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`liveLineProps.requiredLayerIds`}
+					obj={this.props.item}
+					options={this.props.showStyleBase.sourceLayers.map((l) => {
+						return { name: l.name, value: l._id }
+					})}
+					type="multiselect"
+					label={t('Disabled')}
+					collection={RundownLayouts}
+					className="input text-input input-l dropdown"
+					mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+				/>
+				<span className="text-s dimmed">
+					{t('One of these source layers must have an active piece for the live line countdown to be show')}
+				</span>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">{t('Also Require Source Layers')}</label>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`liveLineProps.additionalLayers`}
+					obj={this.props.item}
+					type="checkbox"
+					collection={RundownLayouts}
+					className="mod mas"
+					mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+					mutateUpdateValue={() => undefined}
+				/>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`liveLineProps.additionalLayers`}
+					obj={this.props.item}
+					options={this.props.showStyleBase.sourceLayers.map((l) => {
+						return { name: l.name, value: l._id }
+					})}
+					type="multiselect"
+					label={t('Disabled')}
+					collection={RundownLayouts}
+					className="input text-input input-l dropdown"
+					mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+				/>
+				<span className="text-s dimmed">
+					{t('Specify additional layers where at least one layer must have an active piece')}
+				</span>
+			</div>
+			<div className="mod mvs mhs">
+				<div className="field">
+					{t('Select visible Source Layers')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'visibleSourceLayers'}
+						obj={item}
+						options={showStyleBase.sourceLayers
+							.sort((a, b) => a._rank - b._rank)
+							.map((sourceLayer) => ({
+								value: sourceLayer._id,
+								name: sourceLayer.name,
+							}))}
+						type="multiselect"
+						mutateUpdateValue={undefinedOnEmptyArray}
+						collection={RundownLayouts}
+						className="input text-input input-l dropdown"
+					></EditAttribute>
+				</div>
+			</div>
+			<div className="mod mvs mhs">
+				<div className="field">
+					{t('Select visible Output Groups')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'visibleOutputLayers'}
+						obj={item}
+						options={showStyleBase.outputLayers
+							.sort((a, b) => a._rank - b._rank)
+							.map((outputLayer) => ({
+								value: outputLayer._id,
+								name: outputLayer.name,
+							}))}
+						type="multiselect"
+						mutateUpdateValue={undefinedOnEmptyArray}
+						collection={RundownLayouts}
+						className="input text-input input-l dropdown"
+					></EditAttribute>
+				</div>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">
+					{t('Require All Additional Source Layers')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={`liveLineProps.requireAllAdditionalSourcelayers`}
+						obj={this.props.item}
+						type="checkbox"
+						collection={RundownLayouts}
+						className="mod mas"
+					/>
+					<span className="text-s dimmed">{t('All additional source layers must have active pieces')}</span>
+				</label>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">
+					{t('Hide Rundown Divider')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'hideRundownDivider'}
+						obj={this.props.item}
+						type="checkbox"
+						collection={RundownLayouts}
+						className="mod mas"
+					></EditAttribute>
+					<span className="text-s dimmed">{t('Hide rundown divider between rundowns in a playlist')}</span>
+				</label>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">
+					{t('Show Breaks as Segments')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'showBreaksAsSegments'}
+						obj={this.props.item}
+						type="checkbox"
+						collection={RundownLayouts}
+						className="mod mas"
+					></EditAttribute>
+				</label>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">{t('Segment countdown requires source layer')}</label>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`countdownToSegmentRequireLayers`}
+					obj={this.props.item}
+					type="checkbox"
+					collection={RundownLayouts}
+					className="mod mas"
+					mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+					mutateUpdateValue={() => undefined}
+				/>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`countdownToSegmentRequireLayers`}
+					obj={this.props.item}
+					options={this.props.showStyleBase.sourceLayers.map((l) => {
+						return { name: l.name, value: l._id }
+					})}
+					type="multiselect"
+					label={t('Disabled')}
+					collection={RundownLayouts}
+					className="input text-input input-l dropdown"
+					mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+				/>
+				<span className="text-s dimmed">
+					{t('One of these source layers must have a piece for the countdown to segment on-air to be show')}
+				</span>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">
+					{t('Fixed duration in Segment header')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'fixedSegmentDuration'}
+						obj={this.props.item}
+						type="checkbox"
+						collection={RundownLayouts}
+						className="mod mas"
+					></EditAttribute>
+					<span className="text-s dimmed">
+						{t(
+							'The segment duration in the segment header always displays the planned duration instead of acting as a counter'
+						)}
+					</span>
+				</label>
+			</div>
+			<div className="mod mvs mhs">
+				<label className="field">{t('Display piece duration for source layers')}</label>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`showDurationSourceLayers`}
+					obj={this.props.item}
+					type="checkbox"
+					collection={RundownLayouts}
+					className="mod mas"
+					mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+					mutateUpdateValue={() => undefined}
+				/>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`showDurationSourceLayers`}
+					obj={this.props.item}
+					options={this.props.showStyleBase.sourceLayers.map((l) => {
+						return { name: l.name, value: l._id }
+					})}
+					type="multiselect"
+					label={t('Disabled')}
+					collection={RundownLayouts}
+					className="input text-input input-l dropdown"
+					mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+				/>
+				<span className="text-s dimmed">{t('Piece on selected source layers will have a duration label shown')}</span>
+			</div>
+		</>
+	)
+}

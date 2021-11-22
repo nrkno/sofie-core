@@ -1,6 +1,6 @@
 {
 	"name": "playout-gateway",
-	"version": "1.37.0-in-development",
+	"version": "1.37.0-in-testing.13",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
@@ -58,9 +58,10 @@
 	"dependencies": {
 		"@sofie-automation/blueprints-integration": "1.36.0-in-testing.9",
 		"@sofie-automation/server-core-integration": "1.36.0-in-testing.9",
+		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
 		"timeline-state-resolver": "npm:@tv2media/timeline-state-resolver@1.0.0-release37.4",
-		"tslib": "^2.1.0",
+		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
 		"winston": "^2.4.2"
 	},
@@ -71,5 +72,8 @@
 		"*.{ts,tsx}": [
 			"yarn lint --fix"
 		]
+	},
+	"devDependencies": {
+		"@types/debug": "^4.1.7"
 	}
 }

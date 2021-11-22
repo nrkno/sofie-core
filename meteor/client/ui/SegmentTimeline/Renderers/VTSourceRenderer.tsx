@@ -46,8 +46,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	private metadataRev: string | undefined
 	private cachedContentPackageInfos: ScanInfoForPackages | undefined
 
-	private leftLabelNodes: JSX.Element
-	private rightLabelNodes: JSX.Element
+	private leftLabelNodes: JSX.Element | null = null
+	private rightLabelNodes: JSX.Element | null = null
 
 	private rightLabelContainer: HTMLSpanElement | null = null
 	private countdownContainer: HTMLSpanElement | null = null
@@ -109,7 +109,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 					newState.rightLabelIsAppendage = true
 				} else {
-					this.rightLabelContainer?.remove()
+					try {
+						this.rightLabelContainer?.remove()
+					} catch (err) {
+						console.error('Error in VTSourceRendererBase.mountRightLabelContainer 1', err)
+					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
 				}
@@ -119,7 +123,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 					newState.rightLabelIsAppendage = true
 				} else if (itemDuration !== Number.POSITIVE_INFINITY && this.state.rightLabelIsAppendage === true) {
-					this.rightLabelContainer?.remove()
+					try {
+						this.rightLabelContainer?.remove()
+					} catch (err) {
+						console.error('Error in VTSourceRendererBase.mountRightLabelContainer 2', err)
+					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
 				}
@@ -156,7 +164,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			this.state.sourceEndCountdownAppendage &&
 			!(!relativeRendering && isLiveLine && !outputLayer.collapsed && itemElement)
 		) {
-			this.countdownContainer.remove()
+			try {
+				this.countdownContainer.remove()
+			} catch (err) {
+				console.error('Error in VTSourceRendererBase.mountSourceEndedCountdownContainer 1', err)
+			}
 			newState.sourceEndCountdownAppendage = false
 		}
 
@@ -275,12 +287,20 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 
 		if (this.rightLabelContainer) {
-			this.rightLabelContainer.remove()
+			try {
+				this.rightLabelContainer.remove()
+			} catch (err) {
+				console.error('Error in VTSourceRendererBase.componentWillUnmount 1', err)
+			}
 			this.rightLabelContainer = null
 		}
 
 		if (this.countdownContainer) {
-			this.countdownContainer.remove()
+			try {
+				this.countdownContainer.remove()
+			} catch (err) {
+				console.error('Error in VTSourceRendererBase.componentWillUnmount 2', err)
+			}
 			this.countdownContainer = null
 		}
 	}
@@ -290,8 +310,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
 				// TODO: support multiple packages:
-				if (piece.contentPackageInfos[0]?.deepScan?.scenes) {
-					return _.compact(piece.contentPackageInfos[0].deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
+				const contentPackageInfos = Object.values(piece.contentPackageInfos)
+				if (contentPackageInfos[0]?.deepScan?.scenes) {
+					return _.compact(contentPackageInfos[0].deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
 				}
 			} else {
 				// Fallback to media objects:
@@ -314,8 +335,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				let items: Array<PackageInfo.Anomaly> = []
 				// add freezes
 				// TODO: support multiple packages:
-				if (piece.contentPackageInfos[0]?.deepScan?.freezes?.length) {
-					items = piece.contentPackageInfos[0].deepScan.freezes.map((i): PackageInfo.Anomaly => {
+				const contentPackageInfos = Object.values(piece.contentPackageInfos)
+				if (contentPackageInfos[0]?.deepScan?.freezes?.length) {
+					items = contentPackageInfos[0].deepScan.freezes.map((i): PackageInfo.Anomaly => {
 						return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 					})
 				}
@@ -346,10 +368,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				let items: Array<PackageInfo.Anomaly> = []
 				// add blacks
 				// TODO: support multiple packages:
-				if (piece.contentPackageInfos[0]?.deepScan?.blacks) {
+				const contentPackageInfos = Object.values(piece.contentPackageInfos)
+				if (contentPackageInfos[0]?.deepScan?.blacks) {
 					items = [
 						...items,
-						...piece.contentPackageInfos[0].deepScan.blacks.map((i): PackageInfo.Anomaly => {
+						...contentPackageInfos[0].deepScan.blacks.map((i): PackageInfo.Anomaly => {
 							return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 						}),
 					]
@@ -378,7 +401,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 
-		return (
+		return !this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 				<span
@@ -406,7 +429,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				)}
 				{this.renderContentTrimmed()}
 			</span>
-		)
+		) : null
 	}
 
 	renderRightLabel() {
@@ -582,6 +605,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					noticeMessage={this.props.piece.message || ''}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
+					pieceId={this.props.piece.instance.piece._id}
 					expectedPackages={this.props.piece.instance.piece.expectedPackages}
 					studio={this.props.studio}
 				/>

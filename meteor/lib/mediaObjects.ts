@@ -14,7 +14,7 @@ import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
 import { NoteType } from './api/notes'
 import { PackageInfos } from './collections/PackageInfos'
-import { protectString, unprotectString } from './lib'
+import { assertNever, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric } from './collections/Pieces'
@@ -182,6 +182,7 @@ export function checkPieceContentStatus(
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	const sourceDuration = piece.content.sourceDuration
+	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
 	if (!ignoreMediaStatus && sourceLayer && studio) {
 		if (piece.expectedPackages) {
 			// Using Expected Packages:
@@ -229,7 +230,11 @@ export function checkPieceContentStatus(
 							expectedPackage.content.guid ||
 							expectedPackage._id
 
-						if (!packageOnPackageContainer) {
+						if (
+							!packageOnPackageContainer ||
+							packageOnPackageContainer.status.status ===
+								ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
+						) {
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 							messages.push(
 								t(
@@ -272,14 +277,17 @@ export function checkPieceContentStatus(
 									}
 								)
 							)
-						} else {
+						} else if (
+							packageOnPackageContainer.status.status ===
+							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY
+						) {
 							packageInfos[expectedPackage._id] = {
 								packageName,
 							}
-							// ok:
+							// Fetch scan-info about the package:
 							PackageInfos.find({
-								studio: studio._id,
-								packageId: protectString(expectedPackage._id),
+								studioId: studio._id,
+								packageId: getExpectedPackageId(piece._id, expectedPackage._id),
 								type: {
 									$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN] as any,
 								},
@@ -290,6 +298,8 @@ export function checkPieceContentStatus(
 									packageInfos[expectedPackage._id].deepScan = packageInfo.payload
 								}
 							})
+						} else {
+							assertNever(packageOnPackageContainer.status.status)
 						}
 					}
 				}
@@ -300,7 +310,7 @@ export function checkPieceContentStatus(
 					const { scan, deepScan } = packageInfo
 
 					if (scan && scan.streams) {
-						if (scan.streams.length < 2) {
+						if (!ignoreMediaAudioStatus && scan.streams.length < 2) {
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 							messages.push(
 								t("{{sourceLayer}} doesn't have both audio & video", {
@@ -351,6 +361,7 @@ export function checkPieceContentStatus(
 							packageInfo.timebase = timebase // what todo?
 						}
 						if (
+							!ignoreMediaAudioStatus &&
 							audioConfig &&
 							(!expectedAudioStreams.has(audioStreams.toString()) ||
 								(isStereo && !expectedAudioStreams.has('stereo')))
@@ -370,7 +381,8 @@ export function checkPieceContentStatus(
 								t: i18next.TFunction
 							) => {
 								if (anomalies.length === 1) {
-									const frames = Math.round((anomalies[0].duration * 1000) / timebase)
+									/** Number of frames */
+									const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
 									if (anomalies[0].start === 0) {
 										messages.push(
 											t('Clip starts with {{frames}} {{type}} frame', {
@@ -393,7 +405,7 @@ export function checkPieceContentStatus(
 												count: freezeStartsAt,
 											})
 										)
-									} else {
+									} else if (frames > 0) {
 										messages.push(
 											t('{{frames}} {{type}} frame detected within the clip', {
 												frames,
@@ -453,6 +465,7 @@ export function checkPieceContentStatus(
 						messages.push(t('{{sourceLayer}} is missing a file path', { sourceLayer: sourceLayer.name }))
 					} else {
 						const mediaObject = MediaObjects.findOne({
+							studioId: studio._id,
 							mediaId: fileName,
 						})
 						// If media object not found, then...
@@ -470,7 +483,7 @@ export function checkPieceContentStatus(
 							// Do a format check:
 							if (mediaObject.mediainfo) {
 								if (mediaObject.mediainfo.streams) {
-									if (mediaObject.mediainfo.streams.length < 2) {
+									if (!ignoreMediaAudioStatus && mediaObject.mediainfo.streams.length < 2) {
 										newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 										messages.push(t("Clip doesn't have audio & video", { fileName: displayName }))
 									}
@@ -516,6 +529,7 @@ export function checkPieceContentStatus(
 										mediaObject.mediainfo.timebase = timebase
 									}
 									if (
+										!ignoreMediaAudioStatus &&
 										audioConfig &&
 										(!expectedAudioStreams.has(audioStreams.toString()) ||
 											(isStereo && !expectedAudioStreams.has('stereo')))
@@ -626,6 +640,7 @@ export function checkPieceContentStatus(
 				case SourceLayerType.GRAPHICS:
 					if (fileName) {
 						const mediaObject = MediaObjects.findOne({
+							studioId: studio._id,
 							mediaId: fileName,
 						})
 						if (!mediaObject) {

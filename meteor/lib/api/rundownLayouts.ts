@@ -277,11 +277,13 @@ export namespace RundownLayoutsAPI {
 	}
 
 	export function isRundownLayout(layout: RundownLayoutBase): layout is RundownLayout {
-		return layout.type === RundownLayoutType.RUNDOWN_LAYOUT
+		// we need to check if filters are defined, because RundownLayout is a RundownLayoutWithFilters, and RundownLayoutBase doesn't require it
+		return layout.type === RundownLayoutType.RUNDOWN_LAYOUT && (layout as RundownLayout).filters !== undefined
 	}
 
 	export function isDashboardLayout(layout: RundownLayoutBase): layout is DashboardLayout {
-		return layout.type === RundownLayoutType.DASHBOARD_LAYOUT
+		// we need to check if filters are defined, because DashboardLayout is a RundownLayoutWithFilters, and RundownLayoutBase doesn't require it
+		return layout.type === RundownLayoutType.DASHBOARD_LAYOUT && (layout as DashboardLayout).filters !== undefined
 	}
 
 	export function isRundownHeaderLayout(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
