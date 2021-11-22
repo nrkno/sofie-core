@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -710,6 +710,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 				adlibId: piece._id,
 				partRank: (piece.partId && uiPartMap.get(piece.partId))?._rank ?? null,
 				segmentRank: segment._rank,
+				rundownRank: 0, // not needed, bacause we are in just one rundown
 			}))
 		)
 	})

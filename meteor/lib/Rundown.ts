@@ -319,9 +319,16 @@ export function sortAdlibs<T>(
 		adlibId: ProtectedString<any> | string
 		partRank: number | null
 		segmentRank: number | null
+		rundownRank: number | null
 	}[]
 ) {
 	adlibs = adlibs.sort((a, b) => {
+		// Sort by rundown rank, where applicable:
+		a.rundownRank = a.rundownRank ?? Number.POSITIVE_INFINITY
+		b.rundownRank = b.rundownRank ?? Number.POSITIVE_INFINITY
+		if (a.rundownRank > b.rundownRank) return 1
+		if (a.rundownRank < b.rundownRank) return -1
+
 		// Sort by segment rank, where applicable:
 		a.segmentRank = a.segmentRank ?? Number.POSITIVE_INFINITY
 		b.segmentRank = b.segmentRank ?? Number.POSITIVE_INFINITY

@@ -25,10 +25,11 @@ import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { FindOptions, MongoSelector } from '../../typings/meteor'
-import { RundownId } from '../../collections/Rundowns'
+import { DBRundown, RundownId, Rundowns } from '../../collections/Rundowns'
 import _ from 'underscore'
 import { sortAdlibs } from '../../Rundown'
 import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reactiveDataHelper'
+import { SegmentId, Segments, DBSegment } from '../../collections/Segments'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
@@ -524,6 +525,7 @@ export function compileAdLibFilter(
 				? nextPartId
 				: undefined
 
+		/** Note: undefined means that all parts are to be considered */
 		let partFilter: PartId[] | undefined = undefined
 
 		// Figure out the intersection of the segment current/next filter
@@ -652,28 +654,84 @@ export function compileAdLibFilter(
 			}
 		}
 
-		const partRankMap = new Map<PartId, number>()
+		const rundownRankMap = new Map<RundownId, number>()
+		const segmentRankMap = new Map<SegmentId, number>()
+		const partRankMap = new Map<PartId, { segmentId: SegmentId; _rank: number; rundownId: RundownId }>()
 		{
-			if (partFilter?.length) {
-				const partRanks = memoizedIsolatedAutorun(() => {
-					// Note: We need to return an array, because
-					// _.isEqual (used in memoizedIsolatedAutorun) doesn't work with Maps
+			if (partFilter === undefined || partFilter.length > 0) {
+				// Note: We need to return an array from within memoizedIsolatedAutorun,
+				// because _.isEqual (used in memoizedIsolatedAutorun) doesn't work with Maps..
 
-					return Parts.find(
-						{
-							_id: { $in: partFilter },
-						},
-						{
-							fields: {
-								_id: 1,
-								_rank: 1,
+				const rundownRanks = memoizedIsolatedAutorun(
+					() =>
+						Rundowns.find(
+							{
+								playlistId: rundownPlaylistId,
 							},
-						}
-					).fetch() as Pick<DBPart, '_id' | '_rank'>[]
+							{
+								fields: {
+									_id: 1,
+									_rank: 1,
+								},
+							}
+						).fetch() as Pick<DBRundown, '_id' | '_rank'>[],
+					`rundownsRanksForPlaylist_${rundownPlaylistId}`
+				)
+				rundownRanks.forEach((rundown) => {
+					rundownRankMap.set(rundown._id, rundown._rank)
+				})
+
+				const segmentRanks = memoizedIsolatedAutorun(
+					() =>
+						Segments.find(
+							{
+								rundownId: { $in: Array.from(rundownRankMap.keys()) },
+							},
+							{
+								fields: {
+									_id: 1,
+									_rank: 1,
+								},
+							}
+						).fetch() as Pick<DBSegment, '_id' | '_rank'>[],
+					`segmentRanksForRundowns_${Array.from(rundownRankMap.keys()).join(',')}`
+				)
+				segmentRanks.forEach((segment) => {
+					segmentRankMap.set(segment._id, segment._rank)
+				})
+
+				const partRanks = memoizedIsolatedAutorun(() => {
+					if (!partFilter) {
+						return Parts.find(
+							{
+								rundownId: { $in: Array.from(rundownRankMap.keys()) },
+							},
+							{
+								fields: {
+									_id: 1,
+									segmentId: 1,
+									rundownId: 1,
+									_rank: 1,
+								},
+							}
+						).fetch() as Pick<DBPart, '_id' | '_rank' | 'segmentId' | 'rundownId'>[]
+					} else {
+						return Parts.find(
+							{ _id: { $in: partFilter } },
+							{
+								fields: {
+									_id: 1,
+									segmentId: 1,
+									rundownId: 1,
+									_rank: 1,
+								},
+							}
+						).fetch() as Pick<DBPart, '_id' | '_rank' | 'segmentId' | 'rundownId'>[]
+					}
 				}, `partRanks_${JSON.stringify(partFilter)}`)
 
 				partRanks.forEach((part) => {
-					partRankMap.set(part._id, part._rank)
+					partRankMap.set(part._id, part)
 				})
 			}
 		}
@@ -692,14 +750,21 @@ export function compileAdLibFilter(
 
 			// Sort the adliba:
 			resultingAdLibs = sortAdlibs(
-				resultingAdLibs.map((adlib) => ({
-					adlib: adlib,
-					label: adlib.label,
-					adlibRank: adlib._rank,
-					adlibId: adlib._id,
-					partRank: (adlib.partId && partRankMap.get(adlib.partId)) ?? null,
-					segmentRank: 0, // TODO: should we take the segment rank into account?
-				}))
+				resultingAdLibs.map((adlib) => {
+					const part = adlib.partId && partRankMap.get(adlib.partId)
+					const segmentRank = part?.segmentId && segmentRankMap.get(part.segmentId)
+					const rundownRank = part?.rundownId && rundownRankMap.get(part.rundownId)
+
+					return {
+						adlib: adlib,
+						label: adlib.label,
+						adlibRank: adlib._rank,
+						adlibId: adlib._id,
+						partRank: part?._rank ?? null,
+						segmentRank: segmentRank ?? null,
+						rundownRank: rundownRank ?? null,
+					}
+				})
 			)
 
 			// finalize the process: apply limit and pick
