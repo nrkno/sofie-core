@@ -34,20 +34,26 @@ export function setUpOptimizedObserver<Data extends any[], Context extends Conte
 				if (newContext[key] !== undefined) context[key] = newContext[key]
 			}
 
-			lazyIgnore(
-				`optimizedObserver_${identifier}`,
-				() => {
-					const o = optimizedObservers[identifier]
-					if (o) {
-						const result = manipulateData(context)
+			const innerFcn = () => {
+				const o = optimizedObservers[identifier]
+				if (o) {
+					const result = manipulateData(context)
 
-						for (const dataReceiver of o.dataReceivers) {
-							dataReceiver(result)
-						}
+					for (const dataReceiver of o.dataReceivers) {
+						dataReceiver(result)
 					}
-				},
-				lazynessDuration // ms
-			)
+				}
+			}
+
+			if (lazynessDuration) {
+				lazyIgnore(
+					`optimizedObserver_${identifier}`,
+					innerFcn,
+					lazynessDuration // ms
+				)
+			} else {
+				innerFcn()
+			}
 		}
 		const context: any = {}
 		const observers = setupObservers(triggerUpdate)

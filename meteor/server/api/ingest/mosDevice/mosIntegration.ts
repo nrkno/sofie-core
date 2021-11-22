@@ -4,8 +4,8 @@ import * as MOS from 'mos-connection'
 import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../logging'
-import { getStudioFromDevice, canRundownBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
-import { handleRemovedRundown } from '../rundownInput'
+import { canRundownBeUpdated, checkAccessAndGetPeripheralDevice, fetchStudioIdFromDevice } from '../lib'
+import { handleRemovedRundown, regenerateRundown } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import {
 	handleMosRundownData,
@@ -108,8 +108,8 @@ export namespace MosIntegration {
 		logger.info(`mosRoStatus "${status.ID}"`)
 		logger.debug(status)
 
-		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundownFromMosRO(studio, status.ID)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const rundown = getRundownFromMosRO(studioId, status.ID)
 		if (!canRundownBeUpdated(rundown, false)) return
 
 		await Rundowns.updateAsync(rundown._id, {
@@ -134,8 +134,8 @@ export namespace MosIntegration {
 		logger.info(`mosRoStoryStatus "${status.ID}"`)
 		logger.debug(status)
 
-		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundownFromMosRO(studio, status.RunningOrderId)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const rundown = getRundownFromMosRO(studioId, status.RunningOrderId)
 		if (!canRundownBeUpdated(rundown, false)) return
 		// TODO ORPHAN include segment in check
 

@@ -19,6 +19,7 @@ import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
 import { ReadonlyDeep } from 'type-fest'
 import { DBRundown } from '../../lib/collections/Rundowns'
+import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 export async function getShowStyleCompound(
 	showStyleVariantId: ShowStyleVariantId
@@ -108,7 +109,7 @@ export async function insertShowStyleVariant(
 	return insertShowStyleVariantInner(showStyleBase, name)
 }
 export async function insertShowStyleVariantInner(
-	showStyleBase: ShowStyleBase,
+	showStyleBase: ShowStyleBaseLight,
 	name?: string
 ): Promise<ShowStyleVariantId> {
 	return ShowStyleVariants.insertAsync({
