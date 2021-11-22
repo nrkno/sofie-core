@@ -333,6 +333,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
 			props.isFollowingOnAirSegment !== nextProps.isFollowingOnAirSegment ||
+			props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
+			props.ownNextPartInstance !== nextProps.ownNextPartInstance ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
 			!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers) ||
 			props.rundownViewLayout !== nextProps.rundownViewLayout
