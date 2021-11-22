@@ -31,8 +31,8 @@ import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { LoggerInstance } from './index'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
-import { sendTrace } from './influxdb'
-import { FinishedTrace } from 'timeline-state-resolver/dist/lib'
+import { FinishedTrace, sendTrace } from './influxdb'
+
 const debug = Debug('playout-gateway')
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -303,9 +303,12 @@ export class TSRHandler {
 			debug('triggerUpdateDevices from deviceObserver added')
 			this._triggerUpdateDevices()
 		}
-		deviceObserver.changed = () => {
-			debug('triggerUpdateDevices from deviceObserver changed')
-			this._triggerUpdateDevices()
+		deviceObserver.changed = (_id, _oldFields, _clearedFields, newFields) => {
+			// Only react to changes in the .settings property:
+			if (newFields['settings'] !== undefined) {
+				debug('triggerUpdateDevices from deviceObserver changed')
+				this._triggerUpdateDevices()
+			}
 		}
 		deviceObserver.removed = () => {
 			debug('triggerUpdateDevices from deviceObserver removed')

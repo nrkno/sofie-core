@@ -19,7 +19,7 @@ const client = config.influx.host
 			port: config.influx.port,
 			username: config.influx.user,
 			password: config.influx.password,
-			protocol
+			protocol,
 	  })
 	: undefined
 

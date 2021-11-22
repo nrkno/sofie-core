@@ -153,6 +153,8 @@ export function getPreviewPackageSettings(
 		packagePath = expectedPackage.content.filePath
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.JSON_DATA) {
+		packagePath = undefined // Not supported
 	} else {
 		assertNever(expectedPackage)
 	}
@@ -172,6 +174,8 @@ export function getThumbnailPackageSettings(
 		packagePath = expectedPackage.content.filePath
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.JSON_DATA) {
+		packagePath = undefined // Not supported
 	} else {
 		assertNever(expectedPackage)
 	}

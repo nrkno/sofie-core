@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.37.0-in-testing.11",
+	"version": "1.38.0-in-development",
 	"private": true,
 	"engines": {
 		"node": "^12.22.1 || 14"
@@ -25,7 +25,8 @@
 		"send-coverage": "codecov -p ..",
 		"test-i": "npm run integration-test",
 		"license-validate": "node ../scripts/checkLicenses.js --allowed=\"MIT,BSD,ISC,Apache,Unlicense,CC0,LGPL,CC BY 3.0,CC BY 4.0,MPL 2.0\" --excludePackages=timecode,rxjs/ajax,rxjs/fetch,rxjs/internal-compatibility,nw-pre-gyp-module-test,rxjs/operators,rxjs/testing,rxjs/webSocket,undefined,i18next-conv,@fortawesome/fontawesome-common-types,argv,indexof,custom-license,private,public-domain-module",
-		"lint": "eslint . --ext .ts --ext .js --ext .tsx --ext .jsx",
+		"lint": "npm run lint:raw -- .",
+		"lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx",
 		"lintfix": "npm run lint -- --fix",
 		"quickformat": "prettier \"__mocks__/**\" --write ; prettier \"lib/**\" --write ; prettier \"server/**\" --write ; prettier \"client/**\" --write ; prettier \"*.json\" --write ; prettier \"*.js\" --write ; prettier \"*.md\" --write",
 		"i18n-extract-pot": "node ./scripts/extract-i18next-pot.js -f \"{./client/ui/**/*.+(ts|tsx),./lib/mediaObjects.ts,./lib/rundownNotifications.ts,./server/migration/**/*.ts}\" -o i18n/template.pot",
@@ -72,6 +73,7 @@
 		"i18next-xhr-backend": "^3.2.2",
 		"immutability-helper": "^3.1.1",
 		"indexof": "0.0.1",
+		"influx": "^5.9.2",
 		"lottie-web": "^5.7.13",
 		"meteor-node-stubs": "^1.1.0",
 		"moment": "^2.29.1",
@@ -100,7 +102,7 @@
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.3.5",
 		"soap": "^0.37.0",
-		"superfly-timeline": "^8.2.1",
+		"superfly-timeline": "^8.2.2",
 		"timecode": "0.0.4",
 		"type-fest": "^1.4.0",
 		"underscore": "^1.13.1",
@@ -113,7 +115,7 @@
 		"xmlbuilder": "^15.1.1"
 	},
 	"devDependencies": {
-		"@sofie-automation/code-standard-preset": "^0.4.2",
+		"@sofie-automation/code-standard-preset": "0.5.0",
 		"@types/amqplib": "^0.5.17",
 		"@types/body-parser": "^1.19.1",
 		"@types/classnames": "^2.3.1",
@@ -163,17 +165,12 @@
 		"yargs": "^16.2.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
 	"lint-staged": {
-		"*.{js,css,json,md,scss}": [
-			"prettier --write"
+		"*.{css,json,md,scss}": [
+			"prettier"
 		],
-		"*.{ts,tsx}": [
-			"npm run lintfix --"
+		"*.{ts,tsx,js,jsx}": [
+			"npm run lint:raw"
 		]
 	},
 	"meteor": {

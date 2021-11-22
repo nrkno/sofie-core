@@ -5,48 +5,60 @@ export enum FastTrackObservers {
 	TIMELINE = 'timeline',
 }
 
-const fastTrackObserver: {
-	[key: string]: {
-		useCount: number
-		onData: (data: any) => void
-	}
-} = {}
-
-function getKey(key: string, args: any[]): string {
-	return key + args.join(',')
-}
-
+/**
+ * Sets up a fastTrackObserver, it basically calls onData whenever triggerFastTrackObserver() is called from somewhere else in the code.
+ */
 export function setupFastTrackObserver<T>(
-	key: string,
+	observerKey: FastTrackObservers,
 	keyArgs: any[],
 	onData: (data: T) => void
 ): Meteor.LiveQueryHandle {
-	const fullKey = getKey(key, keyArgs)
+	const key = getKey(observerKey, keyArgs)
 
-	if (!fastTrackObserver[fullKey]) {
-		fastTrackObserver[fullKey] = {
-			useCount: 1,
-			onData: onData,
+	if (!fastTrackObserver[key]) {
+		fastTrackObserver[key] = {
+			onDatas: [onData],
 		}
 	} else {
-		fastTrackObserver[fullKey].useCount++
+		fastTrackObserver[key].onDatas.push(onData)
 	}
 	return {
 		stop: () => {
-			fastTrackObserver[fullKey].useCount--
-			if (!fastTrackObserver[fullKey].useCount) {
-				delete fastTrackObserver[fullKey]
+			const index = fastTrackObserver[key].onDatas.findIndex((fcn) => fcn === onData)
+
+			if (index !== -1) {
+				fastTrackObserver[key].onDatas.splice(index, 1)
+			}
+			if (fastTrackObserver[key].onDatas.length === 0) {
+				delete fastTrackObserver[key]
 			}
 		},
 	}
 }
 
-export function triggerFastTrackObserver(key: string, keyArgs: any[], data: any) {
-	const fullKey = getKey(key, keyArgs)
+/** Trigger a FastTrackObserver, which was setup in setupFastTrackObserver(). */
+export function triggerFastTrackObserver(observerKey: FastTrackObservers, keyArgs: any[], data: any) {
+	const key = getKey(observerKey, keyArgs)
 
 	try {
-		fastTrackObserver[fullKey]?.onData(data)
+		if (fastTrackObserver[key]) {
+			for (const onData of fastTrackObserver[key].onDatas) {
+				onData(data)
+			}
+		}
 	} catch (e) {
 		logger.error(e)
 	}
+}
+
+/** A global store for the fast-track observers */
+const fastTrackObserver: {
+	[key: string]: {
+		onDatas: ((data: any) => void)[]
+	}
+} = {}
+
+/** Convenience function to generate a unique key for the key+args pair */
+function getKey(key: FastTrackObservers, args: any[]): string {
+	return key + args.join(',')
 }

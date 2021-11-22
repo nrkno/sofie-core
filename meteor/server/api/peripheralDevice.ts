@@ -27,7 +27,8 @@ import { MediaManagerIntegration } from './integration/mediaWorkFlows'
 import { MediaWorkFlowId, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import * as MOS from 'mos-connection'
-import { determineDiffTime, getTimeDiff } from './systemTime/systemTime'
+import { determineDiffTime } from './systemTime/systemTime'
+import { getTimeDiff } from './systemTime/api'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
@@ -46,6 +47,7 @@ import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { profiler } from './profiler'
+import { FastTrackObservers, triggerFastTrackObserver } from '../publications/fastTrack'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 
@@ -356,17 +358,16 @@ export namespace ServerPeripheralDeviceAPI {
 			}
 		}
 		if (tlChanged) {
-			cache.Timeline.update(
-				cache.Studio.doc._id,
-				{
-					$set: {
-						timelineBlob: JSON.stringify(timelineObjs),
-						timelineHash: getRandomId(),
-						generated: getCurrentTime(),
-					},
-				},
-				true
-			)
+			const newTimeline: TimelineComplete = {
+				_id: cache.Studio.doc._id,
+				timelineBlob: JSON.stringify(timelineObjs),
+				timelineHash: getRandomId(),
+				generated: getCurrentTime(),
+			}
+
+			cache.Timeline.replace(newTimeline)
+			// Also do a fast-track for the timeline to be published faster:
+			triggerFastTrackObserver(FastTrackObservers.TIMELINE, [cache.Studio.doc._id], newTimeline)
 		}
 	}
 	export async function partPlaybackStarted(
@@ -878,6 +879,13 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	}
 	async dataRundownUpdate(deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
 		return RundownInput.dataRundownUpdate(this, deviceId, deviceToken, ingestRundown)
+	}
+	async dataRundownMetaDataUpdate(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		ingestRundown: Omit<IngestRundown, 'segments'>
+	) {
+		return RundownInput.dataRundownMetaDataUpdate(this, deviceId, deviceToken, ingestRundown)
 	}
 	async dataSegmentGet(
 		deviceId: PeripheralDeviceId,

@@ -7,7 +7,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
-import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { ISourceLayer, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import {
@@ -26,6 +26,7 @@ import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { preventDefault } from '../SorensenContext'
+import { logger } from '../../../lib/logging'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -252,6 +253,19 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 
 	useEffect(() => {
 		const fKeys = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F12'] // not 'F11', because people use that apparently
+		const ctrlDigitKeys = [
+			// Ctrl+DigitX is a shortcut for switching Tabs in some browsers
+			'Digit1',
+			'Digit2',
+			'Digit3',
+			'Digit4',
+			'Digit5',
+			'Digit6',
+			'Digit7',
+			'Digit8',
+			'Digit9',
+			'Digit0',
+		]
 
 		if (initialized) {
 			localSorensen.bind('Escape', poisonHotkeys, {
@@ -283,6 +297,14 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 						global: true,
 					})
 				)
+				ctrlDigitKeys.forEach((key) =>
+					localSorensen.bind(`Control+${key}`, preventDefault, {
+						exclusive: true,
+						global: true,
+						ordered: true,
+						preventDefaultPartials: false,
+					})
+				)
 			}
 		}
 
@@ -293,6 +315,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			localSorensen.unbind('Enter', preventDefault)
 			localSorensen.unbind('NumpadEnter', preventDefault)
 			fKeys.forEach((key) => localSorensen.unbind(key, preventDefault))
+			ctrlDigitKeys.forEach((key) => localSorensen.unbind(`Control+${key}`, preventDefault))
 		}
 	}, [initialized]) // run once once Sorensen is initialized
 
@@ -306,7 +329,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					nextPartInstanceId: 1,
 					currentPartInstanceId: 1,
 				},
-			})
+			}) as
+				| Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'>
+				| undefined
 			if (playlist) {
 				setRundownPlaylistContext({
 					rundownPlaylist: playlist,
@@ -316,6 +341,8 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					currentSegmentPartIds: props.currentSegmentPartIds,
 					nextSegmentPartIds: props.nextSegmentPartIds,
 				})
+			} else {
+				logger.error(`TriggersHandler: Playlist ${props.rundownPlaylistId} not found`)
 			}
 		})
 	}, [

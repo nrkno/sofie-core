@@ -25,7 +25,7 @@ exports["default"] = utils_1.createRule({
     name: __filename,
     meta: {
         docs: {
-            category: 'Best Practices',
+            // category: 'Best Practices',
             description: 'Disallow focused tests',
             recommended: 'error',
             suggestion: true
@@ -35,7 +35,8 @@ exports["default"] = utils_1.createRule({
             suggestRemoveFocus: 'Remove focus from test.'
         },
         schema: [],
-        type: 'suggestion'
+        type: 'suggestion',
+        hasSuggestions: true
     },
     defaultOptions: [],
     create: function (context) { return ({

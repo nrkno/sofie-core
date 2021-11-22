@@ -66,7 +66,7 @@ export const PieceIcon = (props: {
 	return null
 }
 
-const supportedLayers = new Set([
+export const pieceIconSupportedLayers = new Set([
 	SourceLayerType.GRAPHICS,
 	SourceLayerType.LIVE_SPEAK,
 	SourceLayerType.REMOTE,
@@ -83,7 +83,7 @@ export const PieceIconContainerNoSub = withTracker(
 		}
 		renderUnknown?: boolean
 	}) => {
-		return findPieceInstanceToShowFromInstances(props.pieceInstances, props.sourceLayers, supportedLayers)
+		return findPieceInstanceToShowFromInstances(props.pieceInstances, props.sourceLayers, pieceIconSupportedLayers)
 	}
 )(
 	({
@@ -98,7 +98,7 @@ export const PieceIconContainerNoSub = withTracker(
 )
 
 export const PieceIconContainer = withTracker((props: IPropsHeader) => {
-	return findPieceInstanceToShow(props, supportedLayers)
+	return findPieceInstanceToShow(props, pieceIconSupportedLayers)
 })(
 	class PieceIconContainer extends MeteorReactComponent<
 		IPropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }

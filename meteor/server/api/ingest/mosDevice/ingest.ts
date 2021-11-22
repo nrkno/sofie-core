@@ -12,7 +12,7 @@ import {
 } from './lib'
 import { literal, protectString, getCurrentTime, normalizeArray } from '../../../../lib/lib'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
-import { handleUpdatedRundownInner } from '../rundownInput'
+import { handleUpdatedRundownInner, handleUpdatedRundownMetaDataInner } from '../rundownInput'
 import { LocalIngestRundown, LocalIngestSegment, LocalIngestPart } from '../ingestCache'
 import { RundownId } from '../../../../lib/collections/Rundowns'
 import { logger } from '../../../../lib/logging'
@@ -194,7 +194,48 @@ export async function handleMosRundownMetadata(
 		async (cache, ingestRundown) => {
 			if (!ingestRundown) throw new Meteor.Error(`handleMosRundownMetadata lost the IngestRundown...`)
 
-			return handleUpdatedRundownInner(cache, ingestRundown, false, peripheralDevice)
+			return handleUpdatedRundownMetaDataInner(cache, ingestRundown, peripheralDevice)
+		}
+	)
+}
+
+export async function handleMosReadyToAir(
+	peripheralDevice: PeripheralDevice,
+	action: MOS.IMOSROReadyToAir
+): Promise<void> {
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
+
+	const rundownExternalId = parseMosString(action.ID)
+
+	return runIngestOperationWithCache(
+		'handleMosRundownMetadata',
+		studioId,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				// No changes
+				return ingestRundown
+			} else {
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
+			}
+		},
+		async (cache, ingestRundown) => {
+			if (!ingestRundown) throw new Meteor.Error(`handleMosReadyToAir lost the IngestRundown...`)
+			if (!cache.Rundown.doc) throw new Meteor.Error(`handleMosReadyToAir expects an existing Rundown...`)
+
+			if (!canRundownBeUpdated(cache.Rundown.doc, false)) return null
+
+			// Set the ready to air status of a Rundown
+			if (cache.Rundown.doc.airStatus !== action.Status) {
+				cache.Rundown.update((doc) => {
+					doc.airStatus = action.Status
+					return doc
+				})
+
+				return handleUpdatedRundownMetaDataInner(cache, ingestRundown, peripheralDevice)
+			} else {
+				return null
+			}
 		}
 	)
 }

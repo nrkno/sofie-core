@@ -12,6 +12,7 @@ import {
 	normalizeArray,
 	normalizeArrayToMap,
 	clone,
+	stringifyError,
 	waitForPromise,
 } from '../../lib/lib'
 import { logger } from '../logging'
@@ -57,10 +58,16 @@ import {
 	fetchStudioLight,
 } from '../../lib/collections/optimizations'
 
+export interface SelectedShowStyleVariant {
+	variant: ShowStyleVariant
+	base: ShowStyleBase
+	compound: ShowStyleCompound
+}
+
 export async function selectShowStyleVariant(
 	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
-): Promise<{ variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null> {
+): Promise<SelectedShowStyleVariant | null> {
 	const studio = context.studio
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
@@ -83,9 +90,19 @@ export async function selectShowStyleVariant(
 	if (!studioBlueprint.blueprint.getShowStyleId)
 		throw new Meteor.Error(500, `Studio "${studio._id}" blueprint missing property getShowStyleId`)
 
-	const showStyleId: ShowStyleBaseId | null = protectString(
-		studioBlueprint.blueprint.getShowStyleId(context, unprotectObjectArray(showStyleBases) as any, ingestRundown)
-	)
+	let showStyleId: ShowStyleBaseId | null = null
+	try {
+		showStyleId = protectString(
+			studioBlueprint.blueprint.getShowStyleId(
+				context,
+				unprotectObjectArray(showStyleBases) as any,
+				ingestRundown
+			)
+		)
+	} catch (err) {
+		logger.error(`Error in studioBlueprint.getShowStyleId: ${stringifyError(err)}`)
+		showStyleId = null
+	}
 	if (showStyleId === null) {
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned showStyleId = null`)
 		return null
@@ -104,13 +121,19 @@ export async function selectShowStyleVariant(
 	if (!showStyleBlueprint)
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 
-	const variantId: ShowStyleVariantId | null = protectString(
-		showStyleBlueprint.blueprint.getShowStyleVariantId(
-			context,
-			unprotectObjectArray(showStyleVariants),
-			ingestRundown
+	let variantId: ShowStyleVariantId | null = null
+	try {
+		variantId = protectString(
+			showStyleBlueprint.blueprint.getShowStyleVariantId(
+				context,
+				unprotectObjectArray(showStyleVariants),
+				ingestRundown
+			)
 		)
-	)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.getShowStyleVariantId: ${stringifyError(err)}`)
+		variantId = null
+	}
 	if (variantId === null) {
 		logger.debug(`StudioBlueprint for studio "${studio._id}" returned variantId = null in .getShowStyleVariantId`)
 		return null

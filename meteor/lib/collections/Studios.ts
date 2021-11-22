@@ -244,6 +244,12 @@ export function routeExpectedPackages(
 	return getRoutedMappings(mappingsWithPackages, routes)
 }
 
+export interface RoutedMappings {
+	_id: StudioId
+	mappingsHash: MappingsHash | undefined
+	mappings: { [layerName: string]: MappingExt }
+}
+
 export type Studio = DBStudio
 export const Studios = createMongoCollection<Studio, DBStudio>('studios')
 registerCollection('Studios', Studios)

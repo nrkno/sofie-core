@@ -1,7 +1,7 @@
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { IBlueprintPartDB, PartHoldMode } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPartDB, NoteSeverity, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -11,6 +11,12 @@ import { ITranslatableMessage } from '../api/TranslatableMessage'
 export type PartId = ProtectedString<'PartId'>
 
 /** A "Line" in NRK Lingo. */
+
+export interface PartInvalidReason {
+	message: ITranslatableMessage
+	level?: NoteSeverity
+	color?: string
+}
 export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
 	_id: PartId
 	/** Position inside the segment */
@@ -26,10 +32,7 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	notes?: Array<PartNote>
 
 	/** Holds the user-facing explanation for why the part is invalid */
-	invalidReason?: {
-		message: ITranslatableMessage
-		color?: string
-	}
+	invalidReason?: PartInvalidReason
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
@@ -50,6 +53,7 @@ export class Part implements DBPart {
 	public transitionDuration?: number | null
 	public disableOutTransition?: boolean
 	public expectedDuration?: number
+	public budgetDuration?: number
 	public holdMode?: PartHoldMode
 	public shouldNotifyCurrentPlayingPart?: boolean
 	public classes?: string[]
@@ -57,10 +61,7 @@ export class Part implements DBPart {
 	public displayDurationGroup?: string
 	public displayDuration?: number
 	public invalid?: boolean
-	public invalidReason?: {
-		message: ITranslatableMessage
-		color?: string
-	}
+	public invalidReason?: PartInvalidReason
 	public untimed?: boolean
 	public floated?: boolean
 	public gap?: boolean

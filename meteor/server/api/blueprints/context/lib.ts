@@ -51,6 +51,7 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	transitionDuration: true,
 	disableOutTransition: true,
 	expectedDuration: true,
+	budgetDuration: true,
 	holdMode: true,
 	shouldNotifyCurrentPlayingPart: true,
 	classes: true,

@@ -10,6 +10,7 @@ import {
 	unprotectString,
 	isStringOrProtectedString,
 	getRandomId,
+	stringifyError,
 } from '../../../lib/lib'
 import { StatObjectMetadata, TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
@@ -53,7 +54,8 @@ import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/se
 import { StudioContentWriteAccess } from '../../security/studio'
 import {
 	afterTake,
-	resetPreviousSegmentAndClearNextSegmentId,
+	clearNextSegmentId,
+	resetPreviousSegment,
 	takeNextPartInnerSync,
 	updatePartInstanceOnTake,
 } from './take'
@@ -314,7 +316,8 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		nextPartId: PartId | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined
+		nextTimeOffset?: number | undefined,
+		clearNextSegment?: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 		if (nextPartId) check(nextPartId, String)
@@ -333,7 +336,7 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" cannot change next during hold!`)
 			},
 			async (cache) => {
-				await setNextPartInner(cache, nextPartId, setManually, nextTimeOffset)
+				await setNextPartInner(cache, nextPartId, setManually, nextTimeOffset, clearNextSegment)
 
 				return ClientAPI.responseSuccess(undefined)
 			}
@@ -344,7 +347,8 @@ export namespace ServerPlayoutAPI {
 		cache: CacheForPlayout,
 		nextPartId: PartId | DBPart | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined
+		nextTimeOffset?: number | undefined,
+		clearNextSegment?: boolean
 	): Promise<void> {
 		const playlist = cache.Playlist.doc
 		if (!playlist.activationId) throw new Meteor.Error(501, `Rundown Playlist "${playlist._id}" is not active!`)
@@ -361,6 +365,9 @@ export namespace ServerPlayoutAPI {
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 
+		if (clearNextSegment) {
+			libSetNextSegment(cache, null)
+		}
 		await libsetNextPart(cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
 
 		// update lookahead and the next part when we have an auto-next
@@ -943,7 +950,8 @@ export namespace ServerPlayoutAPI {
 							currentPartInstance
 						)
 
-						resetPreviousSegmentAndClearNextSegmentId(cache)
+						clearNextSegmentId(cache, currentPartInstance)
+						resetPreviousSegment(cache)
 
 						// Update the next partinstance
 						const nextPart = selectNextPart(
@@ -1158,7 +1166,12 @@ export namespace ServerPlayoutAPI {
 
 						logger.debug(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-						blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+						try {
+							blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+						} catch (err) {
+							logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
+							throw err
+						}
 					}
 				)
 			}
@@ -1403,7 +1416,7 @@ interface UpdateTimelineFromIngestDataTimeout {
 }
 const updateTimelineFromIngestDataTimeouts = new Map<RundownPlaylistId, UpdateTimelineFromIngestDataTimeout>()
 export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylistId) {
-	if (process.env.JEST_WORKER_ID) {
+	if (Meteor.isTest) {
 		// Don't run this when in jest, as it is not useful and ends up producing errors
 		return
 	}

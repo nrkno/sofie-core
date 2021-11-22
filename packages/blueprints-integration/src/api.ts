@@ -103,7 +103,8 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	/** Returns information about the playlist this rundown is a part of, return null to not make it a part of a playlist */
 	getRundownPlaylistInfo?: (
 		context: IStudioUserContext,
-		rundowns: IBlueprintRundownDB[]
+		rundowns: IBlueprintRundownDB[],
+		playlistExternalId: string
 	) => BlueprintResultRundownPlaylist | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
@@ -139,7 +140,6 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/**
 	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment() )
-	 * Warning: This is currently an experimental api, and is likely to break in the next release
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,

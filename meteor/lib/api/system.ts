@@ -2,8 +2,10 @@ import { TranslationsBundle, TranslationsBundleId } from '../collections/Transla
 import { ClientAPI } from './client'
 
 export interface CollectionCleanupResult {
-	collectionName: string
-	docsToRemove: number
+	[index: string]: {
+		collectionName: string
+		docsToRemove: number
+	}
 }
 
 export interface BenchmarkResult {
@@ -21,7 +23,7 @@ export interface SystemBenchmarkResults {
 
 export interface SystemAPI {
 	cleanupIndexes(actuallyRemoveOldIndexes: boolean): Promise<any>
-	cleanupOldData(actuallyRemoveOldData: boolean): Promise<CollectionCleanupResult[] | string>
+	cleanupOldData(actuallyRemoveOldData: boolean): Promise<CollectionCleanupResult | string>
 
 	doSystemBenchmark(): Promise<SystemBenchmarkResults>
 

@@ -37,7 +37,10 @@ type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T
 
 export type ActionContext = XOR<
 	{
-		rundownPlaylist: RundownPlaylist
+		rundownPlaylist: Pick<
+			RundownPlaylist,
+			'_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'
+		>
 		currentRundownId: RundownId | null
 		currentSegmentPartIds: PartId[]
 		nextSegmentPartIds: PartId[]
@@ -84,7 +87,10 @@ export function isPreviewableAction(action: ExecutableAction): action is Preview
 
 interface InternalActionContext {
 	rundownPlaylistId: RundownPlaylistId
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: Pick<
+		RundownPlaylist,
+		'_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'
+	>
 	currentRundownId: RundownId | null
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]

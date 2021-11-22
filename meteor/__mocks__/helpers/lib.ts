@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
-import { ProtectedString } from '../../lib/lib'
+import { LogLevel, ProtectedString } from '../../lib/lib'
 import { AsyncTransformedCollection } from '../../lib/collections/lib'
+import { getLogLevel, setLogLevel } from '../../server/logging'
 
 /*
 interface MockedCollection<T, Y extends any[]> {
@@ -66,4 +67,23 @@ export function resetMockupCollection<A extends B, B extends { _id: ProtectedStr
 		collection[methodName] = collection['__original' + methodName]
 		delete collection['__original' + methodName]
 	})
+}
+
+/** Supresses logging for the duration of the callback */
+export async function supressLogging(cb: () => void | Promise<void>, allowErrors = false): Promise<void> {
+	const orgLogLevel = getLogLevel()
+
+	if (allowErrors) {
+		setLogLevel(LogLevel.ERROR)
+	} else {
+		setLogLevel(LogLevel.NONE)
+	}
+	try {
+		const returnValue = await Promise.resolve(cb())
+		setLogLevel(orgLogLevel)
+		return returnValue
+	} catch (err) {
+		setLogLevel(orgLogLevel)
+		throw err
+	}
 }

@@ -19,6 +19,7 @@ import { saveIntoCache } from '../../cache/lib'
 import { profiler } from '../profiler'
 import { getSegmentId, getPartId } from './lib'
 import { Changes } from '../../lib/database'
+import { SetOptional } from 'type-fest'
 
 interface LocalIngestBase {
 	modified: number
@@ -33,10 +34,10 @@ export interface LocalIngestPart extends IngestPart, LocalIngestBase {}
 export function isLocalIngestRundown(o: IngestRundown | LocalIngestRundown): o is LocalIngestRundown {
 	return !!o['modified']
 }
-export function makeNewIngestRundown(ingestRundown: IngestRundown): LocalIngestRundown {
+export function makeNewIngestRundown(ingestRundown: SetOptional<IngestRundown, 'segments'>): LocalIngestRundown {
 	return {
 		...ingestRundown,
-		segments: _.map(ingestRundown.segments, makeNewIngestSegment),
+		segments: ingestRundown.segments ? _.map(ingestRundown.segments, makeNewIngestSegment) : [],
 		modified: getCurrentTime(),
 	}
 }

@@ -11,6 +11,10 @@ import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
+import { Mongo } from 'meteor/mongo'
+import { RoutedTimeline } from '../../../lib/collections/Timeline'
+
+const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
 
 interface ITimelineViewProps {
 	match?: {
@@ -70,7 +74,7 @@ export const ComponentTimelineSimulate = withTracker<
 	try {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
-		const tlComplete = Timeline.findOne(props.studioId)
+		const tlComplete: RoutedTimeline = StudioTimeline.findOne(props.studioId)
 		const timelineObj = tlComplete && (JSON.parse(tlComplete.timelineBlob) as Array<TimelineObjGeneric>)
 		console.log('regen timeline', tlComplete?.timelineHash, tlComplete?.generated)
 		const timeline =
@@ -127,9 +131,7 @@ export const ComponentTimelineSimulate = withTracker<
 			}
 		}
 		componentDidMount() {
-			this.subscribe(PubSub.timeline, {
-				_id: this.props.studioId,
-			})
+			this.subscribe(PubSub.timelineForStudio, this.props.studioId)
 		}
 		renderTimelineState(state: TimelineState) {
 			return _.map(

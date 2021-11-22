@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getCurrentTime, Time, unprotectString } from '../../../lib/lib'
+import { getCurrentTime, stringifyError, Time, unprotectString } from '../../../lib/lib'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { logger } from '../../../lib/logging'
 import { queueExternalMessages } from '../ExternalMessageQueue'
@@ -113,8 +113,8 @@ async function handlePartInstanceTimingEventInner(
 				logger.error(error)
 			}
 		}
-	} catch (e) {
-		logger.error(`handlePartInstanceTimingEvent: ${e}`)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.onRundownTimingEvent: ${stringifyError(err)}`)
 	}
 	span?.end()
 }
@@ -178,8 +178,8 @@ export function reportRundownDataHasChanged(
 					try {
 						const messages = await blueprint.onRundownDataChangedEvent(context)
 						queueExternalMessages(rundown, messages)
-					} catch (error) {
-						logger.error(error)
+					} catch (err) {
+						logger.error(`Error in showStyleBlueprint.onRundownDataChangedEvent: ${stringifyError(err)}`)
 					}
 				}
 			}

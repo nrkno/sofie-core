@@ -7,7 +7,7 @@ export const getNetworkTime = (
 	port: number,
 	cb: (error: Error | undefined, date: Date | undefined) => void
 ): void => {
-	const validAdresses = ['0.se.pool.ntp.org:123', '1.se.pool.ntp.org:123', '2.se.pool.ntp.org:123']
+	const validAdresses = ['0.pool.ntp.org:123', '1.pool.ntp.org:123', '2.pool.ntp.org:123']
 
 	const mockDiffFromRealTime = 400 // ms
 

@@ -11,7 +11,7 @@ import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { StudioId, Studios } from '../../lib/collections/Studios'
 import { Pieces, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
+import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -184,8 +184,8 @@ export async function setNextSegment(
 
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		if (!currentPartInstance || !nextPartInstance || nextPartInstance.segmentId !== currentPartInstance.segmentId) {
-			// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart
-			return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, firstValidPartInSegment._id, true, 0)
+			// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart and clear previous nextSegmentId
+			return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, firstValidPartInSegment._id, true, 0, true)
 		}
 	}
 
@@ -393,12 +393,7 @@ export async function pieceTakeNow(
 	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
 	if (!pieceToCopy.allowDirectPlay) {
-		// Not explicitly allowed, use legacy route
-		const showStyleBase = rundown.getShowStyleBase()
-		const sourceLayerId = pieceToCopy.sourceLayerId
-		const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-		if (sourceL && (sourceL.type !== SourceLayerType.LOWER_THIRD || sourceL.exclusiveGroup))
-			return ClientAPI.responseError(`PieceInstance or Piece "${pieceToCopy.name}" cannot be direct played!`)
+		return ClientAPI.responseError(`PieceInstance or Piece "${pieceToCopy.name}" cannot be direct played!`)
 	}
 
 	return ClientAPI.responseSuccess(
