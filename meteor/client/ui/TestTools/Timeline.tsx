@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Timeline, TimelineObjGeneric } from '../../../lib/collections/Timeline'
+import { deserializeTimelineBlob } from '../../../lib/collections/Timeline'
 import { Time, applyToArray, clone } from '../../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
@@ -74,8 +74,8 @@ export const ComponentTimelineSimulate = withTracker<
 	try {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
-		const tlComplete: RoutedTimeline = StudioTimeline.findOne(props.studioId)
-		const timelineObj = tlComplete && (JSON.parse(tlComplete.timelineBlob) as Array<TimelineObjGeneric>)
+		const tlComplete = StudioTimeline.findOne(props.studioId)
+		const timelineObj = tlComplete && deserializeTimelineBlob(tlComplete.timelineBlob)
 		console.log('regen timeline', tlComplete?.timelineHash, tlComplete?.generated)
 		const timeline =
 			(tlComplete &&

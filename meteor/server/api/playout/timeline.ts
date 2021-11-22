@@ -20,6 +20,8 @@ import {
 	StatObjectMetadata,
 	OnGenerateTimelineObjExt,
 	TimelineComplete,
+	deserializeTimelineBlob,
+	serializeTimelineBlob,
 } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -225,10 +227,7 @@ function processAndSaveTimelineObjects(
 		_id: studio._id,
 	})
 	const oldTimelineObjsMap = normalizeArray(
-		(timeline &&
-			timeline.timelineBlob !== undefined &&
-			(JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)) ||
-			[],
+		(timeline?.timelineBlob !== undefined && deserializeTimelineBlob(timeline.timelineBlob)) || [],
 		'id'
 	)
 
@@ -258,7 +257,7 @@ function processAndSaveTimelineObjects(
 		_id: studio._id,
 		timelineHash: getRandomId(), // randomized on every timeline change
 		generated: getCurrentTime(),
-		timelineBlob: JSON.stringify(timelineObjs),
+		timelineBlob: serializeTimelineBlob(timelineObjs),
 	}
 
 	cache.Timeline.replace(newTimeline)

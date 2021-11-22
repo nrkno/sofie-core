@@ -7,7 +7,13 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, getRandomId, applyToArray, stringifyObjects } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { Timeline, TimelineComplete, TimelineHash, TimelineObjGeneric } from '../../lib/collections/Timeline'
+import {
+	deserializeTimelineBlob,
+	serializeTimelineBlob,
+	Timeline,
+	TimelineComplete,
+	TimelineHash,
+} from '../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -291,7 +297,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// ------------------------------
 		const timeline = cache.Timeline.findOne(cache.Studio.doc._id)
-		const timelineObjs = (timeline && (JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)) || []
+		const timelineObjs = timeline ? deserializeTimelineBlob(timeline.timelineBlob) : []
 		let tlChanged = false
 
 		_.each(results, (o) => {
@@ -360,7 +366,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (tlChanged) {
 			const newTimeline: TimelineComplete = {
 				_id: cache.Studio.doc._id,
-				timelineBlob: JSON.stringify(timelineObjs),
+				timelineBlob: serializeTimelineBlob(timelineObjs),
 				timelineHash: getRandomId(),
 				generated: getCurrentTime(),
 			}

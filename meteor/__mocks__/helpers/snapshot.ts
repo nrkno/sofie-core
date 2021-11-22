@@ -1,5 +1,10 @@
 import * as _ from 'underscore'
-import { TimelineObjGeneric, TimelineComplete, StatObjectMetadata } from '../../lib/collections/Timeline'
+import {
+	TimelineObjGeneric,
+	TimelineComplete,
+	StatObjectMetadata,
+	deserializeTimelineBlob,
+} from '../../lib/collections/Timeline'
 import { DBRundown } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
 import { DBPart } from '../../lib/collections/Parts'
@@ -55,7 +60,7 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 		if (isTimelineComplete(o)) {
 			if (o.generated) o.generated = 12345
 
-			const timeline = JSON.parse(o.timelineBlob) as Array<TimelineObjGeneric>
+			const timeline = deserializeTimelineBlob(o.timelineBlob)
 
 			_.each(timeline, (obj) => {
 				const statObjMetadata = obj.metaData as Partial<StatObjectMetadata> | undefined

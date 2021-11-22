@@ -1,5 +1,12 @@
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { TimelineObjGeneric, TimelineObjType, TimelineComplete, Timeline } from '../../../lib/collections/Timeline'
+import {
+	TimelineObjGeneric,
+	TimelineObjType,
+	TimelineComplete,
+	Timeline,
+	deserializeTimelineBlob,
+	serializeTimelineBlob,
+} from '../../../lib/collections/Timeline'
 import { protectString } from '../../../lib/lib'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { SaveIntoDbHooks, saveIntoDb, sumChanges, anythingChanged } from '../database'
@@ -31,7 +38,7 @@ describe('server/lib', () => {
 			_id: protectString('myStudio'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
-			timelineBlob: JSON.stringify(mystudioObjs),
+			timelineBlob: serializeTimelineBlob(mystudioObjs),
 		})
 
 		const mystudio2Objs: Array<TimelineObjGeneric> = [
@@ -49,7 +56,7 @@ describe('server/lib', () => {
 			_id: protectString('myStudio2'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
-			timelineBlob: JSON.stringify(mystudio2Objs),
+			timelineBlob: serializeTimelineBlob(mystudio2Objs),
 		})
 
 		const options: SaveIntoDbHooks<any, any> = {
@@ -112,7 +119,7 @@ describe('server/lib', () => {
 		).toEqual(1)
 		const abc = Timeline.findOne(protectString('myStudio')) as TimelineComplete
 		expect(abc).toBeTruthy()
-		const timeline = JSON.parse(abc.timelineBlob) as Array<TimelineObjGeneric>
+		const timeline = deserializeTimelineBlob(abc.timelineBlob)
 		expect(timeline).toHaveLength(2)
 		expect(timeline[0].classes).toEqual(undefined)
 		expect(timeline[0].layer).toEqual('L2')

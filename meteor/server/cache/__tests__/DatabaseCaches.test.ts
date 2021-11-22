@@ -3,7 +3,7 @@ import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/databa
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { waitTime, protectString } from '../../../lib/lib'
 import { CacheForStudio } from '../../api/studio/cache'
-import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
+import { serializeTimelineBlob, Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 
 describe('DatabaseCaches', () => {
 	beforeEach(async () => {
@@ -31,7 +31,7 @@ describe('DatabaseCaches', () => {
 			// Insert a document:
 			cache.Timeline.insert({
 				_id: id,
-				timelineBlob: JSON.stringify([]),
+				timelineBlob: serializeTimelineBlob([]),
 				timelineHash: protectString('insert'),
 				generated: 1234,
 			})
@@ -103,7 +103,7 @@ describe('DatabaseCaches', () => {
 			// Insert a document:
 			cache.Timeline.insert({
 				_id: id,
-				timelineBlob: JSON.stringify([]),
+				timelineBlob: serializeTimelineBlob([]),
 				timelineHash: protectString('insert'),
 				generated: 1234,
 			})
@@ -207,7 +207,7 @@ describe('DatabaseCaches', () => {
 				// Insert a document:
 				cache.Timeline.insert({
 					_id: id,
-					timelineBlob: JSON.stringify([]),
+					timelineBlob: serializeTimelineBlob([]),
 					timelineHash: protectString('insert'),
 					generated: 1234,
 				})

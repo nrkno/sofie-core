@@ -12,7 +12,7 @@ import {
 	getRandomId,
 	stringifyError,
 } from '../../../lib/lib'
-import { StatObjectMetadata, TimelineObjGeneric } from '../../../lib/collections/Timeline'
+import { deserializeTimelineBlob, StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
@@ -1344,7 +1344,7 @@ export namespace ServerPlayoutAPI {
 		if (activePlaylists.length === 0) {
 			const studioTimeline = cache.Timeline.findOne(studio._id)
 			if (!studioTimeline) return 'noBaseline'
-			const timeline = JSON.parse(studioTimeline.timelineBlob) as Array<TimelineObjGeneric>
+			const timeline = deserializeTimelineBlob(studioTimeline.timelineBlob)
 			const markerObject = timeline.find((x) => x.id === `baseline_version`)
 			if (!markerObject) return 'noBaseline'
 			// Accidental inclusion of one timeline code below - random ... don't know why

@@ -6,6 +6,8 @@ import {
 	TimelineComplete,
 	TimelineObjGeneric,
 	TimelineHash,
+	deserializeTimelineBlob,
+	serializeTimelineBlob,
 } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
@@ -148,7 +150,7 @@ function createObserverForTimelinePublication(
 
 			if (invalidateTimeline) {
 				context.timelineHash = context.timeline.timelineHash
-				const timeline = JSON.parse(context.timeline.timelineBlob) as TimelineObjGeneric[]
+				const timeline = deserializeTimelineBlob(context.timeline.timelineBlob)
 				context.routedTimeline = getRoutedTimeline(timeline, context.routes)
 				changedData = true
 			}
@@ -158,7 +160,7 @@ function createObserverForTimelinePublication(
 					_id: context.timeline._id,
 					mappingsHash: context.studio.mappingsHash,
 					timelineHash: context.timeline.timelineHash,
-					timelineBlob: JSON.stringify(context.routedTimeline),
+					timelineBlob: serializeTimelineBlob(context.routedTimeline),
 					generated: context.timeline.generated,
 					published: Date.now(),
 

@@ -27,7 +27,7 @@ Array [
   Object {
     "_id": "mockStudio4",
     "generated": 12345,
-    "timelineBlob": "[{\\"id\\":\\"baseline_version\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"baseline_version\\",\\"metaData\\":{\\"versions\\":{\\"core\\":\\"1.37.0-in-testing.11\\",\\"blueprintId\\":\\"mockBlueprint0\\",\\"blueprintVersion\\":\\"0.0.0\\",\\"studio\\":\\"asdf\\"}},\\"content\\":{\\"deviceType\\":0}}]",
+    "timelineBlob": "[{\\"id\\":\\"baseline_version\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"baseline_version\\",\\"metaData\\":{\\"versions\\":{\\"core\\":\\"1.38.0-in-development\\",\\"blueprintId\\":\\"mockBlueprint0\\",\\"blueprintVersion\\":\\"0.0.0\\",\\"studio\\":\\"asdf\\"}},\\"content\\":{\\"deviceType\\":0}}]",
     "timelineHash": "randomId9025",
   },
 ]
