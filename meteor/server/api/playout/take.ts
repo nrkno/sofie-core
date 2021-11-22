@@ -29,7 +29,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { isAnyQueuedWorkRunning } from '../../codeControl'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { calculatePartTimings } from './timings'
+import { calculatePartTimings } from '../../../lib/rundown/timings'
 
 export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	const span = profiler.startSpan('takeNextPartInner')
@@ -326,9 +326,9 @@ export function updatePartInstanceOnTake(
 			// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
 			partPlayoutTimings: calculatePartTimings(
 				cache.Playlist.doc.holdState,
-				currentPartInstance,
-				takePartInstance,
-				cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id)
+				currentPartInstance?.part,
+				takePartInstance.part,
+				cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id).map((p) => p.piece)
 			),
 		}),
 	}

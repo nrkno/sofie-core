@@ -13,6 +13,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
 import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -76,7 +77,7 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 							title: 1,
 							rundownId: 1,
 							segmentId: 1,
-							expectedDuration: 1,
+							expectedDurationWithPreroll: 1,
 						},
 					}
 				)
@@ -134,7 +135,9 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 							width:
 								(Math.max(
 									(timingDurations && timingDurations[unprotectString(innerPart._id)]) || 0,
-									part.instance.timings?.duration || innerPart.expectedDuration || 0
+									part.instance.timings?.duration ||
+										calculatePartInstanceExpectedDurationWithPreroll(part.instance) ||
+										0
 								) /
 									(segmentDuration || 0)) *
 									100 +
@@ -150,7 +153,9 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 										((getCurrentTime() - (part.instance.timings?.startedPlayback || 0)) /
 											Math.max(
 												(timingDurations && timingDurations[unprotectString(innerPart._id)]) || 0,
-												part.instance.timings?.duration || innerPart.expectedDuration || 0
+												part.instance.timings?.duration ||
+													calculatePartInstanceExpectedDurationWithPreroll(part.instance) ||
+													0
 											)) *
 											100 +
 										'%',

@@ -68,7 +68,7 @@ import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackag
 import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { endTrace, sendTrace, startTrace } from '../integration/influx'
-import { calculatePartTimings, getPartTimingsOrDefaults, PartCalculatedTimings } from './timings'
+import { calculatePartTimings, getPartTimingsOrDefaults, PartCalculatedTimings } from '../../../lib/rundown/timings'
 
 export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 	const playlists = cache.getActiveRundownPlaylists()
@@ -782,9 +782,9 @@ function generateNextPartInstanceObjects(
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const currentToNextTimings = calculatePartTimings(
 		activePlaylist.holdState,
-		currentPartInfo.partInstance,
-		nextPartInfo.partInstance,
-		nextPartInfo.pieceInstances
+		currentPartInfo.partInstance.part,
+		nextPartInfo.partInstance.part,
+		nextPartInfo.pieceInstances.map((p) => p.piece)
 	)
 
 	const nextPartGroup = createPartGroup(nextPartInfo.partInstance, {})

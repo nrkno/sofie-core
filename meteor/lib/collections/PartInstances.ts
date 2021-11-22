@@ -20,7 +20,7 @@ import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
 import { RundownPlaylistActivationId } from './RundownPlaylists'
 import { PartialDeep } from 'type-fest'
-import { PartCalculatedTimings } from '../../server/api/playout/timings'
+import { PartCalculatedTimings } from '../rundown/timings'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>

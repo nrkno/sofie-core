@@ -42,6 +42,9 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
+
+	/** A modified expectedDuration with the planned preroll and other timings factored in */
+	expectedDurationWithPreroll: number | undefined
 }
 
 export class Part implements DBPart {
@@ -78,6 +81,7 @@ export class Part implements DBPart {
 	public status?: string
 	public notes?: Array<PartNote>
 	public identifier?: string
+	public expectedDurationWithPreroll: number | undefined
 
 	constructor(document: DBPart) {
 		for (const [key, value] of Object.entries(document)) {

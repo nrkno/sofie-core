@@ -1,7 +1,7 @@
 import { IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import {} from 'type-fest'
-import { RundownHoldState } from '../../../../lib/collections/Rundowns'
-import { literal } from '../../../../lib/lib'
+import { RundownHoldState } from '../../collections/Rundowns'
+import { literal } from '../../lib'
 import { calculatePartTimings, CalculateTimingsPieceInstance, PartCalculatedTimings } from '../timings'
 
 describe('Part Playout Timings', () => {

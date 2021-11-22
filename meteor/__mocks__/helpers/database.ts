@@ -581,6 +581,7 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part00)
 
@@ -654,6 +655,7 @@ export function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part01)
 
@@ -696,6 +698,7 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part10)
 
@@ -706,6 +709,7 @@ export function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
 		title: 'Part 1 1',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part11)
 
@@ -716,6 +720,7 @@ export function setupDefaultRundown(
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',
 		title: 'Part 1 2',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part12)
 
@@ -795,6 +800,7 @@ export function setupRundownWithAutoplayPart0(
 		title: 'Part 0 0',
 
 		expectedDuration: 20,
+		expectedDurationWithPreroll: 20,
 		autoNext: true,
 	}
 	Parts.insert(part00)

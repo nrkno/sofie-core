@@ -36,6 +36,7 @@ import {
 	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
 	selectNextPart,
+	updateExpectedDurationWithPrerollForPartInstance,
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -84,6 +85,7 @@ import { MongoQuery } from '../../../lib/typings/meteor'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PieceGroupMetadata } from '../../../lib/rundown/pieces'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
+import { calculatePartExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1355,6 +1357,13 @@ export namespace ServerPlayoutAPI {
 			actionContext.nextPartState !== ActionPartChange.NONE
 		) {
 			await syncPlayheadInfinitesForNextPartInstance(cache)
+		}
+
+		if (actionContext.nextPartState !== ActionPartChange.NONE) {
+			const nextPartInstanceId = cache.Playlist.doc.nextPartInstanceId
+			if (nextPartInstanceId) {
+				updateExpectedDurationWithPrerollForPartInstance(cache, nextPartInstanceId)
+			}
 		}
 
 		if (actionContext.takeAfterExecute) {

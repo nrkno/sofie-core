@@ -1,27 +1,27 @@
 import { IBlueprintPartInTransition, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
-import { DBPartInstance } from '../../../lib/collections/PartInstances'
-import { DBPart } from '../../../lib/collections/Parts'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { Piece } from '../../../lib/collections/Pieces'
-import { RundownHoldState } from '../../../lib/collections/Rundowns'
+import { DBPartInstance } from '../collections/PartInstances'
+import { DBPart } from '../collections/Parts'
+import { PieceInstance, PieceInstancePiece } from '../collections/PieceInstances'
+import { Piece } from '../collections/Pieces'
+import { RundownHoldState } from '../collections/Rundowns'
 
 /**
  * Calculate the total pre-roll duration of a PartInstance
  * Note: once the part has been taken this should not be recalculated. Doing so may result in the timings shifting
  */
-function calculatePartPreroll(pieces: CalculateTimingsPieceInstance[]): number {
+function calculatePartPreroll(pieces: CalculateTimingsPiece[]): number {
 	const candidates: number[] = []
 	for (const piece of pieces) {
-		if (piece.piece.pieceType !== IBlueprintPieceType.Normal) {
+		if (piece.pieceType !== IBlueprintPieceType.Normal) {
 			// Ignore preroll for transition pieces
 			continue
 		}
 
-		if (piece.piece.enable.start === 'now') {
+		if (piece.enable.start === 'now') {
 			// A piece starting at now was adlibbed, so does not affect the starting preroll
-		} else if (piece.piece.prerollDuration) {
+		} else if (piece.prerollDuration) {
 			// How far before the part does the piece protrude
-			candidates.push(Math.max(0, piece.piece.prerollDuration - piece.piece.enable.start))
+			candidates.push(Math.max(0, piece.prerollDuration - piece.enable.start))
 		}
 	}
 
@@ -38,50 +38,50 @@ export interface PartCalculatedTimings {
 	fromPartRemaining: number // How long after the start of toPartGroup should fromPartGroup continue?
 }
 
-export type CalculateTimingsPieceInstance = { piece: Pick<Piece, 'enable' | 'prerollDuration' | 'pieceType'> }
-export type CalculateTimingsFromPartInstance = {
-	part: Pick<DBPart, 'autoNext' | 'autoNextOverlap' | 'disableNextPartInTransition' | 'outTransition'>
-}
-export type CalculateTimingsToPartInstance = {
-	part: Pick<DBPart, 'inTransition'>
-}
+export type CalculateTimingsPiece = Pick<Piece, 'enable' | 'prerollDuration' | 'pieceType'>
+export type CalculateTimingsFromPart = Pick<
+	DBPart,
+	'autoNext' | 'autoNextOverlap' | 'disableNextPartInTransition' | 'outTransition'
+>
+
+export type CalculateTimingsToPart = Pick<DBPart, 'inTransition'>
 
 /**
  * Calculate the timings of the period where the parts can overlap.
  */
 export function calculatePartTimings(
 	holdState: RundownHoldState | undefined,
-	fromPartInstance: CalculateTimingsFromPartInstance | undefined,
-	toPartInstance: CalculateTimingsToPartInstance,
-	toPieceInstances: CalculateTimingsPieceInstance[]
+	fromPart: CalculateTimingsFromPart | undefined,
+	toPart: CalculateTimingsToPart,
+	toPiece: CalculateTimingsPiece[]
 	// toPartPreroll: number
 ): PartCalculatedTimings {
 	// If in a hold, we cant do the transition
 	const isInHold = holdState !== RundownHoldState.NONE && holdState !== undefined
 
-	const toPartPreroll = calculatePartPreroll(toPieceInstances)
+	const toPartPreroll = calculatePartPreroll(toPiece)
 
 	let inTransition: Omit<IBlueprintPartInTransition, 'blockTakeDuration'> | undefined
 	let allowTransitionPiece: boolean | undefined
-	if (fromPartInstance && !isInHold) {
-		if (fromPartInstance.part.autoNext && fromPartInstance.part.autoNextOverlap) {
+	if (fromPart && !isInHold) {
+		if (fromPart.autoNext && fromPart.autoNextOverlap) {
 			// An auto-next with overlap is essentially a simple transition, so we treat it as one
 			allowTransitionPiece = false
 			inTransition = {
 				// blockTakeDuration: fromPartInstance.part.autoNextOverlap,
 				partContentDelayDuration: 0,
-				previousPartKeepaliveDuration: fromPartInstance.part.autoNextOverlap,
+				previousPartKeepaliveDuration: fromPart.autoNextOverlap,
 			}
-		} else if (!fromPartInstance.part.disableNextPartInTransition) {
+		} else if (!fromPart.disableNextPartInTransition) {
 			allowTransitionPiece = true
-			inTransition = toPartInstance.part.inTransition
+			inTransition = toPart.inTransition
 		}
 	}
 
 	// Try and convert the transition
-	if (!inTransition || !fromPartInstance) {
+	if (!inTransition || !fromPart) {
 		// The amount to delay the part 'switch' to, to ensure the outTransition has time to complete as well as any prerolls for part B
-		const takeOffset = Math.max(0, fromPartInstance?.part?.outTransition?.duration ?? 0, toPartPreroll)
+		const takeOffset = Math.max(0, fromPart?.outTransition?.duration ?? 0, toPartPreroll)
 
 		return {
 			inTransitionStart: null, // No transition to use
@@ -92,8 +92,8 @@ export function calculatePartTimings(
 		}
 	} else {
 		// The amount of time needed to complete the outTransition before the 'take' point
-		const outTransitionTime = fromPartInstance.part.outTransition
-			? fromPartInstance.part.outTransition.duration - inTransition.previousPartKeepaliveDuration
+		const outTransitionTime = fromPart.outTransition
+			? fromPart.outTransition.duration - inTransition.previousPartKeepaliveDuration
 			: 0
 
 		// The amount of time needed to preroll Part B before the 'take' point
@@ -117,21 +117,38 @@ export function getPartTimingsOrDefaults(
 	if (partInstance.partPlayoutTimings) {
 		return partInstance.partPlayoutTimings
 	} else {
-		return calculatePartTimings(RundownHoldState.NONE, undefined, partInstance, pieceInstances)
+		return calculatePartTimings(
+			RundownHoldState.NONE,
+			undefined,
+			partInstance.part,
+			pieceInstances.map((p) => p.piece)
+		)
 	}
 }
 
-/** Approximate the likely expectedDuration of a Part, factoring in the transition and preroll time */
-export function approximatePartExpectedDuration(
-	partInstance: DBPartInstance,
-	pieceInstances: Array<CalculateTimingsPieceInstance>
+function calcInner(rawDuration: number, timings: PartCalculatedTimings): number {
+	return rawDuration + timings.toPartDelay - timings.fromPartRemaining
+}
+
+export function calculatePartExpectedDurationWithPreroll(
+	part: DBPart,
+	pieces: PieceInstancePiece[]
+): number | undefined {
+	if (part.expectedDuration === undefined) return undefined
+
+	const timings = calculatePartTimings(undefined, {}, part, pieces)
+
+	return calcInner(part.expectedDuration, timings)
+}
+
+export function calculatePartInstanceExpectedDurationWithPreroll(
+	partInstance: Pick<DBPartInstance, 'part' | 'partPlayoutTimings'>
 ): number | undefined {
 	if (partInstance.part.expectedDuration === undefined) return undefined
 
-	// A fake partinstance that allows the transition from the next part to be used
-	const fakePartInstance: CalculateTimingsFromPartInstance = { part: {} }
-
-	const timings = calculatePartTimings(undefined, fakePartInstance, partInstance, pieceInstances)
-
-	return partInstance.part.expectedDuration + timings.toPartDelay
+	if (partInstance.partPlayoutTimings) {
+		return calcInner(partInstance.part.expectedDuration, partInstance.partPlayoutTimings)
+	} else {
+		return partInstance.part.expectedDurationWithPreroll
+	}
 }

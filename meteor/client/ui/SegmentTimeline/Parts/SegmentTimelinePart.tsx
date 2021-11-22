@@ -473,7 +473,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						0,
 						(this.props.livePosition || 0) +
 							SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale) -
-							(this.props.part.instance.part.expectedDuration || this.props.part.renderedDuration || 0)
+							(this.props.part.instance.part.expectedDurationWithPreroll || this.props.part.renderedDuration || 0)
 					),
 					SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
 				) *
