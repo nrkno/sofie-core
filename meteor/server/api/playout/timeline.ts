@@ -71,7 +71,6 @@ import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { endTrace, sendTrace, startTrace } from '../integration/influx'
 import { FastTrackObservers, triggerFastTrackObserver } from '../../publications/fastTrack'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
-import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 
 export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 	const playlists = cache.getActiveRundownPlaylists()

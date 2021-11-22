@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { TimelineObjGeneric, TimelineComplete, deserializeTimelineBlob } from '../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineComplete } from '../../lib/collections/Timeline'
 import { DBRundown } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
 import { DBPart } from '../../lib/collections/Parts'
