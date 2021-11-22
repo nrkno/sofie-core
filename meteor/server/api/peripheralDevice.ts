@@ -47,6 +47,7 @@ import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { profiler } from './profiler'
+import { FastTrackObservers, triggerFastTrackObserver } from '../publications/fastTrack'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 
@@ -356,17 +357,16 @@ export namespace ServerPeripheralDeviceAPI {
 			}
 		}
 		if (tlChanged) {
-			cache.Timeline.update(
-				cache.Studio.doc._id,
-				{
-					$set: {
-						timeline: timelineObjs,
-						timelineHash: getRandomId(),
-						generated: getCurrentTime(),
-					},
-				},
-				true
-			)
+			const newTimeline: TimelineComplete = {
+				_id: cache.Studio.doc._id,
+				timeline: timelineObjs,
+				timelineHash: getRandomId(),
+				generated: getCurrentTime(),
+			}
+
+			cache.Timeline.replace(newTimeline)
+			// Also do a fast-track for the timeline to be published faster:
+			triggerFastTrackObserver(FastTrackObservers.TIMELINE, [cache.Studio.doc._id], newTimeline)
 		}
 	}
 	export async function partPlaybackStarted(
