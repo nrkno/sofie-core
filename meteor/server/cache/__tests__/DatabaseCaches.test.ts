@@ -31,7 +31,7 @@ describe('DatabaseCaches', () => {
 			// Insert a document:
 			cache.Timeline.insert({
 				_id: id,
-				timeline: [],
+				timelineBlob: JSON.stringify([]),
 				timelineHash: protectString('insert'),
 				generated: 1234,
 			})
@@ -103,7 +103,7 @@ describe('DatabaseCaches', () => {
 			// Insert a document:
 			cache.Timeline.insert({
 				_id: id,
-				timeline: [],
+				timelineBlob: JSON.stringify([]),
 				timelineHash: protectString('insert'),
 				generated: 1234,
 			})
@@ -207,7 +207,7 @@ describe('DatabaseCaches', () => {
 				// Insert a document:
 				cache.Timeline.insert({
 					_id: id,
-					timeline: [],
+					timelineBlob: JSON.stringify([]),
 					timelineHash: protectString('insert'),
 					generated: 1234,
 				})

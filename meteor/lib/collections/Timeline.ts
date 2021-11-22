@@ -149,15 +149,15 @@ export interface TimelineComplete {
 	timelineHash: TimelineHash
 	/** Timestamp when the timeline is generated */
 	generated: Time
-	/** Array containing all timeline-objects */
-	timeline: Array<TimelineObjGeneric>
+	/** serialized JSON Array containing all timeline-objects */
+	timelineBlob: string
 }
 
 export interface RoutedTimeline {
 	_id: StudioId
 	mappingsHash: MappingsHash | undefined
 	timelineHash: TimelineHash | undefined
-	timeline: TimelineObjGeneric[]
+	timelineBlob: string
 	generated: Time
 	published: Time
 }
