@@ -28,6 +28,7 @@ import { FindOptions, MongoSelector } from '../../typings/meteor'
 import { RundownId } from '../../collections/Rundowns'
 import _ from 'underscore'
 import { sortAdlibs } from '../../Rundown'
+import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reactiveDataHelper'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
@@ -651,13 +652,28 @@ export function compileAdLibFilter(
 			}
 		}
 
-		const partMap = new Map<PartId, DBPart>()
+		const partRankMap = new Map<PartId, number>()
 		{
 			if (partFilter?.length) {
-				Parts.find({
-					_id: { $in: partFilter },
-				}).forEach((part) => {
-					partMap.set(part._id, part)
+				const partRanks = memoizedIsolatedAutorun(() => {
+					// Note: We need to return an array, because
+					// _.isEqual (used in memoizedIsolatedAutorun) doesn't work with Maps
+
+					return Parts.find(
+						{
+							_id: { $in: partFilter },
+						},
+						{
+							fields: {
+								_id: 1,
+								_rank: 1,
+							},
+						}
+					).fetch() as Pick<DBPart, '_id' | '_rank'>[]
+				}, `partRanks_${JSON.stringify(partFilter)}`)
+
+				partRanks.forEach((part) => {
+					partRankMap.set(part._id, part._rank)
 				})
 			}
 		}
