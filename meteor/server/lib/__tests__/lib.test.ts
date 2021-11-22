@@ -39,6 +39,7 @@ describe('server/lib', () => {
 			timelineHash: protectString('abc'),
 			generated: 1234,
 			timelineBlob: serializeTimelineBlob(mystudioObjs),
+			generationVersions: {} as any,
 		})
 
 		const mystudio2Objs: Array<TimelineObjGeneric> = [
@@ -57,6 +58,7 @@ describe('server/lib', () => {
 			timelineHash: protectString('abc'),
 			generated: 1234,
 			timelineBlob: serializeTimelineBlob(mystudio2Objs),
+			generationVersions: {} as any,
 		})
 
 		const options: SaveIntoDbHooks<any, any> = {

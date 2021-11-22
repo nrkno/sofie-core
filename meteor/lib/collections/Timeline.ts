@@ -57,15 +57,6 @@ export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
 
-export interface StatObjectMetadata {
-	versions: {
-		core: string
-		blueprintId: BlueprintId | undefined
-		blueprintVersion: string
-		studio: string
-	}
-}
-
 export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true
 }
@@ -139,6 +130,15 @@ export function updateLookaheadLayer(obj: TimelineObjRundown): void {
 	obj.lookaheadForLayer = obj.layer
 	obj.layer += '_lookahead'
 }
+
+/** Version numbers of sofie at the time the timeline was generated */
+export interface TimelineCompleteGenerationVersions {
+	core: string
+	blueprintId: BlueprintId | undefined
+	blueprintVersion: string
+	studio: string
+}
+
 /** This is the data-object stored in the Timeline collection in MongoDB */
 export interface TimelineComplete {
 	/** The id of the timeline. Since there is one (1) timeline in a studio, we can use that id here. */
@@ -152,6 +152,8 @@ export interface TimelineComplete {
 	generated: Time
 	/** serialized JSON Array containing all timeline-objects.  */
 	timelineBlob: TimelineBlob
+	/** Version numbers of sofie at the time the timeline was generated */
+	generationVersions: TimelineCompleteGenerationVersions
 }
 
 export type TimelineBlob = ProtectedString<'TimelineBlob'>

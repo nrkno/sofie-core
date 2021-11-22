@@ -17,11 +17,11 @@ import {
 	TimelineContentTypeOther,
 	TimelineObjGroupPart,
 	TimelineObjPartAbstract,
-	StatObjectMetadata,
 	OnGenerateTimelineObjExt,
 	TimelineComplete,
 	deserializeTimelineBlob,
 	serializeTimelineBlob,
+	TimelineCompleteGenerationVersions,
 } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -70,6 +70,8 @@ import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { endTrace, sendTrace, startTrace } from '../integration/influx'
 import { FastTrackObservers, triggerFastTrackObserver } from '../../publications/fastTrack'
+import { BlueprintId } from '../../../lib/collections/Blueprints'
+import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 
 export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 	const playlists = cache.getActiveRundownPlaylists()
@@ -92,6 +94,19 @@ export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Pro
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
 	return !!cache2.isStudio
+}
+
+function generateTimelineVersions(
+	studio: ReadonlyDeep<Studio>,
+	blueprintId: BlueprintId | undefined,
+	blueprintVersion: string
+): TimelineCompleteGenerationVersions {
+	return {
+		core: PackageInfo.versionExtended || PackageInfo.version,
+		blueprintId: blueprintId,
+		blueprintVersion: blueprintVersion,
+		studio: studio._rundownVersionHash,
+	}
 }
 
 export async function updateStudioTimeline(cache: CacheForStudio | CacheForPlayout): Promise<void> {
@@ -138,30 +153,14 @@ export async function updateStudioTimeline(cache: CacheForStudio | CacheForPlayo
 			}
 		}
 		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
-
-		const id = `baseline_version`
-		baselineObjects.push(
-			literal<TimelineObjRundown>({
-				id: id,
-				objectType: TimelineObjType.RUNDOWN,
-				enable: { start: 0 },
-				layer: id,
-				metaData: literal<StatObjectMetadata>({
-					versions: {
-						core: PackageInfo.versionExtended || PackageInfo.version,
-						blueprintId: studio.blueprintId,
-						blueprintVersion: blueprint.blueprintVersion,
-						studio: studio._rundownVersionHash,
-					},
-				}),
-				content: {
-					deviceType: TSR.DeviceType.ABSTRACT,
-				},
-			})
-		)
 	}
 
-	processAndSaveTimelineObjects(cache, baselineObjects, undefined)
+	const versions = generateTimelineVersions(
+		studio,
+		studio.blueprintId,
+		studioBlueprint?.blueprint?.blueprintVersion ?? '-'
+	)
+	processAndSaveTimelineObjects(cache, baselineObjects, versions, undefined)
 	if (studioBaseline) {
 		updateBaselineExpectedPackagesOnStudio(cache, studioBaseline)
 	}
@@ -183,9 +182,9 @@ export async function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Ti
 		throw new Meteor.Error(500, `RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
-	const timelineObjs: Array<TimelineObjGeneric> = [...(await getTimelineRundown(cache))]
+	const timeline = await getTimelineRundown(cache)
 
-	processAndSaveTimelineObjects(cache, timelineObjs, forceNowToTime)
+	processAndSaveTimelineObjects(cache, timeline.objs, timeline.versions, forceNowToTime)
 
 	if (span) span.end()
 }
@@ -193,6 +192,7 @@ export async function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Ti
 function processAndSaveTimelineObjects(
 	cache: CacheForStudioBase,
 	timelineObjs: Array<TimelineObjGeneric>,
+	versions: TimelineCompleteGenerationVersions,
 	forceNowToTime: Time | undefined
 ): void {
 	const studio = cache.Studio.doc
@@ -258,6 +258,7 @@ function processAndSaveTimelineObjects(
 		timelineHash: getRandomId(), // randomized on every timeline change
 		generated: getCurrentTime(),
 		timelineBlob: serializeTimelineBlob(timelineObjs),
+		generationVersions: versions,
 	}
 
 	cache.Timeline.replace(newTimeline)
@@ -303,7 +304,9 @@ export function getPartInstanceTimelineInfo(
 /**
  * Returns timeline objects related to rundowns in a studio
  */
-async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<TimelineObjRundown>> {
+async function getTimelineRundown(
+	cache: CacheForPlayout
+): Promise<{ objs: Array<TimelineObjRundown>; versions: TimelineCompleteGenerationVersions }> {
 	const span = profiler.startSpan('getTimelineRundown')
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObjExt> = []
@@ -313,6 +316,7 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 		const partForRundown = currentPartInstance || nextPartInstance
 		const activeRundown = partForRundown && cache.Rundowns.findOne(partForRundown.rundownId)
 
+		let timelineVersions: TimelineCompleteGenerationVersions | undefined
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
 			const pShowStyle = cache.activationCache.getShowStyleCompound(activeRundown)
@@ -346,6 +350,12 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 
 			const showStyleBlueprint0 = await pshowStyleBlueprint
 			const showStyleBlueprintManifest = showStyleBlueprint0.blueprint
+
+			timelineVersions = generateTimelineVersions(
+				cache.Studio.doc,
+				showStyle.blueprintId,
+				showStyleBlueprint0.blueprint.blueprintVersion
+			)
 
 			if (showStyleBlueprintManifest.onTimelineGenerate) {
 				const context = new TimelineEventContext(
@@ -386,21 +396,30 @@ async function getTimelineRundown(cache: CacheForPlayout): Promise<Array<Timelin
 			}
 
 			if (span) span.end()
-			return timelineObjs.map<TimelineObjRundown>((timelineObj) => {
-				return {
-					...omit(timelineObj, 'pieceInstanceId', 'infinitePieceInstanceId', 'partInstanceId'), // temporary fields from OnGenerateTimelineObj
-					objectType: TimelineObjType.RUNDOWN,
-				}
-			})
+			return {
+				objs: timelineObjs.map<TimelineObjRundown>((timelineObj) => {
+					return {
+						...omit(timelineObj, 'pieceInstanceId', 'infinitePieceInstanceId', 'partInstanceId'), // temporary fields from OnGenerateTimelineObj
+						objectType: TimelineObjType.RUNDOWN,
+					}
+				}),
+				versions: timelineVersions ?? generateTimelineVersions(cache.Studio.doc, undefined, '-'),
+			}
 		} else {
 			if (span) span.end()
 			logger.error('No active rundown during updateTimeline')
-			return []
+			return {
+				objs: [],
+				versions: generateTimelineVersions(cache.Studio.doc, undefined, '-'),
+			}
 		}
 	} catch (e) {
 		if (span) span.end()
 		logger.error(e)
-		return []
+		return {
+			objs: [],
+			versions: generateTimelineVersions(cache.Studio.doc, undefined, '-'),
+		}
 	}
 }
 /**

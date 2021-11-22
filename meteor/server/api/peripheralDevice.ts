@@ -297,83 +297,86 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// ------------------------------
 		const timeline = cache.Timeline.findOne(cache.Studio.doc._id)
-		const timelineObjs = timeline ? deserializeTimelineBlob(timeline.timelineBlob) : []
-		let tlChanged = false
+		if (timeline) {
+			const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
+			let tlChanged = false
 
-		_.each(results, (o) => {
-			check(o.id, String)
+			_.each(results, (o) => {
+				check(o.id, String)
 
-			logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
+				logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
 
-			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
-			if (obj) {
-				applyToArray(obj.enable, (enable) => {
-					if (enable.start === 'now') {
-						enable.start = o.time
-						enable.setFromNow = true
+				const obj = timelineObjs.find((tlo) => tlo.id === o.id)
+				if (obj) {
+					applyToArray(obj.enable, (enable) => {
+						if (enable.start === 'now') {
+							enable.start = o.time
+							enable.setFromNow = true
 
-						tlChanged = true
-					}
-				})
-
-				// TODO - we should do the same for the partInstance.
-				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
-
-				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
-				if (objPieceId && activePlaylist && pieceInstanceCache) {
-					logger.info('Update PieceInstance: ', {
-						pieceId: objPieceId,
-						time: new Date(o.time).toTimeString(),
+							tlChanged = true
+						}
 					})
 
-					const pieceInstance = pieceInstanceCache.findOne(objPieceId)
-					if (pieceInstance) {
-						pieceInstanceCache.update(pieceInstance._id, {
-							$set: {
-								'piece.enable.start': o.time,
-							},
+					// TODO - we should do the same for the partInstance.
+					// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
+
+					const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
+					if (objPieceId && activePlaylist && pieceInstanceCache) {
+						logger.info('Update PieceInstance: ', {
+							pieceId: objPieceId,
+							time: new Date(o.time).toTimeString(),
 						})
 
-						const takeTime = pieceInstance.dynamicallyInserted
-						if (pieceInstance.dynamicallyInserted && takeTime) {
-							lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+						const pieceInstance = pieceInstanceCache.findOne(objPieceId)
+						if (pieceInstance) {
+							pieceInstanceCache.update(pieceInstance._id, {
+								$set: {
+									'piece.enable.start': o.time,
+								},
+							})
+
+							const takeTime = pieceInstance.dynamicallyInserted
+							if (pieceInstance.dynamicallyInserted && takeTime) {
+								lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+							}
 						}
 					}
 				}
-			}
-		})
-
-		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
-			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-			const remainingNowPieces = pieceInstanceCache.findFetch({
-				partInstanceId: activePlaylist.currentPartInstanceId,
-				dynamicallyInserted: { $exists: true },
-				disabled: { $ne: true },
 			})
-			for (const piece of remainingNowPieces) {
-				const pieceTakeTime = piece.dynamicallyInserted
-				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
-					// Disable and hide the instance
-					pieceInstanceCache.update(piece._id, {
-						$set: {
-							disabled: true,
-							hidden: true,
-						},
-					})
+
+			if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
+				// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
+				const remainingNowPieces = pieceInstanceCache.findFetch({
+					partInstanceId: activePlaylist.currentPartInstanceId,
+					dynamicallyInserted: { $exists: true },
+					disabled: { $ne: true },
+				})
+				for (const piece of remainingNowPieces) {
+					const pieceTakeTime = piece.dynamicallyInserted
+					if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
+						// Disable and hide the instance
+						pieceInstanceCache.update(piece._id, {
+							$set: {
+								disabled: true,
+								hidden: true,
+							},
+						})
+					}
 				}
 			}
-		}
-		if (tlChanged) {
-			const newTimeline: TimelineComplete = {
-				_id: cache.Studio.doc._id,
-				timelineBlob: serializeTimelineBlob(timelineObjs),
-				timelineHash: getRandomId(),
-				generated: getCurrentTime(),
-			}
+			if (tlChanged) {
+				const newTimeline: TimelineComplete = {
+					_id: cache.Studio.doc._id,
+					timelineBlob: serializeTimelineBlob(timelineObjs),
+					timelineHash: getRandomId(),
+					generated: getCurrentTime(),
+					generationVersions: timeline.generationVersions,
+				}
 
-			cache.Timeline.replace(newTimeline)
-			// Also do a fast-track for the timeline to be published faster:
-			triggerFastTrackObserver(FastTrackObservers.TIMELINE, [cache.Studio.doc._id], newTimeline)
+				cache.Timeline.replace(newTimeline)
+				// Also do a fast-track for the timeline to be published faster:
+				triggerFastTrackObserver(FastTrackObservers.TIMELINE, [cache.Studio.doc._id], newTimeline)
+			}
 		}
 	}
 	export async function partPlaybackStarted(

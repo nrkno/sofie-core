@@ -1,10 +1,5 @@
 import * as _ from 'underscore'
-import {
-	TimelineObjGeneric,
-	TimelineComplete,
-	StatObjectMetadata,
-	deserializeTimelineBlob,
-} from '../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineComplete, deserializeTimelineBlob } from '../../lib/collections/Timeline'
 import { DBRundown } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
 import { DBPart } from '../../lib/collections/Parts'
@@ -60,15 +55,10 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 		if (isTimelineComplete(o)) {
 			if (o.generated) o.generated = 12345
 
-			const timeline = deserializeTimelineBlob(o.timelineBlob)
-
-			_.each(timeline, (obj) => {
-				const statObjMetadata = obj.metaData as Partial<StatObjectMetadata> | undefined
-				if (statObjMetadata?.versions?.core) {
-					// re-write the core version to something static, so tests won't fail just because the version has changed
-					statObjMetadata.versions.core = '0.0.0-test'
-				}
-			})
+			if (o.generationVersions?.core) {
+				// re-write the core version to something static, so tests won't fail just because the version has changed
+				o.generationVersions.core = '0.0.0-test'
+			}
 		} else if (isPlaylist(o)) {
 			o['created'] = 0
 			o['modified'] = 0

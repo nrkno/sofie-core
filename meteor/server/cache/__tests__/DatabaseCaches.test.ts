@@ -34,6 +34,7 @@ describe('DatabaseCaches', () => {
 				timelineBlob: serializeTimelineBlob([]),
 				timelineHash: protectString('insert'),
 				generated: 1234,
+				generationVersions: {} as any,
 			})
 			cache.Timeline.update(id, { $set: { timelineHash: protectString('insertthenupdate') } })
 
@@ -106,6 +107,7 @@ describe('DatabaseCaches', () => {
 				timelineBlob: serializeTimelineBlob([]),
 				timelineHash: protectString('insert'),
 				generated: 1234,
+				generationVersions: {} as any,
 			})
 			const deferFcn0 = jest.fn(() => {
 				expect(Timeline.findOne(id)).toBeFalsy()
@@ -210,6 +212,7 @@ describe('DatabaseCaches', () => {
 					timelineBlob: serializeTimelineBlob([]),
 					timelineHash: protectString('insert'),
 					generated: 1234,
+					generationVersions: {} as any,
 				})
 				cache.Timeline.update(id, { $set: { timelineHash: protectString('insertthenupdate') } })
 
