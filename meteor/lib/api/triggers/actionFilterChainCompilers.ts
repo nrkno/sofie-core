@@ -662,10 +662,10 @@ export function compileAdLibFilter(
 			}
 		}
 
-		let adlibs: IWrappedAdLib[] = []
+		let resultingAdLibs: IWrappedAdLib[] = []
 
 		{
-			adlibs = [
+			resultingAdLibs = [
 				...rundownBaselineAdLibItems,
 				...rundownBaselineAdLibActions,
 				...adLibPieces,
@@ -675,30 +675,30 @@ export function compileAdLibFilter(
 			]
 
 			// Sort the adliba:
-			adlibs = sortAdlibs(
-				adlibs.map((adlib) => ({
+			resultingAdLibs = sortAdlibs(
+				resultingAdLibs.map((adlib) => ({
 					adlib: adlib,
 					label: adlib.label,
 					adlibRank: adlib._rank,
 					adlibId: adlib._id,
-					partRank: (adlib.partId && partMap.get(adlib.partId))?._rank ?? null,
+					partRank: (adlib.partId && partRankMap.get(adlib.partId)) ?? null,
 					segmentRank: 0, // TODO: should we take the segment rank into account?
 				}))
 			)
 
 			// finalize the process: apply limit and pick
 			if (adLibPieceTypeFilter.limit !== undefined) {
-				adlibs = adlibs.slice(0, adLibPieceTypeFilter.limit)
+				resultingAdLibs = resultingAdLibs.slice(0, adLibPieceTypeFilter.limit)
 			}
 			if (adLibPieceTypeFilter.pick !== undefined && adLibPieceTypeFilter.pick >= 0) {
-				adlibs = [adlibs[adLibPieceTypeFilter.pick]]
+				resultingAdLibs = [resultingAdLibs[adLibPieceTypeFilter.pick]]
 			} else if (adLibPieceTypeFilter.pick !== undefined && adLibPieceTypeFilter.pick < 0) {
-				adlibs = [adlibs[adlibs.length + adLibPieceTypeFilter.pick]]
+				resultingAdLibs = [resultingAdLibs[resultingAdLibs.length + adLibPieceTypeFilter.pick]]
 			}
 		}
 
 		// remove any falsy values from the result set
-		return adlibs.filter(Boolean)
+		return resultingAdLibs.filter(Boolean)
 	}
 }
 
