@@ -7,19 +7,25 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { IProps } from './ThumbnailRendererFactory'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilm, faSlash } from '@fortawesome/free-solid-svg-icons'
+import { getPreviewUrlForPieceUi, getThumbnailUrlForPieceUi } from '../../../../lib/ui/clipPreview'
+import { VideoPreviewPlayer } from '../../../../lib/VideoPreviewPlayer'
 
 export function VTThumbnailRenderer({
 	pieceInstance,
 	hovering,
 	hoverScrubTimePosition,
 	originPosition,
-	...props
+	studio,
+	layer,
 }: IProps) {
-	const mediaPreviewUrl = props.studio.settings.mediaPreviewsUrl
+	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
 
 	const status = pieceInstance.instance.piece.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
+
+	const previewUrl: string | undefined = getPreviewUrlForPieceUi(pieceInstance, studio, mediaPreviewUrl)
+	const thumbnailUrl: string | undefined = getThumbnailUrlForPieceUi(pieceInstance, studio, mediaPreviewUrl)
 
 	return (
 		<>
@@ -33,7 +39,7 @@ export function VTThumbnailRenderer({
 					left: originPosition.left + 'px',
 					transform: 'translate(0, -100%)',
 				}}
-				typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
+				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}
 				contentMetaData={pieceInstance.contentMetaData || null}
 				noticeMessage={pieceInstance.message || null}
@@ -42,15 +48,30 @@ export function VTThumbnailRenderer({
 				contentPackageInfos={pieceInstance.contentPackageInfos}
 				pieceId={pieceInstance.instance.piece._id}
 				expectedPackages={pieceInstance.instance.piece.expectedPackages}
-				studio={props.studio}
+				studio={studio}
+				hideHoverscrubPreview={true}
 			/>
 			<div className="segment-storyboard__thumbnail__image-container">
-				<div className="segment-storyboard__thumbnail__icon">
-					<span className="fa-layers fa-fw">
-						<FontAwesomeIcon icon={faFilm} />
-						<FontAwesomeIcon icon={faSlash} />
-					</span>
-				</div>
+				{thumbnailUrl ? (
+					hovering && previewUrl ? (
+						<VideoPreviewPlayer
+							itemDuration={vtContent?.sourceDuration || 0}
+							loop={vtContent?.loop || false}
+							previewUrl={previewUrl}
+							seek={vtContent?.seek || 0}
+							timePosition={0}
+						/>
+					) : (
+						<img src={thumbnailUrl} />
+					)
+				) : (
+					<div className="segment-storyboard__thumbnail__icon">
+						<span className="fa-layers fa-fw">
+							<FontAwesomeIcon icon={faFilm} />
+							<FontAwesomeIcon icon={faSlash} />
+						</span>
+					</div>
+				)}
 			</div>
 			<div className="segment-storyboard__thumbnail__label">{pieceInstance.instance.piece.name}</div>
 		</>

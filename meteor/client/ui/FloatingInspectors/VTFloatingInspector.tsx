@@ -1,5 +1,4 @@
-import React, { useRef, useEffect } from 'react'
-import classNames from 'classnames'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
@@ -7,12 +6,12 @@ import { FloatingInspector } from '../FloatingInspector'
 import { NoticeLevel } from '../../lib/notifications/notifications'
 import { ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integration'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
-import { StyledTimecode } from '../../lib/StyledTimecode'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { getPreviewUrlForExpectedPackagesAndContentMetaData } from '../../lib/ui/clipPreview'
+import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
 
 interface IProps {
 	status: RundownAPI.PieceStatusCode
@@ -33,23 +32,8 @@ interface IProps {
 	expectedPackages: ExpectedPackage.Any[] | undefined
 	studio: Studio | undefined
 	displayOn?: 'document' | 'viewport'
-}
 
-function setVideoElementPosition(
-	vEl: HTMLVideoElement,
-	timePosition: number,
-	itemDuration: number,
-	seek: number,
-	loop: boolean
-) {
-	let targetTime = timePosition + seek
-	if (loop && vEl.duration > 0) {
-		targetTime =
-			targetTime % ((itemDuration > 0 ? Math.min(vEl.duration * 1000, itemDuration) : vEl.duration * 1000) * 1000)
-	} else {
-		targetTime = Math.min(timePosition, itemDuration)
-	}
-	vEl.currentTime = targetTime / 1000
+	hideHoverscrubPreview?: boolean
 }
 
 function renderNotice(noticeLevel: NoticeLevel, noticeMessage: string | null): JSX.Element {
@@ -71,20 +55,11 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 	const { t } = useTranslation()
 	const { timePosition } = props
 
-	const videoElement = useRef<HTMLVideoElement>(null)
-
 	const itemDuration = (props.content ? props.content.sourceDuration : undefined) || props.renderedDuration || 0
-	const seek = (props.content ? props.content.seek : 0) || 0
-	const loop = (props.content ? props.content.loop : false) || false
-
-	useEffect(() => {
-		if (videoElement.current) {
-			setVideoElementPosition(videoElement.current, timePosition, itemDuration, seek, loop)
-		}
-	})
+	const seek = props.content?.seek ?? 0
+	const loop = props.content?.loop ?? false
 
 	const offsetTimePosition = timePosition + seek
-	const showFrameMarker = offsetTimePosition === 0 || offsetTimePosition >= itemDuration
 
 	const previewUrl: string | undefined = getPreviewUrlForExpectedPackagesAndContentMetaData(
 		props.pieceId,
@@ -101,32 +76,20 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 					style={props.floatingInspectorStyle}
 				>
-					<video src={previewUrl} ref={videoElement} crossOrigin="anonymous" playsInline={true} muted={true} />
-					{showFrameMarker && (
-						<div
-							className={classNames('segment-timeline__mini-inspector__frame-marker', {
-								'segment-timeline__mini-inspector__frame-marker--first-frame': offsetTimePosition === 0,
-								'segment-timeline__mini-inspector__frame-marker--last-frame': offsetTimePosition >= itemDuration,
-							})}
-						>
-							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<path d="M6 14.5L18.5 14.5V18.5H6H1.5V14V1.5H5.5V14V14.5H6Z" fill="#FFD600" stroke="black" />
-								{/* <path
-									fillRule="evenodd"
-									clipRule="evenodd"
-									d="M0 0H7V13L20 13V20H0V0ZM6 14V1H1V19H19V14L6 14Z"
-									fill="white"
-								/> */}
-							</svg>
-						</div>
-					)}
-					<span className="segment-timeline__mini-inspector__timecode">
-						<StyledTimecode time={offsetTimePosition} />
-					</span>
+					{!props.hideHoverscrubPreview ? (
+						<VideoPreviewPlayer
+							itemDuration={itemDuration}
+							loop={loop}
+							seek={seek}
+							previewUrl={previewUrl}
+							timePosition={offsetTimePosition}
+						/>
+					) : null}
 					{props.noticeLevel !== null ? (
 						<div
 							className={
-								'segment-timeline__mini-inspector segment-timeline__mini-inspector--sub-inspector ' +
+								'segment-timeline__mini-inspector ' +
+								(!props.hideHoverscrubPreview ? 'segment-timeline__mini-inspector--sub-inspector ' : '') +
 								props.typeClass +
 								' ' +
 								(props.noticeLevel === NoticeLevel.CRITICAL
