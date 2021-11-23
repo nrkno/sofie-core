@@ -5,7 +5,7 @@ import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../logging'
 import { canRundownBeUpdated, checkAccessAndGetPeripheralDevice, fetchStudioIdFromDevice } from '../lib'
-import { handleRemovedRundown, regenerateRundown } from '../rundownInput'
+import { handleRemovedRundown } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import {
 	handleMosRundownData,

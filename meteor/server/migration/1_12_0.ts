@@ -74,7 +74,7 @@ export const addSteps = addMigrationSteps('1.12.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			const badCount = Timeline.find({
-				timeline: { $exists: false },
+				timelineBlob: { $exists: false },
 			}).count()
 			if (badCount > 0) {
 				return `${badCount} timeline objects need to be deleted`
@@ -83,7 +83,7 @@ export const addSteps = addMigrationSteps('1.12.0', [
 		},
 		migrate: () => {
 			Timeline.remove({
-				timeline: { $exists: false },
+				timelineBlob: { $exists: false },
 			})
 		},
 	},

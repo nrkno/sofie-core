@@ -6,6 +6,8 @@ import {
 	TimelineComplete,
 	TimelineObjGeneric,
 	TimelineHash,
+	deserializeTimelineBlob,
+	serializeTimelineBlob,
 } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
@@ -13,10 +15,9 @@ import { FindOptions } from '../../lib/typings/meteor'
 import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Studios, getActiveRoutes, StudioId, DBStudio, ResultingMappingRoutes } from '../../lib/collections/Studios'
+import { Studios, getActiveRoutes, StudioId, ResultingMappingRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
-import { literal } from '../../lib/lib'
 import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
 import { FastTrackObservers, setupFastTrackObserver } from './fastTrack'
 
@@ -149,7 +150,8 @@ function createObserverForTimelinePublication(
 
 			if (invalidateTimeline) {
 				context.timelineHash = context.timeline.timelineHash
-				context.routedTimeline = getRoutedTimeline(context.timeline.timeline, context.routes)
+				const timeline = deserializeTimelineBlob(context.timeline.timelineBlob)
+				context.routedTimeline = getRoutedTimeline(timeline, context.routes)
 				changedData = true
 			}
 
@@ -158,7 +160,7 @@ function createObserverForTimelinePublication(
 					_id: context.timeline._id,
 					mappingsHash: context.studio.mappingsHash,
 					timelineHash: context.timeline.timelineHash,
-					timeline: context.routedTimeline,
+					timelineBlob: serializeTimelineBlob(context.routedTimeline),
 					generated: context.timeline.generated,
 					published: Date.now(),
 
