@@ -69,6 +69,9 @@ describe('Playout API', () => {
 	function getAllPartInstances() {
 		return PartInstances.find({}).fetch()
 	}
+	function getAllPieceInstances() {
+		return PieceInstances.find({}).fetch()
+	}
 	function getAllPieceInstancesForPartInstance(partInstanceId: PartInstanceId) {
 		return PieceInstances.find({
 			partInstanceId: partInstanceId,
@@ -262,9 +265,9 @@ describe('Playout API', () => {
 				playlist.activationId = playlist.activationId ?? undefined
 				return playlist
 			}
-			// const getRundown1 = () => {
-			// 	return Rundowns.findOne(rundownId1) as Rundown
-			// }
+			const getRundown1 = () => {
+				return Rundowns.findOne(rundownId1) as Rundown
+			}
 			const getPlaylist1 = () => {
 				const playlist = RundownPlaylists.findOne(playlistId1) as RundownPlaylist
 				playlist.activationId = playlist.activationId ?? undefined
@@ -370,6 +373,9 @@ describe('Playout API', () => {
 			// Take the first Part of active playlist1 once more:
 			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
+			// Take the second Part of active playlist1 so that we have more pieceInstances to reset
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
+
 			// should throw with 402 code, as resetting the rundown when active is forbidden, with default configuration
 			await expect(
 				ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, false)
@@ -379,19 +385,103 @@ describe('Playout API', () => {
 
 			await ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist1()), playlistId1, false)
 
+			// should contain two nonreset pieceInstance (from the first part)
+			expect(
+				getAllPieceInstances().filter(
+					(pieceInstance) => pieceInstance.rundownId === rundownId1 && !pieceInstance.reset
+				)
+			).toHaveLength(2)
+
 			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
-			// should contain one not-reset taken instance
-			const playlist1 = getPlaylist1()
+			// should contain one nonreset taken partInstance
 			expect(
 				getAllPartInstances().filter(
 					(partInstance) =>
-						partInstance.rundownId === rundownId1 &&
-						!partInstance.reset &&
-						partInstance.isTaken &&
-						partInstance.playlistActivationId === playlist1.activationId
+						partInstance.rundownId === rundownId1 && !partInstance.reset && partInstance.isTaken
 				)
 			).toHaveLength(1)
+
+			// should contain three non-reset pieceInstance (two from the first part, one from the second)
+			expect(
+				getAllPieceInstances().filter(
+					(pieceInstance) => pieceInstance.rundownId === rundownId1 && !pieceInstance.reset
+				)
+			).toHaveLength(3)
+
+			// take the second part
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
+
+			// Setting as next a part that is previous
+
+			// set and take first Part again
+			await ServerPlayoutAPI.setNextPart(
+				DEFAULT_ACCESS(getPlaylist1()),
+				playlistId1,
+				getRundown1().getParts()[0]._id
+			)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
+
+			// take the second part to check if we reset all previous partInstances correctly
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
+
+			// should contain two nonreset taken partInstances
+			expect(
+				getAllPartInstances().filter(
+					(partInstance) =>
+						partInstance.rundownId === rundownId1 && !partInstance.reset && partInstance.isTaken
+				)
+			).toHaveLength(2)
+
+			// should contain one nonreset untaken partInstance
+			expect(
+				getAllPartInstances().filter(
+					(partInstance) =>
+						partInstance.rundownId === rundownId1 && !partInstance.reset && !partInstance.isTaken
+				)
+			).toHaveLength(1)
+
+			// should contain three nonreset pieceInstances
+			expect(
+				getAllPieceInstances().filter(
+					(pieceInstance) => pieceInstance.rundownId === rundownId1 && !pieceInstance.reset
+				)
+			).toHaveLength(3)
+
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
+
+			// Setting as next a non-previous and non-current part:
+
+			// set and take first Part again
+			await ServerPlayoutAPI.setNextPart(
+				DEFAULT_ACCESS(getPlaylist1()),
+				playlistId1,
+				getRundown1().getParts()[0]._id
+			)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
+
+			// should contain two nonreset taken instance
+			expect(
+				getAllPartInstances().filter(
+					(partInstance) =>
+						partInstance.rundownId === rundownId1 && !partInstance.reset && partInstance.isTaken
+				)
+			).toHaveLength(2)
+
+			// should contain one nonreset untaken partInstance (next)
+			expect(
+				getAllPartInstances().filter(
+					(partInstance) =>
+						partInstance.rundownId === rundownId1 && !partInstance.reset && !partInstance.isTaken
+				)
+			).toHaveLength(1)
+
+			// should contain three nonreset pieceInstance
+			expect(
+				getAllPieceInstances().filter(
+					(pieceInstance) => pieceInstance.rundownId === rundownId1 && !pieceInstance.reset
+				)
+			).toHaveLength(3)
 		}
 	)
 	testInFiber('reloadRundownPlaylistData', async () => {
