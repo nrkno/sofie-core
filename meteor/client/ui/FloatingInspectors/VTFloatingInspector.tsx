@@ -12,7 +12,7 @@ import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { PieceId } from '../../../lib/collections/Pieces'
-import { getMediaPreviewUrl, getPackagePreviewUrl } from '../../lib/piecePreview/clipPreviews'
+import { getPreviewUrlForExpectedPackagesAndContentMetaData } from '../../lib/ui/clipPreview'
 
 interface IProps {
 	status: RundownAPI.PieceStatusCode
@@ -86,14 +86,13 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 	const offsetTimePosition = timePosition + seek
 	const showFrameMarker = offsetTimePosition === 0 || offsetTimePosition >= itemDuration
 
-	let previewUrl: string | undefined = undefined
-	if (props.contentPackageInfos) {
-		if (props.expectedPackages && props.studio) {
-			previewUrl = getPackagePreviewUrl(props.pieceId, props.expectedPackages, props.studio)
-		}
-	} else {
-		previewUrl = getMediaPreviewUrl(props.contentMetaData, props.mediaPreviewUrl) // Fallback, media objects
-	}
+	const previewUrl: string | undefined = getPreviewUrlForExpectedPackagesAndContentMetaData(
+		props.pieceId,
+		props.studio,
+		props.studio?.settings.mediaPreviewsUrl,
+		props.expectedPackages,
+		props.contentMetaData
+	)
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>

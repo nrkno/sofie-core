@@ -1,5 +1,5 @@
 node_modules/**
-public/images/samples/**
+public/images/media/**
 src/**/*.js
 src/**/*.js.map
 coverage

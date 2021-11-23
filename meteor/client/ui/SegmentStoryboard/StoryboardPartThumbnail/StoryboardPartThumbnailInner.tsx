@@ -94,7 +94,7 @@ export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
 			>
 				{studio &&
 					renderThumbnail({
-						hoverScrubTimePosition: mousePosition,
+						hoverScrubTimePosition: mousePosition * (piece.instance.piece.content.sourceDuration || 0),
 						hovering: hover,
 						layer: layer,
 						originPosition: origin,
