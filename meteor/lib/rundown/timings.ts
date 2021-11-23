@@ -127,7 +127,7 @@ export function getPartTimingsOrDefaults(
 }
 
 function calcInner(rawDuration: number, timings: PartCalculatedTimings): number {
-	return rawDuration + timings.toPartDelay - timings.fromPartRemaining
+	return Math.max(0, rawDuration + timings.toPartDelay - timings.fromPartRemaining)
 }
 
 export function calculatePartExpectedDurationWithPreroll(
