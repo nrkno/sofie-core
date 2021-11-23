@@ -433,7 +433,7 @@ describe('Playout API', () => {
 			// take the second part to check if we reset all previous partInstances correctly
 			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist1()), playlistId1)
 
-			// should contain two non-reset taken partInstances
+			// should contain one non-reset taken partInstance
 			expect(
 				getAllPartInstances().filter(
 					(partInstance) =>
@@ -442,7 +442,7 @@ describe('Playout API', () => {
 						partInstance.isTaken &&
 						partInstance.playlistActivationId === playlist1Activation2.activationId
 				)
-			).toHaveLength(2)
+			).toHaveLength(1)
 
 			// should contain one not-reset not-taken partInstance
 			expect(
