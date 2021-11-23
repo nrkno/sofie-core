@@ -1,7 +1,7 @@
-import { registerCollection, ProtectedString, Time } from '../lib'
+import { registerCollection, ProtectedString, Time, unprotectString, protectString } from '../lib'
 import { TimelineObjectCoreExt, TSR, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { StudioId, ResultingMappingRoutes, MappingsHash } from './Studios'
+import { StudioId, ResultingMappingRoutes, DBStudio } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId, PieceInstanceInfiniteId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
@@ -56,15 +56,6 @@ export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 	isGroup: true
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
-
-export interface StatObjectMetadata {
-	versions: {
-		core: string
-		blueprintId: BlueprintId | undefined
-		blueprintVersion: string
-		studio: string
-	}
-}
 
 export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true
@@ -139,6 +130,16 @@ export function updateLookaheadLayer(obj: TimelineObjRundown): void {
 	obj.lookaheadForLayer = obj.layer
 	obj.layer += '_lookahead'
 }
+
+/** Version numbers of sofie at the time the timeline was generated */
+export interface TimelineCompleteGenerationVersions {
+	core: string
+	blueprintId: BlueprintId | undefined
+	blueprintVersion: string
+	studio: string
+}
+
+/** This is the data-object stored in the Timeline collection in MongoDB */
 export interface TimelineComplete {
 	/** The id of the timeline. Since there is one (1) timeline in a studio, we can use that id here. */
 	_id: StudioId
@@ -149,16 +150,27 @@ export interface TimelineComplete {
 	timelineHash: TimelineHash
 	/** Timestamp when the timeline is generated */
 	generated: Time
-	/** Array containing all timeline-objects */
-	timeline: Array<TimelineObjGeneric>
+	/** serialized JSON Array containing all timeline-objects.  */
+	timelineBlob: TimelineBlob
+	/** Version numbers of sofie at the time the timeline was generated */
+	generationVersions: TimelineCompleteGenerationVersions
 }
 
+export type TimelineBlob = ProtectedString<'TimelineBlob'>
+
+/** This is the data-object published from Core */
 export interface RoutedTimeline {
 	_id: StudioId
-	mappingsHash: MappingsHash | undefined
-	timelineHash: TimelineHash | undefined
-	timeline: TimelineObjGeneric[]
-	generated: Time
+	/** Hash of the studio mappings */
+	mappingsHash: DBStudio['mappingsHash']
+
+	/** Hash of the Timeline */
+	timelineHash: TimelineComplete['timelineHash']
+
+	/** serialized JSON Array containing all timeline-objects */
+	timelineBlob: TimelineBlob
+	generated: TimelineComplete['generated']
+	/** The point in time the data was published */
 	published: Time
 }
 
@@ -170,3 +182,10 @@ registerCollection('Timeline', Timeline)
 // registerIndex(Timeline, {
 // 	_id: 1,
 // })
+
+export function deserializeTimelineBlob(timelineBlob: TimelineBlob): TimelineObjGeneric[] {
+	return JSON.parse(unprotectString(timelineBlob)) as Array<TimelineObjGeneric>
+}
+export function serializeTimelineBlob(timeline: TimelineObjGeneric[]): TimelineBlob {
+	return protectString(JSON.stringify(timeline))
+}

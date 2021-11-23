@@ -21,6 +21,7 @@ let origGetCurrentTime
 jest.mock('../logging')
 
 import '../cronjobs'
+import { Meteor } from 'meteor/meteor'
 
 describe('cronjobs', () => {
 	beforeEach(() => {
@@ -325,6 +326,18 @@ describe('cronjobs', () => {
 			expect(pendingCommands[0]).toMatchObject({
 				deviceId: mockCasparCg,
 				functionName: 'restartCasparCG',
+			})
+
+			// Emulate that the restart was successful:
+			pendingCommands.forEach((cmd) => {
+				Meteor.call(
+					'peripheralDevice.functionReply',
+					cmd.deviceId, // deviceId
+					'', // deviceToken
+					cmd._id, // commandId
+					null, // err
+					null // result
+				)
 			})
 
 			await runAllTimers()

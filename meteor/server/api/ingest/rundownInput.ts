@@ -16,12 +16,12 @@ import {
 } from './ingestCache'
 import {
 	getSegmentId,
-	getStudioFromDevice,
 	canRundownBeUpdated,
 	canSegmentBeUpdated,
 	checkAccessAndGetPeripheralDevice,
 	getRundown,
 	extendIngestRundownCore,
+	fetchStudioIdFromDevice,
 } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { CommitIngestData, runIngestOperationWithCache, UpdateIngestRundownAction } from './lockFunction'
@@ -44,6 +44,7 @@ import { loadShowStyleBlueprint } from '../blueprints/cache'
 import _ from 'underscore'
 import { profiler } from '../profiler'
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
+import { StudioLight } from '../../../lib/collections/optimizations'
 
 export namespace RundownInput {
 	export async function dataPlaylistGet(
@@ -321,9 +322,9 @@ export async function handleRemovedRundown(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
-	return handleRemovedRundownFromStudio(studio._id, rundownExternalId)
+	return handleRemovedRundownFromStudio(studioId, rundownExternalId)
 }
 async function handleRemovedRundownFromStudio(studioId: StudioId, rundownExternalId: string, forceDelete?: boolean) {
 	return runIngestOperationWithCache(
@@ -368,7 +369,7 @@ export async function handleRemovedRundownByRundown(rundown: DBRundown, forceDel
 
 /** Handle an updated (or inserted) Rundown */
 export async function handleUpdatedRundown(
-	studio0: Studio | undefined,
+	studio0: StudioLight | undefined,
 	peripheralDevice: PeripheralDevice | undefined,
 	newIngestRundown: IngestRundown,
 	isCreateAction: boolean
@@ -458,13 +459,13 @@ export async function handleUpdatedRundownInner(
 	return updateRundownFromIngestData(cache, ingestRundown, peripheralDevice)
 }
 export async function regenerateRundown(
-	studio: Studio,
+	studioId: StudioId,
 	rundownExternalId: string,
 	peripheralDevice0: PeripheralDevice | undefined
 ): Promise<void> {
 	return runIngestOperationWithCache(
 		'regenerateRundown',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -531,7 +532,7 @@ export async function handleUpdatedRundownMetaDataInner(
 	const allRundownWatchedPackages = await pAllRundownWatchedPackages
 
 	// Call blueprints, get rundown
-	const { dbRundownData, rundownRes } = await getRundownFromIngestData(
+	const rundownData = await getRundownFromIngestData(
 		cache,
 		ingestRundown,
 		peripheralDevice,
@@ -539,6 +540,12 @@ export async function handleUpdatedRundownMetaDataInner(
 		showStyleBlueprint,
 		allRundownWatchedPackages
 	)
+	if (!rundownData) {
+		// We got no rundown, abort:
+		return null
+	}
+
+	const { dbRundownData, rundownRes } = rundownData
 
 	// Save rundown and baseline
 	const dbRundown = await saveChangesForRundown(cache, dbRundownData, rundownRes, showStyle)
@@ -578,11 +585,11 @@ export async function handleRemovedSegment(
 	rundownExternalId: string,
 	segmentExternalId: string
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleRemovedSegment',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -632,13 +639,13 @@ export async function handleUpdatedSegment(
 	newIngestSegment: IngestSegment,
 	isCreateAction: boolean
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const segmentExternalId = newIngestSegment.externalId
 
 	return runIngestOperationWithCache(
 		'handleUpdatedSegment',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -665,11 +672,11 @@ export async function handleUpdatedSegmentRanks(
 	rundownExternalId: string,
 	newRanks: { [segmentExternalId: string]: number }
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleUpdatedSegmentRanks',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -719,11 +726,11 @@ export async function handleRemovedPart(
 	segmentExternalId: string,
 	partExternalId: string
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleRemovedPart',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -756,11 +763,11 @@ export async function handleUpdatedPart(
 	segmentExternalId: string,
 	ingestPart: IngestPart
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	return runIngestOperationWithCache(
 		'handleUpdatedPart',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {

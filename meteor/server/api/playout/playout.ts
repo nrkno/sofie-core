@@ -11,8 +11,8 @@ import {
 	isStringOrProtectedString,
 	getRandomId,
 	applyToArray,
+	stringifyError,
 } from '../../../lib/lib'
-import { StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
@@ -25,7 +25,6 @@ import {
 	reportPartInstanceHasStopped,
 	reportPieceHasStopped,
 } from '../blueprints/events'
-import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
@@ -56,7 +55,8 @@ import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/se
 import { StudioContentWriteAccess } from '../../security/studio'
 import {
 	afterTake,
-	resetPreviousSegmentAndClearNextSegmentId,
+	clearNextSegmentId,
+	resetPreviousSegment,
 	takeNextPartInnerSync,
 	updatePartInstanceOnTake,
 } from './take'
@@ -85,7 +85,9 @@ import { MongoQuery } from '../../../lib/typings/meteor'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PieceGroupMetadata } from '../../../lib/rundown/pieces'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
-import { calculatePartExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
+import { fetchBlueprintVersion } from '../../../lib/collections/optimizations'
+import { deserializeTimelineBlob, serializeTimelineBlob, TimelineComplete } from '../../../lib/collections/Timeline'
+import { FastTrackObservers, triggerFastTrackObserver } from '../../publications/fastTrack'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -321,7 +323,8 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		nextPartId: PartId | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined
+		nextTimeOffset?: number | undefined,
+		clearNextSegment?: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 		if (nextPartId) check(nextPartId, String)
@@ -340,7 +343,7 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" cannot change next during hold!`)
 			},
 			async (cache) => {
-				await setNextPartInner(cache, nextPartId, setManually, nextTimeOffset)
+				await setNextPartInner(cache, nextPartId, setManually, nextTimeOffset, clearNextSegment)
 
 				return ClientAPI.responseSuccess(undefined)
 			}
@@ -351,7 +354,8 @@ export namespace ServerPlayoutAPI {
 		cache: CacheForPlayout,
 		nextPartId: PartId | DBPart | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined
+		nextTimeOffset?: number | undefined,
+		clearNextSegment?: boolean
 	): Promise<void> {
 		const playlist = cache.Playlist.doc
 		if (!playlist.activationId) throw new Meteor.Error(501, `Rundown Playlist "${playlist._id}" is not active!`)
@@ -368,6 +372,9 @@ export namespace ServerPlayoutAPI {
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 
+		if (clearNextSegment) {
+			libSetNextSegment(cache, null)
+		}
 		await libsetNextPart(cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
 
 		// update lookahead and the next part when we have an auto-next
@@ -950,7 +957,8 @@ export namespace ServerPlayoutAPI {
 							currentPartInstance
 						)
 
-						resetPreviousSegmentAndClearNextSegmentId(cache)
+						clearNextSegmentId(cache, currentPartInstance)
+						resetPreviousSegment(cache)
 
 						// Update the next partinstance
 						const nextPart = selectNextPart(
@@ -1103,88 +1111,92 @@ export namespace ServerPlayoutAPI {
 		let lastTakeTime: number | undefined
 
 		// ------------------------------
-		const timelineObjs = cache.Timeline.findOne(cache.Studio.doc._id)?.timeline || []
-		let tlChanged = false
+		const timeline = cache.Timeline.findOne(cache.Studio.doc._id)
+		if (timeline) {
+			const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
+			let tlChanged = false
 
-		_.each(results, (o) => {
-			check(o.id, String)
+			_.each(results, (o) => {
+				check(o.id, String)
 
-			logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
+				logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
 
-			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
-			if (obj) {
-				applyToArray(obj.enable, (enable) => {
-					if (enable.start === 'now') {
-						enable.start = o.time
-						enable.setFromNow = true
+				const obj = timelineObjs.find((tlo) => tlo.id === o.id)
+				if (obj) {
+					applyToArray(obj.enable, (enable) => {
+						if (enable.start === 'now') {
+							enable.start = o.time
+							enable.setFromNow = true
 
-						tlChanged = true
-					}
-				})
-
-				// TODO - we should do the same for the partInstance.
-				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
-
-				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
-				if (objPieceId && activePlaylist && pieceInstanceCache) {
-					logger.info('Update PieceInstance: ', {
-						pieceId: objPieceId,
-						time: new Date(o.time).toTimeString(),
+							tlChanged = true
+						}
 					})
 
-					const pieceInstance = pieceInstanceCache.findOne(objPieceId)
-					if (
-						pieceInstance &&
-						pieceInstance.dynamicallyInserted &&
-						pieceInstance.piece.enable.start === 'now'
-					) {
-						pieceInstanceCache.update(pieceInstance._id, {
-							$set: {
-								'piece.enable.start': o.time,
-							},
+					// TODO - we should do the same for the partInstance.
+					// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
+
+					const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
+					if (objPieceId && activePlaylist && pieceInstanceCache) {
+						logger.info('Update PieceInstance: ', {
+							pieceId: objPieceId,
+							time: new Date(o.time).toTimeString(),
 						})
 
-						const takeTime = pieceInstance.dynamicallyInserted
-						if (takeTime) {
-							lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+						const pieceInstance = pieceInstanceCache.findOne(objPieceId)
+						if (
+							pieceInstance &&
+							pieceInstance.dynamicallyInserted &&
+							pieceInstance.piece.enable.start === 'now'
+						) {
+							pieceInstanceCache.update(pieceInstance._id, {
+								$set: {
+									'piece.enable.start': o.time,
+								},
+							})
+
+							const takeTime = pieceInstance.dynamicallyInserted
+							if (takeTime) {
+								lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+							}
 						}
 					}
 				}
-			}
-		})
-
-		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
-			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-			const remainingNowPieces = pieceInstanceCache.findFetch({
-				partInstanceId: activePlaylist.currentPartInstanceId,
-				dynamicallyInserted: { $exists: true },
-				disabled: { $ne: true },
 			})
-			for (const piece of remainingNowPieces) {
-				const pieceTakeTime = piece.dynamicallyInserted
-				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
-					// Disable and hide the instance
-					pieceInstanceCache.update(piece._id, {
-						$set: {
-							disabled: true,
-							hidden: true,
-						},
-					})
+
+			if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
+				// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
+				const remainingNowPieces = pieceInstanceCache.findFetch({
+					partInstanceId: activePlaylist.currentPartInstanceId,
+					dynamicallyInserted: { $exists: true },
+					disabled: { $ne: true },
+				})
+				for (const piece of remainingNowPieces) {
+					const pieceTakeTime = piece.dynamicallyInserted
+					if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
+						// Disable and hide the instance
+						pieceInstanceCache.update(piece._id, {
+							$set: {
+								disabled: true,
+								hidden: true,
+							},
+						})
+					}
 				}
 			}
-		}
-		if (tlChanged) {
-			cache.Timeline.update(
-				cache.Studio.doc._id,
-				{
-					$set: {
-						timeline: timelineObjs,
-						timelineHash: getRandomId(),
-						generated: getCurrentTime(),
-					},
-				},
-				true
-			)
+
+			if (tlChanged) {
+				const newTimeline: TimelineComplete = {
+					_id: cache.Studio.doc._id,
+					timelineBlob: serializeTimelineBlob(timelineObjs),
+					timelineHash: getRandomId(),
+					generated: getCurrentTime(),
+					generationVersions: timeline.generationVersions,
+				}
+
+				cache.Timeline.replace(newTimeline)
+				// Also do a fast-track for the timeline to be published faster:
+				triggerFastTrackObserver(FastTrackObservers.TIMELINE, [cache.Studio.doc._id], newTimeline)
+			}
 		}
 	}
 
@@ -1303,7 +1315,12 @@ export namespace ServerPlayoutAPI {
 
 						logger.debug(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-						blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+						try {
+							blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+						} catch (err) {
+							logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
+							throw err
+						}
 					}
 				)
 			}
@@ -1483,27 +1500,18 @@ export namespace ServerPlayoutAPI {
 		if (activePlaylists.length === 0) {
 			const studioTimeline = cache.Timeline.findOne(studio._id)
 			if (!studioTimeline) return 'noBaseline'
-			const markerObject = studioTimeline.timeline.find((x) => x.id === `baseline_version`)
-			if (!markerObject) return 'noBaseline'
-			// Accidental inclusion of one timeline code below - random ... don't know why
-			// const studioTimeline = cache.Timeline.findOne(studioId)
-			// if (!studioTimeline) return 'noBaseline'
-			// const markerObject = studioTimeline.timeline.find(
-			// 	(x) => x._id === protectString(`${studio._id}_baseline_version`)
-			// )
-			// if (!markerObject) return 'noBaseline'
+			const versionsContent = studioTimeline.generationVersions
+			if (!versionsContent) return 'noVersion'
 
-			const versionsContent = (markerObject.metaData as Partial<StatObjectMetadata> | undefined)?.versions
+			if (versionsContent.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
 
-			if (versionsContent?.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
+			if (versionsContent.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 
-			if (versionsContent?.studio !== (studio._rundownVersionHash || 0)) return 'studio'
-
-			if (versionsContent?.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
+			if (versionsContent.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
 			if (studio.blueprintId) {
-				const blueprint = await Blueprints.findOneAsync(studio.blueprintId)
-				if (!blueprint) return 'blueprintUnknown'
-				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
+				const blueprintVersion = await fetchBlueprintVersion(studio.blueprintId)
+				if (!blueprintVersion) return 'blueprintUnknown'
+				if (versionsContent.blueprintVersion !== (blueprintVersion || 0)) return 'blueprintVersion'
 			}
 		}
 

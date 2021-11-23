@@ -38,7 +38,13 @@ const { ServerPlayoutAPI: _ActualServerPlayoutAPI } = jest.requireActual('../pla
 import { ServerPlayoutAPI } from '../playout/playout'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { Timeline, TimelineComplete, TimelineEnableExt, TimelineObjGeneric } from '../../../lib/collections/Timeline'
+import {
+	deserializeTimelineBlob,
+	Timeline,
+	TimelineComplete,
+	TimelineEnableExt,
+	TimelineObjGeneric,
+} from '../../../lib/collections/Timeline'
 import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
@@ -437,11 +443,13 @@ describe('test peripheralDevice general API methods', () => {
 		}) as TimelineComplete
 		expect(studioTimeline).toBeTruthy()
 
-		const nowTimelineObjs = studioTimeline.timeline.filter(
-			(x) => x.enable && !Array.isArray(x.enable) && x.enable.start === 'now'
-		)
+		const timeline0 = studioTimeline && deserializeTimelineBlob(studioTimeline.timelineBlob)
+		const nowTimelineObjs =
+			(studioTimeline &&
+				timeline0 &&
+				timeline0.filter((x) => x.enable && !Array.isArray(x.enable) && x.enable.start === 'now')) ||
+			[]
 		expect(nowTimelineObjs.length).toBe(1)
-
 		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = nowTimelineObjs.map(
 			(tObj) => ({
 				id: tObj.id,
@@ -458,14 +466,14 @@ describe('test peripheralDevice general API methods', () => {
 
 		const updatedStudioTimeline = Timeline.findOne({
 			_id: env.studio._id,
-		}) as TimelineComplete
-		expect(updatedStudioTimeline).toBeTruthy()
-
-		const updatedObjectMap = normalizeArrayToMap(updatedStudioTimeline.timeline, 'id')
+		})
+		const prevIds = nowTimelineObjs.map((x) => x.id)
+		const timeline1 = updatedStudioTimeline && deserializeTimelineBlob(updatedStudioTimeline.timelineBlob)
+		const timelineUpdatedObjs = (timeline1 && timeline1.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
+		const updatedObjectMap = normalizeArrayToMap(timelineUpdatedObjs, 'id')
 		for (const prevObj of nowTimelineObjs) {
 			const tlObj = updatedObjectMap.get(prevObj.id) as TimelineObjGeneric
 			expect(tlObj).toBeTruthy()
-
 			expect(Array.isArray(tlObj.enable)).toBeFalsy()
 			const enable = tlObj.enable as TimelineEnableExt
 			expect(enable.setFromNow).toBe(true)

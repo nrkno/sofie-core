@@ -9,6 +9,7 @@ import {
 	getRandomId,
 	assertNever,
 	getRank,
+	stringifyError,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
@@ -141,11 +142,18 @@ export namespace ServerPlayoutAdLibAPI {
 										)}`
 									)
 
-									blueprint.blueprint.executeAction(
-										actionContext,
-										executeProps.actionId,
-										executeProps.userData
-									)
+									try {
+										blueprint.blueprint.executeAction(
+											actionContext,
+											executeProps.actionId,
+											executeProps.userData
+										)
+									} catch (err) {
+										logger.error(
+											`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`
+										)
+										// TODO: should we throw here?
+									}
 								}
 							)
 							break
