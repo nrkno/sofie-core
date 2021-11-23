@@ -135,7 +135,7 @@ export function SourceLayer(props: ISourceLayerProps) {
 									onFollowLiveLine={props.onFollowLiveLine}
 									layerIndex={props.layerIndex}
 									isPreview={props.isPreview}
-									showDurationSourceLayers={this.props.showDurationSourceLayers}
+									showDurationSourceLayers={props.showDurationSourceLayers}
 								/>
 							)
 						})

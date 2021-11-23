@@ -87,7 +87,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 							onPieceClick={props.onPieceClick}
 							onPieceDoubleClick={props.onPieceDoubleClick}
 							isPreview={props.isPreview}
-							showDurationSourceLayers={this.props.showDurationSourceLayers}
+							showDurationSourceLayers={props.showDurationSourceLayers}
 						/>
 					)
 				})
@@ -124,7 +124,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 						onPieceClick={props.onPieceClick}
 						onPieceDoubleClick={props.onPieceDoubleClick}
 						isPreview={props.isPreview}
-						showDurationSourceLayers={this.props.showDurationSourceLayers}
+						showDurationSourceLayers={props.showDurationSourceLayers}
 					/>
 				)
 			}

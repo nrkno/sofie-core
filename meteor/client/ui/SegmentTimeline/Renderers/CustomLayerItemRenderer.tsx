@@ -205,6 +205,7 @@ export class CustomLayerItemRenderer<
 		const innerPiece = uiPiece.instance.piece
 		const content = innerPiece.content
 		const duration = content && content.sourceDuration
+		console.log(this.props)
 		if (duration && this.props.showDurationSourceLayers?.has(innerPiece.sourceLayerId)) {
 			return (
 				<span className="segment-timeline__piece__label__duration">{`(${RundownUtils.formatDiffToTimecode(
