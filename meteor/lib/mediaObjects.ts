@@ -430,14 +430,14 @@ export function checkPieceContentStatus(
 					}
 				}
 
-				if (messages.length) {
-					if (newStatus === RundownAPI.PieceStatusCode.OK) {
-						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-					}
-					message = messages.join('; ') + '.'
+				packageInfoToForward = packageInfos
+			}
+			if (messages.length) {
+				if (newStatus === RundownAPI.PieceStatusCode.OK) {
+					newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 				}
 
-				packageInfoToForward = packageInfos
+				message = _.uniq(messages).join('; ') + '.'
 			}
 		} else {
 			// Fallback to MediaObject statuses:
@@ -604,12 +604,6 @@ export function checkPieceContentStatus(
 						}
 					}
 
-					if (messages.length) {
-						if (newStatus === RundownAPI.PieceStatusCode.OK) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-						}
-						message = messages.join('; ') + '.'
-					}
 					break
 				case SourceLayerType.GRAPHICS:
 					if (fileName) {
@@ -629,6 +623,12 @@ export function checkPieceContentStatus(
 				// Note: If adding another type here, make sure it is also handled in:
 				// getMediaObjectMediaId()
 				// * withMediaObjectStatus.tsx (updateMediaObjectSubscription)
+			}
+			if (messages.length) {
+				if (newStatus === RundownAPI.PieceStatusCode.OK) {
+					newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+				}
+				message = messages.join('; ') + '.'
 			}
 		}
 	}
