@@ -48,6 +48,7 @@ describe('updatePartInstanceRanks', () => {
 			segmentId,
 			externalId: id,
 			title: id,
+			expectedDurationWithPreroll: undefined,
 		})
 	}
 
@@ -272,6 +273,7 @@ describe('updatePartInstanceRanks', () => {
 				segmentId,
 				externalId: adlibId,
 				title: adlibId,
+				expectedDurationWithPreroll: undefined,
 			}),
 			'adlib-part'
 		)

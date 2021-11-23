@@ -57,6 +57,10 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { ServerPlayoutAPI } from './playout'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
+import {
+	calculatePartExpectedDurationWithPreroll,
+	calculatePartInstanceExpectedDurationWithPreroll,
+} from '../../../lib/rundown/timings'
 
 export namespace ServerPlayoutAdLibAPI {
 	export async function pieceTakeNow(
@@ -360,6 +364,7 @@ export namespace ServerPlayoutAdLibAPI {
 					rundownId: rundown._id,
 					title: adLibPiece.name,
 					expectedDuration: adLibPiece.expectedDuration,
+					expectedDurationWithPreroll: adLibPiece.expectedDuration, // Temporary
 				}),
 			})
 			const newPieceInstance = convertAdLibToPieceInstance(
@@ -368,6 +373,12 @@ export namespace ServerPlayoutAdLibAPI {
 				newPartInstance,
 				queue
 			)
+
+			newPartInstance.part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
+				newPartInstance.part,
+				[newPieceInstance.piece]
+			)
+
 			await innerStartQueuedAdLib(cache, rundown, currentPartInstance, newPartInstance, [newPieceInstance])
 
 			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart

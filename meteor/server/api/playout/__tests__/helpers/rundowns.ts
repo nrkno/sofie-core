@@ -64,6 +64,7 @@ export function setupRundownBase(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
+		expectedDurationWithPreroll: undefined,
 
 		...partPropsOverride,
 	}
@@ -133,6 +134,7 @@ export function setupPart2(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
+		expectedDurationWithPreroll: undefined,
 
 		...partPropsOverride,
 	}

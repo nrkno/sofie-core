@@ -149,6 +149,6 @@ export function calculatePartInstanceExpectedDurationWithPreroll(
 	if (partInstance.partPlayoutTimings) {
 		return calcInner(partInstance.part.expectedDuration, partInstance.partPlayoutTimings)
 	} else {
-		return partInstance.part.expectedDurationWithPreroll
+		return partInstance.part.expectedDurationWithPreroll ?? partInstance.part.expectedDuration
 	}
 }

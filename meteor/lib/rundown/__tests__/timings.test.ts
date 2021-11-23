@@ -2,75 +2,54 @@ import { IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import {} from 'type-fest'
 import { RundownHoldState } from '../../collections/Rundowns'
 import { literal } from '../../lib'
-import { calculatePartTimings, CalculateTimingsPieceInstance, PartCalculatedTimings } from '../timings'
+import { calculatePartTimings, CalculateTimingsPiece, PartCalculatedTimings } from '../timings'
 
 describe('Part Playout Timings', () => {
 	describe('calculatePartTimings', () => {
-		const pieceInstancesNoPartPreroll: CalculateTimingsPieceInstance[] = [
+		const pieceInstancesNoPartPreroll: CalculateTimingsPiece[] = [
 			{
-				piece: {
-					enable: { start: 0 },
-					prerollDuration: 0,
-					pieceType: IBlueprintPieceType.Normal,
-				},
+				enable: { start: 0 },
+				prerollDuration: 0,
+				pieceType: IBlueprintPieceType.Normal,
 			},
 			{
-				piece: {
-					enable: { start: 5000 },
-					prerollDuration: 1000,
-					pieceType: IBlueprintPieceType.Normal,
-				},
+				enable: { start: 5000 },
+				prerollDuration: 1000,
+				pieceType: IBlueprintPieceType.Normal,
 			},
 			{
-				piece: {
-					enable: { start: 0 },
-					prerollDuration: 500, // Ignored
-					pieceType: IBlueprintPieceType.InTransition,
-				},
+				enable: { start: 0 },
+				prerollDuration: 500, // Ignored
+				pieceType: IBlueprintPieceType.InTransition,
 			},
 		]
-		const pieceInstances500msPartPreroll: CalculateTimingsPieceInstance[] = [
+		const pieceInstances500msPartPreroll: CalculateTimingsPiece[] = [
 			{
-				piece: {
-					enable: { start: 0 },
-					prerollDuration: 500,
-					pieceType: IBlueprintPieceType.Normal,
-				},
+				enable: { start: 0 },
+				prerollDuration: 500,
+				pieceType: IBlueprintPieceType.Normal,
 			},
 			{
-				piece: {
-					enable: { start: 0 },
-					prerollDuration: 150,
-					pieceType: IBlueprintPieceType.Normal,
-				},
+				enable: { start: 0 },
+				prerollDuration: 150,
+				pieceType: IBlueprintPieceType.Normal,
 			},
 			{
-				piece: {
-					enable: { start: 5000 },
-					prerollDuration: 1000,
-					pieceType: IBlueprintPieceType.Normal,
-				},
+				enable: { start: 5000 },
+				prerollDuration: 1000,
+				pieceType: IBlueprintPieceType.Normal,
 			},
 			{
-				piece: {
-					enable: { start: 0 },
-					prerollDuration: 500, // Ignored
-					pieceType: IBlueprintPieceType.InTransition,
-				},
+				enable: { start: 0 },
+				prerollDuration: 500, // Ignored
+				pieceType: IBlueprintPieceType.InTransition,
 			},
 		]
 
 		describe('no transition', () => {
 			describe('no preroll', () => {
 				test('no previous part', () => {
-					const timings = calculatePartTimings(
-						undefined,
-						undefined,
-						{
-							part: {},
-						},
-						pieceInstancesNoPartPreroll
-					)
+					const timings = calculatePartTimings(undefined, undefined, {}, pieceInstancesNoPartPreroll)
 
 					expect(timings).toEqual(
 						literal<PartCalculatedTimings>({
@@ -85,13 +64,9 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								autoNext: true,
-							},
+							autoNext: true,
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstancesNoPartPreroll
 					)
 
@@ -108,13 +83,9 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								outTransition: { duration: 289 },
-							},
+							outTransition: { duration: 289 },
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstancesNoPartPreroll
 					)
 
@@ -131,14 +102,10 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								autoNext: true,
-								autoNextOverlap: 452,
-							},
+							autoNext: true,
+							autoNextOverlap: 452,
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstancesNoPartPreroll
 					)
 
@@ -155,15 +122,11 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								autoNext: true,
-								autoNextOverlap: 452,
-								outTransition: { duration: 256 },
-							},
+							autoNext: true,
+							autoNextOverlap: 452,
+							outTransition: { duration: 256 },
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstancesNoPartPreroll
 					)
 
@@ -180,15 +143,11 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								autoNext: true,
-								autoNextOverlap: 452,
-								outTransition: { duration: 2256 },
-							},
+							autoNext: true,
+							autoNextOverlap: 452,
+							outTransition: { duration: 2256 },
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstancesNoPartPreroll
 					)
 
@@ -203,14 +162,7 @@ describe('Part Playout Timings', () => {
 			})
 			describe('500ms preroll', () => {
 				test('no previous part', () => {
-					const timings = calculatePartTimings(
-						undefined,
-						undefined,
-						{
-							part: {},
-						},
-						pieceInstances500msPartPreroll
-					)
+					const timings = calculatePartTimings(undefined, undefined, {}, pieceInstances500msPartPreroll)
 
 					expect(timings).toEqual(
 						literal<PartCalculatedTimings>({
@@ -222,16 +174,7 @@ describe('Part Playout Timings', () => {
 				})
 
 				test('with previous part', () => {
-					const timings = calculatePartTimings(
-						undefined,
-						{
-							part: {},
-						},
-						{
-							part: {},
-						},
-						pieceInstances500msPartPreroll
-					)
+					const timings = calculatePartTimings(undefined, {}, {}, pieceInstances500msPartPreroll)
 
 					expect(timings).toEqual(
 						literal<PartCalculatedTimings>({
@@ -246,13 +189,9 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								outTransition: { duration: 289 },
-							},
+							outTransition: { duration: 289 },
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstances500msPartPreroll
 					)
 
@@ -269,13 +208,9 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								outTransition: { duration: 823 },
-							},
+							outTransition: { duration: 823 },
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstances500msPartPreroll
 					)
 
@@ -292,14 +227,10 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								autoNext: true,
-								autoNextOverlap: 452,
-							},
+							autoNext: true,
+							autoNextOverlap: 452,
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstances500msPartPreroll
 					)
 
@@ -316,15 +247,11 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								autoNext: true,
-								autoNextOverlap: 452,
-								outTransition: { duration: 256 },
-							},
+							autoNext: true,
+							autoNextOverlap: 452,
+							outTransition: { duration: 256 },
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstances500msPartPreroll
 					)
 
@@ -341,15 +268,11 @@ describe('Part Playout Timings', () => {
 					const timings = calculatePartTimings(
 						undefined,
 						{
-							part: {
-								autoNext: true,
-								autoNextOverlap: 452,
-								outTransition: { duration: 2256 },
-							},
+							autoNext: true,
+							autoNextOverlap: 452,
+							outTransition: { duration: 2256 },
 						},
-						{
-							part: {},
-						},
+						{},
 						pieceInstances500msPartPreroll
 					)
 
@@ -370,12 +293,10 @@ describe('Part Playout Timings', () => {
 					undefined,
 					undefined,
 					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 5000,
-								previousPartKeepaliveDuration: 5000,
-								partContentDelayDuration: 1000,
-							},
+						inTransition: {
+							blockTakeDuration: 5000,
+							previousPartKeepaliveDuration: 5000,
+							partContentDelayDuration: 1000,
 						},
 					},
 					pieceInstances500msPartPreroll
@@ -394,18 +315,14 @@ describe('Part Playout Timings', () => {
 				const timings = calculatePartTimings(
 					undefined,
 					{
-						part: {
-							autoNext: true,
-							autoNextOverlap: 452,
-						},
+						autoNext: true,
+						autoNextOverlap: 452,
 					},
 					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 5000,
-								previousPartKeepaliveDuration: 5000,
-								partContentDelayDuration: 1000,
-							},
+						inTransition: {
+							blockTakeDuration: 5000,
+							previousPartKeepaliveDuration: 5000,
+							partContentDelayDuration: 1000,
 						},
 					},
 					pieceInstances500msPartPreroll
@@ -424,17 +341,13 @@ describe('Part Playout Timings', () => {
 				const timings = calculatePartTimings(
 					undefined,
 					{
-						part: {
-							disableNextPartInTransition: true,
-						},
+						disableNextPartInTransition: true,
 					},
 					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 5000,
-								previousPartKeepaliveDuration: 5000,
-								partContentDelayDuration: 1000,
-							},
+						inTransition: {
+							blockTakeDuration: 5000,
+							previousPartKeepaliveDuration: 5000,
+							partContentDelayDuration: 1000,
 						},
 					},
 					pieceInstances500msPartPreroll
@@ -452,16 +365,12 @@ describe('Part Playout Timings', () => {
 			test('HOLD complete', () => {
 				const timings = calculatePartTimings(
 					RundownHoldState.COMPLETE,
+					{},
 					{
-						part: {},
-					},
-					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 5000,
-								previousPartKeepaliveDuration: 5000,
-								partContentDelayDuration: 1000,
-							},
+						inTransition: {
+							blockTakeDuration: 5000,
+							previousPartKeepaliveDuration: 5000,
+							partContentDelayDuration: 1000,
 						},
 					},
 					pieceInstances500msPartPreroll
@@ -479,16 +388,12 @@ describe('Part Playout Timings', () => {
 			test('HOLD pending', () => {
 				const timings = calculatePartTimings(
 					RundownHoldState.PENDING,
+					{},
 					{
-						part: {},
-					},
-					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 5000,
-								previousPartKeepaliveDuration: 5000,
-								partContentDelayDuration: 1000,
-							},
+						inTransition: {
+							blockTakeDuration: 5000,
+							previousPartKeepaliveDuration: 5000,
+							partContentDelayDuration: 1000,
 						},
 					},
 					pieceInstances500msPartPreroll
@@ -506,16 +411,12 @@ describe('Part Playout Timings', () => {
 			test('HOLD active', () => {
 				const timings = calculatePartTimings(
 					RundownHoldState.ACTIVE,
+					{},
 					{
-						part: {},
-					},
-					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 5000,
-								previousPartKeepaliveDuration: 5000,
-								partContentDelayDuration: 1000,
-							},
+						inTransition: {
+							blockTakeDuration: 5000,
+							previousPartKeepaliveDuration: 5000,
+							partContentDelayDuration: 1000,
 						},
 					},
 					pieceInstances500msPartPreroll
@@ -535,16 +436,12 @@ describe('Part Playout Timings', () => {
 			test('high preroll', () => {
 				const timings = calculatePartTimings(
 					undefined,
+					{},
 					{
-						part: {},
-					},
-					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 0, // unused
-								previousPartKeepaliveDuration: 628,
-								partContentDelayDuration: 345,
-							},
+						inTransition: {
+							blockTakeDuration: 0, // unused
+							previousPartKeepaliveDuration: 628,
+							partContentDelayDuration: 345,
 						},
 					},
 					pieceInstances500msPartPreroll
@@ -562,16 +459,12 @@ describe('Part Playout Timings', () => {
 			test('high content delay', () => {
 				const timings = calculatePartTimings(
 					undefined,
+					{},
 					{
-						part: {},
-					},
-					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 0, // unused
-								previousPartKeepaliveDuration: 628,
-								partContentDelayDuration: 987,
-							},
+						inTransition: {
+							blockTakeDuration: 0, // unused
+							previousPartKeepaliveDuration: 628,
+							partContentDelayDuration: 987,
 						},
 					},
 					pieceInstances500msPartPreroll
@@ -590,17 +483,13 @@ describe('Part Playout Timings', () => {
 				const timings = calculatePartTimings(
 					undefined,
 					{
-						part: {
-							outTransition: { duration: 200 },
-						},
+						outTransition: { duration: 200 },
 					},
 					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 0, // unused
-								previousPartKeepaliveDuration: 628,
-								partContentDelayDuration: 345,
-							},
+						inTransition: {
+							blockTakeDuration: 0, // unused
+							previousPartKeepaliveDuration: 628,
+							partContentDelayDuration: 345,
 						},
 					},
 					pieceInstances500msPartPreroll
@@ -618,17 +507,13 @@ describe('Part Playout Timings', () => {
 				const timings = calculatePartTimings(
 					undefined,
 					{
-						part: {
-							outTransition: { duration: 987 },
-						},
+						outTransition: { duration: 987 },
 					},
 					{
-						part: {
-							inTransition: {
-								blockTakeDuration: 0, // unused
-								previousPartKeepaliveDuration: 628,
-								partContentDelayDuration: 345,
-							},
+						inTransition: {
+							blockTakeDuration: 0, // unused
+							previousPartKeepaliveDuration: 628,
+							partContentDelayDuration: 345,
 						},
 					},
 					pieceInstances500msPartPreroll

@@ -125,6 +125,7 @@ describe('test peripheralDevice general API methods', () => {
 			segmentId: segmentID,
 			rundownId: rundownID,
 			title: 'Part 000',
+			expectedDurationWithPreroll: undefined,
 		})
 		Pieces.insert({
 			_id: protectString('piece0001'),
@@ -151,6 +152,7 @@ describe('test peripheralDevice general API methods', () => {
 			segmentId: segmentID,
 			rundownId: rundownID,
 			title: 'Part 001',
+			expectedDurationWithPreroll: undefined,
 		})
 		Segments.insert({
 			_id: protectString('segment1'),
