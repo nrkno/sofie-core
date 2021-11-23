@@ -9,7 +9,7 @@ $segment-storyboard-part-width: 160px;
 	> .segment-storyboard__part-list__container {
 		position: relative;
 		overflow: hidden;
-		grid-column: segment-group-controls / end;
+		grid-column: timeline / end;
 		grid-row: header / end;
 	}
 
@@ -17,7 +17,7 @@ $segment-storyboard-part-width: 160px;
 		> .segment-storyboard__part-list {
 			position: relative;
 			display: flex;
-			padding-left: $segment-group-controls-width;
+			padding-left: 0;
 
 			> .segment-storyboard__part-list.segment-storyboard__part-list--squished-parts {
 				position: relative;
@@ -37,7 +37,7 @@ $segment-storyboard-part-width: 160px;
 		}
 
 		> .segment-timeline__zoom-area {
-			margin-left: $segment-group-controls-width;
+			margin-left: 0;
 
 			transition: 1s opacity, 0s visibility;
 

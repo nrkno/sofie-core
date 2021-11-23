@@ -77,7 +77,8 @@ interface IProps {
 }
 
 const PART_WIDTH = 160 // Must match SCSS: $segment-storyboard-part-width
-const PART_LIST_LEAD_IN = 120 // Must match SCSS: .segment-storyboard__part-list(padding-left)
+const PART_LIST_LEAD_IN = 0 // Must match SCSS: .segment-storyboard__part-list(padding-left)
+const PART_SHADE_WIDTH = 100
 
 export const SegmentStoryboard = React.memo(
 	React.forwardRef<HTMLDivElement, IProps>(function SegmentStoryboard(props: IProps, ref) {
@@ -622,7 +623,12 @@ export const SegmentStoryboard = React.memo(
 								</div>
 							</div>
 						</OptionalVelocityComponent>
-						<div className="segment-storyboard__history-shade"></div>
+						<div
+							className="segment-storyboard__history-shade"
+							style={{
+								opacity: 1 - Math.min(1, Math.max(0, (PART_SHADE_WIDTH - scrollLeft) / PART_SHADE_WIDTH)),
+							}}
+						></div>
 						<div
 							className={classNames('segment-timeline__zoom-area', {
 								hidden: scrollLeft === 0 && !props.isLiveSegment,

@@ -86,6 +86,7 @@ export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
 
 					'invert-flash': highlight,
 				})}
+				data-obj-id={piece.instance._id}
 				onPointerEnter={onPointerEnter}
 				onPointerLeave={onPointerLeave}
 				onPointerMove={onPointerMove}

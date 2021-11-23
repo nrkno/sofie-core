@@ -6,6 +6,8 @@ import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/noti
 import { RundownUtils } from '../../../../lib/rundown'
 import { getMediaPreviewUrl, getPackagePreviewUrl } from '../../../../lib/piecePreview/clipPreviews'
 import { IProps } from './ThumbnailRendererFactory'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFilm, faSlash } from '@fortawesome/free-solid-svg-icons'
 
 export function VTThumbnailRenderer({
 	pieceInstance,
@@ -58,7 +60,15 @@ export function VTThumbnailRenderer({
 					studio={props.studio}
 				/>
 			) : null}
-			{pieceInstance.instance.piece.name}
+			<div className="segment-storyboard__thumbnail__image-container">
+				<div className="segment-storyboard__thumbnail__icon">
+					<span className="fa-layers fa-fw">
+						<FontAwesomeIcon icon={faFilm} />
+						<FontAwesomeIcon icon={faSlash} />
+					</span>
+				</div>
+			</div>
+			<div className="segment-storyboard__thumbnail__label">{pieceInstance.instance.piece.name}</div>
 		</>
 	)
 }

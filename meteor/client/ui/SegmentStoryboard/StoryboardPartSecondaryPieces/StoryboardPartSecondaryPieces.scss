@@ -40,4 +40,21 @@ $source-layer-margin: 0.1rem;
 	&:last-child {
 		margin-right: 0;
 	}
+
+	&.script {
+		font-weight: 300;
+		font-style: italic;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+
+.part__piece__right-align-label-container {
+	direction: rtl;
+
+	> .part__piece__right-align-label-inside {
+		white-space: nowrap;
+		direction: ltr;
+		display: inline-block;
+	}
 }
