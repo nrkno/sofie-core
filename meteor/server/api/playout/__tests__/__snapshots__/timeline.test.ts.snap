@@ -5,27 +5,13 @@ Array [
   Object {
     "_id": "mockStudio95",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint91",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint91",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9033",
   },
 ]
@@ -36,27 +22,13 @@ Array [
   Object {
     "_id": "mockStudio101",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint97",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint97",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9033",
   },
 ]
@@ -118,27 +90,13 @@ Array [
   Object {
     "_id": "mockStudio11",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint7",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint7",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -149,27 +107,13 @@ Array [
   Object {
     "_id": "mockStudio35",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint31",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint31",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -180,27 +124,13 @@ Array [
   Object {
     "_id": "mockStudio29",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint25",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint25",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -211,27 +141,13 @@ Array [
   Object {
     "_id": "mockStudio17",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint13",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint13",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -242,27 +158,13 @@ Array [
   Object {
     "_id": "mockStudio23",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint19",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint19",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -273,27 +175,13 @@ Array [
   Object {
     "_id": "mockStudio59",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint55",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint55",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -304,27 +192,13 @@ Array [
   Object {
     "_id": "mockStudio53",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint49",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint49",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9024",
   },
 ]
@@ -335,27 +209,13 @@ Array [
   Object {
     "_id": "mockStudio41",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint37",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint37",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9022",
   },
 ]
@@ -366,27 +226,13 @@ Array [
   Object {
     "_id": "mockStudio47",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint43",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint43",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9022",
   },
 ]
@@ -397,27 +243,13 @@ Array [
   Object {
     "_id": "mockStudio65",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint61",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint61",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -428,27 +260,13 @@ Array [
   Object {
     "_id": "mockStudio83",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint79",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint79",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -459,27 +277,13 @@ Array [
   Object {
     "_id": "mockStudio77",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint73",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint73",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -490,27 +294,13 @@ Array [
   Object {
     "_id": "mockStudio71",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint67",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint67",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9021",
   },
 ]
@@ -521,27 +311,13 @@ Array [
   Object {
     "_id": "mockStudio89",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint85",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint85",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9024",
   },
 ]

@@ -58,10 +58,7 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { ServerPlayoutAPI } from './playout'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import {
-	calculatePartExpectedDurationWithPreroll,
-	calculatePartInstanceExpectedDurationWithPreroll,
-} from '../../../lib/rundown/timings'
+import { calculatePartExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
 
 export namespace ServerPlayoutAdLibAPI {
 	export async function pieceTakeNow(

@@ -9,7 +9,12 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import '../api'
-import { Timeline, TimelineComplete, TimelineEnableExt } from '../../../../lib/collections/Timeline'
+import {
+	deserializeTimelineBlob,
+	Timeline,
+	TimelineComplete,
+	TimelineEnableExt,
+} from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
@@ -72,7 +77,8 @@ async function checkTimingsRaw(
 	previousPartInstance: PartInstance | undefined,
 	expectedTimings: PartTimelineTimings
 ) {
-	const objs = normalizeArrayToMap(timeline?.timeline ?? [], 'id')
+	const timelineObjs = timeline ? deserializeTimelineBlob(timeline?.timelineBlob) : []
+	const objs = normalizeArrayToMap(timelineObjs, 'id')
 
 	// previous part group
 	const prevPartTlObj = previousPartInstance ? objs.get(getPartGroupId(previousPartInstance)) : undefined
