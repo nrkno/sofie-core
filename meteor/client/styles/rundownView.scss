@@ -2862,35 +2862,6 @@ svg.icon {
 			background: #000;
 		}
 
-		> .segment-timeline__mini-inspector__timecode {
-			display: block;
-			position: absolute;
-			top: 0;
-			right: 0;
-			font-weight: 400;
-			text-shadow: 0 0 1px rgba(0, 0, 0, 1);
-			font-size: 0.75em;
-			padding: 0.2em 0.3em;
-			background: rgba(0, 0, 0, 0.25);
-			border-bottom-left-radius: 3px;
-		}
-
-		> .segment-timeline__mini-inspector__frame-marker {
-			display: block;
-			position: absolute;
-			bottom: 1px;
-
-			&.segment-timeline__mini-inspector__frame-marker--first-frame {
-				left: 6px;
-			}
-
-			&.segment-timeline__mini-inspector__frame-marker--last-frame {
-				left: auto;
-				right: 6px;
-				transform: scaleX(-1);
-			}
-		}
-
 		> .segment-timeline__mini-inspector__warnings {
 			display: block;
 			position: absolute;

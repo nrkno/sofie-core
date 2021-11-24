@@ -44,9 +44,9 @@ export function VideoPreviewPlayer({ previewUrl, timePosition, itemDuration, see
 			<video src={previewUrl} ref={videoElement} crossOrigin="anonymous" playsInline={true} muted={true} />
 			{showFrameMarker && (
 				<div
-					className={classNames('segment-timeline__mini-inspector__frame-marker', {
-						'segment-timeline__mini-inspector__frame-marker--first-frame': offsetTimePosition === 0,
-						'segment-timeline__mini-inspector__frame-marker--last-frame': offsetTimePosition >= itemDuration,
+					className={classNames('video-preview-player__frame-marker', {
+						'video-preview-player__frame-marker--first-frame': offsetTimePosition === 0,
+						'video-preview-player__frame-marker--last-frame': offsetTimePosition >= itemDuration,
 					})}
 				>
 					<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -54,7 +54,7 @@ export function VideoPreviewPlayer({ previewUrl, timePosition, itemDuration, see
 					</svg>
 				</div>
 			)}
-			<span className="segment-timeline__mini-inspector__timecode">
+			<span className="video-preview-player__timecode">
 				<StyledTimecode time={offsetTimePosition} />
 			</span>
 		</>

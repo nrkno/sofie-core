@@ -85,14 +85,8 @@
 			align-self: center;
 			justify-self: center;
 			background-color: black;
-		}
-
-		> .segment-timeline__mini-inspector__frame-marker {
-			position: absolute;
-		}
-
-		> .segment-timeline__mini-inspector__timecode {
-			position: absolute;
+			object-fit: contain;
+			aspect-ratio: 16/9;
 		}
 	}
 }

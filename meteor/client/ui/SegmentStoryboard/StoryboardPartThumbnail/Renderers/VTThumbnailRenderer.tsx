@@ -59,7 +59,7 @@ export function VTThumbnailRenderer({
 							loop={vtContent?.loop || false}
 							previewUrl={previewUrl}
 							seek={vtContent?.seek || 0}
-							timePosition={0}
+							timePosition={hoverScrubTimePosition}
 						/>
 					) : (
 						<img src={thumbnailUrl} />
