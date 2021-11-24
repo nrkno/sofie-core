@@ -1,9 +1,11 @@
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../../../lib/collections/Studios'
+import { assertNever } from '../../../../../lib/lib'
 import { OffsetPosition } from '../../../../utils/positions'
 import { PieceUi } from '../../../SegmentContainer/withResolvedSegment'
 import { CameraThumbnailRenderer } from './CameraThumbnailRenderer'
 import { DefaultThumbnailRenderer } from './DefaultThumbnailRenderer'
+import { GraphicsThumbnailRenderer } from './GraphicsThumbnailRenderer'
 import { SplitsThumbnailRenderer } from './SplitsThumbnailRenderer'
 import { VTThumbnailRenderer } from './VTThumbnailRenderer'
 
@@ -17,7 +19,8 @@ export interface IProps {
 }
 
 export default function renderThumbnail(props: IProps) {
-	switch (props.layer?.type) {
+	const type = props.layer?.type
+	switch (type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
 			return VTThumbnailRenderer(props)
@@ -26,7 +29,18 @@ export default function renderThumbnail(props: IProps) {
 			return CameraThumbnailRenderer(props)
 		case SourceLayerType.SPLITS:
 			return SplitsThumbnailRenderer(props)
+		case SourceLayerType.GRAPHICS:
+		case SourceLayerType.LOWER_THIRD:
+			return GraphicsThumbnailRenderer(props)
+		case SourceLayerType.AUDIO:
+		case SourceLayerType.LOCAL:
+		case SourceLayerType.SCRIPT:
+		case SourceLayerType.TRANSITION:
+		case SourceLayerType.UNKNOWN:
+		case undefined:
+			return DefaultThumbnailRenderer(props)
 		default:
+			assertNever(type)
 			return DefaultThumbnailRenderer(props)
 	}
 }

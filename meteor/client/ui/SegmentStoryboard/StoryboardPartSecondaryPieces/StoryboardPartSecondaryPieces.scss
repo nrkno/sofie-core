@@ -1,14 +1,18 @@
 @import '../../../styles/itemTypeColors';
 
 $source-layer-height: 1.2rem;
-$source-layer-margin: 0.1rem;
+$source-layer-margin: 0.2rem;
 
 .segment-storyboard__part__secondary-pieces {
 	margin-top: 0.3em;
+	display: flex;
+	flex-direction: column;
 }
 
 .segment-storyboard__part__output-group {
-	min-height: $source-layer-height + $source-layer-margin * 2;
+	min-height: $source-layer-height + $source-layer-margin;
+	display: flex;
+	flex-direction: column;
 }
 
 .segment-storyboard__part__source-layer {
@@ -28,7 +32,6 @@ $source-layer-margin: 0.1rem;
 	text-overflow: ellipsis;
 	line-height: $source-layer-height;
 	font-size: 1em;
-	margin-bottom: $source-layer-margin;
 	padding: 0 0.2em;
 	border-radius: 3px;
 

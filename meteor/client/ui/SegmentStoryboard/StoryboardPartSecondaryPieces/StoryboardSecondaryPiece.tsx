@@ -12,6 +12,7 @@ import { assertNever } from '../../../../lib/lib'
 import { ScriptRenderer } from './Renderers/ScriptRenderer'
 import { getElementDocumentOffset } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
+import { GraphicsRenderer } from './Renderers/GraphicsRenderer'
 
 interface IProps {
 	layer: ISourceLayer
@@ -31,10 +32,11 @@ function renderPieceInside(
 	switch (type) {
 		case SourceLayerType.SCRIPT:
 			return ScriptRenderer({ ...props, elementOffset, isHovering, typeClass })
-		case SourceLayerType.AUDIO:
-		case SourceLayerType.CAMERA:
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
+			return GraphicsRenderer({ ...props, elementOffset, isHovering, typeClass })
+		case SourceLayerType.AUDIO:
+		case SourceLayerType.CAMERA:
 		case SourceLayerType.LIVE_SPEAK:
 		case SourceLayerType.VT:
 		case SourceLayerType.LOCAL:
@@ -46,7 +48,7 @@ function renderPieceInside(
 			return DefaultRenderer({ ...props, elementOffset, isHovering, typeClass })
 		default:
 			assertNever(type)
-			return null
+			return DefaultRenderer({ ...props, elementOffset, isHovering, typeClass })
 	}
 }
 

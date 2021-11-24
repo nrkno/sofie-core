@@ -53,6 +53,10 @@
 			right: 0;
 			margin: 0;
 		}
+
+		&.segment-storyboard__thumbnail__label--sm {
+			font-size: 0.85em;
+		}
 	}
 
 	&.remote > .segment-storyboard__thumbnail__icon {
