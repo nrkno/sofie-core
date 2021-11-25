@@ -15,6 +15,7 @@ import { AnyLockEvent } from './locks'
 import { Observable } from 'threads/observable'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
+import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 
 export abstract class WorkerParentBase {
 	readonly #workerId: string
@@ -194,7 +195,18 @@ export abstract class WorkerParentBase {
 
 							// TODO: Worker - we should call extendLock on an interval with a fairly low duration
 							// TODO: Worker - this never resolves if the worker dies. Hopefully the bug will be fixed, or swap it out for threadedclass https://github.com/andywer/threads.js/issues/386
-							const result = await this.runJobInWorker(job.name, job.data)
+							let result
+							if (job.name === FORCE_CLEAR_CACHES_JOB) {
+								const invalidations = this.#pendingInvalidations ?? createInvalidateWorkerDataCache()
+								this.#pendingInvalidations = null
+
+								invalidations.forceAll = true
+								await this.invalidateWorkerCaches(invalidations)
+
+								result = undefined
+							} else {
+								result = await this.runJobInWorker(job.name, job.data)
+							}
 
 							await job.moveToCompleted(result, this.#workerId, false)
 						} catch (e) {

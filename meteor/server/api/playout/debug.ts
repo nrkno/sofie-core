@@ -8,8 +8,9 @@ import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { check } from 'meteor/check'
 import { StudioId } from '../../../lib/collections/Studios'
 import { profiler } from '../profiler'
-import { QueueStudioJob } from '../../worker/worker'
+import { QueueForceClearAllCaches, QueueStudioJob } from '../../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { fetchStudioIds } from '../../../lib/collections/optimizations'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -105,7 +106,8 @@ if (!Settings.enableUserAccounts) {
 		debug_forceClearAllCaches() {
 			logger.info('forceClearAllCaches')
 
-			// TODO: Worker - hook into workers
+			const studioIds = fetchStudioIds({})
+			waitForPromise(QueueForceClearAllCaches(studioIds))
 		},
 
 		/**

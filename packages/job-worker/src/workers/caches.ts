@@ -36,6 +36,7 @@ export interface WorkerDataCache {
 }
 
 export interface InvalidateWorkerDataCache {
+	forceAll: boolean
 	studio: boolean
 	blueprints: Array<BlueprintId>
 	showStyleBases: Array<ShowStyleBaseId>
@@ -44,6 +45,7 @@ export interface InvalidateWorkerDataCache {
 
 export function createInvalidateWorkerDataCache(): InvalidateWorkerDataCache {
 	return {
+		forceAll: false,
 		studio: false,
 		blueprints: [],
 		showStyleBases: [],
@@ -82,6 +84,24 @@ export async function invalidateWorkerDataCache(
 	cache: WorkerDataCache,
 	data: InvalidateWorkerDataCache
 ): Promise<void> {
+	if (data.forceAll) {
+		// Clear everything!
+
+		const newStudio = await collections.Studios.findOne(cache.studio._id)
+		if (!newStudio) throw new Error(`Studio is missing during cache invalidation!`)
+		cache.studio = deepFreeze(newStudio)
+
+		cache.studioBlueprint = deepFreeze(await loadStudioBlueprintOrPlaceholder(collections, cache.studio)) // TODO: Worker - guard against errors?
+		cache.studioBlueprintConfig = undefined
+
+		cache.showStyleBases.clear()
+		cache.showStyleVariants.clear()
+		cache.showStyleBlueprints.clear()
+		cache.showStyleBlueprintConfig.clear()
+
+		return
+	}
+
 	let updateStudioBlueprint = false
 
 	if (data.studio) {
