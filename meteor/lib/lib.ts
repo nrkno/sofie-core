@@ -1213,6 +1213,7 @@ export enum LogLevel {
 	INFO = 'info',
 	WARN = 'warn',
 	ERROR = 'error',
+	NONE = 'crit',
 }
 /** Make a string out of an error, including any additional data such as stack trace if available */
 export function stringifyError(error: unknown, noStack = false): string {

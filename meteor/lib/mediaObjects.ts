@@ -14,7 +14,7 @@ import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections
 import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
 import { PackageInfos } from './collections/PackageInfos'
-import { protectString, unprotectString } from './lib'
+import { assertNever, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric } from './collections/Pieces'
@@ -229,7 +229,11 @@ export function checkPieceContentStatus(
 							expectedPackage.content.guid ||
 							expectedPackage._id
 
-						if (!packageOnPackageContainer) {
+						if (
+							!packageOnPackageContainer ||
+							packageOnPackageContainer.status.status ===
+								ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
+						) {
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 							messages.push(
 								t(
@@ -272,14 +276,17 @@ export function checkPieceContentStatus(
 									}
 								)
 							)
-						} else {
+						} else if (
+							packageOnPackageContainer.status.status ===
+							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY
+						) {
 							packageInfos[expectedPackage._id] = {
 								packageName,
 							}
-							// ok:
+							// Fetch scan-info about the package:
 							PackageInfos.find({
-								studio: studio._id,
-								packageId: protectString(expectedPackage._id),
+								studioId: studio._id,
+								packageId: getExpectedPackageId(piece._id, expectedPackage._id),
 								type: {
 									$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN] as any,
 								},
@@ -290,6 +297,8 @@ export function checkPieceContentStatus(
 									packageInfos[expectedPackage._id].deepScan = packageInfo.payload
 								}
 							})
+						} else {
+							assertNever(packageOnPackageContainer.status.status)
 						}
 					}
 				}
@@ -371,6 +380,7 @@ export function checkPieceContentStatus(
 								t: i18next.TFunction
 							) => {
 								if (anomalies.length === 1) {
+									/** Number of frames */
 									const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
 									if (anomalies[0].start === 0) {
 										messages.push(
@@ -389,7 +399,7 @@ export function checkPieceContentStatus(
 												count: freezeStartsAt,
 											})
 										)
-									} else {
+									} else if (frames > 0) {
 										messages.push(
 											t('{{frames}} {{type}} frame detected within the clip', {
 												frames,
@@ -420,14 +430,14 @@ export function checkPieceContentStatus(
 					}
 				}
 
-				if (messages.length) {
-					if (newStatus === RundownAPI.PieceStatusCode.OK) {
-						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-					}
-					message = messages.join('; ') + '.'
+				packageInfoToForward = packageInfos
+			}
+			if (messages.length) {
+				if (newStatus === RundownAPI.PieceStatusCode.OK) {
+					newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 				}
 
-				packageInfoToForward = packageInfos
+				message = _.uniq(messages).join('; ') + '.'
 			}
 		} else {
 			// Fallback to MediaObject statuses:
@@ -594,12 +604,6 @@ export function checkPieceContentStatus(
 						}
 					}
 
-					if (messages.length) {
-						if (newStatus === RundownAPI.PieceStatusCode.OK) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-						}
-						message = messages.join('; ') + '.'
-					}
 					break
 				case SourceLayerType.GRAPHICS:
 					if (fileName) {
@@ -619,6 +623,12 @@ export function checkPieceContentStatus(
 				// Note: If adding another type here, make sure it is also handled in:
 				// getMediaObjectMediaId()
 				// * withMediaObjectStatus.tsx (updateMediaObjectSubscription)
+			}
+			if (messages.length) {
+				if (newStatus === RundownAPI.PieceStatusCode.OK) {
+					newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+				}
+				message = messages.join('; ') + '.'
 			}
 		}
 	}

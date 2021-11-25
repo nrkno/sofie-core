@@ -5,6 +5,9 @@ import { LogLevel } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 
+export function getLogLevel(): LogLevel {
+	return logger.level as LogLevel
+}
 export function setLogLevel(level: LogLevel) {
 	if (logger.level !== level) {
 		logger.level = level

@@ -22,6 +22,7 @@ import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { PieceInstanceInfiniteId } from './PieceInstances'
 import { ReadonlyDeep } from 'type-fest'
+import { fetchStudioLight, StudioLight } from './optimizations'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
@@ -191,6 +192,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	getStudio(): Studio {
 		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
 		const studio = Studios.findOne(this.studioId)
+		if (studio) {
+			return studio
+		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
+	}
+	getStudioLight(): StudioLight {
+		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
+		const studio = fetchStudioLight(this.studioId)
 		if (studio) {
 			return studio
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')

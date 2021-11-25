@@ -103,7 +103,8 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	/** Returns information about the playlist this rundown is a part of, return null to not make it a part of a playlist */
 	getRundownPlaylistInfo?: (
 		context: IStudioUserContext,
-		rundowns: IBlueprintRundownDB[]
+		rundowns: IBlueprintRundownDB[],
+		playlistExternalId: string
 	) => BlueprintResultRundownPlaylist | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
