@@ -7,7 +7,7 @@ import { ProtectedString } from '../../lib/lib'
 import { Credentials, ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../../lib/Settings'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { fetchShowStyleBasesLight } from '../../lib/collections/optimizations'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}
@@ -74,9 +74,9 @@ export namespace AutoFillSelector {
 			if (!selector.showStyleBaseId) {
 				cred = resolveCredentials(cred)
 				if (cred.organization) {
-					const showStyleBases = ShowStyleBases.find({
+					const showStyleBases = fetchShowStyleBasesLight({
 						organizationId: cred.organization._id,
-					}).fetch()
+					})
 
 					selector = {
 						showStyleBaseId: { $in: _.map(showStyleBases, (d) => d._id) },

@@ -33,6 +33,8 @@ export interface IStudioSettings {
 }
 export type MappingsHash = ProtectedString<'MappingsHash'>
 
+export type StudioLight = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
+
 /** A set of available layer groups in a given installation */
 export interface DBStudio {
 	_id: StudioId

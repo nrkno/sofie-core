@@ -393,7 +393,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		timelineDiv: HTMLDivElement
 		intersectionObserver: IntersectionObserver | undefined
 		mountedTime: number
-		nextPartDisplayStartsAt: number
+		nextPartOffset: number
 
 		private pastInfinitesComp: Tracker.Computation | undefined
 
@@ -566,38 +566,48 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 			// segment is stopping from being live
 			if (this.state.isLiveSegment === true && isLiveSegment === false) {
-				this.setState({ isLiveSegment: false })
+				this.setState({ isLiveSegment: false }, () => {
+					if (Settings.autoRewindLeavingSegment) {
+						this.onRewindSegment()
+						this.onShowEntireSegment()
+					}
+				})
 				this.stopLive()
-				if (Settings.autoRewindLeavingSegment) {
-					this.onRewindSegment()
-					this.onShowEntireSegment()
-				}
 			}
-			if (
-				// the segment isn't live, is next, and the nextPartId has changed
-				!isLiveSegment &&
-				isNextSegment &&
+
+			const nextPartDisplayStartsAt =
+				currentNextPart &&
+				this.context.durations?.partDisplayStartsAt &&
+				this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
+			const partOffset =
+				nextPartDisplayStartsAt -
+				(this.props.parts.length > 0
+					? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] ?? 0
+					: 0)
+			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
 				this.props.playlist.nextPartInstanceId &&
 				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
-					this.nextPartDisplayStartsAt !==
-						(this.context.durations?.partDisplayStartsAt &&
-							this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)])) &&
-				!this.state.showingAllSegment
+					this.nextPartOffset !== partOffset)
+			const isBecomingNextSegment = this.state.isNextSegment === false && isNextSegment
+			// the segment isn't live, will be next, and either the nextPartId has changed or it is just becoming next
+			if (
+				!isLiveSegment &&
+				isNextSegment &&
+				currentNextPart &&
+				(nextPartIdOrOffsetHasChanged || isBecomingNextSegment)
 			) {
-				const nextPartDisplayStartsAt =
-					this.context.durations?.partDisplayStartsAt &&
-					this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
-				const partOffset =
-					nextPartDisplayStartsAt -
-						this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
-
-				if (this.state.scrollLeft > partOffset) {
+				const timelineWidth = getElementWidth(this.timelineDiv)
+				// If part is not within viewport scroll to its start
+				if (
+					this.state.scrollLeft > partOffset ||
+					this.state.scrollLeft * this.state.timeScale + timelineWidth < partOffset * this.state.timeScale
+				) {
 					this.setState({
 						scrollLeft: partOffset,
 					})
 				}
-				this.nextPartDisplayStartsAt = nextPartDisplayStartsAt
+				this.nextPartOffset = partOffset
 			}
 
 			// rewind all scrollLeft's to 0 on rundown activate
@@ -775,23 +785,25 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onGoToPartInner = (part: PartUi, timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
-			let newScale: number | undefined
+			this.setState((state) => {
+				let newScale: number | undefined
 
-			let scrollLeft = this.state.scrollLeft
+				let scrollLeft = state.scrollLeft
 
-			if (zoomInToFit) {
-				const timelineWidth = getElementWidth(this.timelineDiv)
-				newScale =
-					(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
-					(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
+				if (zoomInToFit) {
+					const timelineWidth = getElementWidth(this.timelineDiv)
+					newScale =
+						(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
+						(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
 
-				scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
-			}
+					scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
+				}
 
-			this.setState({
-				scrollLeft,
-				timeScale: newScale ?? this.state.timeScale,
-				showingAllSegment: newScale !== undefined ? false : this.state.showingAllSegment,
+				return {
+					scrollLeft,
+					timeScale: newScale ?? state.timeScale,
+					showingAllSegment: newScale !== undefined ? false : state.showingAllSegment,
+				}
 			})
 		}
 

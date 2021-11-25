@@ -15,13 +15,13 @@ import {
 	RundownId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ReadonlyDeep } from 'type-fest'
+import { StudioLight } from '../../../lib/collections/optimizations'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 
 export function generateExpectedPackagesForPartInstance(
-	studio: DBStudio,
+	studio: StudioLight,
 	rundownId: RundownId,
 	partInstance: PartInstance
 ) {
@@ -55,7 +55,7 @@ export function generateExpectedPackagesForPartInstance(
 
 // TODO - this is duplicated in the job-worker
 function generateExpectedPackageBases(
-	studio: ReadonlyDeep<DBStudio>,
+	studio: ReadonlyDeep<StudioLight>,
 	ownerId:
 		| PieceId
 		| AdLibActionId

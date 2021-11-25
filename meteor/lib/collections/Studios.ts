@@ -14,10 +14,11 @@ import {
 	DBStudio,
 	MappingExt,
 	MappingsHash,
+	StudioLight,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
 
-export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
+export function getActiveRoutes(studio: StudioLight): ResultingMappingRoutes {
 	const routes: ResultingMappingRoutes = {
 		existing: {},
 		inserted: [],

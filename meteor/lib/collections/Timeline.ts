@@ -1,14 +1,14 @@
 import { createMongoCollection } from './lib'
-import { MappingsHash, ResultingMappingRoutes } from './Studios'
+import { DBStudio, ResultingMappingRoutes } from './Studios'
 import { StudioId, TimelineObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { TimelineObjId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
 	TimelineComplete,
-	TimelineHash,
 	TimelineObjGeneric,
 	updateLookaheadLayer,
+	TimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { Time } from '@sofie-automation/blueprints-integration'
 export * from '@sofie-automation/corelib/dist/dataModel/Timeline'
@@ -40,6 +40,13 @@ export function getRoutedTimeline(
 				if (i > 0) {
 					// If there are multiple routes we must rename the ids, so that they stay unique.
 					routedObj.id = `_${i}_${routedObj.id}`
+
+					if (routedObj.keyframes) {
+						routedObj.keyframes = routedObj.keyframes.map((keyframe) => ({
+							...keyframe,
+							id: `_${i}_${keyframe.id}`,
+						}))
+					}
 				}
 				outputTimelineObjs.push(routedObj)
 			}
@@ -51,12 +58,19 @@ export function getRoutedTimeline(
 	return outputTimelineObjs
 }
 
+/** This is the data-object published from Core */
 export interface RoutedTimeline {
 	_id: StudioId
-	mappingsHash: MappingsHash | undefined
-	timelineHash: TimelineHash | undefined
-	timeline: TimelineObjGeneric[]
-	generated: Time
+	/** Hash of the studio mappings */
+	mappingsHash: DBStudio['mappingsHash']
+
+	/** Hash of the Timeline */
+	timelineHash: TimelineComplete['timelineHash']
+
+	/** serialized JSON Array containing all timeline-objects */
+	timelineBlob: TimelineBlob
+	generated: TimelineComplete['generated']
+	/** The point in time the data was published */
 	published: Time
 }
 

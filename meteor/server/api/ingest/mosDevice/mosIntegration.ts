@@ -1,6 +1,6 @@
 import * as MOS from 'mos-connection'
 import { logger } from '../../../logging'
-import { getStudioFromDevice, checkAccessAndGetPeripheralDevice, runIngestOperation } from '../lib'
+import { checkAccessAndGetPeripheralDevice, fetchStudioIdFromDevice, runIngestOperation } from '../lib'
 import { parseMosString } from './lib'
 import { PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../../lib/api/methods'
@@ -19,14 +19,14 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoCreate', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(rundown.ID)
 
 		logger.info(`mosRoCreate "${rundown.ID}"`)
 		logger.debug(rundown)
 
-		await runIngestOperation(studio._id, IngestJobs.MosRundown, {
+		await runIngestOperation(studioId, IngestJobs.MosRundown, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			isCreateAction: true,
@@ -44,7 +44,7 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoReplace', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(rundown.ID)
 
@@ -52,7 +52,7 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(rundown)
 
-		await runIngestOperation(studio._id, IngestJobs.MosRundown, {
+		await runIngestOperation(studioId, IngestJobs.MosRundown, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			isCreateAction: true,
@@ -71,13 +71,13 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoDelete', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(rundownId)
 
 		logger.info(`mosRoDelete "${rundownId}"`)
 
-		await runIngestOperation(studio._id, IngestJobs.RemoveRundown, {
+		await runIngestOperation(studioId, IngestJobs.RemoveRundown, {
 			rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 		})
@@ -94,14 +94,14 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoMetadata', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(rundownData.ID)
 
 		logger.info(`mosRoMetadata "${rundownData.ID}"`)
 		logger.debug(rundownData)
 
-		await runIngestOperation(studio._id, IngestJobs.MosRundownMetadata, {
+		await runIngestOperation(studioId, IngestJobs.MosRundownMetadata, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			mosRunningOrderBase: rundownData,
@@ -119,14 +119,14 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoStatus', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(status.ID)
 
 		logger.info(`mosRoStatus "${rundownExternalId}"`)
 		logger.debug(status)
 
-		await runIngestOperation(studio._id, IngestJobs.MosRundownStatus, {
+		await runIngestOperation(studioId, IngestJobs.MosRundownStatus, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			status: status.Status,
@@ -144,7 +144,7 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoStoryStatus', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(status.RunningOrderId)
 		const partExternalId = parseMosString(status.ID)
@@ -152,7 +152,7 @@ export namespace MosIntegration {
 		logger.info(`mosRoStoryStatus "${status.ID}"`)
 		logger.debug(status)
 
-		await runIngestOperation(studio._id, IngestJobs.MosStoryStatus, {
+		await runIngestOperation(studioId, IngestJobs.MosStoryStatus, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			partExternalId: partExternalId,
@@ -172,7 +172,7 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoStoryInsert', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
@@ -180,7 +180,7 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		await runIngestOperation(studio._id, IngestJobs.MosInsertStory, {
+		await runIngestOperation(studioId, IngestJobs.MosInsertStory, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			insertBeforeStoryId: Action.StoryID,
@@ -200,7 +200,7 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoStoryReplace', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
@@ -208,7 +208,7 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(Action, Stories)
 
-		await runIngestOperation(studio._id, IngestJobs.MosInsertStory, {
+		await runIngestOperation(studioId, IngestJobs.MosInsertStory, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			insertBeforeStoryId: Action.StoryID,
@@ -228,13 +228,13 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoStoryMove', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
 		logger.info(`mosRoStoryMove "${Action.StoryID}" Stories: ${Stories}`)
 
-		await runIngestOperation(studio._id, IngestJobs.MosMoveStory, {
+		await runIngestOperation(studioId, IngestJobs.MosMoveStory, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			insertBeforeStoryId: Action.StoryID,
@@ -254,13 +254,13 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoStoryDelete', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
 		logger.info(`mosRoStoryDelete "${rundownExternalId}" Stories: ${Stories}`)
 
-		await runIngestOperation(studio._id, IngestJobs.MosDeleteStory, {
+		await runIngestOperation(studioId, IngestJobs.MosDeleteStory, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			stories: Stories,
@@ -280,13 +280,13 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoStorySwap', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
 		logger.info(`mosRoStorySwap "${StoryID0}", "${StoryID1}"`)
 
-		await runIngestOperation(studio._id, IngestJobs.MosSwapStory, {
+		await runIngestOperation(studioId, IngestJobs.MosSwapStory, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			story0: StoryID0,
@@ -305,14 +305,14 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoReadyToAir', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.ID)
 
 		logger.info(`mosRoReadyToAir "${rundownExternalId}"`)
 		logger.debug(Action)
 
-		await runIngestOperation(studio._id, IngestJobs.MosRundownReadyToAir, {
+		await runIngestOperation(studioId, IngestJobs.MosRundownReadyToAir, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			status: Action.Status,
@@ -330,11 +330,11 @@ export namespace MosIntegration {
 		const transaction = profiler.startTransaction('mosRoFullStory', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 		logger.info(`mosRoFullStory "${story.ID}"`)
 
-		await runIngestOperation(studio._id, IngestJobs.MosFullStory, {
+		await runIngestOperation(studioId, IngestJobs.MosFullStory, {
 			rundownExternalId: parseMosString(story.RunningOrderId),
 			peripheralDeviceId: peripheralDevice._id,
 			story: story,

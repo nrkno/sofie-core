@@ -1,5 +1,5 @@
 import { TSR, OnGenerateTimelineObj, TimelineObjectCoreExt, Time } from '@sofie-automation/blueprints-integration'
-import { ProtectedString } from '../protectedString'
+import { ProtectedString, protectString, unprotectString } from '../protectedString'
 import {
 	PartInstanceId,
 	PieceInstanceInfiniteId,
@@ -57,15 +57,6 @@ export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
 
-export interface StatObjectMetadata {
-	versions: {
-		core: string
-		blueprintId: BlueprintId | undefined
-		blueprintVersion: string
-		studio: string
-	}
-}
-
 export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true
 }
@@ -102,6 +93,15 @@ export function updateLookaheadLayer(obj: TimelineObjRundown): void {
 	obj.lookaheadForLayer = obj.layer
 	obj.layer += '_lookahead'
 }
+
+/** Version numbers of sofie at the time the timeline was generated */
+export interface TimelineCompleteGenerationVersions {
+	core: string
+	blueprintId: BlueprintId | undefined
+	blueprintVersion: string
+	studio: string
+}
+
 export interface TimelineComplete {
 	/** The id of the timeline. Since there is one (1) timeline in a studio, we can use that id here. */
 	_id: StudioId
@@ -112,6 +112,17 @@ export interface TimelineComplete {
 	timelineHash: TimelineHash
 	/** Timestamp when the timeline is generated */
 	generated: Time
-	/** Array containing all timeline-objects */
-	timeline: Array<TimelineObjGeneric>
+	/** serialized JSON Array containing all timeline-objects.  */
+	timelineBlob: TimelineBlob
+	/** Version numbers of sofie at the time the timeline was generated */
+	generationVersions: TimelineCompleteGenerationVersions
+}
+
+export type TimelineBlob = ProtectedString<'TimelineBlob'>
+
+export function deserializeTimelineBlob(timelineBlob: TimelineBlob): TimelineObjGeneric[] {
+	return JSON.parse(unprotectString(timelineBlob)) as Array<TimelineObjGeneric>
+}
+export function serializeTimelineBlob(timeline: TimelineObjGeneric[]): TimelineBlob {
+	return protectString(JSON.stringify(timeline))
 }

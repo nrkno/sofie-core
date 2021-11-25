@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
-import { Studios, StudioId } from '../../../lib/collections/Studios'
+import { StudioId } from '../../../lib/collections/Studios'
 import { check } from '../../../lib/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getRundownId, runIngestOperation } from './lib'
@@ -10,6 +10,7 @@ import { PickerPOST } from '../http'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { fetchStudioLight } from '../../../lib/collections/optimizations'
 
 PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 	check(params.studioId, String)
@@ -39,10 +40,10 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 	}
 })
 export function importIngestRundown(studioId: StudioId, ingestRundown: IngestRundown) {
-	const studio = Studios.findOne(studioId)
+	const studio = fetchStudioLight(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
 
-	const rundownId = getRundownId(studio, ingestRundown.externalId)
+	const rundownId = getRundownId(studio._id, ingestRundown.externalId)
 
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced

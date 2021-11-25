@@ -1,4 +1,4 @@
-import { PartId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, PartId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { JobContext } from '../jobs'
@@ -15,8 +15,11 @@ import {
 } from '@sofie-automation/blueprints-integration/dist'
 import { protectString, unprotectObjectArray, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
+	deserializeTimelineBlob,
 	OnGenerateTimelineObjExt,
-	StatObjectMetadata,
+	serializeTimelineBlob,
+	TimelineComplete,
+	TimelineCompleteGenerationVersions,
 	TimelineContentTypeOther,
 	TimelineObjGeneric,
 	TimelineObjGroupPart,
@@ -60,10 +63,24 @@ import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
 import { endTrace, sendTrace, startTrace } from '../influx'
+import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
 	return !!cache2.isStudio
+}
+
+function generateTimelineVersions(
+	studio: ReadonlyDeep<StudioLight>,
+	blueprintId: BlueprintId | undefined,
+	blueprintVersion: string
+): TimelineCompleteGenerationVersions {
+	return {
+		core: getSystemVersion(),
+		blueprintId: blueprintId,
+		blueprintVersion: blueprintVersion,
+		studio: studio._rundownVersionHash,
+	}
 }
 
 export async function updateStudioTimeline(
@@ -111,30 +128,15 @@ export async function updateStudioTimeline(
 			}
 		}
 		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
-
-		const id = `baseline_version`
-		baselineObjects.push(
-			literal<TimelineObjRundown>({
-				id: id,
-				objectType: TimelineObjType.RUNDOWN,
-				enable: { start: 0 },
-				layer: id,
-				metaData: literal<StatObjectMetadata>({
-					versions: {
-						core: getSystemVersion(),
-						blueprintId: studio.blueprintId,
-						blueprintVersion: blueprint.blueprintVersion,
-						studio: studio._rundownVersionHash,
-					},
-				}),
-				content: {
-					deviceType: TSR.DeviceType.ABSTRACT,
-				},
-			})
-		)
 	}
 
-	processAndSaveTimelineObjects(context, cache, baselineObjects, undefined)
+	const versions = generateTimelineVersions(
+		studio,
+		studio.blueprintId,
+		studioBlueprint?.blueprint?.blueprintVersion ?? '-'
+	)
+	processAndSaveTimelineObjects(context, cache, baselineObjects, versions, undefined)
+
 	if (studioBaseline) {
 		updateBaselineExpectedPackagesOnStudio(context, cache, studioBaseline)
 	}
@@ -155,9 +157,9 @@ export async function updateTimeline(
 		throw new Error(`RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
-	const timelineObjs: Array<TimelineObjGeneric> = await getTimelineRundown(context, cache)
+	const timeline = await getTimelineRundown(context, cache)
 
-	processAndSaveTimelineObjects(context, cache, timelineObjs, forceNowToTime)
+	processAndSaveTimelineObjects(context, cache, timeline.objs, timeline.versions, forceNowToTime)
 
 	if (span) span.end()
 }
@@ -166,6 +168,7 @@ function processAndSaveTimelineObjects(
 	context: JobContext,
 	cache: CacheForStudioBase,
 	timelineObjs: Array<TimelineObjGeneric>,
+	versions: TimelineCompleteGenerationVersions,
 	forceNowToTime: Time | undefined
 ): void {
 	const studio = context.studio
@@ -196,10 +199,11 @@ function processAndSaveTimelineObjects(
 		setNowToTimeInObjects(timelineObjs, theNowTime)
 	}
 
+	const timeline = cache.Timeline.findOne({
+		_id: studio._id,
+	})
 	const oldTimelineObjsMap = normalizeArray(
-		cache.Timeline.findOne({
-			_id: studio._id,
-		})?.timeline ?? [],
+		(timeline?.timelineBlob !== undefined && deserializeTimelineBlob(timeline.timelineBlob)) || [],
 		'id'
 	)
 
@@ -225,12 +229,18 @@ function processAndSaveTimelineObjects(
 		}
 	})
 
-	cache.Timeline.replace({
+	const newTimeline: TimelineComplete = {
 		_id: studio._id,
 		timelineHash: getRandomId(), // randomized on every timeline change
 		generated: getCurrentTime(),
-		timeline: timelineObjs,
-	})
+		timelineBlob: serializeTimelineBlob(timelineObjs),
+		generationVersions: versions,
+	}
+
+	cache.Timeline.replace(newTimeline)
+	// Also do a fast-track for the timeline to be published faster:
+	// TODO: This doesn't work in the worker model, can we do something else?
+	// triggerFastTrackObserver(FastTrackObservers.TIMELINE, [studio._id], newTimeline)
 
 	logger.debug('updateTimeline done!')
 }
@@ -271,7 +281,10 @@ export function getPartInstanceTimelineInfo(
 /**
  * Returns timeline objects related to rundowns in a studio
  */
-async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): Promise<Array<TimelineObjRundown>> {
+async function getTimelineRundown(
+	context: JobContext,
+	cache: CacheForPlayout
+): Promise<{ objs: Array<TimelineObjRundown>; versions: TimelineCompleteGenerationVersions }> {
 	const span = context.startSpan('getTimelineRundown')
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObjExt> = []
@@ -281,6 +294,7 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 		const partForRundown = currentPartInstance || nextPartInstance
 		const activeRundown = partForRundown && cache.Rundowns.findOne(partForRundown.rundownId)
 
+		let timelineVersions: TimelineCompleteGenerationVersions | undefined
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
 			const showStyle = await context.getShowStyleCompound(
@@ -315,6 +329,12 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 			timelineObjs = timelineObjs.concat(await pLookaheadObjs)
 
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+			timelineVersions = generateTimelineVersions(
+				context.studio,
+				showStyle.blueprintId,
+				blueprint.blueprint.blueprintVersion
+			)
+
 			if (blueprint.blueprint.onTimelineGenerate) {
 				const context2 = new TimelineEventContext(
 					context.studio,
@@ -358,21 +378,30 @@ async function getTimelineRundown(context: JobContext, cache: CacheForPlayout): 
 			}
 
 			if (span) span.end()
-			return timelineObjs.map<TimelineObjRundown>((timelineObj) => {
-				return {
-					...omit(timelineObj, 'pieceInstanceId', 'infinitePieceInstanceId', 'partInstanceId'), // temporary fields from OnGenerateTimelineObj
-					objectType: TimelineObjType.RUNDOWN,
-				}
-			})
+			return {
+				objs: timelineObjs.map<TimelineObjRundown>((timelineObj) => {
+					return {
+						...omit(timelineObj, 'pieceInstanceId', 'infinitePieceInstanceId', 'partInstanceId'), // temporary fields from OnGenerateTimelineObj
+						objectType: TimelineObjType.RUNDOWN,
+					}
+				}),
+				versions: timelineVersions ?? generateTimelineVersions(context.studio, undefined, '-'),
+			}
 		} else {
 			if (span) span.end()
 			logger.error('No active rundown during updateTimeline')
-			return []
+			return {
+				objs: [],
+				versions: generateTimelineVersions(context.studio, undefined, '-'),
+			}
 		}
 	} catch (e) {
 		if (span) span.end()
 		logger.error(e)
-		return []
+		return {
+			objs: [],
+			versions: generateTimelineVersions(context.studio, undefined, '-'),
+		}
 	}
 }
 

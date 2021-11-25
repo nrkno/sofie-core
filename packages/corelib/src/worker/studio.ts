@@ -92,6 +92,7 @@ export interface SetNextPartProps extends RundownPlayoutPropsBase {
 	nextPartId: PartId | null
 	setManually?: boolean
 	nextTimeOffset?: number
+	clearNextSegment?: boolean
 }
 export interface SetNextSegmentProps extends RundownPlayoutPropsBase {
 	nextSegmentId: SegmentId | null

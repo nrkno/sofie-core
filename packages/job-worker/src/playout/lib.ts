@@ -1,5 +1,5 @@
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { applyToArray, clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, assertNever, clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Time, TSR } from '@sofie-automation/blueprints-integration'
 import _ = require('underscore')
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -204,6 +204,17 @@ export function selectNextPart(
 	return nextPart ?? null
 }
 
+type ParsedNextPart =
+	| {
+			type: 'part'
+			part: DBPart
+			consumesNextSegmentId: boolean | undefined
+	  }
+	| {
+			type: 'partinstance'
+			instance: DBPartInstance
+	  }
+
 export async function setNextPart(
 	context: JobContext,
 	cache: CacheForPlayout,
@@ -216,36 +227,71 @@ export async function setNextPart(
 	const rundownIds = getRundownIDsFromCache(cache)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-	const newNextPartInstance = rawNextPart && 'playlistActivationId' in rawNextPart ? rawNextPart : null
-	const newNextPart = rawNextPart && 'playlistActivationId' in rawNextPart ? null : rawNextPart
-
-	if (newNextPart || newNextPartInstance) {
+	if (rawNextPart) {
 		if (!cache.Playlist.doc.activationId)
 			throw new Error(`RundownPlaylist "${cache.Playlist.doc._id}" is not active`)
 
-		if ((newNextPart && newNextPart.part.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
-			throw new Error('Part is marked as invalid, cannot set as next.')
-		}
-		if (newNextPart && !rundownIds.includes(newNextPart.part.rundownId)) {
-			throw new Error(
-				`Part "${newNextPart.part._id}" of rundown "${newNextPart.part.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
-			)
-		} else if (newNextPartInstance && !rundownIds.includes(newNextPartInstance.rundownId)) {
-			throw new Error(
-				`PartInstance "${newNextPartInstance._id}" of rundown "${newNextPartInstance.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
-			)
+		let nextPartInfo: ParsedNextPart
+		if ('playlistActivationId' in rawNextPart) {
+			nextPartInfo = {
+				type: 'partinstance',
+				instance: rawNextPart,
+			}
+		} else {
+			nextPartInfo = {
+				type: 'part',
+				part: rawNextPart.part,
+				consumesNextSegmentId: rawNextPart.consumesNextSegmentId,
+			}
 		}
 
-		const nextPart = newNextPartInstance ? newNextPartInstance.part : newNextPart!.part
+		if (
+			(nextPartInfo.type === 'part' && nextPartInfo.part.invalid) ||
+			(nextPartInfo.type === 'partinstance' && nextPartInfo.instance.part.invalid)
+		) {
+			throw new Error('Part is marked as invalid, cannot set as next.')
+		}
+
+		switch (nextPartInfo.type) {
+			case 'part':
+				if (!rundownIds.includes(nextPartInfo.part.rundownId)) {
+					throw new Error(
+						`Part "${nextPartInfo.part._id}" of rundown "${nextPartInfo.part.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
+					)
+				}
+				break
+			case 'partinstance':
+				if (!rundownIds.includes(nextPartInfo.instance.rundownId)) {
+					throw new Error(
+						`PartInstance "${nextPartInfo.instance._id}" of rundown "${nextPartInfo.instance.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
+					)
+				}
+				break
+			default:
+				assertNever(nextPartInfo)
+				throw new Error('Unhandled ParsedNextPart in setNextPart')
+		}
+
+		const nextPart = nextPartInfo.type === 'partinstance' ? nextPartInfo.instance.part : nextPartInfo.part
 
 		// create new instance
 		let newInstanceId: PartInstanceId
-		if (newNextPartInstance) {
-			newInstanceId = newNextPartInstance._id
+		if (nextPartInfo.type === 'partinstance') {
+			newInstanceId = nextPartInfo.instance._id
+			cache.PartInstances.update(newInstanceId, {
+				$unset: {
+					consumesNextSegmentId: 1,
+				},
+			})
 			await syncPlayheadInfinitesForNextPartInstance(context, cache)
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
+			cache.PartInstances.update(newInstanceId, {
+				$set: {
+					consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
+				},
+			})
 			await syncPlayheadInfinitesForNextPartInstance(context, cache)
 		} else {
 			// Create new isntance
@@ -265,7 +311,7 @@ export async function setNextPart(
 				segmentPlayoutId,
 				part: nextPart,
 				rehearsal: !!cache.Playlist.doc.rehearsal,
-				consumesNextSegmentId: newNextPart?.consumesNextSegmentId,
+				consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
 			})
 
 			const rundown = cache.Rundowns.findOne(nextPart.rundownId)
@@ -323,10 +369,11 @@ export async function setNextPart(
 			}
 		)
 
+		const nextPartInstanceTmp = nextPartInfo.type === 'partinstance' ? nextPartInfo.instance : null
 		cache.Playlist.update({
 			$set: literal<Partial<DBRundownPlaylist>>({
 				nextPartInstanceId: newInstanceId,
-				nextPartManual: !!(setManually || newNextPartInstance?.orphaned),
+				nextPartManual: !!(setManually || nextPartInstanceTmp?.orphaned),
 				nextTimeOffset: nextTimeOffset || null,
 			}),
 		})
@@ -413,6 +460,30 @@ export async function setNextPart(
 
 	await cleanupOrphanedItems(context, cache)
 
+	if (span) span.end()
+}
+
+export function setNextSegment(context: JobContext, cache: CacheForPlayout, nextSegment: DBSegment | null) {
+	const span = context.startSpan('setNextSegment')
+	if (nextSegment) {
+		// Just run so that errors will be thrown if something wrong:
+		const partsInSegment = cache.Parts.findFetch({ segmentId: nextSegment._id })
+		if (!partsInSegment.find((p) => isPartPlayable(p))) {
+			throw new Error('Segment contains no valid parts')
+		}
+
+		cache.Playlist.update({
+			$set: {
+				nextSegmentId: nextSegment._id,
+			},
+		})
+	} else {
+		cache.Playlist.update({
+			$unset: {
+				nextSegmentId: 1,
+			},
+		})
+	}
 	if (span) span.end()
 }
 

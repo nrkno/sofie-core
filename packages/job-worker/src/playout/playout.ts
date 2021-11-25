@@ -36,6 +36,7 @@ import {
 	resetRundownPlaylist as libResetRundownPlaylist,
 	selectNextPart,
 	setNextPart as libSetNextPart,
+	setNextSegment as libSetNextSegment,
 } from './lib'
 import { updateStudioTimeline, updateTimeline } from './timeline'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
@@ -59,7 +60,8 @@ import { applyToArray, getRandomId, normalizeArrayToMap, stringifyError } from '
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import {
 	afterTake,
-	resetPreviousSegmentAndClearNextSegmentId,
+	clearNextSegmentId,
+	resetPreviousSegment,
 	takeNextPartInnerSync,
 	updatePartInstanceOnTake,
 } from './take'
@@ -78,6 +80,11 @@ import { CacheForStudio } from '../studio/cache'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PieceGroupMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import {
+	deserializeTimelineBlob,
+	serializeTimelineBlob,
+	TimelineComplete,
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -309,7 +316,14 @@ export async function setNextPart(context: JobContext, data: SetNextPartProps): 
 				if (!isPartPlayable(nextPart)) throw UserError.create(UserErrorMessage.PartNotPlayable)
 			}
 
-			await setNextPartInner(context, cache, nextPart ?? null, data.setManually, data.nextTimeOffset)
+			await setNextPartInner(
+				context,
+				cache,
+				nextPart ?? null,
+				data.setManually,
+				data.nextTimeOffset,
+				data.clearNextSegment
+			)
 		}
 	)
 }
@@ -319,7 +333,8 @@ export async function setNextPartInner(
 	cache: CacheForPlayout,
 	nextPartId: PartId | DBPart | null,
 	setManually?: boolean,
-	nextTimeOffset?: number | undefined
+	nextTimeOffset?: number | undefined,
+	clearNextSegment?: boolean
 ): Promise<void> {
 	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
@@ -335,6 +350,10 @@ export async function setNextPartInner(
 			nextPart = nextPartId
 		}
 		if (!nextPart) throw UserError.create(UserErrorMessage.PartNotFound)
+	}
+
+	if (clearNextSegment) {
+		libSetNextSegment(context, cache, null)
 	}
 
 	await libSetNextPart(context, cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
@@ -485,6 +504,8 @@ export async function setNextSegment(context: JobContext, data: SetNextSegmentPr
 			}
 
 			if (nextSegment) {
+				// TODO - some of this is replicated inside of libSetNextSegment
+
 				// Just run so that errors will be thrown if something wrong:
 				const playablePartsInSegment = cache.Parts.findFetch((p) => p.segmentId === data.nextSegmentId).filter(
 					(p) => isPartPlayable(p)
@@ -499,22 +520,14 @@ export async function setNextSegment(context: JobContext, data: SetNextSegmentPr
 					!nextPartInstance ||
 					nextPartInstance.segmentId !== currentPartInstance.segmentId
 				) {
-					// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart
-					await setNextPartInner(context, cache, playablePartsInSegment[0])
+					// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart and clear previous nextSegmentId
+					await setNextPartInner(context, cache, playablePartsInSegment[0], true, 0, true)
 				} else {
 					// Set the whole segemnt as next
-					cache.Playlist.update({
-						$set: {
-							nextSegmentId: nextSegment._id,
-						},
-					})
+					libSetNextSegment(context, cache, nextSegment)
 				}
 			} else {
-				cache.Playlist.update({
-					$unset: {
-						nextSegmentId: 1,
-					},
-				})
+				libSetNextSegment(context, cache, null)
 			}
 
 			// Update any future lookaheads
@@ -860,7 +873,8 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 						currentPartInstance
 					)
 
-					resetPreviousSegmentAndClearNextSegmentId(cache)
+					clearNextSegmentId(cache, currentPartInstance)
+					resetPreviousSegment(cache)
 
 					// Update the next partinstance
 					const nextPart = selectNextPart(
@@ -998,82 +1012,85 @@ function timelineTriggerTimeInner(
 	let lastTakeTime: number | undefined
 
 	// ------------------------------
-	const timelineObjs = cache.Timeline.findOne(context.studio._id)?.timeline || []
-	let tlChanged = false
+	const timeline = cache.Timeline.findOne(context.studioId)
+	if (timeline) {
+		const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
+		let tlChanged = false
 
-	_.each(results, (o) => {
-		logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
+		_.each(results, (o) => {
+			logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
 
-		const obj = timelineObjs.find((tlo) => tlo.id === o.id)
-		if (obj) {
-			applyToArray(obj.enable, (enable) => {
-				if (enable.start === 'now') {
-					enable.start = o.time
-					enable.setFromNow = true
+			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
+			if (obj) {
+				applyToArray(obj.enable, (enable) => {
+					if (enable.start === 'now') {
+						enable.start = o.time
+						enable.setFromNow = true
 
-					tlChanged = true
-				}
-			})
-
-			// TODO - we should do the same for the partInstance.
-			// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
-
-			const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
-			if (objPieceId && activePlaylist && pieceInstanceCache) {
-				logger.info('Update PieceInstance: ', {
-					pieceId: objPieceId,
-					time: new Date(o.time).toTimeString(),
+						tlChanged = true
+					}
 				})
 
-				const pieceInstance = pieceInstanceCache.findOne(objPieceId)
-				if (pieceInstance) {
-					pieceInstanceCache.update(pieceInstance._id, {
-						$set: {
-							'piece.enable.start': o.time,
-						},
+				// TODO - we should do the same for the partInstance.
+				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
+
+				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
+				if (objPieceId && activePlaylist && pieceInstanceCache) {
+					logger.info('Update PieceInstance: ', {
+						pieceId: objPieceId,
+						time: new Date(o.time).toTimeString(),
 					})
 
-					const takeTime = pieceInstance.dynamicallyInserted
-					if (pieceInstance.dynamicallyInserted && takeTime) {
-						lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+					const pieceInstance = pieceInstanceCache.findOne(objPieceId)
+					if (pieceInstance) {
+						pieceInstanceCache.update(pieceInstance._id, {
+							$set: {
+								'piece.enable.start': o.time,
+							},
+						})
+
+						const takeTime = pieceInstance.dynamicallyInserted
+						if (pieceInstance.dynamicallyInserted && takeTime) {
+							lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+						}
 					}
 				}
 			}
-		}
-	})
-
-	if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
-		// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-		const remainingNowPieces = pieceInstanceCache.findFetch({
-			partInstanceId: activePlaylist.currentPartInstanceId,
-			dynamicallyInserted: { $exists: true },
-			disabled: { $ne: true },
 		})
-		for (const piece of remainingNowPieces) {
-			const pieceTakeTime = piece.dynamicallyInserted
-			if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
-				// Disable and hide the instance
-				pieceInstanceCache.update(piece._id, {
-					$set: {
-						disabled: true,
-						hidden: true,
-					},
-				})
+
+		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
+			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
+			const remainingNowPieces = pieceInstanceCache.findFetch({
+				partInstanceId: activePlaylist.currentPartInstanceId,
+				dynamicallyInserted: { $exists: true },
+				disabled: { $ne: true },
+			})
+			for (const piece of remainingNowPieces) {
+				const pieceTakeTime = piece.dynamicallyInserted
+				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
+					// Disable and hide the instance
+					pieceInstanceCache.update(piece._id, {
+						$set: {
+							disabled: true,
+							hidden: true,
+						},
+					})
+				}
 			}
 		}
-	}
-	if (tlChanged) {
-		cache.Timeline.update(
-			context.studio._id,
-			{
-				$set: {
-					timeline: timelineObjs,
-					timelineHash: getRandomId(),
-					generated: getCurrentTime(),
-				},
-			},
-			true
-		)
+		if (tlChanged) {
+			const newTimeline: TimelineComplete = {
+				_id: context.studioId,
+				timelineBlob: serializeTimelineBlob(timelineObjs),
+				timelineHash: getRandomId(),
+				generated: getCurrentTime(),
+				generationVersions: timeline.generationVersions,
+			}
+
+			cache.Timeline.replace(newTimeline)
+			// Also do a fast-track for the timeline to be published faster:
+			// triggerFastTrackObserver(FastTrackObservers.TIMELINE, [cache.Studio.doc._id], newTimeline)
+		}
 	}
 }
 

@@ -4,7 +4,7 @@ import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
 import { Time, applyClassToDocument, normalizeArrayFunc, unprotectString } from '../lib'
 import { Rundowns, Rundown, DBRundown } from './Rundowns'
-import { Studio, Studios } from './Studios'
+import { Studio, StudioLight, Studios } from './Studios'
 import { Segments, Segment, DBSegment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { TimelinePersistentState, RundownPlaylistTiming } from '@sofie-automation/blueprints-integration'
@@ -35,6 +35,7 @@ import {
 	ABSessionInfo,
 	RundownHoldState,
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { fetchStudioLight } from './optimizations'
 export { DBRundownPlaylist, ABSessionInfo }
 
 export class RundownPlaylist implements DBRundownPlaylist {
@@ -122,6 +123,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	getStudio(): Studio {
 		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
 		const studio = Studios.findOne(this.studioId)
+		if (studio) {
+			return studio
+		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
+	}
+	getStudioLight(): StudioLight {
+		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
+		const studio = fetchStudioLight(this.studioId)
 		if (studio) {
 			return studio
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')

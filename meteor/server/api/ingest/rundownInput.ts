@@ -7,7 +7,7 @@ import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie
 import { logger } from '../../../lib/logging'
 import { Segments } from '../../../lib/collections/Segments'
 import { RundownIngestDataCache } from './ingestCache'
-import { getStudioFromDevice, checkAccessAndGetPeripheralDevice, runIngestOperation } from './lib'
+import { fetchStudioIdFromDevice, checkAccessAndGetPeripheralDevice, runIngestOperation } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
@@ -52,11 +52,11 @@ export namespace RundownInput {
 		rundownExternalId: string
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataRundownDelete', rundownExternalId)
 		check(rundownExternalId, String)
 
-		await runIngestOperation(studio._id, IngestJobs.RemoveRundown, {
+		await runIngestOperation(studioId, IngestJobs.RemoveRundown, {
 			rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 		})
@@ -68,11 +68,11 @@ export namespace RundownInput {
 		ingestRundown: IngestRundown
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataRundownCreate', ingestRundown)
 		check(ingestRundown, Object)
 
-		await runIngestOperation(studio._id, IngestJobs.UpdateRundown, {
+		await runIngestOperation(studioId, IngestJobs.UpdateRundown, {
 			rundownExternalId: ingestRundown.externalId,
 			peripheralDeviceId: peripheralDevice._id,
 			ingestRundown: ingestRundown,
@@ -86,11 +86,11 @@ export namespace RundownInput {
 		ingestRundown: IngestRundown
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
 
-		await runIngestOperation(studio._id, IngestJobs.UpdateRundown, {
+		await runIngestOperation(studioId, IngestJobs.UpdateRundown, {
 			rundownExternalId: ingestRundown.externalId,
 			peripheralDeviceId: peripheralDevice._id,
 			ingestRundown: ingestRundown,
@@ -104,11 +104,11 @@ export namespace RundownInput {
 		ingestRundown: Omit<IngestRundown, 'segments'>
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataRundownMetaDataUpdate', ingestRundown)
 		check(ingestRundown, Object)
 
-		await runIngestOperation(studio._id, IngestJobs.UpdateRundownMetaData, {
+		await runIngestOperation(studioId, IngestJobs.UpdateRundownMetaData, {
 			rundownExternalId: ingestRundown.externalId,
 			peripheralDeviceId: peripheralDevice._id,
 			ingestRundown: ingestRundown,
@@ -136,12 +136,12 @@ export namespace RundownInput {
 		segmentExternalId: string
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataSegmentDelete', rundownExternalId, segmentExternalId)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 
-		await runIngestOperation(studio._id, IngestJobs.RemoveSegment, {
+		await runIngestOperation(studioId, IngestJobs.RemoveSegment, {
 			rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			segmentExternalId,
@@ -155,12 +155,12 @@ export namespace RundownInput {
 		ingestSegment: IngestSegment
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataSegmentCreate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 
-		await runIngestOperation(studio._id, IngestJobs.UpdateSegment, {
+		await runIngestOperation(studioId, IngestJobs.UpdateSegment, {
 			rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			ingestSegment,
@@ -175,12 +175,12 @@ export namespace RundownInput {
 		ingestSegment: IngestSegment
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataSegmentUpdate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 
-		await runIngestOperation(studio._id, IngestJobs.UpdateSegment, {
+		await runIngestOperation(studioId, IngestJobs.UpdateSegment, {
 			rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			ingestSegment,
@@ -195,12 +195,12 @@ export namespace RundownInput {
 		newRanks: { [segmentExternalId: string]: number }
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataSegmentRanksUpdate', rundownExternalId, Object.keys(newRanks))
 		check(rundownExternalId, String)
 		check(newRanks, Object)
 
-		await runIngestOperation(studio._id, IngestJobs.UpdateSegmentRanks, {
+		await runIngestOperation(studioId, IngestJobs.UpdateSegmentRanks, {
 			rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			newRanks,
@@ -216,13 +216,13 @@ export namespace RundownInput {
 		partExternalId: string
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataPartDelete', rundownExternalId, segmentExternalId, partExternalId)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		check(partExternalId, String)
 
-		await runIngestOperation(studio._id, IngestJobs.RemovePart, {
+		await runIngestOperation(studioId, IngestJobs.RemovePart, {
 			rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			segmentExternalId,
@@ -238,13 +238,13 @@ export namespace RundownInput {
 		ingestPart: IngestPart
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataPartCreate', rundownExternalId, segmentExternalId, ingestPart)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		check(ingestPart, Object)
 
-		await runIngestOperation(studio._id, IngestJobs.UpdatePart, {
+		await runIngestOperation(studioId, IngestJobs.UpdatePart, {
 			rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			segmentExternalId,
@@ -261,13 +261,13 @@ export namespace RundownInput {
 		ingestPart: IngestPart
 	): Promise<void> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studio = getStudioFromDevice(peripheralDevice)
+		const studioId = fetchStudioIdFromDevice(peripheralDevice)
 		logger.info('dataPartUpdate', rundownExternalId, segmentExternalId, ingestPart)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		check(ingestPart, Object)
 
-		await runIngestOperation(studio._id, IngestJobs.UpdatePart, {
+		await runIngestOperation(studioId, IngestJobs.UpdatePart, {
 			rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
 			segmentExternalId,

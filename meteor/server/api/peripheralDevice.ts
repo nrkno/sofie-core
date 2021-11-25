@@ -41,6 +41,7 @@ import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPacka
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+// import { FastTrackObservers, triggerFastTrackObserver } from '../publications/fastTrack'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {

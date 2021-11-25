@@ -213,6 +213,42 @@ describe('Test blueprint api context', () => {
 			)
 		})
 
+		test('getFirstPartInstanceInRundown - allowUntimed', async () => {
+			const { rundownId } = setupDefaultRundownPlaylist(env)
+			const rundown = Rundowns.findOne(rundownId) as Rundown
+			expect(rundown).toBeTruthy()
+
+			generateSparsePieceInstances(rundown)
+
+			const partInstance = PartInstances.findOne({ rundownId }) as PartInstance
+			expect(partInstance).toBeTruthy()
+
+			PartInstances.update(partInstance._id, {
+				$set: {
+					'part.untimed': true,
+				},
+			})
+
+			const secondPartInstance = PartInstances.findOne({
+				rundownId,
+				_id: { $ne: partInstance._id },
+			}) as PartInstance
+			expect(secondPartInstance).toBeTruthy()
+
+			const context = await getContext(rundown, undefined, partInstance, undefined)
+			// Get the 'timed' partInstance
+			expect(context.getFirstPartInstanceInRundown()).toMatchObject({
+				_id: secondPartInstance._id,
+				playlistActivationId: partInstance.playlistActivationId,
+			})
+
+			// Get the 'untimed' partInstance
+			expect(context.getFirstPartInstanceInRundown(true)).toMatchObject({
+				_id: partInstance._id,
+				playlistActivationId: partInstance.playlistActivationId,
+			})
+		})
+
 		test('getPartInstancesInSegmentPlayoutId', async () => {
 			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
 			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown

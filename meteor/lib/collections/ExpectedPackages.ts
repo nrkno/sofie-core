@@ -8,7 +8,7 @@ export { ExpectedPackageId }
 
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { Studio } from './Studios'
+import { StudioLight } from './Studios'
 import deepExtend from 'deep-extend'
 export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
@@ -72,7 +72,7 @@ export function getThumbnailPackageSettings(
 }
 export function getSideEffect(
 	expectedPackage: ExpectedPackage.Base,
-	studio: Studio
+	studio: StudioLight
 ): ExpectedPackage.Base['sideEffect'] {
 	return deepExtend(
 		{},

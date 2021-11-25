@@ -10,10 +10,10 @@ import { TSR } from '@sofie-automation/blueprints-integration'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
-import { Studios } from '../lib/collections/Studios'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { fetchStudioIds } from '../lib/collections/optimizations'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -21,17 +21,22 @@ const lowPrioFcn = (fcn: () => any) => {
 		fcn()
 	}, Math.random() * 10 * 1000)
 }
+/** Returns true if it is "low-season" (like during the night) when it is suitable to run cronjobs */
+function isLowSeason() {
+	const d = new Date(getCurrentTime())
+	return (
+		d.getHours() >= 4 && d.getHours() < 5 // It is nighttime
+	)
+}
 
 Meteor.startup(() => {
 	let lastNightlyCronjob = 0
 	let failedRetries = 0
 
 	function nightlyCronjob() {
-		const d = new Date(getCurrentTime())
 		const timeSinceLast = getCurrentTime() - lastNightlyCronjob
 		if (
-			d.getHours() >= 4 &&
-			d.getHours() < 5 && // It is nighttime
+			isLowSeason() &&
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
 			const previousLastNightlyCronjob = lastNightlyCronjob
@@ -83,7 +88,7 @@ Meteor.startup(() => {
 			}
 
 			const ps: Array<Promise<any>> = []
-			// restart casparcg
+			// Restart casparcg
 			if (system?.cron?.casparCGRestart?.enabled) {
 				PeripheralDevices.find({
 					type: PeripheralDeviceType.PLAYOUT,
@@ -131,13 +136,12 @@ Meteor.startup(() => {
 					})
 				})
 			}
-			Promise.all(ps)
-				.then(() => {
-					failedRetries = 0
-				})
-				.catch((err) => {
-					logger.error(err)
-				})
+			try {
+				waitForPromiseAll(ps)
+				failedRetries = 0
+			} catch (err) {
+				logger.error(err)
+			}
 
 			// last:
 			logger.info('Nightly cronjob: done')
@@ -146,18 +150,20 @@ Meteor.startup(() => {
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
 
-	function cleanupPlaylists() {
-		// Ensure there are no empty playlists on an interval
-		const studios = Studios.find({}, { fields: { _id: 1 } }).fetch()
-		Promise.all(
-			studios.map(async (studio) => {
-				const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studio._id, undefined)
-				await job.complete
+	function cleanupPlaylists(force?: boolean) {
+		if (isLowSeason() || force) {
+			// Ensure there are no empty playlists on an interval
+			const studioIds = fetchStudioIds({})
+			Promise.all(
+				studioIds.map(async (studioId) => {
+					const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+					await job.complete
+				})
+			).catch((e) => {
+				logger.error(`Cron: CleanupPlaylists error: ${e}`)
 			})
-		).catch((e) => {
-			logger.error(`Cron: CleanupPlaylists error: ${e}`)
-		})
+		}
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
-	cleanupPlaylists()
+	cleanupPlaylists(true)
 })

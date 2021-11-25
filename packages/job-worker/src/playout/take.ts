@@ -88,6 +88,8 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	const takeRundown: DBRundown | undefined = cache.Rundowns.findOne(takePartInstance.rundownId)
 	if (!takeRundown) throw new Error(`takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
+	clearNextSegmentId(cache, takePartInstance)
+
 	const nextPart = selectNextPart(
 		context,
 		cache.Playlist.doc,
@@ -146,7 +148,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 		})
 	}
 
-	resetPreviousSegmentAndClearNextSegmentId(cache)
+	resetPreviousSegment(cache)
 
 	// Once everything is synced, we can choose the next part
 	await setNextPart(context, cache, nextPart)
@@ -169,12 +171,10 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	if (span) span.end()
 }
 
-export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout): void {
-	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-
+export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInstance?: DBPartInstance) {
 	if (
-		currentPartInstance?.consumesNextSegmentId &&
-		cache.Playlist.doc.nextSegmentId === currentPartInstance.segmentId
+		takeOrCurrentPartInstance?.consumesNextSegmentId &&
+		cache.Playlist.doc.nextSegmentId === takeOrCurrentPartInstance.segmentId
 	) {
 		// clear the nextSegmentId if the newly taken partInstance says it was selected because of it
 		cache.Playlist.update({
@@ -183,6 +183,10 @@ export function resetPreviousSegmentAndClearNextSegmentId(cache: CacheForPlayout
 			},
 		})
 	}
+}
+
+export function resetPreviousSegment(cache: CacheForPlayout) {
+	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the playlist is looping and
 	// If the previous and current part are not in the same segment, then we have just left a segment

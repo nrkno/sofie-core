@@ -5,8 +5,13 @@ export interface Blueprint {
 	_id: BlueprintId
 	organizationId: OrganizationId | null
 	name: string
+	/** String containing the Code for the blueprint */
 	code: string
+	/** Whether the blueprint has a code or not. Is equal to !!blueprint.code. */
+	hasCode: boolean
+	/** Timestamp, last time the blueprint was modified */
 	modified: number
+	/** Timestamp, when the blueprint was created */
 	created: number
 
 	blueprintId: BlueprintId

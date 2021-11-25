@@ -2,14 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
-import { unprotectString, makePromise, normalizeArray } from '../../lib/lib'
+import { unprotectString, makePromise, normalizeArray, waitForPromise } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { Studios } from '../../lib/collections/Studios'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
@@ -22,6 +20,13 @@ import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import {
+	fetchBlueprintLight,
+	fetchBlueprintsLight,
+	fetchBlueprintVersion,
+	fetchShowStyleBaseLight,
+	fetchStudioLight,
+} from '../../lib/collections/optimizations'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */
@@ -97,16 +102,16 @@ export namespace ClientRundownAPI {
 			if (rundown.importVersions.showStyleVariant !== (showStyleVariant._rundownVersionHash || 0))
 				return 'showStyleVariant'
 
-			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+			const showStyleBase = fetchShowStyleBaseLight(rundown.showStyleBaseId)
 			if (!showStyleBase) return 'missing showStyleBase'
 			if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0))
 				return 'showStyleBase'
 
-			const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
-			if (!blueprint) return 'missing blueprint'
-			if (rundown.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
+			const blueprintVersion = waitForPromise(fetchBlueprintVersion(showStyleBase.blueprintId))
+			if (!blueprintVersion) return 'missing blueprint'
+			if (rundown.importVersions.blueprint !== (blueprintVersion || 0)) return 'blueprint'
 
-			const studio = Studios.findOne(rundown.studioId)
+			const studio = fetchStudioLight(rundown.studioId)
 			if (!studio) return 'missing studio'
 			if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 		})
@@ -124,7 +129,7 @@ export namespace ClientRundownAPI {
 		const rundownPlaylist = access.playlist
 
 		const studio = rundownPlaylist.getStudio()
-		const studioBlueprint = studio.blueprintId ? await Blueprints.findOneAsync(studio.blueprintId) : null
+		const studioBlueprint = studio.blueprintId ? await fetchBlueprintLight(studio.blueprintId) : null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
 		const rundowns = rundownPlaylist.getRundowns()
@@ -143,7 +148,7 @@ export namespace ClientRundownAPI {
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) },
 			}),
 		])
-		const showStyleBlueprints = await Blueprints.findFetchAsync({
+		const showStyleBlueprints = await fetchBlueprintsLight({
 			_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
 		})
 

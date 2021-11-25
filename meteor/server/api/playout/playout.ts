@@ -5,7 +5,6 @@ import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections
 import { ClientAPI } from '../../../lib/api/client'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-
 import { PackageInfo } from '../../coreSystem'
 import { MethodContext } from '../../../lib/api/methods'
 import { StudioContentWriteAccess } from '../../security/studio'

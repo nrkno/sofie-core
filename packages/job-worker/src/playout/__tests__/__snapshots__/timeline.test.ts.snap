@@ -222,27 +222,13 @@ Array [
   Object {
     "_id": "mockStudio4",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "baseline_version",
-        "layer": "baseline_version",
-        "metaData": Object {
-          "versions": Object {
-            "blueprintId": "mockBlueprint0",
-            "blueprintVersion": "0.0.0",
-            "core": "0.0.0-test",
-            "studio": "asdf",
-          },
-        },
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "mockBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
     "timelineHash": "randomId9025",
   },
 ]

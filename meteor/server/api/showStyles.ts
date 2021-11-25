@@ -17,6 +17,7 @@ import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
+import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 export async function getShowStyleCompound(
 	showStyleVariantId: ShowStyleVariantId
@@ -82,7 +83,7 @@ export async function insertShowStyleVariant(
 	return insertShowStyleVariantInner(showStyleBase, name)
 }
 export async function insertShowStyleVariantInner(
-	showStyleBase: ShowStyleBase,
+	showStyleBase: ShowStyleBaseLight,
 	name?: string
 ): Promise<ShowStyleVariantId> {
 	return ShowStyleVariants.insertAsync({

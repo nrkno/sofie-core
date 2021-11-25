@@ -618,18 +618,19 @@ export async function bucketAdlibImport(
 	bucketId: BucketId,
 	ingestItem: IngestAdlib
 ): Promise<ClientAPI.ClientResponse<undefined>> {
-	const { studio } = OrganizationContentWriteAccess.studio(context, studioId)
+	const o = OrganizationContentWriteAccess.studio(context, studioId)
+	const studioLight = o.studio
 
 	check(studioId, String)
 	check(showStyleVariantId, String)
 	check(bucketId, String)
 	// TODO - validate IngestAdlib
 
-	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+	if (!studioLight) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 	const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
 	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
 
-	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
+	if (studioLight.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
 		throw new Meteor.Error(500, `ShowStyle Variant "${showStyleVariantId}" not supported by studio "${studioId}"`)
 	}
 

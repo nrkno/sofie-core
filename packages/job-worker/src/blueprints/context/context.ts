@@ -62,6 +62,7 @@ import _ = require('underscore')
 import { WatchedPackagesHelper } from './watchedPackages'
 import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { JobContext } from '../../jobs'
+import { MongoQuery } from '../../db'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -709,18 +710,21 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 		this.nextPart = unprotectPartInstance(nextPartInstance)
 	}
 
-	async getFirstPartInstanceInRundown(): Promise<Readonly<IBlueprintPartInstance<unknown>>> {
-		const partInstance = await this.context.directCollections.PartInstances.findOne(
-			{
-				rundownId: this._rundown._id,
-				playlistActivationId: this._currentPart.playlistActivationId,
+	async getFirstPartInstanceInRundown(allowUntimed?: boolean): Promise<Readonly<IBlueprintPartInstance<unknown>>> {
+		const query: MongoQuery<DBPartInstance> = {
+			rundownId: this._rundown._id,
+			playlistActivationId: this._currentPart.playlistActivationId,
+		}
+
+		if (!allowUntimed) {
+			query['part.untimed'] = { $ne: true }
+		}
+
+		const partInstance = await this.context.directCollections.PartInstances.findOne(query, {
+			sort: {
+				takeCount: 1,
 			},
-			{
-				sort: {
-					takeCount: 1,
-				},
-			}
-		)
+		})
 
 		// If this doesn't find anything, then where did our reference PartInstance come from?
 		if (!partInstance)
