@@ -1,10 +1,9 @@
 import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integration'
 import React from 'react'
-import { RundownUtils } from '../../../../lib/rundown'
 import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector'
 import { IDefaultRendererProps } from './DefaultRenderer'
 
-export function GraphicsRenderer({ piece: pieceInstance, hovering, elementOffset, layer }: IDefaultRendererProps) {
+export function GraphicsRenderer({ piece: pieceInstance, hovering, elementOffset, typeClass }: IDefaultRendererProps) {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
 	return (
@@ -21,7 +20,7 @@ export function GraphicsRenderer({ piece: pieceInstance, hovering, elementOffset
 						  }
 						: {}
 				}
-				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
+				typeClass={typeClass}
 				itemElement={null}
 				piece={pieceInstance.instance.piece}
 				pieceRenderedDuration={pieceInstance.renderedDuration}

@@ -13,6 +13,7 @@ import { ScriptRenderer } from './Renderers/ScriptRenderer'
 import { getElementDocumentOffset } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { GraphicsRenderer } from './Renderers/GraphicsRenderer'
+import { SplitsRenderer } from './Renderers/SplitsRenderer'
 
 interface IProps {
 	layer: ISourceLayer
@@ -35,13 +36,14 @@ function renderPieceInside(
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
 			return GraphicsRenderer({ ...props, elementOffset, hovering, typeClass })
+		case SourceLayerType.SPLITS:
+			return SplitsRenderer({ ...props, elementOffset, hovering, typeClass })
 		case SourceLayerType.AUDIO:
 		case SourceLayerType.CAMERA:
 		case SourceLayerType.LIVE_SPEAK:
 		case SourceLayerType.VT:
 		case SourceLayerType.LOCAL:
 		case SourceLayerType.REMOTE:
-		case SourceLayerType.SPLITS:
 		case SourceLayerType.TRANSITION:
 		case SourceLayerType.UNKNOWN:
 		case undefined:

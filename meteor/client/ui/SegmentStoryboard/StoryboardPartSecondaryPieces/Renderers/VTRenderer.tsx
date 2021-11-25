@@ -1,12 +1,17 @@
 import React from 'react'
 import { VTContent } from '@sofie-automation/blueprints-integration'
-import { RundownUtils } from '../../../../lib/rundown'
 import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
 import { IDefaultRendererProps } from './DefaultRenderer'
 import { RundownAPI } from '../../../../../lib/api/rundown'
 import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 
-export function VTRenderer({ piece: pieceInstance, hovering, elementOffset, layer, studio }: IDefaultRendererProps) {
+export function VTRenderer({
+	piece: pieceInstance,
+	hovering,
+	elementOffset,
+	studio,
+	typeClass,
+}: IDefaultRendererProps) {
 	const mediaPreviewUrl = studio?.settings.mediaPreviewsUrl
 
 	const status = pieceInstance.instance.piece.status
@@ -31,7 +36,7 @@ export function VTRenderer({ piece: pieceInstance, hovering, elementOffset, laye
 						  }
 						: {}
 				}
-				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
+				typeClass={typeClass}
 				itemElement={null}
 				contentMetaData={pieceInstance.contentMetaData || null}
 				noticeMessage={pieceInstance.message || null}
