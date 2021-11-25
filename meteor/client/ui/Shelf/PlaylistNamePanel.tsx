@@ -72,7 +72,7 @@ export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IP
 				const currentRundown = props.playlist.getRundowns({ _id: livePart.rundownId })[0]
 
 				return {
-					currentRundown
+					currentRundown,
 				}
 			}
 		}
