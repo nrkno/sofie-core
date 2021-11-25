@@ -13,6 +13,8 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { LocksManager } from '../locks'
 import { AnyLockEvent } from './locks'
 import { Observable } from 'threads/observable'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
 export abstract class WorkerParentBase {
 	readonly #workerId: string
@@ -83,6 +85,7 @@ export abstract class WorkerParentBase {
 			}
 		)
 		attachChangesStream<Blueprint>(
+			// Detect changes to other docs, the invalidate will filter out irrelevant values
 			database.collection(CollectionName.Blueprints).watch(
 				[
 					// TODO: Worker - can/should this be scoped down at all?
@@ -95,6 +98,40 @@ export abstract class WorkerParentBase {
 			(invalidations, change) => {
 				if (change.documentKey) {
 					invalidations.blueprints.push(change.documentKey)
+				}
+			}
+		)
+		attachChangesStream<DBShowStyleBase>(
+			// Detect changes to other docs, the invalidate will filter out irrelevant values
+			database.collection(CollectionName.ShowStyleBases).watch(
+				[
+					// TODO: Worker - can/should this be scoped down at all?
+				],
+				{
+					batchSize: 1,
+				}
+			),
+			`ShowStyleBases"`,
+			(invalidations, change) => {
+				if (change.documentKey) {
+					invalidations.showStyleBases.push(change.documentKey)
+				}
+			}
+		)
+		attachChangesStream<DBShowStyleVariant>(
+			// Detect changes to other docs, the invalidate will filter out irrelevant values
+			database.collection(CollectionName.ShowStyleVariants).watch(
+				[
+					// TODO: Worker - can/should this be scoped down at all?
+				],
+				{
+					batchSize: 1,
+				}
+			),
+			`ShowStyleVariants"`,
+			(invalidations, change) => {
+				if (change.documentKey) {
+					invalidations.showStyleVariants.push(change.documentKey)
 				}
 			}
 		)

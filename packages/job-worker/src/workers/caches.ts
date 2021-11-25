@@ -28,7 +28,7 @@ export interface WorkerDataCache {
 	showStyleBases: Map<ShowStyleBaseId, ReadonlyDeep<DBShowStyleBase> | null> // null when not found
 	showStyleVariants: Map<ShowStyleVariantId, ReadonlyDeep<DBShowStyleVariant> | null> // null when not found
 	showStyleBlueprints: Map<BlueprintId, ReadonlyDeep<WrappedShowStyleBlueprint> | null> // null when not found
-	showStyleBlueprintConfig: Map<BlueprintId, ProcessedShowStyleConfig>
+	showStyleBlueprintConfig: Map<ShowStyleVariantId, ProcessedShowStyleConfig>
 
 	studioQueue: Queue
 	ingestQueue: Queue
@@ -38,12 +38,16 @@ export interface WorkerDataCache {
 export interface InvalidateWorkerDataCache {
 	studio: boolean
 	blueprints: Array<BlueprintId>
+	showStyleBases: Array<ShowStyleBaseId>
+	showStyleVariants: Array<ShowStyleVariantId>
 }
 
 export function createInvalidateWorkerDataCache(): InvalidateWorkerDataCache {
 	return {
 		studio: false,
 		blueprints: [],
+		showStyleBases: [],
+		showStyleVariants: [],
 	}
 }
 
@@ -102,6 +106,15 @@ export async function invalidateWorkerDataCache(
 		cache.studioBlueprintConfig = undefined
 	}
 
+	const purgeShowStyleVariants = (keep: (variant: ReadonlyDeep<DBShowStyleVariant>) => boolean) => {
+		for (const [id, v] of Array.from(cache.showStyleVariants.entries())) {
+			if (v === null || !keep(v)) {
+				cache.showStyleVariants.delete(id)
+				cache.showStyleBlueprintConfig.delete(id)
+			}
+		}
+	}
+
 	if (data.studio) {
 		// Ensure showStyleBases & showStyleVariants are all still valid for the studio
 		const allowedBases = new Set(cache.studio.supportedShowStyleBase)
@@ -112,28 +125,39 @@ export async function invalidateWorkerDataCache(
 			}
 		}
 
-		for (const [id, v] of Array.from(cache.showStyleVariants.entries())) {
-			if (v === null || !allowedBases.has(v.showStyleBaseId)) {
-				cache.showStyleVariants.delete(id)
-			}
-		}
+		purgeShowStyleVariants((v) => allowedBases.has(v.showStyleBaseId))
 
-		// // Unload any unreferenced blueprints
-		// const validShowStyleBlueprints = new Set<BlueprintId>()
-		// for (const showStyleBase of cache.showStyleBases) {
-		// 	if (showStyleBase[1]) {
-		// 		validShowStyleBlueprints.add(showStyleBase[1].blueprintId)
-		// 	}
-		// }
-
-		// TODO: Worker - can we delete any blueprints. be gentle, we could have briefly unloaded the showStyleBase that referenced them
+		// Blueprints get cleaned up at the end
 	}
-	// TODO: Worker - handle showStyleBases & showStyleVariants changes
 
-	// TODO: Worker - showStyleBlueprints on change
+	// TODO: Worker - inactivity timeout for everything/anything showstyle?
+	// TODO: Worker - this is all a bit too agressive, it would be better to have a grace period as it likely that the owning ShowStyleBase will be reloaded soon
 
-	// TODO: Worker - showStyleBlueprints inactivity timeout?
-	// TODO: Worker - showStyleBlueprintConfig cleanup
+	// Purge any ShowStyleBase (and its Variants) that has changes
+	for (const id of data.showStyleBases) {
+		cache.showStyleBases.delete(id)
+
+		purgeShowStyleVariants((v) => v.showStyleBaseId !== id)
+	}
+
+	// Purge any ShowtStyleVariant that has changes
+	if (data.showStyleVariants.length > 0) {
+		const variantIds = new Set(data.showStyleVariants)
+		purgeShowStyleVariants((v) => !variantIds.has(v._id))
+	}
+
+	// Clear out any currently unreferenced blueprints
+	const allowedBlueprints = new Set<BlueprintId>()
+	for (const showStyleBase of cache.showStyleBases.values()) {
+		if (showStyleBase) {
+			allowedBlueprints.add(showStyleBase.blueprintId)
+		}
+	}
+	for (const id of cache.showStyleBlueprints.keys()) {
+		if (!allowedBlueprints.has(id)) {
+			allowedBlueprints.delete(id)
+		}
+	}
 }
 
 async function loadStudioBlueprintOrPlaceholder(
