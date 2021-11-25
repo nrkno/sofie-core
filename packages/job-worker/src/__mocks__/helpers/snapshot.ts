@@ -5,11 +5,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import {
-	TimelineObjGeneric,
-	TimelineComplete,
-	StatObjectMetadata,
-} from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { TimelineObjGeneric, TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import * as _ from 'underscore'
 
@@ -59,13 +55,10 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean): Data 
 		if (isTimelineComplete(o)) {
 			if (o.generated) o.generated = 12345
 
-			_.each(o.timeline, (obj) => {
-				const statObjMetadata = obj.metaData as Partial<StatObjectMetadata> | undefined
-				if (statObjMetadata?.versions?.core) {
-					// re-write the core version to something static, so tests won't fail just because the version has changed
-					statObjMetadata.versions.core = '0.0.0-test'
-				}
-			})
+			if (o.generationVersions?.core) {
+				// re-write the core version to something static, so tests won't fail just because the version has changed
+				o.generationVersions.core = '0.0.0-test'
+			}
 		} else if (isPlaylist(o)) {
 			o['created'] = 0
 			o['modified'] = 0
@@ -88,7 +81,7 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean): Data 
 }
 function isTimelineComplete(o: any): o is TimelineComplete {
 	const o2 = o as TimelineComplete
-	return !!(o2.timeline && o2._id && o2.generated)
+	return !!(o2.timelineBlob && o2._id && o2.generated)
 }
 // function isTimelineObj(o): o is TimelineObjGeneric {
 // 	return o.enable && o._id && o.id && o.studioId

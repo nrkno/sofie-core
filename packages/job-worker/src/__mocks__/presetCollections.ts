@@ -32,6 +32,7 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { createShowStyleCompound } from '../showStyles'
+import { ReadonlyDeep } from 'type-fest'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -44,7 +45,7 @@ export async function setupMockShowStyleCompound(
 	blueprintId?: BlueprintId,
 	doc?: Partial<DBShowStyleBase>,
 	doc2?: Partial<DBShowStyleVariant>
-): Promise<ShowStyleCompound> {
+): Promise<ReadonlyDeep<ShowStyleCompound>> {
 	const base = await setupMockShowStyleBase(context, blueprintId, doc)
 	const variant = await setupMockShowStyleVariant(context, base._id, doc2)
 	const compound = createShowStyleCompound(base, variant)
@@ -380,7 +381,7 @@ export async function setupMockPeripheralDevice(
 ): Promise<PeripheralDevice> {
 	doc = doc || {}
 
-	const dbI = (await context.directCollections.ShowStyleBases.findFetch()).length
+	const dbI = (await context.directCollections.PeripheralDevices.findFetch()).length
 
 	const defaultDevice: PeripheralDevice = {
 		_id: protectString('mockDevice' + dbI),

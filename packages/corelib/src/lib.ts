@@ -282,7 +282,10 @@ export function formatDateAsTimecode(settings: ReadonlyDeep<Pick<IStudioSettings
 /**
  * @param duration time in milliseconds
  */
-export function formatDurationAsTimecode(settings: ReadonlyDeep<Pick<IStudioSettings, 'frameRate'>>, duration: Time): string {
+export function formatDurationAsTimecode(
+	settings: ReadonlyDeep<Pick<IStudioSettings, 'frameRate'>>,
+	duration: Time
+): string {
 	const tc = Timecode.init({
 		framerate: settings.frameRate + '',
 		timecode: (duration * settings.frameRate) / 1000,
