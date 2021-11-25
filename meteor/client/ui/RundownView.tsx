@@ -814,7 +814,11 @@ const RundownHeader = withTranslation()(
 					}
 				)
 			}
-			if (this.props.playlist.activationId && !this.props.playlist.rehearsal && !Settings.allowRundownResetOnAir) {
+			if (
+				this.props.playlist.activationId &&
+				!this.props.playlist.rehearsal &&
+				!this.props.studio.settings.allowRundownResetOnAir
+			) {
 				// The rundown is active and not in rehersal
 				doModalDialog({
 					title: this.props.playlist.name,
@@ -965,7 +969,7 @@ const RundownHeader = withTranslation()(
 									{!(
 										this.props.playlist.activationId &&
 										!this.props.playlist.rehearsal &&
-										!Settings.allowRundownResetOnAir
+										!this.props.studio.settings.allowRundownResetOnAir
 									) ? (
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}

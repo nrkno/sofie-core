@@ -193,7 +193,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 						</div>
 					)}
 					<span className="segment-timeline__mini-inspector__timecode">
-						<StyledTimecode time={offsetTimePosition} />
+						<StyledTimecode time={offsetTimePosition} studioSettings={props.studio?.settings} />
 					</span>
 					{props.noticeLevel !== null ? (
 						<div

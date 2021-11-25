@@ -85,6 +85,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		supportedShowStyleBase: [],
 		blueprintConfig: {},
 		settings: {
+			frameRate: 25,
 			mediaPreviewsUrl: '',
 			sofieUrl: '',
 		},

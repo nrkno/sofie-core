@@ -152,7 +152,7 @@ export async function resetRundownPlaylist(context: JobContext, data: ResetRundo
 		data,
 		async (cache) => {
 			const playlist = cache.Playlist.doc
-			if (playlist.activationId && !playlist.rehearsal && !context.settings.allowRundownResetOnAir) {
+			if (playlist.activationId && !playlist.rehearsal && !context.studio.settings.allowRundownResetOnAir) {
 				throw UserError.create(UserErrorMessage.RundownResetWhileActive)
 			}
 

@@ -7,7 +7,6 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ISettings } from '@sofie-automation/corelib/dist/settings'
 import { ApmSpan } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
@@ -28,8 +27,6 @@ export interface WorkerJob<TRes> {
 
 export interface JobContext {
 	readonly directCollections: Readonly<IDirectCollections>
-
-	readonly settings: ReadonlyDeep<ISettings>
 
 	readonly studioId: StudioId
 	readonly studio: ReadonlyDeep<DBStudio>

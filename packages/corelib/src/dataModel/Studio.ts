@@ -8,6 +8,12 @@ export interface MappingsExt {
 export type MappingExt = ProtectedStringProperties<BlueprintMapping, 'deviceId'>
 
 export interface IStudioSettings {
+	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
+	 * into timecodes and timecode-like strings and interpret timecode user input
+	 * Default: 25
+	 */
+	frameRate: number
+
 	/** URL to endpoint where media preview are exposed */
 	mediaPreviewsUrl: string // (former media_previews_url in config)
 	/** URL to Sofie Core endpoint */
@@ -30,6 +36,11 @@ export interface IStudioSettings {
 	/** How much extra delay to add to the Now-time (used for the "multi-playout-gateway" feature) .
 	 * A higher value adds delays in playout, but reduces the risk of missed frames. */
 	nowSafeLatency?: number
+
+	/** Preserve unsynced segment contents when the playing segment is removed, rather than removing all but the playing part */
+	preserveUnsyncedPlayingSegmentContents?: boolean
+	/** Allow resets while a rundown is on-air */
+	allowRundownResetOnAir?: boolean
 }
 export type MappingsHash = ProtectedString<'MappingsHash'>
 

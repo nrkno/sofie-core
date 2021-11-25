@@ -7,7 +7,6 @@ import {
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { DEFAULT_SETTINGS, ISettings } from '@sofie-automation/corelib/dist/settings'
 import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
@@ -63,7 +62,6 @@ export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext 
 
 export class MockJobContext implements JobContext {
 	#collections: Readonly<IDirectCollections>
-	#settings: ISettings
 	#studio: ReadonlyDeep<DBStudio>
 
 	#studioBlueprint: StudioBlueprintManifest
@@ -71,7 +69,6 @@ export class MockJobContext implements JobContext {
 
 	constructor(collections: Readonly<IDirectCollections>, studio: ReadonlyDeep<DBStudio>) {
 		this.#collections = collections
-		this.#settings = clone(DEFAULT_SETTINGS)
 		this.#studio = studio
 
 		this.#studioBlueprint = MockStudioBlueprint()
@@ -80,10 +77,6 @@ export class MockJobContext implements JobContext {
 
 	get directCollections(): Readonly<IDirectCollections> {
 		return this.#collections
-	}
-
-	get settings(): ReadonlyDeep<ISettings> {
-		return this.#settings
 	}
 
 	get studioId(): StudioId {
@@ -145,7 +138,10 @@ export class MockJobContext implements JobContext {
 		if (!style) throw new Error(`ShowStyleVariant "${id}" Not found!`)
 		return style
 	}
-	async getShowStyleCompound(variantId: ShowStyleVariantId, baseId?: ShowStyleBaseId): Promise<ShowStyleCompound> {
+	async getShowStyleCompound(
+		variantId: ShowStyleVariantId,
+		baseId?: ShowStyleBaseId
+	): Promise<ReadonlyDeep<ShowStyleCompound>> {
 		const [variant, base0] = await Promise.all([
 			this.getShowStyleVariant(variantId),
 			baseId ? this.getShowStyleBase(baseId) : null,
@@ -179,10 +175,6 @@ export class MockJobContext implements JobContext {
 
 	setStudio(studio: ReadonlyDeep<DBStudio>): void {
 		this.#studio = clone(studio)
-	}
-
-	get mutableSettings(): ISettings {
-		return this.#settings
 	}
 }
 

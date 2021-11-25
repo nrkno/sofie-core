@@ -4,7 +4,6 @@ import { logger } from '../logging'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { ensureCollectionProperty, ensureCollectionPropertyManual } from './lib'
 import { PeripheralDevices, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { protectString } from '../../lib/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
@@ -31,6 +30,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				organizationId: null,
 				supportedShowStyleBase: [],
 				settings: {
+					frameRate: 25,
 					mediaPreviewsUrl: '',
 					sofieUrl: '',
 				},

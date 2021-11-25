@@ -5,7 +5,6 @@ import { MongoClient } from 'mongodb'
 import { createMongoConnection, getMongoCollections, IDirectCollections } from '../../db'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { setupApmAgent, startTransaction } from '../../profiler'
-import { ISettings, DEFAULT_SETTINGS } from '@sofie-automation/corelib/dist/settings'
 import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
 import { JobContextBase } from '../context'
 import { Observable } from 'threads/observable'
@@ -83,17 +82,7 @@ const studioMethods = {
 			transaction.setLabel('studioId', unprotectString(staticData.dataCache.studio._id))
 		}
 
-		const settings = Object.freeze<ISettings>({
-			...DEFAULT_SETTINGS,
-		})
-
-		const context = new JobContextBase(
-			staticData.collections,
-			settings,
-			staticData.dataCache,
-			staticData.locks,
-			transaction
-		)
+		const context = new JobContextBase(staticData.collections, staticData.dataCache, staticData.locks, transaction)
 
 		try {
 			// Execute function, or fail if no handler

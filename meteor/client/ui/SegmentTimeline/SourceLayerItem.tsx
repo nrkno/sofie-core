@@ -768,12 +768,16 @@ export const SourceLayerItem = withTranslation()(
 						style={this.getItemStyle()}
 					>
 						{this.renderInsideItem(typeClass)}
-						{DEBUG_MODE && (
+						{DEBUG_MODE && this.props.studio && (
 							<div className="segment-timeline__debug-info">
-								{innerPiece.enable.start} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} /{' '}
-								{piece.renderedDuration ? RundownUtils.formatTimeToTimecode(piece.renderedDuration).substr(-5) : 'X'} /{' '}
+								{innerPiece.enable.start} /{' '}
+								{RundownUtils.formatTimeToTimecode(this.props.studio.settings, this.props.partDuration).substr(-5)} /{' '}
+								{piece.renderedDuration
+									? RundownUtils.formatTimeToTimecode(this.props.studio.settings, piece.renderedDuration).substr(-5)
+									: 'X'}{' '}
+								/{' '}
 								{typeof innerPiece.enable.duration === 'number'
-									? RundownUtils.formatTimeToTimecode(innerPiece.enable.duration).substr(-5)
+									? RundownUtils.formatTimeToTimecode(this.props.studio.settings, innerPiece.enable.duration).substr(-5)
 									: ''}
 							</div>
 						)}

@@ -1,4 +1,3 @@
-import { ISettings } from '@sofie-automation/corelib/dist/settings'
 import { IDirectCollections } from '../db'
 import { JobContext } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
@@ -40,7 +39,6 @@ export class JobContextBase implements JobContext {
 
 	constructor(
 		readonly directCollections: Readonly<IDirectCollections>,
-		readonly settings: ReadonlyDeep<ISettings>,
 		private readonly cacheData: WorkerDataCache,
 		private readonly locksManager: LocksManager,
 		private readonly transaction: ApmTransaction | undefined

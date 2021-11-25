@@ -178,7 +178,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				{typeof sourceDuration === 'string' ? (
 					sourceDuration
 				) : typeof sourceDuration === 'number' ? (
-					<StyledTimecode time={sourceDuration} />
+					<StyledTimecode time={sourceDuration} studioSettings={props.studio?.settings} />
 				) : (
 					sourceDuration
 				)}

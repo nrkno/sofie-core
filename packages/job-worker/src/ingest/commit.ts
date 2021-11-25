@@ -221,7 +221,7 @@ export async function CommitIngestOperation(
 					}
 				}
 
-				const emptySegmentIds = context.settings.preserveUnsyncedPlayingSegmentContents
+				const emptySegmentIds = context.studio.settings.preserveUnsyncedPlayingSegmentContents
 					? purgeSegmentIds
 					: new Set([...purgeSegmentIds.values(), ...orphanSegmentIds.values()])
 				removeSegmentContents(ingestCache, emptySegmentIds)

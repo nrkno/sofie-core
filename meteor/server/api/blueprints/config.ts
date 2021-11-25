@@ -92,26 +92,3 @@ export function findMissingConfigs(
 
 	return missingKeys
 }
-
-export function applyToConfig(
-	res: any,
-	configManifest: ConfigManifestEntry[],
-	blueprintConfig: ReadonlyDeep<IBlueprintConfig>,
-	source: string
-) {
-	for (const val of configManifest) {
-		let newVal = val.defaultVal
-
-		const overrideVal = objectPathGet(blueprintConfig, val.id) as
-			| BasicConfigItemValue
-			| TableConfigItemValue
-			| undefined
-		if (overrideVal !== undefined) {
-			newVal = overrideVal
-		} else if (val.required) {
-			logger.warning(`Required config not defined in ${source}: "${val.name}"`)
-		}
-
-		objectPathSet(res, val.id, newVal)
-	}
-}

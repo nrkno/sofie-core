@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 
 import { RundownUtils } from '../../lib/rundown'
 
-import { Settings } from '../../../lib/Settings'
 import { getElementWidth, getElementHeight } from '../../utils/dimensions'
 import { onElementResize } from '../../lib/resizeObserver'
 
@@ -28,6 +27,7 @@ const SHORT_LINE_TOP = 30
 const SHORT_LINE_HEIGHT = 6
 
 interface ITimelineGridProps {
+	frameRate: number
 	timeScale: number
 	scrollLeft: number
 	onResize: (size: number[]) => void
@@ -154,7 +154,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			this.ctx.font = (15 * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
 			this.ctx.fillStyle = this.labelColor
 
-			const fps = Settings.frameRate
+			const fps = this.props.frameRate
 
 			const secondTimeScale = this.props.timeScale * 1000
 

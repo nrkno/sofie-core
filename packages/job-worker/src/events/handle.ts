@@ -221,5 +221,5 @@ export async function handleNotifyCurrentlyPlayingPart(
 	_context: JobContext,
 	_data: NotifyCurrentlyPlayingPartProps
 ): Promise<void> {
-	//
+	// TODO: Worker - this is a MOS callback to the gateway. How does that fit into this model?
 }

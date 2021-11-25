@@ -6,8 +6,8 @@ import { ProtectedString, protectString } from './protectedString'
 import * as objectPath from 'object-path'
 import * as crypto from 'crypto'
 import { Timecode } from 'timecode'
-import { ISettings } from './settings'
 import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/blueprints-integration'
+import { IStudioSettings } from './dataModel/Studio'
 
 export type TimeDuration = number
 
@@ -271,7 +271,7 @@ export function createManualPromise<T>(): ManualPromise<T> {
 	return manualPromise
 }
 
-export function formatDateAsTimecode(settings: ISettings, date: Date): string {
+export function formatDateAsTimecode(settings: ReadonlyDeep<Pick<IStudioSettings, 'frameRate'>>, date: Date): string {
 	const tc = Timecode.init({
 		framerate: settings.frameRate + '',
 		timecode: date,
@@ -282,7 +282,7 @@ export function formatDateAsTimecode(settings: ISettings, date: Date): string {
 /**
  * @param duration time in milliseconds
  */
-export function formatDurationAsTimecode(settings: ISettings, duration: Time): string {
+export function formatDurationAsTimecode(settings: ReadonlyDeep<Pick<IStudioSettings, 'frameRate'>>, duration: Time): string {
 	const tc = Timecode.init({
 		framerate: settings.frameRate + '',
 		timecode: (duration * settings.frameRate) / 1000,

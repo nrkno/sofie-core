@@ -677,11 +677,11 @@ export class RundownDataChangedEventContext extends RundownContext implements IR
 
 	formatDateAsTimecode(time: number): string {
 		if (typeof time !== 'number') throw new Error(`formatDateAsTimecode: time must be a number`)
-		return formatDateAsTimecode(this.context.settings, new Date(time))
+		return formatDateAsTimecode(this.context.studio.settings, new Date(time))
 	}
 	formatDurationAsTimecode(time: number): string {
 		if (typeof time !== 'number') throw new Error(`formatDurationAsTimecode: time must be a number`)
-		return formatDurationAsTimecode(this.context.settings, time)
+		return formatDurationAsTimecode(this.context.studio.settings, time)
 	}
 }
 

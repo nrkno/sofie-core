@@ -744,7 +744,7 @@ export async function resolveSegmentChangesForUpdatedRundown(
 		})
 	}
 
-	if (context.settings.preserveUnsyncedPlayingSegmentContents && removedSegments.length > 0) {
+	if (context.studio.settings.preserveUnsyncedPlayingSegmentContents && removedSegments.length > 0) {
 		// Preserve any old content, unless the part is referenced in another segment
 		const retainSegments = new Set(removedSegments.map((s) => s._id))
 		const newPartIds = new Set(segmentChanges.parts.map((p) => p._id))

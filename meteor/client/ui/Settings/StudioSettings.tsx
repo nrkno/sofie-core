@@ -2418,6 +2418,20 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								<SettingsNavigation type="newshowstyle" />
 							</div>
 						</div>
+						<label className="field">
+							{t('Frame Rate')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.frameRate"
+									obj={this.props.studio}
+									type="int"
+									collection={Studios}
+									className="mdinput"
+								></EditAttribute>
+								<span className="mdfx"></span>
+							</div>
+						</label>
 						<div className="mod mtn mbm mhn">
 							<label className="field">
 								<EditAttribute
@@ -2523,6 +2537,30 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									collection={Studios}
 									className="mdinput"
 								></EditAttribute>
+							</label>
+						</div>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.preserveUnsyncedPlayingSegmentContents"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}
+								></EditAttribute>
+								{t('Preserve contents of playing segment when unsynced')}
+							</label>
+						</div>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.allowRundownResetOnAir"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}
+								></EditAttribute>
+								{t('Allow Rundowns to be reset while on-air')}
 							</label>
 						</div>
 					</div>

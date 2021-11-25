@@ -85,7 +85,7 @@ export async function diffAndApplyChanges(
 		},
 	})
 
-	if (!context.settings.preserveUnsyncedPlayingSegmentContents) {
+	if (!context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
 		// Remove everything inside the segment
 		removeSegmentContents(cache, segmentIdsToRemove)
 	}

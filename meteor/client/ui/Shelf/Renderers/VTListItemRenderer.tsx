@@ -146,7 +146,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 				/>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">
-				{sourceDuration ? <StyledTimecode time={sourceDuration} /> : null}
+				{sourceDuration ? <StyledTimecode time={sourceDuration} studioSettings={props.studio?.settings} /> : null}
 			</td>
 			{/*<td className='adlib-panel__list-view__list__table__cell--data'>
 			&nbsp;

@@ -1121,14 +1121,19 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								}
 							/>
 						)}
-					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
+					{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}
 				</div>
 				<div className="segment-timeline__mos-id">{this.props.segment.externalId}</div>
 				<div className="segment-timeline__output-layers">{this.renderOutputLayerControls()}</div>
 				<div className="segment-timeline__timeline-background" />
-				<TimelineGrid {...this.props} onResize={this.onTimelineResize} />
+				<TimelineGrid
+					onResize={this.onTimelineResize}
+					scrollLeft={this.props.scrollLeft}
+					timeScale={this.props.timeScale}
+					frameRate={this.props.studio.settings.frameRate}
+				/>
 				<div
 					className={ClassNames('segment-timeline__timeline-container', {
 						'segment-timeline__timeline-container--grabbable': Settings.allowGrabbingTimeline,

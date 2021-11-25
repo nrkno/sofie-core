@@ -200,7 +200,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				)}
 				{sourceDuration && (
 					<span className="dashboard-panel__panel__button__sub-label">
-						{sourceDuration ? <StyledTimecode time={sourceDuration || 0} /> : null}
+						{sourceDuration ? (
+							<StyledTimecode time={sourceDuration || 0} studioSettings={this.props.studio?.settings} />
+						) : null}
 					</span>
 				)}
 				<VTFloatingInspector

@@ -36,6 +36,7 @@ import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { FindOptions } from '../../lib/typings/meteor'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown, RundownId } from '../../lib/collections/Rundowns'
+import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -60,6 +61,7 @@ export namespace RundownUtils {
 	}
 
 	export function formatTimeToTimecode(
+		studioSettings: Pick<IStudioSettings, 'frameRate'>,
 		milliseconds: number,
 		showPlus?: boolean,
 		enDashAsMinus?: boolean,
@@ -73,9 +75,9 @@ export namespace RundownUtils {
 			if (showPlus) sign = '+'
 		}
 		const tc = Timecode.init({
-			framerate: Settings.frameRate + '',
-			timecode: (milliseconds * Settings.frameRate) / 1000,
-			drop_frame: !Number.isInteger(Settings.frameRate),
+			framerate: studioSettings.frameRate + '',
+			timecode: (milliseconds * studioSettings.frameRate) / 1000,
+			drop_frame: !Number.isInteger(studioSettings.frameRate),
 		})
 		const timeCodeString: string = tc.toString()
 		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
