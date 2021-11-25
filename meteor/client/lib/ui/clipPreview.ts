@@ -74,9 +74,8 @@ function getPreviewUrlFromExpectedPackages(
 			break // don't look further
 		}
 	}
-	if (packagePreviewPath && previewContainerId && expectedPackage) {
-		return getAssetUrlFromExpectedPackages(ownerId, packagePreviewPath, previewContainerId, expectedPackage, studio)
-	}
+	if (!packagePreviewPath || !previewContainerId || !expectedPackage) return
+	return getAssetUrlFromExpectedPackages(ownerId, packagePreviewPath, previewContainerId, expectedPackage, studio)
 }
 
 function getThumbnailUrlFromExpectedPackages(
@@ -102,15 +101,8 @@ function getThumbnailUrlFromExpectedPackages(
 			break // don't look further
 		}
 	}
-	if (packageThumbnailPath && thumbnailContainerId && expectedPackage) {
-		return getAssetUrlFromExpectedPackages(
-			ownerId,
-			packageThumbnailPath,
-			thumbnailContainerId,
-			expectedPackage,
-			studio
-		)
-	}
+	if (!packageThumbnailPath || !thumbnailContainerId || !expectedPackage) return
+	return getAssetUrlFromExpectedPackages(ownerId, packageThumbnailPath, thumbnailContainerId, expectedPackage, studio)
 }
 
 function getAssetUrlFromContentMetaData(
@@ -118,15 +110,12 @@ function getAssetUrlFromContentMetaData(
 	assetType: 'thumbnail' | 'preview',
 	mediaPreviewUrl: string
 ): string | undefined {
-	if (contentMetaData) {
-		if (contentMetaData && contentMetaData.previewPath) {
-			return (
-				ensureHasTrailingSlash(mediaPreviewUrl ?? null) +
-				`media/${assetType}/` +
-				encodeURIComponent(contentMetaData.mediaId)
-			)
-		}
-	}
+	if (!contentMetaData || !contentMetaData.previewPath) return
+	return (
+		ensureHasTrailingSlash(mediaPreviewUrl ?? null) +
+		`media/${assetType}/` +
+		encodeURIComponent(contentMetaData.mediaId)
+	)
 }
 
 function getThumbnailUrlFromContentMetaData(contentMetaData: MediaObject, mediaPreviewUrl: string): string | undefined {

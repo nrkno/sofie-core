@@ -1,12 +1,10 @@
 import React from 'react'
 import * as _ from 'underscore'
-// import { useTranslation } from 'react-i18next'
 
 import { NoraContent, GraphicsContent } from '@sofie-automation/blueprints-integration'
 
 import { NoraFloatingInspector } from './NoraFloatingInspector'
 import { FloatingInspector } from '../FloatingInspector'
-// import { Time } from '../../../lib/lib'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
 interface IProps {
@@ -28,14 +26,9 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	floatingInspectorStyle,
 	showMiniInspector,
 	piece,
-	// pieceRenderedIn,
-	// pieceRenderedDuration,
 	typeClass,
 	displayOn,
 }) => {
-	// const { t } = useTranslation()
-	// const innerPiece = piece
-
 	const noraContent = (content as NoraContent)?.payload?.content ? (content as NoraContent | undefined) : undefined
 
 	let properties: Array<KeyValue> = []
@@ -71,8 +64,6 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 			)
 		) as Array<KeyValue>
 	}
-
-	// const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
 
 	const graphicContent = (content as GraphicsContent)?.fileName ? (content as GraphicsContent | undefined) : undefined
 
