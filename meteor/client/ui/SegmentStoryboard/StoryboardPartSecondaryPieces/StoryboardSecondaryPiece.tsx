@@ -25,16 +25,16 @@ interface IProps {
 function renderPieceInside(
 	props: IProps,
 	elementOffset: { top: number; left: number; width: number } | undefined,
-	isHovering: boolean,
+	hovering: MousePagePosition | null,
 	typeClass: string
 ) {
 	const type = props.piece?.sourceLayer?.type
 	switch (type) {
 		case SourceLayerType.SCRIPT:
-			return ScriptRenderer({ ...props, elementOffset, isHovering, typeClass })
+			return ScriptRenderer({ ...props, elementOffset, hovering, typeClass })
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
-			return GraphicsRenderer({ ...props, elementOffset, isHovering, typeClass })
+			return GraphicsRenderer({ ...props, elementOffset, hovering, typeClass })
 		case SourceLayerType.AUDIO:
 		case SourceLayerType.CAMERA:
 		case SourceLayerType.LIVE_SPEAK:
@@ -45,12 +45,14 @@ function renderPieceInside(
 		case SourceLayerType.TRANSITION:
 		case SourceLayerType.UNKNOWN:
 		case undefined:
-			return DefaultRenderer({ ...props, elementOffset, isHovering, typeClass })
+			return DefaultRenderer({ ...props, elementOffset, hovering, typeClass })
 		default:
 			assertNever(type)
-			return DefaultRenderer({ ...props, elementOffset, isHovering, typeClass })
+			return DefaultRenderer({ ...props, elementOffset, hovering, typeClass })
 	}
 }
+
+type MousePagePosition = { pageX: number; pageY: number }
 
 export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(function StoryboardSecondaryPiece(
 	props: IProps
@@ -58,7 +60,7 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 	const { piece, partId } = props
 	const [highlight] = useState(false)
 	const element = useRef<HTMLDivElement>(null)
-	const [isHovering, setHovering] = useState(false)
+	const [hovering, setHovering] = useState<MousePagePosition | null>(null)
 	const [elementOffset, setElementOffset] = useState<{ top: number; left: number; width: number } | undefined>(
 		undefined
 	)
@@ -70,7 +72,7 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') return
 
-		setHovering(true)
+		setHovering({ pageX: e.pageX, pageY: e.pageY })
 		if (!element.current) return
 
 		const offset = getElementDocumentOffset(element.current)
@@ -85,7 +87,7 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 	}
 
 	const onPointerLeave = () => {
-		setHovering(false)
+		setHovering(null)
 	}
 
 	return (
@@ -117,7 +119,7 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 			onPointerLeave={onPointerLeave}
 			ref={element}
 		>
-			{renderPieceInside(props, elementOffset, isHovering, typeClass)}
+			{renderPieceInside(props, elementOffset, hovering, typeClass)}
 		</div>
 	)
 })

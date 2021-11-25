@@ -4,13 +4,13 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector'
 import { IDefaultRendererProps } from './DefaultRenderer'
 
-export function GraphicsRenderer({ piece: pieceInstance, isHovering, elementOffset, layer }: IDefaultRendererProps) {
+export function GraphicsRenderer({ piece: pieceInstance, hovering, elementOffset, layer }: IDefaultRendererProps) {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
 	return (
 		<>
 			<L3rdFloatingInspector
-				showMiniInspector={isHovering}
+				showMiniInspector={!!hovering}
 				content={content}
 				floatingInspectorStyle={
 					elementOffset

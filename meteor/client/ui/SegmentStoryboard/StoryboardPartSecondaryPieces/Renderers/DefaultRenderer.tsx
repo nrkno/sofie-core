@@ -11,7 +11,7 @@ export interface IDefaultRendererProps {
 	isLiveLine: boolean
 	studio: Studio | undefined
 	typeClass: string
-	isHovering: boolean
+	hovering: { pageX: number; pageY: number } | null
 	elementOffset:
 		| {
 				left: number

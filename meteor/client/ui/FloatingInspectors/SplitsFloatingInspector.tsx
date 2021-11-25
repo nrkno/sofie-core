@@ -3,8 +3,8 @@ import ClassNames from 'classnames'
 
 import { FloatingInspector } from '../FloatingInspector'
 import { RundownUtils } from '../../lib/rundown'
-import { SplitRole, SplitSubItem, SplitsSourceRenderer } from '../SegmentTimeline/Renderers/SplitsSourceRenderer'
 import { SplitsContent } from '@sofie-automation/blueprints-integration'
+import { getSplitPreview, SplitRole, SplitSubItem } from '../../lib/ui/splitPreview'
 
 interface IProps {
 	typeClass?: string
@@ -57,7 +57,7 @@ const RenderSplitPreview = memo(function RenderSplitPreview({ subItems }: { subI
 export const SplitsFloatingInspector: React.FunctionComponent<IProps> = (props) => {
 	const splitItems = useMemo(() => {
 		if (props.content.boxSourceConfiguration) {
-			return SplitsSourceRenderer.generateSplitSubItems(props.content.boxSourceConfiguration)
+			return getSplitPreview(props.content.boxSourceConfiguration)
 		} else {
 			return []
 		}

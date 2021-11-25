@@ -28,7 +28,7 @@ export function ScriptRenderer(props: IDefaultRendererProps) {
 								: {}
 						}
 						itemElement={null}
-						showMiniInspector={props.isHovering}
+						showMiniInspector={!!props.hovering}
 						typeClass={props.typeClass}
 					/>
 				)}
