@@ -22,9 +22,6 @@ $source-layer-margin: 0.2rem;
 }
 
 .segment-storyboard__part__piece {
-	@include item-type-colors();
-	@include missing-overlay();
-
 	position: relative;
 	flex: 1 1;
 	overflow: hidden;
@@ -39,6 +36,11 @@ $source-layer-margin: 0.2rem;
 
 	text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 	font-weight: 400;
+
+	background: $segment-layer-background-unknown;
+
+	@include item-type-colors();
+	@include missing-overlay();
 
 	&:last-child {
 		margin-right: 0;

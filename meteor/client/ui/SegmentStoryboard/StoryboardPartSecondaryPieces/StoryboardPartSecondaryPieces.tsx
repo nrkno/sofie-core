@@ -1,3 +1,4 @@
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React from 'react'
 import { ISourceLayerExtended, PartExtended } from '../../../../lib/Rundown'
 import { IOutputLayerUi } from '../../SegmentContainer/withResolvedSegment'
@@ -9,10 +10,16 @@ interface IProps {
 }
 
 function filterSourceLayers(sourceLayers: ISourceLayerExtended[]) {
-	return sourceLayers.filter((sourceLayer) => !sourceLayer.isHidden && !sourceLayer.onPresenterScreen)
+	return sourceLayers.filter(
+		(sourceLayer) =>
+			!sourceLayer.isHidden && !sourceLayer.onPresenterScreen && sourceLayer.type !== SourceLayerType.TRANSITION
+	)
 }
 
-export function StoryboardPartSecondaryPieces({ part, outputLayers }: IProps) {
+export const StoryboardPartSecondaryPieces = React.memo(function StoryboardPartSecondaryPieces({
+	part,
+	outputLayers,
+}: IProps) {
 	return (
 		<div className="segment-storyboard__part__secondary-pieces">
 			{Object.values(outputLayers)
@@ -37,4 +44,4 @@ export function StoryboardPartSecondaryPieces({ part, outputLayers }: IProps) {
 				})}
 		</div>
 	)
-}
+})

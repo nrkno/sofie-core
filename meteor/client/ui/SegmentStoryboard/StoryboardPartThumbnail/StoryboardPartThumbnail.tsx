@@ -1,3 +1,4 @@
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import React, { useEffect, useState } from 'react'
 import { PartExtended, PieceExtended } from '../../../../lib/Rundown'
@@ -13,14 +14,18 @@ function findMainPiece(pieces: PieceExtended[]) {
 		.slice()
 		.reverse()
 		.find((piece) => {
-			if (piece.outputLayer?.isPGM && piece.sourceLayer?.onPresenterScreen) {
+			if (
+				piece.outputLayer?.isPGM &&
+				piece.sourceLayer?.onPresenterScreen &&
+				piece.sourceLayer?.type !== SourceLayerType.TRANSITION
+			) {
 				return true
 			}
 		})
 	return mainPiece
 }
 
-export function StoryboardPartThumbnail({ part }: IProps) {
+export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbnail({ part }: IProps) {
 	const [mainPiece, setMainPiece] = useState<PieceExtended | undefined>(findMainPiece(part.pieces))
 	const [highlight] = useState(false)
 
@@ -49,4 +54,4 @@ export function StoryboardPartThumbnail({ part }: IProps) {
 			})}
 		></div>
 	)
-}
+})

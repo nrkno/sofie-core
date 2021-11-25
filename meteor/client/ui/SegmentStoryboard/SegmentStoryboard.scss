@@ -148,6 +148,25 @@ $segment-storyboard-part-width: 160px;
 		}
 	}
 
+	> .segment-storyboard__part__transitions {
+		position: absolute;
+		top: 2rem;
+		left: $part-left-right-padding;
+
+		width: $segment-storyboard-part-width / 5;
+
+		.segment-storyboard__part__piece {
+			border-radius: 0;
+		}
+	}
+
+	> .segment-storyboard__part__thumbnail.live-speak:hover,
+	> .segment-storyboard__part__thumbnail.vt:hover {
+		& + .segment-storyboard__part__transitions {
+			display: none;
+		}
+	}
+
 	--invalid-reason-color-transparent: transparent;
 	--invalid-reason-color-opaque: #{$ui-dark-color};
 

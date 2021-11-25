@@ -15,6 +15,7 @@ import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRe
 import { getAllowSpeaking } from '../../lib/localStorage'
 import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../RundownView/RundownViewEventBus'
 import { Meteor } from 'meteor/meteor'
+import { StoryboardPartTransitions } from './StoryboardPartTransitions'
 
 interface IProps {
 	className?: string
@@ -126,6 +127,7 @@ export function StoryboardPart({
 			{subscriptionsReady ? (
 				<>
 					<StoryboardPartThumbnail part={part} />
+					<StoryboardPartTransitions part={part} outputLayers={outputLayers} />
 					<StoryboardPartSecondaryPieces part={part} outputLayers={outputLayers} />
 				</>
 			) : (
