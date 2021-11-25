@@ -37,13 +37,13 @@ export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
 			}
 			setHover(true)
 
-			const offset = thumbnailEl.current && getElementDocumentOffset(thumbnailEl.current)
-			if (offset !== null) {
-				setOrigin(offset)
+			const newOffset = thumbnailEl.current && getElementDocumentOffset(thumbnailEl.current)
+			if (newOffset !== null) {
+				setOrigin(newOffset)
 			}
-			const width = thumbnailEl.current && getElementWidth(thumbnailEl.current)
-			if (width !== null) {
-				setWidth(width)
+			const newWidth = thumbnailEl.current && getElementWidth(thumbnailEl.current)
+			if (newWidth !== null) {
+				setWidth(newWidth)
 			}
 		}
 
