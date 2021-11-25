@@ -4,12 +4,12 @@
 # lint meteor
 cd meteor
 
-# check if we're on a windows machine
-DUMMY=$(command -v where)
-IS_WINDOWS=$?
-
-if [ "$IS_WINDOWS" = "0" ]; then
+if [[ "$OSTYPE" == "msys"* ]] || [[ "$OSTYPE" == "cygwin"* ]]; then
+	# we're on a windows machine
 	meteor.bat npx --no-install lint-staged
+elif [[ "$OSTYPE" == "darwin"* ]] && [[ $(arch) == "arm64" ]]; then
+	# we're on an arm64 mac
+	arch -x86_64 meteor npx --no-install lint-staged
 else
 	meteor npx --no-install lint-staged
 fi;
