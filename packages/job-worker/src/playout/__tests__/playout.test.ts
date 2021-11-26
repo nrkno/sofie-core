@@ -55,6 +55,7 @@ import {
 import { PieceLifespan } from '../../../../blueprints-integration/dist'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { ReadonlyDeep } from 'type-fest'
 
 const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
@@ -63,7 +64,7 @@ const mockExecutePeripheralDeviceFunction = jest
 
 describe('Playout API', () => {
 	let context: MockJobContext
-	let showStyle: ShowStyleCompound
+	let showStyle: ReadonlyDeep<ShowStyleCompound>
 	let playoutDevice: PeripheralDevice
 	// const origGetCurrentTime = lib.getCurrentTime
 
@@ -703,7 +704,7 @@ describe('Playout API', () => {
 async function setupRundownWithAutoplayPart0(
 	context: MockJobContext,
 	rundownId: RundownId,
-	showStyle: ShowStyleCompound
+	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<{ playlistId: RundownPlaylistId; rundownId: RundownId }> {
 	const playlistId = await context.directCollections.RundownPlaylists.insertOne(
 		defaultRundownPlaylist(protectString(`playlist_${rundownId}`), context.studioId)

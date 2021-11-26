@@ -176,6 +176,15 @@ export class MockJobContext implements JobContext {
 	setStudio(studio: ReadonlyDeep<DBStudio>): void {
 		this.#studio = clone(studio)
 	}
+	setShowStyleBlueprint(blueprint: ShowStyleBlueprintManifest): void {
+		this.#showStyleBlueprint = blueprint
+	}
+	updateShowStyleBlueprint(blueprint: Partial<ShowStyleBlueprintManifest>): void {
+		this.#showStyleBlueprint = {
+			...this.#showStyleBlueprint,
+			...blueprint,
+		}
+	}
 }
 
 const MockStudioBlueprint: () => StudioBlueprintManifest = () => ({

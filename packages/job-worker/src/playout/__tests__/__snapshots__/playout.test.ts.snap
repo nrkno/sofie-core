@@ -5,104 +5,13 @@ Array [
   Object {
     "_id": "mockStudio0",
     "generated": 12345,
-    "timeline": Array [
-      Object {
-        "classes": Array [
-          "rundown_active",
-        ],
-        "content": Object {
-          "deviceType": 0,
-        },
-        "enable": Object {
-          "while": 1,
-        },
-        "id": "playlist_randomId9000_status",
-        "layer": "rundown_status",
-        "objectType": "rundown",
-      },
-      Object {
-        "children": Array [],
-        "content": Object {
-          "deviceType": 0,
-          "type": "group",
-        },
-        "enable": Object {
-          "start": "now",
-        },
-        "id": "part_group_randomId9000_part0_0_randomId9002",
-        "isGroup": true,
-        "isPartGroup": true,
-        "layer": "",
-        "metaData": Object {
-          "isPieceTimeline": true,
-        },
-        "objectType": "rundown",
-        "priority": 5,
-      },
-      Object {
-        "classes": Array [],
-        "content": Object {
-          "callBack": "partPlaybackStarted",
-          "callBackData": Object {
-            "partInstanceId": "randomId9000_part0_0_randomId9002",
-            "rundownPlaylistId": "playlist_randomId9000",
-          },
-          "callBackStopped": "partPlaybackStopped",
-          "deviceType": 0,
-          "type": "callback",
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "part_group_firstobject_randomId9000_part0_0_randomId9002",
-        "inGroup": "part_group_randomId9000_part0_0_randomId9002",
-        "layer": "group_first_object",
-        "objectType": "rundown",
-      },
-      Object {
-        "children": Array [],
-        "content": Object {
-          "deviceType": 0,
-          "type": "group",
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "piece_group_randomId9000_part0_0_randomId9002_randomId9000_piece001",
-        "inGroup": "part_group_randomId9000_part0_0_randomId9002",
-        "isGroup": true,
-        "layer": "vt0",
-        "metaData": Object {
-          "isPieceTimeline": true,
-          "pieceId": "randomId9000_part0_0_randomId9002_randomId9000_piece001",
-        },
-        "objectType": "rundown",
-        "priority": 5,
-      },
-      Object {
-        "classes": Array [
-          "current_part",
-        ],
-        "content": Object {
-          "callBack": "piecePlaybackStarted",
-          "callBackData": Object {
-            "dynamicallyInserted": false,
-            "pieceInstanceId": "randomId9000_part0_0_randomId9002_randomId9000_piece001",
-            "rundownPlaylistId": "playlist_randomId9000",
-          },
-          "callBackStopped": "piecePlaybackStopped",
-          "deviceType": 0,
-          "type": "callback",
-        },
-        "enable": Object {
-          "start": 0,
-        },
-        "id": "piece_group_firstobject_randomId9000_part0_0_randomId9002_randomId9000_piece001",
-        "inGroup": "piece_group_randomId9000_part0_0_randomId9002_randomId9000_piece001",
-        "layer": "vt0_firstobject",
-        "objectType": "rundown",
-      },
-    ],
+    "generationVersions": Object {
+      "blueprintId": "blueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[{\\"id\\":\\"playlist_randomId9000_status\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"while\\":1},\\"layer\\":\\"rundown_status\\",\\"content\\":{\\"deviceType\\":0},\\"classes\\":[\\"rundown_active\\"]},{\\"id\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":\\"now\\"},\\"priority\\":5,\\"layer\\":\\"\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"isGroup\\":true,\\"isPartGroup\\":true,\\"metaData\\":{\\"isPieceTimeline\\":true}},{\\"id\\":\\"part_group_firstobject_randomId9000_part0_0_randomId9002\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"group_first_object\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"partPlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"partInstanceId\\":\\"randomId9000_part0_0_randomId9002\\"},\\"callBackStopped\\":\\"partPlaybackStopped\\"},\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"classes\\":[]},{\\"id\\":\\"piece_group_randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"isGroup\\":true,\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"vt0\\",\\"priority\\":5,\\"metaData\\":{\\"pieceId\\":\\"randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"isPieceTimeline\\":true}},{\\"id\\":\\"piece_group_firstobject_randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"vt0_firstobject\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"piecePlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"pieceInstanceId\\":\\"randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"dynamicallyInserted\\":false},\\"callBackStopped\\":\\"piecePlaybackStopped\\"},\\"classes\\":[\\"current_part\\"],\\"inGroup\\":\\"piece_group_randomId9000_part0_0_randomId9002_randomId9000_piece001\\"}]",
     "timelineHash": "randomId9006",
   },
 ]
@@ -113,7 +22,7 @@ Object {
   "_id": "randomId9000",
   "_rank": 0,
   "created": 0,
-  "externalId": "MOCK_RUNDOWN_randomId9002",
+  "externalId": "MOCK_RUNDOWN",
   "externalNRCSName": "mock",
   "importVersions": Object {
     "blueprint": "",
@@ -141,13 +50,13 @@ Array [
     "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint0",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9023",
+    "timelineHash": "randomId9007",
   },
 ]
 `;
@@ -179,7 +88,7 @@ Object {
   "_id": "randomId9000",
   "_rank": 0,
   "created": 0,
-  "externalId": "MOCK_RUNDOWN_randomId9002",
+  "externalId": "MOCK_RUNDOWN",
   "externalNRCSName": "mock",
   "importVersions": Object {
     "blueprint": "",
