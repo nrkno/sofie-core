@@ -321,6 +321,17 @@ function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean 
 	}
 }
 
+function createMiniShelfQueueAdLibAction(_filterChain: IGUIContextFilterLink[], forward: boolean): ExecutableAction {
+	return {
+		action: ClientActions.miniShelfQueueAdLib,
+		execute: () => {
+			RundownViewEventBus.emit(RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, {
+				forward,
+			})
+		},
+	}
+}
+
 function createGoToOnAirLineAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: ClientActions.goToOnAirLine,
@@ -510,6 +521,8 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 			)
 		case ClientActions.showEntireCurrentSegment:
 			return createShowEntireCurrentSegmentAction(action.filterChain, action.on)
+		case ClientActions.miniShelfQueueAdLib:
+			return createMiniShelfQueueAdLibAction(action.filterChain, action.forward)
 		default:
 			assertNever(action)
 			break
