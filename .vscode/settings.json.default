@@ -1,0 +1,11 @@
+{
+    "eslint.workingDirectories": [
+        "meteor",
+        "packages/blueprints-integration",
+        "packages/mos-gateway",
+        "packages/playout-gateway",
+        "packages/server-core-integration"
+    ],
+    "prettier.enable": true,
+    "sonarlint.connectedMode.project": { "projectKey": "nrkno_tv-automation-server-core" },
+}
