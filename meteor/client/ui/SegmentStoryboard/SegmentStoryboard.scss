@@ -150,10 +150,10 @@ $segment-storyboard-part-width: 160px;
 
 	> .segment-storyboard__part__transitions {
 		position: absolute;
-		top: 2rem;
+		top: 3.5rem;
 		left: $part-left-right-padding;
 
-		width: $segment-storyboard-part-width / 5;
+		width: fit-content;
 
 		.segment-storyboard__part__piece {
 			border-radius: 0;
