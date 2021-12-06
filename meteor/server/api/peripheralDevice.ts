@@ -485,18 +485,15 @@ export namespace ServerPeripheralDeviceAPI {
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		PeripheralDeviceAPI.executeFunction(
-			peripheralDevice._id,
-			(err, res) => {
-				if (err) {
-					logger.warn(err)
-				}
+		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, 'pingResponse', message)
+			.then((res) => {
+				if (cb) cb(null, res)
+			})
+			.catch((err) => {
+				logger.warn(err)
 
-				if (cb) cb(err, res)
-			},
-			'pingResponse',
-			message
-		)
+				if (cb) cb(err, null)
+			})
 
 		ping(context, deviceId, token)
 	}
@@ -537,12 +534,6 @@ export namespace ServerPeripheralDeviceAPI {
 			return returnValue
 		}
 	}
-	export const executeFunction: (deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => any =
-		Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
-			const args0 = args.slice(0, -1)
-			const cb = args.slice(-1)[0] // the last argument in ...args
-			PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
-		})
 
 	export function requestUserAuthToken(
 		context: MethodContext,

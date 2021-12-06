@@ -1032,8 +1032,6 @@ export function firstIfArray<T>(value: any): T {
 	return _.isArray(value) ? _.first(value) : value
 }
 
-export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)
-
 /**
  * Wait for specified time
  * @param time

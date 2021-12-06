@@ -126,85 +126,54 @@ export namespace ServerClientAPI {
 		const actionId: UserActionsLogItemId = getRandomId()
 		const startTime = Date.now()
 
-		return new Promise((resolve, reject) => {
-			if (!methodContext.connection) {
-				// In this case, it was called internally from server-side.
-				// Just run and return right away:
-				try {
-					triggerWriteAccessBecauseNoCheckNecessary()
-					PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-						deviceId,
-						(err, result) => {
-							if (err) reject(err)
-							else resolve(result)
-						},
-						timeoutTime,
-						functionName,
-						...args
-					)
-				} catch (e) {
-					// allow the exception to be handled by the Client code
-					const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-					logger.error(errMsg)
-					reject(e)
-				}
-				return
-			}
-
-			const access = PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
-
-			UserActionsLog.insert(
-				literal<UserActionsLogItem>({
-					_id: actionId,
-					clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
-					organizationId: access.organizationId,
-					userId: access.userId,
-					context: context,
-					method: `${deviceId}: ${functionName}`,
-					args: JSON.stringify(args),
-					timestamp: getCurrentTime(),
-				})
-			)
-			try {
-				PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-					deviceId,
-					(err, result) => {
-						if (err) {
-							const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
-							logger.error(errMsg)
-							UserActionsLog.update(actionId, {
-								$set: {
-									success: false,
-									doneTime: getCurrentTime(),
-									executionTime: Date.now() - startTime,
-									errorMessage: errMsg,
-								},
-							})
-
-							reject(err)
-							return
-						}
-
-						UserActionsLog.update(actionId, {
-							$set: {
-								success: true,
-								doneTime: getCurrentTime(),
-								executionTime: Date.now() - startTime,
-							},
-						})
-
-						resolve(result)
-						return
-					},
-					timeoutTime,
-					functionName,
-					...args
-				)
-			} catch (e) {
-				// allow the exception to be handled by the Client code
+		if (!methodContext.connection) {
+			// In this case, it was called internally from server-side.
+			// Just run and return right away:
+			triggerWriteAccessBecauseNoCheckNecessary()
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+				deviceId,
+				timeoutTime,
+				functionName,
+				...args
+			).catch(async (e) => {
 				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 				logger.error(errMsg)
-				UserActionsLog.update(actionId, {
+				// allow the exception to be handled by the Client code
+				return Promise.reject(e)
+			})
+		}
+
+		const access = PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+
+		await UserActionsLog.insertAsync(
+			literal<UserActionsLogItem>({
+				_id: actionId,
+				clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
+				organizationId: access.organizationId,
+				userId: access.userId,
+				context: context,
+				method: `${deviceId}: ${functionName}`,
+				args: JSON.stringify(args),
+				timestamp: getCurrentTime(),
+			})
+		)
+
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, functionName, ...args)
+			.then(async (result) => {
+				await UserActionsLog.updateAsync(actionId, {
+					$set: {
+						success: true,
+						doneTime: getCurrentTime(),
+						executionTime: Date.now() - startTime,
+					},
+				})
+
+				return result
+			})
+			.catch(async (err) => {
+				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+				logger.error(errMsg)
+				await UserActionsLog.updateAsync(actionId, {
 					$set: {
 						success: false,
 						doneTime: getCurrentTime(),
@@ -212,10 +181,10 @@ export namespace ServerClientAPI {
 						errorMessage: errMsg,
 					},
 				})
-				reject(e)
-				return
-			}
-		})
+
+				// allow the exception to be handled by the Client code
+				return Promise.reject(err)
+			})
 	}
 	function getLoggedInCredentials(methodContext: MethodContext): {
 		userId: UserId | null

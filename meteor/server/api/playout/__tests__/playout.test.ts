@@ -397,7 +397,7 @@ describe('Playout API', () => {
 	testInFiber('reloadRundownPlaylistData', async () => {
 		// mock reloadRundown for test
 		const origReloadRundown = IngestActions.reloadRundown
-		IngestActions.reloadRundown = jest.fn(() => TriggerReloadDataResponse.COMPLETED)
+		IngestActions.reloadRundown = jest.fn(async () => TriggerReloadDataResponse.COMPLETED)
 
 		expect(() => {
 			ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))

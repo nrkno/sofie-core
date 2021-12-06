@@ -17,6 +17,7 @@ import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections
 import { mockRO } from './mock-mos-data'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
+import { rejects } from 'assert'
 
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -58,7 +59,7 @@ describe('Test sending mos actions', () => {
 			},
 		})
 
-		expect(() => MOSDeviceActions.reloadRundown(device, rundown)).toThrow(`unknown annoying error`)
+		await expect(MOSDeviceActions.reloadRundown(device, rundown)).rejects.toThrow(`unknown annoying error`)
 	})
 
 	testInFiber('reloadRundown: valid payload', async () => {
@@ -104,7 +105,7 @@ describe('Test sending mos actions', () => {
 			})
 		})
 
-		const response = MOSDeviceActions.reloadRundown(device, rundown)
+		const response = await MOSDeviceActions.reloadRundown(device, rundown)
 
 		expect(response).toEqual(TriggerReloadDataResponse.WORKING)
 
@@ -143,7 +144,7 @@ describe('Test sending mos actions', () => {
 			},
 		})
 
-		expect(() => MOSDeviceActions.reloadRundown(device, rundown)).toThrow(
+		await expect(MOSDeviceActions.reloadRundown(device, rundown)).rejects.toThrow(
 			`[401] Expected triggerGetRunningOrder reply for SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa but got newId`
 		)
 	})

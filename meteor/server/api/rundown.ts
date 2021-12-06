@@ -403,7 +403,7 @@ export namespace ServerRundownAPI {
 		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
 
 		// Orphaned flag will be reset by the response update
-		return IngestActions.reloadRundown(rundown)
+		return waitForPromise(IngestActions.reloadRundown(rundown))
 	}
 }
 export namespace ClientRundownAPI {
