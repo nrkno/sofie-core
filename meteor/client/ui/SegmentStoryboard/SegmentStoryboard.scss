@@ -127,24 +127,28 @@ $segment-storyboard-part-width: 160px;
 		color: $part-identifier-text;
 	}
 
-	> .segment-storyboard__liveline {
+	> .segment-storyboard__part-timer {
 		position: absolute;
 		bottom: 0;
 		right: $part-left-right-padding;
 		text-align: right;
 		z-index: 2;
-
-		font-size: 1.2em;
-		line-height: 1em;
-		font-weight: 500;
-		color: $liveline-timecode-color;
 		white-space: nowrap;
 		word-wrap: none;
-		opacity: 1;
 		background: $segment-background-color;
+		color: #888;
+		font-size: 0.9em;
 
-		> .overtime {
-			color: $general-late-color;
+		&--live {
+			font-size: 1.2em;
+			line-height: 1em;
+			font-weight: 500;
+			color: $liveline-timecode-color;
+			opacity: 1;
+
+			> .overtime {
+				color: $general-late-color;
+			}
 		}
 	}
 

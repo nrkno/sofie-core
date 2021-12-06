@@ -16,6 +16,7 @@ import { getAllowSpeaking } from '../../lib/localStorage'
 import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../RundownView/RundownViewEventBus'
 import { Meteor } from 'meteor/meteor'
 import { StoryboardPartTransitions } from './StoryboardPartTransitions'
+import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
 
 interface IProps {
 	className?: string
@@ -166,15 +167,19 @@ export function StoryboardPart({
 					? t('Invalid')
 					: null}
 			</div>
-			{isLivePart && displayLiveLineCounter && (
-				<div className="segment-storyboard__liveline">
+			{isLivePart && displayLiveLineCounter ? (
+				<div className="segment-storyboard__part-timer segment-storyboard__part-timer--live">
 					<CurrentPartRemaining
 						currentPartInstanceId={part.instance._id}
 						speaking={getAllowSpeaking()}
 						heavyClassName="overtime"
 					/>
 				</div>
-			)}
+			) : displayLiveLineCounter ? (
+				<div className="segment-storyboard__part-timer">
+					<PartDisplayDuration fixed={true} part={part} />
+				</div>
+			) : null}
 		</ContextMenuTrigger>
 	)
 }
