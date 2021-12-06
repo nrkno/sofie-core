@@ -24,7 +24,7 @@ import { Random } from 'meteor/random'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
-import { literal } from '../../../../lib/lib'
+import { literal, waitForPromise } from '../../../../lib/lib'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1373,7 +1373,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			const getSegment = (id: SegmentId) => Segments.findOne(id) as Segment
 			const resyncRundown = () => {
 				try {
-					ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
+					waitForPromise(ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id))
 				} catch (e) {
 					if (e.toString().match(/does not support the method "reloadRundown"/)) {
 						// This is expected
