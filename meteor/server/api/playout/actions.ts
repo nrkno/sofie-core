@@ -193,22 +193,21 @@ export async function prepareStudioForBroadcast(cache: CacheForPlayout, okToDest
 
 	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
-	await Promise.all(
-		playoutDevices.map(async (device) =>
-			PeripheralDeviceAPI.executeFunction(
-				device._id,
-				'devicesMakeReady',
-				okToDestoryStuff,
-				rundownPlaylistToBeActivated._id
-			)
-				.then(() => {
-					logger.info(`devicesMakeReady: "${device._id}" OK`)
-				})
-				.catch((err) => {
-					logger.error(`devicesMakeReady: "${device._id} Fail: ${stringifyError(err)}"`)
-				})
+	for (const device of playoutDevices) {
+		// Fire the command and don't wait for the result
+		PeripheralDeviceAPI.executeFunction(
+			device._id,
+			'devicesMakeReady',
+			okToDestoryStuff,
+			rundownPlaylistToBeActivated._id
 		)
-	)
+			.then(() => {
+				logger.info(`devicesMakeReady: "${device._id}" OK`)
+			})
+			.catch((err) => {
+				logger.error(`devicesMakeReady: "${device._id} Fail: ${stringifyError(err)}"`)
+			})
+	}
 }
 /**
  * Makes a studio "stand down" after a broadcast
@@ -220,15 +219,14 @@ export async function standDownStudio(cache: CacheForPlayout, okToDestoryStuff: 
 
 	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
-	await Promise.allSettled(
-		playoutDevices.map(async (device) =>
-			PeripheralDeviceAPI.executeFunction(device._id, 'devicesStandDown', okToDestoryStuff)
-				.then(() => {
-					logger.info(`devicesStandDown: "${device._id}" OK`)
-				})
-				.catch((err) => {
-					logger.error(`devicesStandDown: "${device._id} Fail: ${stringifyError(err)}"`)
-				})
-		)
-	)
+	for (const device of playoutDevices) {
+		// Fire the command and don't wait for the result
+		PeripheralDeviceAPI.executeFunction(device._id, 'devicesStandDown', okToDestoryStuff)
+			.then(() => {
+				logger.info(`devicesStandDown: "${device._id}" OK`)
+			})
+			.catch((err) => {
+				logger.error(`devicesStandDown: "${device._id} Fail: ${stringifyError(err)}"`)
+			})
+	}
 }

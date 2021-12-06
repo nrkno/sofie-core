@@ -46,6 +46,8 @@ import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
+import '../peripheralDevice'
+
 const DEBUG = false
 
 const ActualServerPlayoutAPI: typeof ServerPlayoutAPI = _ActualServerPlayoutAPI
