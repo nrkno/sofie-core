@@ -39,7 +39,7 @@ export namespace ServerClientAPI {
 		context: string,
 		methodName: string,
 		args: any[],
-		fcn: () => Result | Promise<Result>
+		fcn: () => Promise<Result>
 	): Awaited<Result> {
 		const startTime = Date.now()
 		const influxTrace = startTrace('userFunction:' + methodName)
