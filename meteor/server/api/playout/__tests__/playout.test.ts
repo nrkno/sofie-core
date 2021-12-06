@@ -30,7 +30,6 @@ import { ClientAPI } from '../../../../lib/api/client'
 import { ServerRundownAPI } from '../../rundown'
 import { MethodContext } from '../../../../lib/api/methods'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
-import { rejects } from 'assert'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,
