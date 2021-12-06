@@ -40,10 +40,18 @@ function uncaughtErrorHandler(errorObj: any) {
 	if (!errorObj) return // Nothing to report..
 
 	// To get the textual content of Error('my Error')
-	let stringContent: string = `${errorObj}`
+	let stringContent: string
 	if (Array.isArray(errorObj)) {
 		stringContent = errorObj.map((err) => stringifyError(err)).join(',')
+	} else {
+		stringContent = stringifyError(errorObj)
 	}
+
+	const caughtErrorStack = new Error('')
+	if (caughtErrorStack.stack) {
+		stringContent += `\nCaught stack: ${caughtErrorStack.stack}`
+	}
+
 	const errorLog: LoggedError = {
 		location: window.location.href,
 		content: errorObj,
