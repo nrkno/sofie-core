@@ -11,6 +11,15 @@ $segment-storyboard-part-width: 160px;
 		overflow: hidden;
 		grid-column: timeline / end;
 		grid-row: header / end;
+
+		position: relative;
+		overflow: hidden;
+		contain: content style;
+		touch-action: pan-y;
+
+		cursor: ew-resize;
+		cursor: url(/images/cursor_zoom_area_move.png), ew-resize;
+		cursor: url(/images/cursor_zoom_area_move.png) 15 8, ew-resize;
 	}
 
 	> .segment-storyboard__part-list__container {
@@ -34,6 +43,7 @@ $segment-storyboard-part-width: 160px;
 			width: 100px;
 			bottom: 0;
 			background: linear-gradient(to right, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+			pointer-events: none;
 		}
 
 		> .segment-timeline__zoom-area {
@@ -177,6 +187,7 @@ $segment-storyboard-part-width: 160px;
 
 		.segment-storyboard__part__piece {
 			border-radius: 0;
+			cursor: default;
 		}
 	}
 

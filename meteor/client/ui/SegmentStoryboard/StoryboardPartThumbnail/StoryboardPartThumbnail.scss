@@ -10,6 +10,7 @@
 	height: 7rem;
 	border-radius: 4px;
 	overflow: hidden;
+	cursor: default;
 
 	&.segment-storyboard__part__thumbnail--placeholder {
 		background: lighten($segment-background-color, 10%);
