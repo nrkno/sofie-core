@@ -7,6 +7,10 @@ $source-layer-margin: 0.2rem;
 	margin-top: 0.3em;
 	display: flex;
 	flex-direction: column;
+
+	.segment-storyboard__part__piece {
+		position: absolute;
+	}
 }
 
 .segment-storyboard__part__output-group {
@@ -16,14 +20,31 @@ $source-layer-margin: 0.2rem;
 }
 
 .segment-storyboard__part__source-layer {
-	display: flex;
+	position: relative;
 	min-height: $source-layer-height;
 	margin-bottom: $source-layer-margin;
+	overflow: hidden;
+
+	> .segment-storyboard__part__piece {
+		width: 100%;
+	}
+
+	&--multiple-piece {
+		> .segment-storyboard__part__piece {
+			width: 80%;
+			filter: brightness(0.5);
+			$squished-shadow: 0 0 10px rgba(0, 0, 0, 1);
+			box-shadow: $squished-shadow;
+
+			&--frontmost {
+				filter: none;
+			}
+		}
+	}
 }
 
 .segment-storyboard__part__piece {
 	position: relative;
-	flex: 1 1;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;

@@ -25,12 +25,7 @@ export const StoryboardPartTransitions = React.memo(function StoryboardPartTrans
 					.flat()
 			).map((sourceLayer) => {
 				return (
-					<StoryboardSourceLayer
-						key={sourceLayer._id}
-						sourceLayer={sourceLayer}
-						pieces={part.pieces}
-						partId={part.partId}
-					/>
+					<StoryboardSourceLayer key={sourceLayer._id} sourceLayer={sourceLayer} pieces={part.pieces} part={part} />
 				)
 			})}
 		</div>

@@ -20,6 +20,8 @@ interface IProps {
 	partId: PartId
 	isLiveLine: boolean
 	studio: Studio | undefined
+	className?: string
+	style?: React.CSSProperties
 }
 
 function renderPieceInside(
@@ -58,7 +60,7 @@ type MousePagePosition = { pageX: number; pageY: number }
 export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(function StoryboardSecondaryPiece(
 	props: IProps
 ) {
-	const { piece, partId } = props
+	const { piece, partId, style, className } = props
 	const [highlight] = useState(false)
 	const element = useRef<HTMLDivElement>(null)
 	const [hovering, setHovering] = useState<MousePagePosition | null>(null)
@@ -91,7 +93,7 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 
 	return (
 		<PieceElement
-			className="segment-storyboard__part__piece"
+			className={['segment-storyboard__part__piece', className].join(' ')}
 			layer={piece?.sourceLayer}
 			partId={partId}
 			piece={piece}
@@ -99,6 +101,7 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 			onPointerEnter={onPointerEnter}
 			onPointerLeave={onPointerLeave}
 			ref={element}
+			style={style}
 		>
 			{renderPieceInside(props, elementOffset, hovering, typeClass)}
 		</PieceElement>

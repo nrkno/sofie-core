@@ -36,7 +36,7 @@ export const StoryboardPartSecondaryPieces = React.memo(function StoryboardPartS
 									key={sourceLayer._id}
 									sourceLayer={sourceLayer}
 									pieces={part.pieces}
-									partId={part.partId}
+									part={part}
 								/>
 							))}
 						</div>

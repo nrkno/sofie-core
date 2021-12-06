@@ -11,6 +11,7 @@ interface IProps {
 	partId: PartId
 	layer: ISourceLayer | undefined
 	piece: PieceExtended
+	style?: React.CSSProperties
 	highlight?: boolean
 
 	onPointerEnter?: React.PointerEventHandler<HTMLDivElement> | undefined
@@ -25,6 +26,7 @@ export const PieceElement = React.forwardRef<HTMLDivElement, React.PropsWithChil
 		layer,
 		piece,
 		highlight,
+		style,
 		children,
 		onPointerEnter,
 		onPointerLeave,
@@ -65,6 +67,9 @@ export const PieceElement = React.forwardRef<HTMLDivElement, React.PropsWithChil
 			onPointerLeave={onPointerLeave}
 			onPointerMove={onPointerMove}
 			ref={ref}
+			style={style}
+			data-rendered-in={piece.renderedInPoint}
+			data-rendered-duration={piece.renderedDuration}
 		>
 			{children}
 		</div>
