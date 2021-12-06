@@ -25,6 +25,7 @@ interface IProps {
 	outputLayers: Record<string, IOutputLayerUi>
 	isLivePart: boolean
 	isNextPart: boolean
+	isLastPartInSegment?: boolean
 	inHold: boolean
 	currentPartWillAutonext: boolean
 	subscriptionsReady: boolean
@@ -41,6 +42,7 @@ export function StoryboardPart({
 	part,
 	isLivePart,
 	isNextPart,
+	isLastPartInSegment,
 	currentPartWillAutonext,
 	outputLayers,
 	subscriptionsReady,
@@ -167,6 +169,17 @@ export function StoryboardPart({
 					? t('Invalid')
 					: null}
 			</div>
+			{isLastPartInSegment && (
+				<div
+					className={classNames(
+						'segment-storyboard__part__next-line',
+						'segment-storyboard__part__next-line--opposite',
+						{
+							'segment-storyboard__part__next-line--autonext': part.instance.part.autoNext,
+						}
+					)}
+				></div>
+			)}
 			{isLivePart && displayLiveLineCounter ? (
 				<div className="segment-storyboard__part-timer segment-storyboard__part-timer--live">
 					<CurrentPartRemaining

@@ -171,6 +171,8 @@ export const SegmentStoryboard = React.memo(
 
 		const renderedParts = props.parts.filter((part) => !(part.instance.part.invalid && part.instance.part.gap))
 
+		const lastValidPartId = props.parts[props.lastValidPartIndex ?? props.parts.length - 1]?.instance._id
+
 		const maxScrollLeft = PART_WIDTH * (renderedParts.length - 1) - PART_LIST_LEAD_IN / 2
 
 		let fittingParts = 1
@@ -212,6 +214,7 @@ export const SegmentStoryboard = React.memo(
 					part={part}
 					isLivePart={isLivePart}
 					isNextPart={isNextPart}
+					isLastPartInSegment={part.instance._id === lastValidPartId}
 					displayLiveLineCounter={props.displayLiveLineCounter}
 					inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
 					currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
@@ -273,20 +276,20 @@ export const SegmentStoryboard = React.memo(
 			(e: GoToPartEvent) => {
 				const idx = renderedParts.findIndex((partInstance) => e.partId === partInstance.partId)
 				if (idx >= 0) {
-					setScrollLeft(PART_WIDTH * idx)
+					setScrollLeft(idx * PART_WIDTH - props.liveLineHistorySize)
 				}
 			},
-			[renderedParts]
+			[renderedParts, props.followLiveLine]
 		)
 
 		const onGoToPartInstance = useCallback(
 			(e: GoToPartInstanceEvent) => {
 				const idx = renderedParts.findIndex((partInstance) => partInstance.instance._id === e.partInstanceId)
 				if (idx >= 0) {
-					setScrollLeft(PART_WIDTH * idx)
+					setScrollLeft(idx * PART_WIDTH - props.liveLineHistorySize)
 				}
 			},
-			[renderedParts]
+			[renderedParts, props.followLiveLine]
 		)
 
 		const highlightTimeout = useRef<number | null>(null)
