@@ -119,7 +119,9 @@ export async function calculateSegmentsFromIngestData(
 			const context = new SegmentUserContext(
 				{
 					name: `getSegment=${ingestSegment.name}`,
-					identifier: `rundownId=${rundown._id},segmentId=${segmentId}`, // Note - this needs to not include the segmentId, because we want PieceIds to be persistant when moving across segments
+					// Note: this intentionally does not include the segmentId, as parts may be moved between segemnts later on
+					// This isn't much entropy, blueprints may want to add more for each Part they generate
+					identifier: `rundownId=${rundown._id}`,
 				},
 				cache.Studio.doc,
 				showStyle,
