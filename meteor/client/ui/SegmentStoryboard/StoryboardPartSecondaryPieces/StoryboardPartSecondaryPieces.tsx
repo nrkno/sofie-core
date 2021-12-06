@@ -9,7 +9,7 @@ interface IProps {
 	outputLayers: Record<string, IOutputLayerUi>
 }
 
-function filterSourceLayers(sourceLayers: ISourceLayerExtended[]) {
+export function filterSecondarySourceLayers(sourceLayers: ISourceLayerExtended[]) {
 	return sourceLayers.filter(
 		(sourceLayer) =>
 			!sourceLayer.isHidden && !sourceLayer.onPresenterScreen && sourceLayer.type !== SourceLayerType.TRANSITION
@@ -25,7 +25,7 @@ export const StoryboardPartSecondaryPieces = React.memo(function StoryboardPartS
 			{Object.values(outputLayers)
 				.filter((outputLayer) => outputLayer.used)
 				.map((outputLayer) => {
-					const sourceLayers = filterSourceLayers(Object.values(outputLayer.sourceLayers))
+					const sourceLayers = filterSecondarySourceLayers(Object.values(outputLayer.sourceLayers))
 
 					if (sourceLayers.length === 0) return null
 

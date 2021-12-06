@@ -3,7 +3,6 @@
 @import '../../styles/itemTypeColors';
 
 $part-left-right-padding: 0.3rem;
-$segment-storyboard-part-width: 160px;
 
 .segment-storyboard {
 	> .segment-storyboard__part-list__container {
@@ -55,6 +54,24 @@ $segment-storyboard-part-width: 160px;
 				opacity: 0;
 				transition: 1s opacity, 0s visibility 1s;
 				visibility: hidden;
+			}
+		}
+	}
+
+	> .segment-timeline__source-layers {
+		grid-column: segment-group-controls / timeline;
+		grid-row: main-view / zoom-area;
+		margin: $segment-storyboard-thumbnail-height 0.3em 0;
+
+		> .segment-timeline__output-group {
+			> .segment-timeline__source-layer {
+				text-align: right;
+				line-height: 1.5em;
+				height: 1.5em;
+				min-height: 1.5em;
+				letter-spacing: 0em;
+				color: #888;
+				font-weight: 300;
 			}
 		}
 	}

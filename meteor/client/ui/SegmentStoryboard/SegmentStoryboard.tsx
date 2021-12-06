@@ -32,6 +32,7 @@ import { Meteor } from 'meteor/meteor'
 import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
 import { SegmentScrollbar } from './SegmentScrollbar'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
+import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -592,6 +593,21 @@ export const SegmentStoryboard = React.memo(
 						)}
 					</div>
 					<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
+					<div className="segment-timeline__source-layers">
+						{Object.values(props.segment.outputLayers)
+							.filter((outputGroup) => outputGroup.used)
+							.map((outputGroup) => (
+								<div className="segment-timeline__output-group" key={outputGroup._id}>
+									{filterSecondarySourceLayers(outputGroup.sourceLayers).map((sourceLayer) =>
+										sourceLayer.pieces.length > 0 ? (
+											<div className="segment-timeline__source-layer" key={sourceLayer._id}>
+												{sourceLayer.name}
+											</div>
+										) : null
+									)}
+								</div>
+							))}
+					</div>
 					<div className="segment-storyboard__part-list__container" ref={listRef} onPointerDown={onListPointerDown}>
 						<OptionalVelocityComponent
 							animation={{
