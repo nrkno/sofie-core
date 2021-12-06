@@ -39,9 +39,6 @@ import { ensureNextPartIsValid } from '../../updateNext'
 type TensureNextPartIsValid = jest.MockedFunction<typeof ensureNextPartIsValid>
 const ensureNextPartIsValidMock = ensureNextPartIsValid as TensureNextPartIsValid
 
-// require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
-// require('../../../userActions.ts') // include in order to create the Meteor methods needed
-
 function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
 	const sortedParts = sortPartsInSortedSegments(parts, segments)
 

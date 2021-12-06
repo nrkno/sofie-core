@@ -144,7 +144,7 @@ export async function setupDefaultRundownPlaylist(
 
 export async function setupDefaultRundown(
 	context: JobContext,
-	showStyleCompound: ShowStyleCompound,
+	showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): Promise<void> {

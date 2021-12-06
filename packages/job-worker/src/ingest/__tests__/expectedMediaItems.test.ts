@@ -45,6 +45,7 @@ import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 import { runIngestJob, UpdateIngestRundownAction } from '../lock'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ReadonlyDeep } from 'type-fest'
 
 describe('Expected Media Items', () => {
 	const rplId0: RundownPlaylistId = protectString('playlist0')
@@ -68,7 +69,7 @@ describe('Expected Media Items', () => {
 	const mockFlow1 = 'mockFlow1'
 
 	let context: MockJobContext
-	let showStyleCompound: ShowStyleCompound
+	let showStyleCompound: ReadonlyDeep<ShowStyleCompound>
 	beforeAll(async () => {
 		context = setupDefaultJobEnvironment()
 
