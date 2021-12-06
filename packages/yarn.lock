@@ -1470,14 +1470,14 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@sofie-automation/blueprints-integration@1.36.0-in-testing.9":
-  version "1.36.0-in-testing.9"
-  resolved "https://registry.yarnpkg.com/@sofie-automation/blueprints-integration/-/blueprints-integration-1.36.0-in-testing.9.tgz#fab5a9459ad9048953874353c9ffafe5cc427a2f"
-  integrity sha512-CImFBU4Wc7ACR5cJKe19ikvZ07NxW1RmCqj6cYlB+VxRr+lsH8eZs1FvfmQDQfL1DYBX57dCasWRo9Ct+jXNFA==
+"@sofie-automation/blueprints-integration@1.37.0-in-testing.13":
+  version "1.37.0-in-testing.13"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/blueprints-integration/-/blueprints-integration-1.37.0-in-testing.13.tgz#506c1fdd8633bb9287bb0c758df3242c7927e37a"
+  integrity sha512-SR7a0VGe6KREdapFVtNNqTSiRw4zdf2V4KjbuefKulVEeh0glsZBfxk/0qysj92CON8bgaocwEStLz+UYqcziA==
   dependencies:
     moment "2.29.1"
-    timeline-state-resolver-types "^6.1.0-release36.0"
-    tslib "^2.1.0"
+    timeline-state-resolver-types "6.2.0-release37.4"
+    tslib "^2.3.1"
     underscore "1.13.1"
 
 "@sofie-automation/code-standard-preset@^0.4.1":
@@ -1510,6 +1510,18 @@
     faye-websocket "^0.11.4"
     got "^11.8.2"
     tslib "^2.0.3"
+    underscore "^1.12.1"
+
+"@sofie-automation/server-core-integration@1.37.0-in-testing.13":
+  version "1.37.0-in-testing.13"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/server-core-integration/-/server-core-integration-1.37.0-in-testing.13.tgz#180e082e16624f092eef9e853bae74b6bcf06f25"
+  integrity sha512-tlGPSL4nRHAloPFtkvfjUaHi9RUfIDzfIuQMsNILI9/Z+I7gxds/WYNIOqzGLt2KiOrlUv1FaMXdyTv8QPtAKA==
+  dependencies:
+    data-store "^4.0.3"
+    ejson "^2.2.0"
+    faye-websocket "^0.11.4"
+    got "^11.8.2"
+    tslib "^2.3.1"
     underscore "^1.12.1"
 
 "@strictsoftware/typedoc-plugin-monorepo@^0.4.2":
@@ -8552,13 +8564,6 @@ timeline-state-resolver-types@6.2.0-release37.4:
   integrity sha512-jv1i0HOvl0ZeiAmgpC8GmB89XMbJ+kroYxEqLILqEsDtHd1LzaYOHZdgM8j3KkvgcHq8rP0XQL8yMWu0p5WcAg==
   dependencies:
     tslib "^2.3.1"
-
-timeline-state-resolver-types@^6.1.0-release36.0:
-  version "6.1.0-release36.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.1.0-release36.0.tgz#64ccf4e10365b8038ff613ed299606744182d40c"
-  integrity sha512-A6pGl6UUO5nyyO1yUkKc6yL0LGmyFA1t6r3z3wX3aD4dY7LW6ivch1C+dvvXEy1ia1D4uFpeISALKlJrTshPEA==
-  dependencies:
-    tslib "^2.1.0"
 
 "timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.0.0-release37":
   version "1.0.0-release37"

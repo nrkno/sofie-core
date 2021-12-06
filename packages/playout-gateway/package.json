@@ -56,8 +56,8 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.36.0-in-testing.9",
-		"@sofie-automation/server-core-integration": "1.36.0-in-testing.9",
+		"@sofie-automation/blueprints-integration": "1.37.0-in-testing.13",
+		"@sofie-automation/server-core-integration": "1.37.0-in-testing.13",
 		"fast-clone": "^1.5.13",
 		"timeline-state-resolver": "npm:@tv2media/timeline-state-resolver@1.0.0-release37.4",
 		"tslib": "^2.1.0",
