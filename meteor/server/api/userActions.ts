@@ -617,20 +617,20 @@ export async function removeRundownPlaylist(context: MethodContext, playlistId: 
 
 	return ClientAPI.responseSuccess(await ServerRundownAPI.removeRundownPlaylist(context, playlist._id))
 }
-export function resyncRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
+export async function resyncRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
 
-	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundownPlaylist(context, playlist._id))
+	return ClientAPI.responseSuccess(await ServerRundownAPI.resyncRundownPlaylist(context, playlist._id))
 }
 export async function removeRundown(context: MethodContext, rundownId: RundownId) {
 	const rundown = checkAccessAndGetRundown(context, rundownId)
 
 	return ClientAPI.responseSuccess(await ServerRundownAPI.removeRundown(context, rundown._id))
 }
-export function resyncRundown(context: MethodContext, rundownId: RundownId) {
+export async function resyncRundown(context: MethodContext, rundownId: RundownId) {
 	const rundown = checkAccessAndGetRundown(context, rundownId)
 
-	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundown(context, rundown._id))
+	return ClientAPI.responseSuccess(await ServerRundownAPI.resyncRundown(context, rundown._id))
 }
 export function mediaRestartWorkflow(context: MethodContext, workflowId: MediaWorkFlowId) {
 	return ClientAPI.responseSuccess(MediaManagerAPI.restartWorkflow(context, workflowId))

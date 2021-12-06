@@ -30,6 +30,7 @@ import { ClientAPI } from '../../../../lib/api/client'
 import { ServerRundownAPI } from '../../rundown'
 import { MethodContext } from '../../../../lib/api/methods'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
+import { rejects } from 'assert'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,
@@ -399,12 +400,12 @@ describe('Playout API', () => {
 		const origReloadRundown = IngestActions.reloadRundown
 		IngestActions.reloadRundown = jest.fn(async () => TriggerReloadDataResponse.COMPLETED)
 
-		expect(() => {
+		await expect(
 			ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
-		}).toThrowError(/not found/gi)
+		).rejects.toThrowError(/not found/gi)
 
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
-		ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+		await ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 
 		expect(IngestActions.reloadRundown).toHaveBeenCalled()
 		expect((IngestActions.reloadRundown as jest.Mock).mock.calls[0][0]).toMatchObject({
