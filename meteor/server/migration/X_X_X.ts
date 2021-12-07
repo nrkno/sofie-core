@@ -25,8 +25,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		migrate: () => {
 			const existingActions = TriggeredActions.find({ showStyleBaseId: null }).fetch()
 			for (const action of existingActions) {
-				let actionId = unprotectString(action._id)
-				if (!!actionId.match(/^core_/)) {
+				const actionId = unprotectString(action._id)
+				if (actionId.match(/^core_/) !== null) {
 					TriggeredActions.remove(action._id)
 					TriggeredActions.insert({
 						...action,
