@@ -198,35 +198,37 @@ describe('Test blueprint api context', () => {
 
 		test('getFirstPartInstanceInRundown - allowUntimed', async () => {
 			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
+			const rundown = (await jobContext.directCollections.Rundowns.findOne(rundownId)) as DBRundown
 			expect(rundown).toBeTruthy()
 
-			generateSparsePieceInstances(rundown)
+			await generateSparsePieceInstances(rundown)
 
-			const partInstance = PartInstances.findOne({ rundownId }) as PartInstance
+			const partInstance = (await jobContext.directCollections.PartInstances.findOne({
+				rundownId,
+			})) as DBPartInstance
 			expect(partInstance).toBeTruthy()
 
-			PartInstances.update(partInstance._id, {
+			await jobContext.directCollections.PartInstances.update(partInstance._id, {
 				$set: {
 					'part.untimed': true,
 				},
 			})
 
-			const secondPartInstance = PartInstances.findOne({
+			const secondPartInstance = (await jobContext.directCollections.PartInstances.findOne({
 				rundownId,
 				_id: { $ne: partInstance._id },
-			}) as PartInstance
+			})) as DBPartInstance
 			expect(secondPartInstance).toBeTruthy()
 
 			const context = await getContext(rundown, undefined, partInstance, undefined)
 			// Get the 'timed' partInstance
-			expect(context.getFirstPartInstanceInRundown()).toMatchObject({
+			await expect(context.getFirstPartInstanceInRundown()).resolves.toMatchObject({
 				_id: secondPartInstance._id,
 				playlistActivationId: partInstance.playlistActivationId,
 			})
 
 			// Get the 'untimed' partInstance
-			expect(context.getFirstPartInstanceInRundown(true)).toMatchObject({
+			await expect(context.getFirstPartInstanceInRundown(true)).resolves.toMatchObject({
 				_id: partInstance._id,
 				playlistActivationId: partInstance.playlistActivationId,
 			})

@@ -10,6 +10,7 @@ describe('Test blueprint config', () => {
 			settings: {
 				sofieUrl: 'host url',
 				mediaPreviewsUrl: '',
+				frameRate: 25,
 			},
 			blueprintConfig: { sdfsdf: 'one', another: 5 },
 		})
