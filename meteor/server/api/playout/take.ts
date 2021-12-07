@@ -46,6 +46,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { isAnySyncFunctionsRunning } from '../../codeControl'
 import { checkAccessAndGetPlaylist } from '../lib'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import { ServerRundownAPI } from '../rundown'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -297,6 +298,16 @@ export function takeNextPartInnerSync(
 		}
 	})
 	waitForPromise(cache.saveAllToDatabase())
+
+	if (currentPartInstance && takePartInstance && currentPartInstance.segmentId !== takePartInstance.segmentId) {
+		const prevSegment = cache.Segments.findOne({ _id: currentPartInstance.segmentId })
+		if (prevSegment?.unsynced) {
+			// Allow current method to return
+			Meteor.setTimeout(() => {
+				ServerRundownAPI.resyncSegment(context, currentPartInstance.rundownId, currentPartInstance.segmentId)
+			}, 40)
+		}
+	}
 
 	if (span) span.end()
 	return ClientAPI.responseSuccess(undefined)
