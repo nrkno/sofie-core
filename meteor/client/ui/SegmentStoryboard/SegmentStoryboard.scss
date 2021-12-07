@@ -11,8 +11,6 @@ $part-left-right-padding: 0.3rem;
 		grid-column: timeline / end;
 		grid-row: header / end;
 
-		position: relative;
-		overflow: hidden;
 		contain: content style;
 		touch-action: pan-y;
 
