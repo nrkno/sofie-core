@@ -1,5 +1,5 @@
 import { logger } from './logging'
-import { ConnectionOptions } from 'bullmq'
+import { RedisOptions } from 'bullmq'
 import { protectString, protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupApmAgent } from './profiler'
@@ -15,7 +15,7 @@ logger.info('Starting ')
 
 const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
 const dbName = 'meteor'
-const connection: ConnectionOptions = {
+const connection: RedisOptions = {
 	// TODO: Worker - something here?
 }
 
@@ -87,7 +87,7 @@ void (async () => {
 		// Start up each studio, one at a time
 		workers.set(
 			studioId,
-			await StudioWorkerSet.create(workerId, mongoUri, dbName, client, studioId, { connection })
+			await StudioWorkerSet.create(workerId, mongoUri, dbName, client, studioId, { connection }, { connection })
 		)
 	}
 

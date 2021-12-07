@@ -1,6 +1,6 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
-import { WorkerOptions } from 'bullmq'
+import { QueueOptions, WorkerOptions } from 'bullmq'
 import type { StudioWorkerChild } from './child'
 import { MongoClient } from 'mongodb'
 import { InvalidateWorkerDataCache } from '../caches'
@@ -33,7 +33,8 @@ export class StudioWorkerParent extends WorkerParentBase {
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
 		studioId: StudioId,
-		options: WorkerOptions
+		options: WorkerOptions,
+		publishQueueOptions: QueueOptions
 	): Promise<StudioWorkerParent> {
 		const workerThread = await threadedClass<StudioWorkerChild, typeof StudioWorkerChild>(
 			'./child',
@@ -57,12 +58,19 @@ export class StudioWorkerParent extends WorkerParentBase {
 			options,
 			workerThread
 		)
-		parent.startWorkerLoop(mongoUri, mongoDb)
+		parent.startWorkerLoop(mongoUri, mongoDb, publishQueueOptions)
 		return parent
 	}
 
-	protected async initWorker(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
-		return this.#thread.init(mongoUri, dbName, studioId, (event: AnyLockEvent) => this.emit('lock', event))
+	protected async initWorker(
+		mongoUri: string,
+		dbName: string,
+		publishQueueOptions: QueueOptions,
+		studioId: StudioId
+	): Promise<void> {
+		return this.#thread.init(mongoUri, dbName, publishQueueOptions, studioId, (event: AnyLockEvent) =>
+			this.emit('lock', event)
+		)
 	}
 	protected async invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
 		return this.#thread.invalidateCaches(invalidations)

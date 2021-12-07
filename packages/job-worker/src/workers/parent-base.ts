@@ -2,7 +2,7 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UserError } from '@sofie-automation/corelib/dist/error'
 import { ManualPromise, createManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { QueueScheduler, WorkerOptions, Worker } from 'bullmq'
+import { QueueScheduler, WorkerOptions, Worker, QueueOptions } from 'bullmq'
 import { startTransaction } from '../profiler'
 import { ChangeStream, ChangeStreamDocument, MongoClient } from 'mongodb'
 import { createInvalidateWorkerDataCache, InvalidateWorkerDataCache } from './caches'
@@ -145,7 +145,12 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 	}
 
 	/** Initialise the worker thread */
-	protected abstract initWorker(mongoUri: string, dbName: string, studioId: StudioId): Promise<void>
+	protected abstract initWorker(
+		mongoUri: string,
+		dbName: string,
+		publishQueueOptions: QueueOptions,
+		studioId: StudioId
+	): Promise<void>
 	/** Invalidate caches in the worker thread */
 	protected abstract invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void>
 	/** Run a job in the worker thread */
@@ -156,7 +161,7 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 	public abstract workerLockChange(lockId: string, locked: boolean): Promise<void>
 
 	/** Start the loop feeding work to the worker */
-	protected startWorkerLoop(mongoUri: string, dbName: string): void {
+	protected startWorkerLoop(mongoUri: string, dbName: string, publishQueueOptions: QueueOptions): void {
 		setImmediate(async () => {
 			try {
 				this.#pendingInvalidations = null
@@ -164,7 +169,7 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 				this.subscribeToCacheInvalidations(dbName)
 
 				// Start the worker running
-				await this.initWorker(mongoUri, dbName, this.#studioId)
+				await this.initWorker(mongoUri, dbName, publishQueueOptions, this.#studioId)
 				await this.#locksManager.subscribe(this)
 
 				// Run until told to terminate

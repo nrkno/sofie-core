@@ -4,10 +4,9 @@ import { IngestJobFunc, getIngestQueueName } from '@sofie-automation/corelib/dis
 import { Queue, ConnectionOptions, QueueEvents, Job } from 'bullmq'
 import { logger } from '../../lib/logging'
 import PLazy from 'p-lazy'
-import _, { keys } from 'underscore'
+import _ from 'underscore'
 import { UserError } from '@sofie-automation/corelib/dist/error'
 import { Meteor } from 'meteor/meteor'
-import { Studio } from '../../lib/collections/Studios'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 
@@ -164,8 +163,7 @@ async function pushJobToQueue<T>(
 	// Lazily watch for completion once, to be used for multiple caller promises
 	const completedPromise = PLazy.from<WrappedResult<T>>(async () => {
 		try {
-			// TODO - this should be rewritten to manuall use queueEvents
-			// After reading the implementation, we can do that and avoid having to load the job again for getTimings
+			// Wait for the job to have finished
 			const res: T = await job.waitUntilFinished(queueEvents)
 
 			return {
@@ -175,17 +173,17 @@ async function pushJobToQueue<T>(
 				finishedTime: job.finishedOn,
 				completedTime: Date.now(),
 			}
-		} catch (e) {
-			let e2 = e
+		} catch (err) {
+			let wrappedErr = err
 			try {
 				// Try and parse it as a UserError
-				e2 = UserError.tryFromJSON(e.message)
+				wrappedErr = UserError.tryFromJSON(err.message)
 			} catch (_e) {
 				// ignore
 			}
 
 			return {
-				error: e2,
+				error: wrappedErr,
 				queueTime: queuedTime,
 				startedTime: job.processedOn,
 				finishedTime: job.finishedOn,

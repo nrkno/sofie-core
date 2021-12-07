@@ -7,6 +7,7 @@ import { setupApmAgent, startTransaction } from '../../profiler'
 import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
 import { JobContextBase } from '../context'
 import { AnyLockEvent, LocksManager } from '../locks'
+import { QueueOptions } from 'bullmq'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -25,6 +26,7 @@ export class StudioWorkerChild {
 	async init(
 		mongoUri: string,
 		dbName: string,
+		publishQueueOptions: QueueOptions,
 		studioId: StudioId,
 		emitLockEvent: (event: AnyLockEvent) => void
 	): Promise<void> {
@@ -34,13 +36,7 @@ export class StudioWorkerChild {
 		const collections = getMongoCollections(mongoClient, dbName)
 
 		// Load some 'static' data from the db
-		const dataCache = await loadWorkerDataCache(
-			{
-				/* TODO: Worker */
-			},
-			collections,
-			studioId
-		)
+		const dataCache = await loadWorkerDataCache(publishQueueOptions, collections, studioId)
 
 		const locks = new LocksManager(emitLockEvent)
 

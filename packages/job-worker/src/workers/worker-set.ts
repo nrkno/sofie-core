@@ -3,7 +3,7 @@ import { MongoClient } from 'mongodb'
 import { LocksManager } from '../locks'
 import { IngestWorkerParent } from './ingest/parent'
 import { StudioWorkerParent } from './studio/parent'
-import { WorkerOptions } from 'bullmq'
+import { QueueOptions, WorkerOptions } from 'bullmq'
 import { EventsWorkerParent } from './events/parent'
 
 export class StudioWorkerSet {
@@ -12,6 +12,7 @@ export class StudioWorkerSet {
 	#dbName: string
 	#mongoClient: MongoClient
 	#workerOptions: WorkerOptions
+	#publishQueueOptions: QueueOptions
 
 	#studioId: StudioId
 
@@ -26,7 +27,8 @@ export class StudioWorkerSet {
 		dbName: string,
 		mongoClient: MongoClient,
 		studioId: StudioId,
-		workerOptions: WorkerOptions
+		workerOptions: WorkerOptions,
+		publishQueueOptions: QueueOptions
 	) {
 		this.#workerId = workerId
 		this.#mongoUri = mongoUri
@@ -34,6 +36,7 @@ export class StudioWorkerSet {
 		this.#mongoClient = mongoClient
 		this.#studioId = studioId
 		this.#workerOptions = workerOptions
+		this.#publishQueueOptions = publishQueueOptions
 
 		this.#locksManager = new LocksManager()
 	}
@@ -44,9 +47,18 @@ export class StudioWorkerSet {
 		dbName: string,
 		mongoClient: MongoClient,
 		studioId: StudioId,
-		workerOptions: WorkerOptions
+		workerOptions: WorkerOptions,
+		publishQueueOptions: QueueOptions
 	): Promise<StudioWorkerSet> {
-		const result = new StudioWorkerSet(workerId, mongoUri, dbName, mongoClient, studioId, workerOptions)
+		const result = new StudioWorkerSet(
+			workerId,
+			mongoUri,
+			dbName,
+			mongoClient,
+			studioId,
+			workerOptions,
+			publishQueueOptions
+		)
 
 		await Promise.all([result.initStudioThread(), result.initEventsThread(), result.initIngestThread()])
 
@@ -62,7 +74,8 @@ export class StudioWorkerSet {
 			this.#mongoClient,
 			this.#locksManager,
 			this.#studioId,
-			this.#workerOptions
+			this.#workerOptions,
+			this.#publishQueueOptions
 		)
 
 		// TODO: Worker - listen for termination?
@@ -77,7 +90,8 @@ export class StudioWorkerSet {
 			this.#mongoClient,
 			this.#locksManager,
 			this.#studioId,
-			this.#workerOptions
+			this.#workerOptions,
+			this.#publishQueueOptions
 		)
 
 		// TODO: Worker - listen for termination?
@@ -92,7 +106,8 @@ export class StudioWorkerSet {
 			this.#mongoClient,
 			this.#locksManager,
 			this.#studioId,
-			this.#workerOptions
+			this.#workerOptions,
+			this.#publishQueueOptions
 		)
 
 		// TODO: Worker - listen for termination?
