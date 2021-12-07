@@ -1,5 +1,6 @@
-import * as _ from 'underscore'
-import * as React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { Meteor } from 'meteor/meteor'
+import _ from 'underscore'
 
 export { multilineText, isEventInInputField }
 
@@ -69,9 +70,9 @@ export enum UserAgentPointer {
 type MutableRef<T> = ((instance: T | null) => void) | React.MutableRefObject<T | null> | null
 
 export function useCombinedRefs<T>(initial, ...refs: MutableRef<T>[]) {
-	const targetRef = React.useRef<T>(initial)
+	const targetRef = useRef<T>(initial)
 
-	React.useEffect(() => {
+	useEffect(() => {
 		refs.forEach((ref) => {
 			if (!ref) return
 
@@ -84,4 +85,50 @@ export function useCombinedRefs<T>(initial, ...refs: MutableRef<T>[]) {
 	}, [refs])
 
 	return targetRef
+}
+
+/**
+ * A reactive hook that will turn the return value of `func` to a state and re-evaluate `func` on an interval `interval`.
+ * `func` returns a Tuple: a value that is the state and the timespan until next re-validation.
+ *
+ * The initial value of the state is either set to `initialValue` or, if not provided, `func` will be ran synchronously once
+ * to get the initial state.
+ *
+ * Like with any hook, dependencies need to be declared. If the dependencies change, the entire hook is invalidated and the
+ * state will start from the initial value.
+ *
+ * @template K
+ * @param {() => [K, number?]} func
+ * @param {number} interval the interval at which `func` is to be re-evaluated
+ * @param {any[]} [deps] external values `func` depends on. Uses same rules as `useEffect`.
+ * @param {K} [initialValue] the initial value for the state
+ * @return {K} the current value of the state
+ */
+export function useInvalidateTimeout<K>(func: () => [K, number?], interval: number, deps?: any[], initialValue?: K): K {
+	const [value, setValue] = useState(initialValue ?? func()[0])
+	const invalidateHandle = useRef<number | null>(null)
+
+	useEffect(() => {
+		const reevaluate = () => {
+			const [newValue, revalidateIn] = func()
+			if (!_.isEqual(newValue, value)) {
+				setValue(newValue)
+			}
+			if (revalidateIn !== 0) {
+				invalidateHandle.current = Meteor.setTimeout(reevaluate, revalidateIn ?? interval)
+			} else {
+				invalidateHandle.current = null
+			}
+		}
+
+		invalidateHandle.current = Meteor.setTimeout(reevaluate, interval)
+
+		return () => {
+			if (invalidateHandle.current !== null) {
+				Meteor.clearTimeout(invalidateHandle.current)
+			}
+		}
+	}, [value, interval, ...(deps || [])])
+
+	return value
 }

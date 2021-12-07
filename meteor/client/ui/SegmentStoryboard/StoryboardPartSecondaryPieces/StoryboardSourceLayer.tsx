@@ -1,13 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo } from 'react'
 import classNames from 'classnames'
-import _ from 'underscore'
 import * as VelocityReact from 'velocity-react'
 import { ISourceLayerExtended, PartExtended, PieceExtended } from '../../../../lib/Rundown'
 import StudioContext from '../../RundownView/StudioContext'
 import { StoryboardSecondaryPiece } from './StoryboardSecondaryPiece'
-import { Meteor } from 'meteor/meteor'
 import { PieceInstanceId } from '../../../../lib/collections/PieceInstances'
 import { getCurrentTime } from '../../../../lib/lib'
+import { useInvalidateTimeout } from '../../../lib/lib'
 
 interface IProps {
 	sourceLayer: ISourceLayerExtended
@@ -18,29 +17,74 @@ interface IProps {
 // needs to match .segment-storyboard__part__source-layer--multiple-piece > .segment-storyboard__part__piece width CSS property
 const MULTIPLE_PIECES_PIECE_WIDTH = 0.8
 
-function useInvalidateTimeout<K>(func: () => [K, number?], interval: number, deps?: any[], initialValue?: K) {
-	const [value, setValue] = useState(initialValue ?? func()[0])
-	const invalidateHandle = useRef<number | null>(null)
-
-	useEffect(() => {
-		const reevaluate = () => {
-			const [newValue, revalidate] = func()
-			if (!_.isEqual(newValue, value)) {
-				setValue(newValue)
+/**
+ * Calculate which pieces should now be playing and which have already stopped playing. Return the IDs of the playing
+ * and finished PieceInstances.
+ *
+ * @param {(number | undefined)} partInstanceStartedPlayback
+ * @param {(number | undefined)} partInstanceStoppedPlayback
+ * @param {PieceExtended[]} piecesOnLayer
+ * @return {*}
+ */
+function usePlayedOutPieceState(
+	partInstanceStartedPlayback: number | undefined,
+	partInstanceStoppedPlayback: number | undefined,
+	piecesOnLayer: PieceExtended[]
+) {
+	return useInvalidateTimeout(
+		() => {
+			if (partInstanceStartedPlayback === undefined) {
+				return [EMPTY_PLAYED_PIECE_IDS, ONCE_A_MINUTE + Math.random() * 1000]
 			}
-			invalidateHandle.current = Meteor.setTimeout(reevaluate, revalidate ?? interval)
-		}
 
-		invalidateHandle.current = Meteor.setTimeout(reevaluate, interval)
+			const playedPieceIds: PieceInstanceId[] = []
+			const finishedPieceIds: PieceInstanceId[] = []
 
-		return () => {
-			if (invalidateHandle.current !== null) {
-				Meteor.clearTimeout(invalidateHandle.current)
-			}
-		}
-	}, [value, interval, ...(deps || [])])
+			const startedPlayback = partInstanceStartedPlayback
+			const stoppedPlayback = partInstanceStoppedPlayback ?? Number.POSITIVE_INFINITY
+			let closestAbsoluteNext = Number.POSITIVE_INFINITY
 
-	return value
+			piecesOnLayer.forEach((piece) => {
+				if (piece.renderedInPoint === null) return
+				const absoluteRenderedInPoint = startedPlayback + piece.renderedInPoint
+				if (absoluteRenderedInPoint < getCurrentTime() && absoluteRenderedInPoint < stoppedPlayback) {
+					playedPieceIds.push(piece.instance._id)
+				} else {
+					if (absoluteRenderedInPoint < closestAbsoluteNext) {
+						closestAbsoluteNext = absoluteRenderedInPoint
+					}
+				}
+				if (piece.renderedDuration === null) return
+				if (
+					absoluteRenderedInPoint + piece.renderedDuration < getCurrentTime() &&
+					absoluteRenderedInPoint + piece.renderedDuration < stoppedPlayback
+				) {
+					finishedPieceIds.push(piece.instance._id)
+				}
+			})
+
+			return [
+				{
+					playedPieceIds,
+					finishedPieceIds,
+				},
+				Number.isFinite(closestAbsoluteNext)
+					? // the next closest change is in that time, so let's wait until then
+					  closestAbsoluteNext - getCurrentTime()
+					: // if all Pieces are finished, we can stop updating, because piecesOnLayer will change anyway if
+					// anything happens to the Pieces
+					finishedPieceIds.length === piecesOnLayer.length
+					? 0
+					: // the part has stopped playing, so we can stop checking
+					Number.isFinite(stoppedPlayback)
+					? 0
+					: // essentially a fallback, we shouldn't hit this condition ever
+					  1000,
+			]
+		},
+		1000,
+		[partInstanceStartedPlayback, partInstanceStoppedPlayback, piecesOnLayer]
+	)
 }
 
 const ONCE_A_MINUTE = 60000
@@ -56,52 +100,18 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 				.filter(
 					(piece) =>
 						(piece.renderedDuration === null || piece.renderedDuration > 0) &&
+						piece.instance.hidden !== true &&
+						piece.instance.piece.virtual !== true &&
 						piece.sourceLayer?._id === sourceLayer._id
 				)
 				.slice()
 				.reverse(),
 		[pieces]
 	)
-
-	const { playedPieceIds: _p, finishedPieceIds: finishedIds } = useInvalidateTimeout(
-		() => {
-			if (part?.instance.timings?.startedPlayback === undefined) {
-				return [EMPTY_PLAYED_PIECE_IDS, ONCE_A_MINUTE + Math.random() * 1000]
-			}
-
-			const playedPieceIds: PieceInstanceId[] = []
-			const finishedPieceIds: PieceInstanceId[] = []
-
-			const startedPlayback = part?.instance.timings?.startedPlayback
-			let closestAbsoluteNext = Number.POSITIVE_INFINITY
-
-			piecesOnLayer.forEach((piece) => {
-				if (piece.renderedInPoint === null) return
-				if (startedPlayback + piece.renderedInPoint < getCurrentTime()) {
-					playedPieceIds.push(piece.instance._id)
-				} else {
-					const absoluteInPoint = startedPlayback + piece.renderedInPoint
-					if (absoluteInPoint < closestAbsoluteNext) {
-						closestAbsoluteNext = absoluteInPoint
-					}
-				}
-				if (piece.renderedDuration === null) return
-				if (startedPlayback + piece.renderedInPoint + piece.renderedDuration < getCurrentTime()) {
-					finishedPieceIds.push(piece.instance._id)
-				}
-			})
-
-			return [
-				{
-					playedPieceIds,
-					finishedPieceIds,
-				},
-				Number.isFinite(closestAbsoluteNext) ? closestAbsoluteNext - getCurrentTime() : 1000,
-			]
-		},
-		1000,
-		[part, piecesOnLayer],
-		EMPTY_PLAYED_PIECE_IDS
+	const { playedPieceIds: _p, finishedPieceIds: finishedIds } = usePlayedOutPieceState(
+		part?.instance.timings?.startedPlayback,
+		part?.instance.timings?.stoppedPlayback,
+		piecesOnLayer
 	)
 
 	const pieceCount = piecesOnLayer.length - finishedIds.length
@@ -128,12 +138,12 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 						animation={{
 							translateX:
 								pieceCount > 1
-									? `${(offset * (pieceCount - 1 - index) * 100) / MULTIPLE_PIECES_PIECE_WIDTH}%`
+									? `${Math.max(0, (offset * (pieceCount - 1 - index) * 100) / MULTIPLE_PIECES_PIECE_WIDTH)}%`
 									: undefined,
 							translateY: isFinished ? [25, 0] : undefined,
 							opacity: isFinished ? [0, 1] : 1,
 						}}
-						duration={100}
+						duration={350}
 					>
 						<StudioContext.Consumer>
 							{(studio) => (
