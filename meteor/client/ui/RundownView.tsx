@@ -2545,17 +2545,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			if (!pieceToQueue) {
 				if (currentSegmentId) {
-					const currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
-					if (currentSegmentInd >= 0) {
-						const nextShelfOnlySegment = forward
-							? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
-							  this.findShelfOnlySegment(0, currentSegmentInd)
-							: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
-							  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
-						if (nextShelfOnlySegment && nextShelfOnlySegment.queueablePieces.length) {
-							pieceToQueue =
-								nextShelfOnlySegment.queueablePieces[forward ? 0 : nextShelfOnlySegment.queueablePieces.length - 1]
-						}
+					let currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
+					if (currentSegmentInd < 0) {
+						currentSegmentInd = 0
+					}
+
+					const nextShelfOnlySegment = forward
+						? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
+						  this.findShelfOnlySegment(0, currentSegmentInd)
+						: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
+						  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
+					if (nextShelfOnlySegment && nextShelfOnlySegment.queueablePieces.length) {
+						pieceToQueue =
+							nextShelfOnlySegment.queueablePieces[forward ? 0 : nextShelfOnlySegment.queueablePieces.length - 1]
 					}
 				}
 			}
