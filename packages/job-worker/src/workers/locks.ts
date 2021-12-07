@@ -1,4 +1,3 @@
-import { Subject } from 'threads/observable'
 import { createManualPromise, ManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 
@@ -15,12 +14,12 @@ export interface UnLockEvent {
 }
 
 export class LocksManager {
-	readonly lockEvents: Subject<AnyLockEvent>
+	readonly #emitLockEvent: (event: AnyLockEvent) => void
 	/** These are locks that we are waiting to aquire/release */
 	readonly pendingLocks: Map<string, ManualPromise<boolean>>
 
-	constructor() {
-		this.lockEvents = new Subject<AnyLockEvent>()
+	constructor(emitLockEvent: (event: AnyLockEvent) => void) {
+		this.#emitLockEvent = emitLockEvent
 		this.pendingLocks = new Map()
 	}
 
@@ -48,7 +47,7 @@ export class LocksManager {
 		this.pendingLocks.set(lockId, completedPromise)
 
 		// inform parent
-		this.lockEvents.next({
+		this.#emitLockEvent({
 			event: 'lock',
 			lockId,
 			resourceId,
@@ -70,7 +69,7 @@ export class LocksManager {
 		this.pendingLocks.set(lockId, completedPromise)
 
 		// inform parent
-		this.lockEvents.next({
+		this.#emitLockEvent({
 			event: 'unlock',
 			lockId,
 			resourceId,

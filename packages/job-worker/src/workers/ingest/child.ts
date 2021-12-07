@@ -1,4 +1,3 @@
-import { expose } from 'threads/worker'
 import { ingestJobHandlers } from './jobs'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoClient } from 'mongodb'
@@ -7,7 +6,6 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { setupApmAgent, startTransaction } from '../../profiler'
 import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
 import { JobContextBase } from '../context'
-import { Observable } from 'threads/observable'
 import { AnyLockEvent, LocksManager } from '../locks'
 
 interface StaticData {
@@ -18,13 +16,19 @@ interface StaticData {
 
 	readonly locks: LocksManager
 }
-let staticData: StaticData | undefined
 
 setupApmAgent()
 
-const ingestMethods = {
-	async init(mongoUri: string, mongoDb: string, studioId: StudioId): Promise<void> {
-		if (staticData) throw new Error('Worker already initialised')
+export class IngestWorkerChild {
+	#staticData: StaticData | undefined
+
+	async init(
+		mongoUri: string,
+		mongoDb: string,
+		studioId: StudioId,
+		emitLockEvent: (event: AnyLockEvent) => void
+	): Promise<void> {
+		if (this.#staticData) throw new Error('Worker already initialised')
 
 		const mongoClient = await createMongoConnection(mongoUri)
 		const collections = getMongoCollections(mongoClient, mongoDb)
@@ -38,9 +42,9 @@ const ingestMethods = {
 			studioId
 		)
 
-		const locks = new LocksManager()
+		const locks = new LocksManager(emitLockEvent)
 
-		staticData = {
+		this.#staticData = {
 			mongoClient,
 			collections,
 
@@ -48,40 +52,41 @@ const ingestMethods = {
 
 			locks,
 		}
-	},
-	observelockEvents(): Observable<AnyLockEvent> {
-		if (!staticData) throw new Error('Worker not initialised')
-		return staticData.locks.lockEvents
-	},
+	}
 	async lockChange(lockId: string, locked: boolean): Promise<void> {
-		if (!staticData) throw new Error('Worker not initialised')
+		if (!this.#staticData) throw new Error('Worker not initialised')
 
-		staticData.locks.changeEvent(lockId, locked)
-	},
+		this.#staticData.locks.changeEvent(lockId, locked)
+	}
 	async invalidateCaches(data: InvalidateWorkerDataCache): Promise<void> {
-		if (!staticData) throw new Error('Worker not initialised')
+		if (!this.#staticData) throw new Error('Worker not initialised')
 
 		const transaction = startTransaction('invalidateCaches', 'worker-studio')
 		if (transaction) {
-			transaction.setLabel('studioId', unprotectString(staticData.dataCache.studio._id))
+			transaction.setLabel('studioId', unprotectString(this.#staticData.dataCache.studio._id))
 		}
 
 		try {
-			await invalidateWorkerDataCache(staticData.collections, staticData.dataCache, data)
+			await invalidateWorkerDataCache(this.#staticData.collections, this.#staticData.dataCache, data)
 		} finally {
 			transaction?.end()
 		}
-	},
+	}
 	async runJob(jobName: string, data: unknown): Promise<unknown> {
-		if (!staticData) throw new Error('Worker not initialised')
+		if (!this.#staticData) throw new Error('Worker not initialised')
 
 		const transaction = startTransaction(jobName, 'worker-ingest')
 		if (transaction) {
-			transaction.setLabel('studioId', unprotectString(staticData.dataCache.studio._id))
+			transaction.setLabel('studioId', unprotectString(this.#staticData.dataCache.studio._id))
 			// transaction.setLabel('rundownId', unprotectString(staticData.rundownId))
 		}
 
-		const context = new JobContextBase(staticData.collections, staticData.dataCache, staticData.locks, transaction)
+		const context = new JobContextBase(
+			this.#staticData.collections,
+			this.#staticData.dataCache,
+			this.#staticData.locks,
+			transaction
+		)
 
 		try {
 			// Execute function, or fail if no handler
@@ -98,9 +103,5 @@ const ingestMethods = {
 
 			transaction?.end()
 		}
-	},
+	}
 }
-
-export type IngestMethods = typeof ingestMethods
-
-expose(ingestMethods)

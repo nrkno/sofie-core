@@ -12,12 +12,16 @@ import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { LocksManager } from '../locks'
 import { AnyLockEvent } from './locks'
-import { Observable } from 'threads/observable'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
+import { EventEmitter } from 'eventemitter3'
 
-export abstract class WorkerParentBase {
+export type WorkerParentEvents = {
+	lock: [event: AnyLockEvent]
+}
+
+export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> {
 	readonly #workerId: string
 	readonly #studioId: StudioId
 
@@ -41,6 +45,8 @@ export abstract class WorkerParentBase {
 		queueName: string,
 		options: WorkerOptions
 	) {
+		super()
+
 		this.#workerId = workerId
 		this.#studioId = studioId
 		this.#mongoClient = mongoClient
@@ -148,8 +154,6 @@ export abstract class WorkerParentBase {
 	protected abstract terminateWorkerThread(): Promise<void>
 	/** Inform the worker thread about a lock change */
 	public abstract workerLockChange(lockId: string, locked: boolean): Promise<void>
-	/** Get the lock change request event queue for the worker thread */
-	public abstract workerLockEvents(): Observable<AnyLockEvent>
 
 	/** Start the loop feeding work to the worker */
 	protected startWorkerLoop(mongoUri: string, dbName: string): void {

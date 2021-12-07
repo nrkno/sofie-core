@@ -1,17 +1,16 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { WorkerOptions } from 'bullmq'
-import { spawn, Worker as ThreadWorker, ModuleThread, Thread } from 'threads'
-import { IngestMethods } from './child'
+import { IngestWorkerChild } from './child'
 import { MongoClient } from 'mongodb'
 import { InvalidateWorkerDataCache } from '../caches'
 import { LocksManager } from '../../locks'
 import { WorkerParentBase } from '../parent-base'
 import { AnyLockEvent } from '../locks'
-import { Observable } from 'threads/observable'
 import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
+import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 
 export class IngestWorkerParent extends WorkerParentBase {
-	readonly #thread: ModuleThread<IngestMethods>
+	readonly #thread: Promisify<IngestWorkerChild>
 
 	private constructor(
 		workerId: string,
@@ -20,7 +19,7 @@ export class IngestWorkerParent extends WorkerParentBase {
 		locksManager: LocksManager,
 		queueName: string,
 		options: WorkerOptions,
-		thread: ModuleThread<IngestMethods>
+		thread: Promisify<IngestWorkerChild>
 	) {
 		super(workerId, studioId, mongoClient, locksManager, queueName, options)
 
@@ -36,10 +35,17 @@ export class IngestWorkerParent extends WorkerParentBase {
 		studioId: StudioId,
 		options: WorkerOptions
 	): Promise<IngestWorkerParent> {
-		const workerThread = await spawn<IngestMethods>(new ThreadWorker('./child'))
+		const workerThread = await threadedClass<IngestWorkerChild, typeof IngestWorkerChild>(
+			'./child',
+			'IngestWorkerChild',
+			[],
+			{
+				instanceName: `Ingest: ${studioId}`,
+			}
+		)
 
 		// TODO: Worker - do more with the events
-		Thread.events(workerThread).subscribe((event) => console.log('Thread event:', event))
+		// Thread.events(workerThread).subscribe((event) => console.log('Thread event:', event))
 
 		// create and start the worker
 		const parent = new IngestWorkerParent(
@@ -55,22 +61,19 @@ export class IngestWorkerParent extends WorkerParentBase {
 		return parent
 	}
 
-	protected initWorker(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
-		return this.#thread.init(mongoUri, dbName, studioId)
+	protected async initWorker(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
+		return this.#thread.init(mongoUri, dbName, studioId, (event: AnyLockEvent) => this.emit('lock', event))
 	}
-	protected invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
+	protected async invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
 		return this.#thread.invalidateCaches(invalidations)
 	}
-	protected runJobInWorker(name: string, data: any): Promise<any> {
+	protected async runJobInWorker(name: string, data: any): Promise<any> {
 		return this.#thread.runJob(name, data)
 	}
-	protected terminateWorkerThread(): Promise<void> {
-		return Thread.terminate(this.#thread)
+	protected async terminateWorkerThread(): Promise<void> {
+		return ThreadedClassManager.destroy(this.#thread)
 	}
-	public workerLockChange(lockId: string, locked: boolean): Promise<void> {
+	public async workerLockChange(lockId: string, locked: boolean): Promise<void> {
 		return this.#thread.lockChange(lockId, locked)
-	}
-	public workerLockEvents(): Observable<AnyLockEvent> {
-		return this.#thread.observelockEvents()
 	}
 }

@@ -272,7 +272,7 @@ describe('Test blueprint post-process', () => {
 
 			const blueprintId = 'some-blueprints'
 			expect(() => postProcessRundownBaselineItems(protectString(blueprintId), _.clone(rawObjects))).toThrow(
-				`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
+				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
 			)
 		})
 	})

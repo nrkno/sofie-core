@@ -1,5 +1,4 @@
 import { assertNever, getRandomString } from '@sofie-automation/corelib/dist/lib'
-import type { Subscription } from 'observable-fns'
 import { logger } from './logging'
 import { AnyLockEvent } from './workers/locks'
 import { WorkerParentBase } from './workers/parent-base'
@@ -13,10 +12,11 @@ class LockResource {
 	constructor(readonly id: string) {}
 }
 
+type Unsub = () => void
 export class LocksManager {
 	readonly #resources = new Map<string, LockResource>()
 	readonly #ids = new Map<string, WorkerParentBase>()
-	readonly #subs = new Map<string, Subscription<AnyLockEvent>>()
+	readonly #subs = new Map<string, Unsub>()
 
 	private getResource(resourceId: string): LockResource {
 		let resource = this.#resources.get(resourceId)
@@ -67,41 +67,48 @@ export class LocksManager {
 		const id = getRandomString()
 		this.#ids.set(id, worker)
 
-		const events = worker.workerLockEvents()
-		const sub = events.subscribe((e) => {
-			const resource = this.getResource(e.resourceId)
+		const cb = (e: AnyLockEvent): void => {
+			try {
+				const resource = this.getResource(e.resourceId)
 
-			switch (e.event) {
-				case 'lock':
-					resource.waitingWorkers.push([id, e.lockId])
+				switch (e.event) {
+					case 'lock':
+						resource.waitingWorkers.push([id, e.lockId])
 
-					// Check if we can lock it
-					this.lockNextWorker(resource)
+						// Check if we can lock it
+						this.lockNextWorker(resource)
 
-					break
-				case 'unlock':
-					if (resource.holder && resource.holder[0] === id && resource.holder[1] === e.lockId) {
-						resource.holder = null
+						break
+					case 'unlock':
+						if (resource.holder && resource.holder[0] === id && resource.holder[1] === e.lockId) {
+							resource.holder = null
 
-						logger.info(
-							`Resource: ${resource.id} releaseing from "${id}". ${resource.waitingWorkers.length} waiting`
-						)
+							logger.info(
+								`Resource: ${resource.id} releaseing from "${id}". ${resource.waitingWorkers.length} waiting`
+							)
 
-						worker.workerLockChange(e.lockId, false).catch((e) => {
-							logger.error(`Failed to report lock to worker: ${e}`)
-						})
-					} else {
-						logger.warn(`Worker tried to unlock a lock it doesnt own`)
-					}
+							worker.workerLockChange(e.lockId, false).catch((e) => {
+								logger.error(`Failed to report lock to worker: ${e}`)
+							})
+						} else {
+							logger.warn(`Worker tried to unlock a lock it doesnt own`)
+						}
 
-					this.lockNextWorker(resource)
-					break
-				default:
-					assertNever(e)
-					break
+						this.lockNextWorker(resource)
+						break
+					default:
+						assertNever(e)
+						break
+				}
+			} catch (e) {
+				logger.error(`Unexpected error in lock handler: ${e}`)
 			}
+		}
+		worker.on('lock', cb)
+		this.#subs.set(id, () => {
+			// Unsub function
+			worker.off('lock', cb)
 		})
-		this.#subs.set(id, sub)
 	}
 
 	/** Unsubscribe a worker from the lock channels */
@@ -112,8 +119,8 @@ export class LocksManager {
 			this.#ids.delete(id)
 
 			// stop listening
-			const sub = this.#subs.get(id)
-			if (sub) sub.unsubscribe()
+			const unsub = this.#subs.get(id)
+			if (unsub) unsub()
 
 			// ensure all locks are freed
 			for (const resource of this.#resources.values()) {
