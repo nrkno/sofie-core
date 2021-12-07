@@ -1,6 +1,6 @@
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { supressLogging } from '../../../../__mocks__/helpers/lib'
-import { logger } from '../../../logging'
+import { testInFiber } from '../../__mocks__/helpers/jest'
+import { supressLogging } from '../../__mocks__/helpers/lib'
+import { logger } from '../logging'
 
 describe('server/logger', () => {
 	testInFiber('supress errors', async () => {

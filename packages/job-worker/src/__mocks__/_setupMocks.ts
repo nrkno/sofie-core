@@ -72,6 +72,16 @@ expect.extend({
 			pass: pass,
 		}
 	},
+
+	toMatchToString(received, expected) {
+		const received2 = 'toString' in received ? received.toString() : received
+		const pass = typeof received2 === 'string' && !!received2.match(expected)
+
+		return {
+			message: () => `expected ${received.toString()} to match ${expected.toString()}`,
+			pass: pass,
+		}
+	},
 })
 
 declare global {
@@ -81,6 +91,7 @@ declare global {
 			toBeWithinRange(floor: number, ceiling: number): R
 
 			toMatchUserError(message: UserErrorMessage, args?: { [k: string]: any }): R
+			toMatchToString(message: string | RegExp): R
 		}
 	}
 }

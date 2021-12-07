@@ -370,6 +370,7 @@ export async function afterTake(
 		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
 			await context.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
 				rundownId: takePartInstance.rundownId,
+				isRehearsal: !!cache.Playlist.doc.rehearsal,
 				partExternalId: takePartInstance.part.externalId,
 			})
 		}

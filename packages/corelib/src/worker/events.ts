@@ -18,6 +18,7 @@ export interface RundownDataChangedProps {
 
 export interface NotifyCurrentlyPlayingPartProps {
 	rundownId: RundownId
+	isRehearsal: boolean
 	partExternalId: string | null
 }
 

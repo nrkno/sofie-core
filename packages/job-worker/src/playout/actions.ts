@@ -166,6 +166,7 @@ export async function deactivateRundownPlaylistInner(
 		cache.deferAfterSave(async () => {
 			await context.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
 				rundownId: currentPartInstance.rundownId,
+				isRehearsal: !!cache.Playlist.doc.rehearsal,
 				partExternalId: null,
 			})
 		})

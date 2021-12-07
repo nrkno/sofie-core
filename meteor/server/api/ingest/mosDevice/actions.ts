@@ -2,7 +2,7 @@ import * as MOS from 'mos-connection'
 import { logger } from '../../../logging'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
@@ -68,70 +68,6 @@ export namespace MOSDeviceActions {
 				rundown.externalId
 			)
 		})
-	export function notifyCurrentPlayingPart(
-		peripheralDevice: PeripheralDevice,
-		rundown: Rundown,
-		oldPlayingPartExternalId: string | null,
-		newPlayingPartExternalId: string | null
-	) {
-		if (oldPlayingPartExternalId !== newPlayingPartExternalId) {
-			// Note: We send the PLAY first, since that seems to give us _slightly_ better responsiveness in ENPS.
-
-			if (newPlayingPartExternalId) {
-				try {
-					waitForPromise(
-						setStoryStatus(
-							peripheralDevice._id,
-							rundown,
-							newPlayingPartExternalId,
-							MOS.IMOSObjectStatus.PLAY
-						)
-					)
-				} catch (error) {
-					logger.error('Error in setStoryStatus PLAY', error)
-				}
-			}
-			if (oldPlayingPartExternalId) {
-				try {
-					waitForPromise(
-						setStoryStatus(
-							peripheralDevice._id,
-							rundown,
-							oldPlayingPartExternalId,
-							MOS.IMOSObjectStatus.STOP
-						)
-					)
-				} catch (error) {
-					logger.error('Error in setStoryStatus STOP', error)
-				}
-			}
-		}
-	}
-	async function setStoryStatus(
-		deviceId: PeripheralDeviceId,
-		rundown: Rundown,
-		storyId: string,
-		status: MOS.IMOSObjectStatus
-	): Promise<any> {
-		return new Promise((resolve, reject) => {
-			logger.debug('setStoryStatus', { deviceId, externalId: rundown.externalId, storyId, status })
-			PeripheralDeviceAPI.executeFunction(
-				deviceId,
-				(err, result) => {
-					logger.debug('reply', err, result)
-					if (err) {
-						reject(err)
-					} else {
-						resolve(result)
-					}
-				},
-				'setStoryStatus',
-				rundown.externalId,
-				storyId,
-				status
-			)
-		})
-	}
 
 	export async function setPieceInOutPoint(
 		rundown: Rundown,

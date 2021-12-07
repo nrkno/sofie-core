@@ -6,12 +6,7 @@ import {
 	RundownDataChangedEventContext,
 	RundownTimingEventContext,
 } from '../context'
-import {
-	RundownPlaylistActivationId,
-	PartInstanceId,
-	PieceInstanceInfiniteId,
-	PartId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceInstanceInfiniteId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance, unprotectPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -23,20 +18,8 @@ import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/cont
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-
-// TODO: Worker - deduplicate
-function wrapPartToTemporaryInstance(playlistActivationId: RundownPlaylistActivationId, part: DBPart): DBPartInstance {
-	return {
-		_id: protectString(`${part._id}_tmp_instance`),
-		rundownId: part.rundownId,
-		segmentId: part.segmentId,
-		playlistActivationId,
-		segmentPlayoutId: protectString(''), // Only needed when stored in the db, and filled in nearer the time
-		takeCount: -1,
-		rehearsal: false,
-		part: part,
-	}
-}
+import { wrapPartToTemporaryInstance } from '../../__mocks__/partinstance'
+import { ReadonlyDeep } from 'type-fest'
 
 describe('Test blueprint api context', () => {
 	async function generateSparsePieceInstances(rundown: DBRundown) {
@@ -78,7 +61,7 @@ describe('Test blueprint api context', () => {
 	}
 
 	let jobContext: MockJobContext
-	let showStyle: ShowStyleCompound
+	let showStyle: ReadonlyDeep<ShowStyleCompound>
 	beforeEach(async () => {
 		jobContext = setupDefaultJobEnvironment()
 
@@ -214,7 +197,7 @@ describe('Test blueprint api context', () => {
 		})
 
 		test('getFirstPartInstanceInRundown - allowUntimed', async () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
+			const { rundownId } = await setupDefaultRundownPlaylist(jobContext)
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 

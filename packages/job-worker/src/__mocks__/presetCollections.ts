@@ -123,9 +123,10 @@ export async function setupMockShowStyleVariant(
 
 export async function setupDefaultRundownPlaylist(
 	context: JobContext,
-	showStyleCompound0?: ShowStyleCompound
+	showStyleCompound0?: ReadonlyDeep<ShowStyleCompound>,
+	rundownId0?: RundownId
 ): Promise<{ rundownId: RundownId; playlistId: RundownPlaylistId }> {
-	const rundownId: RundownId = getRandomId()
+	const rundownId: RundownId = rundownId0 ?? getRandomId()
 
 	const showStyleCompound =
 		showStyleCompound0! ||

@@ -16,7 +16,15 @@ import { getRandomId, omit, removeNullyProperties, stringifyError } from '@sofie
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { ICollection, MongoModifier } from '../db'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExternalMessageQueueObjId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { runWithRundownLock } from '../ingest/lock'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import * as MOS from 'mos-connection'
+import { executePeripheralDeviceFunction } from '../peripheralDevice'
 
 async function getBlueprintAndDependencies(context: JobContext, rundown: ReadonlyDeep<DBRundown>) {
 	const pShowStyle = context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
@@ -218,8 +226,121 @@ export async function handleRundownDataHasChanged(context: JobContext, data: Run
 }
 
 export async function handleNotifyCurrentlyPlayingPart(
-	_context: JobContext,
-	_data: NotifyCurrentlyPlayingPartProps
+	context: JobContext,
+	data: NotifyCurrentlyPlayingPartProps
 ): Promise<void> {
-	// TODO: Worker - this is a MOS callback to the gateway. How does that fit into this model?
+	const rundown = await context.directCollections.Rundowns.findOne(data.rundownId)
+	if (!rundown) {
+		logger.warn(`Rundown "${data.rundownId} is missing. Skipping notifyCurrentPlayingPart`)
+		return
+	}
+
+	if (!rundown.peripheralDeviceId) {
+		logger.warn(`Rundown "${rundown._id} has no peripheralDevice. Skipping notifyCurrentPlayingPart`)
+		return
+	}
+
+	const device = await context.directCollections.PeripheralDevices.findOne({
+		_id: rundown.peripheralDeviceId,
+		studioId: context.studioId,
+	})
+	if (!device) {
+		logger.warn(
+			`PeripheralDevice "${rundown.peripheralDeviceId}" for Rundown "${rundown._id} not found. Skipping notifyCurrentPlayingPart`
+		)
+		return
+	}
+
+	const previousPlayingPartExternalId: string | null = rundown.notifiedCurrentPlayingPartExternalId || null
+	const currentPlayingPartExternalId: string | null = data.isRehearsal ? null : data.partExternalId
+
+	// Lock the rundown so that we are allowed to write to it
+	await runWithRundownLock(context, rundown._id, async (rundown0) => {
+		if (rundown0) {
+			if (currentPlayingPartExternalId) {
+				await context.directCollections.Rundowns.update(rundown._id, {
+					$set: {
+						notifiedCurrentPlayingPartExternalId: currentPlayingPartExternalId,
+					},
+				})
+			} else {
+				await context.directCollections.Rundowns.update(rundown._id, {
+					$unset: {
+						notifiedCurrentPlayingPartExternalId: 1,
+					},
+				})
+			}
+		}
+	})
+
+	// TODO: refactor this to be non-mos centric
+	if (device.category === PeripheralDeviceCategory.INGEST && device.type === PeripheralDeviceType.MOS) {
+		// Note: rundown may not be up to date anymore
+		await notifyCurrentPlayingPartMOS(
+			context,
+			device,
+			rundown.externalId,
+			previousPlayingPartExternalId,
+			currentPlayingPartExternalId
+		)
+	}
+}
+
+async function notifyCurrentPlayingPartMOS(
+	context: JobContext,
+	peripheralDevice: PeripheralDevice,
+	rundownExternalId: string,
+	oldPlayingPartExternalId: string | null,
+	newPlayingPartExternalId: string | null
+): Promise<void> {
+	if (oldPlayingPartExternalId !== newPlayingPartExternalId) {
+		// Note: We send the PLAY first, since that seems to give us _slightly_ better responsiveness in ENPS.
+
+		if (newPlayingPartExternalId) {
+			try {
+				await setStoryStatusMOS(
+					context,
+					peripheralDevice._id,
+					rundownExternalId,
+					newPlayingPartExternalId,
+					MOS.IMOSObjectStatus.PLAY
+				)
+			} catch (error) {
+				logger.error('Error in setStoryStatus PLAY', error)
+			}
+		}
+
+		if (oldPlayingPartExternalId) {
+			try {
+				await setStoryStatusMOS(
+					context,
+					peripheralDevice._id,
+					rundownExternalId,
+					oldPlayingPartExternalId,
+					MOS.IMOSObjectStatus.STOP
+				)
+			} catch (error) {
+				logger.error('Error in setStoryStatus STOP', error)
+			}
+		}
+	}
+}
+
+async function setStoryStatusMOS(
+	context: JobContext,
+	deviceId: PeripheralDeviceId,
+	rundownExternalId: string,
+	storyId: string,
+	status: MOS.IMOSObjectStatus
+): Promise<void> {
+	logger.debug('setStoryStatus', { deviceId, externalId: rundownExternalId, storyId, status })
+	return executePeripheralDeviceFunction(
+		context,
+		deviceId,
+		null,
+		'setStoryStatus',
+		rundownExternalId,
+		storyId,
+		status
+	)
 }

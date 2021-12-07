@@ -1,4 +1,4 @@
-import { setupDefaultStudioEnvironment, setupMockStudio } from '../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { ConfigRef } from '../config'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
