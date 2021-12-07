@@ -21,13 +21,13 @@ export namespace PackageManagerAPI {
 		check(workId, String)
 		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
 
-		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartExpectation', workId)
+		await PeripheralDeviceAPI.executeFunction(deviceId, 'restartExpectation', workId)
 	}
 	export async function restartAllExpectations(context: MethodContext, deviceId: PeripheralDeviceId): Promise<void> {
 		check(deviceId, String)
 		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
 
-		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartAllExpectations')
+		await PeripheralDeviceAPI.executeFunction(deviceId, 'restartAllExpectations')
 	}
 	export async function abortExpectation(
 		context: MethodContext,
@@ -38,7 +38,7 @@ export namespace PackageManagerAPI {
 		check(workId, String)
 		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
 
-		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'abortExpectation', workId)
+		await PeripheralDeviceAPI.executeFunction(deviceId, 'abortExpectation', workId)
 	}
 	export async function restartAllExpectationsInStudio(context: MethodContext, studioId: StudioId): Promise<void> {
 		check(studioId, String)
@@ -66,6 +66,6 @@ export namespace PackageManagerAPI {
 		check(containerId, String)
 		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
 
-		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartPackageContainer', containerId)
+		await PeripheralDeviceAPI.executeFunction(deviceId, 'restartPackageContainer', containerId)
 	}
 }

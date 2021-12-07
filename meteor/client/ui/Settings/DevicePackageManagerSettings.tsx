@@ -56,36 +56,14 @@ export const DevicePackageManagerSettings = translateWithTracker<
 		reloadStatus(silent: boolean = false) {
 			const { t } = this.props
 
-			PeripheralDeviceAPI.executeFunction(
-				this.props.deviceId,
-				(error, result) => {
-					if (error) {
-						if (!silent) {
-							doModalDialog({
-								message: t('There was an error: {{error}}', { error: error.toString() }),
-								title: t(''),
-								onAccept: () => {
-									// Do nothing
-								},
-							})
-						}
-					} else {
-						this.setState({
-							status: result,
-						})
-					}
-				},
-				'getExpetationManagerStatus'
-			)
-		}
-
-		killApp(appId: string) {
-			const { t } = this.props
-
-			PeripheralDeviceAPI.executeFunction(
-				this.props.deviceId,
-				(error) => {
-					if (error) {
+			PeripheralDeviceAPI.executeFunction(this.props.deviceId, 'getExpetationManagerStatus')
+				.then((result) => {
+					this.setState({
+						status: result,
+					})
+				})
+				.catch((error) => {
+					if (!silent) {
 						doModalDialog({
 							message: t('There was an error: {{error}}', { error: error.toString() }),
 							title: t(''),
@@ -93,13 +71,26 @@ export const DevicePackageManagerSettings = translateWithTracker<
 								// Do nothing
 							},
 						})
-					} else {
-						this.reloadStatus(true)
 					}
-				},
-				'debugKillApp',
-				appId
-			)
+				})
+		}
+
+		killApp(appId: string) {
+			const { t } = this.props
+
+			PeripheralDeviceAPI.executeFunction(this.props.deviceId, 'debugKillApp', appId)
+				.then(() => {
+					this.reloadStatus(true)
+				})
+				.catch((error) => {
+					doModalDialog({
+						message: t('There was an error: {{error}}', { error: error.toString() }),
+						title: t(''),
+						onAccept: () => {
+							// Do nothing
+						},
+					})
+				})
 		}
 
 		render() {

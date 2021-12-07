@@ -29,7 +29,6 @@ import {
 	protectString,
 	getRandomId,
 	unprotectString,
-	makePromise,
 	ProtectedString,
 	protectStringArray,
 } from '../../lib/lib'
@@ -39,7 +38,6 @@ import { logger } from '../logging'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
@@ -412,9 +410,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 					const startTime = getCurrentTime()
 
 					// defer to another fiber
-					const deviceSnapshot = await makePromise(() =>
-						ServerPeripheralDeviceAPI.executeFunction(device._id, 'getSnapshot')
-					)
+					const deviceSnapshot = await PeripheralDeviceAPI.executeFunction(device._id, 'getSnapshot')
 
 					logger.info('Got snapshot from device "' + device._id + '"')
 					return {

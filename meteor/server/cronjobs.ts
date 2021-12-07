@@ -2,7 +2,7 @@ import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { getCurrentTime, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, stringifyError, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
@@ -103,34 +103,32 @@ Meteor.startup(() => {
 							logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 							ps.push(
-								new Promise<void>((resolve, reject) => {
-									PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-										subDevice._id,
-										(err) => {
-											if (err) {
-												logger.error(
-													'Cronjob: "' + subDevice._id + '": CasparCG restart error',
-													err
-												)
-												if ((err + '').match(/timeout/i)) {
-													// If it was a timeout, maybe we could try again later?
-													if (failedRetries < 5) {
-														failedRetries++
-														lastNightlyCronjob = previousLastNightlyCronjob // try again later
-													}
-													resolve()
-												} else {
-													reject(err)
-												}
-											} else {
-												logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
-												resolve()
+								PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+									subDevice._id,
+									CASPARCG_RESTART_TIME,
+									'restartCasparCG'
+								)
+									.then(() => {
+										logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
+									})
+									.catch((err) => {
+										logger.error(
+											`Cronjob: "${subDevice._id}": CasparCG restart error: ${stringifyError(
+												err
+											)}`
+										)
+
+										if ((err + '').match(/timeout/i)) {
+											// If it was a timeout, maybe we could try again later?
+											if (failedRetries < 5) {
+												failedRetries++
+												lastNightlyCronjob = previousLastNightlyCronjob // try again later
 											}
-										},
-										CASPARCG_RESTART_TIME,
-										'restartCasparCG'
-									)
-								})
+										} else {
+											// Propogate the error
+											throw err
+										}
+									})
 							)
 						}
 					})

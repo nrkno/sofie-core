@@ -213,24 +213,23 @@ export async function prepareStudioForBroadcast(
 
 	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
-	await Promise.allSettled(
-		playoutDevices.map(async (device) => {
-			try {
-				await executePeripheralDeviceFunction(
-					context,
-					device._id,
-					null,
-					'devicesMakeReady',
-					okToDestoryStuff,
-					rundownPlaylistToBeActivated._id
-				)
-
-				logger.info(`devicesMakeReady for "${device._id}" OK`)
-			} catch (err) {
-				logger.error(`devicesMakeReady for "${device._id}" failed: ${err}`)
-			}
-		})
-	)
+	for (const device of playoutDevices) {
+		// Fire the command and don't wait for the result
+		executePeripheralDeviceFunction(
+			context,
+			device._id,
+			null,
+			'devicesMakeReady',
+			okToDestoryStuff,
+			rundownPlaylistToBeActivated._id
+		)
+			.then(() => {
+				logger.info(`devicesMakeReady: "${device._id}" OK`)
+			})
+			.catch((err) => {
+				logger.error(`devicesMakeReady: "${device._id} Fail: ${stringifyError(err)}"`)
+			})
+	}
 }
 /**
  * Makes a studio "stand down" after a broadcast
@@ -246,15 +245,14 @@ export async function standDownStudio(
 
 	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
-	await Promise.allSettled(
-		playoutDevices.map(async (device) => {
-			try {
-				await executePeripheralDeviceFunction(context, device._id, null, 'devicesStandDown', okToDestoryStuff)
-
-				logger.info(`devicesStandDown for "${device._id}" OK`)
-			} catch (err) {
-				logger.error(`devicesStandDown for "${device._id}" failed: ${err}`)
-			}
-		})
-	)
+	for (const device of playoutDevices) {
+		// Fire the command and don't wait for the result
+		executePeripheralDeviceFunction(context, device._id, null, 'devicesStandDown', okToDestoryStuff)
+			.then(() => {
+				logger.info(`devicesStandDown: "${device._id}" OK`)
+			})
+			.catch((err) => {
+				logger.error(`devicesStandDown: "${device._id} Fail: ${stringifyError(err)}"`)
+			})
+	}
 }

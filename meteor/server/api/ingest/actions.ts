@@ -13,7 +13,7 @@ export namespace IngestActions {
 	/**
 	 * Trigger a reload of a rundown
 	 */
-	export function reloadRundown(rundown: Rundown): TriggerReloadDataResponse {
+	export async function reloadRundown(rundown: Rundown): Promise<TriggerReloadDataResponse> {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		// TODO: refacor this into something nicer perhaps?
