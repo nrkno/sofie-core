@@ -401,7 +401,7 @@ describe('Playout API', () => {
 
 		await expect(
 			ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
-		).rejects.toThrowError(/not found/gi)
+		).rejects.toMatchToString(/not found/gi)
 
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
 		await ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
