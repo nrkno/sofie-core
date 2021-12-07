@@ -8,77 +8,27 @@ import {
 import {
 	IBlueprintAdLibPiece,
 	IBlueprintPiece,
-	IUserNotesContext,
 	PieceLifespan,
-	PlaylistTimingType,
 	TimelineObjectCoreExt,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
 import { setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { clone, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { JobContext } from '../../jobs'
-import { RundownContext, StudioContext } from '../context'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
+// Setup the mocks
+import * as hashlib from '@sofie-automation/corelib/dist/hash'
+const getHashOrig = hashlib.getHash
+const getHashMock = jest.spyOn(hashlib, 'getHash')
+
 describe('Test blueprint post-process', () => {
-	function getContext(jobContext: JobContext): RundownContext {
-		const rundown: DBRundown = {
-			externalId: 'fakeRo',
-			_id: protectString('fakeRo'),
-			name: 'Fake RO',
-			showStyleBaseId: protectString(''),
-			showStyleVariantId: protectString(''),
-			organizationId: protectString(''),
-			studioId: jobContext.studioId,
-			peripheralDeviceId: protectString(''),
-			created: 0,
-			modified: 0,
-			importVersions: {
-				studio: '',
-				showStyleBase: '',
-				showStyleVariant: '',
-				blueprint: '',
-				core: '',
-			},
-			externalNRCSName: 'mockNRCS',
-			playlistId: protectString(''),
-			_rank: 0,
-			timing: {
-				type: PlaylistTimingType.None,
-			},
-		}
-
-		const showStyle = {} as ShowStyleCompound
-
-		const context = new RundownContext(
-			{ name: rundown.name, identifier: `rundownId=${rundown._id}` },
-			jobContext.studio,
-			jobContext.getStudioBlueprintConfig(),
-			showStyle,
-			jobContext.getShowStyleBlueprintConfig(showStyle),
-			rundown
-		)
-
-		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
-		expect((context as unknown as IUserNotesContext).notifyUserError).toBeUndefined()
-		return context
-	}
-	function getStudioContext(jobContext: JobContext) {
-		const context = new StudioContext(
-			{ name: jobContext.studio.name, identifier: `studioId=${jobContext.studio._id}` },
-			jobContext.studio,
-			jobContext.getStudioBlueprintConfig()
-		)
-
-		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
-		expect((context as unknown as IUserNotesContext).notifyUserError).toBeUndefined()
-		return context
-	}
+	afterEach(() => {
+		getHashMock.mockReset()
+		getHashMock.mockImplementation(getHashOrig)
+	})
 
 	function ensureAllKeysDefined<T>(template: T, objects: T[]) {
 		const errs: string[] = []
@@ -204,18 +154,12 @@ describe('Test blueprint post-process', () => {
 
 	describe('postProcessRundownBaselineItems', () => {
 		test('no objects', async () => {
-			const jobContext = setupDefaultJobEnvironment()
-			const context = getContext(jobContext)
-
 			// Ensure that an empty array works ok
-			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [])
+			const res = postProcessRundownBaselineItems(protectString('some-blueprints'), [])
 			expect(res).toHaveLength(0)
 		})
 
 		test('some no ids', () => {
-			const jobContext = setupDefaultJobEnvironment()
-			const context = getContext(jobContext)
-
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
@@ -254,9 +198,9 @@ describe('Test blueprint post-process', () => {
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2']
 			const expectedIds = _.compact(_.map(rawObjects, (obj) => obj.id)).concat(mockedIds)
-			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
+			getHashMock.mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), _.clone(rawObjects))
+			const res = postProcessRundownBaselineItems(protectString('some-blueprints'), _.clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -270,10 +214,10 @@ describe('Test blueprint post-process', () => {
 			expect(_.filter(res, (r) => r.id === '')).toHaveLength(0)
 			expect(_.filter(res, (r) => r.objectType !== 'rundown')).toHaveLength(0)
 
-			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(2)
-			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'baseline_1')
-			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'baseline_3')
+			// Ensure getHash was called as expected
+			expect(getHashMock).toHaveBeenCalledTimes(2)
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'baseline_1')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'baseline_3')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj.id).sort()
@@ -291,9 +235,6 @@ describe('Test blueprint post-process', () => {
 		})
 
 		test('duplicate ids', () => {
-			const jobContext = setupDefaultJobEnvironment()
-			const context = getContext(jobContext)
-
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
@@ -330,28 +271,26 @@ describe('Test blueprint post-process', () => {
 			])
 
 			const blueprintId = 'some-blueprints'
-			expect(() =>
-				postProcessRundownBaselineItems(context, protectString(blueprintId), _.clone(rawObjects))
-			).toThrow(`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`)
+			expect(() => postProcessRundownBaselineItems(protectString(blueprintId), _.clone(rawObjects))).toThrow(
+				`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
+			)
 		})
 	})
 
 	describe('postProcessAdLibPieces', () => {
 		test('no pieces', () => {
 			const jobContext = setupDefaultJobEnvironment()
-			const context = getStudioContext(jobContext)
 
 			const blueprintId = protectString('blueprint0')
 			const rundownId = protectString('rundown1')
 
 			// Ensure that an empty array works ok
-			const res = postProcessAdLibPieces(jobContext, context, blueprintId, rundownId, undefined, [])
+			const res = postProcessAdLibPieces(jobContext, blueprintId, rundownId, undefined, [])
 			expect(res).toHaveLength(0)
 		})
 
 		test('various pieces', () => {
 			const jobContext = setupDefaultJobEnvironment()
-			const context = getStudioContext(jobContext)
 
 			const blueprintId = protectString('blueprint9')
 			const rundownId = protectString('rundown1')
@@ -393,9 +332,9 @@ describe('Test blueprint post-process', () => {
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2', 'mocked3']
 			const expectedIds = _.clone(mockedIds)
-			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
+			getHashMock.mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessAdLibPieces(jobContext, context, blueprintId, rundownId, undefined, pieces)
+			const res = postProcessAdLibPieces(jobContext, blueprintId, rundownId, undefined, pieces)
 			// expect(res).toHaveLength(3)
 			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
 
@@ -416,11 +355,11 @@ describe('Test blueprint post-process', () => {
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
-			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(3)
-			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_undefined_adlib_piece_eid1_0')
-			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_undefined_adlib_piece_eid2_0')
-			expect(context.getHashId).toHaveBeenNthCalledWith(3, 'blueprint9_undefined_adlib_piece_eid2_1')
+			// Ensure getHash was called as expected
+			expect(getHashMock).toHaveBeenCalledTimes(3)
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'rundown1_blueprint9_undefined_adlib_piece_eid1_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'rundown1_blueprint9_undefined_adlib_piece_eid2_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(3, 'rundown1_blueprint9_undefined_adlib_piece_eid2_1')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
@@ -429,7 +368,6 @@ describe('Test blueprint post-process', () => {
 
 		test('piece with content', () => {
 			const jobContext = setupDefaultJobEnvironment()
-			const context = getStudioContext(jobContext)
 
 			const blueprintId = protectString('blueprint0')
 			const rundownId = protectString('rundown1')
@@ -455,7 +393,7 @@ describe('Test blueprint post-process', () => {
 				lifespan: PieceLifespan.WithinPart,
 			})
 
-			const res = postProcessAdLibPieces(jobContext, context, blueprintId, rundownId, undefined, [piece])
+			const res = postProcessAdLibPieces(jobContext, blueprintId, rundownId, undefined, [piece])
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([piece])
 
@@ -467,15 +405,13 @@ describe('Test blueprint post-process', () => {
 	describe('postProcessPieces', () => {
 		test('no pieces', () => {
 			const jobContext = setupDefaultJobEnvironment()
-			const context = getContext(jobContext)
 
 			// Ensure that an empty array works ok
 			const res = postProcessPieces(
 				jobContext,
-				context,
 				[],
 				protectString('blueprint9'),
-				context._rundown._id,
+				protectString('fakeRo'),
 				protectString('segment5'),
 				protectString('part8')
 			)
@@ -484,7 +420,6 @@ describe('Test blueprint post-process', () => {
 
 		test('various pieces', () => {
 			const jobContext = setupDefaultJobEnvironment()
-			const context = getContext(jobContext)
 
 			const pieces = literal<IBlueprintPiece[]>([
 				{
@@ -512,14 +447,13 @@ describe('Test blueprint post-process', () => {
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2']
 			const expectedIds = [...mockedIds]
-			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
+			getHashMock.mockImplementation(() => mockedIds.shift() || '')
 
 			const res = postProcessPieces(
 				jobContext,
-				context,
 				pieces,
 				protectString('blueprint9'),
-				context._rundown._id,
+				protectString('fakeRo'),
 				protectString('segment5'),
 				protectString('part8')
 			)
@@ -545,10 +479,10 @@ describe('Test blueprint post-process', () => {
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
-			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(2)
-			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_part8_piece_eid1_0')
-			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_part8_piece_eid2_0')
+			// Ensure getHash was called as expected
+			expect(getHashMock).toHaveBeenCalledTimes(2)
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'fakeRo_blueprint9_part8_piece_eid1_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'fakeRo_blueprint9_part8_piece_eid2_0')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
@@ -557,7 +491,6 @@ describe('Test blueprint post-process', () => {
 
 		test('piece with content', () => {
 			const jobContext = setupDefaultJobEnvironment()
-			const context = getContext(jobContext)
 
 			const piece = literal<IBlueprintPiece>({
 				name: 'test2',
@@ -582,10 +515,9 @@ describe('Test blueprint post-process', () => {
 
 			const res = postProcessPieces(
 				jobContext,
-				context,
 				[piece],
 				protectString('blueprint9'),
-				context._rundown._id,
+				protectString('fakeRo'),
 				protectString('segment8'),
 				protectString('part6')
 			)

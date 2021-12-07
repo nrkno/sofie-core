@@ -2,6 +2,9 @@ import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { Studios } from '../../lib/collections/Studios'
 import { Settings } from '../../lib/Settings'
+import { TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { getHash } from '@sofie-automation/corelib/dist/lib'
 
 /*
  * **************************************************************************************
@@ -142,6 +145,27 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 						},
 					}
 				)
+			}
+		},
+	},
+	{
+		id: `TriggeredActions.core.fixIds`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const existingActions = TriggeredActions.find({ showStyleBaseId: null }).fetch()
+			return existingActions.some((action) => !!unprotectString(action._id).match(/^core_/))
+		},
+		migrate: () => {
+			const existingActions = TriggeredActions.find({ showStyleBaseId: null }).fetch()
+			for (const action of existingActions) {
+				const actionId = unprotectString(action._id)
+				if (actionId.match(/^core_/) !== null) {
+					TriggeredActions.remove(action._id)
+					TriggeredActions.insert({
+						...action,
+						_id: protectString(getHash(actionId)),
+					})
+				}
 			}
 		},
 	},

@@ -6,6 +6,7 @@
 		"node": "^12.22.1 || 14"
 	},
 	"scripts": {
+		"preinstall": "node -v",
 		"start": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run debug --\" \"npm run watch-types -- --preserveWatchOutput\"",
 		"debug": "meteor run ",
 		"libs:syncVersions": "cd ../packages && yarn sync-version",

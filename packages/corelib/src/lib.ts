@@ -4,39 +4,17 @@ import fastClone = require('fast-clone')
 import { Random } from './random'
 import { ProtectedString, protectString } from './protectedString'
 import * as objectPath from 'object-path'
-import * as crypto from 'crypto'
 import { Timecode } from 'timecode'
 import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from './dataModel/Studio'
+
+export * from './hash'
 
 export type TimeDuration = number
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
 export type ArrayElement<A> = A extends readonly (infer T)[] ? T : never
-
-export function getHash(str: string): string {
-	const hash = crypto.createHash('sha1')
-	return hash.update(str).digest('base64').replace(/[+/=]/g, '_') // remove +/= from strings, because they cause troubles
-}
-
-/** Creates a hash based on the object properties (excluding ordering of properties) */
-export function hashObj(obj: any): string {
-	if (typeof obj === 'object') {
-		const keys = Object.keys(obj).sort((a, b) => {
-			if (a > b) return 1
-			if (a < b) return -1
-			return 0
-		})
-
-		const strs: string[] = []
-		for (const key of keys) {
-			strs.push(hashObj(obj[key]))
-		}
-		return getHash(strs.join('|'))
-	}
-	return obj + ''
-}
 
 export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
 	return _.omit(obj, ...(props as string[])) as any

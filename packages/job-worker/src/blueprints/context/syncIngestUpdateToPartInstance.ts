@@ -128,7 +128,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		const piece = modifiedPiece
 			? postProcessPieces(
 					this._context,
-					this,
 					[
 						{
 							...modifiedPiece,
@@ -160,7 +159,6 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		const piece = postProcessPieces(
 			this._context,
-			this,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
 			this.partInstance.rundownId,
@@ -195,7 +193,6 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
 			updatedPiece.content.timelineObjects = postProcessTimelineObjects(
-				this,
 				pieceInstance.piece._id,
 				this.showStyleCompound.blueprintId,
 				updatedPiece.content.timelineObjects,

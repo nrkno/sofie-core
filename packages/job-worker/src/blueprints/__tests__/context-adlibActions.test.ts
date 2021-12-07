@@ -941,7 +941,6 @@ describe('Test blueprint api context', () => {
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 					expect(postProcessPiecesMock).toHaveBeenCalledWith(
 						expect.anything(),
-						expect.anything(),
 						[{ externalId: 'input1' }],
 						'blueprint0',
 						partInstance.rundownId,

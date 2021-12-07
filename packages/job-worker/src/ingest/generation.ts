@@ -14,7 +14,7 @@ import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/Show
 import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { ShowStyleUserContext, CommonContext, StudioUserContext, SegmentUserContext } from '../blueprints/context'
+import { ShowStyleUserContext, StudioUserContext, SegmentUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessAdLibActions,
@@ -130,7 +130,9 @@ export async function calculateSegmentsFromIngestData(
 			const context2 = new SegmentUserContext(
 				{
 					name: `getSegment=${ingestSegment.name}`,
-					identifier: `rundownId=${rundown._id},segmentId=${segmentId}`,
+					// Note: this intentionally does not include the segmentId, as parts may be moved between segemnts later on
+					// This isn't much entropy, blueprints may want to add more for each Part they generate
+					identifier: `rundownId=${rundown._id}`,
 				},
 				context.studio,
 				context.getStudioBlueprintConfig(),
@@ -262,7 +264,6 @@ export async function calculateSegmentsFromIngestData(
 				res.pieces.push(
 					...postProcessPieces(
 						context,
-						context2,
 						blueprintPart.pieces,
 						blueprint.blueprintId,
 						rundown._id,
@@ -276,7 +277,6 @@ export async function calculateSegmentsFromIngestData(
 				res.adlibPieces.push(
 					...postProcessAdLibPieces(
 						context,
-						context2,
 						blueprint.blueprintId,
 						rundown._id,
 						part._id,
@@ -285,7 +285,6 @@ export async function calculateSegmentsFromIngestData(
 				)
 				res.adlibActions.push(
 					...postProcessAdLibActions(
-						context2,
 						blueprint.blueprintId,
 						rundown._id,
 						part._id,
@@ -662,10 +661,6 @@ export async function saveChangesForRundown(
 	const dbRundown = cache.Rundown.replace(dbRundownData)
 
 	// Save the baseline
-	const blueprintRundownContext = new CommonContext({
-		name: dbRundown.name,
-		identifier: `rundownId=${dbRundown._id}`,
-	})
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.timelineObjects.length} objects from baseline.`)
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
@@ -678,7 +673,6 @@ export async function saveChangesForRundown(
 				_id: getRandomId(7),
 				rundownId: dbRundown._id,
 				objects: postProcessRundownBaselineItems(
-					blueprintRundownContext,
 					showStyle.base.blueprintId,
 					rundownRes.baseline.timelineObjects
 				),
@@ -691,7 +685,6 @@ export async function saveChangesForRundown(
 			{},
 			postProcessAdLibPieces(
 				context,
-				blueprintRundownContext,
 				showStyle.base.blueprintId,
 				dbRundown._id,
 				undefined,
@@ -702,12 +695,7 @@ export async function saveChangesForRundown(
 			context,
 			baselineAdlibActions,
 			{},
-			postProcessGlobalAdLibActions(
-				blueprintRundownContext,
-				showStyle.base.blueprintId,
-				dbRundown._id,
-				rundownRes.globalActions || []
-			)
+			postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
 		)
 	)
 	if (anythingChanged(rundownBaselineChanges)) {

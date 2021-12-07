@@ -269,10 +269,7 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0)
 					return a.docsToRemove - b.docsToRemove
 				})
 
-				let totalCount = collections.reduce((memo: number, o) => {
-					return memo + o.docsToRemove
-				}, 0)
-
+				let totalCount = 0
 				const affectedCollections: string[] = []
 				_.each(results, (result) => {
 					totalCount += result.docsToRemove

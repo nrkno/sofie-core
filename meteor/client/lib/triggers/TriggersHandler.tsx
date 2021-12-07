@@ -348,9 +348,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		props.rundownPlaylistId,
 		props.currentRundownId,
 		props.currentPartId,
-		props.currentSegmentPartIds,
+		JSON.stringify(props.currentSegmentPartIds),
 		props.nextPartId,
-		props.nextSegmentPartIds,
+		JSON.stringify(props.nextSegmentPartIds),
 	])
 
 	const triggerSubReady = useSubscription(PubSub.triggeredActions, {
@@ -454,6 +454,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					})
 
 					return () => {
+						console.log('Preview cleanup!')
 						MountedAdLibTriggers.remove({
 							triggeredActionId: pair._id,
 						})
