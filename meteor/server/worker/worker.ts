@@ -1,7 +1,7 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { StudioJobFunc, getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import { IngestJobFunc, getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
-import { Queue, ConnectionOptions, QueueEvents, Job } from 'bullmq'
+import { Queue, QueueEvents, Job, RedisOptions } from 'bullmq'
 import { logger } from '../../lib/logging'
 import PLazy from 'p-lazy'
 import _ from 'underscore'
@@ -9,6 +9,7 @@ import { UserError } from '@sofie-automation/corelib/dist/error'
 import { Meteor } from 'meteor/meteor'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
+import { parseRedisEnvVariables } from '@sofie-automation/corelib/dist/redis'
 
 export interface JobTimings {
 	queueTime: number
@@ -25,9 +26,7 @@ export interface WorkerJob<TRes> {
 	// abort: () => Promise<boolean> // Attempt to abort the job. Returns whether it was successful
 }
 
-const connection: ConnectionOptions = {
-	// TODO: Worker
-}
+const connection: RedisOptions = parseRedisEnvVariables()
 
 const studioQueueCache = new Map<StudioId, [Queue, QueueEvents]>()
 const ingestQueueCache = new Map<StudioId, [Queue, QueueEvents]>()
@@ -195,7 +194,6 @@ async function pushJobToQueue<T>(
 	return {
 		complete: PLazy.from(async () => {
 			// lazily await the result
-			// TODO: Worker - should this error be re-wrapped?
 			const res = await completedPromise
 
 			if ('error' in res) {
@@ -208,7 +206,6 @@ async function pushJobToQueue<T>(
 		}),
 		getTimings: PLazy.from(async () => {
 			// lazily await the completion
-			// TODO: Worker - should this error be re-wrapped?
 			const result = await completedPromise
 			const result2 = _.pick(result, 'queueTime', 'startedTime', 'finishedTime', 'completedTime')
 

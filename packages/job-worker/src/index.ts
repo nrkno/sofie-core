@@ -8,6 +8,7 @@ import { createManualPromise, getRandomString, sleep } from '@sofie-automation/c
 import { StudioWorkerSet } from './workers/worker-set'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Db as MongoDb } from 'mongodb'
+import { parseRedisEnvVariables } from '@sofie-automation/corelib/dist/redis'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -15,9 +16,7 @@ logger.info('Starting ')
 
 const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
 const dbName = 'meteor'
-const connection: RedisOptions = {
-	// TODO: Worker - something here?
-}
+const connection: RedisOptions = parseRedisEnvVariables()
 
 /** Get the ids of the studios to run for */
 async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {

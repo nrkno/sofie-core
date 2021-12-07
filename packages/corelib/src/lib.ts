@@ -44,6 +44,10 @@ export function clone<T>(o: ReadonlyDeep<T> | Readonly<T> | T): T {
 	return fastClone(o as any)
 }
 
+/**
+ * Deeply freeze an object
+ * Note: This is done in place
+ */
 export function deepFreeze<T>(o: ReadonlyDeep<T> | Readonly<T> | T): ReadonlyDeep<T> {
 	// TODO: Worker - implement this
 	return o as any

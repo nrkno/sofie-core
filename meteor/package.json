@@ -122,6 +122,7 @@
 		"@types/css-font-loading-module": "0.0.4",
 		"@types/deep-extend": "0.4.31",
 		"@types/fibers": "3.1.0",
+		"@types/ioredis": "^4.28.2",
 		"@types/jest": "^26.0.24",
 		"@types/meteor": "1.4.47",
 		"@types/mongodb": "^3.6.20",
