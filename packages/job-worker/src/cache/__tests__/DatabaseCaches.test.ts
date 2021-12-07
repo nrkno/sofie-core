@@ -1,59 +1,69 @@
-import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
-import { waitTime, protectString } from '../../../lib/lib'
-import { CacheForStudio } from '../../api/studio/cache'
-import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
-
-// setLogLevel(LogLevel.INFO)
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { sleep } from '@sofie-automation/corelib/dist/lib'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { CacheForStudio } from '../../studio/cache'
+import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 
 describe('DatabaseCaches', () => {
+	let context: MockJobContext
 	beforeEach(async () => {
-		await setupDefaultStudioEnvironment()
+		context = setupDefaultJobEnvironment()
+
+		// setLogLevel(LogLevel.INFO)
 	})
 	describe('CacheForStudio', () => {
-		testInFiber('Insert, update & remove', async () => {
-			const studio = Studios.findOne() as Studio
-			expect(studio).toBeTruthy()
-
-			const added = jest.fn()
-			const changed = jest.fn()
-			const removed = jest.fn()
-			Timeline.find().observeChanges({
-				added,
-				changed,
-				removed,
-			})
+		test('Insert, update & remove', async () => {
+			const bulkWrite = jest.spyOn(context.directCollections.Timelines, 'bulkWrite')
 
 			let dbObj: TimelineComplete | undefined
-			const cache = await CacheForStudio.create(studio._id)
+			const cache = await CacheForStudio.create(context)
 
 			const id: StudioId = protectString('tewtDoc1')
 
 			// Insert a document:
 			cache.Timeline.insert({
 				_id: id,
-				timeline: [],
+				timelineBlob: protectString(''),
 				timelineHash: protectString('insert'),
+				generationVersions: {
+					core: '',
+					blueprintId: protectString(''),
+					blueprintVersion: '',
+					studio: '',
+				},
 				generated: 1234,
 			})
 			cache.Timeline.update(id, { $set: { timelineHash: protectString('insertthenupdate') } })
 
 			expect(cache.Timeline.findOne(id)).toBeTruthy()
-			expect(Timeline.findOne(id)).toBeFalsy()
+			await expect(context.directCollections.Timelines.findOne(id)).resolves.toBeFalsy()
 
-			waitTime(1) // to allow for observers to trigger
-			expect(added).toHaveBeenCalledTimes(0)
-			expect(changed).toHaveBeenCalledTimes(0)
-			expect(removed).toHaveBeenCalledTimes(0)
+			await sleep(1) // to allow for observers to trigger
+			expect(bulkWrite).toHaveBeenCalledTimes(0)
 
 			await cache.saveAllToDatabase()
-			waitTime(1) // to allow for observers to trigger
-			expect(added).toHaveBeenCalledTimes(1)
-			expect(changed).toHaveBeenCalledTimes(0) // the previous update should have been included in the insert
-			expect(removed).toHaveBeenCalledTimes(0)
-			added.mockClear()
-			dbObj = Timeline.findOne(id)
+			await sleep(1) // to allow for observers to trigger
+			{
+				expect(bulkWrite).toHaveBeenCalledTimes(1)
+				const ops = bulkWrite.mock.calls[0][0]
+				expect(ops).toHaveLength(1)
+				expect(ops[0]).toMatchObject({
+					replaceOne: {
+						filter: {
+							_id: id,
+						},
+						replacement: {
+							_id: id,
+							timelineHash: 'insertthenupdate',
+						},
+						upsert: true,
+					},
+				})
+			}
+
+			bulkWrite.mockClear()
+			dbObj = await context.directCollections.Timelines.findOne(id)
 			expect(dbObj).toMatchObject({ timelineHash: 'insertthenupdate' })
 
 			// Update a document:
@@ -66,102 +76,151 @@ describe('DatabaseCaches', () => {
 
 			await cache.saveAllToDatabase()
 
-			waitTime(1) // to allow for observers to trigger
-			expect(added).toHaveBeenCalledTimes(0)
-			expect(changed).toHaveBeenCalledTimes(1)
-			expect(removed).toHaveBeenCalledTimes(0)
-			changed.mockClear()
-			dbObj = Timeline.findOne(id)
+			await sleep(1) // to allow for observers to trigger
+			{
+				expect(bulkWrite).toHaveBeenCalledTimes(1)
+				const ops = bulkWrite.mock.calls[0][0]
+				expect(ops).toHaveLength(1)
+				expect(ops[0]).toMatchObject({
+					replaceOne: {
+						filter: {
+							_id: id,
+						},
+						replacement: {
+							_id: id,
+							timelineHash: 'updated',
+						},
+					},
+				})
+			}
+
+			bulkWrite.mockClear()
+			dbObj = await context.directCollections.Timelines.findOne(id)
 			expect(dbObj).toMatchObject({ timelineHash: 'updated' })
 
 			// Remove a document:
 			cache.Timeline.remove(id)
 
 			await cache.saveAllToDatabase()
-			waitTime(1) // to allow for observers to trigger
-			expect(added).toHaveBeenCalledTimes(0)
-			expect(changed).toHaveBeenCalledTimes(0)
-			expect(removed).toHaveBeenCalledTimes(1)
-			removed.mockClear()
-			expect(Timeline.findOne(id)).toBeFalsy()
+			await sleep(1) // to allow for observers to trigger
+			{
+				expect(bulkWrite).toHaveBeenCalledTimes(1)
+				const ops = bulkWrite.mock.calls[0][0]
+				expect(ops).toHaveLength(1)
+				expect(ops[0]).toMatchObject({
+					deleteMany: {
+						filter: {
+							_id: { $in: [id] },
+						},
+					},
+				})
+			}
+
+			bulkWrite.mockClear()
+			await expect(context.directCollections.Timelines.findOne(id)).resolves.toBeFalsy()
 		})
-		testInFiber('Multiple saves', async () => {
-			const studio = Studios.findOne() as Studio
-			expect(studio).toBeTruthy()
+		test('Multiple saves', async () => {
+			const bulkWrite = jest.spyOn(context.directCollections.Timelines, 'bulkWrite')
 
-			const added = jest.fn()
-			const changed = jest.fn()
-			const removed = jest.fn()
-			Timeline.find().observeChanges({
-				added,
-				changed,
-				removed,
-			})
-
-			const cache = await CacheForStudio.create(studio._id)
+			const cache = await CacheForStudio.create(context)
 
 			const id: StudioId = protectString('tewtDoc1')
 
 			// Insert a document:
 			cache.Timeline.insert({
 				_id: id,
-				timeline: [],
+				timelineBlob: protectString(''),
 				timelineHash: protectString('insert'),
+				generationVersions: {
+					core: '',
+					blueprintId: protectString(''),
+					blueprintVersion: '',
+					studio: '',
+				},
 				generated: 1234,
 			})
-			const deferFcn0 = jest.fn(() => {
-				expect(Timeline.findOne(id)).toBeFalsy()
+			const deferFcn0 = jest.fn(async () => {
+				await expect(context.directCollections.Timelines.findOne(id)).resolves.toBeFalsy()
 			})
-			const deferAfterSaveFcn0 = jest.fn(() => {
-				expect(Timeline.findOne(id)).toBeTruthy()
+			const deferAfterSaveFcn0 = jest.fn(async () => {
+				await expect(context.directCollections.Timelines.findOne(id)).resolves.toBeTruthy()
 			})
 			cache.defer(deferFcn0)
 			cache.deferAfterSave(deferAfterSaveFcn0)
 
-			expect(Timeline.findOne(id)).toBeFalsy()
+			await expect(context.directCollections.Timelines.findOne(id)).resolves.toBeFalsy()
 			await cache.saveAllToDatabase()
-			waitTime(1) // to allow for observers to trigger
-			expect(added).toHaveBeenCalledTimes(1)
-			expect(changed).toHaveBeenCalledTimes(0)
-			expect(removed).toHaveBeenCalledTimes(0)
-			expect(Timeline.findOne(id)).toBeTruthy()
+			await sleep(1) // to allow for observers to trigger
+			{
+				expect(bulkWrite).toHaveBeenCalledTimes(1)
+				const ops = bulkWrite.mock.calls[0][0]
+				expect(ops).toHaveLength(1)
+				expect(ops[0]).toMatchObject({
+					replaceOne: {
+						filter: {
+							_id: id,
+						},
+						replacement: {
+							_id: id,
+							timelineHash: 'insert',
+						},
+						upsert: true,
+					},
+				})
+			}
+			await expect(context.directCollections.Timelines.findOne(id)).resolves.toBeTruthy()
 			expect(deferFcn0).toHaveReturnedTimes(1)
 			expect(deferAfterSaveFcn0).toHaveReturnedTimes(1)
-			added.mockClear()
+			bulkWrite.mockClear()
 			deferFcn0.mockClear()
 			deferAfterSaveFcn0.mockClear()
 
 			// Running the save again should render no changes:
 			await cache.saveAllToDatabase()
-			waitTime(1) // to allow for observers to trigger
-			expect(added).toHaveBeenCalledTimes(0)
-			expect(changed).toHaveBeenCalledTimes(0)
-			expect(removed).toHaveBeenCalledTimes(0)
+			await sleep(1) // to allow for observers to trigger
+			expect(bulkWrite).toHaveBeenCalledTimes(0)
 			expect(deferFcn0).toHaveReturnedTimes(0)
 			expect(deferAfterSaveFcn0).toHaveReturnedTimes(0)
 
 			// Update the document:
 			cache.Timeline.update(id, { $set: { timelineHash: protectString('updated') } })
 			// add new defered functions:
-			const deferFcn1 = jest.fn(() => {
-				expect(Timeline.findOne(id)).toMatchObject({ timelineHash: protectString('insert') })
+			const deferFcn1 = jest.fn(async () => {
+				await expect(context.directCollections.Timelines.findOne(id)).resolves.toMatchObject({
+					timelineHash: protectString('insert'),
+				})
 			})
-			const deferAfterSaveFcn1 = jest.fn(() => {
-				expect(Timeline.findOne(id)).toMatchObject({ timelineHash: protectString('updated') })
+			const deferAfterSaveFcn1 = jest.fn(async () => {
+				await expect(context.directCollections.Timelines.findOne(id)).resolves.toMatchObject({
+					timelineHash: protectString('updated'),
+				})
 			})
 			cache.defer(deferFcn1)
 			cache.deferAfterSave(deferAfterSaveFcn1)
 
 			await cache.saveAllToDatabase()
-			waitTime(1) // to allow for observers to trigger
-			expect(added).toHaveBeenCalledTimes(0)
-			expect(changed).toHaveBeenCalledTimes(1)
-			expect(removed).toHaveBeenCalledTimes(0)
+			await sleep(1) // to allow for observers to trigger
+			{
+				expect(bulkWrite).toHaveBeenCalledTimes(1)
+				const ops = bulkWrite.mock.calls[0][0]
+				expect(ops).toHaveLength(1)
+				expect(ops[0]).toMatchObject({
+					replaceOne: {
+						filter: {
+							_id: id,
+						},
+						replacement: {
+							_id: id,
+							timelineHash: 'updated',
+						},
+					},
+				})
+			}
 			expect(deferFcn0).toHaveReturnedTimes(0)
 			expect(deferAfterSaveFcn0).toHaveReturnedTimes(0)
 			expect(deferFcn1).toHaveReturnedTimes(1)
 			expect(deferAfterSaveFcn1).toHaveReturnedTimes(1)
-			changed.mockClear()
+			bulkWrite.mockClear()
 			deferFcn1.mockClear()
 			deferAfterSaveFcn1.mockClear()
 
@@ -169,54 +228,47 @@ describe('DatabaseCaches', () => {
 			cache.Timeline.remove(id)
 
 			await cache.saveAllToDatabase()
-			waitTime(1) // to allow for observers to trigger
-			expect(added).toHaveBeenCalledTimes(0)
-			expect(changed).toHaveBeenCalledTimes(0)
-			expect(removed).toHaveBeenCalledTimes(1)
+			await sleep(1) // to allow for observers to trigger
+			{
+				expect(bulkWrite).toHaveBeenCalledTimes(1)
+				const ops = bulkWrite.mock.calls[0][0]
+				expect(ops).toHaveLength(1)
+				expect(ops[0]).toMatchObject({
+					deleteMany: {
+						filter: {
+							_id: { $in: [id] },
+						},
+					},
+				})
+			}
 			expect(deferFcn0).toHaveReturnedTimes(0)
 			expect(deferAfterSaveFcn0).toHaveReturnedTimes(0)
 			expect(deferFcn1).toHaveReturnedTimes(0)
 			expect(deferAfterSaveFcn1).toHaveReturnedTimes(0)
 		})
 
-		testInFiber('Assert no changes', async () => {
-			const studio = Studios.findOne() as Studio
-			expect(studio).toBeTruthy()
-
-			const added = jest.fn()
-			const changed = jest.fn()
-			const removed = jest.fn()
-			Timeline.find().observeChanges({
-				added,
-				changed,
-				removed,
-			})
-
+		test('Assert no changes', async () => {
 			{
-				const cache = await CacheForStudio.create(studio._id)
-
-				const cachedStudio = context.studio
-				expect(cachedStudio).toMatchObject(studio)
-
-				cache.assertNoChanges() // this shouldn't throw
-				expect(true).toBeTruthy()
-			}
-
-			{
-				const cache = await CacheForStudio.create(studio._id)
+				const cache = await CacheForStudio.create(context)
 				const id: StudioId = protectString('myPlaylist0')
 
 				// Insert a document:
 				cache.Timeline.insert({
 					_id: id,
-					timeline: [],
+					timelineBlob: protectString(''),
 					timelineHash: protectString('insert'),
+					generationVersions: {
+						core: '',
+						blueprintId: protectString(''),
+						blueprintVersion: '',
+						studio: '',
+					},
 					generated: 1234,
 				})
 				cache.Timeline.update(id, { $set: { timelineHash: protectString('insertthenupdate') } })
 
 				expect(cache.Timeline.findOne(id)).toBeTruthy()
-				expect(Timeline.findOne(id)).toBeFalsy()
+				await expect(context.directCollections.Timelines.findOne(id)).resolves.toBeFalsy()
 
 				expect(() => {
 					cache.assertNoChanges()
@@ -224,10 +276,12 @@ describe('DatabaseCaches', () => {
 			}
 
 			{
-				const cache = await CacheForStudio.create(studio._id)
+				const cache = await CacheForStudio.create(context)
 
 				// Insert a document:
-				cache.defer(() => {})
+				cache.defer(() => {
+					//
+				})
 
 				expect(() => {
 					cache.assertNoChanges()
@@ -235,10 +289,12 @@ describe('DatabaseCaches', () => {
 			}
 
 			{
-				const cache = await CacheForStudio.create(studio._id)
+				const cache = await CacheForStudio.create(context)
 
 				// Insert a document:
-				cache.deferAfterSave(() => {})
+				cache.deferAfterSave(() => {
+					//
+				})
 
 				expect(() => {
 					cache.assertNoChanges()

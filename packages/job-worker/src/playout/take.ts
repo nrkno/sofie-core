@@ -368,11 +368,15 @@ export async function afterTake(
 		// This is low-prio, defer so that it's executed well after publications has been updated,
 		// so that the playout gateway has haf the chance to learn about the timeline changes
 		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
-			await context.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
-				rundownId: takePartInstance.rundownId,
-				isRehearsal: !!cache.Playlist.doc.rehearsal,
-				partExternalId: takePartInstance.part.externalId,
-			})
+			context
+				.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
+					rundownId: takePartInstance.rundownId,
+					isRehearsal: !!cache.Playlist.doc.rehearsal,
+					partExternalId: takePartInstance.part.externalId,
+				})
+				.catch((e) => {
+					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
+				})
 		}
 	})
 

@@ -164,11 +164,15 @@ export async function deactivateRundownPlaylistInner(
 		rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 
 		cache.deferAfterSave(async () => {
-			await context.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
-				rundownId: currentPartInstance.rundownId,
-				isRehearsal: !!cache.Playlist.doc.rehearsal,
-				partExternalId: null,
-			})
+			context
+				.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
+					rundownId: currentPartInstance.rundownId,
+					isRehearsal: !!cache.Playlist.doc.rehearsal,
+					partExternalId: null,
+				})
+				.catch((e) => {
+					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
+				})
 		})
 	} else if (nextPartInstance) {
 		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)

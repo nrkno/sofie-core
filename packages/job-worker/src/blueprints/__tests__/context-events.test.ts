@@ -413,7 +413,7 @@ describe('Test blueprint api context', () => {
 			const sessions: ABSessionInfo[] = (context as any)._knownSessions
 			expect(sessions).toBeTruthy()
 
-			return sessions.map((s) => _.omit(s, 'keep'))
+			return sessions.map((s) => _.omit<ABSessionInfo & { keep?: boolean }, 'keep'>(s, 'keep'))
 		}
 		// function overwriteKnownSessions(context: TimelineEventContext, sessions: ABSessionInfo[]): void {
 		// 	const context2 = context as any
