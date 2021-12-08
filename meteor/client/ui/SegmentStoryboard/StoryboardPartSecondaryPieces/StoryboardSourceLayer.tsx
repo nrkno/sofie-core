@@ -31,60 +31,65 @@ function usePlayedOutPieceState(
 	partInstanceStoppedPlayback: number | undefined,
 	piecesOnLayer: PieceExtended[]
 ) {
-	return useInvalidateTimeout(
-		() => {
-			if (partInstanceStartedPlayback === undefined) {
-				return [EMPTY_PLAYED_PIECE_IDS, ONCE_A_MINUTE + Math.random() * 1000]
+	return useInvalidateTimeout(() => {
+		if (partInstanceStartedPlayback === undefined) {
+			return [EMPTY_PLAYED_PIECE_IDS, ONCE_A_MINUTE + Math.random() * 1000]
+		}
+
+		const playedPieceIds: PieceInstanceId[] = []
+		const finishedPieceIds: PieceInstanceId[] = []
+
+		const startedPlayback = partInstanceStartedPlayback
+		const stoppedPlayback = partInstanceStoppedPlayback ?? Number.POSITIVE_INFINITY
+		let closestAbsoluteNext = Number.POSITIVE_INFINITY
+
+		// the pieces are in anti-chronological order for conveniece elsewhere, so we need to go from the end
+		// of the array
+		for (let i = piecesOnLayer.length - 1; i >= 0; i--) {
+			const piece = piecesOnLayer[i]
+
+			if (piece.renderedInPoint === null) continue
+
+			const absoluteRenderedInPoint = startedPlayback + piece.renderedInPoint
+			if (absoluteRenderedInPoint < getCurrentTime() && absoluteRenderedInPoint < stoppedPlayback) {
+				playedPieceIds.push(piece.instance._id)
+			} else {
+				if (absoluteRenderedInPoint < closestAbsoluteNext) {
+					closestAbsoluteNext = absoluteRenderedInPoint
+				}
 			}
 
-			const playedPieceIds: PieceInstanceId[] = []
-			const finishedPieceIds: PieceInstanceId[] = []
+			if (piece.renderedDuration === null) continue
 
-			const startedPlayback = partInstanceStartedPlayback
-			const stoppedPlayback = partInstanceStoppedPlayback ?? Number.POSITIVE_INFINITY
-			let closestAbsoluteNext = Number.POSITIVE_INFINITY
-
-			piecesOnLayer.forEach((piece) => {
-				if (piece.renderedInPoint === null) return
-				const absoluteRenderedInPoint = startedPlayback + piece.renderedInPoint
-				if (absoluteRenderedInPoint < getCurrentTime() && absoluteRenderedInPoint < stoppedPlayback) {
-					playedPieceIds.push(piece.instance._id)
-				} else {
-					if (absoluteRenderedInPoint < closestAbsoluteNext) {
-						closestAbsoluteNext = absoluteRenderedInPoint
-					}
+			const absoluteRenderedOutPoint = absoluteRenderedInPoint + piece.renderedDuration
+			if (absoluteRenderedOutPoint < getCurrentTime() && absoluteRenderedOutPoint < stoppedPlayback) {
+				finishedPieceIds.push(piece.instance._id)
+			} else {
+				if (absoluteRenderedOutPoint < closestAbsoluteNext) {
+					closestAbsoluteNext = absoluteRenderedOutPoint
 				}
-				if (piece.renderedDuration === null) return
-				if (
-					absoluteRenderedInPoint + piece.renderedDuration < getCurrentTime() &&
-					absoluteRenderedInPoint + piece.renderedDuration < stoppedPlayback
-				) {
-					finishedPieceIds.push(piece.instance._id)
-				}
-			})
+			}
+		}
 
-			return [
-				{
-					playedPieceIds,
-					finishedPieceIds,
-				},
-				Number.isFinite(closestAbsoluteNext)
-					? // the next closest change is in that time, so let's wait until then
-					  closestAbsoluteNext - getCurrentTime()
-					: // if all Pieces are finished, we can stop updating, because piecesOnLayer will change anyway if
-					// anything happens to the Pieces
-					finishedPieceIds.length === piecesOnLayer.length
-					? 0
-					: // the part has stopped playing, so we can stop checking
-					Number.isFinite(stoppedPlayback)
-					? 0
-					: // essentially a fallback, we shouldn't hit this condition ever
-					  1000,
-			]
-		},
-		1000,
-		[partInstanceStartedPlayback, partInstanceStoppedPlayback, piecesOnLayer]
-	)
+		return [
+			{
+				playedPieceIds,
+				finishedPieceIds,
+			},
+			// the part has stopped playing, so we can stop checking
+			Number.isFinite(stoppedPlayback)
+				? 0
+				: Number.isFinite(closestAbsoluteNext)
+				? // the next closest change is in that time, so let's wait until then
+				  Math.max(1, closestAbsoluteNext - getCurrentTime() + 100)
+				: // if all Pieces are finished, we can stop updating, because piecesOnLayer will change anyway if
+				// anything happens to the Pieces
+				finishedPieceIds.length === piecesOnLayer.length
+				? 0
+				: // essentially a fallback, we shouldn't hit this condition ever
+				  10000 + Math.random() * 1000,
+		]
+	}, [partInstanceStartedPlayback, partInstanceStoppedPlayback, piecesOnLayer])
 }
 
 const ONCE_A_MINUTE = 60000
@@ -104,15 +109,23 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 						piece.instance.piece.virtual !== true &&
 						piece.sourceLayer?._id === sourceLayer._id
 				)
-				.slice()
 				.reverse(),
 		[pieces]
 	)
-	const { playedPieceIds: _p, finishedPieceIds: finishedIds } = usePlayedOutPieceState(
+
+	const playedOutState = usePlayedOutPieceState(
 		part?.instance.timings?.startedPlayback,
 		part?.instance.timings?.stoppedPlayback,
 		piecesOnLayer
 	)
+
+	let playingIds: PieceInstanceId[] = []
+	let finishedIds: PieceInstanceId[] = []
+
+	if (playedOutState) {
+		playingIds = playedOutState.playedPieceIds
+		finishedIds = playedOutState.finishedPieceIds
+	}
 
 	const pieceCount = piecesOnLayer.length - finishedIds.length
 
@@ -153,7 +166,14 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 									isLiveLine={false}
 									layer={sourceLayer}
 									partId={partId}
-									className={topmostPieceIndex === index ? 'segment-storyboard__part__piece--frontmost' : ''}
+									className={classNames({
+										'segment-storyboard__part__piece--frontmost': topmostPieceIndex === index,
+										'segment-storyboard__part__piece--playing':
+											piece.renderedDuration !== null && playingIds.includes(piece.instance._id),
+									})}
+									style={{
+										animationDuration: `${piece.renderedDuration}ms`,
+									}}
 								/>
 							)}
 						</StudioContext.Consumer>

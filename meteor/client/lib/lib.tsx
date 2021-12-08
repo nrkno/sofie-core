@@ -91,44 +91,47 @@ export function useCombinedRefs<T>(initial, ...refs: MutableRef<T>[]) {
  * A reactive hook that will turn the return value of `func` to a state and re-evaluate `func` on an interval `interval`.
  * `func` returns a Tuple: a value that is the state and the timespan until next re-validation.
  *
- * The initial value of the state is either set to `initialValue` or, if not provided, `func` will be ran synchronously once
- * to get the initial state.
+ * `func` will be ran synchronously once to get the initial state.
  *
  * Like with any hook, dependencies need to be declared. If the dependencies change, the entire hook is invalidated and the
  * state will start from the initial value.
  *
  * @template K
  * @param {() => [K, number?]} func
- * @param {number} interval the interval at which `func` is to be re-evaluated
  * @param {any[]} [deps] external values `func` depends on. Uses same rules as `useEffect`.
- * @param {K} [initialValue] the initial value for the state
  * @return {K} the current value of the state
  */
-export function useInvalidateTimeout<K>(func: () => [K, number?], interval: number, deps?: any[], initialValue?: K): K {
-	const [value, setValue] = useState(initialValue ?? func()[0])
+export function useInvalidateTimeout<K>(func: () => [K, number], deps: any[]): K | null {
+	const [value, setValue] = useState<K | null>(null)
 	const invalidateHandle = useRef<number | null>(null)
 
 	useEffect(() => {
 		const reevaluate = () => {
 			const [newValue, revalidateIn] = func()
-			if (!_.isEqual(newValue, value)) {
-				setValue(newValue)
-			}
-			if (revalidateIn !== 0) {
-				invalidateHandle.current = Meteor.setTimeout(reevaluate, revalidateIn ?? interval)
+			if (revalidateIn > 0) {
+				invalidateHandle.current = Meteor.setTimeout(reevaluate, timeout)
 			} else {
 				invalidateHandle.current = null
 			}
+			if (!_.isEqual(newValue, value)) {
+				setValue(newValue)
+			}
 		}
 
-		invalidateHandle.current = Meteor.setTimeout(reevaluate, interval)
+		const [mountValue, timeout] = func()
+		setValue(mountValue)
+
+		if (timeout > 0) {
+			invalidateHandle.current = Meteor.setTimeout(reevaluate, timeout)
+		}
 
 		return () => {
 			if (invalidateHandle.current !== null) {
 				Meteor.clearTimeout(invalidateHandle.current)
+				invalidateHandle.current = null
 			}
 		}
-	}, [value, interval, ...(deps || [])])
+	}, [...deps])
 
 	return value
 }

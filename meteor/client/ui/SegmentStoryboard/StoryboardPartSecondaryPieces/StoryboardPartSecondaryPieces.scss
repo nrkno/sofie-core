@@ -39,6 +39,35 @@ $source-layer-margin: 0.2rem;
 			&--frontmost {
 				filter: none;
 			}
+
+			&--playing {
+				@keyframes segment-storyboard__part__piece--playout {
+					0% {
+						width: 0;
+					}
+					100% {
+						width: 100%;
+					}
+				}
+
+				&::after {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0;
+					left: 0;
+					bottom: 0;
+					width: 0;
+					animation-name: segment-storyboard__part__piece--playout;
+					animation-fill-mode: both;
+					animation-iteration-count: 1;
+					animation-direction: normal;
+					animation-timing-function: linear;
+					animation-duration: inherit;
+
+					background-color: rgba(255, 255, 255, 0.3);
+				}
+			}
 		}
 	}
 }
@@ -63,6 +92,11 @@ $source-layer-margin: 0.2rem;
 
 	@include item-type-colors();
 	@include missing-overlay();
+
+	&.disabled {
+		background: $segment-item-disabled-background;
+		color: #fff;
+	}
 
 	&:last-child {
 		margin-right: 0;
