@@ -58,7 +58,6 @@ function usePlayedOutPieceState(
 			} else {
 				if (absoluteRenderedInPoint < closestAbsoluteNext) {
 					closestAbsoluteNext = absoluteRenderedInPoint
-					console.log('closest', piece.instance.piece.name, 'in', closestAbsoluteNext - getCurrentTime())
 				}
 			}
 
@@ -70,7 +69,6 @@ function usePlayedOutPieceState(
 			} else {
 				if (absoluteRenderedOutPoint < closestAbsoluteNext) {
 					closestAbsoluteNext = absoluteRenderedOutPoint
-					console.log('closest', piece.instance.piece.name, 'out', closestAbsoluteNext - getCurrentTime())
 				}
 			}
 		}
