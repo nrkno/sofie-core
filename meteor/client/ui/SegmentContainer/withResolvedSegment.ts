@@ -28,6 +28,7 @@ import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
 import { getMinimumReactivePieceNotesForPart } from './getMinimumReactivePieceNotesForPart'
+import { SegmentViewMode } from './SegmentViewModes'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -70,6 +71,7 @@ export interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
+	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean

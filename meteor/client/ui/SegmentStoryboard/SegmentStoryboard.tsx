@@ -33,6 +33,7 @@ import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerL
 import { SegmentScrollbar } from './SegmentScrollbar'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
+import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -69,6 +70,7 @@ interface IProps {
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
+	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
 	budgetDuration?: number
@@ -516,6 +518,7 @@ export const SegmentStoryboard = React.memo(
 						<h2
 							className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
 							data-identifier={props.segment.identifier}
+							onDoubleClick={() => props.onSwitchViewMode(SegmentViewMode.TIMELINE)}
 						>
 							{props.segment.name}
 						</h2>

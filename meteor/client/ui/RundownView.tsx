@@ -113,6 +113,8 @@ import { BucketAdLibItem } from './Shelf/RundownViewBuckets'
 import { IAdLibListItem } from './Shelf/AdLibListItem'
 import { ShelfDashboardLayout } from './Shelf/ShelfDashboardLayout'
 import { SegmentStoryboardContainer } from './SegmentStoryboard/SegmentStoryboardContainer'
+import { SegmentViewMode } from './SegmentContainer/SegmentViewModes'
+import { UIStateStorage } from '../lib/UIStateStorage'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1116,6 +1118,7 @@ interface IState {
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
+	segmentViewModes: Record<string, SegmentViewMode>
 }
 
 type MatchedSegment = {
@@ -1333,6 +1336,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				miniShelfLayout: undefined,
 				currentRundown: undefined,
 				wasShelfResizedByUser: false,
+				segmentViewModes: UIStateStorage.getItemRecord(`rundownView.${props.playlistId}`, `segmentViewModes`, {}),
 			}
 		}
 
@@ -1998,6 +2002,28 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		onSwitchViewMode = (segmentId: SegmentId, viewMode: SegmentViewMode) => {
+			if (!this.props.playlist) {
+				return
+			}
+			this.setState(
+				{
+					segmentViewModes: {
+						...this.state.segmentViewModes,
+						[unprotectString(segmentId)]: viewMode,
+					},
+				},
+				() => {
+					if (!this.props.playlistId) return
+					UIStateStorage.setItem(
+						`rundownView.${this.props.playlistId}`,
+						`segmentViewModes`,
+						this.state.segmentViewModes
+					)
+				}
+			)
+		}
+
 		renderSegmentComponent(
 			index: number,
 			segment: DBSegment,
@@ -2012,7 +2038,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			segmentIdsBeforeSegment: Set<SegmentId>,
 			rundownIdsBefore: RundownId[]
 		) {
-			return localStorage.getItem('useStoryboard') === '1' && (index + 1) % 3 !== 0 ? ( // TODO: This is just a temporary switch
+			return localStorage.getItem('useStoryboard') === '1' &&
+				this.state.segmentViewModes[unprotectString(segment._id)] === SegmentViewMode.STORYBOARD ? ( // TODO: This is just a temporary switch
 				<SegmentStoryboardContainer
 					id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 					studio={studio}
@@ -2033,6 +2060,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					onPieceClick={this.onSelectPiece}
 					onPieceDoubleClick={this.onPieceDoubleClick}
 					onHeaderNoteClick={this.onHeaderNoteClick}
+					onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
 					ownCurrentPartInstance={ownCurrentPartInstance}
 					ownNextPartInstance={ownNextPartInstance}
 					isFollowingOnAirSegment={isFollowingOnAirSegment}
@@ -2060,6 +2088,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					onPieceClick={this.onSelectPiece}
 					onPieceDoubleClick={this.onPieceDoubleClick}
 					onHeaderNoteClick={this.onHeaderNoteClick}
+					onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
 					ownCurrentPartInstance={ownCurrentPartInstance}
 					ownNextPartInstance={ownNextPartInstance}
 					isFollowingOnAirSegment={isFollowingOnAirSegment}

@@ -690,6 +690,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 						onFollowLiveLine={this.onFollowLiveLine}
 						onShowEntireSegment={this.onShowEntireSegment}
 						onZoomChange={this.onZoomChange}
+						onSwitchViewMode={this.props.onSwitchViewMode}
 						onScroll={this.onScroll}
 						isLastSegment={this.props.isLastSegment}
 						lastValidPartIndex={this.props.lastValidPartIndex}

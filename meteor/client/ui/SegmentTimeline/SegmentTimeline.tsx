@@ -41,6 +41,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 
 interface IProps {
 	id: string
@@ -79,6 +80,7 @@ interface IProps {
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
+	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
@@ -1011,6 +1013,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					<h2
 						className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '')}
 						data-identifier={this.props.segment.identifier}
+						onDoubleClick={() => this.props.onSwitchViewMode(SegmentViewMode.STORYBOARD)}
 					>
 						{this.props.segment.name}
 					</h2>
