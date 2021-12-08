@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import { ISourceLayerExtended, PartExtended, PieceExtended } from '../../../../lib/Rundown'
@@ -7,6 +7,8 @@ import { StoryboardSecondaryPiece } from './StoryboardSecondaryPiece'
 import { PieceInstanceId } from '../../../../lib/collections/PieceInstances'
 import { getCurrentTime } from '../../../../lib/lib'
 import { useInvalidateTimeout } from '../../../lib/lib'
+import { Meteor } from 'meteor/meteor'
+import { HOVER_TIMEOUT } from '../../Shelf/DashboardPieceButton'
 
 interface IProps {
 	sourceLayer: ISourceLayerExtended
@@ -56,6 +58,7 @@ function usePlayedOutPieceState(
 			} else {
 				if (absoluteRenderedInPoint < closestAbsoluteNext) {
 					closestAbsoluteNext = absoluteRenderedInPoint
+					console.log('closest', piece.instance.piece.name, 'in', closestAbsoluteNext - getCurrentTime())
 				}
 			}
 
@@ -67,6 +70,7 @@ function usePlayedOutPieceState(
 			} else {
 				if (absoluteRenderedOutPoint < closestAbsoluteNext) {
 					closestAbsoluteNext = absoluteRenderedOutPoint
+					console.log('closest', piece.instance.piece.name, 'out', closestAbsoluteNext - getCurrentTime())
 				}
 			}
 		}
@@ -76,12 +80,12 @@ function usePlayedOutPieceState(
 				playedPieceIds,
 				finishedPieceIds,
 			},
-			// the part has stopped playing, so we can stop checking
-			Number.isFinite(stoppedPlayback)
-				? 0
-				: Number.isFinite(closestAbsoluteNext)
+			Number.isFinite(closestAbsoluteNext)
 				? // the next closest change is in that time, so let's wait until then
-				  Math.max(1, closestAbsoluteNext - getCurrentTime() + 100)
+				  Math.max(1, closestAbsoluteNext - getCurrentTime() + 150)
+				: // the part has stopped playing, so we can stop checking
+				Number.isFinite(stoppedPlayback)
+				? 0
 				: // if all Pieces are finished, we can stop updating, because piecesOnLayer will change anyway if
 				// anything happens to the Pieces
 				finishedPieceIds.length === piecesOnLayer.length
@@ -93,10 +97,12 @@ function usePlayedOutPieceState(
 }
 
 const ONCE_A_MINUTE = 60000
-
 const EMPTY_PLAYED_PIECE_IDS = { playedPieceIds: [], finishedPieceIds: [] }
 
 export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
+	const [hoverIndex, setHoverIndex] = useState<number | null>(null)
+	const hoverTimeout = useRef<number | null>(null)
+
 	const partId = part?.partId
 
 	const piecesOnLayer = useMemo(
@@ -111,6 +117,11 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 				)
 				.reverse(),
 		[pieces]
+	)
+
+	const nonInfinitePieceCount = useMemo(
+		() => piecesOnLayer.filter((piece) => piece.renderedDuration !== null).length,
+		[piecesOnLayer]
 	)
 
 	const playedOutState = usePlayedOutPieceState(
@@ -135,12 +146,47 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 	const lastFinished = piecesOnLayer.find((pieceInstance) => finishedIds.includes(pieceInstance.instance._id))
 	const topmostPieceIndex = lastFinished ? piecesOnLayer.indexOf(lastFinished) - 1 : piecesOnLayer.length - 1
 
+	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerType === 'mouse') {
+			hoverTimeout.current = Meteor.setTimeout(() => setHoverIndex(null), HOVER_TIMEOUT)
+		}
+	}
+
+	const clearHoverTimeout = () => {
+		if (hoverTimeout.current) {
+			Meteor.clearTimeout(hoverTimeout.current)
+			hoverTimeout.current = null
+		}
+	}
+
+	const onPointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerType === 'mouse') {
+			clearHoverTimeout()
+			setHoverIndex(null)
+		}
+	}
+
+	const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerType === 'mouse') {
+			clearHoverTimeout()
+			hoverTimeout.current = Meteor.setTimeout(() => setHoverIndex(null), HOVER_TIMEOUT)
+		}
+	}
+
+	useEffect(() => {
+		return () => clearHoverTimeout()
+	}, [])
+
 	return (
 		<div
 			className={classNames('segment-storyboard__part__source-layer', {
-				'segment-storyboard__part__source-layer--multiple-piece': piecesOnLayer.length > 1,
+				'segment-storyboard__part__source-layer--multiple-piece': nonInfinitePieceCount > 0,
+				hover: hoverIndex !== null,
 			})}
 			data-obj-id={sourceLayer._id}
+			onPointerEnter={onPointerEnter}
+			onPointerLeave={onPointerLeave}
+			onPointerMove={onPointerMove}
 		>
 			{piecesOnLayer.map((piece, index) => {
 				const isFinished = finishedIds.includes(piece.instance._id)
@@ -167,13 +213,22 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 									layer={sourceLayer}
 									partId={partId}
 									className={classNames({
-										'segment-storyboard__part__piece--frontmost': topmostPieceIndex === index,
+										'segment-storyboard__part__piece--frontmost':
+											hoverIndex !== null ? hoverIndex === index : topmostPieceIndex === index,
 										'segment-storyboard__part__piece--playing':
 											piece.renderedDuration !== null && playingIds.includes(piece.instance._id),
+										hover: index === hoverIndex,
 									})}
 									style={{
 										animationDuration: `${piece.renderedDuration}ms`,
+										zIndex:
+											hoverIndex !== null
+												? index <= hoverIndex
+													? piecesOnLayer.length + index
+													: piecesOnLayer.length - index
+												: undefined,
 									}}
+									onPointerEnter={() => setHoverIndex(index)}
 								/>
 							)}
 						</StudioContext.Consumer>

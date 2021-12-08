@@ -22,6 +22,8 @@ interface IProps {
 	studio: Studio | undefined
 	className?: string
 	style?: React.CSSProperties
+	onPointerEnter?: React.EventHandler<React.PointerEvent<HTMLDivElement>>
+	onPointerLeave?: React.EventHandler<React.PointerEvent<HTMLDivElement>>
 }
 
 function renderPieceInside(
@@ -60,7 +62,14 @@ type MousePagePosition = { pageX: number; pageY: number }
 export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(function StoryboardSecondaryPiece(
 	props: IProps
 ) {
-	const { piece, partId, style, className } = props
+	const {
+		piece,
+		partId,
+		style,
+		className,
+		onPointerEnter: onPointerEnterCallback,
+		onPointerLeave: onPointerLeaveCallback,
+	} = props
 	const [highlight] = useState(false)
 	const element = useRef<HTMLDivElement>(null)
 	const [hovering, setHovering] = useState<MousePagePosition | null>(null)
@@ -85,10 +94,14 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 			left: offset.left,
 			width,
 		})
+
+		if (onPointerEnterCallback) onPointerEnterCallback(e)
 	}
 
-	const onPointerLeave = () => {
+	const onPointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
 		setHovering(null)
+
+		if (onPointerLeaveCallback) onPointerLeaveCallback(e)
 	}
 
 	return (
