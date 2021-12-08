@@ -18,7 +18,8 @@
 		"validate:release:meteor": "cd meteor && meteor npm run validate:prod-dependencies && meteor npm run license-validate && meteor npm run lint && meteor npm run test",
 		"validate:release:packages": "cd packages && yarn validate:dependencies && yarn lint && yarn test",
 		"meteor": "cd meteor && meteor",
-		"reset": "meteor node scripts/reset.js"
+		"reset": "meteor node scripts/reset.js",
+		"docs:serve": "cd packages && yarn docs:serve"
 	},
 	"devDependencies": {
 		"rimraf": "^3.0.2"
