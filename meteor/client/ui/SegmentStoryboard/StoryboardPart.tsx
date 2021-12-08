@@ -136,8 +136,10 @@ export function StoryboardPart({
 			) : (
 				<>
 					<div className="segment-storyboard__part__thumbnail segment-storyboard__part__thumbnail--placeholder"></div>
-					<div className="segment-storyboard__part__output-group segment-storyboard__part__output-group--placeholder"></div>
-					<div className="segment-storyboard__part__output-group segment-storyboard__part__output-group--placeholder"></div>
+					<div className="segment-storyboard__part__secondary-pieces">
+						<div className="segment-storyboard__part__output-group segment-storyboard__part__output-group--placeholder"></div>
+						<div className="segment-storyboard__part__output-group segment-storyboard__part__output-group--placeholder"></div>
+					</div>
 				</>
 			)}
 			{isInvalid ? <div className="segment-storyboard__part__invalid-cover"></div> : null}

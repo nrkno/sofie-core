@@ -289,6 +289,14 @@ $part-left-right-padding: 0.3rem;
 			visibility: hidden;
 			opacity: 0;
 		}
+
+		/* Only child */
+		&:first-child:last-child {
+			> .segment-storyboard__part-timer {
+				visibility: visible;
+				opacity: 1;
+			}
+		}
 	}
 
 	&.hover {
