@@ -36,7 +36,6 @@ import {
 	getRandomId,
 	applyToArray,
 	protectString,
-	waitForPromise,
 	normalizeArrayToMapFunc,
 	stringifyError,
 } from '../../../lib/lib'
@@ -130,11 +129,9 @@ export async function updateStudioTimeline(cache: CacheForStudio | CacheForPlayo
 
 	const studioBlueprint = await loadStudioBlueprint(studio)
 	if (studioBlueprint) {
-		const watchedPackages = waitForPromise(
-			WatchedPackagesHelper.create(studio._id, {
-				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
-			})
-		)
+		const watchedPackages = await WatchedPackagesHelper.create(studio._id, {
+			fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,
+		})
 
 		const blueprint = studioBlueprint.blueprint
 		try {
