@@ -1336,7 +1336,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				miniShelfLayout: undefined,
 				currentRundown: undefined,
 				wasShelfResizedByUser: false,
-				segmentViewModes: UIStateStorage.getItemRecord(`rundownView.${props.playlistId}`, `segmentViewModes`, {}),
+				segmentViewModes: this.props.playlist?._id
+					? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
+					: {},
 			}
 		}
 
@@ -1711,6 +1713,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 
 			if (
+				(this.props.playlist && prevProps.playlist === undefined) ||
+				(this.props.playlist && prevProps.playlist && this.props.playlist._id !== prevProps.playlist._id)
+			) {
+				this.setState({
+					segmentViewModes: this.props.playlist?._id
+						? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
+						: {},
+				})
+			}
+
+			if (
 				typeof this.props.playlist !== typeof prevProps.playlist ||
 				(this.props.playlist || { name: '' }).name !== (prevProps.playlist || { name: '' }).name
 			) {
@@ -2003,20 +2016,18 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onSwitchViewMode = (segmentId: SegmentId, viewMode: SegmentViewMode) => {
-			if (!this.props.playlist) {
-				return
-			}
+			if (!this.props.playlist?._id) return
 			this.setState(
-				{
+				(state) => ({
 					segmentViewModes: {
-						...this.state.segmentViewModes,
+						...state.segmentViewModes,
 						[unprotectString(segmentId)]: viewMode,
 					},
-				},
+				}),
 				() => {
-					if (!this.props.playlistId) return
+					if (!this.props.playlist?._id) return
 					UIStateStorage.setItem(
-						`rundownView.${this.props.playlistId}`,
+						`rundownView.${this.props.playlist._id}`,
 						`segmentViewModes`,
 						this.state.segmentViewModes
 					)
