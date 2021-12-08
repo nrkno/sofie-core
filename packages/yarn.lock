@@ -4125,27 +4125,27 @@ at-least-node@^1.0.0:
   resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
-atem-connection@^2.3.0:
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.3.1.tgz#9341ba8095b692cbd7608becf6898486274b67d6"
-  integrity sha512-lw0k0uYDt+Ljf/w4zAEdQSI0g4/FZkFKEsohcYaliotH2rtkRMXkbfHbtQ9e/f8SIdZN4VikJBBeAkHqApi0GA==
+atem-connection@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/atem-connection/-/atem-connection-2.4.0.tgz#bcaf5713e6a3f64be45583bf98b0c294255b7f86"
+  integrity sha512-/D+fWWRrCcxzfCbSdUMT00nCR/S8xCwFTSE6oqFkFSb0mtxgCORs8WKMF0KZddPPuUU2S/4ZfR+Oh53Hm/d/jQ==
   dependencies:
-    big-integer "^1.6.48"
+    big-integer "^1.6.51"
     eventemitter3 "^4.0.4"
-    exit-hook "^2.0.0"
+    exit-hook "^2.2.1"
     nanotimer "^0.3.15"
     threadedclass "^0.8.0"
     tslib "^1.13.0"
     wavefile "^8.4.4"
 
-atem-state@0.12.2-nightly-latest-20211007-163338-78e7dca.0:
-  version "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
-  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.2-nightly-latest-20211007-163338-78e7dca.0.tgz#c49f99a9ef81e3367148f18d97c93da379097b7b"
-  integrity sha512-OMVT3mU4ZJgV2oj4x68xLiYT2NlNX/+GhQMURirkKSuQwlqlT5kH4Rbtmh/ZIeKH+fOpyWdOluRI7DSMMhx9qg==
+atem-state@^0.12.2:
+  version "0.12.2"
+  resolved "https://registry.yarnpkg.com/atem-state/-/atem-state-0.12.2.tgz#40a97b77d32ed9effee5e99505193d1e0c94deca"
+  integrity sha512-4OFp3HHpvhmcBHOpx7M/8Gjpf1xUkH5GZZGdPJGQt3N9JOZggONbC7ndoko4qhwapl7EQkM2eMhkI+uDAKj8LQ==
   dependencies:
     deepmerge "^4.2.2"
-    tslib "^2.2.0"
-    type-fest "^1.1.3"
+    tslib "^2.3.1"
+    type-fest "^1.4.0"
 
 atob@^2.1.2:
   version "2.1.2"
@@ -4360,10 +4360,10 @@ before-after-hook@^2.2.0:
   resolved "https://registry.yarnpkg.com/before-after-hook/-/before-after-hook-2.2.2.tgz#a6e8ca41028d90ee2c24222f201c90956091613e"
   integrity sha512-3pZEU3NT5BFUo/AD5ERPWOgQOCZITni6iavr5AUw5AUwQjMlI0kzu5btnyD39AF0gUEsDPwJT+oY1ORBJijPjQ==
 
-big-integer@^1.6.48:
-  version "1.6.48"
-  resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.48.tgz#8fd88bd1632cba4a1c8c3e3d7159f08bb95b4b9e"
-  integrity sha512-j51egjPa7/i+RdiRuJbPdJ2FIUYYPhvYLjzoYbcMMm62ooO6F94fETG4MTs46zPAF9Brs04OajboA/qTGuz78w==
+big-integer@^1.6.51:
+  version "1.6.51"
+  resolved "https://registry.yarnpkg.com/big-integer/-/big-integer-1.6.51.tgz#0df92a5d9880560d3ff2d5fd20245c889d130686"
+  integrity sha512-GPEid2Y9QU1Exl1rpO9B2IPJGHPSupF5GnVIP0blYvNOMer2bTvSWs1jGOUg04hTmu67nmLsQ9TBo1puaotBHg==
 
 big.js@^5.2.2:
   version "5.2.2"
@@ -6705,7 +6705,7 @@ execa@^5.0.0:
     signal-exit "^3.0.3"
     strip-final-newline "^2.0.0"
 
-exit-hook@^2.0.0:
+exit-hook@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/exit-hook/-/exit-hook-2.2.1.tgz#007b2d92c6428eda2b76e7016a34351586934593"
   integrity sha512-eNTPlAD67BmP31LDINZ3U7HSF8l57TxOY2PmBJ1shpCvpnxBF93mWCE8YHBnXs8qiUZJc9WDcWIeC3a2HIAMfw==
@@ -13917,7 +13917,7 @@ stylehacks@^5.0.1:
     browserslist "^4.16.0"
     postcss-selector-parser "^6.0.4"
 
-superfly-timeline@^8.2.1:
+superfly-timeline@8.2.1:
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.1.tgz#07c0dfee351ae0597c9dcf0a33794ff53f90829e"
   integrity sha512-cwd5mGL/2KP8JSBxdxU1bIG4zB3KtWUB/DwhyxBKtTQksAxgplZmWxSqkrE69LfmEQ/8nYBct2NFZ0fCTZzEnQ==
@@ -14202,21 +14202,21 @@ thunky@^1.0.2:
   resolved "https://registry.yarnpkg.com/thunky/-/thunky-1.1.0.tgz#5abaf714a9405db0504732bbccd2cedd9ef9537d"
   integrity sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==
 
-timeline-state-resolver-types@6.2.0-release37.4:
-  version "6.2.0-release37.4"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0-release37.4.tgz#593f59d4b44c5fb4032207c09c4f411cb3488b50"
-  integrity sha512-jv1i0HOvl0ZeiAmgpC8GmB89XMbJ+kroYxEqLILqEsDtHd1LzaYOHZdgM8j3KkvgcHq8rP0XQL8yMWu0p5WcAg==
+timeline-state-resolver-types@6.2.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.0.tgz#bbc46e82680f7d4938dac8c84080a5fce52f9a1a"
+  integrity sha512-4R55l8KvB1Xk11kAN60KLQoMd/rkysrTNlvB9eOLkoJ5PKmWSqtHV4VNHU8aXUSYfgdTZD9mwq69AbMuuvbiFw==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.2.0-release37.7:
-  version "6.2.0-release37.7"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0-release37.7.tgz#e990dc1dae349d20d0a8237851b1447b46110ced"
-  integrity sha512-/kmi5yWEe4QvqWS24hGHQ2Ui+aTJX1CwgzYA4YR4bxUdD0fiTRACiv+frfR0iiRkv8KWfgsg3GlnlGjnwEF/5A==
+timeline-state-resolver@6.2.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.0.tgz#03294fd13b1424853aeb048ae33b11c64af636f8"
+  integrity sha512-1TxmcZXLtsfFAa3M9z4wpXjbLVArnQ/G5zca5Jj2WioqZDazwUMWQUYnPIpDnXVx1auUSCI1OLs8H3MQMSsq3A==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
-    atem-connection "^2.3.0"
-    atem-state "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
+    atem-connection "2.4.0"
+    atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
     casparcg-state "^2.1.0"
     debug "^4.3.1"
@@ -14232,9 +14232,9 @@ timeline-state-resolver@6.2.0-release37.7:
     p-timeout "^3.2.0"
     request "^2.88.0"
     sprintf-js "^1.1.2"
-    superfly-timeline "^8.2.1"
+    superfly-timeline "8.2.1"
     threadedclass "0.8.3"
-    timeline-state-resolver-types "6.2.0-release37.4"
+    timeline-state-resolver-types "6.2.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
@@ -14549,7 +14549,7 @@ type-fest@^0.8.1:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.8.1.tgz#09e249ebde851d3b1e48d27c105444667f17b83d"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
 
-type-fest@^1.0.1, type-fest@^1.1.3, type-fest@^1.2.1, type-fest@^1.2.2:
+type-fest@^1.0.1, type-fest@^1.2.1, type-fest@^1.2.2, type-fest@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-1.4.0.tgz#e9fb813fe3bf1744ec359d55d1affefa76f14be1"
   integrity sha512-yGSza74xk0UG8k+pLh5oeoYirvIiWo5t0/o3zHHAO2tRDiZcxWP7fywNlXhqb6/r6sWvwi+RsyQMWhVLe4BVuA==
