@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-11-03T11:04:37.940Z\n"
-"PO-Revision-Date: 2021-11-03T11:04:37.940Z\n"
+"POT-Creation-Date: 2021-12-08T09:17:29.050Z\n"
+"PO-Revision-Date: 2021-12-08T09:17:29.050Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -1498,6 +1498,9 @@ msgstr ""
 msgid "Reload statuses"
 msgstr ""
 
+msgid "Updated"
+msgstr ""
+
 msgid "Package Manager"
 msgstr ""
 
@@ -1507,7 +1510,13 @@ msgstr ""
 msgid "Statistics"
 msgstr ""
 
+msgid "Times"
+msgstr ""
+
 msgid "Connected Workers"
+msgstr ""
+
+msgid "Work-in-progress"
 msgstr ""
 
 msgid "WorkForce"
