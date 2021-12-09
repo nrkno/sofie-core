@@ -99,7 +99,7 @@ export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternal
 	return protectString(getHash(`${studioId}_${playlistExternalId}`))
 }
 
-export async function removeRundownPlaylistFromDb(playlist: ReadonlyDeep<RundownPlaylist>): Promise<void> {
+export async function removeRundownPlaylistFromDb(playlist: ReadonlyDeep<DBRundownPlaylist>): Promise<void> {
 	if (playlist.activationId)
 		throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is active and cannot be removed`)
 
@@ -235,7 +235,7 @@ function defaultPlaylistForRundown(
 export function updateRundownsInPlaylist(
 	_playlist: DBRundownPlaylist,
 	rundownRanks: BlueprintResultOrderedRundowns,
-	rundownCollection: DbCacheWriteCollection<Rundown, DBRundown>
+	rundownCollection: DbCacheWriteCollection<Rundown>
 ) {
 	let maxRank: number = Number.NEGATIVE_INFINITY
 	const unrankedRundowns: DBRundown[] = []

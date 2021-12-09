@@ -2,7 +2,7 @@ import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
-import { Part, DBPart, Parts } from '../../../lib/collections/Parts'
+import { Part, Parts } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import {
 	RundownBaselineAdLibAction,
@@ -13,8 +13,8 @@ import {
 	RundownBaselineAdLibPieces,
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
-import { Rundown, DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { Segment, DBSegment, Segments } from '../../../lib/collections/Segments'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { Segment, Segments } from '../../../lib/collections/Segments'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { DbCacheReadObject, DbCacheWriteOptionalObject } from '../../cache/CacheObject'
@@ -29,28 +29,24 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly isIngest = true
 	private toBeRemoved = false
 
-	public readonly Studio: DbCacheReadObject<Studio, Studio>
-	public readonly Rundown: DbCacheWriteOptionalObject<Rundown, DBRundown>
+	public readonly Studio: DbCacheReadObject<Studio>
+	public readonly Rundown: DbCacheWriteOptionalObject<Rundown>
 	public readonly RundownExternalId: string
 
-	public readonly Segments: DbCacheWriteCollection<Segment, DBSegment>
-	public readonly Parts: DbCacheWriteCollection<Part, DBPart>
-	public readonly Pieces: DbCacheWriteCollection<Piece, Piece>
+	public readonly Segments: DbCacheWriteCollection<Segment>
+	public readonly Parts: DbCacheWriteCollection<Part>
+	public readonly Pieces: DbCacheWriteCollection<Piece>
 
-	public readonly AdLibPieces: DbCacheWriteCollection<AdLibPiece, AdLibPiece>
-	public readonly AdLibActions: DbCacheWriteCollection<AdLibAction, AdLibAction>
+	public readonly AdLibPieces: DbCacheWriteCollection<AdLibPiece>
+	public readonly AdLibActions: DbCacheWriteCollection<AdLibAction>
 
-	public readonly ExpectedMediaItems: DbCacheWriteCollection<ExpectedMediaItem, ExpectedMediaItem>
-	public readonly ExpectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>
-	public readonly ExpectedPackages: DbCacheWriteCollection<ExpectedPackageDB, ExpectedPackageDB>
+	public readonly ExpectedMediaItems: DbCacheWriteCollection<ExpectedMediaItem>
+	public readonly ExpectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem>
+	public readonly ExpectedPackages: DbCacheWriteCollection<ExpectedPackageDB>
 
-	public readonly RundownBaselineObjs: LazyInitialise<DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>>
-	public readonly RundownBaselineAdLibPieces: LazyInitialise<
-		DbCacheWriteCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
-	>
-	public readonly RundownBaselineAdLibActions: LazyInitialise<
-		DbCacheWriteCollection<RundownBaselineAdLibAction, RundownBaselineAdLibAction>
-	>
+	public readonly RundownBaselineObjs: LazyInitialise<DbCacheWriteCollection<RundownBaselineObj>>
+	public readonly RundownBaselineAdLibPieces: LazyInitialise<DbCacheWriteCollection<RundownBaselineAdLibItem>>
+	public readonly RundownBaselineAdLibActions: LazyInitialise<DbCacheWriteCollection<RundownBaselineAdLibAction>>
 
 	public get RundownId() {
 		return this.Rundown.doc?._id ?? getRundownId(this.Studio.doc._id, this.RundownExternalId)
@@ -58,16 +54,16 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 	private constructor(
 		rundownExternalId: string,
-		studio: DbCacheReadObject<Studio, Studio>,
-		rundown: DbCacheWriteOptionalObject<Rundown, DBRundown>,
-		segments: DbCacheWriteCollection<Segment, DBSegment>,
-		parts: DbCacheWriteCollection<Part, DBPart>,
-		pieces: DbCacheWriteCollection<Piece, Piece>,
-		adLibPieces: DbCacheWriteCollection<AdLibPiece, AdLibPiece>,
-		adLibActions: DbCacheWriteCollection<AdLibAction, AdLibAction>,
-		expectedMediaItems: DbCacheWriteCollection<ExpectedMediaItem, ExpectedMediaItem>,
-		expectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>,
-		expectedPackages: DbCacheWriteCollection<ExpectedPackageDB, ExpectedPackageDB>
+		studio: DbCacheReadObject<Studio>,
+		rundown: DbCacheWriteOptionalObject<Rundown>,
+		segments: DbCacheWriteCollection<Segment>,
+		parts: DbCacheWriteCollection<Part>,
+		pieces: DbCacheWriteCollection<Piece>,
+		adLibPieces: DbCacheWriteCollection<AdLibPiece>,
+		adLibActions: DbCacheWriteCollection<AdLibAction>,
+		expectedMediaItems: DbCacheWriteCollection<ExpectedMediaItem>,
+		expectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem>,
+		expectedPackages: DbCacheWriteCollection<ExpectedPackageDB>
 	) {
 		super()
 
@@ -124,9 +120,9 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	}
 
 	async loadBaselineCollections(): Promise<{
-		baselineObjects: DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>
-		baselineAdlibPieces: DbCacheWriteCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
-		baselineAdlibActions: DbCacheWriteCollection<RundownBaselineAdLibAction, RundownBaselineAdLibAction>
+		baselineObjects: DbCacheWriteCollection<RundownBaselineObj>
+		baselineAdlibPieces: DbCacheWriteCollection<RundownBaselineAdLibItem>
+		baselineAdlibActions: DbCacheWriteCollection<RundownBaselineAdLibAction>
 	}> {
 		const [baselineObjects, baselineAdlibPieces, baselineAdlibActions] = await Promise.all([
 			this.RundownBaselineObjs.get(),

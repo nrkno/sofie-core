@@ -2,16 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import {
-	Time,
-	applyClassToDocument,
-	registerCollection,
-	normalizeArray,
-	normalizeArrayFunc,
-	ProtectedString,
-	unprotectString,
-} from '../lib'
-import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Rundowns'
+import { Time, registerCollection, normalizeArray, normalizeArrayFunc, ProtectedString, unprotectString } from '../lib'
+import { RundownHoldState, Rundowns, Rundown, RundownId, DBRundown } from './Rundowns'
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
@@ -481,7 +473,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 }
 
 export const RundownPlaylists = createMongoCollectionOLD<RundownPlaylist, DBRundownPlaylist>('rundownPlaylists', {
-	transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
+	transform: (doc) => new RundownPlaylist(doc),
 })
 registerCollection('RundownPlaylists', RundownPlaylists)
 

@@ -16,8 +16,8 @@ import { CacheForIngest } from '../../ingest/cache'
  */
 export class WatchedPackagesHelper {
 	private constructor(
-		private readonly packages: DbCacheReadCollection<ExpectedPackageDB, ExpectedPackageDB>,
-		private readonly packageInfos: DbCacheReadCollection<PackageInfoDB, PackageInfoDB>
+		private readonly packages: DbCacheReadCollection<ExpectedPackageDB>,
+		private readonly packageInfos: DbCacheReadCollection<PackageInfoDB>
 	) {}
 
 	/**
