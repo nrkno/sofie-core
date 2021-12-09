@@ -6,7 +6,7 @@ import { Time, registerCollection, normalizeArray, normalizeArrayFunc, Protected
 import { RundownHoldState, Rundowns, Rundown, RundownId } from './Rundowns'
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, SegmentId } from './Segments'
-import { Parts, Part, DBPart, PartId } from './Parts'
+import { Parts, Part, PartId } from './Parts'
 import { RundownPlaylistTiming, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
 import { createMongoCollection } from './lib'
@@ -260,9 +260,9 @@ export class RundownPlaylistCollectionUtil {
 	static getSegmentsAndPartsSync(
 		playlist: Pick<RundownPlaylist, '_id'>,
 		segmentsQuery?: Mongo.Query<Segment>,
-		partsQuery?: Mongo.Query<DBPart>,
+		partsQuery?: Mongo.Query<Part>,
 		segmentsOptions?: FindOptions<Segment>,
-		partsOptions?: FindOptions<DBPart>
+		partsOptions?: FindOptions<Part>
 	): { segments: Segment[]; parts: Part[] } {
 		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
 			fields: {
@@ -443,7 +443,7 @@ export class RundownPlaylistCollectionUtil {
 			RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
 		)
 	}
-	static _sortPartsInner<P extends DBPart>(parts: P[], sortedSegments: Array<Pick<Segment, '_id'>>): P[] {
+	static _sortPartsInner<P extends Part>(parts: P[], sortedSegments: Array<Pick<Segment, '_id'>>): P[] {
 		const segmentRanks: { [segmentId: string]: number } = {}
 		_.each(sortedSegments, (segment, i) => (segmentRanks[unprotectString(segment._id)] = i))
 

@@ -8,7 +8,7 @@ import { Rundown, RundownId, Rundowns } from '../../../../../lib/collections/Run
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
 import { getCurrentTime, protectString } from '../../../../../lib/lib'
 import { SegmentId, Segments } from '../../../../../lib/collections/Segments'
-import { DBPart, Part, PartId, Parts } from '../../../../../lib/collections/Parts'
+import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { PartInstances, wrapPartToTemporaryInstance } from '../../../../../lib/collections/PartInstances'
@@ -101,7 +101,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 					externalModified: 1,
 				})
 
-				function createMockPart(index: number, segId: SegmentId): DBPart {
+				function createMockPart(index: number, segId: SegmentId): Part {
 					return {
 						_id: protectString(rundownId + '_part' + index),
 						segmentId: segId,

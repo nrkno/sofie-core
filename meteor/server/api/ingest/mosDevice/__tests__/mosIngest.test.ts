@@ -5,7 +5,7 @@ import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import '../../../../../__mocks__/_extendJest'
 import { Rundowns, Rundown, RundownCollectionUtil, RundownId } from '../../../../../lib/collections/Rundowns'
 import { Segments, Segment, SegmentId } from '../../../../../lib/collections/Segments'
-import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
+import { Parts, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { literal, protectString } from '../../../../../lib/lib'
 
@@ -38,7 +38,7 @@ function getPartIdMap(segments: Segment[], parts: Part[]) {
 	const sortedParts = RundownPlaylistCollectionUtil._sortPartsInner(parts, segments)
 
 	const groupedParts = _.groupBy(sortedParts, (p) => p.segmentId)
-	const arr: [string, DBPart[]][] = _.pairs(groupedParts)
+	const arr: [string, Part[]][] = _.pairs(groupedParts)
 	const idMap = _.map(arr, (g) => ({
 		segmentId: protectString<SegmentId>(g[0]),
 		parts: _.map(g[1], (p) => p.externalId),

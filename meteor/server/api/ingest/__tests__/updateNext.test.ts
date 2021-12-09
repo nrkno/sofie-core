@@ -1,7 +1,7 @@
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, Segment } from '../../../../lib/collections/Segments'
-import { Parts, DBPart } from '../../../../lib/collections/Parts'
+import { Parts, Part } from '../../../../lib/collections/Parts'
 import { literal, protectString, waitForPromise } from '../../../../lib/lib'
 import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
 import { ServerPlayoutAPI } from '../../playout/playout'
@@ -114,7 +114,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('mock_part1'),
 				_rank: 1,
 				rundownId: rundownId,
@@ -131,7 +131,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('mock_part2'),
 				_rank: 2,
 				rundownId: rundownId,
@@ -148,7 +148,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('mock_part3'),
 				_rank: 3,
 				rundownId: rundownId,
@@ -166,7 +166,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('mock_part4'),
 				_rank: 0,
 				rundownId: rundownId,
@@ -183,7 +183,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('mock_part5'),
 				_rank: 1,
 				rundownId: rundownId,
@@ -201,7 +201,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('mock_part6'),
 				_rank: 0,
 				rundownId: rundownId,
@@ -219,7 +219,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('mock_part7'),
 				_rank: 0,
 				rundownId: rundownId,
@@ -236,7 +236,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('mock_part8'),
 				_rank: 1,
 				rundownId: rundownId,
@@ -254,7 +254,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('mock_part9'),
 				_rank: 2,
 				rundownId: rundownId,
@@ -272,7 +272,7 @@ async function createMockRO(): Promise<RundownId> {
 			segmentPlayoutId: protectString(''),
 			takeCount: 0,
 			rehearsal: false,
-			part: literal<DBPart>({
+			part: literal<Part>({
 				_id: protectString('orphan_1'),
 				_rank: 1.5,
 				rundownId: rundownId,
@@ -456,7 +456,7 @@ describe('ensureNextPartIsValid', () => {
 				segmentPlayoutId: protectString(''),
 				takeCount: 0,
 				rehearsal: false,
-				part: literal<DBPart>({
+				part: literal<Part>({
 					_id: protectString('orphan_1'),
 					_rank: 1.5,
 					rundownId: rundownId,

@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { TimelineObjGeneric, TimelineComplete } from '../../lib/collections/Timeline'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { Segment } from '../../lib/collections/Segments'
-import { DBPart } from '../../lib/collections/Parts'
+import { Part } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
@@ -18,7 +18,7 @@ type Data =
 	| DBRundownPlaylist
 	| Rundown
 	| Segment
-	| DBPart
+	| Part
 	| Piece
 	| PieceInstance
 	| PartInstance

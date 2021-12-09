@@ -7,7 +7,7 @@ import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { RundownReadAccess } from '../security/rundown'
 import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
-import { DBPart, Parts } from '../../lib/collections/Parts'
+import { Part, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
@@ -59,9 +59,9 @@ meteorPublish(PubSub.segments, function (selector: MongoQuery<Segment>, token?: 
 	return null
 })
 
-meteorPublish(PubSub.parts, function (selector: MongoQuery<DBPart>, token?: string) {
+meteorPublish(PubSub.parts, function (selector: MongoQuery<Part>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<DBPart> = {
+	const modifier: FindOptions<Part> = {
 		fields: {
 			metaData: 0,
 		},

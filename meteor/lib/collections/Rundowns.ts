@@ -1,6 +1,6 @@
 import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Segments, Segment } from './Segments'
-import { Parts, Part, DBPart } from './Parts'
+import { Parts, Part } from './Parts'
 import { FindOptions, MongoQuery } from '../typings/meteor'
 import { StudioId } from './Studios'
 import { Meteor } from 'meteor/meteor'
@@ -121,7 +121,7 @@ export class RundownCollectionUtil {
 	static getParts(
 		rundown: Pick<Rundown, '_id'>,
 		selector?: MongoQuery<Part>,
-		options?: FindOptions<DBPart>,
+		options?: FindOptions<Part>,
 		segmentsInOrder?: Array<Pick<Segment, '_id'>>
 	): Part[] {
 		const parts = Parts.find(

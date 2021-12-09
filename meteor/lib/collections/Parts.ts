@@ -38,10 +38,7 @@ export interface Part extends ProtectedStringProperties<IBlueprintPartDB, '_id' 
 	identifier?: string
 }
 
-/** Note: Use Part instead */
-export type DBPart = Part
-
-export function isPartPlayable(part: DBPart) {
+export function isPartPlayable(part: Part) {
 	return !part.invalid && !part.floated
 }
 

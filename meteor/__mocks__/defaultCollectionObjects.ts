@@ -6,7 +6,7 @@ import { ShowStyleBaseId } from '../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId } from '../lib/collections/ShowStyleVariants'
 import { Rundown, RundownId } from '../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../lib/collections/Segments'
-import { PartId, DBPart } from '../lib/collections/Parts'
+import { PartId, Part } from '../lib/collections/Parts'
 import { RundownAPI } from '../lib/api/rundown'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PieceId, Piece } from '../lib/collections/Pieces'
@@ -108,7 +108,7 @@ export function defaultSegment(_id: SegmentId, rundownId: RundownId): Segment {
 	}
 }
 
-export function defaultPart(_id: PartId, rundownId: RundownId, segmentId: SegmentId): DBPart {
+export function defaultPart(_id: PartId, rundownId: RundownId, segmentId: SegmentId): Part {
 	return {
 		_id: _id,
 		rundownId: rundownId,

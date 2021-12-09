@@ -1,7 +1,7 @@
 import { registerCollection, ProtectedString, ProtectedStringProperties, protectString, unprotectString } from '../lib'
 import { IBlueprintPartInstance, Time, IBlueprintPartInstanceTimings } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { DBPart, PartId } from './Parts'
+import { Part, PartId } from './Parts'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
@@ -57,7 +57,7 @@ export interface PartInstance extends InternalIBlueprintPartInstance {
 	/** Playout timings, in here we log times when playout happens */
 	timings?: PartInstanceTimings
 
-	part: DBPart
+	part: Part
 
 	/** The transition props as used when entering this PartInstance */
 	allowedToUseTransition?: boolean
@@ -78,7 +78,7 @@ export type DBPartInstance = PartInstance
 
 export function wrapPartToTemporaryInstance(
 	playlistActivationId: RundownPlaylistActivationId,
-	part: DBPart
+	part: Part
 ): PartInstance {
 	return {
 		isTemporary: true,
@@ -95,14 +95,14 @@ export function wrapPartToTemporaryInstance(
 
 export function findPartInstanceInMapOrWrapToTemporary<T extends Partial<PartInstance>>(
 	partInstancesMap: Map<PartId, T>,
-	part: DBPart
+	part: Part
 ): T {
 	return partInstancesMap.get(part._id) || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }
 
 export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance>>(
 	partInstances: { [partId: string]: T | undefined },
-	part: DBPart
+	part: Part
 ): T {
 	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }

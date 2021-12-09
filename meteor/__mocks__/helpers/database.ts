@@ -33,7 +33,7 @@ import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
 import { Rundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
-import { DBPart, Parts } from '../../lib/collections/Parts'
+import { Part, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
 import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
@@ -554,7 +554,7 @@ export function setupDefaultRundown(
 	Segments.insert(segment0)
 	/* tslint:disable:ter-indent*/
 	//
-	const part00: DBPart = {
+	const part00: Part = {
 		_id: protectString(rundownId + '_part0_0'),
 		segmentId: segment0._id,
 		rundownId: rundown._id,
@@ -625,7 +625,7 @@ export function setupDefaultRundown(
 
 	AdLibPieces.insert(adLibPiece000)
 
-	const part01: DBPart = {
+	const part01: Part = {
 		_id: protectString(rundownId + '_part0_1'),
 		segmentId: segment0._id,
 		rundownId: segment0.rundownId,
@@ -666,7 +666,7 @@ export function setupDefaultRundown(
 	}
 	Segments.insert(segment1)
 
-	const part10: DBPart = {
+	const part10: Part = {
 		_id: protectString(rundownId + '_part1_0'),
 		segmentId: segment1._id,
 		rundownId: segment1.rundownId,
@@ -676,7 +676,7 @@ export function setupDefaultRundown(
 	}
 	Parts.insert(part10)
 
-	const part11: DBPart = {
+	const part11: Part = {
 		_id: protectString(rundownId + '_part1_1'),
 		segmentId: segment1._id,
 		rundownId: segment1.rundownId,
@@ -686,7 +686,7 @@ export function setupDefaultRundown(
 	}
 	Parts.insert(part11)
 
-	const part12: DBPart = {
+	const part12: Part = {
 		_id: protectString(rundownId + '_part1_2'),
 		segmentId: segment1._id,
 		rundownId: segment1.rundownId,
@@ -766,7 +766,7 @@ export function setupRundownWithAutoplayPart0(
 	Segments.insert(segment0)
 	/* tslint:disable:ter-indent*/
 	//
-	const part00: DBPart = {
+	const part00: Part = {
 		...defaultPart(protectString(rundownId + '_part0_0'), rundown._id, segment0._id),
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
@@ -806,7 +806,7 @@ export function setupRundownWithAutoplayPart0(
 
 	AdLibPieces.insert(adLibPiece000)
 
-	const part01: DBPart = {
+	const part01: Part = {
 		...defaultPart(protectString(rundownId + '_part0_1'), rundown._id, segment0._id),
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
@@ -831,7 +831,7 @@ export function setupRundownWithAutoplayPart0(
 	}
 	Segments.insert(segment1)
 
-	const part10: DBPart = {
+	const part10: Part = {
 		...defaultPart(protectString(rundownId + '_part1_0'), rundown._id, segment1._id),
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
@@ -839,7 +839,7 @@ export function setupRundownWithAutoplayPart0(
 	}
 	Parts.insert(part10)
 
-	const part11: DBPart = {
+	const part11: Part = {
 		...defaultPart(protectString(rundownId + '_part1_1'), rundown._id, segment1._id),
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
@@ -847,7 +847,7 @@ export function setupRundownWithAutoplayPart0(
 	}
 	Parts.insert(part11)
 
-	const part12: DBPart = {
+	const part12: Part = {
 		...defaultPart(protectString(rundownId + '_part1_2'), rundown._id, segment1._id),
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',

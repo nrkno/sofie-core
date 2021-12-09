@@ -1,6 +1,6 @@
 import { literal, protectString, getRandomId } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, LAYER_IDS, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-import { DBPart, Parts, PartId } from '../../../../lib/collections/Parts'
+import { Part, Parts, PartId } from '../../../../lib/collections/Parts'
 import { VTContent, PieceLifespan, WithTimeline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Segments, Segment } from '../../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../../lib/collections/Pieces'
@@ -99,7 +99,7 @@ describe('Expected Media Items', () => {
 			})
 		)
 		Parts.insert(
-			literal<DBPart>({
+			literal<Part>({
 				...defaultPart(protectString(rdId + '_' + mockPart0), rd._id, protectString('segment1')),
 				_rank: 1,
 				title: '',
@@ -129,7 +129,7 @@ describe('Expected Media Items', () => {
 			})
 		)
 		Parts.insert(
-			literal<DBPart>({
+			literal<Part>({
 				...defaultPart(protectString(rdId + '_' + mockPart1), rd._id, protectString('segment1')),
 				_rank: 1,
 				externalId: '',

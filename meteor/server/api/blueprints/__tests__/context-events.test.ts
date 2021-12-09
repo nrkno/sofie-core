@@ -14,7 +14,7 @@ import {
 	RundownTimingEventContext,
 } from '../context'
 import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
-import { DBPart, PartId } from '../../../../lib/collections/Parts'
+import { Part, PartId } from '../../../../lib/collections/Parts'
 import {
 	wrapPartToTemporaryInstance,
 	PartInstances,
@@ -87,7 +87,7 @@ describe('Test blueprint api context', () => {
 				_id: protectString('not-a-real-part'),
 			}
 
-			const tmpPart = wrapPartToTemporaryInstance(protectString('active'), mockPart as DBPart)
+			const tmpPart = wrapPartToTemporaryInstance(protectString('active'), mockPart as Part)
 			const context = new PartEventContext('fake', studio, showStyle, rundown, tmpPart)
 			expect(context.studio).toBeTruthy()
 

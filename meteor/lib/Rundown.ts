@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { Segment, SegmentId } from './collections/Segments'
-import { PartId, DBPart } from './collections/Parts'
+import { PartId, Part } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
 import { PieceInstance, PieceInstances } from './collections/PieceInstances'
 import {
@@ -81,7 +81,7 @@ export interface PieceExtended {
 }
 
 export function fetchPiecesThatMayBeActiveForPart(
-	part: DBPart,
+	part: Part,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	rundownsBeforeThisInPlaylist: RundownId[]
@@ -216,20 +216,20 @@ export function getPieceInstancesForPartInstance(
  * @export
  * @param {RundownPlaylist} playlist
  * @param {(Mongo.Query<Segment> | Mongo.QueryWithModifiers<Segment>)} [segmentsQuery]
- * @param {(Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>)} [partsQuery]
+ * @param {(Mongo.Query<Part> | Mongo.QueryWithModifiers<Part>)} [partsQuery]
  * @param {Mongo.Query<PartInstance>} [partInstancesQuery]
  * @param {FindOptions<Segment>} [segmentsOptions]
- * @param {FindOptions<DBPart>} [partsOptions]
+ * @param {FindOptions<Part>} [partsOptions]
  * @param {FindOptions<PartInstance>} [partInstancesOptions]
  * @return {*}  {Array<{ segment: Segment; partInstances: PartInstance[] }>}
  */
 export function getSegmentsWithPartInstances(
 	playlist: RundownPlaylist,
 	segmentsQuery?: Mongo.Query<Segment> | Mongo.QueryWithModifiers<Segment>,
-	partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
+	partsQuery?: Mongo.Query<Part> | Mongo.QueryWithModifiers<Part>,
 	partInstancesQuery?: Mongo.Query<PartInstance>,
 	segmentsOptions?: FindOptions<Segment>,
-	partsOptions?: FindOptions<DBPart>,
+	partsOptions?: FindOptions<Part>,
 	partInstancesOptions?: FindOptions<PartInstance>
 ): Array<{ segment: Segment; partInstances: PartInstance[] }> {
 	const { segments, parts: rawParts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(

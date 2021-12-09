@@ -1,7 +1,7 @@
 import _ from 'underscore'
 import { PartInstance, PartInstanceId } from '../collections/PartInstances'
 import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../collections/PieceInstances'
-import { DBPart, Part, PartId } from '../collections/Parts'
+import { Part, PartId } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
@@ -13,12 +13,12 @@ import { RundownPlaylistActivationId } from '../collections/RundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
 import { Rundown, RundownId } from '../collections/Rundowns'
 
-export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
+export function buildPiecesStartingInThisPartQuery(part: Part): Mongo.Query<Piece> {
 	return { startPartId: part._id }
 }
 
 export function buildPastInfinitePiecesForThisPartQuery(
-	part: DBPart,
+	part: Part,
 	partsIdsBeforeThisInSegment: PartId[],
 	segmentsIdsBeforeThisInRundown: SegmentId[],
 	rundownIdsBeforeThisInPlaylist: RundownId[]

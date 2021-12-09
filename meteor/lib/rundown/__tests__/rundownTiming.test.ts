@@ -1,5 +1,5 @@
 import { PartInstance } from '../../collections/PartInstances'
-import { DBPart, Part, PartId } from '../../collections/Parts'
+import { Part, PartId } from '../../collections/Parts'
 import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
 import { Rundown } from '../../collections/Rundowns'
 import { literal, protectString, unprotectString } from '../../lib'
@@ -37,7 +37,7 @@ function makeMockPart(
 		displayDurationGroup?: string
 	}
 ): Part {
-	return literal<DBPart>({
+	return literal<Part>({
 		_id: protectString(id),
 		externalId: id,
 		title: '',

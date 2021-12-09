@@ -3,7 +3,7 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
-import { Part, DBPart, isPartPlayable } from '../../../lib/collections/Parts'
+import { Part, isPartPlayable } from '../../../lib/collections/Parts'
 import {
 	getCurrentTime,
 	Time,
@@ -93,13 +93,13 @@ export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void
 }
 
 export interface SelectNextPartResult {
-	part: DBPart
+	part: Part
 	index: number
 	consumesNextSegmentId?: boolean
 }
 export interface PartsAndSegments {
 	segments: Segment[]
-	parts: DBPart[]
+	parts: Part[]
 }
 
 export function selectNextPart(
@@ -117,7 +117,7 @@ export function selectNextPart(
 	 */
 	const findFirstPlayablePart = (
 		offset: number,
-		condition?: (part: DBPart) => boolean,
+		condition?: (part: Part) => boolean,
 		length?: number
 	): SelectNextPartResult | undefined => {
 		// Filter to after and find the first playabale
@@ -211,7 +211,7 @@ export function selectNextPart(
 type ParsedNextPart =
 	| {
 			type: 'part'
-			part: DBPart
+			part: Part
 			consumesNextSegmentId: boolean | undefined
 	  }
 	| {

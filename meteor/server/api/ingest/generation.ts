@@ -7,7 +7,7 @@ import { SegmentNote, PartNote, RundownNote } from '../../../lib/api/notes'
 import { AdLibAction } from '../../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
-import { DBPart, Part } from '../../../lib/collections/Parts'
+import { Part } from '../../../lib/collections/Parts'
 import { getExternalNRCSName, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { Piece } from '../../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
@@ -50,7 +50,7 @@ import { CommitIngestData } from './lockFunction'
 
 export interface UpdateSegmentsResult {
 	segments: Segment[]
-	parts: DBPart[]
+	parts: Part[]
 	pieces: Piece[]
 	adlibPieces: AdLibPiece[]
 	adlibActions: AdLibAction[]
@@ -222,7 +222,7 @@ export async function calculateSegmentsFromIngestData(
 				}
 
 				const existingPart = cache.Parts.findOne(partId)
-				const part = literal<DBPart>({
+				const part = literal<Part>({
 					...blueprintPart.part,
 					_id: partId,
 					rundownId: rundown._id,

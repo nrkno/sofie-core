@@ -7,7 +7,7 @@ import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-
 import { getPlayheadTrackingInfinitesForPart, processAndPrunePieceInstanceTimings } from '../infinites'
 import { Piece } from '../../../lib/collections/Pieces'
 import { PartInstance, PartInstanceId } from '../../collections/PartInstances'
-import { DBPart, PartId } from '../../collections/Parts'
+import { Part, PartId } from '../../collections/Parts'
 import { Rundown, RundownId } from '../../collections/Rundowns'
 import { RundownPlaylistId } from '../../collections/RundownPlaylists'
 
@@ -404,7 +404,7 @@ describe('Infinites', () => {
 			previousPartInstance: Pick<PartInstance, 'rundownId' | 'segmentId'> & { partId: PartId },
 			previousPartPieces: PieceInstance[],
 			rundown: Rundown,
-			part: Pick<DBPart, 'rundownId' | 'segmentId'>,
+			part: Pick<Part, 'rundownId' | 'segmentId'>,
 			newInstanceId: PartInstanceId
 		) {
 			const resolvedInstances = getPlayheadTrackingInfinitesForPart(

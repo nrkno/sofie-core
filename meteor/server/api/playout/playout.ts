@@ -1,7 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import { Rundown, RundownCollectionUtil, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
-import { Part, DBPart, PartId, isPartPlayable } from '../../../lib/collections/Parts'
+import { Part, PartId, isPartPlayable } from '../../../lib/collections/Parts'
 import { PieceId } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
@@ -344,7 +344,7 @@ export namespace ServerPlayoutAPI {
 
 	export async function setNextPartInner(
 		cache: CacheForPlayout,
-		nextPartId: PartId | DBPart | null,
+		nextPartId: PartId | Part | null,
 		setManually?: boolean,
 		nextTimeOffset?: number | undefined,
 		clearNextSegment?: boolean
@@ -354,7 +354,7 @@ export namespace ServerPlayoutAPI {
 		if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE)
 			throw new Meteor.Error(501, `Rundown "${playlist._id}" cannot change next during hold!`)
 
-		let nextPart: DBPart | null = null
+		let nextPart: Part | null = null
 		if (nextPartId) {
 			if (isStringOrProtectedString(nextPartId)) {
 				nextPart = cache.Parts.findOne(nextPartId) || null
@@ -464,7 +464,7 @@ export namespace ServerPlayoutAPI {
 				return null
 			}
 		} else if (partDelta) {
-			let playabaleParts: DBPart[] = rawParts.filter((p) => refPart._id === p._id || isPartPlayable(p))
+			let playabaleParts: Part[] = rawParts.filter((p) => refPart._id === p._id || isPartPlayable(p))
 			let refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 			if (refPartIndex === -1) {
 				const tmpRefPart = { ...refPart, invalid: true } // make sure it won't be found as playable

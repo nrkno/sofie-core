@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DBPart } from '../../../lib/collections/Parts'
+import { Part } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import {
 	DBPartInstance,
@@ -66,7 +66,7 @@ export function canContinueAdlibOnEndInfinites(
 	}
 }
 
-function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
+function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: Part) {
 	const span = profiler.startSpan('getIdsBeforeThisPart')
 	// Get the normal parts
 	const partsBeforeThisInSegment = cache.Parts.findFetch(
@@ -104,7 +104,7 @@ function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
 export async function fetchPiecesThatMayBeActiveForPart(
 	cache: CacheForPlayout,
 	unsavedIngestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | undefined,
-	part: DBPart
+	part: Part
 ): Promise<Piece[]> {
 	const span = profiler.startSpan('fetchPiecesThatMayBeActiveForPart')
 
@@ -232,7 +232,7 @@ export function getPieceInstancesForPart(
 	cache: CacheForPlayout,
 	playingPartInstance: PartInstance | undefined,
 	rundown: ReadonlyDeep<Rundown>,
-	part: DBPart,
+	part: Part,
 	possiblePieces: Piece[],
 	newInstanceId: PartInstanceId,
 	isTemporary: boolean

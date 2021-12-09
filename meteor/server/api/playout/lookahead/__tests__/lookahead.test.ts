@@ -8,7 +8,7 @@ import { Rundown, RundownId, Rundowns } from '../../../../../lib/collections/Run
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
 import { getCurrentTime, getRandomId, protectString } from '../../../../../lib/lib'
 import { SegmentId } from '../../../../../lib/collections/Segments'
-import { DBPart, PartId, Parts } from '../../../../../lib/collections/Parts'
+import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../../lib/collections/Timeline'
@@ -86,7 +86,7 @@ describe('Lookahead', () => {
 				}
 				Rundowns.insert(rundown)
 
-				function createMockPart(index: number, segId: SegmentId): DBPart {
+				function createMockPart(index: number, segId: SegmentId): Part {
 					return {
 						_id: protectString(rundownId + '_part' + index),
 						segmentId: segId,
