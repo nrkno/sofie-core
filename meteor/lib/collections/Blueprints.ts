@@ -44,7 +44,7 @@ export interface Blueprint {
 	disableVersionChecks?: boolean
 }
 
-export const Blueprints = createMongoCollection<Blueprint, Blueprint>('blueprints')
+export const Blueprints = createMongoCollection<Blueprint>('blueprints')
 registerCollection('Blueprints', Blueprints)
 
 registerIndex(Blueprints, {

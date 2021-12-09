@@ -31,7 +31,7 @@ export interface UserActionsLogItem {
 	timelineResolveDuration?: TimeDuration[]
 }
 
-export const UserActionsLog = createMongoCollection<UserActionsLogItem, UserActionsLogItem>('userActionsLog')
+export const UserActionsLog = createMongoCollection<UserActionsLogItem>('userActionsLog')
 registerCollection('UserActionsLog', UserActionsLog)
 
 registerIndex(UserActionsLog, {

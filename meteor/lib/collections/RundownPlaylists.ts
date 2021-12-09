@@ -17,7 +17,7 @@ import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
 import { RundownPlaylistTiming, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
-import { createMongoCollection } from './lib'
+import { createMongoCollectionOLD } from './lib'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { PieceInstanceInfiniteId } from './PieceInstances'
@@ -473,7 +473,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 }
 
-export const RundownPlaylists = createMongoCollection<RundownPlaylist, DBRundownPlaylist>('rundownPlaylists', {
+export const RundownPlaylists = createMongoCollectionOLD<RundownPlaylist, DBRundownPlaylist>('rundownPlaylists', {
 	transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
 })
 registerCollection('RundownPlaylists', RundownPlaylists)

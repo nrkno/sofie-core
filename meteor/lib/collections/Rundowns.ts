@@ -10,7 +10,7 @@ import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowS
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
-import { createMongoCollection } from './lib'
+import { createMongoCollectionOLD } from './lib'
 import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
@@ -217,7 +217,7 @@ export class Rundown implements DBRundown {
 }
 
 // export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
-export const Rundowns = createMongoCollection<Rundown, DBRundown>('rundowns', {
+export const Rundowns = createMongoCollectionOLD<Rundown, DBRundown>('rundowns', {
 	transform: (doc) => applyClassToDocument(Rundown, doc),
 })
 registerCollection('Rundowns', Rundowns)

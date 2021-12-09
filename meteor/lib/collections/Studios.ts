@@ -250,8 +250,9 @@ export interface RoutedMappings {
 	mappings: { [layerName: string]: MappingExt }
 }
 
+/** @deprecated TODO: TransformedCollection */
 export type Studio = DBStudio
-export const Studios = createMongoCollection<Studio, DBStudio>('studios')
+export const Studios = createMongoCollection<DBStudio>('studios')
 registerCollection('Studios', Studios)
 
 registerIndex(Studios, {

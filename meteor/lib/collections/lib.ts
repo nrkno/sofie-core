@@ -72,7 +72,18 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 	}
 }
 
-export function createMongoCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+export function createMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+	name: string | null,
+	options?: {
+		connection?: Object | null
+		idGeneration?: string
+		transform?: Function
+	}
+): AsyncTransformedCollection<DBInterface, DBInterface> {
+	return createMongoCollectionOLD<DBInterface, DBInterface>(name, options)
+}
+
+export function createMongoCollectionOLD<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	name: string | null,
 	options?: {
 		connection?: Object | null
