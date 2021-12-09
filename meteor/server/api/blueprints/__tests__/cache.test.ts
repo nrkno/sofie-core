@@ -1,6 +1,6 @@
 import '../../../../__mocks__/_extendJest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'
+import { DBRundown } from '../../../../lib/collections/Rundowns'
 import { literal, protectString } from '../../../../lib/lib'
 import {
 	loadSystemBlueprints,
@@ -351,27 +351,25 @@ describe('Test blueprint cache', () => {
 
 	describe('getBlueprintOfRundown', () => {
 		function getRundown() {
-			return new Rundown(
-				literal<DBRundown>({
-					_id: protectString('ro1'),
-					playlistId: protectString('pls0'),
-					_rank: 1,
-					externalId: 'ro1',
-					studioId: protectString('studio0'),
-					showStyleBaseId: protectString(''),
-					showStyleVariantId: protectString('variant0'),
-					peripheralDeviceId: protectString(''),
-					created: 0,
-					modified: 0,
-					importVersions: {} as any,
-					name: 'test',
-					externalNRCSName: 'mockNRCS',
-					organizationId: protectString(''),
-					timing: {
-						type: 'none' as any,
-					},
-				})
-			)
+			return literal<DBRundown>({
+				_id: protectString('ro1'),
+				playlistId: protectString('pls0'),
+				_rank: 1,
+				externalId: 'ro1',
+				studioId: protectString('studio0'),
+				showStyleBaseId: protectString(''),
+				showStyleVariantId: protectString('variant0'),
+				peripheralDeviceId: protectString(''),
+				created: 0,
+				modified: 0,
+				importVersions: {} as any,
+				name: 'test',
+				externalNRCSName: 'mockNRCS',
+				organizationId: protectString(''),
+				timing: {
+					type: 'none' as any,
+				},
+			})
 		}
 		test('Valid showStyleBase', async () => {
 			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
