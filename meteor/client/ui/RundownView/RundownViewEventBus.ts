@@ -9,6 +9,7 @@ import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibItem } from '../Shelf/RundownViewBuckets'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
+import { TriggeredActionId } from '../../../lib/collections/TriggeredActions'
 
 export enum RundownViewEvents {
 	ACTIVATE_RUNDOWN_PLAYLIST = 'activateRundownPlaylist',
@@ -28,6 +29,7 @@ export enum RundownViewEvents {
 	GO_TO_PART_INSTANCE = 'goToPartInstance',
 	SELECT_PIECE = 'selectPiece',
 	HIGHLIGHT = 'highlight',
+	TRIGGER_ACTION = 'triggerAction',
 
 	RENAME_BUCKET_ADLIB = 'renameBucketAdLib',
 	DELETE_BUCKET_ADLIB = 'deleteBucketAdLib',
@@ -96,6 +98,10 @@ export interface BucketEvent extends IEventContext {
 	bucket: Bucket
 }
 
+export interface TriggerActionEvent extends IEventContext {
+	actionId: TriggeredActionId
+}
+
 class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, e: ActivateRundownPlaylistEvent): boolean
 	emit(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, e: BaseEvent): boolean
@@ -114,6 +120,7 @@ class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.GO_TO_PART_INSTANCE, e: GoToPartInstanceEvent): boolean
 	emit(event: RundownViewEvents.SELECT_PIECE, e: SelectPieceEvent): boolean
 	emit(event: RundownViewEvents.HIGHLIGHT, e: HighlightEvent): boolean
+	emit(event: RundownViewEvents.TRIGGER_ACTION, e: TriggerActionEvent): boolean
 	emit(event: RundownViewEvents.EMPTY_BUCKET, e: BucketEvent): boolean
 	emit(event: RundownViewEvents.DELETE_BUCKET, e: BucketEvent): boolean
 	emit(event: RundownViewEvents.RENAME_BUCKET, e: BucketEvent): boolean
@@ -141,6 +148,7 @@ class RundownViewEventBus0 extends EventEmitter {
 	on(event: RundownViewEvents.GO_TO_PART_INSTANCE, listener: (e: GoToPartInstanceEvent) => void): this
 	on(event: RundownViewEvents.SELECT_PIECE, listener: (e: SelectPieceEvent) => void): this
 	on(event: RundownViewEvents.HIGHLIGHT, listener: (e: HighlightEvent) => void): this
+	on(event: RundownViewEvents.TRIGGER_ACTION, listener: (e: TriggerActionEvent) => void): this
 	on(event: RundownViewEvents.EMPTY_BUCKET, listener: (e: BucketEvent) => void): this
 	on(event: RundownViewEvents.DELETE_BUCKET, listener: (e: BucketEvent) => void): this
 	on(event: RundownViewEvents.RENAME_BUCKET, listener: (e: BucketEvent) => void): this

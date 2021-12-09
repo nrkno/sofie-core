@@ -30,3 +30,8 @@ export function keyLabelsToCodes(labels: string, sorensen: Sorensen) {
 		})
 		.join(' ')
 }
+
+export function getFinalKey(keys: string) {
+	const individualKeys = keys.split(/\+/gi)
+	return individualKeys[individualKeys.length - 1]
+}

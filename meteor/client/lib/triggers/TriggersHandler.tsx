@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import Sorensen from '@sofie-automation/sorensen'
@@ -8,12 +8,12 @@ import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/col
 import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { ISourceLayer, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, PlayoutActions, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import {
-	ActionContext,
 	createAction as libCreateAction,
 	isPreviewableAction,
+	ReactivePlaylistActionContext,
 } from '../../../lib/api/triggers/actionFactory'
 import { Tracker } from 'meteor/tracker'
 import { PartId } from '../../../lib/collections/Parts'
@@ -26,6 +26,8 @@ import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { preventDefault } from '../SorensenContext'
+import { getFinalKey } from './codesToKeyLabels'
+import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../ui/RundownView/RundownViewEventBus'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -95,7 +97,7 @@ function createAction(
 	actions: SomeAction[],
 	showStyleBase: ShowStyleBase,
 	t: TFunction,
-	collectContext: () => ActionContext | null
+	collectContext: () => ReactivePlaylistActionContext | null
 ): {
 	listener: HotkeyTriggerListener
 	preview: () => IWrappedAdLib[]
@@ -112,7 +114,6 @@ function createAction(
 		},
 		listener: (e) => {
 			e.preventDefault()
-			e.stopPropagation()
 
 			const ctx = collectContext()
 			if (ctx) {
@@ -122,11 +123,12 @@ function createAction(
 	}
 }
 
-const rundownPlaylistContext: ReactiveVar<ActionContext | null> = new ReactiveVar(null)
-function setRundownPlaylistContext(ctx: ActionContext | null) {
+const rundownPlaylistContext: ReactiveVar<ReactivePlaylistActionContext | null> = new ReactiveVar(null)
+
+function setRundownPlaylistContext(ctx: ReactivePlaylistActionContext | null) {
 	rundownPlaylistContext.set(ctx)
 }
-function getCurrentContext(): ActionContext | null {
+function getCurrentContext(): ReactivePlaylistActionContext | null {
 	return rundownPlaylistContext.get()
 }
 
@@ -142,10 +144,16 @@ export interface MountedAdLibTrigger {
 	type: IWrappedAdLib['type']
 	/** The ID in the collection specified by `type` */
 	targetId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | ISourceLayer['_id']
-	/** Keys that have a listener mounted to */
+	/** Keys or combos that have a listener mounted to */
 	keys: string[]
+	/** Final keys in the combos */
+	finalKeys: string[]
 	/** A label of the action, if available */
 	name?: string | ITranslatableMessage
+	/** SourceLayerId of the target, if available */
+	sourceLayerId?: ISourceLayer['_id']
+	/** A label of the target if available */
+	targetName?: string | ITranslatableMessage
 }
 
 export const MountedAdLibTriggers = new Mongo.Collection<MountedAdLibTrigger>(null)
@@ -158,13 +166,23 @@ export interface MountedGenericTrigger {
 	_rank: number
 	/** The ID of the action that will be triggered */
 	triggeredActionId: TriggeredActionId
-	/** Keys that have a listener mounted to */
+	/** Keys or combos that have a listener mounted to */
 	keys: string[]
+	/** Final keys in the combos */
+	finalKeys: string[]
 	/** A label of the action, if available */
 	name: string | ITranslatableMessage
+	/** Hint that all actions of this trigger are adLibs */
+	adLibOnly: boolean
 }
 
 export const MountedGenericTriggers = new Mongo.Collection<MountedGenericTrigger>(null)
+
+export function isMountedAdLibTrigger(
+	mountedTrigger: MountedAdLibTrigger | MountedGenericTrigger
+): mountedTrigger is MountedAdLibTrigger {
+	return !!mountedTrigger['targetId']
+}
 
 function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker.Computation {
 	const computation = Tracker.nonreactive(() =>
@@ -197,6 +215,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	const [initialized, setInitialized] = useState(props.sorensen ? true : false)
 	const { t } = useTranslation()
 	const localSorensen = props.sorensen || Sorensen
+	const createdActions = useRef<Map<TriggeredActionId, (e) => void>>(new Map())
 
 	function bindHotkey(id: TriggeredActionId, keys: string, up: boolean, action: HotkeyTriggerListener) {
 		try {
@@ -215,6 +234,13 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 
 	function unbindHotkey(keys: string, listener: (e: KeyboardEvent) => void) {
 		localSorensen.unbind(keys, listener)
+	}
+
+	function triggerAction(e: TriggerActionEvent) {
+		const listener = createdActions.current.get(e.actionId)
+		if (listener) {
+			listener(e.context)
+		}
 	}
 
 	useEffect(() => {
@@ -319,6 +345,13 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	}, [initialized]) // run once once Sorensen is initialized
 
 	useEffect(() => {
+		RundownViewEventBus.on(RundownViewEvents.TRIGGER_ACTION, triggerAction)
+		return () => {
+			RundownViewEventBus.removeListener(RundownViewEvents.TRIGGER_ACTION, triggerAction)
+		}
+	}, [])
+
+	useEffect(() => {
 		Tracker.nonreactive(() => {
 			const playlist = RundownPlaylists.findOne(props.rundownPlaylistId, {
 				fields: {
@@ -330,23 +363,36 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				},
 			})
 			if (playlist) {
-				setRundownPlaylistContext({
-					rundownPlaylist: playlist,
-					currentRundownId: props.currentRundownId,
-					currentPartId: props.currentPartId,
-					nextPartId: props.nextPartId,
-					currentSegmentPartIds: props.currentSegmentPartIds,
-					nextSegmentPartIds: props.nextSegmentPartIds,
-				})
+				let context = rundownPlaylistContext.get()
+				if (context === null) {
+					context = {
+						rundownPlaylistId: new ReactiveVar(playlist._id),
+						rundownPlaylist: new ReactiveVar(playlist),
+						currentRundownId: new ReactiveVar(props.currentRundownId),
+						currentPartId: new ReactiveVar(props.currentPartId),
+						nextPartId: new ReactiveVar(props.nextPartId),
+						currentSegmentPartIds: new ReactiveVar(props.currentSegmentPartIds),
+						nextSegmentPartIds: new ReactiveVar(props.nextSegmentPartIds),
+					}
+					rundownPlaylistContext.set(context)
+				} else {
+					context.rundownPlaylistId.set(playlist._id)
+					context.rundownPlaylist.set(playlist)
+					context.currentRundownId.set(props.currentRundownId)
+					context.currentPartId.set(props.currentPartId)
+					context.nextPartId.set(props.nextPartId)
+					context.currentSegmentPartIds.set(props.currentSegmentPartIds)
+					context.nextSegmentPartIds.set(props.nextSegmentPartIds)
+				}
 			}
 		})
 	}, [
 		props.rundownPlaylistId,
 		props.currentRundownId,
 		props.currentPartId,
-		props.currentSegmentPartIds,
+		JSON.stringify(props.currentSegmentPartIds),
 		props.nextPartId,
-		props.nextSegmentPartIds,
+		JSON.stringify(props.nextSegmentPartIds),
 	])
 
 	const triggerSubReady = useSubscription(PubSub.triggeredActions, {
@@ -393,13 +439,13 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			return
 		}
 
-		const createdActions: Map<TriggeredActionId, (e) => void> = new Map()
+		createdActions.current = new Map()
 		const previewAutoruns: Tracker.Computation[] = []
 
 		triggeredActions.forEach((pair) => {
 			const action = createAction(pair._id, pair.actions, showStyleBase, t, getCurrentContext)
 			if (!props.simulateTriggerBinding) {
-				createdActions.set(pair._id, action.listener)
+				createdActions.current.set(pair._id, action.listener)
 				pair.triggers.forEach((trigger) => {
 					if (trigger.type === TriggerType.hotkey) {
 						bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
@@ -410,13 +456,18 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			if (pair.name) {
 				const triggers = pair.triggers.filter((trigger) => trigger.type === TriggerType.hotkey)
 				const genericTriggerId = protectString(`${pair._id}`)
+				const keys = triggers.map((trigger) => trigger.keys)
+				const finalKeys = keys.map((key) => getFinalKey(key))
+				const adLibOnly = pair.actions.every((action) => action.action === PlayoutActions.adlib)
 				MountedGenericTriggers.upsert(genericTriggerId, {
 					$set: {
 						_id: genericTriggerId,
 						_rank: pair._rank,
 						triggeredActionId: pair._id,
-						keys: triggers.map((trigger) => trigger.keys),
+						keys,
+						finalKeys,
 						name: pair.name,
+						adLibOnly,
 					},
 				})
 			}
@@ -424,6 +475,8 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			const hotkeyTriggers = pair.triggers
 				.filter((trigger) => trigger.type === TriggerType.hotkey)
 				.map((trigger) => trigger.keys)
+
+			const finalKeys = hotkeyTriggers.map((key) => getFinalKey(key))
 
 			previewAutoruns.push(
 				isolatedAutorunWithCleanup(() => {
@@ -444,7 +497,10 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 								type: adLib.type,
 								triggeredActionId: pair._id,
 								keys: hotkeyTriggers,
+								finalKeys,
 								name: pair.name,
+								targetName: adLib.label,
+								sourceLayerId: adLib.sourceLayerId,
 							},
 						})
 					})
@@ -461,7 +517,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		return () => {
 			if (initialized) {
 				triggeredActions.forEach((pair) => {
-					const actionListener = createdActions.get(pair._id)
+					const actionListener = createdActions.current.get(pair._id)
 					if (actionListener) {
 						pair.triggers.forEach((trigger) => {
 							if (trigger.type === TriggerType.hotkey) {

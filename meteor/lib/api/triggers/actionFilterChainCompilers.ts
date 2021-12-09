@@ -15,17 +15,12 @@ import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
 import { PartId } from '../../collections/Parts'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../../collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../collections/RundownBaselineAdLibPieces'
-import {
-	DBRundownPlaylist,
-	RundownPlaylist,
-	RundownPlaylistId,
-	RundownPlaylists,
-} from '../../collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../collections/RundownPlaylists'
 import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { FindOptions, MongoSelector } from '../../typings/meteor'
-import { RundownId } from '../../collections/Rundowns'
+import { ReactivePlaylistActionContext } from './actionFactory'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
@@ -482,14 +477,7 @@ function compareLabels(a: string | ITranslatableMessage, b: string | ITranslatab
 export function compileAdLibFilter(
 	filterChain: AdLibFilterChainLink[],
 	showStyleBase: ShowStyleBase
-): (
-	rundownPlaylistId: RundownPlaylistId,
-	currentRundownId: RundownId | null,
-	currentSegmentPartIds: PartId[],
-	nextSegmentPartIds: PartId[],
-	currentPartId: PartId | null,
-	nextPartId: PartId | null
-) => IWrappedAdLib[] {
+): (context: ReactivePlaylistActionContext) => IWrappedAdLib[] {
 	const onlyAdLibLinks = filterChain.filter((link) => link.object === 'adLib') as IAdLibFilterLink[]
 	const adLibPieceTypeFilter = compileAdLibPieceFilter(onlyAdLibLinks, showStyleBase)
 	const adLibActionTypeFilter = compileAdLibActionFilter(onlyAdLibLinks, showStyleBase)
@@ -497,30 +485,23 @@ export function compileAdLibFilter(
 	const clearAdLibs = compileAndRunClearFilter(onlyAdLibLinks, showStyleBase)
 	const stickyAdLibs = compileAndRunStickyFilter(onlyAdLibLinks, showStyleBase)
 
-	return (
-		rundownPlaylistId: RundownPlaylistId,
-		currentRundownId: RundownId | null,
-		currentSegmentPartIds: PartId[],
-		nextSegmentPartIds: PartId[],
-		currentPartId: PartId | null,
-		nextPartId: PartId | null
-	) => {
+	return (context: ReactivePlaylistActionContext) => {
 		let rundownBaselineAdLibItems: IWrappedAdLib[] = []
 		let adLibPieces: IWrappedAdLib[] = []
 		let rundownBaselineAdLibActions: IWrappedAdLib[] = []
 		let adLibActions: IWrappedAdLib[] = []
 		const segmentPartIds =
 			adLibPieceTypeFilter.segment === 'current'
-				? currentSegmentPartIds
+				? context.currentSegmentPartIds.get()
 				: adLibPieceTypeFilter.segment === 'next'
-				? nextSegmentPartIds
+				? context.nextSegmentPartIds.get()
 				: undefined
 
 		const singlePartId =
 			adLibPieceTypeFilter.part === 'current'
-				? currentPartId
+				? context.currentPartId.get()
 				: adLibPieceTypeFilter.part === 'next'
-				? nextPartId
+				? context.nextPartId.get()
 				: undefined
 
 		let partFilter: PartId[] | undefined = undefined
@@ -566,7 +547,7 @@ export function compileAdLibFilter(
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
 							...{
-								rundownId: currentRundownId,
+								rundownId: context.currentRundownId.get(),
 							},
 						} as Mongo.QueryWithModifiers<RundownBaselineAdLibItem>,
 						{
@@ -583,7 +564,7 @@ export function compileAdLibFilter(
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
 							...{
-								rundownId: currentRundownId,
+								rundownId: context.currentRundownId.get(),
 							},
 						} as Mongo.QueryWithModifiers<AdLibPiece>,
 						{
@@ -618,7 +599,7 @@ export function compileAdLibFilter(
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
 							...{
-								rundownId: currentRundownId,
+								rundownId: context.currentRundownId.get(),
 							},
 						} as Mongo.QueryWithModifiers<RundownBaselineAdLibAction>,
 						{
@@ -636,7 +617,7 @@ export function compileAdLibFilter(
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
 							...{
-								rundownId: currentRundownId,
+								rundownId: context.currentRundownId.get(),
 							},
 						} as Mongo.QueryWithModifiers<AdLibAction>,
 						{
