@@ -7,7 +7,7 @@ import {
 	setupDefaultRundownPlaylist,
 	setupMockPeripheralDevice,
 } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { Timeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
@@ -50,7 +50,7 @@ describe('Timeline', () => {
 		expect(getRundown0()).toBeTruthy()
 		expect(getPlaylist0()).toBeTruthy()
 
-		const parts = getRundown0().getParts()
+		const parts = RundownCollectionUtil.getParts(getRundown0())
 
 		expect(getPlaylist0()).toMatchObject({
 			activationId: undefined,

@@ -8,7 +8,7 @@ import { protectString, unprotectString, getRandomId, getCurrentTime, clone } fr
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context'
-import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import { Rundown, RundownCollectionUtil, Rundowns } from '../../../../lib/collections/Rundowns'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
 import {
 	PieceInstance,
@@ -63,7 +63,7 @@ describe('Test blueprint api context', () => {
 		const activationId = playlist.activationId as RundownPlaylistActivationId
 		expect(activationId).toBeTruthy()
 
-		rundown.getParts().forEach((part, i) => {
+		RundownCollectionUtil.getParts(rundown).forEach((part, i) => {
 			// make into a partInstance
 			PartInstances.insert({
 				_id: protectString(`${part._id}_instance`),

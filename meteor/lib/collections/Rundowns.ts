@@ -1,6 +1,5 @@
-import * as _ from 'underscore'
 import { Time, applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { Segments, DBSegment, Segment } from './Segments'
+import { Segments, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery } from '../typings/meteor'
 import { StudioId } from './Studios'
@@ -11,7 +10,6 @@ import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases
 import { RundownNote } from '../api/notes'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
 import { createMongoCollectionOLD } from './lib'
-import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
@@ -117,76 +115,87 @@ export class Rundown implements DBRundown {
 			this[key] = value
 		}
 	}
-	getRundownPlaylist(): RundownPlaylist {
-		if (!this.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
-		const pls = RundownPlaylists.findOne(this.playlistId)
+}
+
+/**
+ * Direct database accessors for the Rundown
+ * These used to reside on the Rundown class
+ */
+export class RundownCollectionUtil {
+	static getRundownPlaylist(rundown: Pick<DBRundown, 'playlistId'>): RundownPlaylist {
+		if (!rundown.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
+		const pls = RundownPlaylists.findOne(rundown.playlistId)
 		if (pls) {
 			return pls
-		} else throw new Meteor.Error(404, `Rundown Playlist "${this.playlistId}" not found!`)
+		} else throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
 	}
-	getShowStyleVariant(): ShowStyleVariant {
-		const showStyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
-		if (!showStyleVariant) throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
+	static getShowStyleVariant(rundown: Pick<DBRundown, 'showStyleVariantId'>): ShowStyleVariant {
+		const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId)
+		if (!showStyleVariant)
+			throw new Meteor.Error(404, `ShowStyleVariant "${rundown.showStyleVariantId}" not found!`)
 		return showStyleVariant
 	}
-	getShowStyleBase(): ShowStyleBase {
-		const showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
-		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
+	static getShowStyleBase(rundown: Pick<DBRundown, 'showStyleBaseId'>): ShowStyleBase {
+		const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found!`)
 		return showStyleBase
 	}
-	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
-		selector = selector || {}
-		options = options || {}
+	static getSegments(
+		rundown: Pick<DBRundown, '_id'>,
+		selector?: MongoQuery<Segment>,
+		options?: FindOptions<Segment>
+	): Segment[] {
 		return Segments.find(
-			_.extend(
-				{
-					rundownId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1 },
-				},
-				options
-			)
+			{
+				rundownId: rundown._id,
+				...selector,
+			},
+			{
+				sort: { _rank: 1 },
+				...options,
+			}
 		).fetch()
 	}
-	getParts(selector?: MongoQuery<Part>, options?: FindOptions<DBPart>, segmentsInOrder?: Segment[]): Part[] {
-		selector = selector || {}
-		options = options || {}
-
-		let parts = Parts.find(
-			_.extend(
-				{
-					rundownId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1 },
-				},
-				options
-			)
+	static getParts(
+		rundown: Pick<DBRundown, '_id'>,
+		selector?: MongoQuery<Part>,
+		options?: FindOptions<DBPart>,
+		segmentsInOrder?: Array<Pick<Segment, '_id'>>
+	): Part[] {
+		const parts = Parts.find(
+			{
+				rundownId: rundown._id,
+				...selector,
+			},
+			{
+				sort: { _rank: 1 },
+				...options,
+			}
 		).fetch()
-		if (!options.sort) {
-			parts = RundownPlaylist._sortPartsInner(parts, segmentsInOrder || this.getSegments())
+
+		if (options?.sort) {
+			// User explicitly sorted the parts
+			return parts
+		} else {
+			// Default to sorting within the rundown
+			return RundownPlaylist._sortPartsInner(
+				parts,
+				segmentsInOrder || RundownCollectionUtil.getSegments(rundown, undefined, { fields: { _id: 1 } })
+			)
 		}
-		return parts
 	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
-	getSegmentsAndPartsSync(): { segments: Segment[]; parts: Part[] } {
+	static getSegmentsAndPartsSync(rundown: Pick<DBRundown, '_id'>): { segments: Segment[]; parts: Part[] } {
 		const segments = Segments.find(
 			{
-				rundownId: this._id,
+				rundownId: rundown._id,
 			},
 			{ sort: { _rank: 1 } }
 		).fetch()
 
 		const parts = Parts.find(
 			{
-				rundownId: this._id,
+				rundownId: rundown._id,
 			},
 			{ sort: { _rank: 1 } }
 		).fetch()
@@ -196,27 +205,8 @@ export class Rundown implements DBRundown {
 			parts: RundownPlaylist._sortPartsInner(parts, segments),
 		}
 	}
-	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
-		selector = selector || {}
-		options = options || {}
-		return PartInstances.find(
-			_.extend(
-				{
-					rundownId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { takeCount: 1 },
-				},
-				options
-			)
-		).fetch()
-	}
 }
 
-// export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
 export const Rundowns = createMongoCollectionOLD<Rundown, DBRundown>('rundowns', {
 	transform: (doc) => applyClassToDocument(Rundown, doc),
 })

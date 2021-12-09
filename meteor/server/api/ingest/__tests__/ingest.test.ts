@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
@@ -1365,11 +1365,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
 			})
-			const playlist = rundown.getRundownPlaylist()
+			const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
 			expect(playlist).toBeTruthy()
 
 			const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
-			const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+			const getPlaylist = () => RundownCollectionUtil.getRundownPlaylist(rundown)
 			const getSegment = (id: SegmentId) => Segments.findOne(id) as Segment
 			const resyncRundown = async () => {
 				try {
@@ -1390,8 +1390,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				}
 			}
 
-			const segments = getRundown().getSegments()
-			const parts = getRundown().getParts()
+			const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 			expect(segments).toHaveLength(2)
 			expect(parts).toHaveLength(3)
@@ -1525,14 +1524,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
 			})
-			const playlist = rundown.getRundownPlaylist()
+			const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
 			expect(playlist).toBeTruthy()
 
-			const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
-			const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+			// const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
+			const getPlaylist = () => RundownCollectionUtil.getRundownPlaylist(rundown)
 
-			const segments = getRundown().getSegments()
-			const parts = getRundown().getParts()
+			const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 			expect(segments).toHaveLength(2)
 			expect(parts).toHaveLength(3)
@@ -1572,8 +1570,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				updatedSegmentData
 			)
 			{
-				const segments2 = getRundown().getSegments()
-				const parts2 = getRundown().getParts()
+				const { segments: segments2, parts: parts2 } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 				expect(segments2).toHaveLength(2)
 				expect(parts2).toHaveLength(3)
