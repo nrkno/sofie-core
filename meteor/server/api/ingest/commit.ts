@@ -303,7 +303,7 @@ export async function CommitIngestOperation(
 async function generatePlaylistAndRundownsCollection(
 	ingestCache: CacheForIngest,
 	newPlaylistIds: PlaylistIdPair
-): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>]> {
+): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown>]> {
 	// Load existing playout data
 	const finalRundown = getRundown(ingestCache)
 
@@ -338,8 +338,8 @@ async function generatePlaylistAndRundownsCollectionInner(
 	newPlaylistId: RundownPlaylistId,
 	newPlaylistExternalId: string,
 	existingPlaylist0?: ReadonlyDeep<RundownPlaylist>,
-	existingRundownsCollection?: DbCacheWriteCollection<Rundown, DBRundown>
-): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>] | null> {
+	existingRundownsCollection?: DbCacheWriteCollection<Rundown>
+): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown>] | null> {
 	if (existingPlaylist0) {
 		if (existingPlaylist0._id !== newPlaylistId) {
 			throw new Meteor.Error(
@@ -465,7 +465,7 @@ function updatePartInstancesBasicProperties(
 export async function regeneratePlaylistAndRundownOrder(
 	studio: ReadonlyDeep<Studio>,
 	oldPlaylist: ReadonlyDeep<RundownPlaylist>,
-	existingRundownsCollection?: DbCacheWriteCollection<Rundown, DBRundown>
+	existingRundownsCollection?: DbCacheWriteCollection<Rundown>
 ): Promise<RundownPlaylist | null> {
 	const result = await generatePlaylistAndRundownsCollectionInner(
 		studio,

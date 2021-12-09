@@ -40,7 +40,7 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceGroupMetadata } from '../../lib/rundown/pieces'
@@ -290,8 +290,8 @@ export namespace ServerPeripheralDeviceAPI {
 	function timelineTriggerTimeInner(
 		cache: CacheForStudio,
 		results: PeripheralDeviceAPI.TimelineTriggerTimeResult,
-		pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance> | undefined,
-		activePlaylist: RundownPlaylist | undefined
+		pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
+		activePlaylist: DBRundownPlaylist | undefined
 	) {
 		let lastTakeTime: number | undefined
 

@@ -9,7 +9,6 @@ import {
 	getCurrentTime,
 	systemTime,
 	literal,
-	applyClassToDocument,
 	formatDateAsTimecode,
 	formatDurationAsTimecode,
 	formatDateTime,
@@ -90,29 +89,6 @@ describe('lib/lib', () => {
 		})
 		const layer: string | number = obj.layer // just to check typings
 		expect(layer).toBeTruthy()
-	})
-	testInFiber('applyClassToDocument', () => {
-		class MyClass {
-			public publ: string
-			private priv: string
-			constructor(from) {
-				Object.keys(from).forEach((key) => {
-					this[key] = from[key]
-				})
-			}
-			getPriv() {
-				return this.priv
-			}
-			getPubl() {
-				return this.publ
-			}
-		}
-		const doc = applyClassToDocument(MyClass, {
-			priv: 'aaa',
-			publ: 'bbb',
-		})
-		expect(doc.getPriv()).toEqual('aaa')
-		expect(doc.getPubl()).toEqual('bbb')
 	})
 	testInFiber('formatDateAsTimecode', () => {
 		const d = new Date('2019-01-01 13:04:15.145')

@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { DBRundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, isPartPlayable } from '../../../lib/collections/Parts'
 import {
 	getCurrentTime,
@@ -683,9 +683,9 @@ export function isTooCloseToAutonext(currentPartInstance: ReadonlyDeep<PartInsta
 }
 
 export function getRundownsSegmentsAndPartsFromCache(
-	partsCache: DbCacheReadCollection<Part, DBPart>,
-	segmentsCache: DbCacheReadCollection<Segment, DBSegment>,
-	rundowns: Array<ReadonlyDeep<DBRundown>>
+	partsCache: DbCacheReadCollection<Part>,
+	segmentsCache: DbCacheReadCollection<Segment>,
+	rundowns: Array<ReadonlyDeep<Rundown>>
 ): { segments: Segment[]; parts: Part[] } {
 	const segments = RundownPlaylist._sortSegments(
 		segmentsCache.findFetch(

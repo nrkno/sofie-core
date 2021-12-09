@@ -1,10 +1,5 @@
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import {
-	RundownPlaylist,
-	DBRundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistId,
-} from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 import { protectString } from '../../../lib/lib'
@@ -13,10 +8,10 @@ import { DbCacheReadObject } from '../../cache/CacheObject'
 import { CacheBase } from '../../cache/CacheBase'
 
 export interface CacheForStudioBase {
-	readonly Studio: DbCacheReadObject<Studio, Studio>
-	readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>
+	readonly Studio: DbCacheReadObject<Studio>
+	readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
-	readonly Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
+	readonly Timeline: DbCacheWriteCollection<TimelineComplete>
 }
 
 /**
@@ -25,17 +20,17 @@ export interface CacheForStudioBase {
 export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheForStudioBase {
 	public readonly isStudio = true
 
-	public readonly Studio: DbCacheReadObject<Studio, Studio>
-	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>
+	public readonly Studio: DbCacheReadObject<Studio>
+	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
-	public readonly RundownPlaylists: DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>
-	public readonly Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
+	public readonly RundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>
+	public readonly Timeline: DbCacheWriteCollection<TimelineComplete>
 
 	private constructor(
-		studio: DbCacheReadObject<Studio, Studio>,
-		peripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>,
-		rundownPlaylists: DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>,
-		timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
+		studio: DbCacheReadObject<Studio>,
+		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
+		rundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>,
+		timeline: DbCacheWriteCollection<TimelineComplete>
 	) {
 		super()
 
@@ -58,7 +53,7 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 		return new CacheForStudio(studio, ...collections)
 	}
 
-	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): RundownPlaylist[] {
+	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): DBRundownPlaylist[] {
 		return this.RundownPlaylists.findFetch({
 			activationId: { $exists: true },
 			_id: {

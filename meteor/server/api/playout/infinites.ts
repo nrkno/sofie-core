@@ -8,7 +8,7 @@ import {
 	wrapPartToTemporaryInstance,
 } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { saveIntoCache } from '../../cache/lib'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
@@ -30,7 +30,7 @@ import { flatten, getCurrentTime } from '../../../lib/lib'
 import { CacheForIngest } from '../ingest/cache'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { DBSegment } from '../../../lib/collections/Segments'
+import { Segment } from '../../../lib/collections/Segments'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -39,8 +39,8 @@ export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
  * We can only continue adlib onEnd infinites if we go forwards in the rundown. Any distance backwards will clear them.
  * */
 export function canContinueAdlibOnEndInfinites(
-	playlist: ReadonlyDeep<RundownPlaylist>,
-	orderedSegments: DBSegment[],
+	playlist: ReadonlyDeep<DBRundownPlaylist>,
+	orderedSegments: Segment[],
 	previousPartInstance: PartInstance | undefined,
 	candidateInstance: DBPartInstance
 ): boolean {

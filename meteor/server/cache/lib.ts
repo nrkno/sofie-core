@@ -5,20 +5,20 @@ import { DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 import { SaveIntoDbHooks, ChangedIds, saveIntoBase } from '../lib/database'
 import { logger } from '../logging'
 
-export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
+export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
 }
 export function isDbCacheWritable(
 	o: any
-): o is DbCacheWriteCollection<any, any> | DbCacheWriteObject<any, any> | DbCacheWriteOptionalObject<any, any> {
+): o is DbCacheWriteCollection<any> | DbCacheWriteObject<any> | DbCacheWriteOptionalObject<any> {
 	return !!(o && typeof o === 'object' && o.updateDatabaseWithData)
 }
 /** Caches data, allowing reads from cache, but not writes */
-export function saveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: DbCacheWriteCollection<DocClass, DBInterface>,
+export function saveIntoCache<DBInterface extends DBObj>(
+	collection: DbCacheWriteCollection<DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
-	optionsOrg?: SaveIntoDbHooks<DocClass, DBInterface>
+	optionsOrg?: SaveIntoDbHooks<DBInterface, DBInterface>
 ): ChangedIds<DBInterface['_id']> {
 	return saveIntoBase(collection.name ?? '', collection.findFetch(filter), newData, {
 		...optionsOrg,
