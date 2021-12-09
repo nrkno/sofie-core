@@ -73,9 +73,6 @@ export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
 	duration?: Time
 }
 
-/** Note: Use PartInstance instead */
-export type DBPartInstance = PartInstance
-
 export function wrapPartToTemporaryInstance(
 	playlistActivationId: RundownPlaylistActivationId,
 	part: Part

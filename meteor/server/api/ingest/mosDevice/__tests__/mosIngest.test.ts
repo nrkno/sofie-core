@@ -20,7 +20,7 @@ import {
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
 import { getPartId } from '../../lib'
-import { DBPartInstance, PartInstance, PartInstances } from '../../../../../lib/collections/PartInstances'
+import { PartInstance, PartInstances } from '../../../../../lib/collections/PartInstances'
 import { resetRandomId, restartRandomId } from '../../../../../__mocks__/random'
 import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
 import { removeRundownPlaylistFromDb } from '../../../rundownPlaylist'
@@ -1168,7 +1168,7 @@ describe('Test recieved mos ingest payloads', () => {
 	function rundownGetAllPartInstances(
 		rundownId: RundownId,
 		selector?: MongoQuery<PartInstance>,
-		options?: FindOptions<DBPartInstance>
+		options?: FindOptions<PartInstance>
 	) {
 		return PartInstances.find(
 			{

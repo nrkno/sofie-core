@@ -4,7 +4,7 @@ import { Segments, Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { unprotectString, literal, generateTranslation, normalizeArrayToMap, assertNever } from './lib'
 import * as _ from 'underscore'
-import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
+import { PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
 import { RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
 import { ITranslatableMessage } from './api/TranslatableMessage'
@@ -70,7 +70,7 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 			orphaned: 'deleted',
 		},
 		{
-			fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
+			fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
 				_id: 1,
 				segmentId: 1,
 				rundownId: 1,
@@ -121,7 +121,7 @@ export function getBasicNotesForSegment(
 	segment: Segment,
 	nrcsName: string,
 	parts: Part[],
-	partInstances: Pick<DBPartInstance, 'orphaned' | 'reset' | 'part'>[]
+	partInstances: Pick<PartInstance, 'orphaned' | 'reset' | 'part'>[]
 ): Array<TrackedNote> {
 	const notes: Array<TrackedNote> = []
 

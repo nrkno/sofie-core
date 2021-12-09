@@ -6,7 +6,7 @@ import { literal, protectString, waitForPromise } from '../../../../lib/lib'
 import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances, DBPartInstance, PartInstanceId } from '../../../../lib/collections/PartInstances'
+import { PartInstances, PartInstance, PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { Studios } from '../../../../lib/collections/Studios'
 import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 import { removeRundownsFromDb } from '../../rundownPlaylist'
@@ -106,7 +106,7 @@ async function createMockRO(): Promise<RundownId> {
 
 	const rawInstances = [
 		// Segment 1
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('mock_part_instance1'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
@@ -123,7 +123,7 @@ async function createMockRO(): Promise<RundownId> {
 				title: 'Part 1',
 			}),
 		}),
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('mock_part_instance2'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
@@ -140,7 +140,7 @@ async function createMockRO(): Promise<RundownId> {
 				title: 'Part 2',
 			}),
 		}),
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('mock_part_instance3'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
@@ -158,7 +158,7 @@ async function createMockRO(): Promise<RundownId> {
 			}),
 		}),
 		// Segment 2
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('mock_part_instance4'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment2'),
@@ -175,7 +175,7 @@ async function createMockRO(): Promise<RundownId> {
 				title: 'Part 4',
 			}),
 		}),
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('mock_part_instance5'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment2'),
@@ -193,7 +193,7 @@ async function createMockRO(): Promise<RundownId> {
 			}),
 		}),
 		// Segment 3
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('mock_part_instance6'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment3'),
@@ -211,7 +211,7 @@ async function createMockRO(): Promise<RundownId> {
 			}),
 		}),
 		// Segment 4
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('mock_part_instance7'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
@@ -228,7 +228,7 @@ async function createMockRO(): Promise<RundownId> {
 				title: 'Part 7',
 			}),
 		}),
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('mock_part_instance8'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
@@ -246,7 +246,7 @@ async function createMockRO(): Promise<RundownId> {
 				floated: true,
 			}),
 		}),
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('mock_part_instance9'),
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
@@ -264,7 +264,7 @@ async function createMockRO(): Promise<RundownId> {
 			}),
 		}),
 
-		literal<DBPartInstance>({
+		literal<PartInstance>({
 			_id: protectString('orphan_part_instance1'), // after mock_part_instance8
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
@@ -448,7 +448,7 @@ describe('ensureNextPartIsValid', () => {
 		// Insert a temporary instance
 		const instanceId: PartInstanceId = protectString('orphaned_first_part')
 		PartInstances.insert(
-			literal<DBPartInstance>({
+			literal<PartInstance>({
 				_id: instanceId,
 				rundownId: rundownId,
 				segmentId: protectString('mock_segment1'),

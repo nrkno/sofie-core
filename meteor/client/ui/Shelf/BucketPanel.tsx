@@ -53,7 +53,7 @@ import { BucketPieceButton } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { PartInstances, PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { AdLibPieceUi } from './AdLibPanel'
 import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
@@ -253,7 +253,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
-				fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
+				fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
 					rundownId: 1,
 					//@ts-ignore
 					'part._id': 1,

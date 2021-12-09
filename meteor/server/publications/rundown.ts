@@ -10,7 +10,7 @@ import { Segment, Segments } from '../../lib/collections/Segments'
 import { Part, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
-import { PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
+import { PartInstances, PartInstance } from '../../lib/collections/PartInstances'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
@@ -74,9 +74,9 @@ meteorPublish(PubSub.parts, function (selector: MongoQuery<Part>, token?: string
 	}
 	return null
 })
-meteorPublish(PubSub.partInstances, function (selector: MongoQuery<DBPartInstance>, token?: string) {
+meteorPublish(PubSub.partInstances, function (selector: MongoQuery<PartInstance>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<DBPartInstance> = {
+	const modifier: FindOptions<PartInstance> = {
 		fields: {
 			// @ts-ignore
 			'part.metaData': 0,
@@ -91,9 +91,9 @@ meteorPublish(PubSub.partInstances, function (selector: MongoQuery<DBPartInstanc
 	}
 	return null
 })
-meteorPublish(PubSub.partInstancesSimple, function (selector: MongoQuery<DBPartInstance>, token?: string) {
+meteorPublish(PubSub.partInstancesSimple, function (selector: MongoQuery<PartInstance>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<DBPartInstance> = {
+	const modifier: FindOptions<PartInstance> = {
 		fields: {
 			// @ts-ignore
 			'part.metaData': 0,

@@ -1,12 +1,7 @@
 import * as _ from 'underscore'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import {
-	DBPartInstance,
-	PartInstance,
-	PartInstanceId,
-	wrapPartToTemporaryInstance,
-} from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId, wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { saveIntoCache } from '../../cache/lib'
@@ -42,7 +37,7 @@ export function canContinueAdlibOnEndInfinites(
 	playlist: ReadonlyDeep<RundownPlaylist>,
 	orderedSegments: Segment[],
 	previousPartInstance: PartInstance | undefined,
-	candidateInstance: DBPartInstance
+	candidateInstance: PartInstance
 ): boolean {
 	if (previousPartInstance && playlist) {
 		// When in the same segment, we can rely on the ranks to be in order. This is to handle orphaned parts, but is also valid for normal parts

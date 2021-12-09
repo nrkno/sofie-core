@@ -23,7 +23,7 @@ import {
 } from './infinites'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
@@ -216,12 +216,12 @@ type ParsedNextPart =
 	  }
 	| {
 			type: 'partinstance'
-			instance: DBPartInstance
+			instance: PartInstance
 	  }
 
 export async function setNextPart(
 	cache: CacheForPlayout,
-	rawNextPart: Omit<SelectNextPartResult, 'index'> | DBPartInstance | null,
+	rawNextPart: Omit<SelectNextPartResult, 'index'> | PartInstance | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ): Promise<void> {

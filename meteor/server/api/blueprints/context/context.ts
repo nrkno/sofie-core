@@ -63,7 +63,6 @@ import {
 	PartInstances,
 	protectPartInstance,
 	unprotectPartInstanceArray,
-	DBPartInstance,
 } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { ReadonlyDeep } from 'type-fest'
@@ -693,7 +692,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 	}
 
 	getFirstPartInstanceInRundown(allowUntimed?: boolean): Readonly<IBlueprintPartInstance<unknown>> {
-		const query: MongoSelector<DBPartInstance> = {
+		const query: MongoSelector<PartInstance> = {
 			rundownId: this._rundown._id,
 			playlistActivationId: this._currentPart.playlistActivationId,
 		}
