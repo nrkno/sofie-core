@@ -77,7 +77,6 @@ export function createMongoCollection<DBInterface extends { _id: ProtectedString
 	options?: {
 		connection?: Object | null
 		idGeneration?: string
-		transform?: Function
 	}
 ): AsyncTransformedCollection<DBInterface, DBInterface> {
 	return createMongoCollectionOLD<DBInterface, DBInterface>(name, options)
