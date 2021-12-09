@@ -143,7 +143,7 @@ describe('findLookaheadForLayer', () => {
 			{ _id: 'p4' },
 			{ _id: 'p5' },
 		].map((p) => ({
-			part: new Part(p as any),
+			part: p as any,
 			pieces: [{ _id: p._id + '_p1' } as any],
 		}))
 

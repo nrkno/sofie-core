@@ -265,14 +265,14 @@ describe('updatePartInstanceRanks', () => {
 		// insert an adlib part
 		const adlibId = 'adlib0'
 		insertPartInstance(
-			new Part({
+			{
 				_id: protectString(adlibId),
 				_rank: 3.5, // after part03
 				rundownId,
 				segmentId,
 				externalId: adlibId,
 				title: adlibId,
-			}),
+			},
 			'adlib-part'
 		)
 
