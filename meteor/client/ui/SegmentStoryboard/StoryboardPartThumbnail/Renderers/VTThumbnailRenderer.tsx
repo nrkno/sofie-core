@@ -9,8 +9,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilm, faSlash } from '@fortawesome/free-solid-svg-icons'
 import { getPreviewUrlForPieceUi, getThumbnailUrlForPieceUi } from '../../../../lib/ui/clipPreview'
 import { VideoPreviewPlayer } from '../../../../lib/VideoPreviewPlayer'
+import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/RundownTimingConsumer'
+import { unprotectString } from '../../../../../lib/lib'
 
 export function VTThumbnailRenderer({
+	partId,
 	pieceInstance,
 	hovering,
 	hoverScrubTimePosition,
@@ -72,6 +75,22 @@ export function VTThumbnailRenderer({
 						</span>
 					</div>
 				)}
+			</div>
+			<div className="segment-storyboard__thumbnail__countdown">
+				<RundownTimingConsumer
+					filter={(timingContext) => timingContext.partPlayed && timingContext.partPlayed[unprotectString(partId)]}
+				>
+					{(timingContext) => {
+						if (!timingContext.partPlayed) return null
+
+						const contentLeft =
+							(vtContent?.sourceDuration ?? 0) - (timingContext.partPlayed[unprotectString(partId)] ?? 0)
+
+						return contentLeft < 10000 ? (
+							<>{RundownUtils.formatDiffToTimecode(contentLeft, false, false, true, false, true, '+')}</>
+						) : null
+					}}
+				</RundownTimingConsumer>
 			</div>
 			<div className="segment-storyboard__thumbnail__label">{pieceInstance.instance.piece.name}</div>
 		</>

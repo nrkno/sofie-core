@@ -43,6 +43,7 @@ export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbna
 					layer={mainPiece?.sourceLayer}
 					studio={studio}
 					partId={part.partId}
+					partInstanceId={part.instance._id}
 					highlight={highlight}
 				/>
 			)}

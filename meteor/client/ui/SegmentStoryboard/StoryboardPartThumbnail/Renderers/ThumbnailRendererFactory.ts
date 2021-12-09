@@ -1,4 +1,6 @@
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { PartInstanceId } from '../../../../../lib/collections/PartInstances'
+import { PartId } from '../../../../../lib/collections/Parts'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { assertNever } from '../../../../../lib/lib'
 import { OffsetPosition } from '../../../../utils/positions'
@@ -10,6 +12,8 @@ import { SplitsThumbnailRenderer } from './SplitsThumbnailRenderer'
 import { VTThumbnailRenderer } from './VTThumbnailRenderer'
 
 export interface IProps {
+	partId: PartId
+	partInstanceId: PartInstanceId
 	studio: Studio
 	pieceInstance: PieceUi
 	hoverScrubTimePosition: number

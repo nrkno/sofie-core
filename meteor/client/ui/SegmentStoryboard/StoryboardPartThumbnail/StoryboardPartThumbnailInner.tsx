@@ -8,9 +8,11 @@ import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positio
 import { getElementWidth } from '../../../utils/dimensions'
 import renderThumbnail from './Renderers/ThumbnailRendererFactory'
 import { PieceElement } from '../utils/PieceElement'
+import { PartInstanceId } from '../../../../lib/collections/PartInstances'
 
 interface IProps {
 	partId: PartId
+	partInstanceId: PartInstanceId
 	layer: ISourceLayer | undefined
 	piece: PieceExtended
 	studio: Studio | undefined
@@ -19,7 +21,7 @@ interface IProps {
 }
 
 export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
-	({ piece, layer, partId, studio, highlight }: IProps) => {
+	({ piece, layer, partId, partInstanceId, studio, highlight }: IProps) => {
 		const [hover, setHover] = useState(false)
 		const [origin, setOrigin] = useState<OffsetPosition>({ left: 0, top: 0 })
 		const [width, setWidth] = useState(0)
@@ -71,6 +73,8 @@ export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
 			>
 				{studio &&
 					renderThumbnail({
+						partId,
+						partInstanceId,
 						hoverScrubTimePosition: mousePosition * (piece.instance.piece.content.sourceDuration || 0),
 						hovering: hover,
 						layer: layer,
