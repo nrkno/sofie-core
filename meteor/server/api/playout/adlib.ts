@@ -350,7 +350,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
 		if (queue || adLibPiece.toBeQueued) {
-			const newPartInstance = new PartInstance({
+			const newPartInstance: PartInstance = {
 				_id: getRandomId(),
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
@@ -369,7 +369,7 @@ export namespace ServerPlayoutAdLibAPI {
 					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
 				},
-			})
+			}
 			const newPieceInstance = convertAdLibToPieceInstance(
 				playlist.activationId,
 				adLibPiece,

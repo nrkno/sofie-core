@@ -1,20 +1,7 @@
-import * as _ from 'underscore'
-import {
-	applyClassToDocument,
-	registerCollection,
-	ProtectedString,
-	ProtectedStringProperties,
-	protectString,
-	unprotectString,
-} from '../lib'
-import {
-	IBlueprintPartInstance,
-	PartEndState,
-	Time,
-	IBlueprintPartInstanceTimings,
-} from '@sofie-automation/blueprints-integration'
-import { createMongoCollectionOLD } from './lib'
-import { DBPart, Part, PartId } from './Parts'
+import { registerCollection, ProtectedString, ProtectedStringProperties, protectString, unprotectString } from '../lib'
+import { IBlueprintPartInstance, Time, IBlueprintPartInstanceTimings } from '@sofie-automation/blueprints-integration'
+import { createMongoCollection } from './lib'
+import { DBPart, PartId } from './Parts'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { registerIndex } from '../database'
@@ -42,6 +29,10 @@ export function protectPartInstance(partInstance: IBlueprintPartInstance): Parti
 }
 
 export interface DBPartInstance extends InternalIBlueprintPartInstance {
+	// Temporary properties (never stored in DB):
+	/** Whether this PartInstance is a temprorary wrapping of a Part */
+	readonly isTemporary?: boolean
+
 	_id: PartInstanceId
 	rundownId: RundownId
 	segmentId: SegmentId
@@ -82,60 +73,23 @@ export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
 	duration?: Time
 }
 
-export class PartInstance implements DBPartInstance {
-	// Temporary properties (never stored in DB):
-	/** Whether this PartInstance is a temprorary wrapping of a Part */
-	public readonly isTemporary: boolean
-
-	public playlistActivationId: RundownPlaylistActivationId
-	public segmentPlayoutId: SegmentPlayoutId
-	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
-	public reset?: boolean
-	public takeCount: number
-	public consumesNextSegmentId?: boolean
-	public previousPartEndState?: PartEndState
-
-	public timings?: PartInstanceTimings
-	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
-	public isTaken?: boolean
-	public rehearsal: boolean
-
-	// From IBlueprintPartInstance:
-	public part: Part
-	public _id: PartInstanceId
-	public segmentId: SegmentId
-	public rundownId: RundownId
-
-	public allowedToUseTransition?: boolean
-
-	public orphaned?: 'adlib-part' | 'deleted'
-
-	constructor(document: DBPartInstance, isTemporary?: boolean) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
-		this.isTemporary = isTemporary === true
-		this.part = document.part
-	}
-}
+export type PartInstance = DBPartInstance
 
 export function wrapPartToTemporaryInstance(
 	playlistActivationId: RundownPlaylistActivationId,
 	part: DBPart
 ): PartInstance {
-	return new PartInstance(
-		{
-			_id: protectString(`${part._id}_tmp_instance`),
-			rundownId: part.rundownId,
-			segmentId: part.segmentId,
-			playlistActivationId,
-			segmentPlayoutId: protectString(''), // Only needed when stored in the db, and filled in nearer the time
-			takeCount: -1,
-			rehearsal: false,
-			part: part,
-		},
-		true
-	)
+	return {
+		isTemporary: true,
+		_id: protectString(`${part._id}_tmp_instance`),
+		rundownId: part.rundownId,
+		segmentId: part.segmentId,
+		playlistActivationId,
+		segmentPlayoutId: protectString(''), // Only needed when stored in the db, and filled in nearer the time
+		takeCount: -1,
+		rehearsal: false,
+		part: part,
+	}
 }
 
 export function findPartInstanceInMapOrWrapToTemporary<T extends Partial<PartInstance>>(
@@ -152,9 +106,7 @@ export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance
 	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }
 
-export const PartInstances = createMongoCollectionOLD<PartInstance, DBPartInstance>('partInstances', {
-	transform: (doc) => applyClassToDocument(PartInstance, doc),
-})
+export const PartInstances = createMongoCollection<PartInstance>('partInstances')
 registerCollection('PartInstances', PartInstances)
 registerIndex(PartInstances, {
 	rundownId: 1,
