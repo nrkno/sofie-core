@@ -1,15 +1,15 @@
-import { Time, applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
+import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Segments, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery } from '../typings/meteor'
 import { StudioId } from './Studios'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintRundownDB, RundownPlaylistTiming } from '@sofie-automation/blueprints-integration'
-import { ShowStyleVariantId, ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
+import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
+import { ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
-import { createMongoCollectionOLD } from './lib'
+import { createMongoCollection } from './lib'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
@@ -78,44 +78,7 @@ export interface DBRundown
 	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
 	baselineModifyHash?: string
 }
-export class Rundown implements DBRundown {
-	// From IBlueprintRundown:
-	public externalId: string
-	public organizationId: OrganizationId
-	public name: string
-	public description?: string
-	public timing: RundownPlaylistTiming
-	public metaData?: unknown
-	// From IBlueprintRundownDB:
-	public _id: RundownId
-	public showStyleVariantId: ShowStyleVariantId
-	// From DBRundown:
-	public studioId: StudioId
-	public showStyleBaseId: ShowStyleBaseId
-	public peripheralDeviceId?: PeripheralDeviceId
-	public restoredFromSnapshotId?: RundownId
-	public created: Time
-	public modified: Time
-	public importVersions: RundownImportVersions
-	public status?: string
-	public airStatus?: string
-	public orphaned?: 'deleted'
-	public notifiedCurrentPlayingPartExternalId?: string
-	public notes?: Array<RundownNote>
-	public playlistExternalId?: string
-	public endOfRundownIsShowBreak?: boolean
-	public externalNRCSName: string
-	public playlistId: RundownPlaylistId
-	public playlistIdIsSetInSofie?: boolean
-	public _rank: number
-	public baselineModifyHash?: string
-
-	constructor(document: DBRundown) {
-		for (const [key, value] of Object.entries(document)) {
-			this[key] = value
-		}
-	}
-}
+export type Rundown = DBRundown
 
 /**
  * Direct database accessors for the Rundown
@@ -207,9 +170,7 @@ export class RundownCollectionUtil {
 	}
 }
 
-export const Rundowns = createMongoCollectionOLD<Rundown, DBRundown>('rundowns', {
-	transform: (doc) => applyClassToDocument(Rundown, doc),
-})
+export const Rundowns = createMongoCollection<Rundown>('rundowns')
 registerCollection('Rundowns', Rundowns)
 
 registerIndex(Rundowns, {

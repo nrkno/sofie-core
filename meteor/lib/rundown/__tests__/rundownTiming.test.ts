@@ -1,7 +1,7 @@
 import { PartInstance } from '../../collections/PartInstances'
 import { DBPart, Part, PartId } from '../../collections/Parts'
 import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
-import { DBRundown, Rundown } from '../../collections/Rundowns'
+import { DBRundown } from '../../collections/Rundowns'
 import { literal, protectString, unprotectString } from '../../lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 
@@ -53,27 +53,25 @@ function makeMockPart(
 }
 
 function makeMockRundown(id: string, playlistId: string, rank: number) {
-	return new Rundown(
-		literal<DBRundown>({
-			_id: protectString(id),
-			externalId: id,
-			timing: {
-				type: 'none' as any,
-			},
-			studioId: protectString('studio0'),
-			showStyleBaseId: protectString(''),
-			showStyleVariantId: protectString('variant0'),
-			peripheralDeviceId: protectString(''),
-			created: 0,
-			modified: 0,
-			importVersions: {} as any,
-			name: 'test',
-			externalNRCSName: 'mockNRCS',
-			organizationId: protectString(''),
-			playlistId: protectString(playlistId),
-			_rank: rank,
-		})
-	)
+	return literal<DBRundown>({
+		_id: protectString(id),
+		externalId: id,
+		timing: {
+			type: 'none' as any,
+		},
+		studioId: protectString('studio0'),
+		showStyleBaseId: protectString(''),
+		showStyleVariantId: protectString('variant0'),
+		peripheralDeviceId: protectString(''),
+		created: 0,
+		modified: 0,
+		importVersions: {} as any,
+		name: 'test',
+		externalNRCSName: 'mockNRCS',
+		organizationId: protectString(''),
+		playlistId: protectString(playlistId),
+		_rank: rank,
+	})
 }
 
 describe('rundown Timing Calculator', () => {
