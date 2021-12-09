@@ -80,10 +80,6 @@ export class Part implements DBPart {
 			this[key] = value
 		}
 	}
-
-	isPlayable() {
-		return isPartPlayable(this)
-	}
 }
 
 export function isPartPlayable(part: DBPart) {
