@@ -68,10 +68,12 @@ export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IP
 	(props: IPlaylistNamePanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
 			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
-			const currentRundown = props.playlist.getRundowns({ _id: livePart.rundownId })[0]
+			if (livePart) {
+				const currentRundown = props.playlist.getRundowns({ _id: livePart.rundownId })[0]
 
-			return {
-				currentRundown,
+				return {
+					currentRundown,
+				}
 			}
 		}
 
