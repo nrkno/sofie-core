@@ -8,7 +8,7 @@ import {
 	ISyncIngestUpdateToPartInstanceContext,
 	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
-import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
@@ -42,8 +42,8 @@ export class SyncIngestUpdateToPartInstanceContext
 	extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext
 {
-	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
-	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>
+	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance>
+	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
 	public readonly notes: INoteBase[] = []
 	private readonly tempSendNotesIntoBlackHole: boolean

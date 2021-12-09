@@ -116,7 +116,7 @@ export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 		preserveTypesDuringSave.push(ExpectedPackageDBType.BASELINE_ADLIB_ACTION)
 	}
 
-	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
+	saveIntoCache<ExpectedPackageDB>(
 		cache.ExpectedPackages,
 		{
 			fromPieceType: { $nin: preserveTypesDuringSave as any },
@@ -382,7 +382,7 @@ export function updateBaselineExpectedPackagesOnRundown(
 	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
 
 	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.RundownId, baseline.expectedPackages ?? [])
-	saveIntoCache<ExpectedPackageDB, ExpectedPackageDB>(
+	saveIntoCache<ExpectedPackageDB>(
 		cache.ExpectedPackages,
 		{
 			fromPieceType: ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS,
