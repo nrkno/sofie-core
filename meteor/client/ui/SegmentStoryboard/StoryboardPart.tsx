@@ -192,7 +192,7 @@ export function StoryboardPart({
 				</div>
 			) : displayLiveLineCounter ? (
 				<div className="segment-storyboard__part-timer">
-					<PartDisplayDuration fixed={true} part={part} />
+					<PartDisplayDuration part={part} />
 				</div>
 			) : null}
 		</ContextMenuTrigger>

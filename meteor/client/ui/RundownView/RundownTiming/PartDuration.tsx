@@ -20,9 +20,11 @@ interface IPartDurationProps {
  * @function PartDisplayDuration
  * @extends React.Component<WithTiming<IPartDurationProps>>
  */
-export const PartDisplayDuration = withTiming<IPartDurationProps, {}>()(function SegmentDuration(
-	props: WithTiming<IPartDurationProps>
-) {
+export const PartDisplayDuration = withTiming<IPartDurationProps, {}>((props) => ({
+	filter: (context) => {
+		return context.partExpectedDurations && context.partExpectedDurations[unprotectString(props.part.partId)]
+	},
+}))(function SegmentDuration(props: WithTiming<IPartDurationProps>) {
 	let duration: number | undefined = undefined
 	let budget = 0
 	let playedOut = 0
@@ -34,8 +36,8 @@ export const PartDisplayDuration = withTiming<IPartDurationProps, {}>()(function
 		budget =
 			part.instance.orphaned || part.instance.part.untimed
 				? 0
-				: partExpectedDurations[unprotectString(part.instance.part._id)] || 0
-		playedOut = (!part.instance.part.untimed ? partPlayed[unprotectString(part.instance.part._id)] : 0) || 0
+				: partExpectedDurations[unprotectString(part.partId)] || 0
+		playedOut = (!part.instance.part.untimed ? partPlayed[unprotectString(part.partId)] : 0) || 0
 	}
 
 	duration = budget - playedOut
