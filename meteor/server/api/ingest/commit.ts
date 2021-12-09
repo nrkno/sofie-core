@@ -24,7 +24,7 @@ import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PartId } from '../../../lib/collections/Parts'
+import { PartId, Parts } from '../../../lib/collections/Parts'
 import { NoteType, RundownNote } from '../../../lib/api/notes'
 import {
 	PlaylistLock,
@@ -40,6 +40,9 @@ import { getShowStyleCompoundForRundown } from '../showStyles'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { Studio } from '../../../lib/collections/Studios'
 import { shouldRemoveOrphanedPartInstance } from './shouldRemoveOrphanedPartInstance'
+import { Pieces } from '../../../lib/collections/Pieces'
+import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { AdLibActions } from '../../../lib/collections/AdLibActions'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -194,12 +197,13 @@ export async function CommitIngestOperation(
 
 					const { currentPartInstance, nextPartInstance } = newPlaylist.getSelectedPartInstances()
 
-					let aChangedSegmentIsHidden = ingestCache.Segments.findFetch({
+					const segmentsChangedToHidden = ingestCache.Segments.findFetch({
 						_id: { $in: data.changedSegmentIds as SegmentId[] },
-					}).some((s) => s.isHidden)
+						isHidden: true,
+					}).map((segment) => segment._id)
 
 					// Do the segment removals
-					if (data.removedSegmentIds.length > 0 || aChangedSegmentIsHidden) {
+					if (data.removedSegmentIds.length > 0 || segmentsChangedToHidden.length) {
 						const purgeSegmentIds = new Set<SegmentId>()
 						const orphanSegmentIds = new Set<SegmentId>()
 						for (const segmentId of data.removedSegmentIds) {
@@ -210,6 +214,44 @@ export async function CommitIngestOperation(
 									`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`
 								)
 								orphanSegmentIds.add(segmentId)
+							}
+						}
+
+						if (Settings.preserveUnsyncedPlayingSegmentContents) {
+							// Find segments that are hidden, not removed, and are not safe to remove (e.g. a live segment)
+							const hiddenSegmentsToRestore = segmentsChangedToHidden
+								.filter((segmentId) => !data.removedSegmentIds.includes(segmentId))
+								.filter(
+									(segmentId) => !canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)
+								)
+
+							for (const segmentId of [...data.removedSegmentIds, ...hiddenSegmentsToRestore]) {
+								const newParts = ingestCache.Parts.findFetch({ segmentId: segmentId })
+
+								// Blueprints have updated the hidden segment, so we won't try to preserve the contents
+								if (newParts.length) {
+									continue
+								}
+
+								// Restore old data
+								const oldParts = Parts.find({ segmentId }).fetch()
+								const oldPartIds = oldParts.map((part) => part._id)
+								const oldPieces = Pieces.find({ startPartId: { $in: oldPartIds } }).fetch()
+								const oldAdLibPieces = AdLibPieces.find({ partId: { $in: oldPartIds } }).fetch()
+								const oldAdLibActions = AdLibActions.find({ partId: { $in: oldPartIds } }).fetch()
+
+								for (const part of oldParts) {
+									ingestCache.Parts.insert(part)
+								}
+								for (const piece of oldPieces) {
+									ingestCache.Pieces.insert(piece)
+								}
+								for (const adLib of oldAdLibPieces) {
+									ingestCache.AdLibPieces.insert(adLib)
+								}
+								for (const action of oldAdLibActions) {
+									ingestCache.AdLibActions.insert(action)
+								}
 							}
 						}
 
