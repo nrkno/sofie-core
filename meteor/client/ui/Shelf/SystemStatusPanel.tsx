@@ -11,11 +11,11 @@ import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/col
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { RundownSystemStatus } from '../RundownView/RundownSystemStatus'
-import { DBStudio } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 
 interface ISystemStatusPanelProps {
-	studio: DBStudio
+	studio: Studio
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutSytemStatus

@@ -28,10 +28,7 @@ export interface ShowStyleBase extends ProtectedStringProperties<IBlueprintShowS
 	_rundownVersionHash: string
 }
 
-/** Note: Use ShowStyleBase instead */
-export type DBShowStyleBase = ShowStyleBase
-
-export const ShowStyleBases = createMongoCollection<DBShowStyleBase>('showStyleBases')
+export const ShowStyleBases = createMongoCollection<ShowStyleBase>('showStyleBases')
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 registerIndex(ShowStyleBases, {

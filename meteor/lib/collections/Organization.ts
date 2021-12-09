@@ -12,7 +12,7 @@ export interface DBOrganizationBase {
 	applications: string[]
 	broadcastMediums: string[]
 }
-export interface DBOrganization extends DBOrganizationBase {
+export interface Organization extends DBOrganizationBase {
 	_id: OrganizationId
 
 	userRoles: { [userId: string]: UserRoles }
@@ -37,8 +37,5 @@ export interface UserRoles {
 	admin?: boolean
 }
 
-/** @deprecated TODO: TransformedCollection */
-export type Organization = DBOrganization // to be replaced by a class some time later?
-
-export const Organizations = createMongoCollection<DBOrganization>('organizations')
+export const Organizations = createMongoCollection<Organization>('organizations')
 registerCollection('Organizations', Organizations)

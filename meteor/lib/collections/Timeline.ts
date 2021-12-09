@@ -1,7 +1,7 @@
 import { registerCollection, ProtectedString, Time, unprotectString, protectString } from '../lib'
 import { TimelineObjectCoreExt, TSR, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { StudioId, ResultingMappingRoutes, DBStudio } from './Studios'
+import { StudioId, ResultingMappingRoutes, Studio } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId, PieceInstanceInfiniteId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
@@ -169,7 +169,7 @@ export type TimelineBlob = ProtectedString<'TimelineBlob'>
 export interface RoutedTimeline {
 	_id: StudioId
 	/** Hash of the studio mappings */
-	mappingsHash: DBStudio['mappingsHash']
+	mappingsHash: Studio['mappingsHash']
 
 	/** Hash of the Timeline */
 	timelineHash: TimelineComplete['timelineHash']

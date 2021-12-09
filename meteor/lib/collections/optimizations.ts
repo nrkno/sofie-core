@@ -1,7 +1,7 @@
 import { MongoSelector } from '../typings/meteor'
 import { BlueprintId, Blueprints, Blueprint } from './Blueprints'
-import { DBShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
-import { DBStudio, StudioId, Studios } from './Studios'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
+import { Studio, StudioId, Studios } from './Studios'
 
 /*
 	This file contains various short-hand functions intended to be used for "light" fetches from collections.
@@ -40,7 +40,7 @@ export function fetchStudioLight(studioId: StudioId): StudioLight | undefined {
 		},
 	})
 }
-export function fetchStudiosLight(selector: MongoSelector<DBStudio>): StudioLight[] {
+export function fetchStudiosLight(selector: MongoSelector<Studio>): StudioLight[] {
 	return Studios.find(selector, {
 		fields: {
 			mappings: 0,
@@ -48,9 +48,9 @@ export function fetchStudiosLight(selector: MongoSelector<DBStudio>): StudioLigh
 		},
 	}).fetch()
 }
-export type StudioLight = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
+export type StudioLight = Omit<Studio, 'mappings' | 'blueprintConfig'>
 
-export function fetchStudioIds(selector: MongoSelector<DBStudio>): StudioId[] {
+export function fetchStudioIds(selector: MongoSelector<Studio>): StudioId[] {
 	return Studios.find(selector, {
 		fields: {
 			_id: 1,
@@ -81,7 +81,7 @@ export function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): ShowStyle
 		},
 	})
 }
-export function fetchShowStyleBasesLight(selector: MongoSelector<DBShowStyleBase>): ShowStyleBaseLight[] {
+export function fetchShowStyleBasesLight(selector: MongoSelector<ShowStyleBase>): ShowStyleBaseLight[] {
 	return ShowStyleBases.find(selector, {
 		fields: {
 			blueprintConfig: 0,
@@ -90,4 +90,4 @@ export function fetchShowStyleBasesLight(selector: MongoSelector<DBShowStyleBase
 		},
 	}).fetch()
 }
-export type ShowStyleBaseLight = Omit<DBShowStyleBase, 'blueprintConfig' | 'outputLayers' | 'sourceLayers'>
+export type ShowStyleBaseLight = Omit<ShowStyleBase, 'blueprintConfig' | 'outputLayers' | 'sourceLayers'>

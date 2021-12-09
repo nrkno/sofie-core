@@ -8,7 +8,6 @@ import {
 	Studios,
 	MappingExt,
 	StudioId,
-	DBStudio,
 	StudioRouteSet,
 	StudioRouteBehavior,
 	RouteMapping,
@@ -738,7 +737,7 @@ const StudioRoutings = withTranslation()(
 				routes: [],
 				behavior: StudioRouteBehavior.TOGGLE,
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Partial<Studio> = {}
 			setObject['routeSets.' + newRouteKeyName + iter] = newRoute
 
 			Studios.update(this.props.studio._id, {
@@ -755,7 +754,7 @@ const StudioRoutings = withTranslation()(
 			const newGroup: StudioRouteSetExclusivityGroup = {
 				name: 'New Exclusivity Group',
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Partial<Studio> = {}
 			setObject['routeSetExclusivityGroups.' + newEGroupKeyName + iter] = newGroup
 
 			Studios.update(this.props.studio._id, {
@@ -1326,7 +1325,7 @@ const StudioPackageManagerSettings = withTranslation()(
 					accessors: {},
 				},
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Partial<Studio> = {}
 			setObject['packageContainers.' + newKeyName + iter] = newPackageContainer
 
 			Studios.update(this.props.studio._id, {
@@ -1556,7 +1555,7 @@ const StudioPackageManagerSettings = withTranslation()(
 				allowWrite: false,
 				folderPath: '',
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Partial<Studio> = {}
 			setObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = newAccessor
 
 			Studios.update(this.props.studio._id, {

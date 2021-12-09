@@ -10,13 +10,8 @@ import {
 	objectPathSet,
 	omit,
 } from '../../../lib/lib'
-import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
-import {
-	ShowStyleBase,
-	ShowStyleBases,
-	DBShowStyleBase,
-	ShowStyleBaseId,
-} from '../../../lib/collections/ShowStyleBases'
+import { Studios, Studio } from '../../../lib/collections/Studios'
+import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
 	ConfigItemValue,
@@ -33,12 +28,7 @@ import {
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
 
-import {
-	ShowStyleVariants,
-	ShowStyleVariant,
-	ShowStyleVariantId,
-	DBShowStyleVariant,
-} from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { check, Match } from '../../../lib/check'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
@@ -196,7 +186,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		value = trimIfString(value)
 
-		let modifier: Mongo.Modifier<DBStudio> = {}
+		let modifier: Mongo.Modifier<Studio> = {}
 		if (value === undefined) {
 			modifier = {
 				$unset: {
@@ -612,7 +602,7 @@ export class MigrationContextShowStyle
 
 		value = trimIfString(value)
 
-		const modifier: Mongo.Modifier<DBShowStyleBase> = {
+		const modifier: Mongo.Modifier<ShowStyleBase> = {
 			$set: {
 				[`blueprintConfig.${configId}`]: value,
 			},
@@ -668,7 +658,7 @@ export class MigrationContextShowStyle
 		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
-		const modifier: Mongo.Modifier<DBShowStyleVariant> = {
+		const modifier: Mongo.Modifier<ShowStyleVariant> = {
 			$set: {
 				[`blueprintConfig.${configId}`]: value,
 			},

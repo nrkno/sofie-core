@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
-import { Studios, DBStudio, StudioId } from '../../../lib/collections/Studios'
+import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { literal, getRandomId, makePromise, lazyIgnore } from '../../../lib/lib'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
@@ -27,7 +27,7 @@ export function insertStudio(context: MethodContext | Credentials, newId?: Studi
 }
 export function insertStudioInner(organizationId: OrganizationId | null, newId?: StudioId): StudioId {
 	return Studios.insert(
-		literal<DBStudio>({
+		literal<Studio>({
 			_id: newId || getRandomId(),
 			name: 'New Studio',
 			organizationId: organizationId,

@@ -6,11 +6,11 @@ import { Snapshots } from '../../lib/collections/Snapshots'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
-import { Organizations, DBOrganization } from '../../lib/collections/Organization'
+import { Organizations, Organization } from '../../lib/collections/Organization'
 
 meteorPublish(PubSub.organization, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
-	const modifier: FindOptions<DBOrganization> = {
+	const modifier: FindOptions<Organization> = {
 		fields: {
 			name: 1,
 			applications: 1,

@@ -4,7 +4,7 @@ import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import {
 	Studios,
-	DBStudio,
+	Studio,
 	getActiveRoutes,
 	getRoutedMappings,
 	StudioId,
@@ -36,7 +36,7 @@ import { literal } from '../../lib/lib'
 
 meteorPublish(PubSub.studios, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
-	const modifier: FindOptions<DBStudio> = {
+	const modifier: FindOptions<Studio> = {
 		fields: {},
 	}
 	if (
@@ -54,7 +54,7 @@ meteorPublish(PubSub.studioOfDevice, function (deviceId: PeripheralDeviceId, tok
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
-		const modifier: FindOptions<DBStudio> = {
+		const modifier: FindOptions<Studio> = {
 			fields: {},
 		}
 

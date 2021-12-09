@@ -2,7 +2,7 @@ import { literal, getRandomId, makePromise, getCurrentTime, waitForPromise } fro
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'
 import { registerClassToMeteorMethods } from '../methods'
-import { Organizations, OrganizationId, DBOrganization, DBOrganizationBase } from '../../lib/collections/Organization'
+import { Organizations, OrganizationId, Organization, DBOrganizationBase } from '../../lib/collections/Organization'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { insertStudioInner } from './studio/api'
@@ -54,7 +54,7 @@ export function createOrganization(organization: DBOrganizationBase): Organizati
 	triggerWriteAccessBecauseNoCheckNecessary()
 
 	const orgId = Organizations.insert(
-		literal<DBOrganization>({
+		literal<Organization>({
 			...organization,
 			_id: getRandomId(),
 			userRoles: {},

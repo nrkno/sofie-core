@@ -1,4 +1,4 @@
-import { DBStudio, StudioId } from '../lib/collections/Studios'
+import { Studio, StudioId } from '../lib/collections/Studios'
 import { getCurrentTime, unprotectString } from '../lib/lib'
 import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
 import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
@@ -75,7 +75,7 @@ export function defaultRundown(
 	}
 }
 
-export function defaultStudio(_id: StudioId): DBStudio {
+export function defaultStudio(_id: StudioId): Studio {
 	return {
 		_id: _id,
 

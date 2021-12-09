@@ -21,10 +21,7 @@ export interface ShowStyleCompound extends ShowStyleBase {
 	_rundownVersionHashVariant: string
 }
 
-/** Note: Use ShowStyleVariant instead */
-export type DBShowStyleVariant = ShowStyleVariant
-
-export const ShowStyleVariants = createMongoCollection<DBShowStyleVariant>('showStyleVariants')
+export const ShowStyleVariants = createMongoCollection<ShowStyleVariant>('showStyleVariants')
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 
 registerIndex(ShowStyleVariants, {

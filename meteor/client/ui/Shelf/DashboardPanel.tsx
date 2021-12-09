@@ -36,7 +36,7 @@ import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IState {
 	outputLayers: {
@@ -602,7 +602,7 @@ export function getNextPiecesReactive(playlist: RundownPlaylist): PieceInstance[
 
 export function getUnfinishedPieceInstancesGrouped(
 	playlist: RundownPlaylist,
-	showStyleBase: DBShowStyleBase
+	showStyleBase: ShowStyleBase
 ): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
 

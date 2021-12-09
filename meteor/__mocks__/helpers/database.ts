@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
+import { Studio, Studios } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
 	IOutputLayer,
@@ -25,13 +25,8 @@ import {
 	TriggerType,
 	PlayoutActions,
 } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariant,
-	DBShowStyleVariant,
-	ShowStyleVariants,
-	ShowStyleVariantId,
-} from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
@@ -190,10 +185,10 @@ export function setupMockTriggeredActions(
 	}
 	return mocks
 }
-export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
+export function setupMockStudio(doc?: Partial<Studio>): Studio {
 	doc = doc || {}
 
-	const studio: DBStudio = {
+	const studio: Studio = {
 		...defaultStudio(protectString('mockStudio' + dbI++)),
 		name: 'mockStudio',
 		_rundownVersionHash: 'asdf',
@@ -205,7 +200,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<ShowStyleBase>): ShowStyleBase {
 	doc = doc || {}
 
-	const defaultShowStyleBase: DBShowStyleBase = {
+	const defaultShowStyleBase: ShowStyleBase = {
 		_id: protectString('mockShowStyleBase' + dbI++),
 		name: 'mockShowStyleBase',
 		organizationId: null,
@@ -248,7 +243,7 @@ export function setupMockShowStyleVariant(
 ): ShowStyleVariant {
 	doc = doc || {}
 
-	const defaultShowStyleVariant: DBShowStyleVariant = {
+	const defaultShowStyleVariant: ShowStyleVariant = {
 		_id: protectString('mockShowStyleVariant' + dbI++),
 		name: 'mockShowStyleVariant',
 		showStyleBaseId: showStyleBaseId,

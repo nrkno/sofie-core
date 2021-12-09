@@ -51,7 +51,7 @@ export type StudioId = ProtectedString<'StudioId'>
 export type MappingsHash = ProtectedString<'MappingsHash'>
 
 /** A set of available layer groups in a given installation */
-export interface DBStudio {
+export interface Studio {
 	_id: StudioId
 	/** If set, this studio is owned by that organization */
 	organizationId: OrganizationId | null
@@ -250,9 +250,7 @@ export interface RoutedMappings {
 	mappings: { [layerName: string]: MappingExt }
 }
 
-/** @deprecated TODO: TransformedCollection */
-export type Studio = DBStudio
-export const Studios = createMongoCollection<DBStudio>('studios')
+export const Studios = createMongoCollection<Studio>('studios')
 registerCollection('Studios', Studios)
 
 registerIndex(Studios, {

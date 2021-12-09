@@ -3,7 +3,7 @@ import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { getCurrentTime } from '../../lib/lib'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { invalidateAt } from './invalidatingTime'
@@ -14,7 +14,7 @@ import { memoizedIsolatedAutorun } from './reactiveData/reactiveDataHelper'
  */
 export function getIsFilterActive(
 	playlist: RundownPlaylist,
-	showStyleBase: DBShowStyleBase,
+	showStyleBase: ShowStyleBase,
 	panel: RequiresActiveLayers
 ): { active: boolean; activePieceInstance: PieceInstance | undefined } {
 	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
@@ -50,7 +50,7 @@ export function getIsFilterActive(
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: DBShowStyleBase) {
+export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: ShowStyleBase) {
 	if (playlist.activationId && playlist.currentPartInstanceId) {
 		return memoizedIsolatedAutorun(
 			(playlistActivationId, currentPartInstanceId, showStyleBase) => {

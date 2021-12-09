@@ -1,6 +1,6 @@
 import { MethodContext } from '../../../lib/api/methods'
 import { setCoreSystemStorePath } from '../../../lib/collections/CoreSystem'
-import { DBOrganization, Organization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
+import { Organization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
 import { User, Users } from '../../../lib/collections/Users'
 import { protectString, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
@@ -45,7 +45,7 @@ describe('Security', () => {
 			},
 		}
 	}
-	function getOrg(id: string): DBOrganization {
+	function getOrg(id: string): Organization {
 		return {
 			_id: protectString(id),
 			name: 'The Company',

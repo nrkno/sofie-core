@@ -27,7 +27,7 @@ import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'
-import { Studios, DBStudio } from '../../lib/collections/Studios'
+import { Studios, Studio } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { isInFiber } from '../../__mocks__/Fibers'
@@ -112,7 +112,7 @@ describe('Basic test of test environment', () => {
 	test('Mock collection data', () => {
 		expect(Studios.find().fetch()).toHaveLength(0)
 
-		MongoMock.mockSetData<DBStudio>(Studios, [
+		MongoMock.mockSetData<Studio>(Studios, [
 			{
 				...defaultStudio(protectString('abc')),
 				name: 'abc',
