@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
 import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { Parts, Part, PartId } from '../../lib/collections/Parts'
+import { Parts, Part, PartId, isPartPlayable } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
@@ -138,7 +138,7 @@ export async function setNext(
 		nextPart = await Parts.findOneAsync(nextPartId)
 		if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 
-		if (!nextPart.isPlayable()) return ClientAPI.responseError('Part is unplayable, cannot set as next.')
+		if (!isPartPlayable(nextPart)) return ClientAPI.responseError('Part is unplayable, cannot set as next.')
 	}
 
 	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
@@ -178,7 +178,7 @@ export async function setNextSegment(
 			rundownId: nextSegment.rundownId,
 			segmentId: nextSegment._id,
 		})
-		const firstValidPartInSegment = partsInSegment.find((p) => p.isPlayable())
+		const firstValidPartInSegment = partsInSegment.find(isPartPlayable)
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
 

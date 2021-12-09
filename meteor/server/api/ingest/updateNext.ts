@@ -6,6 +6,7 @@ import {
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getSelectedPartInstancesFromCache,
 } from '../playout/cache'
+import { isPartPlayable } from '../../../lib/collections/Parts'
 
 export async function ensureNextPartIsValid(cache: CacheForPlayout): Promise<void> {
 	const span = profiler.startSpan('api.ingest.ensureNextPartIsValid')
@@ -15,7 +16,7 @@ export async function ensureNextPartIsValid(cache: CacheForPlayout): Promise<voi
 	if (playlist && playlist.activationId) {
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-		if (playlist.nextPartManual && nextPartInstance?.part?.isPlayable()) {
+		if (playlist.nextPartManual && nextPartInstance?.part && isPartPlayable(nextPartInstance.part)) {
 			// Manual next part is always valid. This includes orphaned (adlib-part) partinstances
 			span?.end()
 			return
@@ -38,7 +39,7 @@ export async function ensureNextPartIsValid(cache: CacheForPlayout): Promise<voi
 				return
 			}
 
-			if (newNextPart?.part?._id !== nextPartInstance.part._id || !nextPartInstance.part.isPlayable()) {
+			if (newNextPart?.part?._id !== nextPartInstance.part._id || !isPartPlayable(nextPartInstance.part)) {
 				// The 'new' next part is before the current next, so move the next point
 				await ServerPlayoutAPI.setNextPartInner(cache, newNextPart.part)
 			}

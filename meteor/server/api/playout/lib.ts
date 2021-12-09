@@ -471,7 +471,7 @@ export function setNextSegment(cache: CacheForPlayout, nextSegment: Segment | nu
 	if (nextSegment) {
 		// Just run so that errors will be thrown if something wrong:
 		const partsInSegment = cache.Parts.findFetch({ segmentId: nextSegment._id })
-		if (!partsInSegment.find((p) => p.isPlayable())) {
+		if (!partsInSegment.find(isPartPlayable)) {
 			throw new Meteor.Error(400, 'Segment contains no valid parts')
 		}
 
