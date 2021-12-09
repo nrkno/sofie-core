@@ -15,7 +15,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime, removeNullyProperties, getRandomId, protectString, omit } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
-import { Rundown } from '../../lib/collections/Rundowns'
+import { Rundown, RundownCollectionUtil } from '../../lib/collections/Rundowns'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
@@ -32,7 +32,7 @@ export function queueExternalMessages(
 	rundown: ReadonlyDeep<Rundown>,
 	messages: Array<IBlueprintExternalMessageQueueObj>
 ) {
-	const playlist = rundown.getRundownPlaylist()
+	const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
 
 	_.each(messages, (message: IBlueprintExternalMessageQueueObj) => {
 		// check the output:

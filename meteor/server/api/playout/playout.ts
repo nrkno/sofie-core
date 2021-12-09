@@ -1,6 +1,6 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownCollectionUtil, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
 import { PieceId } from '../../../lib/collections/Pieces'
 import {
@@ -642,7 +642,7 @@ export namespace ServerPlayoutAPI {
 
 				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
-				const showStyleBase = rundown.getShowStyleBase()
+				const showStyleBase = RundownCollectionUtil.getShowStyleBase(rundown)
 
 				// @ts-ignore stringify
 				// logger.info(o)

@@ -13,7 +13,7 @@ import {
 	RundownDataChangedEventContext,
 	RundownTimingEventContext,
 } from '../context'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import {
 	wrapPartToTemporaryInstance,
@@ -30,7 +30,7 @@ import { getShowStyleCompoundForRundown } from '../../showStyles'
 describe('Test blueprint api context', () => {
 	function generateSparsePieceInstances(rundown: Rundown) {
 		const playlistActivationId = protectString('active')
-		_.each(rundown.getParts(), (part, i) => {
+		_.each(RundownCollectionUtil.getParts(rundown), (part, i) => {
 			// make into a partInstance
 			PartInstances.insert({
 				_id: protectString(`${part._id}_instance`),

@@ -10,7 +10,7 @@ import {
 	setupMockPeripheralDevice,
 	setupRundownWithAutoplayPart0,
 } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
@@ -58,9 +58,10 @@ describe('Playout API', () => {
 		return PeripheralDeviceCommands.find({ deviceId: device._id }, { sort: { time: 1 } }).fetch()
 	}
 	function getAllRundownData(rundown: Rundown) {
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 		return {
-			parts: rundown.getParts(),
-			segments: rundown.getSegments(),
+			parts,
+			segments,
 			rundown: Rundowns.findOne(rundown._id) as Rundown,
 			pieces: Pieces.find({ rundown: rundown._id }, { sort: { _id: 1 } }).fetch(),
 			adLibPieces: AdLibPieces.find({ rundown: rundown._id }, { sort: { _id: 1 } }).fetch(),
@@ -116,7 +117,8 @@ describe('Playout API', () => {
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
-		const parts = getRundown0().getParts()
+
+		const parts = RundownCollectionUtil.getParts(getRundown0())
 
 		expect(getPlaylist0()).toMatchObject({
 			activationId: undefined,
