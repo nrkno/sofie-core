@@ -5,7 +5,7 @@ import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import ClassNames from 'classnames'
 import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -19,7 +19,7 @@ import {
 import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
 import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
-interface SegmentUi extends DBSegment {
+interface SegmentUi extends Segment {
 	items: Array<PartUi>
 }
 

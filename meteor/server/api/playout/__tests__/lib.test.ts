@@ -1,6 +1,6 @@
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { Part } from '../../../../lib/collections/Parts'
-import { DBSegment, SegmentId } from '../../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../../lib/collections/Segments'
 import { protectString } from '../../../../lib/lib'
 import { PartsAndSegments, selectNextPart } from '../lib'
 
@@ -60,7 +60,7 @@ describe('selectNextPart', () => {
 	function getSegmentsAndParts(): PartsAndSegments {
 		return {
 			parts: [...(defaultParts as unknown as Part[])],
-			segments: [...(defaultSegments as unknown as DBSegment[])],
+			segments: [...(defaultSegments as unknown as Segment[])],
 		}
 	}
 

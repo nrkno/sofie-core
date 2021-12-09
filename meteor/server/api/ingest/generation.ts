@@ -14,7 +14,7 @@ import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBase
 import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
-import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, stringifyError, unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
@@ -49,7 +49,7 @@ import {
 import { CommitIngestData } from './lockFunction'
 
 export interface UpdateSegmentsResult {
-	segments: DBSegment[]
+	segments: Segment[]
 	parts: DBPart[]
 	pieces: Piece[]
 	adlibPieces: AdLibPiece[]
@@ -141,7 +141,7 @@ export async function calculateSegmentsFromIngestData(
 			if (!blueprintSegment0) {
 				// Something went wrong when generating the segment
 
-				const newSegment = literal<DBSegment>({
+				const newSegment = literal<Segment>({
 					_id: segmentId,
 					rundownId: rundown._id,
 					externalId: ingestSegment.externalId,
@@ -188,7 +188,7 @@ export async function calculateSegmentsFromIngestData(
 				}
 			}
 
-			const newSegment = literal<DBSegment>({
+			const newSegment = literal<Segment>({
 				...blueprintSegment.segment,
 				_id: segmentId,
 				rundownId: rundown._id,
@@ -667,7 +667,7 @@ export async function resolveSegmentChangesForUpdatedRundown(
 	cache: CacheForIngest,
 	ingestRundown: LocalIngestRundown,
 	allRundownWatchedPackages: WatchedPackagesHelper
-): Promise<{ segmentChanges: UpdateSegmentsResult; removedSegments: DBSegment[] }> {
+): Promise<{ segmentChanges: UpdateSegmentsResult; removedSegments: Segment[] }> {
 	const segmentChanges = await calculateSegmentsFromIngestData(
 		cache,
 		ingestRundown.segments,

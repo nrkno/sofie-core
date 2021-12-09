@@ -5,7 +5,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { useTranslation, withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
@@ -448,7 +448,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	message?: string | null
 }
 
-export interface AdlibSegmentUi extends DBSegment {
+export interface AdlibSegmentUi extends Segment {
 	/** Pieces belonging to this part */
 	parts: Array<PartInstance>
 	pieces: Array<AdLibPieceUi>

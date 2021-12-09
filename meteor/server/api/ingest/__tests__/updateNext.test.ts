@@ -1,6 +1,6 @@
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
-import { Segments, DBSegment } from '../../../../lib/collections/Segments'
+import { Segments, Segment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
 import { literal, protectString, waitForPromise } from '../../../../lib/lib'
 import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
@@ -69,7 +69,7 @@ async function createMockRO(): Promise<RundownId> {
 			rundownId: rundownId,
 		},
 		[
-			literal<DBSegment>({
+			literal<Segment>({
 				_id: protectString('mock_segment1'),
 				_rank: 1,
 				externalId: 's1',
@@ -77,7 +77,7 @@ async function createMockRO(): Promise<RundownId> {
 				name: 'Segment1',
 				externalModified: 1,
 			}),
-			literal<DBSegment>({
+			literal<Segment>({
 				_id: protectString('mock_segment2'),
 				_rank: 2,
 				externalId: 's2',
@@ -85,7 +85,7 @@ async function createMockRO(): Promise<RundownId> {
 				name: 'Segment2',
 				externalModified: 1,
 			}),
-			literal<DBSegment>({
+			literal<Segment>({
 				_id: protectString('mock_segment3'),
 				_rank: 3,
 				externalId: 's3',
@@ -93,7 +93,7 @@ async function createMockRO(): Promise<RundownId> {
 				name: 'Segment3',
 				externalModified: 1,
 			}),
-			literal<DBSegment>({
+			literal<Segment>({
 				_id: protectString('mock_segment4'),
 				_rank: 4,
 				externalId: 's4',

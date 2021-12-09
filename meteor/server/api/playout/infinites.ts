@@ -8,7 +8,7 @@ import {
 	wrapPartToTemporaryInstance,
 } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { saveIntoCache } from '../../cache/lib'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
@@ -39,7 +39,7 @@ export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
  * We can only continue adlib onEnd infinites if we go forwards in the rundown. Any distance backwards will clear them.
  * */
 export function canContinueAdlibOnEndInfinites(
-	playlist: ReadonlyDeep<DBRundownPlaylist>,
+	playlist: ReadonlyDeep<RundownPlaylist>,
 	orderedSegments: Segment[],
 	previousPartInstance: PartInstance | undefined,
 	candidateInstance: DBPartInstance

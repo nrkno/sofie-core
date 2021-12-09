@@ -6,7 +6,7 @@ import { getCurrentTime, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { DBSegment, SegmentId, Segments } from '../../../lib/collections/Segments'
+import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import {
 	RundownIngestDataCache,
 	LocalIngestRundown,
@@ -551,7 +551,7 @@ export async function handleUpdatedRundownMetaDataInner(
 	const dbRundown = await saveChangesForRundown(cache, dbRundownData, rundownRes, showStyle)
 
 	let segmentChanges: UpdateSegmentsResult | undefined
-	let removedSegments: DBSegment[] | undefined
+	let removedSegments: Segment[] | undefined
 	if (!_.isEqual(rundownToSegmentRundown(existingRundown), rundownToSegmentRundown(dbRundown))) {
 		logger.info(`MetaData of rundown ${dbRundown.externalId} has been modified, regenerating segments`)
 		const changes = await resolveSegmentChangesForUpdatedRundown(cache, ingestRundown, allRundownWatchedPackages)

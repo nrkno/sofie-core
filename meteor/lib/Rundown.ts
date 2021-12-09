@@ -2,7 +2,7 @@ import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { DBSegment, Segment, SegmentId } from './collections/Segments'
+import { Segment, SegmentId } from './collections/Segments'
 import { PartId, DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
 import { PieceInstance, PieceInstances } from './collections/PieceInstances'
@@ -23,7 +23,7 @@ import {
 import { Rundown, RundownId } from './collections/Rundowns'
 import { ShowStyleBaseId } from './collections/ShowStyleBases'
 
-export interface SegmentExtended extends DBSegment {
+export interface SegmentExtended extends Segment {
 	/** Output layers available in the installation used by this segment */
 	outputLayers: {
 		[key: string]: IOutputLayerExtended
@@ -215,20 +215,20 @@ export function getPieceInstancesForPartInstance(
  *
  * @export
  * @param {RundownPlaylist} playlist
- * @param {(Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>)} [segmentsQuery]
+ * @param {(Mongo.Query<Segment> | Mongo.QueryWithModifiers<Segment>)} [segmentsQuery]
  * @param {(Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>)} [partsQuery]
  * @param {Mongo.Query<PartInstance>} [partInstancesQuery]
- * @param {FindOptions<DBSegment>} [segmentsOptions]
+ * @param {FindOptions<Segment>} [segmentsOptions]
  * @param {FindOptions<DBPart>} [partsOptions]
  * @param {FindOptions<PartInstance>} [partInstancesOptions]
  * @return {*}  {Array<{ segment: Segment; partInstances: PartInstance[] }>}
  */
 export function getSegmentsWithPartInstances(
 	playlist: RundownPlaylist,
-	segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
+	segmentsQuery?: Mongo.Query<Segment> | Mongo.QueryWithModifiers<Segment>,
 	partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
 	partInstancesQuery?: Mongo.Query<PartInstance>,
-	segmentsOptions?: FindOptions<DBSegment>,
+	segmentsOptions?: FindOptions<Segment>,
 	partsOptions?: FindOptions<DBPart>,
 	partInstancesOptions?: FindOptions<PartInstance>
 ): Array<{ segment: Segment; partInstances: PartInstance[] }> {

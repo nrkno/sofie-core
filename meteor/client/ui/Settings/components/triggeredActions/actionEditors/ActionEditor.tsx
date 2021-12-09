@@ -7,7 +7,7 @@ import {
 	PlayoutActions,
 	SomeAction,
 } from '@sofie-automation/blueprints-integration'
-import { TriggeredActions, TriggeredActionsObj } from '../../../../../../lib/collections/TriggeredActions'
+import { TriggeredActions, DBTriggeredActions } from '../../../../../../lib/collections/TriggeredActions'
 import { AdLibFilter } from './filterPreviews/AdLibFilter'
 import { literal } from '../../../../../../lib/lib'
 import { ViewFilter } from './filterPreviews/ViewFilter'
@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next'
 interface IProps {
 	action: SomeAction
 	showStyleBase: ShowStyleBase | undefined
-	triggeredAction: TriggeredActionsObj
+	triggeredAction: DBTriggeredActions
 	index: number
 	readonly?: boolean
 	opened?: boolean

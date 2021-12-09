@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 import { Time, registerCollection, normalizeArray, normalizeArrayFunc, ProtectedString, unprotectString } from '../lib'
 import { RundownHoldState, Rundowns, Rundown, RundownId, DBRundown } from './Rundowns'
 import { Studio, Studios, StudioId } from './Studios'
-import { Segments, Segment, DBSegment, SegmentId } from './Segments'
+import { Segments, Segment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
 import { RundownPlaylistTiming, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
@@ -261,7 +261,7 @@ export class RundownPlaylistCollectionUtil {
 		playlist: Pick<RundownPlaylist, '_id'>,
 		segmentsQuery?: Mongo.Query<Segment>,
 		partsQuery?: Mongo.Query<DBPart>,
-		segmentsOptions?: FindOptions<DBSegment>,
+		segmentsOptions?: FindOptions<Segment>,
 		partsOptions?: FindOptions<DBPart>
 	): { segments: Segment[]; parts: Part[] } {
 		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
@@ -414,7 +414,7 @@ export class RundownPlaylistCollectionUtil {
 			}
 		})
 	}
-	static _matchSegmentsAndRundowns<T extends DBRundown, E extends DBSegment>(segments: E[], rundowns: T[]) {
+	static _matchSegmentsAndRundowns<T extends DBRundown, E extends Segment>(segments: E[], rundowns: T[]) {
 		const rundownsMap = new Map<
 			RundownId,
 			{

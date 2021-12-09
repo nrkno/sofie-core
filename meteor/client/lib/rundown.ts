@@ -233,7 +233,7 @@ export namespace RundownUtils {
 	 * @export
 	 * @param {ShowStyleBase} showStyleBase
 	 * @param {RundownPlaylist} playlist
-	 * @param {DBSegment} segment
+	 * @param {Segment} segment
 	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
 	 * @param {PartId[]} orderedAllPartIds
 	 * @param {PartInstance | undefined } currentPartInstance

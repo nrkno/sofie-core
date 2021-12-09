@@ -26,10 +26,7 @@ export interface Segment extends ProtectedStringProperties<IBlueprintSegmentDB, 
 	notes?: Array<SegmentNote>
 }
 
-/** Note: Use Segment instead */
-export type DBSegment = Segment
-
-export const Segments = createMongoCollection<DBSegment>('segments')
+export const Segments = createMongoCollection<Segment>('segments')
 registerCollection('Segments', Segments)
 
 registerIndex(Segments, {

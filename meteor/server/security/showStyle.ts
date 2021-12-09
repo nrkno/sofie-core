@@ -11,7 +11,7 @@ import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../../lib/Settings'
 import { isProtectedString } from '../../lib/lib'
-import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { TriggeredActionId, TriggeredActions, DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
@@ -76,7 +76,7 @@ export namespace ShowStyleContentWriteAccess {
 	}
 	export function triggeredActions(
 		cred0: Credentials,
-		existingTriggeredAction: TriggeredActionsObj | TriggeredActionId
+		existingTriggeredAction: DBTriggeredActions | TriggeredActionId
 	) {
 		triggerWriteAccess()
 		if (existingTriggeredAction && isProtectedString(existingTriggeredAction)) {

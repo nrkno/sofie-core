@@ -1,6 +1,6 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
 import { TrackedNote } from './api/notes'
-import { Segments, DBSegment } from './collections/Segments'
+import { Segments, Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { unprotectString, literal, generateTranslation, normalizeArrayToMap, assertNever } from './lib'
 import * as _ from 'underscore'
@@ -90,7 +90,7 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 
 function getAllNotesForSegmentAndParts(
 	rundowns: DBRundown[],
-	segments: DBSegment[],
+	segments: Segment[],
 	parts: Part[],
 	deletedPartInstances: PartInstance[]
 ): Array<TrackedNote> {
@@ -118,7 +118,7 @@ function getAllNotesForSegmentAndParts(
 }
 
 export function getBasicNotesForSegment(
-	segment: DBSegment,
+	segment: Segment,
 	nrcsName: string,
 	parts: Part[],
 	partInstances: Pick<DBPartInstance, 'orphaned' | 'reset' | 'part'>[]

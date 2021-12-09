@@ -2,7 +2,7 @@ import { literal, protectString, getRandomId } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, LAYER_IDS, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../../lib/collections/Parts'
 import { VTContent, PieceLifespan, WithTimeline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { Segments, DBSegment } from '../../../../lib/collections/Segments'
+import { Segments, Segment } from '../../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { ExpectedMediaItems } from '../../../../lib/collections/ExpectedMediaItems'
@@ -93,7 +93,7 @@ describe('Expected Media Items', () => {
 		})
 		Rundowns.insert(rd)
 		Segments.insert(
-			literal<DBSegment>({
+			literal<Segment>({
 				...defaultSegment(getRandomId(), rd._id),
 				_rank: 1,
 			})

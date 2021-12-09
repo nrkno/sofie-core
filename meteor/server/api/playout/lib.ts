@@ -21,9 +21,9 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { DBPartInstance, PartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
+import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
@@ -98,7 +98,7 @@ export interface SelectNextPartResult {
 	consumesNextSegmentId?: boolean
 }
 export interface PartsAndSegments {
-	segments: DBSegment[]
+	segments: Segment[]
 	parts: DBPart[]
 }
 

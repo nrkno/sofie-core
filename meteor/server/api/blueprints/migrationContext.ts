@@ -34,7 +34,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { Mongo } from 'meteor/mongo'
-import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { TriggeredActionId, TriggeredActions, DBTriggeredActions } from '../../../lib/collections/TriggeredActions'
 
 class AbstractMigrationContextWithTriggeredActions {
 	protected showStyleBaseId: ShowStyleBaseId | null = null
@@ -49,7 +49,7 @@ class AbstractMigrationContextWithTriggeredActions {
 			showStyleBaseId: this.showStyleBaseId,
 		}).map((triggeredActions) => unprotectObject(triggeredActions))
 	}
-	private getTriggeredActionFromDb(triggeredActionsId: string): TriggeredActionsObj | undefined {
+	private getTriggeredActionFromDb(triggeredActionsId: string): DBTriggeredActions | undefined {
 		const triggeredAction = TriggeredActions.findOne({
 			showStyleBaseId: this.showStyleBaseId,
 			_id: this.getProtectedTriggeredActionsId(triggeredActionsId),

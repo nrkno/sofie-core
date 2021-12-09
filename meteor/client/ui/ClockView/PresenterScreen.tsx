@@ -1,6 +1,6 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { DBSegment, Segment } from '../../../lib/collections/Segments'
+import { Segment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import {
 	RundownPlaylistId,
@@ -39,7 +39,7 @@ import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { ShowStyleVariant, ShowStyleVariantId, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 
-interface SegmentUi extends DBSegment {
+interface SegmentUi extends Segment {
 	items: Array<PartUi>
 }
 
@@ -139,7 +139,7 @@ function getShowStyleBaseIdSegmentPartUi(
 				true
 			)
 
-			segment = extendMandadory<DBSegment, SegmentUi>(o.segmentExtended, {
+			segment = extendMandadory<Segment, SegmentUi>(o.segmentExtended, {
 				items: o.parts,
 			})
 

@@ -8,12 +8,7 @@ import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
-import {
-	DBTriggeredActions,
-	TriggeredActionId,
-	TriggeredActions,
-	TriggeredActionsObj,
-} from '../../lib/collections/TriggeredActions'
+import { DBTriggeredActions, TriggeredActionId, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from '../../lib/api/triggeredActions'
 import { SystemWriteAccess } from '../security/system'
 import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
@@ -24,7 +19,7 @@ export function createTriggeredActions(
 ) {
 	const id: TriggeredActionId = getRandomId()
 	TriggeredActions.insert(
-		literal<TriggeredActionsObj>({
+		literal<DBTriggeredActions>({
 			_id: id,
 			_rank: base?._rank ?? 0,
 			name: base?.name,

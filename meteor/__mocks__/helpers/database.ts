@@ -32,7 +32,7 @@ import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/coll
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { DBSegment, Segments } from '../../lib/collections/Segments'
+import { Segment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
@@ -543,7 +543,7 @@ export function setupDefaultRundown(
 	}
 	Rundowns.insert(rundown)
 
-	const segment0: DBSegment = {
+	const segment0: Segment = {
 		_id: protectString(rundownId + '_segment0'),
 		_rank: 0,
 		externalId: 'MOCK_SEGMENT_0',
@@ -656,7 +656,7 @@ export function setupDefaultRundown(
 	}
 	Pieces.insert(piece010)
 
-	const segment1: DBSegment = {
+	const segment1: Segment = {
 		_id: protectString(rundownId + '_segment1'),
 		_rank: 1,
 		externalId: 'MOCK_SEGMENT_2',
@@ -696,7 +696,7 @@ export function setupDefaultRundown(
 	}
 	Parts.insert(part12)
 
-	const segment2: DBSegment = {
+	const segment2: Segment = {
 		_id: protectString(rundownId + '_segment2'),
 		_rank: 2,
 		externalId: 'MOCK_SEGMENT_2',
@@ -757,7 +757,7 @@ export function setupRundownWithAutoplayPart0(
 	rundown._id = rundownId
 	Rundowns.insert(rundown)
 
-	const segment0: DBSegment = {
+	const segment0: Segment = {
 		...defaultSegment(protectString(rundownId + '_segment0'), rundown._id),
 		_rank: 0,
 		externalId: 'MOCK_SEGMENT_0',
@@ -823,7 +823,7 @@ export function setupRundownWithAutoplayPart0(
 	}
 	Pieces.insert(piece010)
 
-	const segment1: DBSegment = {
+	const segment1: Segment = {
 		...defaultSegment(protectString(rundownId + '_segment1'), rundown._id),
 		_rank: 1,
 		externalId: 'MOCK_SEGMENT_2',
@@ -855,7 +855,7 @@ export function setupRundownWithAutoplayPart0(
 	}
 	Parts.insert(part12)
 
-	const segment2: DBSegment = {
+	const segment2: Segment = {
 		...defaultSegment(protectString(rundownId + '_segment2'), rundown._id),
 		_rank: 2,
 		externalId: 'MOCK_SEGMENT_2',

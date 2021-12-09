@@ -5,7 +5,7 @@ import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
 import { ShowStyleBaseId } from '../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId } from '../lib/collections/ShowStyleVariants'
 import { DBRundown, RundownId } from '../lib/collections/Rundowns'
-import { DBSegment, SegmentId } from '../lib/collections/Segments'
+import { Segment, SegmentId } from '../lib/collections/Segments'
 import { PartId, DBPart } from '../lib/collections/Parts'
 import { RundownAPI } from '../lib/api/rundown'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
@@ -97,7 +97,7 @@ export function defaultStudio(_id: StudioId): Studio {
 	}
 }
 
-export function defaultSegment(_id: SegmentId, rundownId: RundownId): DBSegment {
+export function defaultSegment(_id: SegmentId, rundownId: RundownId): Segment {
 	return {
 		_id: _id,
 		_rank: 0,
