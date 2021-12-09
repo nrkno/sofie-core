@@ -5,7 +5,7 @@ import {
 	DBRundownPlaylist,
 	RundownPlaylist,
 } from '../../lib/collections/RundownPlaylists'
-import { DBRundown, Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import {
 	getHash,
 	protectString,
@@ -239,7 +239,7 @@ export function updateRundownsInPlaylist(
 	rundownCollection: DbCacheWriteCollection<Rundown>
 ) {
 	let maxRank: number = Number.NEGATIVE_INFINITY
-	const unrankedRundowns: DBRundown[] = []
+	const unrankedRundowns: Rundown[] = []
 
 	for (const rundown of rundownCollection.findFetch({})) {
 		const rundownRank = rundownRanks[unprotectString(rundown._id)]
@@ -511,7 +511,7 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 }
 
 function sortDefaultRundownInPlaylistOrder(
-	rundowns: ReadonlyDeep<Array<DBRundown>>
+	rundowns: ReadonlyDeep<Array<Rundown>>
 ): ReadonlyDeep<Array<IBlueprintRundown>> {
 	return mongoFindOptions<ReadonlyDeep<Rundown>>(rundowns, {
 		sort: {

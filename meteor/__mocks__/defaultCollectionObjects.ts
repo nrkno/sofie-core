@@ -4,7 +4,7 @@ import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/Rundown
 import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
 import { ShowStyleBaseId } from '../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId } from '../lib/collections/ShowStyleVariants'
-import { DBRundown, RundownId } from '../lib/collections/Rundowns'
+import { Rundown, RundownId } from '../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../lib/collections/Segments'
 import { PartId, DBPart } from '../lib/collections/Parts'
 import { RundownAPI } from '../lib/api/rundown'
@@ -42,7 +42,7 @@ export function defaultRundown(
 	playlistId: RundownPlaylistId,
 	showStyleBaseId: ShowStyleBaseId,
 	showStyleVariantId: ShowStyleVariantId
-): DBRundown {
+): Rundown {
 	return {
 		peripheralDeviceId: ingestDeviceId,
 		studioId: studioId,

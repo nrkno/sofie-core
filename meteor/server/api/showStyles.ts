@@ -18,7 +18,7 @@ import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
 import { ReadonlyDeep } from 'type-fest'
-import { DBRundown } from '../../lib/collections/Rundowns'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 export async function getShowStyleCompound(
@@ -32,7 +32,7 @@ export async function getShowStyleCompound(
 	return createShowStyleCompound(showStyleBase, showStyleVariant)
 }
 export async function getShowStyleCompoundForRundown(
-	rundown: Pick<ReadonlyDeep<DBRundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
+	rundown: Pick<ReadonlyDeep<Rundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
 ): Promise<ShowStyleCompound> {
 	const [showStyleBase, showStyleVariant] = await Promise.all([
 		ShowStyleBases.findOneAsync({ _id: rundown.showStyleBaseId }),

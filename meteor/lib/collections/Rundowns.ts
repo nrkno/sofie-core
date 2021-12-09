@@ -79,34 +79,31 @@ export interface Rundown
 	baselineModifyHash?: string
 }
 
-/** Note: Use Rundown instead */
-export type DBRundown = Rundown
-
 /**
  * Direct database accessors for the Rundown
  * These used to reside on the Rundown class
  */
 export class RundownCollectionUtil {
-	static getRundownPlaylist(rundown: Pick<DBRundown, 'playlistId'>): RundownPlaylist {
+	static getRundownPlaylist(rundown: Pick<Rundown, 'playlistId'>): RundownPlaylist {
 		if (!rundown.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
 		const pls = RundownPlaylists.findOne(rundown.playlistId)
 		if (pls) {
 			return pls
 		} else throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
 	}
-	static getShowStyleVariant(rundown: Pick<DBRundown, 'showStyleVariantId'>): ShowStyleVariant {
+	static getShowStyleVariant(rundown: Pick<Rundown, 'showStyleVariantId'>): ShowStyleVariant {
 		const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId)
 		if (!showStyleVariant)
 			throw new Meteor.Error(404, `ShowStyleVariant "${rundown.showStyleVariantId}" not found!`)
 		return showStyleVariant
 	}
-	static getShowStyleBase(rundown: Pick<DBRundown, 'showStyleBaseId'>): ShowStyleBase {
+	static getShowStyleBase(rundown: Pick<Rundown, 'showStyleBaseId'>): ShowStyleBase {
 		const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found!`)
 		return showStyleBase
 	}
 	static getSegments(
-		rundown: Pick<DBRundown, '_id'>,
+		rundown: Pick<Rundown, '_id'>,
 		selector?: MongoQuery<Segment>,
 		options?: FindOptions<Segment>
 	): Segment[] {
@@ -122,7 +119,7 @@ export class RundownCollectionUtil {
 		).fetch()
 	}
 	static getParts(
-		rundown: Pick<DBRundown, '_id'>,
+		rundown: Pick<Rundown, '_id'>,
 		selector?: MongoQuery<Part>,
 		options?: FindOptions<DBPart>,
 		segmentsInOrder?: Array<Pick<Segment, '_id'>>
@@ -150,7 +147,7 @@ export class RundownCollectionUtil {
 		}
 	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
-	static getSegmentsAndPartsSync(rundown: Pick<DBRundown, '_id'>): { segments: Segment[]; parts: Part[] } {
+	static getSegmentsAndPartsSync(rundown: Pick<Rundown, '_id'>): { segments: Segment[]; parts: Part[] } {
 		const segments = Segments.find(
 			{
 				rundownId: rundown._id,

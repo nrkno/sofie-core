@@ -14,7 +14,7 @@ import {
 	SnapshotRundownPlaylist,
 	SnapshotId,
 } from '../../lib/collections/Snapshots'
-import { Rundowns, DBRundown, RundownId } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { Segments, Segment, SegmentId } from '../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../lib/collections/Parts'
@@ -94,7 +94,7 @@ interface DeprecatedRundownSnapshot {
 	version: string
 	rundownId: RundownId
 	snapshot: DeprecatedSnapshotRundown
-	rundown: DBRundown
+	rundown: Rundown
 	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>
 	baselineObjs: Array<RundownBaselineObj>
@@ -112,7 +112,7 @@ interface RundownPlaylistSnapshot {
 	playlistId: RundownPlaylistId
 	snapshot: SnapshotRundownPlaylist
 	playlist: DBRundownPlaylist
-	rundowns: Array<DBRundown>
+	rundowns: Array<Rundown>
 	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>
 	baselineObjs: Array<RundownBaselineObj>

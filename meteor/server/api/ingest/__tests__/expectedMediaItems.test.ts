@@ -20,7 +20,7 @@ import {
 import { runIngestOperationFromRundown } from '../lockFunction'
 import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 import { ExpectedPackages } from '../../../../lib/collections/ExpectedPackages'
-import { DBRundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -81,7 +81,7 @@ describe('Expected Media Items', () => {
 			activationId: protectString('active'),
 		})
 
-		const rd = literal<DBRundown>({
+		const rd = literal<Rundown>({
 			...defaultRundown(
 				rdId,
 				env.studio._id,
@@ -193,7 +193,7 @@ describe('Expected Media Items', () => {
 
 	describe('Based on a Rundown', () => {
 		testInFiber('Generates ExpectedPackages(/ExpectedMediaItems) based on a Rundown', async () => {
-			const rundown = (await Rundowns.findOneAsync(rdId0)) as DBRundown
+			const rundown = (await Rundowns.findOneAsync(rdId0)) as Rundown
 			expect(rundown).toBeTruthy()
 
 			await runIngestOperationFromRundown('test', rundown, async (cache) =>

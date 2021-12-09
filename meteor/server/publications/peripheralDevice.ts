@@ -29,7 +29,7 @@ import {
 	RundownPlaylistCollectionUtil,
 	RundownPlaylists,
 } from '../../lib/collections/RundownPlaylists'
-import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { clone, DBObj, literal, omit, protectString, unprotectObject, unprotectString } from '../../lib/lib'
 import deepExtend from 'deep-extend'
 import { logger } from '../logging'
@@ -236,7 +236,7 @@ meteorCustomPublishArray(
 					/** ExpectedPackages relevant for playout */
 					routedPlayoutExpectedPackages: ResultingExpectedPackage[]
 					activePlaylist: DBRundownPlaylist | undefined
-					activeRundowns: DBRundown[]
+					activeRundowns: Rundown[]
 					currentPartInstance: PartInstance | undefined
 					nextPartInstance: PartInstance | undefined
 				}) => {

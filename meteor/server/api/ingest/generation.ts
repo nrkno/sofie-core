@@ -13,7 +13,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
-import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, stringifyError, unprotectString } from '../../../lib/lib'
@@ -520,7 +520,7 @@ export async function getRundownFromIngestData(
 	showStyle: SelectedShowStyleVariant,
 	showStyleBlueprint: WrappedShowStyleBlueprint,
 	allRundownWatchedPackages: WatchedPackagesHelper
-): Promise<{ dbRundownData: DBRundown; rundownRes: BlueprintResultRundown } | null> {
+): Promise<{ dbRundownData: Rundown; rundownRes: BlueprintResultRundown } | null> {
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
 
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(
@@ -577,7 +577,7 @@ export async function getRundownFromIngestData(
 		showStyle.base
 	)
 
-	const dbRundownData = literal<DBRundown>({
+	const dbRundownData = literal<Rundown>({
 		...rundownRes.rundown,
 		notes: rundownNotes,
 		_id: cache.RundownId,
@@ -615,7 +615,7 @@ export async function getRundownFromIngestData(
 
 export async function saveChangesForRundown(
 	cache: CacheForIngest,
-	dbRundownData: DBRundown,
+	dbRundownData: Rundown,
 	rundownRes: BlueprintResultRundown,
 	showStyle: SelectedShowStyleVariant
 ): Promise<ReadonlyDeep<Rundown>> {

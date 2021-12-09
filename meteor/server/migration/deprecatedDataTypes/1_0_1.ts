@@ -1,5 +1,5 @@
 import { Time, literal, protectString, getRandomId } from '../../../lib/lib'
-import { RundownImportVersions, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
+import { RundownImportVersions, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { RundownNote } from '../../../lib/api/notes'
 import { PlaylistTimingType, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -9,7 +9,7 @@ import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { PartId } from '../../../lib/collections/Parts'
 
-export interface Rundown {
+export interface OldRundown {
 	externalId: string
 	name: string
 	expectedStart?: Time
@@ -46,13 +46,10 @@ export interface Rundown {
 	notes?: Array<RundownNote>
 	previousPersistentState?: TimelinePersistentState
 }
-export function makePlaylistFromRundown_1_0_0(
-	rundown0: DBRundown,
-	newPlaylistId?: RundownPlaylistId
-): DBRundownPlaylist {
-	const rundown = rundown0 as any as Rundown
+export function makePlaylistFromRundown_1_0_0(rundown0: Rundown, newPlaylistId?: RundownPlaylistId): DBRundownPlaylist {
+	const rundown = rundown0 as any as OldRundown
 	if (!newPlaylistId) newPlaylistId = protectString('pl_' + rundown._id)
-	const playlist = literal<DBRundownPlaylist>({
+	return literal<DBRundownPlaylist>({
 		_id: newPlaylistId,
 		externalId: rundown.externalId,
 		activationId: rundown['active'] ? getRandomId() : undefined,
@@ -75,5 +72,4 @@ export function makePlaylistFromRundown_1_0_0(
 		studioId: rundown.studioId,
 		modified: rundown.modified,
 	})
-	return playlist
 }

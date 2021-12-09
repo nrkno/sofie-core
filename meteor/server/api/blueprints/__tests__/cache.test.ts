@@ -1,6 +1,6 @@
 import '../../../../__mocks__/_extendJest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { DBRundown } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '../../../../lib/collections/Rundowns'
 import { literal, protectString } from '../../../../lib/lib'
 import {
 	loadSystemBlueprints,
@@ -351,7 +351,7 @@ describe('Test blueprint cache', () => {
 
 	describe('getBlueprintOfRundown', () => {
 		function getRundown() {
-			return literal<DBRundown>({
+			return literal<Rundown>({
 				_id: protectString('ro1'),
 				playlistId: protectString('pls0'),
 				_rank: 1,

@@ -3,7 +3,7 @@ import { Mongo } from 'meteor/mongo'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
 import { Time, registerCollection, normalizeArray, normalizeArrayFunc, ProtectedString, unprotectString } from '../lib'
-import { RundownHoldState, Rundowns, Rundown, RundownId, DBRundown } from './Rundowns'
+import { RundownHoldState, Rundowns, Rundown, RundownId } from './Rundowns'
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
@@ -401,7 +401,7 @@ export class RundownPlaylistCollectionUtil {
 
 	static _sortSegments<TSegment extends Pick<Segment, '_id' | 'rundownId' | '_rank'>>(
 		segments: Array<TSegment>,
-		rundowns: Array<ReadonlyDeep<DBRundown>>
+		rundowns: Array<ReadonlyDeep<Rundown>>
 	) {
 		const rundownsMap = normalizeArray(rundowns, '_id')
 		return segments.sort((a, b) => {
@@ -414,7 +414,7 @@ export class RundownPlaylistCollectionUtil {
 			}
 		})
 	}
-	static _matchSegmentsAndRundowns<T extends DBRundown, E extends Segment>(segments: E[], rundowns: T[]) {
+	static _matchSegmentsAndRundowns<T extends Rundown, E extends Segment>(segments: E[], rundowns: T[]) {
 		const rundownsMap = new Map<
 			RundownId,
 			{
@@ -435,7 +435,7 @@ export class RundownPlaylistCollectionUtil {
 	}
 	static _sortParts(
 		parts: Part[],
-		rundowns: DBRundown[],
+		rundowns: Rundown[],
 		segments: Array<Pick<Segment, '_id' | 'rundownId' | '_rank'>>
 	) {
 		return RundownPlaylistCollectionUtil._sortPartsInner(

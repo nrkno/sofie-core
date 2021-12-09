@@ -1,7 +1,7 @@
 import { PartInstance } from '../../collections/PartInstances'
 import { DBPart, Part, PartId } from '../../collections/Parts'
 import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
-import { DBRundown } from '../../collections/Rundowns'
+import { Rundown } from '../../collections/Rundowns'
 import { literal, protectString, unprotectString } from '../../lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 
@@ -49,7 +49,7 @@ function makeMockPart(
 }
 
 function makeMockRundown(id: string, playlistId: string, rank: number) {
-	return literal<DBRundown>({
+	return literal<Rundown>({
 		_id: protectString(id),
 		externalId: id,
 		timing: {

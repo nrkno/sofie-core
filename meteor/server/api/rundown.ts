@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
-import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { PartId } from '../../lib/collections/Parts'
 import { SegmentId } from '../../lib/collections/Segments'
 import {
@@ -159,7 +159,7 @@ export async function selectShowStyleVariant(
 /** Return true if the rundown is allowed to be moved out of that playlist */
 export function allowedToMoveRundownOutOfPlaylist(
 	playlist: ReadonlyDeep<RundownPlaylist>,
-	rundown: ReadonlyDeep<DBRundown>
+	rundown: ReadonlyDeep<Rundown>
 ) {
 	const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 

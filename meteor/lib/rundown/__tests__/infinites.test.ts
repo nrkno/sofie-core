@@ -8,7 +8,7 @@ import { getPlayheadTrackingInfinitesForPart, processAndPrunePieceInstanceTiming
 import { Piece } from '../../../lib/collections/Pieces'
 import { PartInstance, PartInstanceId } from '../../collections/PartInstances'
 import { DBPart, PartId } from '../../collections/Parts'
-import { DBRundown, Rundown, RundownId } from '../../collections/Rundowns'
+import { Rundown, RundownId } from '../../collections/Rundowns'
 import { RundownPlaylistId } from '../../collections/RundownPlaylists'
 
 describe('Infinites', () => {
@@ -470,7 +470,7 @@ describe('Infinites', () => {
 			name: string,
 			externalId: string
 		): Rundown {
-			return literal<DBRundown>({
+			return literal<Rundown>({
 				_rank: 0,
 				_id: id,
 				externalId,

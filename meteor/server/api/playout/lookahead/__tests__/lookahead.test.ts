@@ -4,7 +4,7 @@ import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 } from '../../../../../__mocks__/helpers/database'
-import { DBRundown, RundownId, Rundowns } from '../../../../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../../../../lib/collections/Rundowns'
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
 import { getCurrentTime, getRandomId, protectString } from '../../../../../lib/lib'
 import { SegmentId } from '../../../../../lib/collections/Segments'
@@ -59,7 +59,7 @@ describe('Lookahead', () => {
 			env,
 			undefined,
 			(env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId) => {
-				const rundown: DBRundown = {
+				const rundown: Rundown = {
 					peripheralDeviceId: env.ingestDevice._id,
 					organizationId: null,
 					studioId: env.studio._id,

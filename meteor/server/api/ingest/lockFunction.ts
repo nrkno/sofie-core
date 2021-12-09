@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { PartId } from '../../../lib/collections/Parts'
-import { DBRundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
@@ -128,7 +128,7 @@ export async function runIngestOperationWithCache(
  */
 export async function runIngestOperationFromRundown(
 	context: string,
-	refRundown: DBRundown,
+	refRundown: Rundown,
 	fcn: (ingestCache: CacheForIngest) => Promise<void>
 ): Promise<void> {
 	const refRundownId = refRundown._id

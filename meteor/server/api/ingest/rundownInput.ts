@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
@@ -350,7 +350,7 @@ async function handleRemovedRundownFromStudio(studioId: StudioId, rundownExterna
 		}
 	)
 }
-export async function handleRemovedRundownByRundown(rundown: DBRundown, forceDelete?: boolean): Promise<void> {
+export async function handleRemovedRundownByRundown(rundown: Rundown, forceDelete?: boolean): Promise<void> {
 	if (rundown.restoredFromSnapshotId) {
 		// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
 		// Note: this bypasses activation checks, but that probably doesnt matter

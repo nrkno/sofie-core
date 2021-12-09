@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import '../../../../../__mocks__/_extendJest'
-import { Rundowns, Rundown, DBRundown, RundownCollectionUtil, RundownId } from '../../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownCollectionUtil, RundownId } from '../../../../../lib/collections/Rundowns'
 import { Segments, Segment, SegmentId } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
@@ -162,7 +162,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const roData = mockRO.roCreate()
 		Rundowns.update({ externalId: roData.ID.toString() }, { $set: { orphaned: 'deleted' } })
 
-		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as DBRundown
+		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as Rundown
 		expect(rundown).toBeTruthy()
 		expect(RundownPlaylists.findOne(rundown.playlistId)).toBeTruthy()
 
@@ -174,7 +174,7 @@ describe('Test recieved mos ingest payloads', () => {
 		await resetOrphanedRundown()
 
 		const roData = mockRO.roCreate()
-		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as DBRundown
+		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as Rundown
 		expect(rundown).toBeTruthy()
 		expect(rundown.orphaned).toBeFalsy()
 		expect(RundownPlaylists.findOne(rundown.playlistId)).toBeTruthy()

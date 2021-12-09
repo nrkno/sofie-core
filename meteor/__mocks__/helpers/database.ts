@@ -31,7 +31,7 @@ import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
-import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
+import { Rundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
@@ -512,7 +512,7 @@ export function setupDefaultRundown(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = {
+	const rundown: Rundown = {
 		peripheralDeviceId: env.ingestDevice._id,
 		organizationId: null,
 		studioId: env.studio._id,
@@ -746,7 +746,7 @@ export function setupRundownWithAutoplayPart0(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const rundown: DBRundown = defaultRundown(
+	const rundown: Rundown = defaultRundown(
 		unprotectString(rundownId),
 		env.studio._id,
 		env.ingestDevice._id,

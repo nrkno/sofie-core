@@ -5,7 +5,7 @@ import { PubSub } from '../../lib/api/pubsub'
 import { MongoQuery, FindOptions } from '../../lib/typings/meteor'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { RundownReadAccess } from '../security/rundown'
-import { Rundowns, DBRundown } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
@@ -27,7 +27,7 @@ import {
 meteorPublish(PubSub.rundowns, function (selector0, token: string) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<DBRundown> = {
+	const modifier: FindOptions<Rundown> = {
 		fields: {
 			metaData: 0,
 		},

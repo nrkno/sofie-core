@@ -1,6 +1,6 @@
 import { Tracker } from 'meteor/tracker'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Rundowns, Rundown, DBRundown } from '../../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { StudioId } from '../../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
@@ -26,7 +26,7 @@ export namespace reactiveData {
 
 	export function getRRundowns(
 		playlistId: RundownPlaylistId | undefined,
-		options?: FindOptions<DBRundown>
+		options?: FindOptions<Rundown>
 	): ReactiveVar<Rundown[]> {
 		const rVar = new ReactiveVar<Rundown[]>([])
 

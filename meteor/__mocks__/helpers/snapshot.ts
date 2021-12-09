@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { TimelineObjGeneric, TimelineComplete } from '../../lib/collections/Timeline'
-import { DBRundown } from '../../lib/collections/Rundowns'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { Segment } from '../../lib/collections/Segments'
 import { DBPart } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
@@ -16,7 +16,7 @@ type Data =
 	| TimelineObjGeneric
 	| TimelineComplete
 	| DBRundownPlaylist
-	| DBRundown
+	| Rundown
 	| Segment
 	| DBPart
 	| Piece
@@ -88,7 +88,7 @@ function isTimelineComplete(o): o is TimelineComplete {
 function isPlaylist(o): o is DBRundownPlaylist {
 	return o._id && _.has(o, 'currentPartInstanceId')
 }
-function isRundown(o): o is DBRundown {
+function isRundown(o): o is Rundown {
 	return o._id && _.has(o, 'playlistId')
 }
 function isSegment(o): o is Segment {

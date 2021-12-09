@@ -1,4 +1,4 @@
-import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from './collections/Rundowns'
 import { TrackedNote } from './api/notes'
 import { Segments, Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
@@ -89,7 +89,7 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 }
 
 function getAllNotesForSegmentAndParts(
-	rundowns: DBRundown[],
+	rundowns: Rundown[],
 	segments: Segment[],
 	parts: Part[],
 	deletedPartInstances: PartInstance[]
