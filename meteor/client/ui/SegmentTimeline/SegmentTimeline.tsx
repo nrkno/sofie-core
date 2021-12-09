@@ -29,7 +29,7 @@ import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
 import { literal, protectString, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
+import { isPartPlayable, PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
@@ -665,7 +665,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	getSegmentContext = (_props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
-			part: this.props.parts.find((p) => p.instance.part.isPlayable()) || null,
+			part: this.props.parts.find((p) => isPartPlayable(p.instance.part)) || null,
 		})
 
 		if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {

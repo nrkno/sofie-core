@@ -1,7 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import { Rundown, RundownCollectionUtil, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
-import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
+import { Part, DBPart, PartId, isPartPlayable } from '../../../lib/collections/Parts'
 import { PieceId } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
@@ -437,10 +437,7 @@ export namespace ServerPlayoutAPI {
 					: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
 			// const allowedSegmentIds = new Set(allowedSegments.map((s) => s._id))
 
-			const playablePartsBySegment = _.groupBy(
-				rawParts.filter((p) => p.isPlayable()),
-				(p) => p.segmentId
-			)
+			const playablePartsBySegment = _.groupBy(rawParts.filter(isPartPlayable), (p) => p.segmentId)
 
 			// Iterate through segments and find the first part
 			let selectedPart: Part | undefined
@@ -467,7 +464,7 @@ export namespace ServerPlayoutAPI {
 				return null
 			}
 		} else if (partDelta) {
-			let playabaleParts: DBPart[] = rawParts.filter((p) => refPart._id === p._id || p.isPlayable())
+			let playabaleParts: DBPart[] = rawParts.filter((p) => refPart._id === p._id || isPartPlayable(p))
 			let refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 			if (refPartIndex === -1) {
 				const tmpRefPart = { ...refPart, invalid: true } // make sure it won't be found as playable
