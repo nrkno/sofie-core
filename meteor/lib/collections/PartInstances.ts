@@ -115,7 +115,7 @@ export class PartInstance implements DBPartInstance {
 			this[key] = document[key]
 		})
 		this.isTemporary = isTemporary === true
-		this.part = new Part(document.part)
+		this.part = document.part
 	}
 }
 
@@ -132,7 +132,7 @@ export function wrapPartToTemporaryInstance(
 			segmentPlayoutId: protectString(''), // Only needed when stored in the db, and filled in nearer the time
 			takeCount: -1,
 			rehearsal: false,
-			part: new Part(part),
+			part: part,
 		},
 		true
 	)

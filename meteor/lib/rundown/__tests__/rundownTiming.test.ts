@@ -39,17 +39,15 @@ function makeMockPart(
 		displayDurationGroup?: string
 	}
 ): Part {
-	return new Part(
-		literal<DBPart>({
-			_id: protectString(id),
-			externalId: id,
-			title: '',
-			segmentId: protectString(segmentId),
-			_rank: rank,
-			rundownId: protectString(rundownId),
-			...durations,
-		})
-	)
+	return literal<DBPart>({
+		_id: protectString(id),
+		externalId: id,
+		title: '',
+		segmentId: protectString(segmentId),
+		_rank: rank,
+		rundownId: protectString(rundownId),
+		...durations,
+	})
 }
 
 function makeMockRundown(id: string, playlistId: string, rank: number) {

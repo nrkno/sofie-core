@@ -17,7 +17,6 @@ import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Ti
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
-import { Part } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, setNextPart, selectNextPart } from './lib'
 import {
 	convertAdLibToPieceInstance,
@@ -360,7 +359,7 @@ export namespace ServerPlayoutAdLibAPI {
 				takeCount: currentPartInstance.takeCount + 1,
 				rehearsal: !!playlist.rehearsal,
 				orphaned: 'adlib-part',
-				part: new Part({
+				part: {
 					_id: getRandomId(),
 					_rank: 99999, // Corrected in innerStartQueuedAdLib
 					externalId: '',
@@ -369,7 +368,7 @@ export namespace ServerPlayoutAdLibAPI {
 					title: adLibPiece.name,
 					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
-				}),
+				},
 			})
 			const newPieceInstance = convertAdLibToPieceInstance(
 				playlist.activationId,
