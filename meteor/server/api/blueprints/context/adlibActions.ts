@@ -356,7 +356,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('New part must contain at least one piece')
 		}
 
-		const newPartInstance = new PartInstance({
+		const newPartInstance: PartInstance = {
 			_id: getRandomId(),
 			rundownId: currentPartInstance.rundownId,
 			segmentId: currentPartInstance.segmentId,
@@ -375,7 +375,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				invalidReason: undefined,
 				floated: false,
 			},
-		})
+		}
 
 		if (!isPartPlayable(newPartInstance.part)) {
 			throw new Error('Cannot queue a part which is not playable')
