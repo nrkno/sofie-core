@@ -73,23 +73,25 @@ function usePlayedOutPieceState(
 			}
 		}
 
+		const nextRevalidation = Number.isFinite(closestAbsoluteNext)
+			? // the next closest change is in that time, so let's wait until then
+			  Math.max(1, closestAbsoluteNext - getCurrentTime())
+			: // the part has stopped playing, so we can stop checking
+			Number.isFinite(stoppedPlayback)
+			? 0
+			: // if all Pieces are finished, we can stop updating, because piecesOnLayer will change anyway if
+			// anything happens to the Pieces
+			finishedPieceIds.length === piecesOnLayer.length
+			? 0
+			: // essentially a fallback, we shouldn't hit this condition ever
+			  10000 + Math.random() * 1000
+
 		return [
 			{
 				playedPieceIds,
 				finishedPieceIds,
 			},
-			Number.isFinite(closestAbsoluteNext)
-				? // the next closest change is in that time, so let's wait until then
-				  Math.max(1, closestAbsoluteNext - getCurrentTime() + 150)
-				: // the part has stopped playing, so we can stop checking
-				Number.isFinite(stoppedPlayback)
-				? 0
-				: // if all Pieces are finished, we can stop updating, because piecesOnLayer will change anyway if
-				// anything happens to the Pieces
-				finishedPieceIds.length === piecesOnLayer.length
-				? 0
-				: // essentially a fallback, we shouldn't hit this condition ever
-				  10000 + Math.random() * 1000,
+			nextRevalidation,
 		]
 	}, [partInstanceStartedPlayback, partInstanceStoppedPlayback, piecesOnLayer])
 }
@@ -218,7 +220,8 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 										hover: index === hoverIndex,
 									})}
 									style={{
-										animationDuration: `${piece.renderedDuration}ms`,
+										//@ts-ignore: CSS Variable
+										'--piece-playback-duration': `${piece.renderedDuration}ms`,
 										zIndex:
 											hoverIndex !== null
 												? index <= hoverIndex

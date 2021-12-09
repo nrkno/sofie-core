@@ -63,7 +63,7 @@ $source-layer-margin: 0.2rem;
 					animation-iteration-count: 1;
 					animation-direction: normal;
 					animation-timing-function: linear;
-					animation-duration: inherit;
+					animation-duration: var(--piece-playback-duration, 0);
 
 					background-color: rgba(255, 255, 255, 0.3);
 				}
@@ -94,8 +94,8 @@ $source-layer-margin: 0.2rem;
 	@include missing-overlay();
 
 	&.disabled {
-		background: $segment-item-disabled-background;
-		color: #fff;
+		background: $segment-item-disabled-background !important;
+		color: $segment-item-disabled-color !important;
 	}
 
 	&:last-child {

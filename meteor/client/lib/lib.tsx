@@ -109,7 +109,7 @@ export function useInvalidateTimeout<K>(func: () => [K, number], deps: any[]): K
 		const reevaluate = () => {
 			const [newValue, revalidateIn] = func()
 			if (revalidateIn > 0) {
-				invalidateHandle.current = Meteor.setTimeout(reevaluate, timeout)
+				invalidateHandle.current = Meteor.setTimeout(reevaluate, revalidateIn)
 			} else {
 				invalidateHandle.current = null
 			}
