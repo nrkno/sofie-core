@@ -21,8 +21,9 @@ export interface ShowStyleCompound extends ShowStyleBase {
 	_rundownVersionHashVariant: string
 }
 
+/** @deprecated TODO: TransformedCollection */
 export type ShowStyleVariant = DBShowStyleVariant
-export const ShowStyleVariants = createMongoCollection<ShowStyleVariant, DBShowStyleVariant>('showStyleVariants')
+export const ShowStyleVariants = createMongoCollection<DBShowStyleVariant>('showStyleVariants')
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 
 registerIndex(ShowStyleVariants, {

@@ -15,7 +15,7 @@ export interface RundownBaselineObj {
 	objects: TimelineObjGeneric[]
 }
 
-export const RundownBaselineObjs = createMongoCollection<RundownBaselineObj, RundownBaselineObj>('rundownBaselineObjs')
+export const RundownBaselineObjs = createMongoCollection<RundownBaselineObj>('rundownBaselineObjs')
 registerCollection('RundownBaselineObjs', RundownBaselineObjs)
 registerIndex(RundownBaselineObjs, {
 	rundownId: 1,

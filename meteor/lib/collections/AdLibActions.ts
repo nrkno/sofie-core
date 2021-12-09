@@ -32,7 +32,7 @@ export interface AdLibAction extends AdLibActionCommon {
 	partId: PartId
 }
 
-export const AdLibActions = createMongoCollection<AdLibAction, AdLibAction>('adLibActions')
+export const AdLibActions = createMongoCollection<AdLibAction>('adLibActions')
 registerCollection('AdLibActions', AdLibActions)
 registerIndex(AdLibActions, {
 	rundownId: 1,

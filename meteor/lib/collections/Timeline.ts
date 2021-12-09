@@ -182,7 +182,7 @@ export interface RoutedTimeline {
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
-export const Timeline = createMongoCollection<TimelineComplete, TimelineComplete>('timeline')
+export const Timeline = createMongoCollection<TimelineComplete>('timeline')
 registerCollection('Timeline', Timeline)
 
 // Note: this index is always created by default, so it's not needed.

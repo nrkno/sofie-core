@@ -13,7 +13,7 @@ import {
 	Time,
 	IBlueprintPartInstanceTimings,
 } from '@sofie-automation/blueprints-integration'
-import { createMongoCollection } from './lib'
+import { createMongoCollectionOLD } from './lib'
 import { DBPart, Part, PartId } from './Parts'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
@@ -152,7 +152,7 @@ export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance
 	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }
 
-export const PartInstances = createMongoCollection<PartInstance, DBPartInstance>('partInstances', {
+export const PartInstances = createMongoCollectionOLD<PartInstance, DBPartInstance>('partInstances', {
 	transform: (doc) => applyClassToDocument(PartInstance, doc),
 })
 registerCollection('PartInstances', PartInstances)

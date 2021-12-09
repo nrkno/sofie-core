@@ -43,7 +43,7 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 	invalid: boolean
 }
 
-export const Pieces = createMongoCollection<Piece, Piece>('pieces')
+export const Pieces = createMongoCollection<Piece>('pieces')
 registerCollection('Pieces', Pieces)
 
 registerIndex(Pieces, {

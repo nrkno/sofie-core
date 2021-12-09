@@ -31,7 +31,7 @@ export interface MediaWorkFlow {
 	success: boolean
 }
 
-export const MediaWorkFlows = createMongoCollection<MediaWorkFlow, MediaWorkFlow>('mediaWorkFlows')
+export const MediaWorkFlows = createMongoCollection<MediaWorkFlow>('mediaWorkFlows')
 registerCollection('MediaWorkFlows', MediaWorkFlows)
 registerIndex(MediaWorkFlows, {
 	// TODO: add deviceId: 1,

@@ -110,7 +110,7 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
 // The CoreSystem collection will contain one (exactly 1) object.
 // This represents the "system"
 
-export const CoreSystem = createMongoCollection<ICoreSystem, ICoreSystem>('coreSystem')
+export const CoreSystem = createMongoCollection<ICoreSystem>('coreSystem')
 registerCollection('CoreSystem', CoreSystem)
 
 export function getCoreSystem(): ICoreSystem | undefined {

@@ -43,7 +43,7 @@ export interface BucketAdLibAction extends Omit<IBlueprintActionManifest, 'partI
 	})[]
 }
 
-export const BucketAdLibActions = createMongoCollection<BucketAdLibAction, BucketAdLibAction>('bucketAdlibActions')
+export const BucketAdLibActions = createMongoCollection<BucketAdLibAction>('bucketAdlibActions')
 registerCollection('BucketAdLibActions', BucketAdLibActions)
 
 registerIndex(BucketAdLibActions, {
