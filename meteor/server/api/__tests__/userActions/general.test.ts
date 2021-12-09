@@ -6,7 +6,7 @@ import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
 import { setMinimumTakeSpan } from '../../userActions'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { RESTART_SALT } from '../../../../lib/api/userActions'
@@ -113,7 +113,7 @@ describe('User Actions - General', () => {
 		expect(getRundown1()).toBeTruthy()
 		expect(getRundown0()._id).not.toEqual(getRundown1()._id)
 
-		const parts = getRundown0().getParts()
+		const parts = RundownCollectionUtil.getParts(getRundown0())
 
 		expect(getPlaylist0()).toMatchObject({
 			activationId: undefined,

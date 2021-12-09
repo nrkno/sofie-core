@@ -423,7 +423,10 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const instances = this.getActivePartInstances(selector, options)
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
-	static _sortSegments(segments: Segment[], rundowns: Array<ReadonlyDeep<DBRundown>>) {
+	static _sortSegments<TSegment extends Pick<Segment, '_id' | 'rundownId' | '_rank'>>(
+		segments: Array<TSegment>,
+		rundowns: Array<ReadonlyDeep<DBRundown>>
+	) {
 		const rundownsMap = normalizeArray(rundowns, '_id')
 		return segments.sort((a, b) => {
 			if (a.rundownId === b.rundownId) {
@@ -454,10 +457,14 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		})
 		return Array.from(rundownsMap.values())
 	}
-	static _sortParts(parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
+	static _sortParts(
+		parts: Part[],
+		rundowns: DBRundown[],
+		segments: Array<Pick<Segment, '_id' | 'rundownId' | '_rank'>>
+	) {
 		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))
 	}
-	static _sortPartsInner<P extends DBPart>(parts: P[], sortedSegments: DBSegment[]): P[] {
+	static _sortPartsInner<P extends DBPart>(parts: P[], sortedSegments: Array<Pick<Segment, '_id'>>): P[] {
 		const segmentRanks: { [segmentId: string]: number } = {}
 		_.each(sortedSegments, (segment, i) => (segmentRanks[unprotectString(segment._id)] = i))
 

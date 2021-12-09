@@ -12,7 +12,7 @@ import {
 	stringifyError,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
-import { RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
+import { RundownHoldState, Rundown, RundownCollectionUtil } from '../../../lib/collections/Rundowns'
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -101,7 +101,7 @@ export namespace ServerPlayoutAdLibAPI {
 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 
-				const showStyleBase = rundown.getShowStyleBase() // todo: database
+				const showStyleBase = RundownCollectionUtil.getShowStyleBase(rundown) // todo: database
 				if (!pieceToCopy.allowDirectPlay) {
 					throw new Meteor.Error(
 						403,
