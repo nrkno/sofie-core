@@ -3,7 +3,7 @@ import { SegmentId } from './Segments'
 import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { IBlueprintPartDB, NoteSeverity, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '../api/notes'
-import { createMongoCollection } from './lib'
+import { createMongoCollectionOLD } from './lib'
 import { registerIndex } from '../database'
 import { ITranslatableMessage } from '../api/TranslatableMessage'
 
@@ -90,7 +90,7 @@ export function isPartPlayable(part: DBPart) {
 	return !part.invalid && !part.floated
 }
 
-export const Parts = createMongoCollection<Part, DBPart>('parts', {
+export const Parts = createMongoCollectionOLD<Part, DBPart>('parts', {
 	transform: (doc) => applyClassToDocument(Part, doc),
 })
 registerCollection('Parts', Parts)

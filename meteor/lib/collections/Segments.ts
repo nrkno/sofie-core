@@ -25,9 +25,11 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentNote>
 }
+
+/** @deprecated TODO: TransformedCollection */
 export type Segment = DBSegment
 
-export const Segments = createMongoCollection<Segment, DBSegment>('segments')
+export const Segments = createMongoCollection<DBSegment>('segments')
 registerCollection('Segments', Segments)
 
 registerIndex(Segments, {

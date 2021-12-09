@@ -28,9 +28,10 @@ export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintSho
 	_rundownVersionHash: string
 }
 
+/** @deprecated TODO: TransformedCollection */
 export type ShowStyleBase = DBShowStyleBase
 
-export const ShowStyleBases = createMongoCollection<ShowStyleBase, DBShowStyleBase>('showStyleBases')
+export const ShowStyleBases = createMongoCollection<DBShowStyleBase>('showStyleBases')
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 registerIndex(ShowStyleBases, {

@@ -22,7 +22,7 @@ export interface BucketAdLib extends IBlueprintAdLibPiece {
 	importVersions: RundownImportVersions // TODO - is this good?
 }
 
-export const BucketAdLibs = createMongoCollection<BucketAdLib, BucketAdLib>('bucketAdlibs')
+export const BucketAdLibs = createMongoCollection<BucketAdLib>('bucketAdlibs')
 registerCollection('BucketAdLibs', BucketAdLibs)
 
 registerIndex(BucketAdLibs, {
