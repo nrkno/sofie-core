@@ -1,4 +1,5 @@
 import React from 'react'
+import classNames from 'classnames'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../../../lib/api/rundown'
 import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
@@ -11,10 +12,14 @@ import { getPreviewUrlForPieceUi, getThumbnailUrlForPieceUi } from '../../../../
 import { VideoPreviewPlayer } from '../../../../lib/VideoPreviewPlayer'
 import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/RundownTimingConsumer'
 import { unprotectString } from '../../../../../lib/lib'
+import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
 
 export function VTThumbnailRenderer({
 	partId,
 	pieceInstance,
+	partAutoNext,
+	isLive,
+	isFinished,
 	hovering,
 	hoverScrubTimePosition,
 	originPosition,
@@ -76,22 +81,50 @@ export function VTThumbnailRenderer({
 					</div>
 				)}
 			</div>
-			<div className="segment-storyboard__thumbnail__countdown">
-				<RundownTimingConsumer
-					filter={(timingContext) => timingContext.partPlayed && timingContext.partPlayed[unprotectString(partId)]}
-				>
-					{(timingContext) => {
-						if (!timingContext.partPlayed) return null
 
-						const contentLeft =
-							(vtContent?.sourceDuration ?? 0) - (timingContext.partPlayed[unprotectString(partId)] ?? 0)
+			<RundownTimingConsumer
+				filter={(timingContext) => ({
+					partPlayed: timingContext.partPlayed && timingContext.partPlayed[unprotectString(partId)],
+					partExpectedDuration:
+						timingContext.partExpectedDurations && timingContext.partExpectedDurations[unprotectString(partId)],
+				})}
+			>
+				{(timingContext) => {
+					if (!timingContext.partPlayed || !timingContext.partExpectedDurations) return null
 
-						return contentLeft < 10000 ? (
-							<>{RundownUtils.formatDiffToTimecode(contentLeft, false, false, true, false, true, '+')}</>
-						) : null
-					}}
-				</RundownTimingConsumer>
-			</div>
+					const partPlayed = timingContext.partPlayed[unprotectString(partId)] ?? 0
+
+					const contentLeft =
+						(vtContent?.sourceDuration ?? 0) -
+						(vtContent?.seek ?? 0) +
+						(pieceInstance.renderedInPoint ?? 0) -
+						partPlayed
+
+					const partLeft = timingContext.partExpectedDurations[unprotectString(partId)] - partPlayed
+
+					return !isFinished &&
+						!(hovering && thumbnailUrl && previewUrl) &&
+						contentLeft < 10000 &&
+						(!partAutoNext || partLeft > contentLeft) ? (
+						<div
+							className={classNames('segment-storyboard__thumbnail__countdown', {
+								'segment-storyboard__thumbnail__countdown--playing': isLive,
+							})}
+						>
+							<span
+								className={classNames('segment-storyboard__thumbnail__countdown-icon', {
+									'segment-storyboard__thumbnail__countdown-icon--flash': isLive && contentLeft < 5000,
+								})}
+							>
+								<FreezeFrameIcon />
+							</span>
+							{contentLeft > 0 ? (
+								<span>{RundownUtils.formatDiffToTimecode(contentLeft, false, false, true, false, true, '+')}</span>
+							) : null}
+						</div>
+					) : null
+				}}
+			</RundownTimingConsumer>
 			<div className="segment-storyboard__thumbnail__label">{pieceInstance.instance.piece.name}</div>
 		</>
 	)

@@ -55,6 +55,7 @@ export function StoryboardPart({
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
+	const isFinished = (part.instance.timings?.stoppedPlayback ?? part.instance.timings?.takeOut) !== undefined
 
 	const getPartContext = useCallback(() => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + part.instance._id)
@@ -129,7 +130,7 @@ export function StoryboardPart({
 			<div className="segment-storyboard__identifier">{part.instance.part.identifier}</div>
 			{subscriptionsReady ? (
 				<>
-					<StoryboardPartThumbnail part={part} />
+					<StoryboardPartThumbnail part={part} isLive={isLivePart} isNext={isNextPart} isFinished={isFinished} />
 					<StoryboardPartTransitions part={part} outputLayers={outputLayers} />
 					<StoryboardPartSecondaryPieces part={part} outputLayers={outputLayers} />
 				</>

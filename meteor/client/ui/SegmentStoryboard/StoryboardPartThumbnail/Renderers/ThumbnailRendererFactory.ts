@@ -14,12 +14,16 @@ import { VTThumbnailRenderer } from './VTThumbnailRenderer'
 export interface IProps {
 	partId: PartId
 	partInstanceId: PartInstanceId
+	partAutoNext: boolean
 	studio: Studio
 	pieceInstance: PieceUi
 	hoverScrubTimePosition: number
 	hovering: boolean
 	originPosition: OffsetPosition
 	layer: ISourceLayer | undefined
+	isLive: boolean
+	isNext: boolean
+	isFinished: boolean
 }
 
 export default function renderThumbnail(props: IProps) {

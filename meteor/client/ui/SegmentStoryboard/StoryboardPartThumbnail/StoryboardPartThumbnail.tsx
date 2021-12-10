@@ -7,6 +7,9 @@ import { StoryboardPartThumbnailInner } from './StoryboardPartThumbnailInner'
 
 interface IProps {
 	part: PartExtended
+	isLive: boolean
+	isNext: boolean
+	isFinished: boolean
 }
 
 function findMainPiece(pieces: PieceExtended[]) {
@@ -25,7 +28,12 @@ function findMainPiece(pieces: PieceExtended[]) {
 	return mainPiece
 }
 
-export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbnail({ part }: IProps) {
+export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbnail({
+	part,
+	isLive,
+	isNext,
+	isFinished,
+}: IProps) {
 	const [mainPiece, setMainPiece] = useState<PieceExtended | undefined>(findMainPiece(part.pieces))
 	const [highlight] = useState(false)
 
@@ -39,12 +47,15 @@ export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbna
 			{(studio) => (
 				<StoryboardPartThumbnailInner
 					piece={mainPiece}
-					isLiveLine={false}
+					isLive={isLive}
+					isNext={isNext}
+					isFinished={isFinished}
 					layer={mainPiece?.sourceLayer}
 					studio={studio}
 					partId={part.partId}
 					partInstanceId={part.instance._id}
 					highlight={highlight}
+					partAutoNext={part.instance.part.autoNext || false}
 				/>
 			)}
 		</StudioContext.Consumer>

@@ -13,15 +13,18 @@ import { PartInstanceId } from '../../../../lib/collections/PartInstances'
 interface IProps {
 	partId: PartId
 	partInstanceId: PartInstanceId
+	partAutoNext: boolean
 	layer: ISourceLayer | undefined
 	piece: PieceExtended
 	studio: Studio | undefined
-	isLiveLine?: boolean
+	isLive: boolean
+	isNext: boolean
+	isFinished: boolean
 	highlight?: boolean
 }
 
 export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
-	({ piece, layer, partId, partInstanceId, studio, highlight }: IProps) => {
+	({ piece, layer, partId, partInstanceId, studio, highlight, partAutoNext, isLive, isNext, isFinished }: IProps) => {
 		const [hover, setHover] = useState(false)
 		const [origin, setOrigin] = useState<OffsetPosition>({ left: 0, top: 0 })
 		const [width, setWidth] = useState(0)
@@ -75,12 +78,16 @@ export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
 					renderThumbnail({
 						partId,
 						partInstanceId,
+						partAutoNext,
 						hoverScrubTimePosition: mousePosition * (piece.instance.piece.content.sourceDuration || 0),
 						hovering: hover,
 						layer: layer,
 						originPosition: origin,
 						pieceInstance: piece,
 						studio,
+						isLive,
+						isNext,
+						isFinished,
 					})}
 			</PieceElement>
 		)

@@ -61,6 +61,48 @@
 		}
 	}
 
+	> .segment-storyboard__thumbnail__countdown {
+		position: absolute;
+		top: 0;
+		right: 0;
+		margin: 0.2em 0.4em;
+		left: auto;
+		font-weight: 400;
+		-webkit-text-stroke: 0.2px #000;
+		filter: drop-shadow(0 0 1px black);
+
+		> .segment-storyboard__thumbnail__countdown-icon {
+			margin-right: 0.2em;
+
+			&--flash {
+				@keyframes segment-storyboard__thumbnail__countdown-icon--flash {
+					0% {
+						opacity: 0;
+					}
+					25% {
+						opacity: 0;
+					}
+					50% {
+						opacity: 1;
+					}
+					100% {
+						opacity: 1;
+					}
+				}
+				/* @keyframes duration | easing-function | delay | iteration-count | direction | fill-mode | play-state | name */
+				animation: 1s linear 0s infinite normal forwards segment-storyboard__thumbnail__countdown-icon--flash;
+			}
+
+			&:last-child {
+				margin-right: 0;
+			}
+		}
+
+		&--playing {
+			color: $liveline-timecode-color;
+		}
+	}
+
 	&.remote > .segment-storyboard__thumbnail__icon {
 		opacity: 0.4;
 	}

@@ -60,7 +60,7 @@ export interface PieceExtended {
 	sourceLayer?: ISourceLayerExtended
 	/** Output layer that this part uses */
 	outputLayer?: IOutputLayerExtended
-	/** Position in timeline, relative to the beginning of the segment */
+	/** Position in timeline, relative to the beginning of the Part */
 	renderedInPoint: number | null
 	/** Duration in timeline */
 	renderedDuration: number | null
