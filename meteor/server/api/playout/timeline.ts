@@ -287,6 +287,9 @@ export function saveTimeline(
 			// This could be improved (as it relies on that the internal execution takes no longer than 3000 ms),
 			// but should be good enough for now..
 			timestamp: { $gt: getCurrentTime() - 3000 },
+
+			// Only set the timelineHash once:
+			timelineHash: { $exists: false },
 		}
 		if (studio.organizationId) {
 			selector.organizationId = studio.organizationId
