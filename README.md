@@ -4,7 +4,7 @@ This is the "Core" application of the [**Sofie** TV News Studio Automation Syste
 
 The Core is a Meteor/Node.JS-based web server that serves the web-GUI:s as well as handling the business logic for the Sofie TV Automation system.
 
-System documentation can be found here: [Sofie system documentation](https://sofie.gitbook.io/sofie-tv-automation/documentation).
+System documentation can be found here: [Sofie system documentation](https://nrkno.github.io/tv-automation-server-core/).
 
 # For developers
 
