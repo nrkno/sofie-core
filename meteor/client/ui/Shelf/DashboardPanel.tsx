@@ -35,7 +35,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IState {
@@ -154,7 +154,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	componentDidMount() {
 		this.autorun(() => {
-			const rundownIds = this.props.playlist.getRundownIDs()
+			const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(this.props.playlist)
 			if (rundownIds.length > 0) {
 				this.subscribe(PubSub.pieceInstances, {
 					rundownId: {
@@ -723,7 +723,7 @@ export const DashboardPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		return {
 			...fetchAndFilter(props),
-			studio: props.playlist.getStudio(),
+			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,

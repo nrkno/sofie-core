@@ -21,9 +21,9 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
+import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { DBPartInstance, PartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
@@ -687,7 +687,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 	segmentsCache: DbCacheReadCollection<Segment>,
 	rundowns: Array<ReadonlyDeep<Rundown>>
 ): { segments: Segment[]; parts: Part[] } {
-	const segments = RundownPlaylist._sortSegments(
+	const segments = RundownPlaylistCollectionUtil._sortSegments(
 		segmentsCache.findFetch(
 			{},
 			{
@@ -700,7 +700,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 		rundowns
 	)
 
-	const parts = RundownPlaylist._sortPartsInner(
+	const parts = RundownPlaylistCollectionUtil._sortPartsInner(
 		partsCache.findFetch(
 			{},
 			{

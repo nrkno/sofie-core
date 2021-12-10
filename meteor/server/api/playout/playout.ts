@@ -24,7 +24,7 @@ import {
 	reportPartInstanceHasStopped,
 	reportPieceHasStopped,
 } from '../blueprints/events'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { updateStudioTimeline, updateTimeline } from './timeline'
@@ -468,7 +468,10 @@ export namespace ServerPlayoutAPI {
 			let refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 			if (refPartIndex === -1) {
 				const tmpRefPart = { ...refPart, invalid: true } // make sure it won't be found as playable
-				playabaleParts = RundownPlaylist._sortPartsInner([...playabaleParts, tmpRefPart], rawSegments)
+				playabaleParts = RundownPlaylistCollectionUtil._sortPartsInner(
+					[...playabaleParts, tmpRefPart],
+					rawSegments
+				)
 				refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 				if (refPartIndex === -1) throw new Meteor.Error(500, `Part "${refPart._id}" not found after insert!`)
 			}

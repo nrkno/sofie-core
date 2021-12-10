@@ -12,7 +12,11 @@ import { literal, protectString } from '../../../../../lib/lib'
 import { mockRO } from './mock-mos-data'
 import { fixSnapshot } from '../../../../../__mocks__/helpers/snapshot'
 import { Pieces } from '../../../../../lib/collections/Pieces'
-import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+} from '../../../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
 import { getPartId } from '../../lib'
@@ -30,8 +34,8 @@ const ensureNextPartIsValidMock = ensureNextPartIsValid as TensureNextPartIsVali
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../../../userActions.ts') // include in order to create the Meteor methods needed
 
-function getPartIdMap(segments: Segment[], parts: DBPart[]) {
-	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
+function getPartIdMap(segments: Segment[], parts: Part[]) {
+	const sortedParts = RundownPlaylistCollectionUtil._sortPartsInner(parts, segments)
 
 	const groupedParts = _.groupBy(sortedParts, (p) => p.segmentId)
 	const arr: [string, DBPart[]][] = _.pairs(groupedParts)
@@ -403,7 +407,7 @@ describe('Test recieved mos ingest payloads', () => {
 	testInFiber('mosRoStoryInsert: Into segment', async () => {
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -445,7 +449,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -469,7 +473,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -573,7 +577,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -608,7 +612,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -654,7 +658,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -763,7 +767,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -796,7 +800,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -866,7 +870,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -901,7 +905,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -929,7 +933,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -945,7 +949,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const { segments, parts } = playlist.getSegmentsAndPartsSync()
+		const { segments, parts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts[1] = 'ro1;s1;p3'
 		partMap[0].parts[2] = 'ro1;s1;p2'
@@ -963,7 +967,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -981,7 +985,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const { segments, parts } = playlist.getSegmentsAndPartsSync()
+		const { segments, parts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
 		const partMap = mockRO.segmentIdMap()
 		const old = partMap.splice(0, 1)
 		partMap.splice(3, 0, ...old)
@@ -1312,7 +1316,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 		expect(rundown.orphaned).toBeFalsy()

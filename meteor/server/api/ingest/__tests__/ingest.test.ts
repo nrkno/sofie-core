@@ -16,7 +16,12 @@ import {
 import { ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownInput } from '../rundownInput'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylist,
+	RundownPlaylistId,
+	RundownPlaylistCollectionUtil,
+} from '../../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../../lib/api/methods'
 import { removeRundownPlaylistFromDb } from '../../rundownPlaylist'
@@ -1546,7 +1551,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Check which parts are current and next
-				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const selectedInstances = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist())
 				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
 				const nextPartInstance = selectedInstances.nextPartInstance as PartInstance
 				expect(currentPartInstance).toBeTruthy()
@@ -1587,7 +1592,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Check if the partInstance was updated
-				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const selectedInstances = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist())
 				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
 				const nextPartInstance = selectedInstances.nextPartInstance as PartInstance
 				expect(currentPartInstance).toBeTruthy()

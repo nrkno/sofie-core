@@ -29,7 +29,11 @@ import { ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylistId,
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+} from '../../lib/collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
@@ -157,7 +161,7 @@ export function allowedToMoveRundownOutOfPlaylist(
 	playlist: ReadonlyDeep<RundownPlaylist>,
 	rundown: ReadonlyDeep<DBRundown>
 ) {
-	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+	const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 	if (rundown.playlistId !== playlist._id)
 		throw new Meteor.Error(
@@ -417,7 +421,7 @@ export namespace ClientRundownAPI {
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const playlist = access.playlist
 
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		const errors = rundowns.map((rundown) => {
 			if (!rundown.importVersions) return 'unknown'
 
@@ -455,11 +459,11 @@ export namespace ClientRundownAPI {
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const rundownPlaylist = access.playlist
 
-		const studio = rundownPlaylist.getStudio()
+		const studio = RundownPlaylistCollectionUtil.getStudio(rundownPlaylist)
 		const studioBlueprint = studio.blueprintId ? await fetchBlueprintLight(studio.blueprintId) : null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
-		const rundowns = rundownPlaylist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(rundownPlaylist)
 		const uniqueShowStyleCompounds = _.uniq(
 			rundowns,
 			undefined,

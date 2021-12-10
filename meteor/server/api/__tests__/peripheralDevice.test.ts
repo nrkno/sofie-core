@@ -23,7 +23,12 @@ import * as MOS from 'mos-connection'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylistId,
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+} from '../../../lib/collections/RundownPlaylists'
 import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
@@ -309,7 +314,8 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const currentPartInstance = playlist?.getSelectedPartInstances()?.currentPartInstance as PartInstance
+		const currentPartInstance = (playlist &&
+			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)?.currentPartInstance) as PartInstance
 		expect(currentPartInstance).toBeTruthy()
 		const partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
@@ -334,7 +340,8 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
+		const currentPartInstance = (playlist &&
+			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)?.currentPartInstance) as PartInstance
 		expect(currentPartInstance).toBeTruthy()
 		const partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,
@@ -360,7 +367,8 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
+		const currentPartInstance = (playlist &&
+			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)?.currentPartInstance) as PartInstance
 		expect(currentPartInstance).toBeTruthy()
 		const pieces = PieceInstances.find({
 			partInstanceId: currentPartInstance._id,
@@ -394,7 +402,8 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const currentPartInstance = playlist?.getSelectedPartInstances().currentPartInstance as PartInstance
+		const currentPartInstance = (playlist &&
+			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)?.currentPartInstance) as PartInstance
 		expect(currentPartInstance).toBeTruthy()
 		const pieces = PieceInstances.find({
 			partInstanceId: currentPartInstance._id,

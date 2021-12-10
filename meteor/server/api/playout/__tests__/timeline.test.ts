@@ -12,7 +12,12 @@ import '../api'
 import { Timeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylist,
+	RundownPlaylistId,
+	RundownPlaylistCollectionUtil,
+} from '../../../../lib/collections/RundownPlaylists'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
@@ -60,7 +65,9 @@ describe('Timeline', () => {
 		{
 			// Prepare and activate in rehersal:
 			await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId0), playlistId0, false)
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
@@ -75,7 +82,9 @@ describe('Timeline', () => {
 		{
 			// Take the first Part:
 			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(currentPartInstance!.part._id).toEqual(parts[0]._id)

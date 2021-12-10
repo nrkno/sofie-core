@@ -7,12 +7,12 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { RundownSystemStatus } from '../RundownView/RundownSystemStatus'
 import { DBStudio } from '../../../lib/collections/Studios'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 
 interface ISystemStatusPanelProps {
 	studio: DBStudio
@@ -65,8 +65,10 @@ class SystemStatusPanelInner extends MeteorReactComponent<
 
 export const SystemStatusPanel = translateWithTracker<ISystemStatusPanelProps, IState, ISystemStatusPanelTrackedProps>(
 	(props: ISystemStatusPanelProps) => {
-		const rundownIds = props.playlist.getRundownIDs() ?? []
-		const firstRundown = rundownIds.length ? props.playlist.getRundowns({ _id: rundownIds[0] })[0] : undefined
+		const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
+		const firstRundown = rundownIds.length
+			? Rundowns.findOne({ playlistId: props.playlist._id, _id: rundownIds[0] })
+			: undefined
 		return {
 			rundownIds,
 			firstRundown,
