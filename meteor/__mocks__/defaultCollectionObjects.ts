@@ -1,6 +1,6 @@
 import { Studio, StudioId } from '../lib/collections/Studios'
 import { getCurrentTime, unprotectString } from '../lib/lib'
-import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
 import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
 import { ShowStyleBaseId } from '../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId } from '../lib/collections/ShowStyleVariants'
@@ -13,7 +13,7 @@ import { PieceId, Piece } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
 
-export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
+export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): RundownPlaylist {
 	return {
 		_id: _id,
 

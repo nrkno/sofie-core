@@ -1,6 +1,6 @@
 import { ReadonlyDeep } from 'type-fest'
 import { wrapPartToTemporaryInstance } from '../../../../lib/collections/PartInstances'
-import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
 import { getRandomId, protectString } from '../../../../lib/lib'
 import {
@@ -21,7 +21,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 	})
 
 	async function wrapWithCache<T>(
-		fcn: (cache: CacheForPlayout, playlist: ReadonlyDeep<DBRundownPlaylist>) => Promise<T>
+		fcn: (cache: CacheForPlayout, playlist: ReadonlyDeep<RundownPlaylist>) => Promise<T>
 	): Promise<T> {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
 

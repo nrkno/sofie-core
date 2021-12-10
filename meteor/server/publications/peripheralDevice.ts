@@ -25,7 +25,7 @@ import {
 	AccessorOnPackage,
 } from '@sofie-automation/blueprints-integration'
 import {
-	DBRundownPlaylist,
+	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
 	RundownPlaylists,
 } from '../../lib/collections/RundownPlaylists'
@@ -235,7 +235,7 @@ meteorCustomPublishArray(
 					routedExpectedPackages: ResultingExpectedPackage[]
 					/** ExpectedPackages relevant for playout */
 					routedPlayoutExpectedPackages: ResultingExpectedPackage[]
-					activePlaylist: DBRundownPlaylist | undefined
+					activePlaylist: RundownPlaylist | undefined
 					activeRundowns: Rundown[]
 					currentPartInstance: PartInstance | undefined
 					nextPartInstance: PartInstance | undefined

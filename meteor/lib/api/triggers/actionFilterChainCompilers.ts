@@ -15,12 +15,7 @@ import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
 import { PartId } from '../../collections/Parts'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../../collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../collections/RundownBaselineAdLibPieces'
-import {
-	DBRundownPlaylist,
-	RundownPlaylist,
-	RundownPlaylistId,
-	RundownPlaylists,
-} from '../../collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../collections/RundownPlaylists'
 import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
@@ -684,7 +679,7 @@ export function rundownPlaylistFilter(
 	studioId: StudioId,
 	filterChain: IRundownPlaylistFilterLink[]
 ): RundownPlaylist | undefined {
-	const selector: MongoSelector<DBRundownPlaylist> = {
+	const selector: MongoSelector<RundownPlaylist> = {
 		$and: [
 			{
 				studioId,

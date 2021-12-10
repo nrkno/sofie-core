@@ -51,7 +51,7 @@ import {
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { INoteBase } from '../../../../lib/api/notes'
-import { RundownPlaylistId, ABSessionInfo, DBRundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, ABSessionInfo, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	PieceInstances,
 	protectPieceInstance,
@@ -459,7 +459,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	constructor(
 		studio: ReadonlyDeep<Studio>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		playlist: ReadonlyDeep<DBRundownPlaylist>,
+		playlist: ReadonlyDeep<RundownPlaylist>,
 		rundown: ReadonlyDeep<Rundown>,
 		previousPartInstance: PartInstance | undefined,
 		currentPartInstance: PartInstance | undefined,

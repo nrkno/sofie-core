@@ -39,7 +39,7 @@ import {
 	normalizeArrayToMapFunc,
 	stringifyError,
 } from '../../../lib/lib'
-import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
@@ -637,7 +637,7 @@ function buildTimelineObjsForRundown(
 }
 
 function generateCurrentInfinitePieceObjects(
-	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	activePlaylist: ReadonlyDeep<RundownPlaylist>,
 	currentPartInfo: SelectedPartInstanceTimelineInfo,
 	nextPartInfo: SelectedPartInstanceTimelineInfo | undefined,
 	previousPartInfinites: Map<PieceInstanceInfinite['infiniteInstanceId'], PieceInstanceWithTimings>,
@@ -724,7 +724,7 @@ function generateCurrentInfinitePieceObjects(
 }
 
 function generatePreviousPartInstanceObjects(
-	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	activePlaylist: ReadonlyDeep<RundownPlaylist>,
 	previousPartInfo: SelectedPartInstanceTimelineInfo,
 	currentPartInfo: SelectedPartInstanceTimelineInfo,
 	currentInfinitePieceIds: Set<PieceInstanceInfinite['infinitePieceId']>
@@ -780,7 +780,7 @@ function generatePreviousPartInstanceObjects(
 }
 
 function generateNextPartInstanceObjects(
-	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	activePlaylist: ReadonlyDeep<RundownPlaylist>,
 	currentPartInfo: SelectedPartInstanceTimelineInfo,
 	nextPartInfo: SelectedPartInstanceTimelineInfo,
 	currentPartGroup: TimelineObjGroupPart,

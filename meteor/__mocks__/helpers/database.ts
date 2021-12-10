@@ -36,7 +36,7 @@ import { Segment, Segments } from '../../lib/collections/Segments'
 import { Part, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
-import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { restartRandomId } from '../random'
@@ -491,7 +491,7 @@ export function setupDefaultRundownPlaylist(
 ): { rundownId: RundownId; playlistId: RundownPlaylistId } {
 	const rundownId: RundownId = rundownId0 || getRandomId()
 
-	const playlist: DBRundownPlaylist = defaultRundownPlaylist(protectString('playlist_' + rundownId), env.studio._id)
+	const playlist: RundownPlaylist = defaultRundownPlaylist(protectString('playlist_' + rundownId), env.studio._id)
 
 	const playlistId = RundownPlaylists.insert(playlist)
 

@@ -98,9 +98,6 @@ export interface RundownPlaylist {
 	trackedAbSessions?: ABSessionInfo[]
 }
 
-/** Note: Use RundownPlaylist instead */
-export type DBRundownPlaylist = RundownPlaylist
-
 /**
  * Direct database accessors for the RundownPlaylist
  * These used to reside on the Rundown class

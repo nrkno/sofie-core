@@ -4,12 +4,7 @@ import { PartInstance, PartInstances } from '../../../lib/collections/PartInstan
 import { Part, Parts } from '../../../lib/collections/Parts'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
-import {
-	RundownPlaylist,
-	DBRundownPlaylist,
-	RundownPlaylistId,
-	RundownPlaylists,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Segment, Segments } from '../../../lib/collections/Segments'
 import { Studio, Studios } from '../../../lib/collections/Studios'
@@ -39,7 +34,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 	public readonly Studio: DbCacheReadObject<Studio>
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
-	public readonly Playlist: DbCacheWriteObject<DBRundownPlaylist>
+	public readonly Playlist: DbCacheWriteObject<RundownPlaylist>
 	public readonly Rundowns: DbCacheReadCollection<Rundown>
 
 	protected constructor(
@@ -47,7 +42,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		activationCache: ActivationCache,
 		studio: DbCacheReadObject<Studio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
-		playlist: DbCacheWriteObject<DBRundownPlaylist>,
+		playlist: DbCacheWriteObject<RundownPlaylist>,
 		rundowns: DbCacheReadCollection<Rundown>
 	) {
 		super()
@@ -61,13 +56,13 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		this.Rundowns = rundowns
 	}
 
-	static async createPreInit(tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>): Promise<CacheForPlayoutPreInit> {
+	static async createPreInit(tmpPlaylist: ReadonlyDeep<RundownPlaylist>): Promise<CacheForPlayoutPreInit> {
 		const initData = await CacheForPlayoutPreInit.loadInitData(tmpPlaylist, true, undefined)
 		return new CacheForPlayoutPreInit(tmpPlaylist._id, ...initData)
 	}
 
 	protected static async loadInitData(
-		tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>,
+		tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
 		reloadPlaylist: boolean,
 		existingRundowns: DbCacheReadCollection<Rundown> | undefined
 	): Promise<
@@ -75,7 +70,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 			ActivationCache,
 			DbCacheReadObject<Studio>,
 			DbCacheReadCollection<PeripheralDevice>,
-			DbCacheWriteObject<DBRundownPlaylist>,
+			DbCacheWriteObject<RundownPlaylist>,
 			DbCacheReadCollection<Rundown>
 		]
 	> {
@@ -84,7 +79,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 		const [playlist, rundowns] = await Promise.all([
 			reloadPlaylist
 				? await DbCacheWriteObject.createFromDatabase(RundownPlaylists, false, tmpPlaylist._id)
-				: DbCacheWriteObject.createFromDoc<DBRundownPlaylist>(RundownPlaylists, false, tmpPlaylist),
+				: DbCacheWriteObject.createFromDoc<RundownPlaylist>(RundownPlaylists, false, tmpPlaylist),
 			existingRundowns ?? DbCacheReadCollection.createFromDatabase(Rundowns, { playlistId: tmpPlaylist._id }),
 		])
 
@@ -118,7 +113,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		activationCache: ActivationCache,
 		studio: DbCacheReadObject<Studio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
-		playlist: DbCacheWriteObject<DBRundownPlaylist>,
+		playlist: DbCacheWriteObject<RundownPlaylist>,
 		rundowns: DbCacheReadCollection<Rundown>,
 		segments: DbCacheReadCollection<Segment>,
 		parts: DbCacheReadCollection<Part>,
@@ -192,7 +187,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	 */
 	private static async loadContent(
 		ingestCache: ReadOnlyCache<CacheForIngest> | null,
-		playlist: ReadonlyDeep<DBRundownPlaylist>,
+		playlist: ReadonlyDeep<RundownPlaylist>,
 		rundownIds: RundownId[]
 	): Promise<
 		[

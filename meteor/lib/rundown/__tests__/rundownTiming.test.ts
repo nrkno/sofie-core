@@ -1,6 +1,6 @@
 import { PartInstance } from '../../collections/PartInstances'
 import { Part, PartId } from '../../collections/Parts'
-import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
+import { RundownPlaylist } from '../../collections/RundownPlaylists'
 import { Rundown } from '../../collections/Rundowns'
 import { literal, protectString, unprotectString } from '../../lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
@@ -8,7 +8,7 @@ import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 const DEFAULT_DURATION = 4000
 
 function makeMockPlaylist(): RundownPlaylist {
-	return literal<DBRundownPlaylist>({
+	return literal<RundownPlaylist>({
 		_id: protectString('mock-playlist'),
 		externalId: 'mock-playlist',
 		organizationId: protectString('test'),

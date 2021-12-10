@@ -12,7 +12,7 @@ import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { Snapshots } from '../../lib/collections/Snapshots'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { RundownPlaylists, DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
@@ -140,7 +140,7 @@ Blueprints.allow({
 })
 // Owned by Studio:
 RundownPlaylists.allow({
-	insert(_userId, _doc: DBRundownPlaylist): boolean {
+	insert(_userId, _doc: RundownPlaylist): boolean {
 		return false
 	},
 	update(_userId, _doc, _fields, _modifier) {

@@ -1,10 +1,5 @@
 import { Studio, StudioId, Studios } from '../../lib/collections/Studios'
-import {
-	RundownPlaylists,
-	RundownPlaylistId,
-	DBRundownPlaylist,
-	RundownPlaylist,
-} from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import {
 	getHash,
@@ -100,7 +95,7 @@ export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternal
 	return protectString(getHash(`${studioId}_${playlistExternalId}`))
 }
 
-export async function removeRundownPlaylistFromDb(playlist: ReadonlyDeep<DBRundownPlaylist>): Promise<void> {
+export async function removeRundownPlaylistFromDb(playlist: ReadonlyDeep<RundownPlaylist>): Promise<void> {
 	if (playlist.activationId)
 		throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is active and cannot be removed`)
 
@@ -133,7 +128,7 @@ export async function removeRundownsFromDb(rundownIds: RundownId[]): Promise<voi
 }
 
 export interface RundownPlaylistAndOrder {
-	rundownPlaylist: DBRundownPlaylist
+	rundownPlaylist: RundownPlaylist
 	order: BlueprintResultOrderedRundowns
 }
 
@@ -170,7 +165,7 @@ export function produceRundownPlaylistInfoFromRundown(
 
 	const rundownsInDefaultOrder = sortDefaultRundownInPlaylistOrder(rundowns)
 
-	let newPlaylist: DBRundownPlaylist
+	let newPlaylist: RundownPlaylist
 	if (playlistInfo) {
 		newPlaylist = {
 			created: getCurrentTime(),
@@ -214,7 +209,7 @@ function defaultPlaylistForRundown(
 	rundown: ReadonlyDeep<IBlueprintRundown>,
 	studio: ReadonlyDeep<Studio>,
 	existingPlaylist?: ReadonlyDeep<RundownPlaylist>
-): Omit<DBRundownPlaylist, '_id' | 'externalId'> {
+): Omit<RundownPlaylist, '_id' | 'externalId'> {
 	return {
 		created: getCurrentTime(),
 		currentPartInstanceId: null,
@@ -234,7 +229,7 @@ function defaultPlaylistForRundown(
 
 /** Set _rank and playlistId of rundowns in a playlist */
 export function updateRundownsInPlaylist(
-	_playlist: DBRundownPlaylist,
+	_playlist: RundownPlaylist,
 	rundownRanks: BlueprintResultOrderedRundowns,
 	rundownCollection: DbCacheWriteCollection<Rundown>
 ) {
@@ -451,7 +446,7 @@ export async function moveRundownIntoPlaylist(
 				// No point locking, as we are creating something fresh and unique here
 
 				const externalId = Random.id()
-				const playlist: DBRundownPlaylist = {
+				const playlist: RundownPlaylist = {
 					...defaultPlaylistForRundown(rundown, studio),
 					externalId: externalId,
 					_id: getPlaylistIdFromExternalId(studio._id, externalId),

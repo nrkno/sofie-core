@@ -2,7 +2,7 @@ import { Time, literal, protectString, getRandomId } from '../../../lib/lib'
 import { RundownImportVersions, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { RundownNote } from '../../../lib/api/notes'
 import { PlaylistTimingType, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
-import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
@@ -46,10 +46,10 @@ export interface OldRundown {
 	notes?: Array<RundownNote>
 	previousPersistentState?: TimelinePersistentState
 }
-export function makePlaylistFromRundown_1_0_0(rundown0: Rundown, newPlaylistId?: RundownPlaylistId): DBRundownPlaylist {
+export function makePlaylistFromRundown_1_0_0(rundown0: Rundown, newPlaylistId?: RundownPlaylistId): RundownPlaylist {
 	const rundown = rundown0 as any as OldRundown
 	if (!newPlaylistId) newPlaylistId = protectString('pl_' + rundown._id)
-	return literal<DBRundownPlaylist>({
+	return literal<RundownPlaylist>({
 		_id: newPlaylistId,
 		externalId: rundown.externalId,
 		activationId: rundown['active'] ? getRandomId() : undefined,

@@ -4,7 +4,7 @@ import { Rundown } from '../../lib/collections/Rundowns'
 import { Segment } from '../../lib/collections/Segments'
 import { Part } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
-import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { PartInstance } from '../../lib/collections/PartInstances'
 const cloneOrg = require('fast-clone')
@@ -15,7 +15,7 @@ type Data =
 	| undefined
 	| TimelineObjGeneric
 	| TimelineComplete
-	| DBRundownPlaylist
+	| RundownPlaylist
 	| Rundown
 	| Segment
 	| Part
@@ -85,7 +85,7 @@ function isTimelineComplete(o): o is TimelineComplete {
 // function isTimelineObj(o): o is TimelineObjGeneric {
 // 	return o.enable && o._id && o.id && o.studioId
 // }
-function isPlaylist(o): o is DBRundownPlaylist {
+function isPlaylist(o): o is RundownPlaylist {
 	return o._id && _.has(o, 'currentPartInstanceId')
 }
 function isRundown(o): o is Rundown {

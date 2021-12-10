@@ -53,7 +53,7 @@ import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/Inges
 import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
@@ -111,7 +111,7 @@ interface RundownPlaylistSnapshot {
 	version: string
 	playlistId: RundownPlaylistId
 	snapshot: SnapshotRundownPlaylist
-	playlist: DBRundownPlaylist
+	playlist: RundownPlaylist
 	rundowns: Array<Rundown>
 	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>

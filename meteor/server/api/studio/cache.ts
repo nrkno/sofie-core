@@ -1,5 +1,5 @@
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 import { protectString } from '../../../lib/lib'
@@ -23,13 +23,13 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 	public readonly Studio: DbCacheReadObject<Studio>
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
-	public readonly RundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>
+	public readonly RundownPlaylists: DbCacheReadCollection<RundownPlaylist>
 	public readonly Timeline: DbCacheWriteCollection<TimelineComplete>
 
 	private constructor(
 		studio: DbCacheReadObject<Studio>,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
-		rundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>,
+		rundownPlaylists: DbCacheReadCollection<RundownPlaylist>,
 		timeline: DbCacheWriteCollection<TimelineComplete>
 	) {
 		super()
@@ -53,7 +53,7 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 		return new CacheForStudio(studio, ...collections)
 	}
 
-	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): DBRundownPlaylist[] {
+	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): RundownPlaylist[] {
 		return this.RundownPlaylists.findFetch({
 			activationId: { $exists: true },
 			_id: {

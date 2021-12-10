@@ -1,11 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import {
-	RundownPlaylistId,
-	RundownPlaylist,
-	RundownPlaylists,
-	DBRundownPlaylist,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { assertNever } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { pushWorkToQueue } from '../../codeControl'
@@ -152,7 +147,7 @@ export async function runPlayoutOperationWithLock<T>(
 export async function runPlayoutOperationWithCacheFromStudioOperation<T>(
 	context: string,
 	cacheOrLock: ReadOnlyCache<CacheForStudio> | ReadOnlyCache<CacheForPlayoutPreInit> | StudioLock | PlaylistLock, // Important to verify correct lock is held
-	tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
 	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
 	fcn: (cache: CacheForPlayout) => Promise<T>
@@ -232,7 +227,7 @@ interface PlayoutLockOptions {
 async function playoutLockFunctionInner<T>(
 	context: string,
 	lock: StudioLock,
-	tmpPlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	tmpPlaylist: ReadonlyDeep<RundownPlaylist>,
 	priority: PlayoutLockFunctionPriority,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
 	fcn: (cache: CacheForPlayout) => Promise<T>,
