@@ -13,6 +13,7 @@ import { VideoPreviewPlayer } from '../../../../lib/VideoPreviewPlayer'
 import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/RundownTimingConsumer'
 import { unprotectString } from '../../../../../lib/lib'
 import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
+import { PieceStatusIcon } from '../../../../lib/ui/PieceStatusIcon'
 
 export function VTThumbnailRenderer({
 	partId,
@@ -35,6 +36,8 @@ export function VTThumbnailRenderer({
 	const previewUrl: string | undefined = getPreviewUrlForPieceUi(pieceInstance, studio, mediaPreviewUrl)
 	const thumbnailUrl: string | undefined = getThumbnailUrlForPieceUi(pieceInstance, studio, mediaPreviewUrl)
 
+	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
+
 	return (
 		<>
 			<VTFloatingInspector
@@ -51,7 +54,7 @@ export function VTThumbnailRenderer({
 				itemElement={null}
 				contentMetaData={pieceInstance.contentMetaData || null}
 				noticeMessage={pieceInstance.message || null}
-				noticeLevel={status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null}
+				noticeLevel={noticeLevel}
 				mediaPreviewUrl={mediaPreviewUrl}
 				contentPackageInfos={pieceInstance.contentPackageInfos}
 				pieceId={pieceInstance.instance.piece._id}
@@ -125,7 +128,10 @@ export function VTThumbnailRenderer({
 					) : null
 				}}
 			</RundownTimingConsumer>
-			<div className="segment-storyboard__thumbnail__label">{pieceInstance.instance.piece.name}</div>
+			<div className="segment-storyboard__thumbnail__label">
+				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+				{pieceInstance.instance.piece.name}
+			</div>
 		</>
 	)
 }

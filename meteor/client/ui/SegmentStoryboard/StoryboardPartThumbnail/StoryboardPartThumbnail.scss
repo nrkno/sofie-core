@@ -43,6 +43,10 @@
 		font-weight: 400;
 		margin: 0.2em 0.4em;
 
+		> .piece__status-icon {
+			line-height: 0.6em;
+		}
+
 		&.segment-storyboard__thumbnail__label--lg {
 			position: absolute;
 			text-align: center;
