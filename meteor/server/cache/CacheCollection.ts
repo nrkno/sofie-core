@@ -18,7 +18,7 @@ import { BulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
 import { Changes } from '../lib/database'
-import { AsyncTransformedCollection } from '../../lib/collections/lib'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
 type DbCacheCollectionDocument<Class> = {
@@ -36,12 +36,12 @@ export class DbCacheReadCollection<DBInterface extends { _id: ProtectedString<an
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
-	protected constructor(protected _collection: AsyncTransformedCollection<DBInterface, DBInterface>) {
+	protected constructor(protected _collection: AsyncMongoCollection<DBInterface>) {
 		//
 	}
 
 	public static createFromArray<DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		docs: DBInterface[] | ReadonlyDeep<Array<DBInterface>>
 	): DbCacheReadCollection<DBInterface> {
 		const col = new DbCacheReadCollection(collection)
@@ -49,7 +49,7 @@ export class DbCacheReadCollection<DBInterface extends { _id: ProtectedString<an
 		return col
 	}
 	public static async createFromDatabase<DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		selector: MongoQuery<DBInterface>
 	): Promise<DbCacheReadCollection<DBInterface>> {
 		const docs = await collection.findFetchAsync(selector)
@@ -173,7 +173,7 @@ export class DbCacheWriteCollection<
 	}
 
 	public static createFromArray<DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		docs: DBInterface[]
 	): DbCacheWriteCollection<DBInterface> {
 		const col = new DbCacheWriteCollection(collection)
@@ -181,7 +181,7 @@ export class DbCacheWriteCollection<
 		return col
 	}
 	public static async createFromDatabase<DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		selector: MongoQuery<DBInterface>
 	): Promise<DbCacheWriteCollection<DBInterface>> {
 		const docs = await collection.findFetchAsync(selector)
