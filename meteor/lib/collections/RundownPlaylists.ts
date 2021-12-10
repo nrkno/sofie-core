@@ -9,7 +9,7 @@ import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
 import { RundownPlaylistTiming, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
-import { createMongoCollectionOLD } from './lib'
+import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { PieceInstanceInfiniteId } from './PieceInstances'
@@ -39,7 +39,7 @@ export interface ABSessionInfo {
 export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
 	/** External ID (source) of the playlist */
-	externalId: string | null
+	externalId: string
 	/** ID of the organization that owns the playlist */
 	organizationId?: OrganizationId | null
 	/** Studio that this playlist is assigned to */
@@ -98,42 +98,7 @@ export interface DBRundownPlaylist {
 	trackedAbSessions?: ABSessionInfo[]
 }
 
-export class RundownPlaylist implements DBRundownPlaylist {
-	public _id: RundownPlaylistId
-	public externalId: string
-	public organizationId: OrganizationId
-	public studioId: StudioId
-	public restoredFromSnapshotId?: RundownPlaylistId
-	public name: string
-	public created: Time
-	public modified: Time
-	public startedPlayback?: Time
-	public lastIncorrectPartPlaybackReported?: Time
-	public rundownsStartedPlayback?: Record<string, Time>
-	public timing: RundownPlaylistTiming
-	public rehearsal?: boolean
-	public holdState?: RundownHoldState
-	public activationId?: RundownPlaylistActivationId
-	public currentPartInstanceId: PartInstanceId | null
-	public nextPartInstanceId: PartInstanceId | null
-	public nextSegmentId?: SegmentId
-	public nextTimeOffset?: number | null
-	public nextPartManual?: boolean
-	public previousPartInstanceId: PartInstanceId | null
-	public loop?: boolean
-	public outOfOrderTiming?: boolean
-	public timeOfDayCountdowns?: boolean
-	public rundownRanksAreSetInSofie?: boolean
-
-	public previousPersistentState?: TimelinePersistentState
-	public trackedAbSessions?: ABSessionInfo[]
-
-	constructor(document: DBRundownPlaylist) {
-		for (const [key, value] of Object.entries(document)) {
-			this[key] = value
-		}
-	}
-}
+export type RundownPlaylist = DBRundownPlaylist
 
 /**
  * Direct database accessors for the RundownPlaylist
@@ -493,9 +458,7 @@ export class RundownPlaylistCollectionUtil {
 	}
 }
 
-export const RundownPlaylists = createMongoCollectionOLD<RundownPlaylist, DBRundownPlaylist>('rundownPlaylists', {
-	transform: (doc) => new RundownPlaylist(doc),
-})
+export const RundownPlaylists = createMongoCollection<RundownPlaylist>('rundownPlaylists')
 registerCollection('RundownPlaylists', RundownPlaylists)
 
 registerIndex(RundownPlaylists, {

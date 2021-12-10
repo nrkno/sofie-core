@@ -380,7 +380,7 @@ async function generatePlaylistAndRundownsCollectionInner(
 	if (allRundowns.length > 0) {
 		// Skip the update, if there are no rundowns left
 		// Generate the new playlist, and ranks for the rundowns
-		const { rundownPlaylist: newPlaylist0, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
+		const { rundownPlaylist: newPlaylist, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
 			studio,
 			studioBlueprint,
 			existingPlaylist,
@@ -388,7 +388,6 @@ async function generatePlaylistAndRundownsCollectionInner(
 			newPlaylistExternalId,
 			allRundowns
 		)
-		const newPlaylist = new RundownPlaylist(newPlaylist0)
 
 		// Update the ranks of the rundowns
 		if (!newPlaylist.rundownRanksAreSetInSofie) {
