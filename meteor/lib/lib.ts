@@ -133,18 +133,6 @@ export function getCollectionKey(collection: AsyncTransformedCollection<any, any
 	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
 	return o[0] // collectionName
 }
-// export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
-// 	function getCollectionIndexes(collection: TransformedCollection<any, any>, cb) {
-// 		let raw = collection.rawCollection()
-// 		raw.indexes(cb) // TODO - invalid
-// 	}
-// )
-export const getCollectionStats: (collection: AsyncTransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
-	function getCollectionStats(collection: AsyncTransformedCollection<any, any>, cb) {
-		const raw = collection.rawCollection()
-		raw.stats(cb)
-	}
-)
 
 /** Convenience function, to be used when length of array has previously been verified */
 export function last<T>(values: T[]): T {
@@ -265,33 +253,33 @@ export function toc(name: string = 'default', logStr?: string | Promise<any>[]) 
 	}
 }
 
-export function MeteorWrapAsync(func: Function, context?: Object): any {
-	// A variant of Meteor.wrapAsync to fix the bug
-	// https://github.com/meteor/meteor/issues/11120
+// export function MeteorWrapAsync(func: Function, context?: Object): any {
+// 	// A variant of Meteor.wrapAsync to fix the bug
+// 	// https://github.com/meteor/meteor/issues/11120
 
-	return Meteor.wrapAsync((...args: any[]) => {
-		// Find the callback-function:
-		for (let i = args.length - 1; i >= 0; i--) {
-			if (typeof args[i] === 'function') {
-				if (i < args.length - 1) {
-					// The callback is not the last argument, make it so then:
-					const callback = args[i]
-					const fixedArgs = args
-					fixedArgs[i] = undefined
-					fixedArgs.push(callback)
+// 	return Meteor.wrapAsync((...args: any[]) => {
+// 		// Find the callback-function:
+// 		for (let i = args.length - 1; i >= 0; i--) {
+// 			if (typeof args[i] === 'function') {
+// 				if (i < args.length - 1) {
+// 					// The callback is not the last argument, make it so then:
+// 					const callback = args[i]
+// 					const fixedArgs = args
+// 					fixedArgs[i] = undefined
+// 					fixedArgs.push(callback)
 
-					func.apply(context, fixedArgs)
-					return
-				} else {
-					// The callback is the last argument, that's okay
-					func.apply(context, args)
-					return
-				}
-			}
-		}
-		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
-	})
-}
+// 					func.apply(context, fixedArgs)
+// 					return
+// 				} else {
+// 					// The callback is the last argument, that's okay
+// 					func.apply(context, args)
+// 					return
+// 				}
+// 			}
+// 		}
+// 		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
+// 	})
+// }
 
 /**
  * Blocks the fiber until all the Promises have resolved

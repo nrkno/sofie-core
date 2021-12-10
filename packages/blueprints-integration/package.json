@@ -40,7 +40,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"timeline-state-resolver-types": "6.3.0-nightly-release38-20211022-090801-9264c02ad.0",
+		"timeline-state-resolver-types": "6.3.0-nightly-release38-20211208-151539-570b2cfb5.0",
 		"tslib": "^2.3.1"
 	},
 	"lint-staged": {

@@ -104,7 +104,6 @@ module.exports = {
 							banner: 'none',
 						},
 					},
-
 				},
 				// blog: {
 				//   showReadingTime: true,
