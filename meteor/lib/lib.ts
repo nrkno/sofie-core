@@ -9,7 +9,7 @@ import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { ITranslatableMessage } from './api/TranslatableMessage'
-import { AsyncTransformedCollection } from './collections/lib'
+import { AsyncMongoCollection } from './collections/lib'
 
 export * from './hash'
 
@@ -236,11 +236,11 @@ export function stringifyObjects(objs: any): string {
 		return objs + ''
 	}
 }
-export const Collections: { [name: string]: AsyncTransformedCollection<any, any> } = {}
-export function registerCollection(name: string, collection: AsyncTransformedCollection<any, any>) {
+export const Collections: { [name: string]: AsyncMongoCollection<any> } = {}
+export function registerCollection(name: string, collection: AsyncMongoCollection<any>) {
 	Collections[name] = collection
 }
-export function getCollectionKey(collection: AsyncTransformedCollection<any, any>): string {
+export function getCollectionKey(collection: AsyncMongoCollection<any>): string {
 	const o = Object.entries(Collections).find(([_key, col]) => col === collection)
 	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
 	return o[0] // collectionName
@@ -674,10 +674,10 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 	})
 	return ok
 }
-export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id?: ProtectedString<any> }>(
-	docs0: ReadonlyArray<Class>,
+export function mongoFindOptions<DBInterface extends { _id?: ProtectedString<any> }>(
+	docs0: ReadonlyArray<DBInterface>,
 	options: FindOptions<DBInterface> | undefined
-): Class[] {
+): DBInterface[] {
 	let docs = [...docs0] // Shallow clone it
 	if (options) {
 		const sortOptions = options.sort

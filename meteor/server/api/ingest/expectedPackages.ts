@@ -416,7 +416,7 @@ export function updateBaselineExpectedPackagesOnStudio(
 
 	const bases = generateExpectedPackageBases(cache.Studio.doc, cache.Studio.doc._id, baseline.expectedPackages ?? [])
 	cache.deferAfterSave(async () => {
-		await saveIntoDb<ExpectedPackageDB, ExpectedPackageDB>(
+		await saveIntoDb<ExpectedPackageDB>(
 			ExpectedPackages,
 			{
 				studioId: cache.Studio.doc._id,
