@@ -118,7 +118,7 @@ export class ActivationCache {
 			throw new Error(
 				`ActivationCache.initialize playlist._id "${playlist._id}" not equal to this.playlistId "${this.playlistId}"`
 			)
-		this._playlist = new RundownPlaylist(clone<DBRundownPlaylist>(playlist))
+		this._playlist = clone<DBRundownPlaylist>(playlist)
 
 		const pStudio = Studios.findOneAsync(this._playlist.studioId)
 
