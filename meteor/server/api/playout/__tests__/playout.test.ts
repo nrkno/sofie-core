@@ -397,14 +397,14 @@ describe('Playout API', () => {
 	testInFiber('reloadRundownPlaylistData', async () => {
 		// mock reloadRundown for test
 		const origReloadRundown = IngestActions.reloadRundown
-		IngestActions.reloadRundown = jest.fn(() => TriggerReloadDataResponse.COMPLETED)
+		IngestActions.reloadRundown = jest.fn(async () => TriggerReloadDataResponse.COMPLETED)
 
-		expect(() => {
+		await expect(
 			ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
-		}).toThrowError(/not found/gi)
+		).rejects.toMatchToString(/not found/gi)
 
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
-		ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+		await ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 
 		expect(IngestActions.reloadRundown).toHaveBeenCalled()
 		expect((IngestActions.reloadRundown as jest.Mock).mock.calls[0][0]).toMatchObject({

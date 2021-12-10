@@ -1371,9 +1371,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 			const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
 			const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
 			const getSegment = (id: SegmentId) => Segments.findOne(id) as Segment
-			const resyncRundown = () => {
+			const resyncRundown = async () => {
 				try {
-					ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
+					await ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
 				} catch (e) {
 					if (e.toString().match(/does not support the method "reloadRundown"/)) {
 						// This is expected
@@ -1403,7 +1403,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await RundownInput.dataRundownDelete(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId)
 			expect(getRundown().orphaned).toEqual('deleted')
 
-			resyncRundown()
+			await resyncRundown()
 			expect(getRundown().orphaned).toBeUndefined()
 
 			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
@@ -1422,7 +1422,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(getRundown().orphaned).toBeUndefined()
 			expect(getSegment(segments[0]._id).orphaned).toEqual('deleted')
 
-			resyncRundown()
+			await resyncRundown()
 			expect(getRundown().orphaned).toBeUndefined()
 			expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 
@@ -1437,7 +1437,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(getRundown().orphaned).toBeUndefined()
 			expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 
-			resyncRundown()
+			await resyncRundown()
 			expect(getRundown().orphaned).toBeUndefined()
 			expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 		} finally {

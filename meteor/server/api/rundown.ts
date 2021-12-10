@@ -371,33 +371,38 @@ export namespace ServerRundownAPI {
 		})
 	}
 	/** Resync all rundowns in a rundownPlaylist */
-	export function resyncRundownPlaylist(
+	export async function resyncRundownPlaylist(
 		context: MethodContext,
 		playlistId: RundownPlaylistId
-	): ReloadRundownPlaylistResponse {
+	): Promise<ReloadRundownPlaylistResponse> {
 		check(playlistId, String)
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		logger.info('resyncRundownPlaylist ' + access.playlist._id)
 
-		const response: ReloadRundownPlaylistResponse = {
-			rundownsResponses: Rundowns.find({ playlistId: access.playlist._id })
-				.fetch()
-				.map((rundown) => {
-					return {
-						rundownId: rundown._id,
-						response: innerResyncRundown(rundown),
-					}
-				}),
+		const rundowns = await Rundowns.findFetchAsync({ playlistId: access.playlist._id })
+		const responses = await Promise.all(
+			rundowns.map(async (rundown) => {
+				return {
+					rundownId: rundown._id,
+					response: await innerResyncRundown(rundown),
+				}
+			})
+		)
+
+		return {
+			rundownsResponses: responses,
 		}
-		return response
 	}
-	export function resyncRundown(context: MethodContext, rundownId: RundownId): TriggerReloadDataResponse {
+	export async function resyncRundown(
+		context: MethodContext,
+		rundownId: RundownId
+	): Promise<TriggerReloadDataResponse> {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 		return innerResyncRundown(access.rundown)
 	}
 
-	export function innerResyncRundown(rundown: Rundown): TriggerReloadDataResponse {
+	export async function innerResyncRundown(rundown: Rundown): Promise<TriggerReloadDataResponse> {
 		logger.info('resyncRundown ' + rundown._id)
 
 		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
@@ -536,7 +541,7 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		return ServerRundownAPI.removeRundownPlaylist(this, playlistId)
 	}
 	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
-		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(this, playlistId))
+		return ServerRundownAPI.resyncRundownPlaylist(this, playlistId)
 	}
 	async rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
 		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId))
@@ -548,7 +553,7 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		return ServerRundownAPI.removeRundown(this, rundownId)
 	}
 	async resyncRundown(rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.resyncRundown(this, rundownId))
+		return ServerRundownAPI.resyncRundown(this, rundownId)
 	}
 	async unsyncRundown(rundownId: RundownId) {
 		return ServerRundownAPI.unsyncRundown(this, rundownId)
