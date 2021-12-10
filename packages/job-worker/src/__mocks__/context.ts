@@ -30,12 +30,12 @@ import {
 	BlueprintResultPart,
 	BlueprintResultRundown,
 	BlueprintResultSegment,
+	ExtendedIngestRundown,
 	IBlueprintAdLibPiece,
 	IBlueprintPart,
 	IBlueprintPiece,
 	IBlueprintRundown,
 	IBlueprintSegment,
-	IngestRundown,
 	IngestSegment,
 	ISegmentUserContext,
 	IShowStyleContext,
@@ -185,6 +185,15 @@ export class MockJobContext implements JobContext {
 			...blueprint,
 		}
 	}
+	setStudioBlueprint(blueprint: StudioBlueprintManifest): void {
+		this.#studioBlueprint = blueprint
+	}
+	updateStudioBlueprint(blueprint: Partial<StudioBlueprintManifest>): void {
+		this.#studioBlueprint = {
+			...this.#studioBlueprint,
+			...blueprint,
+		}
+	}
 }
 
 const MockStudioBlueprint: () => StudioBlueprintManifest = () => ({
@@ -216,13 +225,16 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 	getShowStyleVariantId: (_context, variants): string | null => {
 		return variants[0]._id
 	},
-	getRundown: (_context: IShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
+	getRundown: (_context: IShowStyleContext, ingestRundown: ExtendedIngestRundown): BlueprintResultRundown => {
 		const rundown: IBlueprintRundown = {
 			externalId: ingestRundown.externalId,
 			name: ingestRundown.name,
 			// expectedStart?:
 			// expectedDuration?: number;
-			metaData: ingestRundown.payload,
+			metaData: {
+				payload: ingestRundown.payload,
+				airStatus: ingestRundown.coreData?.airStatus,
+			},
 			timing: {
 				type: PlaylistTimingType.None,
 			},

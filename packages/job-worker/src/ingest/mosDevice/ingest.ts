@@ -233,7 +233,10 @@ export async function handleMosRundownReadyToAir(context: JobContext, data: MosR
 
 			if (!cache.Rundown.doc || cache.Rundown.doc.airStatus === data.status) return null
 
-			await cache.Rundown.update({
+			// If rundown is orphaned, then it should be ignored
+			if (cache.Rundown.doc.orphaned) return null
+
+			cache.Rundown.update({
 				$set: {
 					airStatus: data.status,
 				},

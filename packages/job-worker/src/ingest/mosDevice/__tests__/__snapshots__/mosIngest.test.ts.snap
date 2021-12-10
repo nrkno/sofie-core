@@ -33,140 +33,142 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -342,140 +344,142 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -643,140 +647,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -967,140 +974,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -1277,140 +1287,142 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -1588,140 +1600,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -1864,140 +1879,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -2187,140 +2205,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -2519,140 +2540,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -2833,140 +2857,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -3147,140 +3174,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -3442,140 +3472,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -3756,140 +3789,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -4061,140 +4097,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -4402,140 +4441,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",
@@ -4716,140 +4758,143 @@ Object {
     "studio": "asdf",
   },
   "metaData": Object {
-    "EditorialDuration": Object {
-      "_duration": 540,
+    "airStatus": "READY",
+    "payload": Object {
+      "EditorialDuration": Object {
+        "_duration": 540,
+      },
+      "EditorialStart": Object {
+        "_time": 2018-11-07T07:00:00.000Z,
+        "_timezone": "Z",
+        "_timezoneDeclaration": "",
+        "_timezoneZuluIndicator": "Z",
+      },
+      "ID": Object {
+        "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
+        "strict": true,
+      },
+      "MosExternalMetaData": Array [
+        Object {
+          "MosPayload": Object {
+            "AllowExternalMod": 1,
+            "AnsvRed": "DKSL",
+            "AutoArchiveClips": 1,
+            "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
+            "ENPSItemType": 2,
+            "EndTime": "2018-09-07T07:09:00",
+            "Kanal": "NRK1",
+            "LocalStartTime": "2018-10-07T07:00:00",
+            "MOSROStatus": "PLAY",
+            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
+            "MOSROStatusTime": "2018-05-14T11:21:13",
+            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
+            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
+            "ProdNr": "DKSL99090618",
+            "ProgramName": "DKSL TV 1850",
+            "Regionalsend": "SL",
+            "RundownDuration": "09:00",
+            "StartTime": "2018-10-07T07:00:00",
+            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
+          },
+          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
+          "MosScope": "PLAYLIST",
+        },
+      ],
+      "Slug": Object {
+        "_str": "All effect1 into clip combinations",
+        "strict": true,
+      },
+      "Stories": Array [
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s1;p3",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT1;PART3",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s2;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART1",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s3;p2",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT3;PART2",
+            "strict": true,
+          },
+        },
+        Object {
+          "ID": Object {
+            "_str": "ro1;s4;p1",
+            "strict": true,
+          },
+          "Items": Array [],
+          "Slug": Object {
+            "_str": "SEGMENT2;PART3",
+            "strict": true,
+          },
+        },
+      ],
     },
-    "EditorialStart": Object {
-      "_time": 2018-11-07T07:00:00.000Z,
-      "_timezone": "Z",
-      "_timezoneDeclaration": "",
-      "_timezoneZuluIndicator": "Z",
-    },
-    "ID": Object {
-      "_str": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
-      "strict": true,
-    },
-    "MosExternalMetaData": Array [
-      Object {
-        "MosPayload": Object {
-          "AllowExternalMod": 1,
-          "AnsvRed": "DKSL",
-          "AutoArchiveClips": 1,
-          "Clipnames": "Klipp 1;\\\\Klipp 2;\\\\Klipp 3;\\\\Klipp 4;",
-          "ENPSItemType": 2,
-          "EndTime": "2018-09-07T07:09:00",
-          "Kanal": "NRK1",
-          "LocalStartTime": "2018-10-07T07:00:00",
-          "MOSROStatus": "PLAY",
-          "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-          "MOSROStatusTime": "2018-05-14T11:21:13",
-          "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-          "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-          "ProdNr": "DKSL99090618",
-          "ProgramName": "DKSL TV 1850",
-          "Regionalsend": "SL",
-          "RundownDuration": "09:00",
-          "StartTime": "2018-10-07T07:00:00",
-          "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-        },
-        "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-        "MosScope": "PLAYLIST",
-      },
-    ],
-    "Slug": Object {
-      "_str": "All effect1 into clip combinations",
-      "strict": true,
-    },
-    "Stories": Array [
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s1;p3",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT1;PART3",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s2;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART1",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s3;p2",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT3;PART2",
-          "strict": true,
-        },
-      },
-      Object {
-        "ID": Object {
-          "_str": "ro1;s4;p1",
-          "strict": true,
-        },
-        "Items": Array [],
-        "Slug": Object {
-          "_str": "SEGMENT2;PART3",
-          "strict": true,
-        },
-      },
-    ],
   },
   "modified": 0,
   "name": "All effect1 into clip combinations",

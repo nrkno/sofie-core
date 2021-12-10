@@ -265,7 +265,7 @@ export async function takeNextPart(context: JobContext, data: TakeNextPartProps)
 			const playlist = cache.Playlist.doc
 
 			if (playlist.currentPartInstanceId) {
-				const currentPartInstance = await cache.PartInstances.findOne(playlist.currentPartInstanceId)
+				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
 				if (currentPartInstance && currentPartInstance.timings) {
 					const lastStartedPlayback = currentPartInstance.timings.startedPlayback || 0
 					const lastTake = currentPartInstance.timings.take || 0

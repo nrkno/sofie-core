@@ -14,6 +14,9 @@ describe('Test blueprint config', () => {
 			},
 			blueprintConfig: { sdfsdf: 'one', another: 5 },
 		})
+		jobContext.updateStudioBlueprint({
+			studioConfigManifest: undefined,
+		})
 
 		const res = preprocessStudioConfig(jobContext.studio, jobContext.studioBlueprint.blueprint)
 		expect(res).toEqual({

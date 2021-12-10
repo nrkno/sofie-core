@@ -26,12 +26,11 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { MongoQuery } from '../../../db'
 import { handleRemovedRundown } from '../../rundownInput'
 import * as MOS from 'mos-connection'
-import { IngestJobs, IngestRegenerateRundownProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { getPartId } from '../../lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { activateRundownPlaylist, setNextPart, takeNextPart } from '../../../playout/playout'
+import { activateRundownPlaylist, deactivateRundownPlaylist, setNextPart, takeNextPart } from '../../../playout/playout'
 import { removeRundownPlaylistFromDb } from '../../../rundownPlaylists'
 
 jest.mock('../../updateNext')
@@ -352,8 +351,7 @@ describe('Test recieved mos ingest payloads', () => {
 		let rundown = (await context.directCollections.Rundowns.findOne()) as DBRundown
 		expect(rundown).toBeTruthy()
 		expect(rundown.status).not.toEqual(newStatus.toString())
-
-		const mockQueueIngestJob = jest.spyOn(context, 'queueIngestJob').mockImplementationOnce(() => Promise.resolve())
+		expect((rundown.metaData as any)?.airStatus).not.toEqual(newStatus.toString())
 
 		await handleMosRundownReadyToAir(context, {
 			peripheralDeviceId: device._id,
@@ -365,14 +363,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(rundown).toBeTruthy()
 		expect(rundown.airStatus).toEqual(newStatus.toString())
 
-		expect(mockQueueIngestJob).toHaveBeenCalledTimes(1)
-		expect(mockQueueIngestJob).toHaveBeenCalledWith(
-			IngestJobs.RegenerateRundown,
-			literal<IngestRegenerateRundownProps>({
-				peripheralDeviceId: device._id,
-				rundownExternalId: rundown.externalId,
-			})
-		)
+		expect((rundown.metaData as any)?.airStatus).toEqual(newStatus.toString())
 
 		await expectRundownToMatchSnapshot(rundown._id, true, false)
 	})
@@ -1250,29 +1241,36 @@ describe('Test recieved mos ingest payloads', () => {
 			playlistId: rundown.playlistId,
 			rehearsal: true,
 		})
-		await setNextPart(context, {
-			playlistId: rundown.playlistId,
-			nextPartId: getPartId(rundown._id, 'ro1;s2;p1'),
-		})
-		await takeNextPart(context, {
-			playlistId: rundown.playlistId,
-		})
+		try {
+			await setNextPart(context, {
+				playlistId: rundown.playlistId,
+				nextPartId: getPartId(rundown._id, 'ro1;s2;p1'),
+			})
+			await takeNextPart(context, {
+				playlistId: rundown.playlistId,
+			})
 
-		const partInstances0 = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })
-		const { segments: segments0, parts: parts0 } = await getRundownData({ _id: rundown._id })
+			const partInstances0 = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })
+			const { segments: segments0, parts: parts0 } = await getRundownData({ _id: rundown._id })
 
-		await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p1', 'ro1;s2;p1', 'SEGMENT2b;PART1')
-		await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p2', 'ro1;s2;p2', 'SEGMENT2b;PART2')
+			await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p1', 'ro1;s2;p1', 'SEGMENT2b;PART1')
+			await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p2', 'ro1;s2;p2', 'SEGMENT2b;PART2')
 
-		const partInstances = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })
-		const { segments, parts } = await getRundownData({ _id: rundown._id })
+			const partInstances = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })
+			const { segments, parts } = await getRundownData({ _id: rundown._id })
 
-		// Update expected data, for just the segment name and ids changing
-		applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+			// Update expected data, for just the segment name and ids changing
+			applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
 
-		expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
-		expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
-		expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
+			expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
+			expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
+			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
+		} finally {
+			// cleanup
+			await deactivateRundownPlaylist(context, {
+				playlistId: rundown.playlistId,
+			})
+		}
 	})
 
 	test('Rename segment during resync while on air', async () => {
@@ -1289,49 +1287,56 @@ describe('Test recieved mos ingest payloads', () => {
 			playlistId: rundown.playlistId,
 			rehearsal: true,
 		})
-		await setNextPart(context, {
-			playlistId: rundown.playlistId,
-			nextPartId: getPartId(rundown._id, 'ro1;s2;p1'),
-		})
-		await takeNextPart(context, {
-			playlistId: rundown.playlistId,
-		})
+		try {
+			await setNextPart(context, {
+				playlistId: rundown.playlistId,
+				nextPartId: getPartId(rundown._id, 'ro1;s2;p1'),
+			})
+			await takeNextPart(context, {
+				playlistId: rundown.playlistId,
+			})
 
-		const partInstances0 = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })
-		const { segments: segments0, parts: parts0 } = await getRundownData({ _id: rundown._id })
+			const partInstances0 = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })
+			const { segments: segments0, parts: parts0 } = await getRundownData({ _id: rundown._id })
 
-		// rename the segment
-		for (const story of mosRO.Stories) {
-			// mutate the slugs of the second segment
-			if (story.Slug && story.ID.toString().match(/;s2;/i)) {
-				story.Slug = new MOS.MosString128('SEGMENT2b;' + story.Slug.toString().split(';')[1])
+			// rename the segment
+			for (const story of mosRO.Stories) {
+				// mutate the slugs of the second segment
+				if (story.Slug && story.ID.toString().match(/;s2;/i)) {
+					story.Slug = new MOS.MosString128('SEGMENT2b;' + story.Slug.toString().split(';')[1])
+				}
 			}
+
+			// regenerate the rundown
+			await handleMosRundownData(context, {
+				peripheralDeviceId: device._id,
+				rundownExternalId: rundown.externalId,
+				mosRunningOrder: mosRO,
+				isCreateAction: true,
+			})
+
+			{
+				// still valid
+				const rundown2 = (await context.directCollections.Rundowns.findOne()) as DBRundown
+				expect(rundown2).toBeTruthy()
+				expect(rundown2.orphaned).toBeFalsy()
+			}
+
+			const partInstances = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })
+			const { segments, parts } = await getRundownData({ _id: rundown._id })
+
+			// Update expected data, for just the segment name and ids changing
+			applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
+
+			expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
+			expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
+			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
+		} finally {
+			// cleanup
+			await deactivateRundownPlaylist(context, {
+				playlistId: rundown.playlistId,
+			})
 		}
-
-		// regenerate the rundown
-		await handleMosRundownData(context, {
-			peripheralDeviceId: device._id,
-			rundownExternalId: rundown.externalId,
-			mosRunningOrder: mosRO,
-			isCreateAction: true,
-		})
-
-		{
-			// still valid
-			const rundown2 = (await context.directCollections.Rundowns.findOne()) as DBRundown
-			expect(rundown2).toBeTruthy()
-			expect(rundown2.orphaned).toBeFalsy()
-		}
-
-		const partInstances = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })
-		const { segments, parts } = await getRundownData({ _id: rundown._id })
-
-		// Update expected data, for just the segment name and ids changing
-		applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
-
-		expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
-		expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
-		expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
 	})
 
 	test('Playlist updates when removing one (of multiple) rundowns', async () => {
