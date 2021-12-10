@@ -7,6 +7,7 @@ import { ClientAPI } from '../../../../lib/api/client'
 import { Bucket, BucketId, Buckets } from '../../../../lib/collections/Buckets'
 import { BucketAdLibs } from '../../../../lib/collections/BucketAdlibs'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { CreateFakeResult, QueueIngestJobSpy } from '../../../../__mocks__/worker'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
@@ -37,7 +38,6 @@ describe('User Actions - Buckets', () => {
 			buttonWidthScale: 1,
 			name: 'Mock Bucket',
 			studioId: env.studio._id,
-			userId: null,
 			width: 0.3,
 		}
 		Buckets.insert(bucket)
@@ -78,6 +78,10 @@ describe('User Actions - Buckets', () => {
 	beforeEach(async () => {
 		env = await setupDefaultStudioEnvironment()
 		jest.resetAllMocks()
+
+		QueueIngestJobSpy.mockImplementation(async () => {
+			throw new Error('Not implemented')
+		})
 	})
 	testInFiber('createBucket', () => {
 		const NAME = 'Test bucket'

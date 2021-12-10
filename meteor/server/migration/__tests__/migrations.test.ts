@@ -159,6 +159,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							sofieUrl: '',
+							frameRate: 25,
 						},
 						mappings: {},
 						// @ts-ignore
@@ -186,6 +187,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							sofieUrl: '',
+							frameRate: 25,
 						},
 						mappings: {},
 						// @ts-ignore
@@ -213,6 +215,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							sofieUrl: '',
+							frameRate: 25,
 						},
 						mappings: {},
 						// @ts-ignore

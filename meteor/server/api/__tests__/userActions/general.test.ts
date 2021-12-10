@@ -7,7 +7,6 @@ import {
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import { setMinimumTakeSpan } from '../../userActions'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { RESTART_SALT } from '../../../../lib/api/userActions'
 import { getHash } from '../../../../lib/lib'

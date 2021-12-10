@@ -83,6 +83,7 @@ describe('lib/mediaObjects', () => {
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
 			mediaPreviewsUrl: '',
 			sofieUrl: '',
+			frameRate: 25,
 		})
 		expect(acceptedFormats).toEqual([
 			['1920', '1080', 'i', '5000', undefined],
@@ -164,6 +165,7 @@ describe('lib/mediaObjects', () => {
 			mediaPreviewsUrl: '',
 			supportedAudioStreams: '4',
 			sofieUrl: '',
+			frameRate: 25,
 		}
 		const mockStudio: Studio = {
 			...defaultStudio(protectString('studio0')),
