@@ -12,10 +12,10 @@ Object {
   "isNextSegment": false,
   "parts": Array [
     Object {
-      "instance": PartInstance {
+      "instance": Object {
         "_id": "randomId9002_part0_0_tmp_instance",
         "isTemporary": true,
-        "part": Part {
+        "part": Object {
           "_id": "randomId9002_part0_0",
           "_rank": 0,
           "externalId": "MOCK_PART_0_0",
@@ -143,10 +143,10 @@ Object {
       "willProbablyAutoNext": false,
     },
     Object {
-      "instance": PartInstance {
+      "instance": Object {
         "_id": "randomId9002_part0_1_tmp_instance",
         "isTemporary": true,
-        "part": Part {
+        "part": Object {
           "_id": "randomId9002_part0_1",
           "_rank": 1,
           "externalId": "MOCK_PART_0_1",
