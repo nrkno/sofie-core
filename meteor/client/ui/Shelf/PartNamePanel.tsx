@@ -7,7 +7,7 @@ import {
 	RundownLayoutPartName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -77,7 +77,9 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 		let instanceToShow: IFoundPieceInstance | undefined
 
 		if (selectedPartInstanceId) {
-			const selectedPartInstance = props.playlist.getActivePartInstances({ _id: selectedPartInstanceId })[0]
+			const selectedPartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+				_id: selectedPartInstanceId,
+			})[0]
 			name = selectedPartInstance.part?.title
 
 			if (selectedPartInstance && props.panel.showPieceIconColor) {

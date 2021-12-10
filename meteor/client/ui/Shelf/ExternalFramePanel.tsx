@@ -11,7 +11,11 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { literal, protectString } from '../../../lib/lib'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylistId,
+} from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
 import {
@@ -211,7 +215,7 @@ export const ExternalFramePanel = withTranslation()(
 
 				targetRundown = Rundowns.findOne(currentPart.rundownId)
 			} else {
-				targetRundown = playlist.getRundowns()[0]
+				targetRundown = RundownPlaylistCollectionUtil.getRundowns(playlist)[0]
 			}
 
 			if (!targetRundown) {

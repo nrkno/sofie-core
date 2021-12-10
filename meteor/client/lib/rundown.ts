@@ -249,8 +249,8 @@ export namespace RundownUtils {
 	export function getResolvedSegment(
 		showStyleBase: ShowStyleBase,
 		playlist: RundownPlaylist,
-		rundown: Rundown,
-		segment: DBSegment,
+		rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
+		segment: Segment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
 		rundownsBeforeThisInPlaylist: RundownId[],
 		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,

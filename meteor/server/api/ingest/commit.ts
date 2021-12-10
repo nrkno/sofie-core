@@ -12,7 +12,12 @@ import { logger } from '../../logging'
 import { isTooCloseToAutonext, LOW_PRIO_DEFER_TIME } from '../playout/lib'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { ReadonlyDeep } from 'type-fest'
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylistId,
+	RundownPlaylists,
+} from '../../../lib/collections/RundownPlaylists'
 import {
 	getPlaylistIdFromExternalId,
 	produceRundownPlaylistInfoFromRundown,
@@ -202,7 +207,8 @@ export async function CommitIngestOperation(
 
 					// Do the segment removals
 					if (data.removedSegmentIds.length > 0) {
-						const { currentPartInstance, nextPartInstance } = newPlaylist.getSelectedPartInstances()
+						const { currentPartInstance, nextPartInstance } =
+							RundownPlaylistCollectionUtil.getSelectedPartInstances(newPlaylist)
 
 						const purgeSegmentIds = new Set<SegmentId>()
 						const orphanSegmentIds = new Set<SegmentId>()

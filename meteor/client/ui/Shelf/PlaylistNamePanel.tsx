@@ -6,11 +6,11 @@ import {
 	RundownLayoutPlaylistName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 
 interface IPlaylistNamePanelProps {
 	visible?: boolean
@@ -59,8 +59,10 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IPlaylistNamePanelTrackedProps>(
 	(props: IPlaylistNamePanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
-			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
-			const currentRundown = props.playlist.getRundowns({ _id: livePart.rundownId })[0]
+			const livePart = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+				_id: props.playlist.currentPartInstanceId,
+			})[0]
+			const currentRundown = Rundowns.findOne({ _id: livePart.rundownId, playlistId: props.playlist._id })
 
 			return {
 				currentRundown,

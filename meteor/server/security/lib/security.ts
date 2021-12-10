@@ -288,7 +288,7 @@ namespace AccessRules {
 		playlist: RundownPlaylist,
 		cred: ResolvedCredentials
 	): Access<RundownPlaylist> {
-		const studio = playlist.getStudioLight()
+		const studio = fetchStudioLight(playlist.studioId)
 		if (!studio) return noAccess(`Studio of playlist "${playlist._id}" not found`)
 		return { ...accessStudio(studio, cred), document: playlist }
 	}
