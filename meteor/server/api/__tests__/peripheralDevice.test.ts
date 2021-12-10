@@ -28,7 +28,7 @@ import * as MOS from 'mos-connection'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
@@ -36,8 +36,6 @@ import {
 
 jest.mock('../playout/playout.ts')
 jest.mock('ntp-client')
-
-const { ServerPlayoutAPI: _ActualServerPlayoutAPI } = jest.requireActual('../playout/playout.ts')
 
 import { ServerPlayoutAPI } from '../playout/playout'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -48,20 +46,11 @@ import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PieceLifespan, PlaylistTimingType, StatusCode } from '@sofie-automation/blueprints-integration'
-import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
 import '../peripheralDevice'
 
 const DEBUG = false
-
-const ActualServerPlayoutAPI: typeof ServerPlayoutAPI = _ActualServerPlayoutAPI
-
-function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
-	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
-	expect(playlist).toBeTruthy()
-	return { userId: null, organizationId: null, studioId: null, playlist: playlist, cred: {} }
-}
 
 describe('test peripheralDevice general API methods', () => {
 	let device: PeripheralDevice
@@ -304,18 +293,11 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('partPlaybackStarted', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
-		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
-		expect(playlist).toBeTruthy()
-		const currentPartInstance = playlist?.getSelectedPartInstances()?.currentPartInstance as PartInstance
-		expect(currentPartInstance).toBeTruthy()
+
+		// TODO - mock the whole 'worker.ts' file.
+		// attach a spy in here
+
 		const partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
 			partInstanceId: currentPartInstance._id,
@@ -324,18 +306,9 @@ describe('test peripheralDevice general API methods', () => {
 		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStarted, device._id, device.token, partPlaybackStartedResult)
 
 		expect(ServerPlayoutAPI.onPartPlaybackStarted).toHaveBeenCalled()
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('partPlaybackStopped', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
@@ -350,18 +323,9 @@ describe('test peripheralDevice general API methods', () => {
 		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStopped, device._id, device.token, partPlaybackStoppedResult)
 
 		expect(ServerPlayoutAPI.onPartPlaybackStopped).toHaveBeenCalled()
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('piecePlaybackStarted', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
@@ -384,18 +348,9 @@ describe('test peripheralDevice general API methods', () => {
 		)
 
 		expect(ServerPlayoutAPI.onPiecePlaybackStarted).toHaveBeenCalled()
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('piecePlaybackStopped', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
@@ -418,18 +373,9 @@ describe('test peripheralDevice general API methods', () => {
 		)
 
 		expect(ServerPlayoutAPI.onPiecePlaybackStopped).toHaveBeenCalled()
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('timelineTriggerTime', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
@@ -464,8 +410,6 @@ describe('test peripheralDevice general API methods', () => {
 			expect(enable.setFromNow).toBe(true)
 			expect(enable.start).toBeGreaterThan(0)
 		})
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
 	})
 
 	testInFiber('killProcess with a rundown present', () => {
