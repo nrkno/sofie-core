@@ -8,7 +8,7 @@ import { IBlueprintRundownDB } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { RundownNote } from '../api/notes'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist, RundownPlaylistId, RundownPlaylistCollectionUtil } from './RundownPlaylists'
 import { createMongoCollection } from './lib'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
@@ -141,7 +141,7 @@ export class RundownCollectionUtil {
 			return parts
 		} else {
 			// Default to sorting within the rundown
-			return RundownPlaylist._sortPartsInner(
+			return RundownPlaylistCollectionUtil._sortPartsInner(
 				parts,
 				segmentsInOrder || RundownCollectionUtil.getSegments(rundown, undefined, { fields: { _id: 1 } })
 			)
@@ -165,7 +165,7 @@ export class RundownCollectionUtil {
 
 		return {
 			segments: segments,
-			parts: RundownPlaylist._sortPartsInner(parts, segments),
+			parts: RundownPlaylistCollectionUtil._sortPartsInner(parts, segments),
 		}
 	}
 }

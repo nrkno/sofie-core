@@ -21,7 +21,7 @@ import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDa
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import {
 	PieceInstances,
@@ -166,7 +166,7 @@ export async function setNextSegment(
 		nextSegment = (await Segments.findOneAsync(nextSegmentId)) || null
 		if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
 
-		const rundownIds = playlist.getRundownIDs()
+		const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
 		if (rundownIds.indexOf(nextSegment.rundownId) === -1) {
 			throw new Meteor.Error(
 				404,
@@ -182,7 +182,8 @@ export async function setNextSegment(
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
 
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+		const { currentPartInstance, nextPartInstance } =
+			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 		if (!currentPartInstance || !nextPartInstance || nextPartInstance.segmentId !== currentPartInstance.segmentId) {
 			// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart and clear previous nextSegmentId
 			return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, firstValidPartInSegment._id, true, 0, true)
@@ -582,7 +583,7 @@ export async function activateHold(
 	if (!playlist.nextPartInstanceId)
 		return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
 
-	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+	const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 	if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${playlist.currentPartInstanceId}" not found!`)
 	if (!nextPartInstance) throw new Meteor.Error(404, `PartInstance "${playlist.nextPartInstanceId}" not found!`)
 	if (!undo && playlist.holdState) {
