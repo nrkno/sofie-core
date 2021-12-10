@@ -201,7 +201,7 @@ function checkDatabaseVersions() {
 }
 function onCoreSystemChanged() {
 	checkDatabaseVersions()
-	updateLoggerLevel()
+	updateLoggerLevel(false)
 }
 
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -407,19 +407,21 @@ function startInstrumenting() {
 		})
 	}
 }
-function updateLoggerLevel() {
+function updateLoggerLevel(startup: boolean) {
 	const coreSystem = getCoreSystem()
 
 	if (coreSystem) {
-		setLogLevel(coreSystem.logLevel || LogLevel.SILLY)
+		setLogLevel(coreSystem.logLevel || LogLevel.SILLY, startup)
+	} else {
+		logger.error('updateLoggerLevel: CoreSystem not found')
 	}
 }
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		startupMessage()
+		updateLoggerLevel(true)
 		initializeCoreSystem()
 		startInstrumenting()
-		updateLoggerLevel()
 	}
 })

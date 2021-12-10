@@ -7,10 +7,11 @@ import { Timecode } from 'timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
-import * as crypto from 'crypto'
 import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { ITranslatableMessage } from './api/TranslatableMessage'
 import { AsyncTransformedCollection } from './collections/lib'
+
+export * from './hash'
 
 const cloneOrg = require('fast-clone')
 
@@ -55,31 +56,6 @@ export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefin
 	} else {
 		return _.max(vals, iterator)
 	}
-}
-
-export function getHash(str: string): string {
-	const hash = crypto.createHash('sha1')
-	return hash
-		.update(str)
-		.digest('base64')
-		.replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
-}
-/** Creates a hash based on the object properties (excluding ordering of properties) */
-export function hashObj(obj: any): string {
-	if (typeof obj === 'object') {
-		const keys = Object.keys(obj).sort((a, b) => {
-			if (a > b) return 1
-			if (a < b) return -1
-			return 0
-		})
-
-		const strs: string[] = []
-		for (const key of keys) {
-			strs.push(hashObj(obj[key]))
-		}
-		return getHash(strs.join('|'))
-	}
-	return obj + ''
 }
 
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
