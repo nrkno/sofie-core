@@ -18,7 +18,7 @@ export function saveIntoCache<DBInterface extends DBObj>(
 	collection: DbCacheWriteCollection<DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
-	optionsOrg?: SaveIntoDbHooks<DBInterface, DBInterface>
+	optionsOrg?: SaveIntoDbHooks<DBInterface>
 ): ChangedIds<DBInterface['_id']> {
 	return saveIntoBase(collection.name ?? '', collection.findFetch(filter), newData, {
 		...optionsOrg,

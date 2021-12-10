@@ -13,7 +13,7 @@ import { profiler } from '../api/profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
 import { Changes } from '../lib/database'
-import { AsyncTransformedCollection } from '../../lib/collections/lib'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 
 /**
  * Caches a single object, allowing reads from cache, but not writes
@@ -27,7 +27,7 @@ export class DbCacheReadObject<DBInterface extends { _id: ProtectedString<any> }
 	protected isToBeRemoved = false
 
 	protected constructor(
-		protected readonly _collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		protected readonly _collection: AsyncMongoCollection<DBInterface>,
 		private readonly _optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<DBInterface> | undefined : ReadonlyDeep<DBInterface>
 	) {
@@ -39,7 +39,7 @@ export class DbCacheReadObject<DBInterface extends { _id: ProtectedString<any> }
 	}
 
 	public static createFromDoc<DBInterface extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<DBInterface> | undefined : ReadonlyDeep<DBInterface>
 	): DbCacheReadObject<DBInterface, DocOptional> {
@@ -50,7 +50,7 @@ export class DbCacheReadObject<DBInterface extends { _id: ProtectedString<any> }
 		DBInterface extends { _id: ProtectedString<any> },
 		DocOptional extends boolean = false
 	>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
 		id: DBInterface['_id']
 	): Promise<DbCacheReadObject<DBInterface, DocOptional>> {
@@ -86,7 +86,7 @@ export class DbCacheWriteObject<
 	private _updated = false
 
 	constructor(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<DBInterface> | undefined : ReadonlyDeep<DBInterface>
 	) {
@@ -94,7 +94,7 @@ export class DbCacheWriteObject<
 	}
 
 	public static createFromDoc<DBInterface extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<DBInterface> | undefined : ReadonlyDeep<DBInterface>
 	): DbCacheWriteObject<DBInterface, DocOptional> {
@@ -105,7 +105,7 @@ export class DbCacheWriteObject<
 		DBInterface extends { _id: ProtectedString<any> },
 		DocOptional extends boolean = false
 	>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
 		id: DBInterface['_id']
 	): Promise<DbCacheWriteObject<DBInterface, DocOptional>> {
@@ -208,22 +208,19 @@ export class DbCacheWriteOptionalObject<DBInterface extends { _id: ProtectedStri
 > {
 	private _inserted = false
 
-	constructor(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
-		doc: ReadonlyDeep<DBInterface> | undefined
-	) {
+	constructor(collection: AsyncMongoCollection<DBInterface>, doc: ReadonlyDeep<DBInterface> | undefined) {
 		super(collection, true, doc)
 	}
 
 	public static createOptionalFromDoc<DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		doc: ReadonlyDeep<DBInterface> | undefined
 	): DbCacheWriteOptionalObject<DBInterface> {
 		return new DbCacheWriteOptionalObject<DBInterface>(collection, doc)
 	}
 
 	public static async createOptionalFromDatabase<DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncTransformedCollection<DBInterface, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		id: DBInterface['_id']
 	): Promise<DbCacheWriteOptionalObject<DBInterface>> {
 		const doc = await collection.findOneAsync(id)
