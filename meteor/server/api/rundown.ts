@@ -228,12 +228,12 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 				delete partInstance.orphaned
 				partInstance.part._rank = part._rank
 			} else if (!partInstance.orphaned) {
-				partInstance.orphaned = 'deleted'
 				cache.PartInstances.update(partInstance._id, {
 					$set: {
 						orphaned: 'deleted',
 					},
 				})
+				partInstance.orphaned = 'deleted'
 			}
 		}
 

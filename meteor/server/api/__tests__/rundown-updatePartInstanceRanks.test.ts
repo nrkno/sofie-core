@@ -362,6 +362,7 @@ describe('updatePartInstanceRanks', () => {
 		insertAllPartInstances()
 
 		const initialInstanceRanks = getPartInstanceRanks()
+		expect(initialInstanceRanks.filter((r) => r.orphaned)).toHaveLength(0)
 		expect(initialInstanceRanks).toHaveLength(5)
 
 		// Delete the segment

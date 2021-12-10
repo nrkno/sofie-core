@@ -1172,7 +1172,7 @@ describe('Test recieved mos ingest payloads', () => {
 	) {
 		return PartInstances.find(
 			{
-				rundownId: this._id,
+				rundownId: rundownId,
 				...selector,
 			},
 			{
