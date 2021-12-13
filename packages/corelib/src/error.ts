@@ -1,41 +1,48 @@
 import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
 // Mock 't' function for i18next to find the keys
 function t(key: string): string {
 	return key
 }
 
+/**
+ * List of all possible UserErrorMessages.
+ * This is an enum to allow for the strings to be defined in one central location.
+ * Note: The Values for these items should never be changed once set. The UI will use these to match certain errors, and the values can be persisted in the database
+ */
 export enum UserErrorMessage {
-	InternalError,
-	InactiveRundown,
-	DuringHold,
-	NoCurrentPart,
-	NoCurrentOrNextPart,
-	AdlibCurrentPart,
-	AdlibNotFound,
-	AdlibUnplayable,
-	PieceAsAdlibNotFound,
-	PieceAsAdlibNotDirectPlayable,
-	PieceAsAdlibCurrentlyLive,
-	SourceLayerNotSticky,
-	SourceLayerStickyNothingFound,
-	BucketAdlibIncompatible,
-	TakeDuringTransition,
-	TakeCloseToAutonext,
-	HoldNotCancelable,
-	HoldNeedsNextPart,
-	HoldAlreadyActive,
-	HoldIncompatibleParts,
-	HoldAfterAdlib,
-	RundownAlreadyActive,
-	RundownAlreadyActiveNames,
-	RundownResetWhileActive,
-	PartNotFound,
-	PartNotPlayable,
-	ActionsNotSupported,
-	TakeNoNextPart,
-	TakeRateLimit,
-	DisableNoPieceFound,
+	InternalError = 0,
+	InactiveRundown = 1,
+	DuringHold = 2,
+	NoCurrentPart = 3,
+	NoCurrentOrNextPart = 4,
+	AdlibCurrentPart = 5,
+	AdlibNotFound = 6,
+	AdlibUnplayable = 7,
+	PieceAsAdlibNotFound = 8,
+	PieceAsAdlibNotDirectPlayable = 9,
+	PieceAsAdlibCurrentlyLive = 10,
+	SourceLayerNotSticky = 11,
+	SourceLayerStickyNothingFound = 12,
+	BucketAdlibIncompatible = 13,
+	TakeDuringTransition = 14,
+	TakeCloseToAutonext = 15,
+	HoldNotCancelable = 16,
+	HoldNeedsNextPart = 17,
+	HoldAlreadyActive = 18,
+	HoldIncompatibleParts = 19,
+	HoldAfterAdlib = 20,
+	RundownAlreadyActive = 21,
+	RundownAlreadyActiveNames = 22,
+	RundownResetWhileActive = 23,
+	RundownRegenerateWhileActive = 24,
+	PartNotFound = 25,
+	PartNotPlayable = 26,
+	ActionsNotSupported = 27,
+	TakeNoNextPart = 28,
+	TakeRateLimit = 29,
+	DisableNoPieceFound = 30,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -69,6 +76,9 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.RundownResetWhileActive]: t(
 		`RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.`
 	),
+	[UserErrorMessage.RundownRegenerateWhileActive]: t(
+		`Rundown Playlist is active, please deactivate it before regenerating it.`
+	),
 	[UserErrorMessage.PartNotFound]: t(`The selected part does not exist`),
 	[UserErrorMessage.PartNotPlayable]: t(`The selected part cannot be played`),
 	[UserErrorMessage.ActionsNotSupported]: t(`AdLib Actions are not supported in the current Rundown`),
@@ -78,13 +88,18 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 }
 
 export class UserError {
-	private constructor(public readonly rawError: Error, public readonly message: ITranslatableMessage) {
-		// super()
-	}
+	private constructor(
+		/** The raw Error that was thrown */
+		public readonly rawError: Error,
+		/** The UserErrorMessage key (for matching certain error) */
+		public readonly key: UserErrorMessage,
+		/** The translatable string for the key */
+		public readonly message: ITranslatableMessage
+	) {}
 
 	/** Create a UserError with a custom error for the log */
 	static from(err: Error, key: UserErrorMessage, args?: { [k: string]: any }): UserError {
-		return new UserError(err, { key: UserErrorMessagesTranslations[key], args })
+		return new UserError(err, key, { key: UserErrorMessagesTranslations[key], args })
 	}
 
 	/** Create a UserError duplicating the same error for the log */
@@ -95,7 +110,7 @@ export class UserError {
 	static tryFromJSON(str: string): UserError {
 		const p = JSON.parse(str)
 		if (UserError.isUserError(p)) {
-			return new UserError(new Error(p.rawError.toString()), p.message)
+			return new UserError(new Error(p.rawError.toString()), p.key, p.message)
 		} else {
 			throw new Error('Not a UserError')
 		}
@@ -103,12 +118,12 @@ export class UserError {
 
 	static toJSON(e: UserError): string {
 		return JSON.stringify({
-			rawError: e.rawError.toString(),
+			rawError: stringifyError(e.rawError),
 			message: e.message,
 		})
 	}
 
 	static isUserError(e: any): e is UserError {
-		return 'rawError' in e && 'message' in e
+		return 'rawError' in e && 'message' in e && 'key' in p
 	}
 }

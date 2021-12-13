@@ -111,6 +111,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowS
 import { BucketAdLibItem } from './Shelf/RundownViewBuckets'
 import { IAdLibListItem } from './Shelf/AdLibListItem'
 import { ShelfDashboardLayout } from './Shelf/ShelfDashboardLayout'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -454,8 +455,8 @@ const RundownHeader = withTranslation()(
 						if (!err) {
 							onSuccess()
 						} else if (ClientAPI.isClientResponseError(err)) {
-							if (err.error === 409) {
-								this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+							if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+								this.handleAnotherPlaylistActive(this.props.playlist._id, true, err.error, onSuccess)
 								return false
 							}
 						}
@@ -549,7 +550,7 @@ const RundownHeader = withTranslation()(
 		handleAnotherPlaylistActive = (
 			playlistId: RundownPlaylistId,
 			rehersal: boolean,
-			err: ClientAPI.ClientResponseError,
+			err: UserError,
 			clb?: Function
 		) => {
 			const { t } = this.props
@@ -572,13 +573,13 @@ const RundownHeader = withTranslation()(
 				}
 			}
 
-			const otherRundowns = err.details as Rundown[]
 			doModalDialog({
 				title: t('Another Rundown is Already Active!'),
 				message: t(
 					'The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?',
 					{
-						rundownName: otherRundowns.map((i) => i.name).join(', '),
+						// TODO: Worker this is a bit of a hack, could a better string sent from the server instead?
+						rundownName: err.message.args?.names ?? '',
 					}
 				),
 				yes: t('Activate Anyway (Rehearsal)'),
@@ -633,8 +634,8 @@ const RundownHeader = withTranslation()(
 							if (!err) {
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 							} else if (ClientAPI.isClientResponseError(err)) {
-								if (err.error === 409) {
-									this.handleAnotherPlaylistActive(this.props.playlist._id, false, err, () => {
+								if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+									this.handleAnotherPlaylistActive(this.props.playlist._id, false, err.error, () => {
 										if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 									})
 									return false
@@ -660,8 +661,8 @@ const RundownHeader = withTranslation()(
 									if (!err) {
 										onSuccess()
 									} else if (ClientAPI.isClientResponseError(err)) {
-										if (err.error === 409) {
-											this.handleAnotherPlaylistActive(this.props.playlist._id, false, err, onSuccess)
+										if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+											this.handleAnotherPlaylistActive(this.props.playlist._id, false, err.error, onSuccess)
 											return false
 										}
 									}
@@ -706,8 +707,8 @@ const RundownHeader = withTranslation()(
 							if (!err) {
 								onSuccess()
 							} else if (ClientAPI.isClientResponseError(err)) {
-								if (err.error === 409) {
-									this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+								if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+									this.handleAnotherPlaylistActive(this.props.playlist._id, true, err.error, onSuccess)
 									return false
 								}
 							}
@@ -727,8 +728,8 @@ const RundownHeader = withTranslation()(
 								if (!err) {
 									onSuccess()
 								} else if (ClientAPI.isClientResponseError(err)) {
-									if (err.error === 409) {
-										this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+									if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+										this.handleAnotherPlaylistActive(this.props.playlist._id, true, err.error, onSuccess)
 										return false
 									}
 								}

@@ -49,7 +49,12 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 
-	export function switchRouteSet(context: MethodContext, studioId: StudioId, routeSetId: string, state: boolean) {
+	export function switchRouteSet(
+		context: MethodContext,
+		studioId: StudioId,
+		routeSetId: string,
+		state: boolean
+	): void {
 		check(studioId, String)
 		check(routeSetId, String)
 		check(state, Boolean)
@@ -83,7 +88,5 @@ export namespace ServerPlayoutAPI {
 		})
 
 		// TODO: Run update timeline here
-
-		return ClientAPI.responseSuccess(undefined)
 	}
 }

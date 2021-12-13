@@ -31,6 +31,7 @@ import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInP
 import { DbCacheWriteCollection } from './cache/CacheCollection'
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
 	// TODO: Worker - should this lock each rundown for removal? Perhaps by putting work onto the ingest queue?
@@ -50,6 +51,10 @@ export async function handleRegenerateRundownPlaylist(
 ): Promise<void> {
 	const ingestData = await runJobWithPlaylistLock(context, data, async (playlist, playlistLock) => {
 		if (!playlist) throw new Error(`Rundown Playlist "${data.playlistId}" not found`)
+
+		if (playlist.activationId) {
+			throw UserError.create(UserErrorMessage.RundownRegenerateWhileActive)
+		}
 
 		logger.info(`Regenerating rundown playlist ${playlist.name} (${playlist._id})`)
 

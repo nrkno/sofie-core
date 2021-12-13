@@ -82,8 +82,8 @@ async function runUserAction<T extends keyof StudioJobFunc>(
 
 		logger.error(`UserAction "${name}" failed: ${userError.rawError.toString()}`)
 
-		// TODO: Worker - this isnt great, but is good enough for a prototype
-		return ClientAPI.responseError(JSON.stringify(userError.message))
+		// Forward the error to the caller
+		return ClientAPI.responseError(userError)
 	}
 }
 
@@ -240,7 +240,8 @@ export async function unsyncRundown(
 	context: MethodContext,
 	rundownId: RundownId
 ): Promise<ClientAPI.ClientResponse<void>> {
-	return ClientAPI.responseSuccess(await ServerRundownAPI.unsyncRundown(context, rundownId))
+	await ServerRundownAPI.unsyncRundown(context, rundownId)
+	return ClientAPI.responseSuccess(undefined)
 }
 export async function disableNextPiece(
 	context: MethodContext,
@@ -319,7 +320,7 @@ export async function pieceSetInOutPoints(
 		) // MOS data is in seconds
 		return ClientAPI.responseSuccess(undefined)
 	} catch (error) {
-		return ClientAPI.responseError(error as any)
+		return ClientAPI.responseError(UserError.from(error, UserErrorMessage.InternalError))
 	}
 }
 export async function executeAction(
@@ -595,15 +596,11 @@ export async function bucketsModifyBucketAdLibAction(
 
 	return ClientAPI.responseSuccess(undefined)
 }
-export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
+export async function regenerateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
 	check(rundownPlaylistId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
-
-	if (playlist.activationId) {
-		return ClientAPI.responseError(`Rundown Playlist is active, please deactivate it before regenerating it.`)
-	}
 
 	return runUserAction(playlist.studioId, StudioJobs.RegeneratePlaylist, {
 		playlistId: playlist._id,
@@ -729,7 +726,8 @@ export function switchRouteSet(
 	check(routeSetId, String)
 	check(state, Boolean)
 
-	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
+	ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
+	return ClientAPI.responseSuccess(undefined)
 }
 
 export async function moveRundown(
