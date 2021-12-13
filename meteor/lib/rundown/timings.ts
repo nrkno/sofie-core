@@ -41,7 +41,7 @@ export interface PartCalculatedTimings {
 export type CalculateTimingsPiece = Pick<Piece, 'enable' | 'prerollDuration' | 'pieceType'>
 export type CalculateTimingsFromPart = Pick<
 	DBPart,
-	'autoNext' | 'autoNextOverlap' | 'disableNextPartInTransition' | 'outTransition'
+	'autoNext' | 'autoNextOverlap' | 'disableNextInTransition' | 'outTransition'
 >
 
 export type CalculateTimingsToPart = Pick<DBPart, 'inTransition'>
@@ -72,7 +72,7 @@ export function calculatePartTimings(
 				partContentDelayDuration: 0,
 				previousPartKeepaliveDuration: fromPart.autoNextOverlap,
 			}
-		} else if (!fromPart.disableNextPartInTransition) {
+		} else if (!fromPart.disableNextInTransition) {
 			allowTransitionPiece = true
 			inTransition = toPart.inTransition
 		}
@@ -126,7 +126,7 @@ export function getPartTimingsOrDefaults(
 	}
 }
 
-function calcInner(rawDuration: number, timings: PartCalculatedTimings): number {
+function calculatePartExpectedDurationWithPrerollInner(rawDuration: number, timings: PartCalculatedTimings): number {
 	return Math.max(0, rawDuration + timings.toPartDelay - timings.fromPartRemaining)
 }
 
@@ -138,7 +138,7 @@ export function calculatePartExpectedDurationWithPreroll(
 
 	const timings = calculatePartTimings(undefined, {}, part, pieces)
 
-	return calcInner(part.expectedDuration, timings)
+	return calculatePartExpectedDurationWithPrerollInner(part.expectedDuration, timings)
 }
 
 export function calculatePartInstanceExpectedDurationWithPreroll(
@@ -147,7 +147,10 @@ export function calculatePartInstanceExpectedDurationWithPreroll(
 	if (partInstance.part.expectedDuration === undefined) return undefined
 
 	if (partInstance.partPlayoutTimings) {
-		return calcInner(partInstance.part.expectedDuration, partInstance.partPlayoutTimings)
+		return calculatePartExpectedDurationWithPrerollInner(
+			partInstance.part.expectedDuration,
+			partInstance.partPlayoutTimings
+		)
 	} else {
 		return partInstance.part.expectedDurationWithPreroll ?? partInstance.part.expectedDuration
 	}

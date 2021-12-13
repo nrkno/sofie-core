@@ -168,7 +168,7 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	inTransition?: IBlueprintPartInTransition
 
 	/** Should we block the inTransition when starting the next Part */
-	disableNextPartInTransition?: boolean
+	disableNextInTransition?: boolean
 
 	/** Timings for the outTransition, when supported and allowed */
 	outTransition?: IBlueprintPartOutTransition

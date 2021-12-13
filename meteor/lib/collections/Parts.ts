@@ -57,7 +57,7 @@ export class Part implements DBPart {
 	public autoNext?: boolean
 	public autoNextOverlap?: number
 	public inTransition?: IBlueprintPartInTransition
-	public disableNextPartInTransition?: boolean
+	public disableNextInTransition?: boolean
 	public outTransition?: IBlueprintPartOutTransition
 	public expectedDuration?: number
 	public budgetDuration?: number

@@ -57,7 +57,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const pBlueprint = pShowStyle.then(async (s) => loadShowStyleBlueprint(s))
 
 	if (currentPartInstance) {
-		const allowTransition = previousPartInstance && !previousPartInstance.part.disableNextPartInTransition
+		const allowTransition = previousPartInstance && !previousPartInstance.part.disableNextInTransition
 		const start = currentPartInstance.timings?.startedPlayback
 
 		if (currentPartInstance.blockTakeUntil && currentPartInstance.blockTakeUntil > getCurrentTime()) {

@@ -225,7 +225,7 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Allowed transition
-		const previousPart: Part = { disableNextPartInTransition: false, classesForNext: undefined } as any
+		const previousPart: Part = { disableNextInTransition: false, classesForNext: undefined } as any
 		const objects1 = findLookaheadObjectsForPart(
 			currentPartInstanceId,
 			layer0,
@@ -271,7 +271,7 @@ describe('findLookaheadObjectsForPart', () => {
 		expect(stripObjectProperties(objects3, true)).toStrictEqual(stripObjectProperties(objects1, true))
 
 		// Previous disables transition
-		const blockedPreviousPart: Part = { disableNextPartInTransition: true, classesForNext: undefined } as any
+		const blockedPreviousPart: Part = { disableNextInTransition: true, classesForNext: undefined } as any
 		const objects4 = findLookaheadObjectsForPart(
 			currentPartInstanceId,
 			layer0,
@@ -507,7 +507,7 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Allowed transition
-		const previousPart: Part = { disableNextPartInTransition: false, classesForNext: undefined } as any
+		const previousPart: Part = { disableNextInTransition: false, classesForNext: undefined } as any
 		const objects1 = findLookaheadObjectsForPart(
 			currentPartInstanceId,
 			layer0,
@@ -574,7 +574,7 @@ describe('findLookaheadObjectsForPart', () => {
 		expect(stripObjectProperties(objects3, true)).toStrictEqual(stripObjectProperties(objects1, true))
 
 		// Previous disables transition
-		const blockedPreviousPart: Part = { disableNextPartInTransition: true, classesForNext: undefined } as any
+		const blockedPreviousPart: Part = { disableNextInTransition: true, classesForNext: undefined } as any
 		const objects4 = findLookaheadObjectsForPart(
 			currentPartInstanceId,
 			layer0,
@@ -683,7 +683,7 @@ describe('findLookaheadObjectsForPart', () => {
 		}
 
 		// Allowed transition
-		const previousPart: Part = { disableNextPartInTransition: false, classesForNext: undefined } as any
+		const previousPart: Part = { disableNextInTransition: false, classesForNext: undefined } as any
 		const objects2 = findLookaheadObjectsForPart(
 			currentPartInstanceId,
 			layer0,

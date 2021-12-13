@@ -337,11 +337,11 @@ describe('Part Playout Timings', () => {
 				)
 			})
 
-			test('previous disableNextPartInTransition', () => {
+			test('previous disableNextInTransition', () => {
 				const timings = calculatePartTimings(
 					undefined,
 					{
-						disableNextPartInTransition: true,
+						disableNextInTransition: true,
 					},
 					{
 						inTransition: {
