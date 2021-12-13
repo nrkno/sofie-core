@@ -1561,43 +1561,51 @@ interface UpdateTimelineFromIngestDataTimeout {
 	timeout?: number
 }
 const updateTimelineFromIngestDataTimeouts = new Map<RundownPlaylistId, UpdateTimelineFromIngestDataTimeout>()
-export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylistId) {
+export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylistId, attempt: number = 1) {
 	if (Meteor.isTest) {
 		// Don't run this when in jest, as it is not useful and ends up producing errors
 		return
 	}
 
+	const MAX_ATTEMPTS = 5 // Limit the number of times this can recurse
+
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
 	const data = updateTimelineFromIngestDataTimeouts.get(playlistId) ?? {}
 	if (data.timeout) Meteor.clearTimeout(data.timeout)
 
-	data.timeout = Meteor.setTimeout(() => {
+	data.timeout = Meteor.setTimeout(async () => {
 		if (updateTimelineFromIngestDataTimeouts.delete(playlistId)) {
 			const transaction = profiler.startTransaction('triggerUpdateTimelineAfterIngestData', 'playout')
-			runPlayoutOperationWithCache(
-				null,
-				'triggerUpdateTimelineAfterIngestData',
-				playlistId,
-				PlayoutLockFunctionPriority.USER_PLAYOUT,
-				null,
-				async (cache) => {
-					const playlist = cache.Playlist.doc
+			try {
+				await runPlayoutOperationWithCache(
+					null,
+					'triggerUpdateTimelineAfterIngestData',
+					playlistId,
+					PlayoutLockFunctionPriority.USER_PLAYOUT,
+					null,
+					async (cache) => {
+						const playlist = cache.Playlist.doc
 
-					if (playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
-						const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-						if (!currentPartInstance?.timings?.startedPlayback) {
-							// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
-							// We mustn't run before that does, or we will get the timings in playout-gateway confused.
-						} else {
-							// It is safe enough (except adlibs) to update the timeline directly
-							// If the playlist is active, then updateTimeline as lookahead could have been affected
-							await updateTimeline(cache)
+						if (playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
+							const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+							if (currentPartInstance && !currentPartInstance.timings?.startedPlayback) {
+								// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
+								// We mustn't run before that does, or we will get the timings in playout-gateway confused.
+								if (attempt < MAX_ATTEMPTS) {
+									// Try the update again later instead
+									triggerUpdateTimelineAfterIngestData(playlistId, attempt + 1)
+								}
+							} else {
+								// It is safe enough (except adlibs) to update the timeline directly
+								// If the playlist is active, then updateTimeline as lookahead could have been affected
+								await updateTimeline(cache)
+							}
 						}
 					}
-				}
-			).catch((e) => {
+				)
+			} catch (e) {
 				logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${e}`)
-			})
+			}
 			transaction?.end()
 		}
 	}, 1000)

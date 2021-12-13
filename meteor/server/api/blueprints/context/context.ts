@@ -63,6 +63,7 @@ import {
 	PartInstances,
 	protectPartInstance,
 	unprotectPartInstanceArray,
+	DBPartInstance,
 } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { ReadonlyDeep } from 'type-fest'
@@ -72,6 +73,7 @@ import _ from 'underscore'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Meteor } from 'meteor/meteor'
 import { WatchedPackagesHelper } from './watchedPackages'
+import { MongoSelector } from '../../../../lib/typings/meteor'
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
 	name: string
@@ -690,18 +692,21 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 		this.nextPart = unprotectPartInstance(nextPartInstance)
 	}
 
-	getFirstPartInstanceInRundown(): Readonly<IBlueprintPartInstance<unknown>> {
-		const partInstance = PartInstances.findOne(
-			{
-				rundownId: this._rundown._id,
-				playlistActivationId: this._currentPart.playlistActivationId,
+	getFirstPartInstanceInRundown(allowUntimed?: boolean): Readonly<IBlueprintPartInstance<unknown>> {
+		const query: MongoSelector<DBPartInstance> = {
+			rundownId: this._rundown._id,
+			playlistActivationId: this._currentPart.playlistActivationId,
+		}
+
+		if (!allowUntimed) {
+			query['part.untimed'] = { $ne: true }
+		}
+
+		const partInstance = PartInstances.findOne(query, {
+			sort: {
+				takeCount: 1,
 			},
-			{
-				sort: {
-					takeCount: 1,
-				},
-			}
-		)
+		})
 
 		// If this doesn't find anything, then where did our reference PartInstance come from?
 		if (!partInstance)

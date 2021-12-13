@@ -20,7 +20,7 @@ export type PartId = ProtectedString<'PartId'>
 
 export interface PartInvalidReason {
 	message: ITranslatableMessage
-	level?: NoteSeverity
+	severity?: NoteSeverity
 	color?: string
 }
 export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {

@@ -933,7 +933,6 @@ describe('Test blueprint api context', () => {
 					expect(newPieceInstanceId).toMatch(/randomId(\d+)_part0_0_instance_randomId(\d+)/)
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 					expect(postProcessPiecesMock).toHaveBeenCalledWith(
-						expect.anything(),
 						[{ externalId: 'input1' }],
 						'mockBlueprint1',
 						partInstance.rundownId,

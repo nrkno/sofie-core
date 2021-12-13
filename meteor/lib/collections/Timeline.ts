@@ -115,6 +115,13 @@ export function getRoutedTimeline(
 				if (i > 0) {
 					// If there are multiple routes we must rename the ids, so that they stay unique.
 					routedObj.id = `_${i}_${routedObj.id}`
+
+					if (routedObj.keyframes) {
+						routedObj.keyframes = routedObj.keyframes.map((keyframe) => ({
+							...keyframe,
+							id: `_${i}_${keyframe.id}`,
+						}))
+					}
 				}
 				outputTimelineObjs.push(routedObj)
 			}

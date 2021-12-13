@@ -131,7 +131,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		// filter the submission to the allowed ones
 		const piece = modifiedPiece
 			? postProcessPieces(
-					this,
 					[
 						{
 							...modifiedPiece,
@@ -162,7 +161,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceSampleKeys)
 
 		const piece = postProcessPieces(
-			this,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
 			this.partInstance.rundownId,
@@ -203,7 +201,6 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
 			updatedPiece.content.timelineObjects = postProcessTimelineObjects(
-				this,
 				pieceInstance.piece._id,
 				this.showStyleCompound.blueprintId,
 				updatedPiece.content.timelineObjects,

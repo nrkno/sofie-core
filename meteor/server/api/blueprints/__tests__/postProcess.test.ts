@@ -1,89 +1,42 @@
 import * as _ from 'underscore'
+
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-import { Rundown } from '../../../../lib/collections/Rundowns'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal, protectString, unprotectString } from '../../../../lib/lib'
-import { Studios, Studio } from '../../../../lib/collections/Studios'
 import {
 	postProcessStudioBaselineObjects,
 	postProcessRundownBaselineItems,
 	postProcessAdLibPieces,
 	postProcessPieces,
 } from '../postProcess'
-import { RundownContext, StudioContext } from '../context'
 import {
 	IBlueprintPiece,
 	IBlueprintAdLibPiece,
 	TimelineObjectCoreExt,
 	TSR,
 	PieceLifespan,
-	IUserNotesContext,
-	PlaylistTimingType,
 	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
-import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
+
+// Setup the mocks
+import * as hashlib from '../../../../lib/hash'
+const getHashOrig = hashlib.getHash
+const getHashMock = jest.spyOn(hashlib, 'getHash')
 
 describe('Test blueprint post-process', () => {
 	let env: DefaultEnvironment
 	beforeAll(async () => {
 		env = await setupDefaultStudioEnvironment()
 	})
+	afterEach(() => {
+		getHashMock.mockReset()
+		getHashMock.mockImplementation(getHashOrig)
+	})
 
 	function getStudio() {
-		const studio = Studios.findOne() as Studio
-		expect(studio).toBeTruthy()
-		return studio
-	}
-	function getContext() {
-		const rundown = new Rundown({
-			externalId: 'fakeRo',
-			_id: protectString('fakeRo'),
-			name: 'Fake RO',
-			showStyleBaseId: protectString(''),
-			showStyleVariantId: protectString(''),
-			organizationId: protectString(''),
-			studioId: env.studio._id,
-			peripheralDeviceId: protectString(''),
-			created: 0,
-			modified: 0,
-			importVersions: {
-				studio: '',
-				showStyleBase: '',
-				showStyleVariant: '',
-				blueprint: '',
-				core: '',
-			},
-			externalNRCSName: 'mockNRCS',
-			playlistId: protectString(''),
-			_rank: 0,
-			timing: {
-				type: PlaylistTimingType.None,
-			},
-		})
-
-		const studio = getStudio()
-		const showStyle = {} as ShowStyleCompound
-
-		const context = new RundownContext(
-			{ name: rundown.name, identifier: `rundownId=${rundown._id}` },
-			studio,
-			showStyle,
-			rundown
-		)
-
-		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
-		expect((context as unknown as IUserNotesContext).notifyUserError).toBeUndefined()
-		return context
-	}
-	function getStudioContext(studio: Studio) {
-		const context = new StudioContext({ name: studio.name, identifier: `studioId=${studio._id}` }, studio)
-
-		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
-		expect((context as unknown as IUserNotesContext).notifyUserError).toBeUndefined()
-		return context
+		return env.studio
 	}
 
 	function ensureAllKeysDefined<T>(template: T, objects: T[]) {
@@ -101,7 +54,7 @@ describe('Test blueprint post-process', () => {
 	}
 
 	describe('postProcessStudioBaselineObjects', () => {
-		testInFiber('no objects', () => {
+		test('no objects', () => {
 			const studio = getStudio()
 
 			// Ensure that an empty array works ok
@@ -109,7 +62,7 @@ describe('Test blueprint post-process', () => {
 			expect(res).toHaveLength(0)
 		})
 
-		testInFiber('some no ids', () => {
+		test('some no ids', () => {
 			const studio = getStudio()
 
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
@@ -167,7 +120,7 @@ describe('Test blueprint post-process', () => {
 			const ids = _.map(res, (obj) => obj.id)
 			expect(ids).toHaveLength(_.uniq(ids).length)
 		})
-		testInFiber('duplicate ids', () => {
+		test('duplicate ids', () => {
 			const studio = getStudio()
 			const blueprintId = protectString(unprotectString(studio.blueprintId)) // the unit could modify the value, so make a literal copy
 
@@ -213,17 +166,13 @@ describe('Test blueprint post-process', () => {
 	})
 
 	describe('postProcessRundownBaselineItems', () => {
-		testInFiber('no objects', () => {
-			const context = getContext()
-
+		test('no objects', () => {
 			// Ensure that an empty array works ok
-			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [])
+			const res = postProcessRundownBaselineItems(protectString('some-blueprints'), [])
 			expect(res).toHaveLength(0)
 		})
 
-		testInFiber('some no ids', () => {
-			const context = getContext()
-
+		test('some no ids', () => {
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
@@ -262,9 +211,9 @@ describe('Test blueprint post-process', () => {
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2']
 			const expectedIds = _.compact(_.map(rawObjects, (obj) => obj.id)).concat(mockedIds)
-			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
+			getHashMock.mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), _.clone(rawObjects))
+			const res = postProcessRundownBaselineItems(protectString('some-blueprints'), _.clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -278,10 +227,10 @@ describe('Test blueprint post-process', () => {
 			expect(_.filter(res, (r) => r.id === '')).toHaveLength(0)
 			expect(_.filter(res, (r) => r.objectType !== 'rundown')).toHaveLength(0)
 
-			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(2)
-			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'baseline_1')
-			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'baseline_3')
+			// Ensure getHash was called as expected
+			expect(getHashMock).toHaveBeenCalledTimes(2)
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'baseline_1')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'baseline_3')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj.id).sort()
@@ -297,9 +246,7 @@ describe('Test blueprint post-process', () => {
 			})
 			ensureAllKeysDefined(tmpObj, res)
 		})
-		testInFiber('duplicate ids', () => {
-			const context = getContext()
-
+		test('duplicate ids', () => {
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
@@ -336,25 +283,23 @@ describe('Test blueprint post-process', () => {
 			])
 
 			const blueprintId = 'some-blueprints'
-			expect(() =>
-				postProcessRundownBaselineItems(context, protectString(blueprintId), _.clone(rawObjects))
-			).toThrow(`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`)
+			expect(() => postProcessRundownBaselineItems(protectString(blueprintId), _.clone(rawObjects))).toThrow(
+				`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
+			)
 		})
 	})
 
 	describe('postProcessAdLibPieces', () => {
-		testInFiber('no pieces', () => {
-			const context = getStudioContext(getStudio())
+		test('no pieces', () => {
 			const blueprintId = protectString('blueprint0')
 			const rundownId = protectString('rundown1')
 
 			// Ensure that an empty array works ok
-			const res = postProcessAdLibPieces(context, blueprintId, rundownId, undefined, [])
+			const res = postProcessAdLibPieces(blueprintId, rundownId, undefined, [])
 			expect(res).toHaveLength(0)
 		})
 
-		testInFiber('various pieces', () => {
-			const context = getStudioContext(getStudio())
+		test('various pieces', () => {
 			const blueprintId = protectString('blueprint9')
 			const rundownId = protectString('rundown1')
 
@@ -395,9 +340,9 @@ describe('Test blueprint post-process', () => {
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2', 'mocked3']
 			const expectedIds = _.clone(mockedIds)
-			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
+			getHashMock.mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessAdLibPieces(context, blueprintId, rundownId, undefined, pieces)
+			const res = postProcessAdLibPieces(blueprintId, rundownId, undefined, pieces)
 			// expect(res).toHaveLength(3)
 			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
 
@@ -418,18 +363,17 @@ describe('Test blueprint post-process', () => {
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
-			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(3)
-			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_undefined_adlib_piece_eid1_0')
-			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_undefined_adlib_piece_eid2_0')
-			expect(context.getHashId).toHaveBeenNthCalledWith(3, 'blueprint9_undefined_adlib_piece_eid2_1')
+			// Ensure getHash was called as expected
+			expect(getHashMock).toHaveBeenCalledTimes(3)
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'rundown1_blueprint9_undefined_adlib_piece_eid1_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'rundown1_blueprint9_undefined_adlib_piece_eid2_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(3, 'rundown1_blueprint9_undefined_adlib_piece_eid2_1')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
 			expect(ids).toEqual(expectedIds.sort())
 		})
-		testInFiber('piece with content', () => {
-			const context = getStudioContext(getStudio())
+		test('piece with content', () => {
 			const blueprintId = protectString('blueprint0')
 			const rundownId = protectString('rundown1')
 
@@ -454,7 +398,7 @@ describe('Test blueprint post-process', () => {
 				lifespan: PieceLifespan.WithinPart,
 			})
 
-			const res = postProcessAdLibPieces(context, blueprintId, rundownId, undefined, [piece])
+			const res = postProcessAdLibPieces(blueprintId, rundownId, undefined, [piece])
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([piece])
 
@@ -464,24 +408,19 @@ describe('Test blueprint post-process', () => {
 	})
 
 	describe('postProcessPieces', () => {
-		testInFiber('no pieces', () => {
-			const context = getContext()
-
+		test('no pieces', () => {
 			// Ensure that an empty array works ok
 			const res = postProcessPieces(
-				context,
 				[],
 				protectString('blueprint9'),
-				context._rundown._id,
+				protectString('fakeRo'),
 				protectString('segment5'),
 				protectString('part8')
 			)
 			expect(res).toHaveLength(0)
 		})
 
-		testInFiber('various pieces', () => {
-			const context = getContext()
-
+		test('various pieces', () => {
 			const pieces = literal<IBlueprintPiece[]>([
 				{
 					name: 'test',
@@ -508,13 +447,12 @@ describe('Test blueprint post-process', () => {
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2']
 			const expectedIds = [...mockedIds]
-			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
+			getHashMock.mockImplementation(() => mockedIds.shift() || '')
 
 			const res = postProcessPieces(
-				context,
 				pieces,
 				protectString('blueprint9'),
-				context._rundown._id,
+				protectString('fakeRo'),
 				protectString('segment5'),
 				protectString('part8')
 			)
@@ -541,18 +479,16 @@ describe('Test blueprint post-process', () => {
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
-			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(2)
-			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_part8_piece_eid1_0')
-			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_part8_piece_eid2_0')
+			// Ensure getHash was called as expected
+			expect(getHashMock).toHaveBeenCalledTimes(2)
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'fakeRo_blueprint9_part8_piece_eid1_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'fakeRo_blueprint9_part8_piece_eid2_0')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
 			expect(ids).toEqual(expectedIds.sort())
 		})
-		testInFiber('piece with content', () => {
-			const context = getContext()
-
+		test('piece with content', () => {
 			const piece = literal<IBlueprintPiece>({
 				name: 'test2',
 				externalId: 'eid2',
@@ -575,10 +511,9 @@ describe('Test blueprint post-process', () => {
 			})
 
 			const res = postProcessPieces(
-				context,
 				[piece],
 				protectString('blueprint9'),
-				context._rundown._id,
+				protectString('fakeRo'),
 				protectString('segment8'),
 				protectString('part6')
 			)

@@ -388,7 +388,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	// TriggeredActions
 	{
 		removeByQuery(TriggeredActions, {
-			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
+			showStyleBaseId: { $nin: [...getAllIdsInCollection(ShowStyleBases), null] },
 		})
 	}
 	// UserActionsLog

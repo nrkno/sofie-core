@@ -277,8 +277,9 @@ export interface IRundownTimingEventContext extends IRundownDataChangedEventCont
 	/**
 	 * Returns the first PartInstance in the Rundown within the current playlist activation.
 	 * This allows for a start time for the Rundown to be determined
+	 * @param allowUntimed Whether to consider a Part which has the untimed property set
 	 */
-	getFirstPartInstanceInRundown(): Readonly<IBlueprintPartInstance>
+	getFirstPartInstanceInRundown(allowUntimed?: boolean): Readonly<IBlueprintPartInstance>
 
 	/**
 	 * Returns the partInstances in the Segment, limited to the playthrough of the segment that refPartInstance is part of

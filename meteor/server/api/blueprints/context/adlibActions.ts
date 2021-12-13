@@ -253,7 +253,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, IBlueprintPieceSampleKeys)
 
 		const piece = postProcessPieces(
-			this,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
 			partInstance.rundownId,
@@ -306,7 +305,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		if (piece.content && piece.content.timelineObjects) {
 			piece.content.timelineObjects = postProcessTimelineObjects(
-				this,
 				pieceInstance.piece._id,
 				this.showStyleCompound.blueprintId,
 				piece.content.timelineObjects,
@@ -386,7 +384,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		const pieces = postProcessPieces(
-			this,
 			rawPieces,
 			this.showStyleCompound.blueprintId,
 			currentPartInstance.rundownId,
