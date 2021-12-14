@@ -593,6 +593,17 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					id={SegmentTimelinePartElementId + this.props.part.instance._id}
 					style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}
 				>
+					{DEBUG_MODE && (
+						<div className="segment-timeline__debug-info">
+							{this.props.livePosition} / {this.props.part.startsAt} /{' '}
+							{
+								((this.props.timingDurations || { partStartsAt: {} }).partStartsAt || {})[
+									unprotectString(innerPart._id)
+								]
+							}
+						</div>
+					)}
+					{this.renderTimelineOutputGroups(this.props.part)}
 					{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
 					{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
 					{this.props.playlist.nextTimeOffset &&
@@ -637,20 +648,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								</div>
 							</div>
 						)}
-					{DEBUG_MODE && (
-						<div className="segment-timeline__debug-info">
-							{this.props.livePosition} / {this.props.part.startsAt} /{' '}
-							{
-								((this.props.timingDurations || { partStartsAt: {} }).partStartsAt || {})[
-									unprotectString(innerPart._id)
-								]
-							}
-						</div>
-					)}
 					{this.state.isLive && !this.props.relative && !this.props.autoNextPart && !innerPart.autoNext && (
 						<div className="segment-timeline__part__future-shade" style={this.getFutureShadeStyle()}></div>
 					)}
-					{this.renderTimelineOutputGroups(this.props.part)}
 					{this.renderEndOfSegment(t, innerPart, isEndOfShow, isEndOfLoopingShow)}
 					{!this.props.isBudgetGap && (
 						<div

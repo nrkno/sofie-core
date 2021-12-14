@@ -1375,6 +1375,7 @@ svg.icon {
 				flex: 0;
 				border-left: 2px solid $part-start-color;
 				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
+				z-index: 20;
 
 				&.segment-timeline__part__nextline--endline {
 					left: auto;
@@ -1445,7 +1446,7 @@ svg.icon {
 				left: 1px;
 				bottom: 0;
 				right: 1px;
-				z-index: 1;
+				z-index: 10;
 				pointer-events: none;
 				background-image: repeating-linear-gradient(
 						45deg,
@@ -1469,7 +1470,7 @@ svg.icon {
 				left: 0;
 				bottom: 0;
 				right: 0;
-				z-index: 1;
+				z-index: 10;
 				pointer-events: none;
 				background-image: repeating-linear-gradient(
 					-45deg,
