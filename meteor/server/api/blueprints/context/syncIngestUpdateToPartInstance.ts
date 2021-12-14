@@ -36,6 +36,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../../lib/collections/Studios'
 import { CacheForPlayout } from '../../playout/cache'
+import { logChanges } from '../../../cache/lib'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownContext
@@ -115,8 +116,11 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.logInfo(`No ingest changes to apply to PartInstance`)
 		}
 
-		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
-		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
+		const pieceChanges = this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
+		const partChanges = this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
+
+		logChanges('PartInstances', partChanges)
+		logChanges('PieceInstances', pieceChanges)
 	}
 
 	syncPieceInstance(
