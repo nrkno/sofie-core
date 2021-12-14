@@ -859,16 +859,17 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	private renderEndOfSegment = (t: TFunction, innerPart: Part, isEndOfShow: boolean, isEndOfLoopingShow?: boolean) => {
+		const isNext =
+			this.state.isLive &&
+			((!this.props.isLastSegment && !this.props.isLastInSegment) || !!this.props.playlist.nextPartInstanceId) &&
+			!innerPart.invalid
 		return (
 			<>
 				{this.props.isLastInSegment && !this.props.isBudgetGap && (
 					<div
 						className={ClassNames('segment-timeline__part__nextline', 'segment-timeline__part__nextline--endline', {
 							'auto-next': innerPart.autoNext,
-							'is-next':
-								this.state.isLive &&
-								((!this.props.isLastSegment && !this.props.isLastInSegment) ||
-									!!this.props.playlist.nextPartInstanceId),
+							'is-next': isNext,
 							'show-end': isEndOfShow,
 						})}
 					>
@@ -886,10 +887,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				{!isEndOfShow && this.props.isLastInSegment && (
 					<div
 						className={ClassNames('segment-timeline__part__segment-end', {
-							'is-next':
-								this.state.isLive &&
-								((!this.props.isLastSegment && !this.props.isLastInSegment) ||
-									!!this.props.playlist.nextPartInstanceId),
+							'is-next': isNext,
 						})}
 					>
 						<div className="segment-timeline__part__segment-end__label">
@@ -954,7 +952,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						'segment-timeline__part',
 						{
 							live: this.state.isLive,
-							next: this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive,
+							next: (this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive) && !innerPart.invalid,
 							invalid: innerPart.invalid && !innerPart.gap,
 							floated: innerPart.floated,
 							gap: innerPart.gap,
