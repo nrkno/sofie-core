@@ -40,7 +40,7 @@ import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 interface IProps {
 	id: string
@@ -679,9 +679,27 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return (this.props.parts && RundownUtils.getSegmentDuration(this.props.parts)) || 0
 	}
 
-	timelineStyle() {
+	private isOutputGroupCollapsed(outputGroup: IOutputLayer) {
+		return this.props.collapsedOutputs[outputGroup._id] !== undefined
+			? this.props.collapsedOutputs[outputGroup._id] === true
+			: outputGroup.isDefaultCollapsed
+	}
+
+	timelineStyle(outputGroups: IOutputLayerUi[]) {
+		const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 		return {
 			transform: 'translate3d(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px, 0, 0.1px)',
+			height: `calc(${outputGroups.reduce(
+				(mem, group) =>
+					mem +
+					(group.isFlattened
+						? 1
+						: this.isOutputGroupCollapsed(group)
+						? 1
+						: group.sourceLayers.filter((layer) => showHiddenSourceLayers || !layer.isHidden).length),
+				0
+			)} * var(--segment-layer-height) + var(--segment-timeline-padding-top) + var(--segment-timeline-padding-bottom))`,
 			minWidth:
 				this.props.budgetDuration !== undefined
 					? `calc(${this.convertTimeToPixels(this.props.budgetDuration).toString()}px + 100vW)`
@@ -888,75 +906,70 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		)
 	}
 
-	renderEndOfSegment() {
-		return <div className="segment-timeline__part segment-timeline__part--end-of-segment"></div>
+	getActiveOutputGroups(): IOutputLayerUi[] {
+		if (this.props.segment.outputLayers === undefined) return []
+
+		return Object.values(this.props.segment.outputLayers)
+			.sort((a, b) => {
+				return a._rank - b._rank
+			})
+			.filter((group) => group.used)
 	}
 
-	renderOutputLayerControls() {
-		if (this.props.segment.outputLayers !== undefined) {
-			const showHiddenSourceLayers = getShowHiddenSourceLayers()
+	renderOutputLayerControls(outputGroups: IOutputLayerUi[]) {
+		const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
-			return Object.values(this.props.segment.outputLayers)
-				.sort((a, b) => {
-					return a._rank - b._rank
-				})
-				.map((outputLayer) => {
-					if (outputLayer.used) {
-						const isCollapsable =
-							outputLayer.sourceLayers !== undefined && outputLayer.sourceLayers.length > 1 && !outputLayer.isFlattened
-						return (
-							<div
-								key={outputLayer._id}
-								className={ClassNames('segment-timeline__output-layer-control', {
-									collapsable: isCollapsable,
-									collapsed:
-										this.props.collapsedOutputs[outputLayer._id] !== undefined
-											? this.props.collapsedOutputs[outputLayer._id] === true
-											: outputLayer.isDefaultCollapsed,
-								})}
-							>
+		return outputGroups.map((outputLayer) => {
+			if (outputLayer.used) {
+				const isCollapsable =
+					outputLayer.sourceLayers !== undefined && outputLayer.sourceLayers.length > 1 && !outputLayer.isFlattened
+				return (
+					<div
+						key={outputLayer._id}
+						className={ClassNames('segment-timeline__output-layer-control', {
+							collapsable: isCollapsable,
+							collapsed: this.isOutputGroupCollapsed(outputLayer),
+						})}
+					>
+						<div
+							className="segment-timeline__output-layer-control__label"
+							data-output-id={outputLayer._id}
+							tabIndex={0}
+							onClick={(e) =>
+								isCollapsable && this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)
+							}
+						>
+							{outputLayer.name}
+						</div>
+						{outputLayer.sourceLayers !== undefined &&
+							(!outputLayer.isFlattened ? (
+								outputLayer.sourceLayers
+									.filter((i) => showHiddenSourceLayers || !i.isHidden)
+									.sort((a, b) => a._rank - b._rank)
+									.map((sourceLayer, index, array) => {
+										return (
+											<div
+												key={sourceLayer._id}
+												className="segment-timeline__output-layer-control__layer"
+												data-source-id={sourceLayer._id}
+											>
+												{array.length === 1 || sourceLayer.name === outputLayer.name ? '\xa0' : sourceLayer.name}
+											</div>
+										)
+									})
+							) : (
 								<div
-									className="segment-timeline__output-layer-control__label"
-									data-output-id={outputLayer._id}
-									tabIndex={0}
-									onClick={(e) =>
-										isCollapsable &&
-										this.props.onCollapseOutputToggle &&
-										this.props.onCollapseOutputToggle(outputLayer, e)
-									}
+									key={outputLayer._id + '_flattened'}
+									className="segment-timeline__output-layer-control__layer"
+									data-source-id={outputLayer.sourceLayers.map((i) => i._id).join(',')}
 								>
-									{outputLayer.name}
+									&nbsp;
 								</div>
-								{outputLayer.sourceLayers !== undefined &&
-									(!outputLayer.isFlattened ? (
-										outputLayer.sourceLayers
-											.filter((i) => showHiddenSourceLayers || !i.isHidden)
-											.sort((a, b) => a._rank - b._rank)
-											.map((sourceLayer, index, array) => {
-												return (
-													<div
-														key={sourceLayer._id}
-														className="segment-timeline__output-layer-control__layer"
-														data-source-id={sourceLayer._id}
-													>
-														{array.length === 1 || sourceLayer.name === outputLayer.name ? '\xa0' : sourceLayer.name}
-													</div>
-												)
-											})
-									) : (
-										<div
-											key={outputLayer._id + '_flattened'}
-											className="segment-timeline__output-layer-control__layer"
-											data-source-id={outputLayer.sourceLayers.map((i) => i._id).join(',')}
-										>
-											&nbsp;
-										</div>
-									))}
-							</div>
-						)
-					}
-				})
-		}
+							))}
+					</div>
+				)
+			}
+		})
 	}
 
 	renderEditorialLine() {
@@ -1005,6 +1018,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 
 		const useTimeOfDayCountdowns = this.state.useTimeOfDayCountdowns
+
+		const activeOutputGroups = this.getActiveOutputGroups()
 
 		return (
 			<div
@@ -1125,7 +1140,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					)}
 				</div>
 				<div className="segment-timeline__mos-id">{this.props.segment.externalId}</div>
-				<div className="segment-timeline__output-layers">{this.renderOutputLayerControls()}</div>
+				<div className="segment-timeline__output-layers">{this.renderOutputLayerControls(activeOutputGroups)}</div>
 				<div className="segment-timeline__timeline-background" />
 				<TimelineGrid {...this.props} onResize={this.onTimelineResize} />
 				<div
@@ -1140,7 +1155,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					<div
 						className="segment-timeline__timeline"
 						key={this.props.segment._id + '-timeline'}
-						style={this.timelineStyle()}
+						style={this.timelineStyle(activeOutputGroups)}
 					>
 						<ErrorBoundary>
 							{this.renderTimeline()}

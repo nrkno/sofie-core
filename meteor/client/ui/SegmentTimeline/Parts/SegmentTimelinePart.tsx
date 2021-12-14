@@ -319,12 +319,10 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		if (this.props.relative) {
 			return {
 				width: ((partDuration / (this.props.totalSegmentDuration || 1)) * 100).toString() + '%',
-				willChange: this.state.isLive ? 'width' : undefined,
 			}
 		} else {
 			return {
 				minWidth: Math.round(partDuration * this.props.timeScale).toString() + 'px',
-				willChange: this.state.isLive ? 'minWidth' : undefined,
 			}
 		}
 	}
@@ -651,7 +649,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					{this.state.isLive && !this.props.relative && !this.props.autoNextPart && !innerPart.autoNext && (
 						<div className="segment-timeline__part__future-shade" style={this.getFutureShadeStyle()}></div>
 					)}
-					{this.renderEndOfSegment(t, innerPart, isEndOfShow, isEndOfLoopingShow)}
 					{!this.props.isBudgetGap && (
 						<div
 							className={ClassNames('segment-timeline__part__nextline', {
@@ -686,6 +683,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							)}
 						</div>
 					)}
+					{this.renderEndOfSegment(t, innerPart, isEndOfShow, isEndOfLoopingShow)}
 				</div>
 			)
 		} else {

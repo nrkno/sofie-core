@@ -137,7 +137,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 					collapsed: isCollapsed,
 					flattened: props.layer.isFlattened,
 				},
-				`layer-count-${props.sourceLayers?.length || 0}`
+				`layer-count-${props.layer.isFlattened ? 1 : props.sourceLayers?.length || 0}`
 			)}
 			data-layer-group-id={props.layer._id}
 		>
