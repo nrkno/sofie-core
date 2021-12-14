@@ -1053,6 +1053,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					onResize={this.onTimelineResize}
 					scrollLeft={this.props.scrollLeft}
 					timeScale={this.props.timeScale}
+					isLiveSegment={this.props.isLiveSegment}
+					partInstances={this.props.parts}
+					currentPartInstanceId={this.props.isLiveSegment ? this.props.playlist.currentPartInstanceId : null}
 				/>
 				<div
 					className={ClassNames('segment-timeline__timeline-container', {

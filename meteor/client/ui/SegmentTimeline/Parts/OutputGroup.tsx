@@ -70,7 +70,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 							timeScale={props.timeScale}
 							autoNextPart={props.autoNextPart}
 							liveLinePadding={props.liveLinePadding}
-							layerIndex={props.indexOffset + index}
+							layerIndex={props.indexOffset + (isCollapsed ? 0 : index)}
 							mediaPreviewUrl={props.mediaPreviewUrl}
 							followLiveLine={props.followLiveLine}
 							isLiveLine={props.isLiveLine}
@@ -137,7 +137,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 					collapsed: isCollapsed,
 					flattened: props.layer.isFlattened,
 				},
-				`layer-count-${props.layer.isFlattened ? 1 : props.sourceLayers?.length || 0}`
+				`layer-count-${props.layer.isFlattened ? 1 : isCollapsed ? 1 : props.sourceLayers?.length || 0}`
 			)}
 			data-layer-group-id={props.layer._id}
 		>
