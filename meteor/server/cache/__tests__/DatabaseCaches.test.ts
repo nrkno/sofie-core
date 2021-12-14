@@ -3,7 +3,7 @@ import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/databa
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { waitTime, protectString } from '../../../lib/lib'
 import { CacheForStudio } from '../../api/studio/cache'
-import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
+import { serializeTimelineBlob, Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 
 describe('DatabaseCaches', () => {
 	beforeEach(async () => {
@@ -31,9 +31,10 @@ describe('DatabaseCaches', () => {
 			// Insert a document:
 			cache.Timeline.insert({
 				_id: id,
-				timeline: [],
+				timelineBlob: serializeTimelineBlob([]),
 				timelineHash: protectString('insert'),
 				generated: 1234,
+				generationVersions: {} as any,
 			})
 			cache.Timeline.update(id, { $set: { timelineHash: protectString('insertthenupdate') } })
 
@@ -103,9 +104,10 @@ describe('DatabaseCaches', () => {
 			// Insert a document:
 			cache.Timeline.insert({
 				_id: id,
-				timeline: [],
+				timelineBlob: serializeTimelineBlob([]),
 				timelineHash: protectString('insert'),
 				generated: 1234,
+				generationVersions: {} as any,
 			})
 			const deferFcn0 = jest.fn(() => {
 				expect(Timeline.findOne(id)).toBeFalsy()
@@ -207,9 +209,10 @@ describe('DatabaseCaches', () => {
 				// Insert a document:
 				cache.Timeline.insert({
 					_id: id,
-					timeline: [],
+					timelineBlob: serializeTimelineBlob([]),
 					timelineHash: protectString('insert'),
 					generated: 1234,
+					generationVersions: {} as any,
 				})
 				cache.Timeline.update(id, { $set: { timelineHash: protectString('insertthenupdate') } })
 

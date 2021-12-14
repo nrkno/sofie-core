@@ -15,6 +15,7 @@ import { ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
+import { StudioLight } from './optimizations'
 
 export interface MappingsExt {
 	[layerName: string]: MappingExt
@@ -136,7 +137,7 @@ export interface ResultingMappingRoute {
 	remapping?: Partial<MappingExt>
 }
 
-export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
+export function getActiveRoutes(studio: StudioLight): ResultingMappingRoutes {
 	const routes: ResultingMappingRoutes = {
 		existing: {},
 		inserted: [],
@@ -241,6 +242,12 @@ export function routeExpectedPackages(
 	// Route the mappings
 	const routes = getActiveRoutes(studio)
 	return getRoutedMappings(mappingsWithPackages, routes)
+}
+
+export interface RoutedMappings {
+	_id: StudioId
+	mappingsHash: MappingsHash | undefined
+	mappings: { [layerName: string]: MappingExt }
 }
 
 export type Studio = DBStudio

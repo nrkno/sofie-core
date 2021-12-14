@@ -31,6 +31,7 @@ import deepExtend from 'deep-extend'
 import { logger } from '../logging'
 import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedPackages'
 import { PartInstance } from '../../lib/collections/PartInstances'
+import { StudioLight } from '../../lib/collections/optimizations'
 /*
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
  */
@@ -442,7 +443,7 @@ enum Priorities {
 }
 
 function generateExpectedPackages(
-	studio: Studio,
+	studio: StudioLight,
 	filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 	routedMappingsWithPackages: MappingsExtWithPackage,
 	priority: Priorities

@@ -163,7 +163,7 @@ export const App = translateWithTracker(() => {
 				document.querySelector('.rundown.active') === null
 			) {
 				// forceReload is marked as deprecated, but it's still usable
-				// tslint:disable-next-line
+				// @ts-ignore
 				setTimeout(() => window.location.reload(true))
 			}
 		}

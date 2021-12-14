@@ -28,6 +28,7 @@ import { profiler } from './api/profiler'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
 import { StatusCode } from '../lib/api/systemStatus'
+import { fetchShowStyleBasesLight, fetchStudiosLight } from '../lib/collections/optimizations'
 
 export { PackageInfo }
 
@@ -77,7 +78,7 @@ function initializeCoreSystem() {
 		queueCheckBlueprintsConfig()
 	}
 
-	const blueprintsCursor = Blueprints.find({})
+	const blueprintsCursor = Blueprints.find({}, { fields: { code: 0 } })
 	blueprintsCursor.observeChanges({
 		added: observeBlueprintChanges,
 		changed: observeBlueprintChanges,
@@ -111,6 +112,7 @@ function initializeCoreSystem() {
 let lastDatabaseVersionBlueprintIds: { [id: string]: true } = {}
 function checkDatabaseVersions() {
 	// Core system
+	logger.debug('checkDatabaseVersions...')
 
 	const databaseSystem = getCoreSystem()
 	if (!databaseSystem) {
@@ -126,8 +128,15 @@ function checkDatabaseVersions() {
 
 		// Blueprints:
 		const blueprintIds: { [id: string]: true } = {}
-		Blueprints.find().forEach((blueprint) => {
-			if (blueprint.code) {
+		Blueprints.find(
+			{},
+			{
+				fields: {
+					code: 0, // Optimization, reduce bandwidth because the .code property is large
+				},
+			}
+		).forEach((blueprint) => {
+			if (blueprint.hasCode) {
 				blueprintIds[unprotectString(blueprint._id)] = true
 
 				// @ts-ignore
@@ -144,7 +153,7 @@ function checkDatabaseVersions() {
 				}
 
 				const studioIds: { [studioId: string]: true } = {}
-				ShowStyleBases.find({
+				fetchShowStyleBasesLight({
 					blueprintId: blueprint._id,
 				}).forEach((showStyleBase) => {
 					if (o.statusCode === StatusCode.GOOD) {
@@ -158,7 +167,7 @@ function checkDatabaseVersions() {
 					}
 
 					// TODO - is this correct for the current relationships? What about studio blueprints?
-					Studios.find({
+					fetchStudiosLight({
 						supportedShowStyleBase: showStyleBase._id,
 					}).forEach((studio) => {
 						if (!studioIds[unprotectString(studio._id)]) {
@@ -188,10 +197,11 @@ function checkDatabaseVersions() {
 		})
 		lastDatabaseVersionBlueprintIds = blueprintIds
 	}
+	logger.debug('checkDatabaseVersions done!')
 }
 function onCoreSystemChanged() {
 	checkDatabaseVersions()
-	updateLoggerLevel()
+	updateLoggerLevel(false)
 }
 
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -241,6 +251,7 @@ function queueCheckBlueprintsConfig() {
 
 let lastBlueprintConfigIds: { [id: string]: true } = {}
 function checkBlueprintsConfig() {
+	logger.debug('checkBlueprintsConfig start')
 	waitForPromise(
 		pushWorkToQueue('checkBlueprintsConfig', 'checkBlueprintsConfig', async () => {
 			const blueprintIds: { [id: string]: true } = {}
@@ -290,6 +301,7 @@ function checkBlueprintsConfig() {
 			lastBlueprintConfigIds = blueprintIds
 		})
 	)
+	logger.debug('checkBlueprintsConfig done!')
 }
 function setBlueprintConfigStatus(systemStatusId: string, diff: string[], studioId?: StudioId) {
 	if (diff && diff.length > 0) {
@@ -366,7 +378,7 @@ function startupMessage() {
 }
 
 function startInstrumenting() {
-	if (process.env.JEST_WORKER_ID) {
+	if (Meteor.isTest) {
 		return
 	}
 
@@ -395,19 +407,21 @@ function startInstrumenting() {
 		})
 	}
 }
-function updateLoggerLevel() {
+function updateLoggerLevel(startup: boolean) {
 	const coreSystem = getCoreSystem()
 
 	if (coreSystem) {
-		setLogLevel(coreSystem.logLevel || LogLevel.SILLY)
+		setLogLevel(coreSystem.logLevel || LogLevel.SILLY, startup)
+	} else {
+		logger.error('updateLoggerLevel: CoreSystem not found')
 	}
 }
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		startupMessage()
+		updateLoggerLevel(true)
 		initializeCoreSystem()
 		startInstrumenting()
-		updateLoggerLevel()
 	}
 })

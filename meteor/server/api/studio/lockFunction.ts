@@ -47,11 +47,14 @@ export async function runStudioOperationWithCache<T>(
 	return runStudioOperationWithLock(context, studioId, priority, async () => {
 		const cache = await CacheForStudio.create(studioId)
 
-		const res = await fcn(cache)
-
-		await cache.saveAllToDatabase()
-
-		return res
+		try {
+			const res = await fcn(cache)
+			await cache.saveAllToDatabase()
+			return res
+		} catch (err) {
+			cache.discardChanges()
+			throw err
+		}
 	})
 }
 

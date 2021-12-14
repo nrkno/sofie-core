@@ -6,6 +6,7 @@ import {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	ISyncIngestUpdateToPartInstanceContext,
+	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
@@ -29,7 +30,7 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../cache/CacheCollection'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
-import { INoteBase, NoteType } from '../../../../lib/api/notes'
+import { INoteBase } from '../../../../lib/api/notes'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
@@ -71,7 +72,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.ERROR,
+				type: NoteSeverity.ERROR,
 				message: {
 					key: message,
 					args: params,
@@ -84,7 +85,21 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.WARNING,
+				type: NoteSeverity.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteSeverity.INFO,
 				message: {
 					key: message,
 					args: params,
@@ -116,7 +131,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		// filter the submission to the allowed ones
 		const piece = modifiedPiece
 			? postProcessPieces(
-					this,
 					[
 						{
 							...modifiedPiece,
@@ -147,7 +161,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceSampleKeys)
 
 		const piece = postProcessPieces(
-			this,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
 			this.partInstance.rundownId,
@@ -188,7 +201,6 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
 			updatedPiece.content.timelineObjects = postProcessTimelineObjects(
-				this,
 				pieceInstance.piece._id,
 				this.showStyleCompound.blueprintId,
 				updatedPiece.content.timelineObjects,

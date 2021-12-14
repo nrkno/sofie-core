@@ -9,7 +9,7 @@ import { StatusCode } from './status'
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ExpectedPackage {
-	export type Any = ExpectedPackageMediaFile | ExpectedPackageQuantelClip
+	export type Any = ExpectedPackageMediaFile | ExpectedPackageQuantelClip | ExpectedPackageJSONData
 
 	export enum PackageType {
 		MEDIA_FILE = 'media_file',

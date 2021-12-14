@@ -36,7 +36,7 @@ describe('systemStatus', () => {
 
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 
-		// Intial expected status is BAD, because the databaseVersion doesn't match and systemTime is wrong
+		// Intial expected status is BAD, because the databaseVersion doesn't match
 		const expectedStatus0 = StatusCode.BAD
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
@@ -44,34 +44,6 @@ describe('systemStatus', () => {
 		})
 		expect(result0.checks && result0.checks.length).toBeGreaterThan(0)
 
-		const systemTimeCheck = result0.checks && result0.checks.find((p) => p.description === 'systemTime')
-		expect(systemTimeCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.GOOD),
-		})
-		const databaseVersionCheck = result0.checks && result0.checks.find((p) => p.description === 'databaseVersion')
-		expect(databaseVersionCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.BAD),
-		})
-	})
-	testInFiber('getSystemStatus: after time sync', () => {
-		// simulate time sync OK
-		setSystemStatus('systemTime', {
-			statusCode: StatusCode.GOOD,
-			messages: [`NTP-time accuracy (standard deviation): ${Math.floor(0 * 10) / 10} ms`],
-		})
-
-		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
-
-		// Intial expected status is BAD, because the databaseVersion doesn't match
-		const expectedStatus0 = StatusCode.BAD
-		expect(result0).toMatchObject({
-			status: status2ExternalStatus(expectedStatus0),
-			_status: expectedStatus0,
-		})
-		const systemTimeCheck = result0.checks && result0.checks.find((p) => p.description === 'systemTime')
-		expect(systemTimeCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.GOOD),
-		})
 		const databaseVersionCheck = result0.checks && result0.checks.find((p) => p.description === 'databaseVersion')
 		expect(databaseVersionCheck).toMatchObject({
 			status: status2ExternalStatus(StatusCode.BAD),
@@ -86,16 +58,11 @@ describe('systemStatus', () => {
 
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 
-		// Expected status is GOOD, because the databaseVersion maches and the systemTime is synced
+		// Expected status is GOOD, because the databaseVersion matches
 		const expectedStatus0 = StatusCode.GOOD
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
 			_status: expectedStatus0,
-		})
-
-		const systemTimeCheck = result0.checks && result0.checks.find((p) => p.description === 'systemTime')
-		expect(systemTimeCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.GOOD),
 		})
 		const databaseVersionCheck = result0.checks && result0.checks.find((p) => p.description === 'databaseVersion')
 		expect(databaseVersionCheck).toMatchObject({

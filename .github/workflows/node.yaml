@@ -16,6 +16,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
@@ -41,6 +45,10 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
@@ -61,27 +69,6 @@ jobs:
         env:
           CI: true
 
-  validate-prod-dependencies-core:
-    name: Validate Core production dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/setup-meteor
-      - name: restore node_modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
-      - name: Validate production dependencies for vulnerabilities and compatible licenses
-        run: |
-          yarn
-          cd meteor
-          meteor npm run validate:prod-dependencies
-        env:
-          CI: true
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
     name: Build Core and publish docker image
@@ -118,6 +105,11 @@ jobs:
           else
             echo "Skipping docker build"
           fi
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        if: ${{ steps.image-tags.outputs.images }}
+        with:
+          node-version: 12.x
       - uses: ./.github/actions/setup-meteor
         if: ${{ steps.image-tags.outputs.images }}
       - name: Prepare Environment
@@ -206,6 +198,11 @@ jobs:
           else
             echo "Skipping docker build"
           fi
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        if: ${{ steps.image-tags.outputs.images }}
+        with:
+          node-version: 12.x
       - name: Build
         if: ${{ steps.image-tags.outputs.images }}
         run: |
@@ -284,7 +281,7 @@ jobs:
       fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
-        node-version: [12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     # Gateways dont support node 10. but no tests to run anyway :)
     # if: "!(endsWith(matrix.package-name, 'gateway') & matrix.node-version == '10.x')"
@@ -316,8 +313,8 @@ jobs:
         env:
           CI: true
 
-  typedoc-libs:
-    name: Generate Libs Typedoc
+  publish-docs:
+    name: Publish Docs
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
@@ -330,25 +327,30 @@ jobs:
           node-version: 12.x
       - name: Prepare Environment
         run: |
-          cd packages
+          cd packages 
           yarn install
           yarn build
+        env:
+          CI: true
+      - name: Run docusaurus
+        run: |
+          cd packages/documentation
+          yarn docs:build
         env:
           CI: true
       - name: Run typedoc
         run: |
           cd packages
-          yarn docs
+          yarn docs:typedoc
+          cp docs documentation/build/typedoc -R
         env:
           CI: true
-      # - name: Publish
-      #   # only run for release tags
-      #   # TODO - we should only do this if the latest release
-      #   if: contains(github.ref, 'refs/tags/')
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./packages/docs
+      - name: Publish
+        if: github.ref == 'refs/heads/master' # always publish for just the master branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./packages/documentation/build
 
   release-libs:
     name: Release Lib
@@ -423,70 +425,5 @@ jobs:
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
-        env:
-          CI: true
-
-  validate-prod-dependencies-packages:
-    name: Validate Package production dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-
-    strategy:
-      fail-fast: false
-      matrix:
-        package-name:
-          [
-            blueprints-integration,
-            server-core-integration,
-            playout-gateway,
-            mos-gateway,
-          ]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - name: Prepare Environment
-        run: |
-          cd packages
-          yarn install
-        env:
-          CI: true
-      - name: Validate production dependencies
-        run: |
-          cd packages/${{ matrix.package-name }}
-          if ! git log --format=oneline -n 1 | grep -q "\[ignore-audit\]"; then
-            yarn validate:dependencies
-          else
-            echo "Skipping audit"
-          fi
-        env:
-          CI: true
-
-  validate-all-dependencies-packages:
-    name: Validate all Package dependencies
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 15
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - name: Prepare Environment
-        run: |
-          cd packages
-          yarn install
-        env:
-          CI: true
-      - name: Validate production dependencies
-        run: |
-          cd packages
-          yarn validate:dependencies
         env:
           CI: true

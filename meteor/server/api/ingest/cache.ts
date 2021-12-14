@@ -53,7 +53,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	>
 
 	public get RundownId() {
-		return this.Rundown.doc?._id ?? getRundownId(this.Studio.doc, this.RundownExternalId)
+		return this.Rundown.doc?._id ?? getRundownId(this.Studio.doc._id, this.RundownExternalId)
 	}
 
 	private constructor(

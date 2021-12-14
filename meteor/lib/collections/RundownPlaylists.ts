@@ -22,6 +22,7 @@ import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 import { PieceInstanceInfiniteId } from './PieceInstances'
 import { ReadonlyDeep } from 'type-fest'
+import { fetchStudioLight, StudioLight } from './optimizations'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
@@ -195,6 +196,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			return studio
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
+	getStudioLight(): StudioLight {
+		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
+		const studio = fetchStudioLight(this.studioId)
+		if (studio) {
+			return studio
+		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
+	}
 	/** Returns all segments joined with their rundowns in their correct oreder for this RundownPlaylist */
 	getRundownsAndSegments(
 		selector?: MongoQuery<DBSegment>,
@@ -210,6 +218,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				playlistId: 1,
 				timing: 1,
 				showStyleBaseId: 1,
+				endOfRundownIsShowBreak: 1,
 			},
 		})
 		const segments = Segments.find(

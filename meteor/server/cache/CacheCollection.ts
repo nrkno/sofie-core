@@ -250,6 +250,14 @@ export class DbCacheWriteCollection<
 		if (span) span.end()
 		return removedIds
 	}
+
+	/**
+	 * Update some documents
+	 * @param selector Filter function or mongo query
+	 * @param modifier
+	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
+	 * @returns All the ids that matched the selector
+	 */
 	update(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface> = {},
@@ -282,15 +290,16 @@ export class DbCacheWriteCollection<
 			// ensure no properties are 'undefined'
 			deleteAllUndefinedProperties(newDoc)
 
-			if (forceUpdate || !_.isEqual(doc, newDoc)) {
-				const docEntry = this.documents.get(_id)
-				if (!docEntry) {
-					throw new Meteor.Error(
-						500,
-						`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
-					)
-				}
+			const docEntry = this.documents.get(_id)
+			if (!docEntry) {
+				throw new Meteor.Error(
+					500,
+					`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
+				)
+			}
 
+			const hasPendingChanges = docEntry.inserted || docEntry.updated // If the doc is already dirty, then there is no point trying to diff it
+			if (forceUpdate || hasPendingChanges || !_.isEqual(doc, newDoc)) {
 				docEntry.document = this._transform(newDoc)
 				docEntry.updated = true
 			}

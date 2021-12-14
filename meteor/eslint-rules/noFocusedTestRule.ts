@@ -39,7 +39,7 @@ export default createRule({
   name: __filename,
   meta: {
     docs: {
-      category: 'Best Practices',
+      // category: 'Best Practices',
       description: 'Disallow focused tests',
       recommended: 'error',
       suggestion: true,
@@ -50,6 +50,7 @@ export default createRule({
     },
     schema: [],
     type: 'suggestion',
+    hasSuggestions: true,
   },
   defaultOptions: [],
   create: context => ({

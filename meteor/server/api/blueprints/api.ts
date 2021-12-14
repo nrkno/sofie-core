@@ -23,6 +23,7 @@ import { Credentials, isResolvedCredentials } from '../../security/lib/credentia
 import { Settings } from '../../../lib/Settings'
 import { upsertBundles } from '../translationsBundles'
 import { fsMakeDir, fsReadFile, fsWriteFile } from '../../lib'
+import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,
@@ -39,6 +40,7 @@ export async function insertBlueprint(
 		_id: getRandomId(),
 		organizationId: organizationId,
 		name: name || 'New Blueprint',
+		hasCode: false,
 		code: '',
 		modified: getCurrentTime(),
 		created: getCurrentTime(),
@@ -85,7 +87,7 @@ export async function uploadBlueprint(
 	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
-	const blueprint = await Blueprints.findOneAsync(blueprintId)
+	const blueprint = await fetchBlueprintLight(blueprintId)
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
@@ -127,13 +129,13 @@ export async function internalUploadBlueprint(
 	organizationId?: OrganizationId | null
 ): Promise<Blueprint> {
 	organizationId = organizationId || null
-	const blueprint = await Blueprints.findOneAsync(blueprintId)
+	const blueprint = await fetchBlueprintLight(blueprintId)
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
 export async function innerUploadBlueprint(
 	organizationId: OrganizationId | null,
-	blueprint: Blueprint | undefined,
+	blueprint: BlueprintLight | undefined,
 	blueprintId: BlueprintId,
 	body: string,
 	blueprintName?: string,
@@ -145,6 +147,7 @@ export async function innerUploadBlueprint(
 		name: blueprint ? blueprint.name : blueprintName || unprotectString(blueprintId),
 		created: blueprint ? blueprint.created : getCurrentTime(),
 		code: body,
+		hasCode: !!body,
 		modified: getCurrentTime(),
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],
@@ -250,7 +253,7 @@ async function assignSystemBlueprint(methodContext: MethodContext, blueprintId?:
 	if (blueprintId !== undefined && blueprintId !== null) {
 		check(blueprintId, String)
 
-		const blueprint = await Blueprints.findOneAsync(blueprintId)
+		const blueprint = await fetchBlueprintLight(blueprintId)
 		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
 
 		if (blueprint.organizationId)

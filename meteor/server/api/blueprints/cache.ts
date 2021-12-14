@@ -195,7 +195,14 @@ Meteor.startup(() => {
 			delete blueprintManifestCache[unprotectString(id)]
 			delete blueprintDocCache[unprotectString(id)]
 		}
-		Blueprints.find({}).observeChanges({
+		Blueprints.find(
+			{},
+			{
+				// Optimize: don't retriece the .code, since that is large,
+				// this instead relies on the .modified property being updated whenever the .code changes.
+				fields: { code: 0 },
+			}
+		).observeChanges({
 			added: (id: BlueprintId) => {
 				triggerBlueprintChanged(id)
 			},

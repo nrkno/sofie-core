@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.37.0](///compare/v1.37.0-in-testing.13...v1.37.0) (2021-12-08)
+
+
+### Features
+
+* Action Triggers tag filter suggestions ([#612](undefined/undefined/undefined/issues/612)) ea82cc5
+* import docs to repo from gitbook ([#547](undefined/undefined/undefined/issues/547)) 152f988
+
+
+### Bug Fixes
+
+* add missing expectedPackages piping d5d93d2
+* Add support for some more Package Manager statuses ada6e17
+* add warning to evaluation form about commands not being sent to Sofie while typing b0f8df4
+* bug fix: Package status in rundownView didn't work 918b882
+* bug fix: some notifications didn't get any messages, resulting in  "There is an unspecified problem" messages 4743b77
+* bug that prevented freezes, blacks and scenes to show for packages 2b31232
+* ci using wrong version of node 6500243
+* don't display freeze/black frames with 0 duration cd03b64
+* explicit handling of the media situations "not checked yet" vs "checked and not found" 3348026
+* IRundownTimingEventContext.getFirstPartInstanceInRundown ignored untimed parts unless asked to include them 00a109f
+* meteor using wrong version of node d8b519d
+* minor fixes to Package Manager status GUI 9626c3f
+* only use public accessors for previews and thumbnails 08130eb
+* preventDefault on down Control+DigitX 116eb36
+* resolvedPieces feeding incorrect piece times into blueprints for adlib infinites 0386af2
+* retry ingest triggered timeline updates if they are skipped from no part timing being received fc52a6f
+* treat "no package" and "package not found" the same da93ee0
+* typo in selector f49132e
+* update keyframe ids when routing objects with routesets ebe461d
+
 ## [1.37.0-in-testing.13](///compare/v1.37.0-testing.12...v1.37.0-in-testing.13) (2021-11-02)
 
 

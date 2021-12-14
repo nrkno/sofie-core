@@ -40,6 +40,7 @@ jest.mock('../../playout/timeline')
 import { updateTimeline } from '../../playout/timeline'
 import { AdLibActionId } from '../../../../lib/collections/AdLibActions'
 import { protectString } from '../../../../lib/lib'
+import { supressLogging } from '../../../../__mocks__/helpers/lib'
 type TupdateTimeline = jest.MockedFunction<typeof updateTimeline>
 const updateTimelineMock = updateTimeline as TupdateTimeline
 
@@ -124,9 +125,17 @@ describe('Playout API', () => {
 					),
 				},
 			})
-			await expect(
-				ServerPlayoutAPI.executeAction(DEFAULT_ACCESS(playlistId), playlistId, actionDocId, actionId, userData)
-			).rejects.toThrowError('action execution threw')
+			await supressLogging(async () => {
+				await expect(
+					ServerPlayoutAPI.executeAction(
+						DEFAULT_ACCESS(playlistId),
+						playlistId,
+						actionDocId,
+						actionId,
+						userData
+					)
+				).rejects.toThrowError('action execution threw')
+			})
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
