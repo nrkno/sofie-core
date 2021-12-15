@@ -36,7 +36,7 @@ export interface ABSessionInfo {
 	partInstanceIds?: Array<PartInstanceId>
 }
 
-export interface DBRundownPlaylist {
+export interface RundownPlaylist {
 	_id: RundownPlaylistId
 	/** External ID (source) of the playlist */
 	externalId: string
@@ -98,7 +98,8 @@ export interface DBRundownPlaylist {
 	trackedAbSessions?: ABSessionInfo[]
 }
 
-export type RundownPlaylist = DBRundownPlaylist
+/** Note: Use RundownPlaylist instead */
+export type DBRundownPlaylist = RundownPlaylist
 
 /**
  * Direct database accessors for the RundownPlaylist
