@@ -165,7 +165,6 @@ export async function deactivateRundownPlaylistInner(cache: CacheForPlayout): Pr
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
-			nextSegmentId: undefined,
 		},
 		$unset: {
 			activationId: 1,
