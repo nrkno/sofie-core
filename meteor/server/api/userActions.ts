@@ -165,28 +165,6 @@ export async function setNextSegment(
 	if (nextSegmentId) {
 		nextSegment = (await Segments.findOneAsync(nextSegmentId)) || null
 		if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
-
-		const rundownIds = playlist.getRundownIDs()
-		if (rundownIds.indexOf(nextSegment.rundownId) === -1) {
-			throw new Meteor.Error(
-				404,
-				`Segment "${nextSegmentId}" does not belong to Rundown Playlist "${rundownPlaylistId}"!`
-			)
-		}
-
-		const partsInSegment = await Parts.findFetchAsync({
-			rundownId: nextSegment.rundownId,
-			segmentId: nextSegment._id,
-		})
-		const firstValidPartInSegment = partsInSegment.find((p) => p.isPlayable())
-
-		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
-
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-		if (!currentPartInstance || !nextPartInstance || nextPartInstance.segmentId !== currentPartInstance.segmentId) {
-			// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart and clear previous nextSegmentId
-			return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, firstValidPartInSegment._id, true, 0, true)
-		}
 	}
 
 	return ServerPlayoutAPI.setNextSegment(access, rundownPlaylistId, nextSegmentId)
