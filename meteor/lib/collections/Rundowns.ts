@@ -32,7 +32,7 @@ export interface RundownImportVersions {
 /** A string, identifying a Rundown */
 export type RundownId = ProtectedString<'RundownId'>
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface DBRundown
+export interface Rundown
 	extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
 	_id: RundownId
 	/** ID of the organization that owns the rundown */
@@ -78,7 +78,9 @@ export interface DBRundown
 	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
 	baselineModifyHash?: string
 }
-export type Rundown = DBRundown
+
+/** Note: Use Rundown instead */
+export type DBRundown = Rundown
 
 /**
  * Direct database accessors for the Rundown
