@@ -11,7 +11,7 @@
 		"install:meteor": "cd meteor && meteor --version && meteor yarn install",
 		"install:packages": "cd packages && yarn install",
 		"start": "yarn install && yarn dev",
-		"dev": "yarn build:packages && yarn meteor:run",
+		"dev": "node ./scripts/run.js",
 		"build:packages": "cd packages && yarn build",
 		"test:packages": "cd packages && yarn test",
 		"lint:packages": "cd packages && yarn lint",
@@ -28,6 +28,7 @@
 		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn lint:packages && yarn lint:meteor && yarn test:packages && yarn test:meteor"
 	},
 	"devDependencies": {
+		"concurrently": "^6.4.0",
 		"rimraf": "^3.0.2"
 	}
 }

@@ -1,5 +1,5 @@
 import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from './lib'
 
 // Mock 't' function for i18next to find the keys
 function t(key: string): string {
@@ -124,6 +124,6 @@ export class UserError {
 	}
 
 	static isUserError(e: any): e is UserError {
-		return 'rawError' in e && 'message' in e && 'key' in p
+		return 'rawError' in e && 'message' in e && 'key' in e
 	}
 }
