@@ -8,6 +8,7 @@ import { PieceUi } from '../../../SegmentContainer/withResolvedSegment'
 import { CameraThumbnailRenderer } from './CameraThumbnailRenderer'
 import { DefaultThumbnailRenderer } from './DefaultThumbnailRenderer'
 import { GraphicsThumbnailRenderer } from './GraphicsThumbnailRenderer'
+import { LocalThumbnailRenderer } from './LocalThumbnailRenderer'
 import { SplitsThumbnailRenderer } from './SplitsThumbnailRenderer'
 import { VTThumbnailRenderer } from './VTThumbnailRenderer'
 
@@ -40,8 +41,9 @@ export default function renderThumbnail(props: IProps) {
 		case SourceLayerType.GRAPHICS:
 		case SourceLayerType.LOWER_THIRD:
 			return GraphicsThumbnailRenderer(props)
-		case SourceLayerType.AUDIO:
 		case SourceLayerType.LOCAL:
+			return LocalThumbnailRenderer(props)
+		case SourceLayerType.AUDIO:
 		case SourceLayerType.SCRIPT:
 		case SourceLayerType.TRANSITION:
 		case SourceLayerType.UNKNOWN:

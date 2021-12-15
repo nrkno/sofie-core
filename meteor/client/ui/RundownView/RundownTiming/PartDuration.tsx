@@ -24,7 +24,7 @@ export const PartDisplayDuration = withTiming<IPartDurationProps, {}>((props) =>
 	filter: (context) => {
 		return context.partExpectedDurations && context.partExpectedDurations[unprotectString(props.part.partId)]
 	},
-}))(function SegmentDuration(props: WithTiming<IPartDurationProps>) {
+}))(function PartDisplayDuration(props: WithTiming<IPartDurationProps>) {
 	let duration: number | undefined = undefined
 	let budget = 0
 	let playedOut = 0

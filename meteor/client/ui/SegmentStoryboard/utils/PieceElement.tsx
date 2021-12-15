@@ -1,10 +1,8 @@
 import React from 'react'
-import classNames from 'classnames'
-import { ISourceLayer, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PieceExtended } from '../../../../lib/Rundown'
-import { RundownUtils } from '../../../lib/rundown'
 import { PartId } from '../../../../lib/collections/Parts'
-import { RundownAPI } from '../../../../lib/api/rundown'
+import { pieceUiClassNames } from '../../../lib/ui/pieceUiClassNames'
 
 interface IProps {
 	className: string
@@ -34,34 +32,9 @@ export const PieceElement = React.forwardRef<HTMLDivElement, React.PropsWithChil
 	}: React.PropsWithChildren<IProps>,
 	ref
 ) {
-	const typeClass = layer?.type ? RundownUtils.getSourceLayerClassName(layer?.type) : ''
-
-	const innerPiece = piece.instance.piece
-
 	return (
 		<div
-			className={classNames(className, typeClass, {
-				'super-infinite':
-					innerPiece.lifespan !== PieceLifespan.WithinPart &&
-					innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
-					innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd,
-				'infinite-starts':
-					innerPiece.lifespan !== PieceLifespan.WithinPart &&
-					innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
-					innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd &&
-					piece.instance.piece.startPartId === partId,
-
-				'not-in-vision': piece.instance.piece.notInVision,
-
-				'source-missing':
-					innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-					innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
-				'source-broken': innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-				'unknown-state': innerPiece.status === RundownAPI.PieceStatusCode.UNKNOWN,
-				disabled: piece.instance.disabled,
-
-				'invert-flash': highlight,
-			})}
+			className={pieceUiClassNames(piece, className, layer?.type, partId, highlight, true)}
 			data-obj-id={piece.instance._id}
 			onPointerEnter={onPointerEnter}
 			onPointerLeave={onPointerLeave}

@@ -16,8 +16,7 @@ export function CameraThumbnailRenderer({ pieceInstance }: IProps) {
 				{isRM
 					? pieceInstance.instance.piece.name
 					: pieceInstance.sourceLayer?.abbreviation
-					? `${pieceInstance.sourceLayer?.abbreviation}${cameraContent.studioLabel}` ||
-					  pieceInstance.instance.piece.name
+					? `${pieceInstance.sourceLayer?.abbreviation}${cameraContent.studioLabel}`
 					: pieceInstance.instance.piece.name}
 			</div>
 		</>

@@ -4,7 +4,7 @@ import { IProps } from './ThumbnailRendererFactory'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPhotoVideo } from '@fortawesome/free-solid-svg-icons'
 
-export function CameraThumbnailRenderer({ pieceInstance }: IProps) {
+export function LocalThumbnailRenderer({ pieceInstance }: IProps) {
 	const localContent = pieceInstance.instance.piece.content as EvsContent
 
 	const { color } = localContent

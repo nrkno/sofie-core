@@ -327,7 +327,7 @@ export function useTracker<T, K extends undefined | T = undefined>(
 
 /**
  * A Meteor Subscription hook that allows using React Functional Components and the Hooks API with Meteor subscriptions.
- * Subscriptions will be torn down 100ms after unmounting the component.
+ * Subscriptions will be torn down 1000ms after unmounting the component.
  *
  * @export
  * @param {PubSub} sub The subscription to be subscribed to

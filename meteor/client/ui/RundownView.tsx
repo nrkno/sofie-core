@@ -1713,8 +1713,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 
 			if (
-				(this.props.playlist && prevProps.playlist === undefined) ||
-				(this.props.playlist && prevProps.playlist && this.props.playlist._id !== prevProps.playlist._id)
+				this.props.playlist &&
+				(prevProps.playlist === undefined || this.props.playlist._id !== prevProps.playlist._id)
 			) {
 				this.setState({
 					segmentViewModes: this.props.playlist?._id
@@ -2036,7 +2036,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		renderSegmentComponent(
-			index: number,
 			segment: DBSegment,
 			rundownAndSegments: MatchedSegment,
 			rundownPlaylist: RundownPlaylist,
