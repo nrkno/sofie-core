@@ -2165,7 +2165,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											width="auto"
 										>
 											{this.renderSegmentComponent(
-												segmentIndex,
 												segment,
 												rundownAndSegments,
 												this.props.playlist,
