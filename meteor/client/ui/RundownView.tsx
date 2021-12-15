@@ -2074,6 +2074,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 														this.state.rundownViewLayout?.countdownToSegmentRequireLayers
 													}
 													fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
+													currentPartInstance={this.props.currentPartInstance}
+													nextPartInstance={this.props.nextPartInstance}
 												/>
 											</VirtualElement>
 										</ErrorBoundary>

@@ -116,6 +116,8 @@ interface IProps {
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined
 	fixedSegmentDuration: boolean | undefined
+	currentPartInstance: PartInstance | undefined
+	nextPartInstance: PartInstance | undefined
 }
 interface IState {
 	scrollLeft: number
@@ -146,6 +148,8 @@ interface ITrackedProps {
 	budgetDuration: number | undefined
 	displayLiveLineCounter: boolean
 	showCountdownToSegment: boolean
+	/** Whether the part instance set as next is the first in the segment */
+	nextPartInstanceIsFirstInSegment: boolean
 }
 export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITrackedProps>(
 	(props: IProps) => {
@@ -164,6 +168,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				budgetDuration: undefined,
 				displayLiveLineCounter: true,
 				showCountdownToSegment: true,
+				nextPartInstanceIsFirstInSegment: false,
 			}
 		}
 
@@ -185,7 +190,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			},
 		}).fetch()
 
-		const [orderedAllPartIds, { currentPartInstance, nextPartInstance }] = slowDownReactivity(
+		const [orderedAllPartIds, { currentPartInstance, nextPartInstance }, partsInCurrentSegment] = slowDownReactivity(
 			() =>
 				[
 					memoizedIsolatedAutorun(
@@ -209,7 +214,24 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						props.playlist.currentPartInstanceId,
 						props.playlist.nextPartInstanceId
 					),
-				] as [PartId[], { currentPartInstance: PartInstance | undefined; nextPartInstance: PartInstance | undefined }],
+					memoizedIsolatedAutorun(
+						(_playlistId: RundownPlaylistId) =>
+							props.playlist
+								.getSegmentsAndPartsSync(
+									{ _id: props.segmentId },
+									{ segmentId: props.segmentId },
+									{ fields: { _id: 1 } },
+									{ fields: { _id: 1, _rank: 1 } }
+								)
+								.parts.map((p) => p._id),
+						`playlist.getPartsForSegment.${props.segmentId}`,
+						props.playlist._id
+					),
+				] as [
+					PartId[],
+					{ currentPartInstance: PartInstance | undefined; nextPartInstance: PartInstance | undefined },
+					PartId[]
+				],
 			// if the rundown isn't active, run the changes ASAP, we don't care if there's going to be jank
 			// if this is the current or next segment (will have those two properties defined), run the changes ASAP,
 			// otherwise, trigger the updates in a window of 500-2500 ms from change
@@ -309,6 +331,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			showCountdownToSegment = props.countdownToSegmentRequireLayers.some((s) => sourcelayersInSegment.includes(s))
 		}
 
+		const nextPartInstanceIsFirstInSegment =
+			!!props.nextPartInstance && partsInCurrentSegment.indexOf(props.nextPartInstance.part._id) === 0
+
 		return {
 			segmentui: o.segmentExtended,
 			parts: o.parts,
@@ -320,6 +345,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			budgetDuration,
 			displayLiveLineCounter,
 			showCountdownToSegment,
+			nextPartInstanceIsFirstInSegment,
 		}
 	},
 	(data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
@@ -958,6 +984,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		render() {
+			const isQueuedSegment =
+				this.props.playlist.nextSegmentId === this.props.segmentId || this.props.nextPartInstanceIsFirstInSegment
+
 			return (
 				(this.props.segmentui && (
 					<SegmentTimeline
@@ -981,7 +1010,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						followLiveSegments={this.props.followLiveSegments}
 						isLiveSegment={this.state.isLiveSegment}
 						isNextSegment={this.state.isNextSegment}
-						isQueuedSegment={this.props.playlist.nextSegmentId === this.props.segmentId}
+						isQueuedSegment={isQueuedSegment}
 						hasRemoteItems={this.props.hasRemoteItems}
 						hasGuestItems={this.props.hasGuestItems}
 						autoNextPart={this.state.autoNextPart}
