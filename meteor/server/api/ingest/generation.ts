@@ -17,7 +17,6 @@ import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, stringifyError, unprotectString } from '../../../lib/lib'
-import { Settings } from '../../../lib/Settings'
 import { logChanges, saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
 import { sumChanges, anythingChanged } from '../../lib/database'
@@ -269,11 +268,6 @@ export async function calculateSegmentsFromIngestData(
 					)
 				)
 			})
-
-			// If the segment has no parts, then hide it
-			if (blueprintSegment.parts.length === 0) {
-				newSegment.isHidden = true
-			}
 		}
 
 		span?.end()
@@ -676,19 +670,6 @@ export async function resolveSegmentChangesForUpdatedRundown(
 			...oldSegment,
 			orphaned: 'deleted',
 		})
-	}
-
-	if (Settings.preserveUnsyncedPlayingSegmentContents && removedSegments.length > 0) {
-		// Preserve any old content, unless the part is referenced in another segment
-		const retainSegments = new Set(removedSegments.map((s) => s._id))
-		const newPartIds = new Set(segmentChanges.parts.map((p) => p._id))
-		const oldParts = cache.Parts.findFetch((p) => retainSegments.has(p.segmentId) && !newPartIds.has(p._id))
-		segmentChanges.parts.push(...oldParts)
-
-		const oldPartIds = new Set(oldParts.map((p) => p._id))
-		segmentChanges.pieces.push(...cache.Pieces.findFetch((p) => oldPartIds.has(p.startPartId)))
-		segmentChanges.adlibPieces.push(...cache.AdLibPieces.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
-		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 	}
 
 	return { segmentChanges, removedSegments }
