@@ -9,7 +9,6 @@ import {
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
 import { Mongo } from 'meteor/mongo'
-import { isTranslatableMessage } from '../TranslatableMessage'
 import { AdLibAction, AdLibActions } from '../../collections/AdLibActions'
 import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
 import { DBPart, PartId, Parts } from '../../collections/Parts'
@@ -26,7 +25,6 @@ import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { FindOptions, MongoSelector } from '../../typings/meteor'
 import { DBRundown, RundownId, Rundowns } from '../../collections/Rundowns'
-import _ from 'underscore'
 import { sortAdlibs } from '../../Rundown'
 import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reactiveDataHelper'
 import { SegmentId, Segments, DBSegment } from '../../collections/Segments'
@@ -601,7 +599,7 @@ export function compileAdLibFilter(
 		}
 
 		{
-			let skip = adLibPieceTypeFilter.skip // TODO: should this be adLibActionTypeFilter  ??
+			let skip = adLibActionTypeFilter.skip
 			const currentNextOverride: MongoSelector<AdLibActionType> = {}
 
 			if (partFilter) {
@@ -615,7 +613,7 @@ export function compileAdLibFilter(
 			}
 
 			if (!skip) {
-				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true)
+				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === true)
 					rundownBaselineAdLibActions = RundownBaselineAdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
@@ -633,7 +631,7 @@ export function compileAdLibFilter(
 							},
 						}
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
-				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
+				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === false)
 					adLibActions = AdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
