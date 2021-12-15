@@ -244,11 +244,6 @@ export async function calculateSegmentsFromIngestData(
 				})
 				res.parts.push(part)
 
-				// This ensures that it doesn't accidently get played while hidden
-				if (blueprintSegment.segment.isHidden) {
-					part.invalid = true
-				}
-
 				// Update pieces
 				res.pieces.push(
 					...postProcessPieces(

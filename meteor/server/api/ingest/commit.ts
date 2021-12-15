@@ -200,17 +200,45 @@ export async function CommitIngestOperation(
 						newPlaylistId
 					)
 
-					// Do the segment removals
-					if (data.removedSegmentIds.length > 0) {
-						const { currentPartInstance, nextPartInstance } = newPlaylist.getSelectedPartInstances()
+					const { currentPartInstance, nextPartInstance } = newPlaylist.getSelectedPartInstances()
 
+					let aChangedSegmentIsHidden = ingestCache.Segments.findFetch({
+						_id: { $in: data.changedSegmentIds as SegmentId[] },
+					}).some((s) => s.isHidden)
+
+					// Do the segment removals
+					if (data.removedSegmentIds.length > 0 || aChangedSegmentIsHidden) {
 						const purgeSegmentIds = new Set<SegmentId>()
 						const orphanSegmentIds = new Set<SegmentId>()
 						for (const segmentId of data.removedSegmentIds) {
 							if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
 								purgeSegmentIds.add(segmentId)
 							} else {
+								logger.warn(
+									`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`
+								)
 								orphanSegmentIds.add(segmentId)
+							}
+						}
+
+						// Protect live segment from being hidden
+						for (const [segmentId, segment] of ingestCache.Segments.documents) {
+							if (segment?.document.isHidden) {
+								if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+									logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
+									ingestCache.Segments.update(segmentId, {
+										$set: { isHidden: false },
+									})
+								} else {
+									// This ensures that it doesn't accidently get played while hidden
+									ingestCache.Parts.update({ segmentId }, { $set: { invalid: true } })
+								}
+								orphanSegmentIds.add(segmentId)
+							} else if (ingestCache.Parts.findFetch({ segmentId }).length === 0) {
+								// No parts in segment, hide it
+								ingestCache.Segments.update(segmentId, {
+									$set: { isHidden: true },
+								})
 							}
 						}
 
@@ -413,7 +441,6 @@ function canRemoveSegment(
 		(nextPartInstance?.segmentId === segmentId && isTooCloseToAutonext(currentPartInstance, false))
 	) {
 		// Don't allow removing an active rundown
-		logger.warn(`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`)
 		return false
 	}
 
