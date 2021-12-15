@@ -24,7 +24,7 @@ import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PartId } from '../../../lib/collections/Parts'
+import { PartId, Parts } from '../../../lib/collections/Parts'
 import { RundownNote } from '../../../lib/api/notes'
 import {
 	PlaylistLock,
@@ -41,6 +41,9 @@ import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { Studio } from '../../../lib/collections/Studios'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { shouldRemoveOrphanedPartInstance } from './shouldRemoveOrphanedPartInstance'
+import { AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { Pieces } from '../../../lib/collections/Pieces'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 

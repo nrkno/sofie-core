@@ -6,7 +6,6 @@ import {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	ISyncIngestUpdateToPartInstanceContext,
-	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
