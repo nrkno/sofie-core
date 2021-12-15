@@ -28,7 +28,7 @@ export function protectPartInstance(partInstance: IBlueprintPartInstance): Parti
 	return partInstance as any
 }
 
-export interface DBPartInstance extends InternalIBlueprintPartInstance {
+export interface PartInstance extends InternalIBlueprintPartInstance {
 	// Temporary properties (never stored in DB):
 	/** Whether this PartInstance is a temprorary wrapping of a Part */
 	readonly isTemporary?: boolean
@@ -73,7 +73,8 @@ export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
 	duration?: Time
 }
 
-export type PartInstance = DBPartInstance
+/** Note: Use PartInstance instead */
+export type DBPartInstance = PartInstance
 
 export function wrapPartToTemporaryInstance(
 	playlistActivationId: RundownPlaylistActivationId,

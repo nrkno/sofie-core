@@ -17,7 +17,7 @@ export interface PartInvalidReason {
 	level?: NoteSeverity
 	color?: string
 }
-export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
+export interface Part extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number
@@ -38,7 +38,8 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	identifier?: string
 }
 
-export type Part = DBPart
+/** Note: Use Part instead */
+export type DBPart = Part
 
 export function isPartPlayable(part: DBPart) {
 	return !part.invalid && !part.floated
