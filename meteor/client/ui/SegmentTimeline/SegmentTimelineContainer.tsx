@@ -985,7 +985,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		render() {
 			const isQueuedSegment =
-				this.props.playlist.nextSegmentId === this.props.segmentId || this.props.nextPartInstanceIsFirstInSegment
+				this.props.playlist.nextSegmentId === this.props.segmentId ||
+				(this.props.nextPartInstanceIsFirstInSegment &&
+					this.props.currentPartInstance?.segmentId === this.props.segmentId)
 
 			return (
 				(this.props.segmentui && (
