@@ -332,7 +332,7 @@ describe('lib/lib', () => {
 		const rawDocs = ['1', '2', '3', '4', '5', '6', '7'].map((s) => ({ _id: protectString(s) }))
 
 		test('nothing', () => {
-			expect(mongoFindOptions(rawDocs)).toEqual(rawDocs)
+			expect(mongoFindOptions(rawDocs, undefined)).toEqual(rawDocs)
 			expect(mongoFindOptions(rawDocs, {})).toEqual(rawDocs)
 		})
 		test('range', () => {
