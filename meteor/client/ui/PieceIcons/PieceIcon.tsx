@@ -73,6 +73,7 @@ export const pieceIconSupportedLayers = new Set([
 	SourceLayerType.SPLITS,
 	SourceLayerType.VT,
 	SourceLayerType.CAMERA,
+	SourceLayerType.TRANSITION,
 ])
 
 export const PieceIconContainerNoSub = withTracker(
