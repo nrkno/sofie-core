@@ -295,16 +295,18 @@ export function saveTimeline(
 			selector.organizationId = studio.organizationId
 		}
 
-		UserActionsLog.update(
-			selector,
-			{
-				$set: {
-					timelineHash: newTimeline.timelineHash,
-					timelineGenerated: newTimeline.generated,
+		cache.deferAfterSave(() => {
+			UserActionsLog.update(
+				selector,
+				{
+					$set: {
+						timelineHash: newTimeline.timelineHash,
+						timelineGenerated: newTimeline.generated,
+					},
 				},
-			},
-			{ multi: false }
-		)
+				{ multi: false }
+			)
+		})
 	}
 }
 
