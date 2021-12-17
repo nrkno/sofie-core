@@ -198,14 +198,18 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		if (span) span.end()
 	}
 }
-export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase<T> {
+export interface ICacheBase<T> {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
-	defer(fcn: DeferredFunction<T>): void {
-		this._deferredFunctions.push(fcn)
-	}
+	defer: (fcn: DeferredFunction<T>) => void
 	/** Defer provided function to after cache.saveAllToDatabase().
 	 * Note that at the time of execution, the cache is no longer available.
 	 * */
+	deferAfterSave: (fcn: () => void | Promise<void>) => void
+}
+export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase<T> implements ICacheBase<T> {
+	defer(fcn: DeferredFunction<T>): void {
+		this._deferredFunctions.push(fcn)
+	}
 	deferAfterSave(fcn: () => void | Promise<void>) {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}
