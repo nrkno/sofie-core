@@ -1475,10 +1475,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						...segment,
 						pieces: filteredPieces,
 					}
-					if (filteredPieces.length) {
-						filteredUiSegmentMap.set(segment._id, filteredSegment)
-						filteredUiSegments.push(filteredSegment)
-					}
+
+					filteredUiSegmentMap.set(segment._id, filteredSegment)
+					filteredUiSegments.push(filteredSegment)
 				}
 			}
 
