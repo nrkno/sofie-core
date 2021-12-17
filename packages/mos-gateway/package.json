@@ -1,6 +1,6 @@
 {
 	"name": "mos-gateway",
-	"version": "1.37.0",
+	"version": "1.37.1-0",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
@@ -64,7 +64,7 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.37.0",
+		"@sofie-automation/server-core-integration": "1.37.1-0",
 		"mos-connection": "^1.0.3",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",

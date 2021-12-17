@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.37.1-0](///compare/v1.37.0...v1.37.1-0) (2021-12-17)
+
+
+### Bug Fixes
+
+* npm publish tag for prerelease git tags 94e132d
+* presenter screen added time after unrelated mos update ([#640](undefined/undefined/undefined/issues/640)) 7258092
+* version checks for patch release broken b64495b
+
 ## [1.37.0](///compare/v1.37.0-in-testing.13...v1.37.0) (2021-12-08)
 
 
