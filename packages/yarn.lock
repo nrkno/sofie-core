@@ -2845,23 +2845,23 @@
     url "^0.11.0"
     webpack-sources "^1.4.3"
 
-"@sofie-automation/code-standard-preset@0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-0.5.0.tgz#ab86502bae5e108f057a14b7280dadd3a2a67968"
-  integrity sha512-+DAQupGIgJnD9Zpnc+9lwucH+k0DFPpi0GQnEOIJ37Tt+ySf6HsEMWlHf5A64zgivtlL9mMP9aQ/XBgPjkAfQg==
+"@sofie-automation/code-standard-preset@0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-0.5.1.tgz#d191c6df6548ea5493bc7c795bfa1758f5c0d28f"
+  integrity sha512-1atuTLJbFrhkbCG0EXks1eeHXutdFcsmiSZh2rLDc0UE9eperQzUiYMACwrHqGDXgdcgKl7qDbZpsGknkZiQKA==
   dependencies:
-    "@typescript-eslint/eslint-plugin" "^5.2.0"
-    "@typescript-eslint/parser" "^5.2.0"
-    eslint "^8.1.0"
+    "@typescript-eslint/eslint-plugin" "^5.5.0"
+    "@typescript-eslint/parser" "^5.5.0"
+    eslint "^8.3.0"
     eslint-config-prettier "^8.3.0"
-    eslint-plugin-jest "^25.2.2"
+    eslint-plugin-jest "^25.3.0"
     eslint-plugin-node "^11.1.0"
     eslint-plugin-prettier "^4.0.0"
     husky "^7.0.4"
     license-checker "^25.0.1"
     lint-staged "^11.2.6"
-    meow "^10.1.1"
-    prettier "^2.4.1"
+    meow "^10.1.2"
+    prettier "^2.5.0"
     read-pkg-up "^9.0.0"
     shelljs "^0.8.4"
 
@@ -12846,12 +12846,13 @@ set-value@^2.0.0, set-value@^2.0.1:
     is-plain-object "^2.0.3"
     split-string "^3.0.1"
 
-set-value@^3.0.1:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/set-value/-/set-value-3.0.2.tgz#74e8ecd023c33d0f77199d415409a40f21e61b90"
-  integrity sha512-npjkVoz+ank0zjlV9F47Fdbjfj/PfXyVhZvGALWsyIYU/qrMzpi6avjKW3/7KeSU2Df3I46BrN1xOI1+6vW0hA==
+set-value@^3.0.1, set-value@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/set-value/-/set-value-4.1.0.tgz#aa433662d87081b75ad88a4743bd450f044e7d09"
+  integrity sha512-zTEg4HL0RwVrqcWs3ztF+x1vkxfm0lP+MQQFPiMJTKVceBwEV0A569Ou8l9IYQG8jOZdMVI1hGsc0tmeD2o/Lw==
   dependencies:
     is-plain-object "^2.0.4"
+    is-primitive "^3.0.1"
 
 set-value@^4.1.0:
   version "4.1.0"
