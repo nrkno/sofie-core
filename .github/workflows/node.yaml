@@ -387,7 +387,7 @@ jobs:
             PACKAGE_NAME=$(yarn info -s . name)
             PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
             THIS_VERSION=$(node -p "require('./package.json').version")
-            NPM_TAG=$(node ../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)
+            NPM_TAG=$(node ../../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)
 
             echo "Publishing $NPM_TAG"
             echo ::set-output name=tag::"$NPM_TAG"
