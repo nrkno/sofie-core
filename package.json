@@ -28,6 +28,7 @@
 		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn lint:packages && yarn lint:meteor && yarn test:packages && yarn test:meteor"
 	},
 	"devDependencies": {
-		"rimraf": "^3.0.2"
+		"rimraf": "^3.0.2",
+		"semver": "^7.3.5"
 	}
 }

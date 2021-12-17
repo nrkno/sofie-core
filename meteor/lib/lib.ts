@@ -679,7 +679,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 }
 export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id?: ProtectedString<any> }>(
 	docs0: ReadonlyArray<Class>,
-	options?: FindOptions<DBInterface>
+	options: FindOptions<DBInterface> | undefined
 ): Class[] {
 	let docs = [...docs0] // Shallow clone it
 	if (options) {

@@ -179,7 +179,7 @@ export function getBasicNotesForSegment(
 
 		if (part.invalidReason) {
 			newNotes.push({
-				type: part.invalidReason.level ?? NoteSeverity.ERROR,
+				type: part.invalidReason.severity ?? NoteSeverity.ERROR,
 				message: part.invalidReason.message,
 				origin: {
 					name: part.title,
