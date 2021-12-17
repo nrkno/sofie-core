@@ -2341,6 +2341,28 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									onWheelCapture={this.onWheel}
 									onContextMenu={this.onContextMenuTop}
 								>
+									{this.renderSegmentsList()}
+									<ErrorBoundary>
+										{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
+											<AfterBroadcastForm playlist={this.props.playlist} />
+										)}
+									</ErrorBoundary>
+									<ErrorBoundary>
+										<RundownHeader
+											playlist={this.props.playlist}
+											studio={this.props.studio}
+											rundownIds={this.props.rundowns.map((r) => r._id)}
+											firstRundown={this.props.rundowns[0]}
+											onActivate={this.onActivate}
+											studioMode={this.state.studioMode}
+											onRegisterHotkeys={this.onRegisterHotkeys}
+											inActiveRundownView={this.props.inActiveRundownView}
+											currentRundown={this.state.currentRundown || this.props.rundowns[0]}
+											layout={this.state.rundownHeaderLayout}
+											showStyleBase={this.props.showStyleBase}
+											showStyleVariant={this.props.showStyleVariant}
+										/>
+									</ErrorBoundary>
 									<ErrorBoundary>
 										{this.state.studioMode && !Settings.disableBlurBorder && (
 											<KeyboardFocusIndicator>
@@ -2468,22 +2490,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										)}
 									</ErrorBoundary>
 									<ErrorBoundary>
-										<RundownHeader
-											playlist={this.props.playlist}
-											studio={this.props.studio}
-											rundownIds={this.props.rundowns.map((r) => r._id)}
-											firstRundown={this.props.rundowns[0]}
-											onActivate={this.onActivate}
-											studioMode={this.state.studioMode}
-											onRegisterHotkeys={this.onRegisterHotkeys}
-											inActiveRundownView={this.props.inActiveRundownView}
-											currentRundown={this.state.currentRundown || this.props.rundowns[0]}
-											layout={this.state.rundownHeaderLayout}
-											showStyleBase={this.props.showStyleBase}
-											showStyleVariant={this.props.showStyleVariant}
-										/>
-									</ErrorBoundary>
-									<ErrorBoundary>
 										<NoraPreviewRenderer />
 									</ErrorBoundary>
 									<ErrorBoundary>
@@ -2521,12 +2527,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 													onClose={() => this.setState({ isClipTrimmerOpen: false })}
 												/>
 											))}
-									</ErrorBoundary>
-									{this.renderSegmentsList()}
-									<ErrorBoundary>
-										{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
-											<AfterBroadcastForm playlist={this.props.playlist} />
-										)}
 									</ErrorBoundary>
 									<ErrorBoundary>
 										<PointerLockCursor />

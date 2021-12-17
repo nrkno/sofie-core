@@ -94,8 +94,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		width: $segment-header-width;
 		left: 0;
 		bottom: 0;
-		background: darken($segment-title-background-color, 20%);
-		mix-blend-mode: screen;
+		background: lighten($segment-title-background-color, 70%);
+		opacity: 0.1;
 	}
 }
 
@@ -1321,9 +1321,6 @@ svg.icon {
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
 			position: relative;
-			z-index: 1;
-			transform-style: preserve-3d;
-
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
 

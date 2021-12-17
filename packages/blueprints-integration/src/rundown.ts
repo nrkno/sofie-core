@@ -336,6 +336,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	content: SomeTimelineContent
 
 	/** The transition used by this piece to transition to and from the piece */
+	/** @deprecated */
 	transitions?: {
 		/** In transition for the piece */
 		inTransition?: PieceTransition

@@ -306,7 +306,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 	}
 
-	getLayerStyle() {
+	getLayerStyle(): React.CSSProperties {
 		const actualPartDuration = SegmentTimelinePartClass.getPartDuration(
 			this.props,
 			this.state.liveDuration,
@@ -325,6 +325,10 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				minWidth: Math.round(partDuration * this.props.timeScale).toString() + 'px',
 			}
 		}
+	}
+
+	getPartStyle(): React.CSSProperties {
+		return this.getLayerStyle()
 	}
 
 	static getPartExpectedDuration(props: WithTiming<IProps>): number {
@@ -589,7 +593,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					)}
 					data-obj-id={this.props.part.instance._id}
 					id={SegmentTimelinePartElementId + this.props.part.instance._id}
-					style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}
+					style={{ ...this.getPartStyle(), ...invalidReasonColorVars }}
 				>
 					{DEBUG_MODE && (
 						<div className="segment-timeline__debug-info">
@@ -700,7 +704,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						this.props.className
 					)}
 					data-obj-id={this.props.part.instance._id}
-					style={this.getLayerStyle()}
+					style={this.getPartStyle()}
 				>
 					{/* render it empty, just to take up space */}
 					{this.state.isInsideViewport ? this.renderEndOfSegment(t, innerPart, isEndOfShow, isEndOfLoopingShow) : null}
