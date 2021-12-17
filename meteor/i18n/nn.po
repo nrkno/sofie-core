@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-12-10T12:08:13.302Z\n"
-"PO-Revision-Date: 2021-12-10 13:40+0100\n"
+"POT-Creation-Date: 2021-12-17T08:27:08.153Z\n"
+"PO-Revision-Date: 2021-12-17 10:02+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
 msgid "Account Page"
 msgstr "Brukarkontoside"
@@ -1137,7 +1137,7 @@ msgid "Display Rank"
 msgstr "Rangering for visning"
 
 msgid "Only Display AdLibs from Current Segment"
-msgstr "Vis berre adliber frå gjeldande segment"
+msgstr "Vis berre adliber frå gjeldande tittel"
 
 msgid "Include Global AdLibs"
 msgstr "Inkluder globale adliber"
@@ -1215,13 +1215,13 @@ msgid "Disabled"
 msgstr "Deaktivert"
 
 msgid "Show segment name"
-msgstr ""
+msgstr "Vis tittelen sitt namn"
 
 msgid "Show part title"
-msgstr ""
+msgstr "Vis delen sin tittel"
 
 msgid "Hide for dynamically inserted parts"
-msgstr ""
+msgstr "Skjul for dynamisk innsatte delar"
 
 msgid "Planned Start Text"
 msgstr "Tekst for planlagt start"
@@ -1272,7 +1272,7 @@ msgid "Show Rundown Name"
 msgstr "Vis køyreplannamn"
 
 msgid "Segment"
-msgstr ""
+msgstr "Tittel"
 
 msgid "Part"
 msgstr "Del"
@@ -1381,23 +1381,27 @@ msgid "Hide rundown divider between rundowns in a playlist"
 msgstr "Skjul skilje mellom køyreplanar i ei speleliste"
 
 msgid "Show Breaks as Segments"
-msgstr ""
+msgstr "Vis pauser som titlar"
 
 msgid "Segment countdown requires source layer"
-msgstr ""
+msgstr "Nedteljing for tittel krev kjeldelag"
 
 msgid ""
 "One of these source layers must have a piece for the countdown to segment on-"
 "air to be show"
 msgstr ""
+"Eit av desse kjeldelaga må ha eit element for at nedteljinga til tittelen er "
+"OnAir visas"
 
 msgid "Fixed duration in Segment header"
-msgstr ""
+msgstr "Låst lengde i tittelheader"
 
 msgid ""
 "The segment duration in the segment header always displays the planned "
 "duration instead of acting as a counter"
 msgstr ""
+"Tittelen si lengde i tittelheaderen vil alltid vise den planlagde lengda i "
+"staden for å telje ned"
 
 msgid "Select visible Source Layers"
 msgstr "Vel synlege kjeldelag"
@@ -1450,13 +1454,9 @@ msgstr "Adlib"
 msgid "Deactivate Rundown"
 msgstr "Deaktiver køyreplan"
 
-#, fuzzy
-#| msgid "Disable the next element"
 msgid "Disable next Piece"
-msgstr "Skip neste super"
+msgstr "Skip neste element"
 
-#, fuzzy
-#| msgid "Move Next forwards"
 msgid "Move Next"
 msgstr "Skip neste"
 
@@ -1482,13 +1482,13 @@ msgid "Force (deactivate others)"
 msgstr "Tving (deaktiver andre)"
 
 msgid "Move Segments"
-msgstr ""
+msgstr "Skip segment"
 
 msgid "By Segments"
 msgstr ""
 
 msgid "Move Parts"
-msgstr ""
+msgstr "Skip del"
 
 msgid "By Parts"
 msgstr ""
@@ -1506,7 +1506,7 @@ msgid "Clear Source Layer"
 msgstr "Tøm kjeldelag"
 
 msgid "Sticky Piece"
-msgstr ""
+msgstr "Element er sticky"
 
 msgid "Global AdLibs"
 msgstr "Globale adliber"
@@ -2001,7 +2001,7 @@ msgid "Display on Presenter's Screen"
 msgstr "Vis på presentatørskjerm"
 
 msgid "Pieces on this layer can be cleared"
-msgstr ""
+msgstr "Element på dette laget kan tømmas"
 
 msgid "Pieces on this layer are sticky"
 msgstr "Element på dette laget er sticky"
@@ -2676,16 +2676,16 @@ msgid "Edit in Nora"
 msgstr "Rediger i Nora"
 
 msgid "Current Part"
-msgstr ""
+msgstr "Noverande del"
 
 msgid "Next Part"
-msgstr ""
+msgstr "Neste del"
 
 msgid "Part Count Down"
-msgstr ""
+msgstr "Nedteljing for del"
 
 msgid "Part Count Up"
-msgstr ""
+msgstr "Opptelling for del"
 
 msgid "New Bucket"
 msgstr "Ny bøtte"
@@ -2700,16 +2700,16 @@ msgid "Are you sure you want to empty (remove all adlibs inside) this Bucket?"
 msgstr "Er du sikker på at du vil tømme denne bøtta (fjerner alle adliber)?"
 
 msgid "Current Segment"
-msgstr ""
+msgstr "Noverande tittel"
 
 msgid "Next Segment"
-msgstr ""
+msgstr "Neste tittel"
 
 msgid "Segment Count Down"
-msgstr ""
+msgstr "Nedteljing for tittel"
 
 msgid "Segment Count Up"
-msgstr ""
+msgstr "Oppteljing for tittel"
 
 msgid "Start this AdLib"
 msgstr "Start denne adliben"
