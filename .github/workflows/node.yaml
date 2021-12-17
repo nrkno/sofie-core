@@ -376,6 +376,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - name: Prepare Script Environment
+        run: |
+          yarn install
       - name: Check release is desired
         id: do-publish
         run: |
