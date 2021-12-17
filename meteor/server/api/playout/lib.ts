@@ -48,41 +48,28 @@ export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void
 	// Remove all dunamically inserted pieces (adlibs etc)
 	// const rundownIds = new Set(getRundownIDsFromCache(cache))
 
-	const partInstancesToRemove = new Set(
-		cache.PartInstances.remove((p) => p.rehearsal || p.playlistActivationId !== cache.Playlist.doc.activationId)
-	)
+	const partInstancesToRemove = cache.PartInstances.remove((p) => p.rehearsal)
 	cache.deferAfterSave(() => {
 		PieceInstances.remove({
-			partInstanceId: { $in: Array.from(partInstancesToRemove.values()) },
+			partInstanceId: { $in: partInstancesToRemove },
 		})
 	})
-
-	cache.PartInstances.update(
-		{
-			$and: [
-				{ $or: [{ reset: false }, { reset: { $exists: false } }] },
-				{ _id: { $in: Array.from(partInstancesToRemove.values()) } },
-			],
+	const partInstancesToReset = cache.PartInstances.update((p) => !p.reset, {
+		$set: {
+			reset: true,
 		},
-		{
-			$set: {
-				reset: true,
-			},
-		}
-	)
+	})
 	cache.deferAfterSave(() => {
 		PieceInstances.update(
 			{
-				$and: [
-					{ $or: [{ reset: false }, { reset: { $exists: false } }] },
-					{ partInstanceId: { $in: Array.from(partInstancesToRemove.values()) } },
-				],
+				partInstanceId: { $in: partInstancesToReset },
 			},
 			{
 				$set: {
 					reset: true,
 				},
-			}
+			},
+			{ multi: true }
 		)
 	})
 
@@ -333,15 +320,12 @@ export async function setNextPart(
 			cache.Playlist.doc.previousPartInstanceId,
 		])
 		// reset any previous instances of this part
-		const partInstanceIdsToReset = cache.PartInstances.findFetch({
-			_id: { $nin: selectedPartInstanceIds },
-			rundownId: nextPart.rundownId,
-			'part._id': nextPart._id,
-			reset: { $ne: true },
-		}).map((pi) => pi._id)
-		cache.PartInstances.update(
+		const partInstancesToReset = cache.PartInstances.update(
 			{
-				_id: { $in: partInstanceIdsToReset },
+				_id: { $nin: selectedPartInstanceIds },
+				rundownId: nextPart.rundownId,
+				'part._id': nextPart._id,
+				reset: { $ne: true },
 			},
 			{
 				$set: {
@@ -352,16 +336,16 @@ export async function setNextPart(
 		cache.deferAfterSave(() => {
 			PieceInstances.update(
 				{
-					partInstanceId: { $in: partInstanceIdsToReset },
+					partInstanceId: { $in: partInstancesToReset },
+					'piece.startPartId': nextPart._id,
+					reset: { $ne: true },
 				},
 				{
 					$set: {
 						reset: true,
 					},
 				},
-				{
-					multi: true,
-				}
+				{ multi: true }
 			)
 		})
 

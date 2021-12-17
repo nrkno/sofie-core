@@ -226,7 +226,7 @@ export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserCont
 }
 
 export interface IRemoveOrphanedPartInstanceContext extends IRundownUserContext {
-	removePartInstance (): void
+	removePartInstance(): void
 }
 
 /** Events */

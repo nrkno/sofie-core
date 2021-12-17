@@ -153,7 +153,10 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	 * Allows the blueprint to remove the next part instance if it has become orphaned.
 	 * This call will only be made if the part instance has been orphaned.
 	 */
-	shouldRemoveOrphanedPartInstance?: (context: IRemoveOrphanedPartInstanceContext, partInstance: BlueprintRemoveOrphanedPartInstance) => void
+	shouldRemoveOrphanedPartInstance?: (
+		context: IRemoveOrphanedPartInstanceContext,
+		partInstance: BlueprintRemoveOrphanedPartInstance
+	) => void
 
 	/** Execute an action defined by an IBlueprintActionManifest */
 	executeAction?: (
@@ -277,7 +280,7 @@ export interface BlueprintSyncIngestPartInstance {
 }
 
 export interface BlueprintRemoveOrphanedPartInstance {
-	partInstance: IBlueprintPartInstance,
+	partInstance: IBlueprintPartInstance
 	pieceInstances: IBlueprintPieceInstance[]
 }
 
