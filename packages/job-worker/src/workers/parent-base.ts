@@ -1,8 +1,6 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UserError } from '@sofie-automation/corelib/dist/error'
 import { ManualPromise, createManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { QueueScheduler, WorkerOptions, Worker, QueueOptions } from 'bullmq'
 import { startTransaction } from '../profiler'
 import { ChangeStream, ChangeStreamDocument, MongoClient } from 'mongodb'
 import { createInvalidateWorkerDataCache, InvalidateWorkerDataCache } from './caches'
@@ -11,18 +9,13 @@ import { logger } from '../logging'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { LocksManager } from '../locks'
-import { AnyLockEvent } from './locks'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
-import { EventEmitter } from 'eventemitter3'
+import { JobManager, JobStream } from '../manager'
 
-export type WorkerParentEvents = {
-	lock: [event: AnyLockEvent]
-}
-
-export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> {
-	readonly #workerId: string
+export abstract class WorkerParentBase {
+	// readonly #workerId: string
 	readonly #studioId: StudioId
 
 	readonly #mongoClient: MongoClient
@@ -30,8 +23,8 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 
 	#terminate: ManualPromise<void> | undefined
 
-	readonly #queue: Worker
-	readonly #scheduler: QueueScheduler
+	readonly #jobManager: JobManager
+	readonly #jobStream: JobStream
 
 	readonly #streams: Array<ChangeStream<any>> = []
 
@@ -43,19 +36,20 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
 		queueName: string,
-		options: WorkerOptions
+		jobManager: JobManager
 	) {
-		super()
-
-		this.#workerId = workerId
+		// this.#workerId = workerId
 		this.#studioId = studioId
 		this.#mongoClient = mongoClient
 		this.#locksManager = locksManager
 
-		this.#queue = new Worker(queueName, undefined, options)
+		this.#jobManager = jobManager
+		this.#jobStream = jobManager.subscribeToQueue(queueName, workerId)
 
-		// This is needed to handle timeouts or something
-		this.#scheduler = new QueueScheduler(queueName, options)
+		// this.#queue = new Worker(queueName, undefined, options)
+
+		// // This is needed to handle timeouts or something
+		// this.#scheduler = new QueueScheduler(queueName, options)
 	}
 
 	/**
@@ -145,12 +139,7 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 	}
 
 	/** Initialise the worker thread */
-	protected abstract initWorker(
-		mongoUri: string,
-		dbName: string,
-		publishQueueOptions: QueueOptions,
-		studioId: StudioId
-	): Promise<void>
+	protected abstract initWorker(mongoUri: string, dbName: string, studioId: StudioId): Promise<void>
 	/** Invalidate caches in the worker thread */
 	protected abstract invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void>
 	/** Run a job in the worker thread */
@@ -161,7 +150,7 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 	public abstract workerLockChange(lockId: string, locked: boolean): Promise<void>
 
 	/** Start the loop feeding work to the worker */
-	protected startWorkerLoop(mongoUri: string, dbName: string, publishQueueOptions: QueueOptions): void {
+	protected startWorkerLoop(mongoUri: string, dbName: string): void {
 		setImmediate(async () => {
 			try {
 				this.#pendingInvalidations = null
@@ -169,14 +158,12 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 				this.subscribeToCacheInvalidations(dbName)
 
 				// Start the worker running
-				await this.initWorker(mongoUri, dbName, publishQueueOptions, this.#studioId)
+				await this.initWorker(mongoUri, dbName, this.#studioId)
 				await this.#locksManager.subscribe(this)
 
 				// Run until told to terminate
 				while (!this.#terminate) {
-					const job = await this.#queue.getNextJob(this.#workerId, {
-						// block: true, // wait for there to be a job ready
-					})
+					const job = await this.#jobStream.next() // Note: this blocks
 
 					// Handle any invalidations
 					if (this.#pendingInvalidations) {
@@ -192,12 +179,15 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 					// we may not get a job even when blocking, so try again
 					if (job) {
 						// Ensure the lock is still good
-						await job.extendLock(this.#workerId, 10000) // TODO: Worker - what should the lock duration be?
+						// TODO: Worker - should jobs time out like this?
+						// await job.extendLock(this.#workerId, 10000) // TODO: Worker - what should the lock duration be?
 
 						const transaction = startTransaction(job.name, 'worker-parent')
 						if (transaction) {
 							transaction.setLabel('studioId', unprotectString(this.#studioId))
 						}
+
+						const startTime = Date.now()
 
 						try {
 							console.log('Running work ', job.id, job.name, JSON.stringify(job.data))
@@ -217,13 +207,13 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 								result = await this.runJobInWorker(job.name, job.data)
 							}
 
-							await job.moveToCompleted(result, this.#workerId, false)
+							await this.#jobManager.jobFinished(job.id, startTime, Date.now(), null, result)
 						} catch (e) {
 							console.log('job errored', e)
 							// stringify the error to preserve the UserError
-							const e2 = e instanceof Error ? e : new Error(UserError.toJSON(e))
+							// const e2 = e instanceof Error ? e : new Error(UserError.toJSON(e))
 
-							await job.moveToFailed(e2, this.#workerId)
+							await this.#jobManager.jobFinished(job.id, startTime, Date.now(), e, null)
 						}
 						console.log('the end')
 						transaction?.end()
@@ -263,7 +253,6 @@ export abstract class WorkerParentBase extends EventEmitter<WorkerParentEvents> 
 
 		await Promise.all(this.#streams.map((s) => s.close()))
 
-		await this.#queue.close()
-		await this.#scheduler.close()
+		await this.#jobStream.close()
 	}
 }

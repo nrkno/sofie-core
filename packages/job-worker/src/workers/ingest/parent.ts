@@ -1,5 +1,4 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { QueueOptions, WorkerOptions } from 'bullmq'
 import { IngestWorkerChild } from './child'
 import { MongoClient } from 'mongodb'
 import { InvalidateWorkerDataCache } from '../caches'
@@ -8,6 +7,8 @@ import { WorkerParentBase } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
+import { JobManager } from '../../manager'
+import { QueueJobFunc } from '../context'
 
 export class IngestWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<IngestWorkerChild>
@@ -18,10 +19,10 @@ export class IngestWorkerParent extends WorkerParentBase {
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
 		queueName: string,
-		options: WorkerOptions,
+		jobManager: JobManager,
 		thread: Promisify<IngestWorkerChild>
 	) {
-		super(workerId, studioId, mongoClient, locksManager, queueName, options)
+		super(workerId, studioId, mongoClient, locksManager, queueName, jobManager)
 
 		this.#thread = thread
 	}
@@ -33,13 +34,14 @@ export class IngestWorkerParent extends WorkerParentBase {
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
 		studioId: StudioId,
-		options: WorkerOptions,
-		publishQueueOptions: QueueOptions
+		jobManager: JobManager,
+		emitLockEvent: (event: AnyLockEvent) => void,
+		queueJob: QueueJobFunc
 	): Promise<IngestWorkerParent> {
 		const workerThread = await threadedClass<IngestWorkerChild, typeof IngestWorkerChild>(
 			'./child',
 			'IngestWorkerChild',
-			[],
+			[emitLockEvent, queueJob],
 			{
 				instanceName: `Ingest: ${studioId}`,
 			}
@@ -55,22 +57,15 @@ export class IngestWorkerParent extends WorkerParentBase {
 			mongoClient,
 			locksManager,
 			getIngestQueueName(studioId),
-			options,
+			jobManager,
 			workerThread
 		)
-		parent.startWorkerLoop(mongoUri, mongoDb, publishQueueOptions)
+		parent.startWorkerLoop(mongoUri, mongoDb)
 		return parent
 	}
 
-	protected async initWorker(
-		mongoUri: string,
-		dbName: string,
-		publishQueueOptions: QueueOptions,
-		studioId: StudioId
-	): Promise<void> {
-		return this.#thread.init(mongoUri, dbName, publishQueueOptions, studioId, (event: AnyLockEvent) =>
-			this.emit('lock', event)
-		)
+	protected async initWorker(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
+		return this.#thread.init(mongoUri, dbName, studioId)
 	}
 	protected async invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
 		return this.#thread.invalidateCaches(invalidations)

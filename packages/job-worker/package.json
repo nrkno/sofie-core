@@ -43,9 +43,8 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.38.0-in-development",
-		"@sofie-automation/corelib": "1.38.0-in-development",
-		"bullmq": "^1.56.0",
+		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
+		"@sofie-automation/corelib": "link:../corelib",
 		"debounce-fn": "^4.0.0",
 		"deepmerge": "^4.2.2",
 		"elastic-apm-node": "^3.11.0",

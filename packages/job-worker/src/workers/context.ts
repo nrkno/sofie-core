@@ -9,7 +9,7 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
+import { getIngestQueueName, IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
@@ -24,14 +24,16 @@ import {
 	ProcessedShowStyleConfig,
 	ProcessedStudioConfig,
 } from '../blueprints/config'
-import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
+import { getStudioQueueName, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { LockBase, PlaylistLock } from '../jobs/lock'
 import { logger } from '../logging'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { IS_PRODUCTION } from '../environment'
 import { LocksManager } from './locks'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
+import { EventsJobFunc, getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
+
+export type QueueJobFunc = (queueName: string, jobName: string, jobData: unknown) => Promise<void>
 
 export class JobContextBase implements JobContext {
 	private readonly locks: Array<LockBase> = []
@@ -41,7 +43,8 @@ export class JobContextBase implements JobContext {
 		readonly directCollections: Readonly<IDirectCollections>,
 		private readonly cacheData: WorkerDataCache,
 		private readonly locksManager: LocksManager,
-		private readonly transaction: ApmTransaction | undefined
+		private readonly transaction: ApmTransaction | undefined,
+		private readonly queueJob: QueueJobFunc
 	) {}
 
 	get studio(): ReadonlyDeep<DBStudio> {
@@ -118,19 +121,13 @@ export class JobContextBase implements JobContext {
 	}
 
 	async queueIngestJob<T extends keyof IngestJobFunc>(name: T, data: Parameters<IngestJobFunc[T]>[0]): Promise<void> {
-		await this.cacheData.ingestQueue.add(name, data, {
-			// priority,
-		})
+		await this.queueJob(getIngestQueueName(this.studioId), name, data)
 	}
 	async queueStudioJob<T extends keyof StudioJobFunc>(name: T, data: Parameters<StudioJobFunc[T]>[0]): Promise<void> {
-		await this.cacheData.studioQueue.add(name, data, {
-			// priority,
-		})
+		await this.queueJob(getStudioQueueName(this.studioId), name, data)
 	}
 	async queueEventJob<T extends keyof EventsJobFunc>(name: T, data: Parameters<EventsJobFunc[T]>[0]): Promise<void> {
-		await this.cacheData.eventsQueue.add(name, data, {
-			// priority,
-		})
+		await this.queueJob(getEventsQueueName(this.studioId), name, data)
 	}
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig {
