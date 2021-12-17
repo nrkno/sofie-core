@@ -1818,7 +1818,6 @@ svg.icon {
 							background-repeat: repeat-x;
 							background-size: auto 1em;
 							background-color: rgba(0, 0, 0, 0.6);
-							z-index: 2;
 						}
 
 						&.hide-overflow-labels {
@@ -1969,7 +1968,6 @@ svg.icon {
 
 			.segment-timeline__piece__label {
 				position: relative;
-				z-index: 10;
 				margin: 0 0.3em;
 				text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 				font-weight: 400;
@@ -2137,9 +2135,14 @@ svg.icon {
 					left: auto;
 					right: 0;
 					bottom: auto;
+					opacity: 1;
+					visibility: visible;
+					transition: 500ms opacity 250ms, 0s visibility 0s;
 
 					&.hidden {
-						display: none;
+						transition: none;
+						visibility: hidden;
+						opacity: 0;
 					}
 				}
 			}

@@ -145,17 +145,17 @@ export const SourceLayerItem = withTranslation()(
 									? '100%'
 									: 'none',
 							transform:
-								'translate3d(' +
+								'translate(' +
 								Math.floor(
 									widthConstrictedMode
 										? targetPos
 										: Math.min(targetPos, elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10)
 								).toString() +
-								'px, 0, 0) ' +
-								'translate3d(' +
+								'px, 0) ' +
+								'translate(' +
 								Math.floor(liveLineHistoryWithMargin).toString() +
-								'px, 0, 0) ' +
-								'translate3d(-100%, 0, 5px)',
+								'px, 0) ' +
+								'translate(-100%, 0)',
 						}
 					} else if (
 						this.state.rightAnchoredWidth < elementWidth &&
@@ -175,15 +175,15 @@ export const SourceLayerItem = withTranslation()(
 									? '100%'
 									: 'none',
 							transform:
-								'translate3d(' +
+								'translate(' +
 								Math.floor(
 									Math.min(targetPos, elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10)
 								).toString() +
-								'px, 0, 0) ' +
-								'translate3d(' +
+								'px, 0) ' +
+								'translate(' +
 								Math.floor(liveLineHistoryWithMargin).toString() +
-								'px, 0, 0) ' +
-								'translate3d(-100%, 0, 5px)',
+								'px, 0) ' +
+								'translate3d(-100%, 0)',
 						}
 					} else {
 						return {
@@ -214,13 +214,13 @@ export const SourceLayerItem = withTranslation()(
 									? '100%'
 									: 'none',
 							transform:
-								'translate3d(' +
+								'translate(' +
 								Math.floor(
 									widthConstrictedMode || this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0
 										? targetPos
 										: Math.min(targetPos, elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth)
 								).toString() +
-								'px,  0, 5px)',
+								'px,  0)',
 						}
 					} else {
 						return {
@@ -242,36 +242,33 @@ export const SourceLayerItem = withTranslation()(
 		getItemLabelOffsetRight = (): React.CSSProperties => {
 			if (this.props.relative) return {}
 
-			if (this.props.part && this.props.partStartsAt !== undefined) {
-				//  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
-				const piece = this.props.piece
-				const innerPiece = piece.instance.piece
+			if (!this.props.part || this.props.partStartsAt === undefined) return {}
 
-				const inPoint = piece.renderedInPoint || 0
-				const duration =
-					innerPiece.lifespan !== PieceLifespan.WithinPart || piece.renderedDuration === 0
-						? this.props.partDuration - inPoint
-						: Math.min(piece.renderedDuration || 0, this.props.partDuration - inPoint)
-				const outPoint = inPoint + duration
+			const piece = this.props.piece
+			const innerPiece = piece.instance.piece
 
-				const elementWidth = this.getElementAbsoluteWidth()
+			const inPoint = piece.renderedInPoint || 0
+			const duration =
+				innerPiece.lifespan !== PieceLifespan.WithinPart || piece.renderedDuration === 0
+					? this.props.partDuration - inPoint
+					: Math.min(piece.renderedDuration || 0, this.props.partDuration - inPoint)
+			const outPoint = inPoint + duration
 
-				// const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
+			const elementWidth = this.getElementAbsoluteWidth()
 
-				if (
-					this.props.scrollLeft + this.props.scrollWidth < outPoint + this.props.partStartsAt &&
-					this.props.scrollLeft + this.props.scrollWidth > inPoint + this.props.partStartsAt
-				) {
-					const targetPos = Math.max(
-						(this.props.scrollLeft + this.props.scrollWidth - outPoint - this.props.partStartsAt) *
-							this.props.timeScale,
-						(elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) *
-							-1
-					)
+			// const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
-					return {
-						transform: 'translate3d(' + Math.floor(targetPos).toString() + 'px,  0, 15px)',
-					}
+			if (
+				this.props.scrollLeft + this.props.scrollWidth < outPoint + this.props.partStartsAt &&
+				this.props.scrollLeft + this.props.scrollWidth > inPoint + this.props.partStartsAt
+			) {
+				const targetPos = Math.max(
+					(this.props.scrollLeft + this.props.scrollWidth - outPoint - this.props.partStartsAt) * this.props.timeScale,
+					(elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1
+				)
+
+				return {
+					transform: 'translate(' + Math.floor(targetPos).toString() + 'px,  0)',
 				}
 			}
 			return {}
