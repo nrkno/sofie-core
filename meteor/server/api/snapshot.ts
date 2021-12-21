@@ -70,10 +70,11 @@ import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { getPartId, getSegmentId } from './ingest/lib'
 import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
-import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
+import { AdLibActions, AdLibAction, AdLibActionId } from '../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActionId,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { saveIntoDb, sumChanges } from '../lib/database'
@@ -681,74 +682,92 @@ export async function restoreFromRundownPlaylistSnapshot(
 	})
 
 	// List any ids that need updating on other documents
-	const rundownIdMap: { [key: string]: RundownId } = {}
+	const rundownIdMap = new Map<RundownId, RundownId>()
 	const getNewRundownId = (oldRundownId: RundownId) => {
-		return rundownIdMap[unprotectString(oldRundownId)]
+		const rundownId = rundownIdMap.get(oldRundownId)
+		if (!rundownId) {
+			throw new Meteor.Error(500, `Could not find new rundownId for "${oldRundownId}"`)
+		}
+		return rundownId
 	}
 	_.each(snapshot.rundowns, (rd) => {
 		const oldId = rd._id
-		rundownIdMap[unprotectString(oldId)] = rd._id = getRandomId()
+		rd._id = getRandomId()
+		rundownIdMap.set(oldId, rd._id)
 	})
-	const partIdMap: { [key: string]: PartId } = {}
+	const partIdMap = new Map<PartId, PartId>()
 	_.each(snapshot.parts, (part) => {
 		const oldId = part._id
-		partIdMap[unprotectString(oldId)] = part._id = part.externalId
-			? getPartId(getNewRundownId(part.rundownId), part.externalId)
-			: getRandomId()
+		part._id = part.externalId ? getPartId(getNewRundownId(part.rundownId), part.externalId) : getRandomId()
+
+		partIdMap.set(oldId, part._id)
 	})
-	const partInstanceIdMap: { [key: string]: PartInstanceId } = {}
+	const partInstanceIdMap = new Map<PartInstanceId, PartInstanceId>()
 	_.each(snapshot.partInstances, (partInstance) => {
 		const oldId = partInstance._id
-		partInstanceIdMap[unprotectString(oldId)] = partInstance._id = getRandomId()
-		partInstance.part._id = partIdMap[unprotectString(partInstance.part._id)] || getRandomId()
+		partInstance._id = getRandomId()
+		partInstanceIdMap.set(oldId, partInstance._id)
+		partInstance.part._id = partIdMap.get(partInstance.part._id) || getRandomId()
 	})
-	const segmentIdMap: { [key: string]: SegmentId } = {}
+	const segmentIdMap = new Map<SegmentId, SegmentId>()
 	_.each(snapshot.segments, (segment) => {
 		const oldId = segment._id
-		segmentIdMap[unprotectString(oldId)] = segment._id = getSegmentId(
-			getNewRundownId(segment.rundownId),
-			segment.externalId
-		)
+		segment._id = getSegmentId(getNewRundownId(segment.rundownId), segment.externalId)
+		segmentIdMap.set(oldId, segment._id)
 	})
-	const pieceIdMap: { [key: string]: PieceId } = {}
+	type AnyPieceId = PieceId | AdLibActionId | RundownBaselineAdLibActionId
+	const pieceIdMap = new Map<AnyPieceId, AnyPieceId>()
 	_.each(snapshot.pieces, (piece) => {
 		const oldId = piece._id
-		piece.startRundownId = rundownIdMap[unprotectString(piece.startRundownId)]
-		piece.startPartId = partIdMap[unprotectString(piece.startPartId)]
-		piece.startSegmentId = segmentIdMap[unprotectString(piece.startSegmentId)]
-		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
+		piece.startRundownId = getNewRundownId(piece.startRundownId)
+		piece.startPartId =
+			partIdMap.get(piece.startPartId) ||
+			getRandomIdAndWarn(`piece.startPartId=${piece.startPartId} of piece=${piece._id}`)
+		piece.startSegmentId =
+			segmentIdMap.get(piece.startSegmentId) ||
+			getRandomIdAndWarn(`piece.startSegmentId=${piece.startSegmentId} of piece=${piece._id}`)
+		piece._id = getRandomId()
+		pieceIdMap.set(oldId, piece._id)
 	})
-	_.each(snapshot.adLibPieces, (piece) => {
-		const oldId = piece._id
-		piece.rundownId = rundownIdMap[unprotectString(piece.rundownId)]
-		if (piece.partId) piece.partId = partIdMap[unprotectString(piece.partId)]
-		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
-	})
+	_.each(
+		[
+			...snapshot.adLibPieces,
+			...snapshot.adLibActions,
+			...snapshot.baselineAdlibs,
+			...snapshot.baselineAdLibActions,
+		],
+		(adlib) => {
+			const oldId = adlib._id
+			if (adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
+			adlib._id = getRandomId()
+			pieceIdMap.set(oldId, adlib._id)
+		}
+	)
 
-	const pieceInstanceIdMap: { [key: string]: PieceInstanceId } = {}
+	// const pieceInstanceIdMap = new Map<PieceInstanceId, PieceInstanceId>()
 	_.each(snapshot.pieceInstances, (pieceInstance) => {
-		const oldId = pieceInstance._id
-		pieceInstanceIdMap[unprotectString(oldId)] = pieceInstance._id = getRandomId()
-		pieceInstance.piece._id = pieceIdMap[unprotectString(pieceInstance.piece._id)] || getRandomId()
+		// const oldId = pieceInstance._id
+		pieceInstance._id = getRandomId()
+		// pieceInstanceIdMap.set(oldId, pieceInstance._id)
+
+		pieceInstance.piece._id = (pieceIdMap.get(pieceInstance.piece._id) || getRandomId()) as PieceId // Note: don't warn if not found, as the piece may have been deleted
 		if (pieceInstance.infinite) {
-			pieceInstance.infinite.infinitePieceId = pieceIdMap[unprotectString(pieceInstance.infinite.infinitePieceId)]
+			pieceInstance.infinite.infinitePieceId =
+				pieceIdMap.get(pieceInstance.infinite.infinitePieceId) || getRandomId() // Note: don't warn if not found, as the piece may have been deleted
 		}
 	})
 
 	if (snapshot.playlist.currentPartInstanceId) {
 		snapshot.playlist.currentPartInstanceId =
-			partInstanceIdMap[unprotectString(snapshot.playlist.currentPartInstanceId)] ||
-			snapshot.playlist.currentPartInstanceId
+			partInstanceIdMap.get(snapshot.playlist.currentPartInstanceId) || snapshot.playlist.currentPartInstanceId
 	}
 	if (snapshot.playlist.nextPartInstanceId) {
 		snapshot.playlist.nextPartInstanceId =
-			partInstanceIdMap[unprotectString(snapshot.playlist.nextPartInstanceId)] ||
-			snapshot.playlist.nextPartInstanceId
+			partInstanceIdMap.get(snapshot.playlist.nextPartInstanceId) || snapshot.playlist.nextPartInstanceId
 	}
 	if (snapshot.playlist.previousPartInstanceId) {
 		snapshot.playlist.previousPartInstanceId =
-			partInstanceIdMap[unprotectString(snapshot.playlist.previousPartInstanceId)] ||
-			snapshot.playlist.previousPartInstanceId
+			partInstanceIdMap.get(snapshot.playlist.previousPartInstanceId) || snapshot.playlist.previousPartInstanceId
 	}
 
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
@@ -767,17 +786,17 @@ export async function restoreFromRundownPlaylistSnapshot(
 	>(objs: undefined | T[], updateId: boolean): T[] {
 		const updateIds = (obj: T) => {
 			if (obj.rundownId) {
-				obj.rundownId = rundownIdMap[unprotectString(obj.rundownId)]
+				obj.rundownId = getNewRundownId(obj.rundownId)
 			}
 
 			if (obj.partId) {
-				obj.partId = partIdMap[unprotectString(obj.partId)]
+				obj.partId = partIdMap.get(obj.partId) || getRandomId()
 			}
 			if (obj.segmentId) {
-				obj.segmentId = segmentIdMap[unprotectString(obj.segmentId)]
+				obj.segmentId = segmentIdMap.get(obj.segmentId) || getRandomId()
 			}
 			if (obj.partInstanceId) {
-				obj.partInstanceId = partInstanceIdMap[unprotectString(obj.partInstanceId)]
+				obj.partInstanceId = partInstanceIdMap.get(obj.partInstanceId) || getRandomId()
 			}
 
 			if (updateId) {
@@ -837,6 +856,10 @@ export async function restoreFromRundownPlaylistSnapshot(
 	])
 
 	logger.info(`Restore done`)
+}
+function getRandomIdAndWarn<T>(name: string): ProtectedString<T> {
+	logger.warn(`Couldn't find "${name}" when restoring snapshot`)
+	return getRandomId<T>()
 }
 async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void> {
 	logger.info(`Restoring from system snapshot "${snapshot.snapshot.name}"`)
