@@ -31,6 +31,7 @@ import {
 	unprotectString,
 	ProtectedString,
 	protectStringArray,
+	assertNever,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -48,7 +49,12 @@ import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Bluepr
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { ExpectedPackageDB, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import {
+	ExpectedPackageDB,
+	ExpectedPackageDBType,
+	ExpectedPackages,
+	getExpectedPackageId,
+} from '../../lib/collections/ExpectedPackages'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
@@ -770,6 +776,41 @@ export async function restoreFromRundownPlaylistSnapshot(
 			partInstanceIdMap.get(snapshot.playlist.previousPartInstanceId) || snapshot.playlist.previousPartInstanceId
 	}
 
+	for (const expectedPackage of snapshot.expectedPackages) {
+		switch (expectedPackage.fromPieceType) {
+			case ExpectedPackageDBType.PIECE:
+			case ExpectedPackageDBType.ADLIB_PIECE:
+			case ExpectedPackageDBType.ADLIB_ACTION:
+			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
+			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION: {
+				expectedPackage.pieceId =
+					pieceIdMap.get(expectedPackage.pieceId) ||
+					getRandomIdAndWarn(`expectedPackage.pieceId=${expectedPackage.pieceId}`)
+				expectedPackage._id = getExpectedPackageId(expectedPackage.pieceId, expectedPackage.blueprintPackageId)
+
+				break
+			}
+			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
+				expectedPackage._id = getExpectedPackageId(
+					expectedPackage.rundownId,
+					expectedPackage.blueprintPackageId
+				)
+				break
+			}
+			case ExpectedPackageDBType.BUCKET_ADLIB:
+			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
+			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS: {
+				// ignore, these are not present in the rundown snapshot anyway.
+				logger.warn(`Unexpected ExpectedPackage in snapshot: ${JSON.stringify(expectedPackage)}`)
+				break
+			}
+
+			default:
+				assertNever(expectedPackage)
+				break
+		}
+	}
+
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
 
 	// Apply the updates of any properties to any document
@@ -852,6 +893,11 @@ export async function restoreFromRundownPlaylistSnapshot(
 			ExpectedPlayoutItems,
 			{ rundownId: { $in: rundownIds } },
 			updateItemIds(snapshot.expectedPlayoutItems || [], false)
+		),
+		saveIntoDb(
+			ExpectedPackages,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.expectedPackages || [], false)
 		),
 	])
 
