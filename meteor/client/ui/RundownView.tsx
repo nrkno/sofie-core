@@ -2048,8 +2048,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			segmentIdsBeforeSegment: Set<SegmentId>,
 			rundownIdsBefore: RundownId[]
 		) {
-			return localStorage.getItem('useStoryboard') === '1' &&
-				this.state.segmentViewModes[unprotectString(segment._id)] === SegmentViewMode.STORYBOARD ? ( // TODO: This is just a temporary switch
+			const userSegmentDisplaymode = this.state.segmentViewModes[unprotectString(segment._id)] as
+				| SegmentViewMode
+				| undefined
+			return userSegmentDisplaymode !== undefined && userSegmentDisplaymode === SegmentViewMode.STORYBOARD ? (
 				<SegmentStoryboardContainer
 					id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 					studio={studio}

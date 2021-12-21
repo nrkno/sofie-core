@@ -114,6 +114,9 @@ export function StoryboardPart({
 					{
 						squished: !!style,
 						'invert-flash': highlight,
+						'segment-storyboard__part--next': isNextPart,
+						'segment-storyboard__part--live': isLivePart,
+						'segment-storyboard__part--invalid': part.instance.part.invalid,
 					},
 					className
 				),
@@ -127,6 +130,7 @@ export function StoryboardPart({
 			holdToDisplay={contextMenuHoldToDisplayTime()}
 			collect={getPartContext}
 		>
+			{isLivePart ? <div className="segment-storyboard__part__background"></div> : null}
 			<div className="segment-storyboard__identifier">{part.instance.part.identifier}</div>
 			{subscriptionsReady ? (
 				<>
@@ -149,6 +153,7 @@ export function StoryboardPart({
 			<div
 				className={classNames('segment-storyboard__part__next-line', {
 					'segment-storyboard__part__next-line--autonext': willBeAutoNextedInto,
+					'segment-storyboard__part__next-line--invalid': part.instance.part.invalid,
 					'segment-storyboard__part__next-line--next': isNextPart,
 					'segment-storyboard__part__next-line--live': isLivePart,
 				})}
@@ -160,17 +165,7 @@ export function StoryboardPart({
 					'segment-storyboard__part__next-line-label--live': isLivePart,
 				})}
 			>
-				{isLivePart
-					? t('On Air')
-					: willBeAutoNextedInto
-					? isNextPart
-						? t('Auto Next')
-						: t('Auto')
-					: isNextPart
-					? t('Next')
-					: isInvalid
-					? t('Invalid')
-					: null}
+				{isLivePart ? t('On Air') : willBeAutoNextedInto ? t('Auto') : isNextPart ? t('Next') : null}
 			</div>
 			{isLastPartInSegment && (
 				<div

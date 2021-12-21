@@ -18,7 +18,7 @@ $segment-background-color: #000;
 $liveline-timecode-color: $general-countdown-to-next-color; //$general-live-color;
 $hold-status-color: $liveline-timecode-color;
 
-$segment-storyboard-part-width: 160px;
+$segment-storyboard-part-width: 166px;
 $segment-storyboard-thumbnail-height: 7rem;
 
 @function rem($pixels, $context: $browser-context) {

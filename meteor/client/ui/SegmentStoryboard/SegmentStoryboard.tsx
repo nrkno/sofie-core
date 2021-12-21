@@ -79,7 +79,7 @@ interface IProps {
 	subscriptionsReady: boolean
 }
 
-const PART_WIDTH = 160 // Must match SCSS: $segment-storyboard-part-width
+const PART_WIDTH = 166 // Must match SCSS: $segment-storyboard-part-width
 const PART_LIST_LEAD_IN = 0 // Must match SCSS: .segment-storyboard__part-list(padding-left)
 const PART_SHADE_WIDTH = 100
 

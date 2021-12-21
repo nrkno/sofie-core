@@ -72,37 +72,39 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
 			{previewUrl ? (
-				<div
-					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-					style={props.floatingInspectorStyle}
-				>
-					{!props.hideHoverscrubPreview ? (
-						<VideoPreviewPlayer
-							itemDuration={itemDuration}
-							loop={loop}
-							seek={seek}
-							previewUrl={previewUrl}
-							timePosition={offsetTimePosition}
-						/>
-					) : null}
-					{props.noticeLevel !== null ? (
-						<div
-							className={
-								'segment-timeline__mini-inspector ' +
-								(!props.hideHoverscrubPreview ? 'segment-timeline__mini-inspector--sub-inspector ' : '') +
-								props.typeClass +
-								' ' +
-								(props.noticeLevel === NoticeLevel.CRITICAL
-									? 'segment-timeline__mini-inspector--notice notice-critical'
-									: props.noticeLevel === NoticeLevel.WARNING
-									? 'segment-timeline__mini-inspector--notice notice-warning'
-									: '')
-							}
-						>
-							{renderNotice(props.noticeLevel, props.noticeMessage)}
-						</div>
-					) : null}
-				</div>
+				!props.hideHoverscrubPreview || props.noticeLevel !== null ? (
+					<div
+						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
+						style={props.floatingInspectorStyle}
+					>
+						{!props.hideHoverscrubPreview ? (
+							<VideoPreviewPlayer
+								itemDuration={itemDuration}
+								loop={loop}
+								seek={seek}
+								previewUrl={previewUrl}
+								timePosition={offsetTimePosition}
+							/>
+						) : null}
+						{props.noticeLevel !== null ? (
+							<div
+								className={
+									'segment-timeline__mini-inspector ' +
+									(!props.hideHoverscrubPreview ? 'segment-timeline__mini-inspector--sub-inspector ' : '') +
+									props.typeClass +
+									' ' +
+									(props.noticeLevel === NoticeLevel.CRITICAL
+										? 'segment-timeline__mini-inspector--notice notice-critical'
+										: props.noticeLevel === NoticeLevel.WARNING
+										? 'segment-timeline__mini-inspector--notice notice-warning'
+										: '')
+								}
+							>
+								{renderNotice(props.noticeLevel, props.noticeMessage)}
+							</div>
+						) : null}
+					</div>
+				) : null
 			) : (
 				<div
 					className={

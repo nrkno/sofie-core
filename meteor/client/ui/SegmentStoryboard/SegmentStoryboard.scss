@@ -1,8 +1,10 @@
 @import '../../styles/colorScheme';
+@import '../../styles/utils';
 @import '../../styles/variables';
 @import '../../styles/itemTypeColors';
 
-$part-left-right-padding: 0.3rem;
+$part-left-padding: 6px;
+$part-right-padding: 5px;
 
 .segment-storyboard {
 	> .segment-storyboard__part-list__container {
@@ -80,7 +82,21 @@ $part-left-right-padding: 0.3rem;
 	flex: 0 0;
 	min-width: $segment-storyboard-part-width;
 	margin-top: 1em;
-	padding: 1.3rem $part-left-right-padding 1.5rem;
+	padding: 1.3rem $part-right-padding 1.5rem $part-left-padding;
+
+	&--invalid {
+		background: $segment-timeline-background-color;
+	}
+
+	> .segment-storyboard__part__background {
+		position: absolute;
+		background-image: linear-gradient(to bottom, $general-live-color 20px, black 8rem);
+		top: 0;
+		left: 3px;
+		bottom: 1.5em;
+		right: 2px;
+		border-radius: 4px 4px 0 0;
+	}
 
 	> .segment-storyboard__part__title {
 		display: none;
@@ -91,7 +107,7 @@ $part-left-right-padding: 0.3rem;
 
 	> .segment-storyboard__part__next-line {
 		position: absolute;
-		top: 0;
+		top: 10px;
 		left: 0;
 		bottom: 0;
 		width: 0;
@@ -99,20 +115,52 @@ $part-left-right-padding: 0.3rem;
 		z-index: 2;
 
 		&--autonext {
+			top: 7px;
 			border-left: 1px solid $part-start-color;
 		}
 
 		&--live {
 			border-left-color: $general-live-color;
+			opacity: 0;
+			transition: 200ms opacity;
 		}
 
 		&--next {
 			border-left-color: $general-next-color;
 		}
 
+		&--invalid {
+			top: 7px;
+			border-left: 1px solid $part-start-color;
+		}
+
 		&--opposite {
 			left: auto;
 			right: -2px;
+		}
+
+		&:not(.segment-storyboard__part__next-line--autonext):not(.segment-storyboard__part__next-line--live):not(.segment-storyboard__part__next-line--invalid) {
+			&::before {
+				@include take-arrow();
+				top: -3px;
+				left: -2px;
+			}
+
+			&::after {
+				@include take-arrow();
+				top: auto;
+				left: -2px;
+				bottom: -1px;
+			}
+
+			&.segment-storyboard__part__next-line--next {
+				&::before {
+					display: none;
+				}
+				&::after {
+					border-color: transparent transparent transparent $general-next-color;
+				}
+			}
 		}
 	}
 
@@ -127,21 +175,54 @@ $part-left-right-padding: 0.3rem;
 		white-space: nowrap;
 		word-wrap: none;
 		color: $part-start-color;
-		padding: 0.1em 0.3em;
+		padding: 3px 0.3em 1px;
 		z-index: 2;
 
 		&.segment-storyboard__part__next-line-label--live {
 			background: $general-live-color;
 			color: #fff;
+			text-align: center;
+			right: 0.2rem;
+			left: 0.3rem;
+			border-radius: 4px 4px 0 0;
 		}
 
 		&.segment-storyboard__part__next-line-label--next {
 			background: $general-next-color;
 			color: #000;
+			right: auto;
+			padding: 3px 0 1px 2px;
+			border-radius: 4px 2px 2px 0;
+
+			&::after {
+				content: ' ';
+				border-color: transparent transparent transparent $general-next-color;
+				display: block;
+				position: absolute;
+				bottom: 0;
+				left: auto;
+				right: -8px;
+				width: 0;
+				height: 0;
+				border-style: solid;
+				border-width: 9px 0 9px 9px;
+			}
+
+			&.segment-storyboard__part__next-line-label--autonext {
+				padding: 3px 5px 1px 0.1em;
+				border-radius: 4px 1em 1em 0;
+
+				&::after {
+					display: none;
+				}
+			}
 		}
 
 		&:not(.segment-storyboard__part__next-line-label--next):not(.segment-storyboard__part__next-line-label--live).segment-storyboard__part__next-line-label--autonext {
 			font-weight: 400;
+			top: 5px;
+			left: -1px;
+			font-size: 0.9em;
 		}
 	}
 
@@ -150,7 +231,7 @@ $part-left-right-padding: 0.3rem;
 		bottom: 0;
 		left: 0;
 		z-index: -1;
-		padding: 0 10px 0 10px;
+		padding: 0 10px 0 12px;
 		box-sizing: border-box;
 		background-color: $part-identifier;
 		border-radius: 0 10px 10px 0;
@@ -160,7 +241,7 @@ $part-left-right-padding: 0.3rem;
 	> .segment-storyboard__part-timer {
 		position: absolute;
 		bottom: 0;
-		right: $part-left-right-padding;
+		right: $part-left-padding;
 		text-align: right;
 		z-index: 2;
 		white-space: nowrap;
@@ -196,7 +277,7 @@ $part-left-right-padding: 0.3rem;
 	> .segment-storyboard__part__transitions {
 		position: absolute;
 		top: 3.5rem;
-		left: $part-left-right-padding;
+		left: $part-left-padding;
 
 		width: fit-content;
 
@@ -215,7 +296,7 @@ $part-left-right-padding: 0.3rem;
 	}
 
 	--invalid-reason-color-transparent: transparent;
-	--invalid-reason-color-opaque: #{$ui-dark-color};
+	--invalid-reason-color-opaque: #{$segment-background-color}; // HERE
 
 	> .segment-storyboard__part__invalid-cover {
 		position: absolute;

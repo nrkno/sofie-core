@@ -1,5 +1,6 @@
 @import 'colorScheme';
 @import 'itemTypeColors';
+@import 'utils';
 @import '_variables';
 
 $output-layer-group-line: 1px solid #5c5c5c;
@@ -1093,7 +1094,7 @@ svg.icon {
 				($output-layer-group-collapse-animation-duration * 1/2),
 			$output-layer-group-collapse-animation-duration visibility 0s;
 
-		color: rgb(175, 175, 175);
+		color: #707070;
 
 		font-size: 15px;
 		--timeline-grid-label-top: 18px;
@@ -1141,7 +1142,7 @@ svg.icon {
 			line-height: 1em;
 			white-space: nowrap;
 			word-wrap: none;
-			border-radius: 0.1em 0.5em 0.5em 0em;
+			border-radius: 4px 0.5em 0.5em 0em;
 			padding: 0.1em 0.5em 0em 0.2em;
 		}
 
@@ -1371,7 +1372,7 @@ svg.icon {
 			.segment-timeline__part__nextline {
 				display: block;
 				position: absolute;
-				top: -13px;
+				top: -10px;
 				left: 0;
 				bottom: -1.3em;
 				flex: 0;
@@ -1387,7 +1388,7 @@ svg.icon {
 				.segment-timeline__part__nextline__label {
 					display: none;
 					position: absolute;
-					top: -2px;
+					top: -3px;
 					left: 2px;
 					text-transform: uppercase;
 					font-weight: bold;
@@ -1396,6 +1397,7 @@ svg.icon {
 					white-space: nowrap;
 					word-wrap: none;
 					color: $part-start-color;
+					font-size: 0.9em;
 
 					&.segment-timeline__part__nextline__label--thin {
 						font-weight: 400;
@@ -1405,8 +1407,8 @@ svg.icon {
 						width: 20px;
 						height: 15px;
 						position: relative;
-						top: 12px;
-						right: 11px;
+						top: 0px;
+						right: -1px;
 						display: inline-block;
 
 						> svg {
@@ -1416,29 +1418,15 @@ svg.icon {
 				}
 
 				&::after {
-					content: ' ';
-					display: block;
-					position: absolute;
-					top: 0px;
-					left: -10px;
-					width: 0;
-					height: 0;
-					border-style: solid;
-					border-width: 5px 0 5px 9px;
-					border-color: transparent transparent transparent $part-start-color;
+					top: -2px;
+					left: -2px;
+					@include take-arrow();
 				}
 
 				&::before {
-					content: ' ';
-					display: block;
-					position: absolute;
-					bottom: 4px;
-					left: -10px;
-					width: 0;
-					height: 0;
-					border-style: solid;
-					border-width: 5px 0 5px 9px;
-					border-color: transparent transparent transparent $part-start-color;
+					bottom: 0;
+					left: -1px;
+					@include take-arrow();
 				}
 			}
 
@@ -1521,15 +1509,18 @@ svg.icon {
 				.segment-timeline__part__nextline.auto-next:not(.segment-timeline__part__nextline--endline),
 				.segment-timeline__part__nextline.invalid:not(.segment-timeline__part__nextline--endline) {
 					border-left-width: 1px;
+					top: -12px;
 
 					&::before,
 					&::after {
-						left: -1px;
+						// left: -1px;
+						display: none;
 					}
 
 					.segment-timeline__part__nextline__label {
 						display: block;
-						left: 10px;
+						top: -1px;
+						// 	left: 10px;
 					}
 				}
 			}
@@ -1624,6 +1615,9 @@ svg.icon {
 						> svg {
 							margin-left: 1px;
 							margin-right: 5px;
+							> path {
+								stroke: $general-next-color;
+							}
 						}
 					}
 				}
@@ -1632,19 +1626,61 @@ svg.icon {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
 
-					&::before,
-					&::after {
+					&::before {
 						border-color: transparent transparent transparent $general-next-color;
 					}
 
-					.segment-timeline__part__nextline__label {
-						color: $general-next-color;
-						display: block;
+					&:not(.invalid) {
+						&::after {
+							display: none;
+						}
 
-						.segment-timeline__part__nextline__label__carriage-return {
-							> svg {
-								fill: $general-next-color;
+						.segment-timeline__part__nextline__label {
+							background: $general-next-color;
+							color: #000;
+							display: block;
+							padding: 3px 1px 1px 2px;
+							border-radius: 4px 0 0 0;
+							left: -2px;
+							top: -8px;
+							font-size: 1em;
+
+							&::after {
+								content: ' ';
+								border-color: transparent transparent transparent $general-next-color;
+								display: block;
+								position: absolute;
+								bottom: 0;
+								left: auto;
+								right: -9px;
+								width: 0;
+								height: 0;
+								border-style: solid;
+								border-width: 9px 0 9px 9px;
 							}
+						}
+
+						&.auto-next {
+							.segment-timeline__part__nextline__label {
+								left: -1px;
+								top: -6px;
+								padding-right: 4px;
+								border-radius: 4px 0.5em 0.5em 0;
+
+								&::after {
+									display: none;
+								}
+							}
+						}
+					}
+
+					&.invalid {
+						z-index: 10;
+						.segment-timeline__part__nextline__label {
+							top: 50%;
+							transform: translateY(calc(-50% - 6px));
+							background: none;
+							filter: drop-shadow(2px 2px 0px black) drop-shadow(-2px -2px 0px black) drop-shadow(0 0 5px black);
 						}
 					}
 				}
@@ -1667,6 +1703,7 @@ svg.icon {
 				}
 
 				.segment-timeline__part__nextline__label {
+					padding: 0 0 0 7px;
 					color: $general-next-color;
 					display: block;
 

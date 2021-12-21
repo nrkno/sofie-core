@@ -117,8 +117,8 @@
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
-			word-wrap: none;
-			word-break: none;
+			word-wrap: break-word;
+			word-break: break-all;
 		}
 	}
 
