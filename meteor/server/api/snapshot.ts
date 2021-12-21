@@ -64,7 +64,7 @@ import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/Rundown
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
