@@ -23,7 +23,7 @@ import {
 	serializeTimelineBlob,
 	TimelineCompleteGenerationVersions,
 } from '../../../lib/collections/Timeline'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio, Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
 	getCurrentTime,
@@ -70,6 +70,8 @@ import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { endTrace, sendTrace, startTrace } from '../integration/influx'
 import { FastTrackObservers, triggerFastTrackObserver } from '../../publications/fastTrack'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
+import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
+import { MongoSelector } from '../../../lib/typings/meteor'
 
 export async function updateStudioOrPlaylistTimeline(cache: CacheForStudio): Promise<void> {
 	const playlists = cache.getActiveRundownPlaylists()
@@ -249,19 +251,60 @@ function processAndSaveTimelineObjects(
 		}
 	})
 
+	saveTimeline(cache, studio, timelineObjs, versions)
+
+	logger.debug('updateTimeline done!')
+}
+
+/** Store the timelineobjects into the cache, and perform any post-save actions */
+export function saveTimeline(
+	cache: CacheForStudioBase,
+	studio: ReadonlyDeep<DBStudio>,
+	timelineObjs: TimelineObjGeneric[],
+	generationVersions: TimelineCompleteGenerationVersions
+): void {
 	const newTimeline: TimelineComplete = {
 		_id: studio._id,
 		timelineHash: getRandomId(), // randomized on every timeline change
 		generated: getCurrentTime(),
 		timelineBlob: serializeTimelineBlob(timelineObjs),
-		generationVersions: versions,
+		generationVersions: generationVersions,
 	}
 
 	cache.Timeline.replace(newTimeline)
 	// Also do a fast-track for the timeline to be published faster:
 	triggerFastTrackObserver(FastTrackObservers.TIMELINE, [studio._id], newTimeline)
 
-	logger.debug('updateTimeline done!')
+	// Store the timelineHash to the latest UserLog,
+	// so that it can be looked up later to set .gatewayDuration:
+	{
+		const selector: MongoSelector<UserActionsLogItem> = {
+			// Try to match the latest userActionLogItem:
+			success: { $exists: false },
+			// This could be improved (as it relies on that the internal execution takes no longer than 3000 ms),
+			// but should be good enough for now..
+			timestamp: { $gt: getCurrentTime() - 3000 },
+
+			// Only set the timelineHash once:
+			timelineHash: { $exists: false },
+		}
+		if (studio.organizationId) {
+			selector.organizationId = studio.organizationId
+		}
+
+		cache.deferAfterSave(() => {
+			UserActionsLog.update(
+				selector,
+				{
+					$set: {
+						timelineHash: newTimeline.timelineHash,
+						timelineGenerated: newTimeline.generated,
+					},
+				},
+				{ multi: false }
+			)
+		})
+	}
 }
 
 export interface SelectedPartInstancesTimelineInfo {

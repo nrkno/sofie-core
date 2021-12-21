@@ -5,9 +5,9 @@ import { Timeline, TimelineComplete } from '../../../lib/collections/Timeline'
 import { protectString } from '../../../lib/lib'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { DbCacheReadObject } from '../../cache/CacheObject'
-import { CacheBase } from '../../cache/CacheBase'
+import { CacheBase, ICacheBase } from '../../cache/CacheBase'
 
-export interface CacheForStudioBase {
+export interface CacheForStudioBase extends ICacheBase<CacheForStudioBase> {
 	readonly Studio: DbCacheReadObject<Studio>
 	readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 

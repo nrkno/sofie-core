@@ -69,9 +69,12 @@ export namespace ServerClientAPI {
 			})
 		)
 		try {
+			// Executes the action:
 			const result = waitForPromise(fcn())
 
-			// check the nature of the result
+			// At this point, the action has finished execution
+
+			// Check the nature of the result:
 			if (ClientAPI.isClientResponseError(result)) {
 				UserActionsLog.update(actionId, {
 					$set: {
