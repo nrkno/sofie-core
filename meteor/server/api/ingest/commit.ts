@@ -10,9 +10,14 @@ import { ensureNextPartIsValid } from './updateNext'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
 import { isTooCloseToAutonext, LOW_PRIO_DEFER_TIME } from '../playout/lib'
-import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { ReadonlyDeep } from 'type-fest'
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylistId,
+	RundownPlaylists,
+} from '../../../lib/collections/RundownPlaylists'
 import {
 	getPlaylistIdFromExternalId,
 	produceRundownPlaylistInfoFromRundown,
@@ -202,7 +207,8 @@ export async function CommitIngestOperation(
 
 					// Do the segment removals
 					if (data.removedSegmentIds.length > 0) {
-						const { currentPartInstance, nextPartInstance } = newPlaylist.getSelectedPartInstances()
+						const { currentPartInstance, nextPartInstance } =
+							RundownPlaylistCollectionUtil.getSelectedPartInstances(newPlaylist)
 
 						const purgeSegmentIds = new Set<SegmentId>()
 						const orphanSegmentIds = new Set<SegmentId>()
@@ -303,7 +309,7 @@ export async function CommitIngestOperation(
 async function generatePlaylistAndRundownsCollection(
 	ingestCache: CacheForIngest,
 	newPlaylistIds: PlaylistIdPair
-): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>]> {
+): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown>]> {
 	// Load existing playout data
 	const finalRundown = getRundown(ingestCache)
 
@@ -338,8 +344,8 @@ async function generatePlaylistAndRundownsCollectionInner(
 	newPlaylistId: RundownPlaylistId,
 	newPlaylistExternalId: string,
 	existingPlaylist0?: ReadonlyDeep<RundownPlaylist>,
-	existingRundownsCollection?: DbCacheWriteCollection<Rundown, DBRundown>
-): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown, DBRundown>] | null> {
+	existingRundownsCollection?: DbCacheWriteCollection<Rundown>
+): Promise<[RundownPlaylist, DbCacheWriteCollection<Rundown>] | null> {
 	if (existingPlaylist0) {
 		if (existingPlaylist0._id !== newPlaylistId) {
 			throw new Meteor.Error(
@@ -374,7 +380,7 @@ async function generatePlaylistAndRundownsCollectionInner(
 	if (allRundowns.length > 0) {
 		// Skip the update, if there are no rundowns left
 		// Generate the new playlist, and ranks for the rundowns
-		const { rundownPlaylist: newPlaylist0, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
+		const { rundownPlaylist: newPlaylist, order: newRundownOrder } = produceRundownPlaylistInfoFromRundown(
 			studio,
 			studioBlueprint,
 			existingPlaylist,
@@ -382,7 +388,6 @@ async function generatePlaylistAndRundownsCollectionInner(
 			newPlaylistExternalId,
 			allRundowns
 		)
-		const newPlaylist = new RundownPlaylist(newPlaylist0)
 
 		// Update the ranks of the rundowns
 		if (!newPlaylist.rundownRanksAreSetInSofie) {
@@ -465,7 +470,7 @@ function updatePartInstancesBasicProperties(
 export async function regeneratePlaylistAndRundownOrder(
 	studio: ReadonlyDeep<Studio>,
 	oldPlaylist: ReadonlyDeep<RundownPlaylist>,
-	existingRundownsCollection?: DbCacheWriteCollection<Rundown, DBRundown>
+	existingRundownsCollection?: DbCacheWriteCollection<Rundown>
 ): Promise<RundownPlaylist | null> {
 	const result = await generatePlaylistAndRundownsCollectionInner(
 		studio,

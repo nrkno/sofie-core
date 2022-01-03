@@ -1,13 +1,7 @@
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
-import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import {
-	IBlueprintPartDB,
-	IBlueprintPartInTransition,
-	IBlueprintPartOutTransition,
-	NoteSeverity,
-	PartHoldMode,
-} from '@sofie-automation/blueprints-integration'
+import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
+import { IBlueprintPartDB, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -23,7 +17,7 @@ export interface PartInvalidReason {
 	severity?: NoteSeverity
 	color?: string
 }
-export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
+export interface Part extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number
@@ -47,60 +41,14 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	expectedDurationWithPreroll: number | undefined
 }
 
-export class Part implements DBPart {
-	// From IBlueprintPart:
-	public externalId: string
-	public title: string
-	public metaData?: {
-		[key: string]: any
-	}
-	public autoNext?: boolean
-	public autoNextOverlap?: number
-	public inTransition?: IBlueprintPartInTransition
-	public disableNextInTransition?: boolean
-	public outTransition?: IBlueprintPartOutTransition
-	public expectedDuration?: number
-	public budgetDuration?: number
-	public holdMode?: PartHoldMode
-	public shouldNotifyCurrentPlayingPart?: boolean
-	public classes?: string[]
-	public classesForNext?: string[]
-	public displayDurationGroup?: string
-	public displayDuration?: number
-	public invalid?: boolean
-	public invalidReason?: PartInvalidReason
-	public untimed?: boolean
-	public floated?: boolean
-	public gap?: boolean
-	// From IBlueprintPartDB:
-	public _id: PartId
-	public segmentId: SegmentId
-	// From DBPart:
-	public _rank: number
-	public rundownId: RundownId
-	public status?: string
-	public notes?: Array<PartNote>
-	public identifier?: string
-	public expectedDurationWithPreroll: number | undefined
-
-	constructor(document: DBPart) {
-		for (const [key, value] of Object.entries(document)) {
-			this[key] = value
-		}
-	}
-
-	isPlayable() {
-		return isPartPlayable(this)
-	}
-}
+/** Note: Use Part instead */
+export type DBPart = Part
 
 export function isPartPlayable(part: DBPart) {
 	return !part.invalid && !part.floated
 }
 
-export const Parts = createMongoCollection<Part, DBPart>('parts', {
-	transform: (doc) => applyClassToDocument(Part, doc),
-})
+export const Parts = createMongoCollection<Part>('parts')
 registerCollection('Parts', Parts)
 
 registerIndex(Parts, {

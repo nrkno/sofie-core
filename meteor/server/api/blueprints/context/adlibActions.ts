@@ -12,7 +12,7 @@ import {
 	UnprotectedStringProperties,
 	clone,
 } from '../../../../lib/lib'
-import { Part } from '../../../../lib/collections/Parts'
+import { isPartPlayable } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
 	IEventContext,
@@ -357,7 +357,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('New part must contain at least one piece')
 		}
 
-		const newPartInstance = new PartInstance({
+		const newPartInstance: PartInstance = {
 			_id: getRandomId(),
 			rundownId: currentPartInstance.rundownId,
 			segmentId: currentPartInstance.segmentId,
@@ -365,7 +365,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			segmentPlayoutId: currentPartInstance.segmentPlayoutId,
 			takeCount: currentPartInstance.takeCount + 1,
 			rehearsal: currentPartInstance.rehearsal,
-			part: new Part({
+			part: {
 				...rawPart,
 				_id: getRandomId(),
 				rundownId: currentPartInstance.rundownId,
@@ -376,10 +376,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				invalidReason: undefined,
 				floated: false,
 				expectedDurationWithPreroll: undefined, // Filled in later
-			}),
-		})
+			},
+		}
 
-		if (!newPartInstance.part.isPlayable()) {
+		if (!isPartPlayable(newPartInstance.part)) {
 			throw new Error('Cannot queue a part which is not playable')
 		}
 

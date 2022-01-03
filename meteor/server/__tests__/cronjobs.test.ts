@@ -21,6 +21,7 @@ let origGetCurrentTime
 jest.mock('../logging')
 
 import '../cronjobs'
+import '../api/peripheralDevice'
 import { Meteor } from 'meteor/meteor'
 
 describe('cronjobs', () => {

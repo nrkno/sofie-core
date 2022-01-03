@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { DBRundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, isPartPlayable } from '../../../lib/collections/Parts'
 import {
 	getCurrentTime,
@@ -21,9 +21,9 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
+import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { DBPartInstance, PartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
@@ -472,7 +472,7 @@ export function setNextSegment(cache: CacheForPlayout, nextSegment: Segment | nu
 	if (nextSegment) {
 		// Just run so that errors will be thrown if something wrong:
 		const partsInSegment = cache.Parts.findFetch({ segmentId: nextSegment._id })
-		if (!partsInSegment.find((p) => p.isPlayable())) {
+		if (!partsInSegment.find(isPartPlayable)) {
 			throw new Meteor.Error(400, 'Segment contains no valid parts')
 		}
 
@@ -684,11 +684,11 @@ export function isTooCloseToAutonext(currentPartInstance: ReadonlyDeep<PartInsta
 }
 
 export function getRundownsSegmentsAndPartsFromCache(
-	partsCache: DbCacheReadCollection<Part, DBPart>,
-	segmentsCache: DbCacheReadCollection<Segment, DBSegment>,
-	rundowns: Array<ReadonlyDeep<DBRundown>>
+	partsCache: DbCacheReadCollection<Part>,
+	segmentsCache: DbCacheReadCollection<Segment>,
+	rundowns: Array<ReadonlyDeep<Rundown>>
 ): { segments: Segment[]; parts: Part[] } {
-	const segments = RundownPlaylist._sortSegments(
+	const segments = RundownPlaylistCollectionUtil._sortSegments(
 		segmentsCache.findFetch(
 			{},
 			{
@@ -701,7 +701,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 		rundowns
 	)
 
-	const parts = RundownPlaylist._sortPartsInner(
+	const parts = RundownPlaylistCollectionUtil._sortPartsInner(
 		partsCache.findFetch(
 			{},
 			{

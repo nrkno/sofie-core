@@ -13,7 +13,7 @@ export interface HotkeyDefinition {
 }
 /** A string, identifying a ShowStyleBase */
 export type ShowStyleBaseId = ProtectedString<'ShowStyleBaseId'>
-export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintShowStyleBase, '_id' | 'blueprintId'> {
+export interface ShowStyleBase extends ProtectedStringProperties<IBlueprintShowStyleBase, '_id' | 'blueprintId'> {
 	_id: ShowStyleBaseId
 
 	/** Name of this show style */
@@ -28,9 +28,10 @@ export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintSho
 	_rundownVersionHash: string
 }
 
-export type ShowStyleBase = DBShowStyleBase
+/** Note: Use ShowStyleBase instead */
+export type DBShowStyleBase = ShowStyleBase
 
-export const ShowStyleBases = createMongoCollection<ShowStyleBase, DBShowStyleBase>('showStyleBases')
+export const ShowStyleBases = createMongoCollection<DBShowStyleBase>('showStyleBases')
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 registerIndex(ShowStyleBases, {

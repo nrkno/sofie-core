@@ -11,17 +11,17 @@ import { anythingChanged, sumChanges } from '../lib/database'
 
 type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
 
-type DbCacheWritable<T1 extends T2, T2 extends { _id: ProtectedString<any> }> =
-	| DbCacheWriteCollection<T1, T2>
-	| DbCacheWriteObject<T1, T2>
-	| DbCacheWriteOptionalObject<T1, T2>
+type DbCacheWritable<T extends { _id: ProtectedString<any> }> =
+	| DbCacheWriteCollection<T>
+	| DbCacheWriteObject<T>
+	| DbCacheWriteOptionalObject<T>
 
-export type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
-	? DbCacheReadCollection<A, B>
-	: T extends DbCacheWriteObject<infer A, infer B>
-	? DbCacheReadObject<A, B>
-	: T extends DbCacheWriteOptionalObject<infer A, infer B>
-	? DbCacheReadObject<A, B, true>
+export type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A>
+	? DbCacheReadCollection<A>
+	: T extends DbCacheWriteObject<infer A>
+	? DbCacheReadObject<A>
+	: T extends DbCacheWriteOptionalObject<infer A>
+	? DbCacheReadObject<A, true>
 	: T
 export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 	{ [K in keyof T]: ReadOnlyCacheInner<T[K]> },
@@ -62,8 +62,8 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	}
 
 	protected getAllCollections() {
-		const highPrioDBs: DbCacheWritable<any, any>[] = []
-		const lowPrioDBs: DbCacheWritable<any, any>[] = []
+		const highPrioDBs: DbCacheWritable<any>[] = []
+		const lowPrioDBs: DbCacheWritable<any>[] = []
 
 		_.map(_.keys(this), (key) => {
 			let db = this[key]
@@ -198,14 +198,18 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		if (span) span.end()
 	}
 }
-export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase<T> {
+export interface ICacheBase<T> {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
-	defer(fcn: DeferredFunction<T>): void {
-		this._deferredFunctions.push(fcn)
-	}
+	defer: (fcn: DeferredFunction<T>) => void
 	/** Defer provided function to after cache.saveAllToDatabase().
 	 * Note that at the time of execution, the cache is no longer available.
 	 * */
+	deferAfterSave: (fcn: () => void | Promise<void>) => void
+}
+export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase<T> implements ICacheBase<T> {
+	defer(fcn: DeferredFunction<T>): void {
+		this._deferredFunctions.push(fcn)
+	}
 	deferAfterSave(fcn: () => void | Promise<void>) {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}

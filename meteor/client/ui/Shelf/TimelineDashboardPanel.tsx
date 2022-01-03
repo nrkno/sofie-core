@@ -25,6 +25,7 @@ import {
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
@@ -39,7 +40,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
 		return {
 			...fetchAndFilter(props),
-			studio: props.playlist.getStudio(),
+			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,

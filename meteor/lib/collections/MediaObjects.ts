@@ -122,7 +122,7 @@ export interface MediaStreamCodec {
 	is_avc?: string
 }
 
-export const MediaObjects = createMongoCollection<MediaObject, MediaObject>('mediaObjects')
+export const MediaObjects = createMongoCollection<MediaObject>('mediaObjects')
 registerCollection('MediaObjects', MediaObjects)
 registerIndex(MediaObjects, {
 	studioId: 1,

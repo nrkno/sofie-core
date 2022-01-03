@@ -2,7 +2,11 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylistId,
+} from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -100,7 +104,7 @@ interface IProps {
 	studio: Studio
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
-	rundown: Rundown
+	rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>
 	timeScale: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -191,19 +195,16 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					memoizedIsolatedAutorun(
 						(_playlistId: RundownPlaylistId) =>
 							(
-								props.playlist.getAllOrderedParts(undefined, {
-									fields: {
-										segmentId: 1,
-										_rank: 1,
-									},
-								}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]
+								RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(props.playlist, undefined, undefined, undefined, {
+									fields: { _id: 1 },
+								}).parts as Pick<Part, '_id'>[]
 							).map((part) => part._id),
 						'playlist.getAllOrderedParts',
 						props.playlist._id
 					),
 					memoizedIsolatedAutorun(
 						(_playlistId: RundownPlaylistId, _currentPartInstanceId, _nextPartInstanceId) =>
-							props.playlist.getSelectedPartInstances(),
+							RundownPlaylistCollectionUtil.getSelectedPartInstances(props.playlist),
 						'playlist.getSelectedPartInstances',
 						props.playlist._id,
 						props.playlist.currentPartInstanceId,
@@ -220,7 +221,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				: Math.random() * 2000 + 500
 		)
 
-		const rundownOrder = props.playlist.getRundownIDs()
+		const rundownOrder = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
 		const rundownIndex = rundownOrder.indexOf(segment.rundownId)
 
 		const o = RundownUtils.getResolvedSegment(

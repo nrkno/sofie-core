@@ -5,7 +5,12 @@ import { logger } from '../../../lib/logging'
 import { queueExternalMessages } from '../ExternalMessageQueue'
 import { loadShowStyleBlueprint } from './cache'
 import { RundownTimingEventContext, RundownDataChangedEventContext } from './context'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylists,
+	RundownPlaylistId,
+	DBRundownPlaylist,
+} from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { profiler } from '../profiler'
@@ -148,7 +153,7 @@ function handlePartInstanceTimingEvent(playlistId: RundownPlaylistId, partInstan
 	}
 }
 export function reportRundownDataHasChanged(
-	playlist: ReadonlyDeep<RundownPlaylist>,
+	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	rundown: ReadonlyDeep<Rundown>
 ): void {
 	Meteor.defer(async () => {

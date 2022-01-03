@@ -7,7 +7,7 @@ import {
 	setupDefaultRundownPlaylist,
 	setupMockPeripheralDevice,
 } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownCollectionUtil, RundownId } from '../../../../lib/collections/Rundowns'
 import '../api'
 import {
 	deserializeTimelineBlob,
@@ -17,7 +17,12 @@ import {
 } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylist,
+	RundownPlaylistId,
+	RundownPlaylistCollectionUtil,
+} from '../../../../lib/collections/RundownPlaylists'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../lockFunction'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
@@ -156,7 +161,8 @@ async function doTakePart(
 	const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 	expect(playlist).toBeTruthy()
 
-	const { currentPartInstance, nextPartInstance, previousPartInstance } = playlist.getSelectedPartInstances()
+	const { currentPartInstance, nextPartInstance, previousPartInstance } =
+		RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 	if (expectedCurrentPartId) {
 		expect(currentPartInstance).toBeTruthy()
@@ -189,7 +195,7 @@ async function doActivatePlaylist(playlistId: RundownPlaylistId, nextPartId: Par
 	const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 	expect(playlist).toBeTruthy()
 
-	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+	const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 	expect(currentPartInstance).toBeFalsy()
 	expect(nextPartInstance).toBeTruthy()
 	expect(nextPartInstance!.part._id).toEqual(nextPartId)
@@ -265,7 +271,7 @@ describe('Timeline', () => {
 		expect(getRundown0()).toBeTruthy()
 		expect(getPlaylist0()).toBeTruthy()
 
-		const parts = getRundown0().getParts()
+		const parts = RundownCollectionUtil.getParts(getRundown0())
 
 		expect(getPlaylist0()).toMatchObject({
 			activationId: undefined,
@@ -367,7 +373,7 @@ describe('Timeline', () => {
 			})
 		}
 
-		const parts = rundown.getParts()
+		const parts = RundownCollectionUtil.getParts(rundown)
 
 		// Prepare and activate in rehersal:
 		await doActivatePlaylist(playlistId0, parts[0]._id)
@@ -375,7 +381,7 @@ describe('Timeline', () => {
 		const getPartInstances = () => {
 			const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 			expect(playlist).toBeTruthy()
-			return playlist.getSelectedPartInstances()
+			return RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 		}
 
 		const checkTimings = async (timings: PartTimelineTimings) => {

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, SegmentId, Segments } from '../../../../lib/collections/Segments'
@@ -16,7 +16,12 @@ import {
 import { ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownInput } from '../rundownInput'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylist,
+	RundownPlaylistId,
+	RundownPlaylistCollectionUtil,
+} from '../../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../../lib/api/methods'
 import { removeRundownPlaylistFromDb } from '../../rundownPlaylist'
@@ -1365,15 +1370,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
 			})
-			const playlist = rundown.getRundownPlaylist()
+			const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
 			expect(playlist).toBeTruthy()
 
 			const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
-			const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+			const getPlaylist = () => RundownCollectionUtil.getRundownPlaylist(rundown)
 			const getSegment = (id: SegmentId) => Segments.findOne(id) as Segment
-			const resyncRundown = () => {
+			const resyncRundown = async () => {
 				try {
-					ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
+					await ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
 				} catch (e) {
 					if (e.toString().match(/does not support the method "reloadRundown"/)) {
 						// This is expected
@@ -1390,8 +1395,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				}
 			}
 
-			const segments = getRundown().getSegments()
-			const parts = getRundown().getParts()
+			const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 			expect(segments).toHaveLength(2)
 			expect(parts).toHaveLength(3)
@@ -1403,7 +1407,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await RundownInput.dataRundownDelete(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId)
 			expect(getRundown().orphaned).toEqual('deleted')
 
-			resyncRundown()
+			await resyncRundown()
 			expect(getRundown().orphaned).toBeUndefined()
 
 			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
@@ -1422,7 +1426,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(getRundown().orphaned).toBeUndefined()
 			expect(getSegment(segments[0]._id).orphaned).toEqual('deleted')
 
-			resyncRundown()
+			await resyncRundown()
 			expect(getRundown().orphaned).toBeUndefined()
 			expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 
@@ -1437,7 +1441,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(getRundown().orphaned).toBeUndefined()
 			expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 
-			resyncRundown()
+			await resyncRundown()
 			expect(getRundown().orphaned).toBeUndefined()
 			expect(getSegment(segments[0]._id).orphaned).toBeUndefined()
 		} finally {
@@ -1525,14 +1529,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
 			})
-			const playlist = rundown.getRundownPlaylist()
+			const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
 			expect(playlist).toBeTruthy()
 
-			const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
-			const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+			// const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
+			const getPlaylist = () => RundownCollectionUtil.getRundownPlaylist(rundown)
 
-			const segments = getRundown().getSegments()
-			const parts = getRundown().getParts()
+			const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 			expect(segments).toHaveLength(2)
 			expect(parts).toHaveLength(3)
@@ -1548,7 +1551,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Check which parts are current and next
-				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const selectedInstances = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist())
 				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
 				const nextPartInstance = selectedInstances.nextPartInstance as PartInstance
 				expect(currentPartInstance).toBeTruthy()
@@ -1572,8 +1575,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				updatedSegmentData
 			)
 			{
-				const segments2 = getRundown().getSegments()
-				const parts2 = getRundown().getParts()
+				const { segments: segments2, parts: parts2 } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 				expect(segments2).toHaveLength(2)
 				expect(parts2).toHaveLength(3)
@@ -1590,7 +1592,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Check if the partInstance was updated
-				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const selectedInstances = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist())
 				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
 				const nextPartInstance = selectedInstances.nextPartInstance as PartInstance
 				expect(currentPartInstance).toBeTruthy()

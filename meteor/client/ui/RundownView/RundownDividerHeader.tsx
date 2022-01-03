@@ -9,7 +9,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IProps {
-	rundown: Rundown
+	rundown: Pick<Rundown, '_id' | 'name' | 'timing'>
 	playlist: RundownPlaylist
 }
 

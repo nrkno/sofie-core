@@ -10,11 +10,15 @@ import {
 	setupMockPeripheralDevice,
 	setupRundownWithAutoplayPart0,
 } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+} from '../../../../lib/collections/RundownPlaylists'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { Pieces } from '../../../../lib/collections/Pieces'
@@ -58,9 +62,10 @@ describe('Playout API', () => {
 		return PeripheralDeviceCommands.find({ deviceId: device._id }, { sort: { time: 1 } }).fetch()
 	}
 	function getAllRundownData(rundown: Rundown) {
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 		return {
-			parts: rundown.getParts(),
-			segments: rundown.getSegments(),
+			parts,
+			segments,
 			rundown: Rundowns.findOne(rundown._id) as Rundown,
 			pieces: Pieces.find({ rundown: rundown._id }, { sort: { _id: 1 } }).fetch(),
 			adLibPieces: AdLibPieces.find({ rundown: rundown._id }, { sort: { _id: 1 } }).fetch(),
@@ -116,7 +121,8 @@ describe('Playout API', () => {
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
-		const parts = getRundown0().getParts()
+
+		const parts = RundownCollectionUtil.getParts(getRundown0())
 
 		expect(getPlaylist0()).toMatchObject({
 			activationId: undefined,
@@ -135,7 +141,9 @@ describe('Playout API', () => {
 			// Prepare and activate:
 			await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, false)
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
@@ -156,7 +164,9 @@ describe('Playout API', () => {
 			// Take the first Part:
 			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
@@ -302,7 +312,8 @@ describe('Playout API', () => {
 				// Take the first Part:
 				await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
-				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+				const { currentPartInstance, nextPartInstance } =
+					RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist0())
 				expect(currentPartInstance).toBeTruthy()
 				expect(nextPartInstance).toBeTruthy()
 			}
@@ -397,14 +408,14 @@ describe('Playout API', () => {
 	testInFiber('reloadRundownPlaylistData', async () => {
 		// mock reloadRundown for test
 		const origReloadRundown = IngestActions.reloadRundown
-		IngestActions.reloadRundown = jest.fn(() => TriggerReloadDataResponse.COMPLETED)
+		IngestActions.reloadRundown = jest.fn(async () => TriggerReloadDataResponse.COMPLETED)
 
-		expect(() => {
+		await expect(
 			ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
-		}).toThrowError(/not found/gi)
+		).rejects.toMatchToString(/not found/gi)
 
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
-		ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
+		await ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 
 		expect(IngestActions.reloadRundown).toHaveBeenCalled()
 		expect((IngestActions.reloadRundown as jest.Mock).mock.calls[0][0]).toMatchObject({
@@ -440,7 +451,7 @@ describe('Playout API', () => {
 				rehearsal: true,
 			})
 
-			const parts = getPlaylist0().getAllOrderedParts()
+			const { parts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(getPlaylist0())
 
 			// just any time, such as 2020-01-01 12:00:00
 			let now = new Date(2020, 0, 1, 12, 0, 0).getTime()
@@ -454,7 +465,8 @@ describe('Playout API', () => {
 				// Take the first Part:
 				await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0)
 
-				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+				const { currentPartInstance, nextPartInstance } =
+					RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist0())
 				expect(currentPartInstance).toBeTruthy()
 				expect(nextPartInstance).toBeTruthy()
 				expect(currentPartInstance?.part._id).toBe(parts[0]._id)
@@ -497,7 +509,8 @@ describe('Playout API', () => {
 				expect(playlist.startedPlayback).toBe(now)
 
 				// the currentPartInstance timings are set
-				const currentPartInstance = playlist.getSelectedPartInstances().currentPartInstance as PartInstance
+				const currentPartInstance = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+					.currentPartInstance as PartInstance
 				expect(currentPartInstance).toBeTruthy()
 				expect(currentPartInstance.timings?.startedPlayback).toBe(now)
 
@@ -512,7 +525,7 @@ describe('Playout API', () => {
 
 			{
 				const nowBuf = now
-				const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
+				const { currentPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist0())
 				expect(currentPartInstance?.part.expectedDuration).toBeTruthy()
 				now += (currentPartInstance?.part.expectedDuration ?? 0) - 500
 				// try to take just before an autonext
@@ -527,7 +540,7 @@ describe('Playout API', () => {
 				const {
 					currentPartInstance: currentPartInstanceBeforeTake,
 					nextPartInstance: nextPartInstanceBeforeTake,
-				} = getPlaylist0().getSelectedPartInstances()
+				} = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist0())
 				const currentPartInstanceBeforeTakeId = currentPartInstanceBeforeTake?._id
 				const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
 
@@ -566,7 +579,7 @@ describe('Playout API', () => {
 				const {
 					currentPartInstance: currentPartInstanceAfterTake,
 					nextPartInstance: nextPartInstanceAfterTake,
-				} = getPlaylist0().getSelectedPartInstances()
+				} = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist0())
 				expect(currentPartInstanceAfterTake).toBeTruthy()
 				expect(currentPartInstanceAfterTake?.part._id).toBe(parts[1]._id)
 				expect(nextPartInstanceAfterTake).toBeTruthy()
@@ -598,14 +611,16 @@ describe('Playout API', () => {
 		const getPlaylist0 = () => {
 			return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 		}
-		const parts = getPlaylist0().getAllOrderedParts()
+		const { parts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(getPlaylist0())
 
 		// Prepare and activate in rehersal:
 		await ServerPlayoutAPI.resetAndActivateRundownPlaylist(DEFAULT_ACCESS(getPlaylist0()), playlistId0, true)
 
 		{
 			// expect first part to be selected as next
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeFalsy()
 			expect(getPlaylist0()).toMatchObject({
 				activationId: expect.stringMatching(/^randomId/),
@@ -617,7 +632,7 @@ describe('Playout API', () => {
 		{
 			// move horizontally +1
 			await ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, 1, 0)
-			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist0())
 			// expect second part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[1]._id)
 		}
@@ -625,7 +640,7 @@ describe('Playout API', () => {
 		{
 			// move horizontally -1
 			await ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, -1, 0)
-			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist0())
 			// expect first part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)
 		}
@@ -633,7 +648,7 @@ describe('Playout API', () => {
 		{
 			// move vertically +1
 			await ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, 0, 1)
-			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist0())
 			// expect 3rd part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[2]._id)
 		}
@@ -641,7 +656,7 @@ describe('Playout API', () => {
 		{
 			// move vertically -1
 			await ServerPlayoutAPI.moveNextPart(DEFAULT_ACCESS(getPlaylist0()), playlistId0, 0, -1)
-			const { nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist0())
 			// expect 1st part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)
 		}

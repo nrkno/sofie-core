@@ -55,7 +55,7 @@ export function makeNewIngestPart(ingestPart: IngestPart): LocalIngestPart {
 export class RundownIngestDataCache {
 	private constructor(
 		private readonly rundownId: RundownId,
-		private readonly collection: DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>
+		private readonly collection: DbCacheWriteCollection<IngestDataCacheObj>
 	) {}
 
 	static async create(rundownId: RundownId): Promise<RundownIngestDataCache> {
@@ -140,7 +140,7 @@ export class RundownIngestDataCache {
 	update(ingestRundown: LocalIngestRundown): void {
 		// cache the Data:
 		const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(this.rundownId, ingestRundown)
-		saveIntoCache<IngestDataCacheObj, IngestDataCacheObj>(this.collection, {}, cacheEntries)
+		saveIntoCache<IngestDataCacheObj>(this.collection, {}, cacheEntries)
 	}
 
 	delete(): void {

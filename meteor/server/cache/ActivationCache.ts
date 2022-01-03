@@ -1,4 +1,4 @@
-import { RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { ProtectedString, clone } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
@@ -106,7 +106,7 @@ export class ActivationCache {
 		this._initialized = false
 		this._persistant = false
 	}
-	async initialize(playlist: ReadonlyDeep<RundownPlaylist>, rundownsInPlaylist: Rundown[]) {
+	async initialize(playlist: ReadonlyDeep<DBRundownPlaylist>, rundownsInPlaylist: Rundown[]) {
 		if (this._initialized && (!this._playlist || playlist.activationId !== this._playlist.activationId)) {
 			// activationId has changed, we should clear out the data because it might not be valid anymore
 			this._uninitialize()
@@ -118,7 +118,7 @@ export class ActivationCache {
 			throw new Error(
 				`ActivationCache.initialize playlist._id "${playlist._id}" not equal to this.playlistId "${this.playlistId}"`
 			)
-		this._playlist = clone<RundownPlaylist>(playlist)
+		this._playlist = clone<DBRundownPlaylist>(playlist)
 
 		const pStudio = Studios.findOneAsync(this._playlist.studioId)
 

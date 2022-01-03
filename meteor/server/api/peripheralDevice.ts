@@ -2,12 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, stringifyObjects } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, applyToArray, stringifyObjects } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
+import { TimelineHash } from '../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -35,7 +35,7 @@ import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '.
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
 import { getValidActivationCache } from '../cache/ActivationCache'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
@@ -341,18 +341,15 @@ export namespace ServerPeripheralDeviceAPI {
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		PeripheralDeviceAPI.executeFunction(
-			peripheralDevice._id,
-			(err, res) => {
-				if (err) {
-					logger.warn(err)
-				}
+		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, 'pingResponse', message)
+			.then((res) => {
+				if (cb) cb(null, res)
+			})
+			.catch((err) => {
+				logger.warn(err)
 
-				if (cb) cb(err, res)
-			},
-			'pingResponse',
-			message
-		)
+				if (cb) cb(err, null)
+			})
 
 		ping(context, deviceId, token)
 	}
@@ -393,12 +390,6 @@ export namespace ServerPeripheralDeviceAPI {
 			return returnValue
 		}
 	}
-	export const executeFunction: (deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => any =
-		Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
-			const args0 = args.slice(0, -1)
-			const cb = args.slice(-1)[0] // the last argument in ...args
-			PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
-		})
 
 	export function requestUserAuthToken(
 		context: MethodContext,
@@ -467,77 +458,38 @@ export namespace ServerPeripheralDeviceAPI {
 		check(timelineHash, String)
 		check(resolveDuration, Number)
 
-		if (peripheralDevice.studioId) {
-			const timeline = (await Timeline.findOneAsync(
-				{
-					_id: peripheralDevice.studioId,
+		// Look up the userAction associated with this timelineHash.
+		// We're using that to determine when the timeline was generated (in Core)
+		// In order to determine the total latency (roundtrip from timeline-generation => resolving done in playout-gateway)
+		const userAction = (await UserActionsLog.findOneAsync(
+			{
+				timelineHash: timelineHash,
+			},
+			{
+				fields: {
+					timelineGenerated: 1,
 				},
-				{
-					fields: {
-						timelineHash: 1,
-						generated: 1,
-					},
-				}
-			)) as Pick<TimelineComplete, 'timelineHash' | 'generated'>
-
-			// Compare the timelineHash with the one we have in the timeline.
-			// We're using that to determine when the timeline was generated (in Core)
-			// In order to determine the total latency (roundtrip from timeline-generation => resolving done in playout-gateway)
-			if (timeline) {
-				if (timeline.timelineHash === timelineHash) {
-					/** Time when timeline was generated in Core */
-					const startTime = timeline.generated
-					const endTime = getCurrentTime()
-
-					const totalLatency = endTime - startTime
-
-					/** How many latencies we store for statistics */
-					const LATENCIES_MAX_LENGTH = 100
-
-					/** Any latency higher than this is not realistic */
-					const MAX_REALISTIC_LATENCY = 1000 // ms
-
-					if (totalLatency < MAX_REALISTIC_LATENCY) {
-						if (!peripheralDevice.latencies) peripheralDevice.latencies = []
-						peripheralDevice.latencies.unshift(totalLatency)
-
-						if (peripheralDevice.latencies.length > LATENCIES_MAX_LENGTH) {
-							// Trim anything after LATENCIES_MAX_LENGTH
-							peripheralDevice.latencies.splice(LATENCIES_MAX_LENGTH, 999)
-						}
-						await PeripheralDevices.updateAsync(peripheralDevice._id, {
-							$set: {
-								latencies: peripheralDevice.latencies,
-							},
-						})
-						// Because the ActivationCache is used during playout, we need to update that as well:
-						const activationCache = getValidActivationCache(peripheralDevice.studioId)
-						if (activationCache) {
-							const device = (await activationCache.getPeripheralDevices()).find(
-								(device) => device._id === peripheralDevice._id
-							)
-							if (device) {
-								device.latencies = peripheralDevice.latencies
-							}
-						}
-
-						// Also store the result to userActions, if possible.
-						await UserActionsLog.updateAsync(
-							{
-								success: true,
-								doneTime: { $gt: startTime },
-							},
-							{
-								$push: {
-									gatewayDuration: totalLatency,
-									timelineResolveDuration: resolveDuration,
-								},
-							},
-							{ multi: false }
-						)
-					}
-				}
 			}
+		)) as Pick<UserActionsLogItem, '_id' | 'timelineGenerated'>
+
+		// Compare the timelineHash with the one we have in the timeline.
+
+		if (userAction && userAction.timelineGenerated) {
+			/** Time when timeline was generated in Core */
+			const startTime = userAction.timelineGenerated
+			const endTime = getCurrentTime()
+
+			const totalLatency = endTime - startTime
+
+			await updatePeripheralDeviceLatency(totalLatency, peripheralDevice)
+
+			// Also store the result to the userAction:
+			await UserActionsLog.updateAsync(userAction._id, {
+				$push: {
+					gatewayDuration: totalLatency,
+					timelineResolveDuration: resolveDuration,
+				},
+			})
 		}
 	}
 }
@@ -588,6 +540,42 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 
 	res.end(content)
 })
+
+async function updatePeripheralDeviceLatency(totalLatency: number, peripheralDevice: PeripheralDevice) {
+	/** How many latencies we store for statistics */
+	const LATENCIES_MAX_LENGTH = 100
+
+	/** Any latency higher than this is not realistic */
+	const MAX_REALISTIC_LATENCY = 3000 // ms
+
+	if (totalLatency < MAX_REALISTIC_LATENCY) {
+		if (!peripheralDevice.latencies) peripheralDevice.latencies = []
+		peripheralDevice.latencies.unshift(totalLatency)
+
+		if (peripheralDevice.latencies.length > LATENCIES_MAX_LENGTH) {
+			// Trim anything after LATENCIES_MAX_LENGTH
+			peripheralDevice.latencies.splice(LATENCIES_MAX_LENGTH, 999)
+		}
+		await PeripheralDevices.updateAsync(peripheralDevice._id, {
+			$set: {
+				latencies: peripheralDevice.latencies,
+			},
+		})
+
+		if (peripheralDevice.studioId) {
+			// Because the ActivationCache is used during playout, we need to update that as well:
+			const activationCache = getValidActivationCache(peripheralDevice.studioId)
+			if (activationCache) {
+				const device = (await activationCache.getPeripheralDevices()).find(
+					(device) => device._id === peripheralDevice._id
+				)
+				if (device) {
+					device.latencies = peripheralDevice.latencies
+				}
+			}
+		}
+	}
+}
 
 /** WHen a device has executed a PeripheralDeviceCommand, it will reply to this endpoint with the result */
 function functionReply(

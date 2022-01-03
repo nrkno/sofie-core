@@ -1,5 +1,5 @@
 import { PartInstanceId } from '../../../../lib/collections/PartInstances'
-import { Part } from '../../../../lib/collections/Parts'
+import { isPartPlayable, Part } from '../../../../lib/collections/Parts'
 import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../lib/collections/Timeline'
 import { profiler } from '../../profiler'
 import { sortPieceInstancesByStart } from '../pieces'
@@ -65,7 +65,7 @@ export function findLookaheadForLayer(
 				break
 			}
 
-			if (partInfo.pieces.length > 0 && partInfo.part.isPlayable()) {
+			if (partInfo.pieces.length > 0 && isPartPlayable(partInfo.part)) {
 				const objs = findLookaheadObjectsForPart(currentPartInstanceId, layer, previousPart, partInfo, null)
 				res.future.push(...objs)
 				previousPart = partInfo.part

@@ -61,7 +61,7 @@ describe('server/lib', () => {
 			generationVersions: {} as any,
 		})
 
-		const options: SaveIntoDbHooks<any, any> = {
+		const options: SaveIntoDbHooks<any> = {
 			beforeInsert: jest.fn((o) => o),
 			beforeUpdate: jest.fn((o) => o),
 			beforeRemove: jest.fn((o) => o),

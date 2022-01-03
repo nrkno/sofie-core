@@ -1,3 +1,4 @@
+import '../../../../../__mocks__/_extendJest'
 import { Meteor } from 'meteor/meteor'
 import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
@@ -58,7 +59,7 @@ describe('Test sending mos actions', () => {
 			},
 		})
 
-		expect(() => MOSDeviceActions.reloadRundown(device, rundown)).toThrow(`unknown annoying error`)
+		await expect(MOSDeviceActions.reloadRundown(device, rundown)).rejects.toMatch(`unknown annoying error`)
 	})
 
 	testInFiber('reloadRundown: valid payload', async () => {
@@ -104,7 +105,7 @@ describe('Test sending mos actions', () => {
 			})
 		})
 
-		const response = MOSDeviceActions.reloadRundown(device, rundown)
+		const response = await MOSDeviceActions.reloadRundown(device, rundown)
 
 		expect(response).toEqual(TriggerReloadDataResponse.WORKING)
 
@@ -143,8 +144,9 @@ describe('Test sending mos actions', () => {
 			},
 		})
 
-		expect(() => MOSDeviceActions.reloadRundown(device, rundown)).toThrow(
-			`[401] Expected triggerGetRunningOrder reply for SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa but got newId`
+		await expect(MOSDeviceActions.reloadRundown(device, rundown)).rejects.toThrowMeteor(
+			401,
+			`Expected triggerGetRunningOrder reply for SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa but got newId`
 		)
 	})
 })

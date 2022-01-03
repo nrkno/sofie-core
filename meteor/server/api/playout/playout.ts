@@ -1,7 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
-import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
+import { Rundown, RundownCollectionUtil, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
+import { Part, DBPart, PartId, isPartPlayable } from '../../../lib/collections/Parts'
 import { PieceId } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
@@ -25,10 +25,14 @@ import {
 	reportPartInstanceHasStopped,
 	reportPieceHasStopped,
 } from '../blueprints/events'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylistId,
+} from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
-import { updateStudioTimeline, updateTimeline } from './timeline'
+import { saveTimeline, updateStudioTimeline, updateTimeline } from './timeline'
 import {
 	resetRundownPlaylist as libResetRundownPlaylist,
 	setNextPart as libsetNextPart,
@@ -445,10 +449,7 @@ export namespace ServerPlayoutAPI {
 					: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
 			// const allowedSegmentIds = new Set(allowedSegments.map((s) => s._id))
 
-			const playablePartsBySegment = _.groupBy(
-				rawParts.filter((p) => p.isPlayable()),
-				(p) => p.segmentId
-			)
+			const playablePartsBySegment = _.groupBy(rawParts.filter(isPartPlayable), (p) => p.segmentId)
 
 			// Iterate through segments and find the first part
 			let selectedPart: Part | undefined
@@ -475,11 +476,14 @@ export namespace ServerPlayoutAPI {
 				return null
 			}
 		} else if (partDelta) {
-			let playabaleParts: DBPart[] = rawParts.filter((p) => refPart._id === p._id || p.isPlayable())
+			let playabaleParts: DBPart[] = rawParts.filter((p) => refPart._id === p._id || isPartPlayable(p))
 			let refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 			if (refPartIndex === -1) {
 				const tmpRefPart = { ...refPart, invalid: true } // make sure it won't be found as playable
-				playabaleParts = RundownPlaylist._sortPartsInner([...playabaleParts, tmpRefPart], rawSegments)
+				playabaleParts = RundownPlaylistCollectionUtil._sortPartsInner(
+					[...playabaleParts, tmpRefPart],
+					rawSegments
+				)
 				refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
 				if (refPartIndex === -1) throw new Meteor.Error(500, `Part "${refPart._id}" not found after insert!`)
 			}
@@ -650,7 +654,7 @@ export namespace ServerPlayoutAPI {
 
 				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
-				const showStyleBase = rundown.getShowStyleBase()
+				const showStyleBase = RundownCollectionUtil.getShowStyleBase(rundown)
 
 				// @ts-ignore stringify
 				// logger.info(o)
@@ -1105,7 +1109,7 @@ export namespace ServerPlayoutAPI {
 	function timelineTriggerTimeInner(
 		cache: CacheForStudio,
 		results: PeripheralDeviceAPI.TimelineTriggerTimeResult,
-		pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance> | undefined,
+		pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
 		activePlaylist: RundownPlaylist | undefined
 	) {
 		let lastTakeTime: number | undefined
@@ -1185,17 +1189,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			if (tlChanged) {
-				const newTimeline: TimelineComplete = {
-					_id: cache.Studio.doc._id,
-					timelineBlob: serializeTimelineBlob(timelineObjs),
-					timelineHash: getRandomId(),
-					generated: getCurrentTime(),
-					generationVersions: timeline.generationVersions,
-				}
-
-				cache.Timeline.replace(newTimeline)
-				// Also do a fast-track for the timeline to be published faster:
-				triggerFastTrackObserver(FastTrackObservers.TIMELINE, [cache.Studio.doc._id], newTimeline)
+				saveTimeline(cache, cache.Studio.doc, timelineObjs, timeline.generationVersions)
 			}
 		}
 	}

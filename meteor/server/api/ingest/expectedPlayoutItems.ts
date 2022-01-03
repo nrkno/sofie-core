@@ -73,7 +73,7 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, action))
 	}
 
-	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(
+	saveIntoCache<ExpectedPlayoutItem>(
 		cache.ExpectedPlayoutItems,
 		{ baseline: { $exists: false } },
 		expectedPlayoutItems
@@ -84,7 +84,7 @@ export function updateBaselineExpectedPlayoutItemsOnRundown(
 	cache: CacheForIngest,
 	items?: ExpectedPlayoutItemGeneric[]
 ) {
-	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(
+	saveIntoCache<ExpectedPlayoutItem>(
 		cache.ExpectedPlayoutItems,
 		{ baseline: 'rundown' },
 		(items || []).map((item): ExpectedPlayoutItemRundown => {

@@ -113,7 +113,7 @@ export function wrapPieceToInstance(
 	)
 }
 
-export const PieceInstances = createMongoCollection<PieceInstance, PieceInstance>('pieceInstances')
+export const PieceInstances = createMongoCollection<PieceInstance>('pieceInstances')
 registerCollection('PieceInstances', PieceInstances)
 
 registerIndex(PieceInstances, {

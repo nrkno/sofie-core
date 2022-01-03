@@ -29,7 +29,11 @@ import { ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylistId,
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+} from '../../lib/collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
@@ -157,7 +161,7 @@ export function allowedToMoveRundownOutOfPlaylist(
 	playlist: ReadonlyDeep<RundownPlaylist>,
 	rundown: ReadonlyDeep<DBRundown>
 ) {
-	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+	const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 	if (rundown.playlistId !== playlist._id)
 		throw new Meteor.Error(
@@ -224,12 +228,12 @@ export function updatePartInstanceRanks(cache: CacheForPlayout, changedSegments:
 				delete partInstance.orphaned
 				partInstance.part._rank = part._rank
 			} else if (!partInstance.orphaned) {
-				partInstance.orphaned = 'deleted'
 				cache.PartInstances.update(partInstance._id, {
 					$set: {
 						orphaned: 'deleted',
 					},
 				})
+				partInstance.orphaned = 'deleted'
 			}
 		}
 
@@ -371,33 +375,38 @@ export namespace ServerRundownAPI {
 		})
 	}
 	/** Resync all rundowns in a rundownPlaylist */
-	export function resyncRundownPlaylist(
+	export async function resyncRundownPlaylist(
 		context: MethodContext,
 		playlistId: RundownPlaylistId
-	): ReloadRundownPlaylistResponse {
+	): Promise<ReloadRundownPlaylistResponse> {
 		check(playlistId, String)
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		logger.info('resyncRundownPlaylist ' + access.playlist._id)
 
-		const response: ReloadRundownPlaylistResponse = {
-			rundownsResponses: Rundowns.find({ playlistId: access.playlist._id })
-				.fetch()
-				.map((rundown) => {
-					return {
-						rundownId: rundown._id,
-						response: innerResyncRundown(rundown),
-					}
-				}),
+		const rundowns = await Rundowns.findFetchAsync({ playlistId: access.playlist._id })
+		const responses = await Promise.all(
+			rundowns.map(async (rundown) => {
+				return {
+					rundownId: rundown._id,
+					response: await innerResyncRundown(rundown),
+				}
+			})
+		)
+
+		return {
+			rundownsResponses: responses,
 		}
-		return response
 	}
-	export function resyncRundown(context: MethodContext, rundownId: RundownId): TriggerReloadDataResponse {
+	export async function resyncRundown(
+		context: MethodContext,
+		rundownId: RundownId
+	): Promise<TriggerReloadDataResponse> {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 		return innerResyncRundown(access.rundown)
 	}
 
-	export function innerResyncRundown(rundown: Rundown): TriggerReloadDataResponse {
+	export async function innerResyncRundown(rundown: Rundown): Promise<TriggerReloadDataResponse> {
 		logger.info('resyncRundown ' + rundown._id)
 
 		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
@@ -412,7 +421,7 @@ export namespace ClientRundownAPI {
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const playlist = access.playlist
 
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		const errors = rundowns.map((rundown) => {
 			if (!rundown.importVersions) return 'unknown'
 
@@ -450,11 +459,11 @@ export namespace ClientRundownAPI {
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const rundownPlaylist = access.playlist
 
-		const studio = rundownPlaylist.getStudio()
+		const studio = RundownPlaylistCollectionUtil.getStudio(rundownPlaylist)
 		const studioBlueprint = studio.blueprintId ? await fetchBlueprintLight(studio.blueprintId) : null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
-		const rundowns = rundownPlaylist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(rundownPlaylist)
 		const uniqueShowStyleCompounds = _.uniq(
 			rundowns,
 			undefined,
@@ -536,7 +545,7 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		return ServerRundownAPI.removeRundownPlaylist(this, playlistId)
 	}
 	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
-		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(this, playlistId))
+		return ServerRundownAPI.resyncRundownPlaylist(this, playlistId)
 	}
 	async rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
 		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId))
@@ -548,7 +557,7 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		return ServerRundownAPI.removeRundown(this, rundownId)
 	}
 	async resyncRundown(rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.resyncRundown(this, rundownId))
+		return ServerRundownAPI.resyncRundown(this, rundownId)
 	}
 	async unsyncRundown(rundownId: RundownId) {
 		return ServerRundownAPI.unsyncRundown(this, rundownId)

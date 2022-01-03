@@ -58,7 +58,8 @@ export const PieceCountdownContainer = withTracker((props: IPropsHeader) => {
 					(!this.props.partAutoNext &&
 						Math.abs(pieceEnable + (sourceDuration - seek) - (this.props.partExpectedDuration || 0)) > 500))
 			) {
-				const freezeCountdown = this.props.partStartedPlayback + pieceEnable + sourceDuration - getCurrentTime()
+				const freezeCountdown =
+					this.props.partStartedPlayback + pieceEnable + (sourceDuration - seek) - getCurrentTime()
 				if (freezeCountdown > 0) {
 					return (
 						<>

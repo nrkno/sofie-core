@@ -472,32 +472,30 @@ describe('Infinites', () => {
 			name: string,
 			externalId: string
 		): Rundown {
-			return new Rundown(
-				literal<DBRundown>({
-					_rank: 0,
-					_id: id,
-					externalId,
-					organizationId: protectString('test'),
-					name,
-					showStyleVariantId: protectString('test-variant'),
-					showStyleBaseId: protectString('test-base'),
-					studioId: protectString('studio0'),
-					created: 0,
-					modified: 0,
-					importVersions: {
-						studio: '0.0.0',
-						showStyleBase: '0.0.0',
-						showStyleVariant: '0.0.0',
-						blueprint: '0.0.0',
-						core: '0.0.0`',
-					},
-					externalNRCSName: 'test',
-					playlistId,
-					timing: {
-						type: PlaylistTimingType.None,
-					},
-				})
-			)
+			return literal<DBRundown>({
+				_rank: 0,
+				_id: id,
+				externalId,
+				organizationId: protectString('test'),
+				name,
+				showStyleVariantId: protectString('test-variant'),
+				showStyleBaseId: protectString('test-base'),
+				studioId: protectString('studio0'),
+				created: 0,
+				modified: 0,
+				importVersions: {
+					studio: '0.0.0',
+					showStyleBase: '0.0.0',
+					showStyleVariant: '0.0.0',
+					blueprint: '0.0.0',
+					core: '0.0.0`',
+				},
+				externalNRCSName: 'test',
+				playlistId,
+				timing: {
+					type: PlaylistTimingType.None,
+				},
+			})
 		}
 
 		testInFiber('multiple continued pieces starting at 0 should preserve the newest', () => {

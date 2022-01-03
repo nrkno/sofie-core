@@ -14,7 +14,6 @@ import {
 	unprotectObjectArray,
 	getRank,
 	unprotectString,
-	mongoFindOptions,
 	stringifyError,
 } from '../../lib/lib'
 import * as _ from 'underscore'
@@ -100,7 +99,7 @@ export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternal
 	return protectString(getHash(`${studioId}_${playlistExternalId}`))
 }
 
-export async function removeRundownPlaylistFromDb(playlist: ReadonlyDeep<RundownPlaylist>): Promise<void> {
+export async function removeRundownPlaylistFromDb(playlist: ReadonlyDeep<DBRundownPlaylist>): Promise<void> {
 	if (playlist.activationId)
 		throw new Meteor.Error(500, `RundownPlaylist "${playlist._id}" is active and cannot be removed`)
 
@@ -236,7 +235,7 @@ function defaultPlaylistForRundown(
 export function updateRundownsInPlaylist(
 	_playlist: DBRundownPlaylist,
 	rundownRanks: BlueprintResultOrderedRundowns,
-	rundownCollection: DbCacheWriteCollection<Rundown, DBRundown>
+	rundownCollection: DbCacheWriteCollection<Rundown>
 ) {
 	let maxRank: number = Number.NEGATIVE_INFINITY
 	const unrankedRundowns: DBRundown[] = []
@@ -511,13 +510,20 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 }
 
 function sortDefaultRundownInPlaylistOrder(
-	rundowns: ReadonlyDeep<Array<DBRundown>>
+	rundowns0: ReadonlyDeep<Array<DBRundown>>
 ): ReadonlyDeep<Array<IBlueprintRundown>> {
-	return mongoFindOptions<ReadonlyDeep<DBRundown>, ReadonlyDeep<DBRundown>>(rundowns, {
-		sort: {
-			name: 1,
-			externalId: 1,
-			_id: 1,
-		},
-	}).sort(PlaylistTiming.sortTiminings)
+	const rundowns = [...rundowns0] // shallow clone array
+	return rundowns.sort((a, b) => {
+		const timingSorting = PlaylistTiming.sortTiminings(a, b)
+		if (timingSorting !== 0) return timingSorting
+
+		const nameSorting = a.name.localeCompare(b.name)
+		if (nameSorting !== 0) return nameSorting
+
+		const externalIdSorting = a.externalId.localeCompare(b.externalId)
+		if (externalIdSorting !== 0) return externalIdSorting
+
+		const idSorting = unprotectString(a._id).localeCompare(unprotectString(b._id))
+		return idSorting
+	})
 }

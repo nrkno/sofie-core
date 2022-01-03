@@ -266,7 +266,7 @@ describe('updatePartInstanceRanks', () => {
 		// insert an adlib part
 		const adlibId = 'adlib0'
 		insertPartInstance(
-			new Part({
+			{
 				_id: protectString(adlibId),
 				_rank: 3.5, // after part03
 				rundownId,
@@ -274,7 +274,7 @@ describe('updatePartInstanceRanks', () => {
 				externalId: adlibId,
 				title: adlibId,
 				expectedDurationWithPreroll: undefined,
-			}),
+			},
 			'adlib-part'
 		)
 
@@ -364,6 +364,7 @@ describe('updatePartInstanceRanks', () => {
 		insertAllPartInstances()
 
 		const initialInstanceRanks = getPartInstanceRanks()
+		expect(initialInstanceRanks.filter((r) => r.orphaned)).toHaveLength(0)
 		expect(initialInstanceRanks).toHaveLength(5)
 
 		// Delete the segment

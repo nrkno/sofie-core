@@ -8,7 +8,7 @@ import { registerIndex } from '../database'
 /** A string, identifying a Segment */
 export type SegmentId = ProtectedString<'SegmentId'>
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
-export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB, '_id'> {
+export interface Segment extends ProtectedStringProperties<IBlueprintSegmentDB, '_id'> {
 	_id: SegmentId
 	/** Position inside rundown */
 	_rank: number
@@ -25,9 +25,11 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentNote>
 }
-export type Segment = DBSegment
 
-export const Segments = createMongoCollection<Segment, DBSegment>('segments')
+/** Note: Use Segment instead */
+export type DBSegment = Segment
+
+export const Segments = createMongoCollection<DBSegment>('segments')
 registerCollection('Segments', Segments)
 
 registerIndex(Segments, {

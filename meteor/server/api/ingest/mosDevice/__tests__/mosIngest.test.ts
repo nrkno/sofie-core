@@ -3,8 +3,8 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import '../../../../../__mocks__/_extendJest'
-import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
-import { Segments, DBSegment, SegmentId, Segment } from '../../../../../lib/collections/Segments'
+import { Rundowns, Rundown, DBRundown, RundownCollectionUtil, RundownId } from '../../../../../lib/collections/Rundowns'
+import { Segments, Segment, SegmentId } from '../../../../../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { literal, protectString } from '../../../../../lib/lib'
@@ -12,25 +12,30 @@ import { literal, protectString } from '../../../../../lib/lib'
 import { mockRO } from './mock-mos-data'
 import { fixSnapshot } from '../../../../../__mocks__/helpers/snapshot'
 import { Pieces } from '../../../../../lib/collections/Pieces'
-import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+} from '../../../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
 import { getPartId } from '../../lib'
-import { PartInstance } from '../../../../../lib/collections/PartInstances'
+import { DBPartInstance, PartInstance, PartInstances } from '../../../../../lib/collections/PartInstances'
 import { resetRandomId, restartRandomId } from '../../../../../__mocks__/random'
 import { UserActionsLog } from '../../../../../lib/collections/UserActionsLog'
 import { removeRundownPlaylistFromDb } from '../../../rundownPlaylist'
 
 jest.mock('../../updateNext')
 import { ensureNextPartIsValid } from '../../updateNext'
+import { MongoQuery, FindOptions } from '../../../../../lib/typings/meteor'
 type TensureNextPartIsValid = jest.MockedFunction<typeof ensureNextPartIsValid>
 const ensureNextPartIsValidMock = ensureNextPartIsValid as TensureNextPartIsValid
 
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../../../userActions.ts') // include in order to create the Meteor methods needed
 
-function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
-	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
+function getPartIdMap(segments: Segment[], parts: Part[]) {
+	const sortedParts = RundownPlaylistCollectionUtil._sortPartsInner(parts, segments)
 
 	const groupedParts = _.groupBy(sortedParts, (p) => p.segmentId)
 	const arr: [string, DBPart[]][] = _.pairs(groupedParts)
@@ -87,8 +92,7 @@ describe('Test recieved mos ingest payloads', () => {
 			playlistId: rundownPlaylist._id,
 		})
 
-		const segments = rundown.getSegments()
-		const parts = rundown.getParts({}, undefined, segments)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		expect(getPartIdMap(segments, parts)).toEqual(mockRO.segmentIdMap())
 
@@ -120,8 +124,7 @@ describe('Test recieved mos ingest payloads', () => {
 			playlistId: rundownPlaylist._id,
 		})
 
-		const segments = rundown.getSegments()
-		const parts = rundown.getParts({}, undefined, segments)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		const partMap2 = mockRO.segmentIdMap()
 		partMap2[1].parts.splice(1, 0, ...partMap2[3].parts)
@@ -404,7 +407,7 @@ describe('Test recieved mos ingest payloads', () => {
 	testInFiber('mosRoStoryInsert: Into segment', async () => {
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -419,8 +422,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const segments = rundown.getSegments()
-		const parts = rundown.getParts({}, undefined, segments)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts.splice(2, 0, newPartData.ID.toString())
@@ -447,7 +449,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -460,7 +462,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		await MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
 
-		const parts = rundown.getParts()
+		const parts = RundownCollectionUtil.getParts(rundown)
 
 		expect(Rundowns.findOne(rundown._id)?.orphaned).toEqual('deleted')
 		expect(parts.find((p) => p.externalId === newPartData.ID.toString())).toBeUndefined()
@@ -471,7 +473,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -486,8 +488,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const segments = rundown.getSegments()
-		const parts = rundown.getParts({}, undefined, segments)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap.splice(1, 0, {
@@ -576,7 +577,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -593,8 +594,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const segments = rundown.getSegments()
-		const parts = rundown.getParts({}, undefined, segments)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts[1] = newPartData.ID.toString()
@@ -612,7 +612,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -625,7 +625,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		await MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData])
 
-		const parts = rundown.getParts()
+		const parts = RundownCollectionUtil.getParts(rundown)
 
 		expect(Rundowns.findOne(rundown._id)?.orphaned).toEqual('deleted')
 		expect(parts.find((p) => p.externalId === newPartData.ID.toString())).toBeUndefined()
@@ -658,7 +658,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -674,8 +674,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const segments = rundown.getSegments()
-		const parts = rundown.getParts({}, undefined, segments)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[1].parts.push(...partMap[3].parts)
@@ -768,7 +767,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -782,8 +781,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const segments = rundown.getSegments()
-		const parts = rundown.getParts({}, undefined, segments)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts[1] = 'ro1;s1;p3'
@@ -802,7 +800,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -816,8 +814,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const segments = rundown.getSegments()
-		const parts = rundown.getParts({}, undefined, segments)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].segmentId = 'apDVfF5nk1_StK474hEUxLMZIag_'
@@ -873,7 +870,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -887,8 +884,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const segments = rundown.getSegments()
-		const parts = rundown.getParts({}, undefined, segments)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		const partMap = mockRO.segmentIdMap()
 		partMap[1].parts.push('ro1;s4;p1')
@@ -909,7 +905,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -937,7 +933,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -953,7 +949,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const { segments, parts } = playlist.getSegmentsAndPartsSync()
+		const { segments, parts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
 		const partMap = mockRO.segmentIdMap()
 		partMap[0].parts[1] = 'ro1;s1;p3'
 		partMap[0].parts[2] = 'ro1;s1;p2'
@@ -971,7 +967,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 
@@ -989,7 +985,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(ensureNextPartIsValid).toHaveBeenCalledTimes(1)
 
-		const { segments, parts } = playlist.getSegmentsAndPartsSync()
+		const { segments, parts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
 		const partMap = mockRO.segmentIdMap()
 		const old = partMap.splice(0, 1)
 		partMap.splice(3, 0, ...old)
@@ -1077,10 +1073,10 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const partExternalId = 'ro1;s1;p1'
 
-		const partToBeRemoved = rundown.getParts({ externalId: partExternalId })[0]
+		const partToBeRemoved = RundownCollectionUtil.getParts(rundown, { externalId: partExternalId })[0]
 		expect(partToBeRemoved).toBeTruthy()
 
-		const partsInSegmentBefore = rundown.getParts({ segmentId: partToBeRemoved.segmentId })
+		const partsInSegmentBefore = RundownCollectionUtil.getParts(rundown, { segmentId: partToBeRemoved.segmentId })
 		expect(partsInSegmentBefore).toHaveLength(3)
 
 		const action = literal<MOS.IMOSROAction>({
@@ -1095,7 +1091,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const partAfter = Parts.findOne(partsInSegmentBefore[2]._id) as Part
 		expect(partAfter).toBeTruthy()
 
-		const partsInSegmentAfter = rundown.getParts({ segmentId: partAfter.segmentId })
+		const partsInSegmentAfter = RundownCollectionUtil.getParts(rundown, { segmentId: partAfter.segmentId })
 		expect(partsInSegmentAfter).toHaveLength(2)
 
 		// The other parts in the segment should not not have changed:
@@ -1169,6 +1165,23 @@ describe('Test recieved mos ingest payloads', () => {
 		}
 	}
 
+	function rundownGetAllPartInstances(
+		rundownId: RundownId,
+		selector?: MongoQuery<PartInstance>,
+		options?: FindOptions<DBPartInstance>
+	) {
+		return PartInstances.find(
+			{
+				rundownId: rundownId,
+				...selector,
+			},
+			{
+				sort: { takeCount: 1 },
+				...options,
+			}
+		).fetch()
+	}
+
 	testInFiber('Rename segment during update while on air', async () => {
 		await resetOrphanedRundown()
 
@@ -1180,14 +1193,14 @@ describe('Test recieved mos ingest payloads', () => {
 		await MeteorCall.userAction.setNext('', rundown.playlistId, getPartId(rundown._id, 'ro1;s2;p1'))
 		await MeteorCall.userAction.take('', rundown.playlistId)
 
-		const partInstances0 = rundown.getAllPartInstances()
-		const { segments: segments0, parts: parts0 } = rundown.getSegmentsAndPartsSync()
+		const partInstances0 = rundownGetAllPartInstances(rundown._id)
+		const { segments: segments0, parts: parts0 } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p1', 'ro1;s2;p1', 'SEGMENT2b;PART1')
 		await mosReplaceBasicStory(rundown.externalId, 'ro1;s2;p2', 'ro1;s2;p2', 'SEGMENT2b;PART2')
 
-		const partInstances = rundown.getAllPartInstances()
-		const { segments, parts } = rundown.getSegmentsAndPartsSync()
+		const partInstances = rundownGetAllPartInstances(rundown._id)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		// Update expected data, for just the segment name and ids changing
 		applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
@@ -1211,8 +1224,8 @@ describe('Test recieved mos ingest payloads', () => {
 		await MeteorCall.userAction.setNext('', rundown.playlistId, getPartId(rundown._id, 'ro1;s2;p1'))
 		await MeteorCall.userAction.take('', rundown.playlistId)
 
-		const partInstances0 = rundown.getAllPartInstances()
-		const { segments: segments0, parts: parts0 } = rundown.getSegmentsAndPartsSync()
+		const partInstances0 = rundownGetAllPartInstances(rundown._id)
+		const { segments: segments0, parts: parts0 } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		// rename the segment
 		for (const story of mosRO.Stories) {
@@ -1232,8 +1245,8 @@ describe('Test recieved mos ingest payloads', () => {
 			expect(rundown2.orphaned).toBeFalsy()
 		}
 
-		const partInstances = rundown.getAllPartInstances()
-		const { segments, parts } = rundown.getSegmentsAndPartsSync()
+		const partInstances = rundownGetAllPartInstances(rundown._id)
+		const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(rundown)
 
 		// Update expected data, for just the segment name and ids changing
 		applySegmentRenameToContents('SEGMENT2', 'SEGMENT2b', segments0, segments, parts0, partInstances0)
@@ -1303,11 +1316,11 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
 		expect(rundown.orphaned).toBeFalsy()
-		expect(rundown.getSegments()).toHaveLength(4)
+		expect(RundownCollectionUtil.getSegments(rundown)).toHaveLength(4)
 
 		// insert a part after segment1
 		const newPartData = mockRO.newItem('ro1;s2a;newPart1', 'SEGMENT2pre;new1')
@@ -1318,7 +1331,7 @@ describe('Test recieved mos ingest payloads', () => {
 		await MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
 
 		{
-			const segments = rundown.getSegments()
+			const segments = RundownCollectionUtil.getSegments(rundown)
 			expect(segments).toHaveLength(5)
 
 			// Make sure we inserted, not replaced
@@ -1351,7 +1364,7 @@ describe('Test recieved mos ingest payloads', () => {
 		])
 
 		{
-			const segments = rundown.getSegments()
+			const segments = RundownCollectionUtil.getSegments(rundown)
 			expect(segments).toHaveLength(4)
 
 			// Make sure first segment is unchanged

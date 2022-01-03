@@ -13,6 +13,7 @@ import {
 	protectStringArray,
 	unDeepString,
 	waitForPromise,
+	assertNever,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
 import { check } from '../../../../lib/check'
@@ -51,7 +52,7 @@ import {
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { INoteBase } from '../../../../lib/api/notes'
-import { RundownPlaylistId, ABSessionInfo, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, ABSessionInfo, DBRundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	PieceInstances,
 	protectPieceInstance,
@@ -124,6 +125,18 @@ export class CommonContext implements ICommonContext {
 	logError(message: string): void {
 		logger.error(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
+	protected logNote(message: string, type: NoteSeverity): void {
+		if (type === NoteSeverity.ERROR) {
+			this.logError(message)
+		} else if (type === NoteSeverity.WARNING) {
+			this.logWarning(message)
+		} else if (type === NoteSeverity.INFO) {
+			this.logInfo(message)
+		} else {
+			assertNever(type)
+			this.logDebug(message)
+		}
+	}
 }
 
 /** Studio */
@@ -182,38 +195,21 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteSeverity.ERROR,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
+		this.addNote(NoteSeverity.ERROR, message, params)
 	}
 	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteSeverity.WARNING,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
+		this.addNote(NoteSeverity.WARNING, message, params)
 	}
 
 	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.INFO, message, params)
+	}
+	private addNote(type: NoteSeverity, message: string, params?: { [key: string]: any }) {
 		if (this.tempSendNotesIntoBlackHole) {
-			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+			this.logNote(`UserNotes: "${message}", ${JSON.stringify(params)}`, type)
 		} else {
 			this.notes.push({
-				type: NoteSeverity.INFO,
+				type: type,
 				message: {
 					key: message,
 					args: params,
@@ -460,7 +456,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	constructor(
 		studio: ReadonlyDeep<Studio>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		playlist: ReadonlyDeep<RundownPlaylist>,
+		playlist: ReadonlyDeep<DBRundownPlaylist>,
 		rundown: ReadonlyDeep<Rundown>,
 		previousPartInstance: PartInstance | undefined,
 		currentPartInstance: PartInstance | undefined,

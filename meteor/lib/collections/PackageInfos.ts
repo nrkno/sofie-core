@@ -33,7 +33,7 @@ export interface PackageInfoDB extends PackageInfo.Base {
 	payload: any
 }
 
-export const PackageInfos = createMongoCollection<PackageInfoDB, PackageInfoDB>('packageInfos')
+export const PackageInfos = createMongoCollection<PackageInfoDB>('packageInfos')
 registerCollection('PackageInfos', PackageInfos)
 
 registerIndex(PackageInfos, {

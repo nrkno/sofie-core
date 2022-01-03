@@ -12,12 +12,11 @@ import {
 	stringifyError,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
-import { RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
+import { RundownHoldState, Rundown, RundownCollectionUtil } from '../../../lib/collections/Rundowns'
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
-import { Part } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, setNextPart, selectNextPart } from './lib'
 import {
 	convertAdLibToPieceInstance,
@@ -102,7 +101,7 @@ export namespace ServerPlayoutAdLibAPI {
 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 
-				const showStyleBase = rundown.getShowStyleBase() // todo: database
+				const showStyleBase = RundownCollectionUtil.getShowStyleBase(rundown) // todo: database
 				if (!pieceToCopy.allowDirectPlay) {
 					throw new Meteor.Error(
 						403,
@@ -352,7 +351,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
 		if (queue || adLibPiece.toBeQueued) {
-			const newPartInstance = new PartInstance({
+			const newPartInstance: PartInstance = {
 				_id: getRandomId(),
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
@@ -361,7 +360,7 @@ export namespace ServerPlayoutAdLibAPI {
 				takeCount: currentPartInstance.takeCount + 1,
 				rehearsal: !!playlist.rehearsal,
 				orphaned: 'adlib-part',
-				part: new Part({
+				part: {
 					_id: getRandomId(),
 					_rank: 99999, // Corrected in innerStartQueuedAdLib
 					externalId: '',
@@ -369,9 +368,9 @@ export namespace ServerPlayoutAdLibAPI {
 					rundownId: rundown._id,
 					title: adLibPiece.name,
 					expectedDuration: adLibPiece.expectedDuration,
-					expectedDurationWithPreroll: adLibPiece.expectedDuration, // Temporary
-				}),
-			})
+					expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
+				},
+			}
 			const newPieceInstance = convertAdLibToPieceInstance(
 				playlist.activationId,
 				adLibPiece,

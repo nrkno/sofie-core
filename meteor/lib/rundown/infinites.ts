@@ -1,7 +1,7 @@
 import _ from 'underscore'
 import { PartInstance, PartInstanceId } from '../collections/PartInstances'
 import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../collections/PieceInstances'
-import { DBPart, PartId } from '../collections/Parts'
+import { DBPart, Part, PartId } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
@@ -91,8 +91,8 @@ export function getPlayheadTrackingInfinitesForPart(
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	currentPartInstance: PartInstance,
 	currentPartPieceInstances: PieceInstance[],
-	rundown: ReadonlyDeep<Rundown>,
-	part: DBPart,
+	rundown: ReadonlyDeep<Pick<Rundown, '_id' | 'showStyleBaseId'>>,
+	part: Part,
 	newInstanceId: PartInstanceId,
 	nextPartIsAfterCurrentPart: boolean,
 	isTemporary: boolean
@@ -260,8 +260,8 @@ export function isPiecePotentiallyActiveInPart(
 	segmentsBeforeThisInRundown: Set<SegmentId>,
 	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
-	rundown: ReadonlyDeep<Rundown>,
-	part: DBPart,
+	rundown: ReadonlyDeep<Pick<Rundown, '_id' | 'showStyleBaseId'>>,
+	part: Part,
 	pieceToCheck: Piece
 ): boolean {
 	// If its from the current part
@@ -330,8 +330,8 @@ export function getPieceInstancesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
 	playingPartInstance: PartInstance | undefined,
 	playingPieceInstances: PieceInstance[] | undefined,
-	rundown: ReadonlyDeep<Rundown>,
-	part: DBPart,
+	rundown: ReadonlyDeep<Pick<Rundown, '_id' | 'showStyleBaseId'>>,
+	part: Part,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	rundownsBeforeThisInPlaylist: RundownId[],
@@ -698,7 +698,7 @@ function continueShowStyleEndInfinites(
 	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	previousRundownId: RundownId,
-	rundown: ReadonlyDeep<Rundown>
+	rundown: ReadonlyDeep<Pick<Rundown, '_id' | 'showStyleBaseId'>>
 ): boolean {
 	let canContinueShowStyleEndInfinites = true
 	if (rundown.showStyleBaseId !== rundownsToShowstyles.get(previousRundownId)) {

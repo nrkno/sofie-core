@@ -21,7 +21,7 @@ import {
 	getSegmentsWithPartInstances,
 } from '../../lib/Rundown'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { DBSegment, Segment, SegmentId, Segments } from '../../lib/collections/Segments'
+import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
@@ -252,8 +252,8 @@ export namespace RundownUtils {
 	export function getResolvedSegment(
 		showStyleBase: ShowStyleBase,
 		playlist: RundownPlaylist,
-		rundown: Rundown,
-		segment: DBSegment,
+		rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
+		segment: Segment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
 		rundownsBeforeThisInPlaylist: RundownId[],
 		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,

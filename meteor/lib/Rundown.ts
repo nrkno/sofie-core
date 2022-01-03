@@ -15,7 +15,11 @@ import {
 import { FindOptions } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
 import { getCurrentTime, protectString, unprotectString } from './lib'
-import { RundownPlaylist, RundownPlaylistActivationId } from './collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+	RundownPlaylistCollectionUtil,
+} from './collections/RundownPlaylists'
 import { Rundown, RundownId } from './collections/Rundowns'
 import { ShowStyleBaseId } from './collections/ShowStyleBases'
 
@@ -120,7 +124,7 @@ const SIMULATION_INVALIDATION = 3000
  */
 export function getPieceInstancesForPartInstance(
 	playlistActivationId: RundownPlaylistActivationId | undefined,
-	rundown: Rundown,
+	rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
 	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
@@ -228,13 +232,18 @@ export function getSegmentsWithPartInstances(
 	partsOptions?: FindOptions<DBPart>,
 	partInstancesOptions?: FindOptions<PartInstance>
 ): Array<{ segment: Segment; partInstances: PartInstance[] }> {
-	const { segments, parts: rawParts } = playlist.getSegmentsAndPartsSync(
+	const { segments, parts: rawParts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
+		playlist,
 		segmentsQuery,
 		partsQuery,
 		segmentsOptions,
 		partsOptions
 	)
-	const rawPartInstances = playlist.getActivePartInstances(partInstancesQuery, partInstancesOptions)
+	const rawPartInstances = RundownPlaylistCollectionUtil.getActivePartInstances(
+		playlist,
+		partInstancesQuery,
+		partInstancesOptions
+	)
 	const playlistActivationId = playlist.activationId ?? protectString('')
 
 	const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)

@@ -4,8 +4,8 @@ import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation, withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
@@ -546,7 +546,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		}
 	}
 
-	const segments = props.playlist.getSegments()
+	const segments = RundownPlaylistCollectionUtil.getSegments(props.playlist)
 
 	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
 		(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, segments: Segment[]) => {
@@ -577,24 +577,24 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 				return segmentUi
 			})
 
-			const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
-			const partInstances = props.playlist.getActivePartInstancesMap()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				props.playlist
+			)
+			const partInstances = RundownPlaylistCollectionUtil.getActivePartInstancesMap(props.playlist)
 
-			props.playlist
-				.getUnorderedParts({
-					segmentId: {
-						$in: Array.from(uiSegmentMap.keys()),
-					},
-				})
-				.forEach((part) => {
-					const segment = uiSegmentMap.get(part.segmentId)
-					if (segment) {
-						const partInstance = findPartInstanceOrWrapToTemporary(partInstances, part)
-						segment.parts.push(partInstance)
+			RundownPlaylistCollectionUtil.getUnorderedParts(props.playlist, {
+				segmentId: {
+					$in: Array.from(uiSegmentMap.keys()),
+				},
+			}).forEach((part) => {
+				const segment = uiSegmentMap.get(part.segmentId)
+				if (segment) {
+					const partInstance = findPartInstanceOrWrapToTemporary(partInstances, part)
+					segment.parts.push(partInstance)
 
-						uiPartSegmentMap.set(part._id, segment)
-					}
-				})
+					uiPartSegmentMap.set(part._id, segment)
+				}
+			})
 
 			if (currentPartInstance) {
 				const segment = uiSegmentMap.get(currentPartInstance.segmentId)
@@ -630,7 +630,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	uiSegments.forEach((segment) => (segment.pieces.length = 0))
 
-	const rundownIds = props.playlist.getRundownIDs()
+	const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
 	const partIds = Array.from(uiPartSegmentMap.keys())
 
 	AdLibPieces.find(
@@ -707,7 +707,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	) {
 		const { t } = props
 
-		const rundowns = props.playlist.getRundowns(undefined, {
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(props.playlist, undefined, {
 			fields: {
 				_id: 1,
 				_rank: 1,
@@ -859,7 +859,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		const data = fetchAndFilter(props)
 		return {
 			...data,
-			studio: props.playlist.getStudio(),
+			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
 		}
 	},
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {

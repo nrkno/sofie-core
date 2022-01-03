@@ -317,7 +317,7 @@ export function saveSegmentChangesToCache(
 	const newPartIds = data.parts.map((p) => p._id)
 	const newSegmentIds = data.segments.map((p) => p._id)
 
-	const partChanges = saveIntoCache<Part, DBPart>(
+	const partChanges = saveIntoCache<Part>(
 		cache.Parts,
 		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
 		data.parts
@@ -327,7 +327,7 @@ export function saveSegmentChangesToCache(
 
 	logChanges(
 		'Pieces',
-		saveIntoCache<Piece, Piece>(
+		saveIntoCache<Piece>(
 			cache.Pieces,
 			isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
 			data.pieces
@@ -335,7 +335,7 @@ export function saveSegmentChangesToCache(
 	)
 	logChanges(
 		'AdLibActions',
-		saveIntoCache<AdLibAction, AdLibAction>(
+		saveIntoCache<AdLibAction>(
 			cache.AdLibActions,
 			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
 			data.adlibActions
@@ -343,7 +343,7 @@ export function saveSegmentChangesToCache(
 	)
 	logChanges(
 		'AdLibPieces',
-		saveIntoCache<AdLibPiece, AdLibPiece>(
+		saveIntoCache<AdLibPiece>(
 			cache.AdLibPieces,
 			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
 			data.adlibPieces
@@ -632,7 +632,7 @@ export async function saveChangesForRundown(
 
 	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
 	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(baselineObjects, {}, [
+		saveIntoCache<RundownBaselineObj>(baselineObjects, {}, [
 			{
 				_id: protectString<RundownBaselineObjId>(Random.id(7)),
 				rundownId: dbRundown._id,
@@ -643,12 +643,12 @@ export async function saveChangesForRundown(
 			},
 		]),
 		// Save the global adlibs
-		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
+		saveIntoCache<RundownBaselineAdLibItem>(
 			baselineAdlibPieces,
 			{},
 			postProcessAdLibPieces(showStyle.base.blueprintId, dbRundown._id, undefined, rundownRes.globalAdLibPieces)
 		),
-		saveIntoCache<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
+		saveIntoCache<RundownBaselineAdLibAction>(
 			baselineAdlibActions,
 			{},
 			postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
