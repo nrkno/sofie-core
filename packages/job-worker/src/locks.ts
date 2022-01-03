@@ -1,7 +1,6 @@
-import { assertNever, getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { logger } from './logging'
 import { AnyLockEvent } from './workers/locks'
-import { WorkerParentBase } from './workers/parent-base'
 
 type OwnerAndLockIds = [string, string]
 
@@ -12,11 +11,16 @@ class LockResource {
 	constructor(readonly id: string) {}
 }
 
-type Unsub = () => void
+export type ThreadLockChanged = (threadId: string, lockId: string, locked: boolean) => Promise<boolean>
+// type Unsub = () => void
 export class LocksManager {
 	readonly #resources = new Map<string, LockResource>()
-	readonly #ids = new Map<string, WorkerParentBase>()
-	readonly #subs = new Map<string, Unsub>()
+
+	readonly #lockChanged: ThreadLockChanged
+
+	constructor(lockChanged: ThreadLockChanged) {
+		this.#lockChanged = lockChanged
+	}
 
 	private getResource(resourceId: string): LockResource {
 		let resource = this.#resources.get(resourceId)
@@ -34,106 +38,89 @@ export class LocksManager {
 		if (resource.holder === null) {
 			const nextWorker = resource.waitingWorkers.shift()
 			if (nextWorker) {
-				const worker = this.#ids.get(nextWorker[0])
-				if (!worker) {
-					// Worker was invalid, try next
-					this.lockNextWorker(resource)
-					return
-				}
-
+				// Assume it will be locked
 				resource.holder = nextWorker
 
 				logger.info(
 					`Resource: ${resource.id} giving to "${nextWorker[0]}". ${resource.waitingWorkers.length} waiting`
 				)
 
-				worker.workerLockChange(nextWorker[1], true).catch((e) => {
-					logger.error(`Failed to report lock to worker: ${e}`)
-					if (
-						resource.holder &&
-						resource.holder[0] === nextWorker[0] &&
-						resource.holder[1] === nextWorker[1]
-					) {
-						// free it as the aquire was 'rejected'
-						resource.holder = null
-						this.lockNextWorker(resource)
-					}
-				})
+				this.#lockChanged(nextWorker[0], nextWorker[1], true)
+					.catch((e) => {
+						logger.error(`Failed to report lock to worker: ${e}`)
+
+						// It failed, so next worker should be attempted
+						return Promise.resolve(false)
+					})
+					.then((success) => {
+						if (!success) {
+							// Lock wasnt successful, so try the next
+							if (
+								resource.holder &&
+								resource.holder[0] === nextWorker[0] &&
+								resource.holder[1] === nextWorker[1]
+							) {
+								// free it as the aquire was 'rejected'
+								resource.holder = null
+								this.lockNextWorker(resource)
+							}
+						}
+					})
 			}
 		}
 	}
 
-	async subscribe(worker: WorkerParentBase): Promise<void> {
-		const id = getRandomString()
-		this.#ids.set(id, worker)
+	handleLockEvent(threadId: string, e: AnyLockEvent): void {
+		try {
+			const resource = this.getResource(e.resourceId)
 
-		const cb = (e: AnyLockEvent): void => {
-			try {
-				const resource = this.getResource(e.resourceId)
+			switch (e.event) {
+				case 'lock':
+					resource.waitingWorkers.push([threadId, e.lockId])
 
-				switch (e.event) {
-					case 'lock':
-						resource.waitingWorkers.push([id, e.lockId])
+					// Check if we can lock it
+					this.lockNextWorker(resource)
 
-						// Check if we can lock it
-						this.lockNextWorker(resource)
+					break
+				case 'unlock':
+					if (resource.holder && resource.holder[0] === threadId && resource.holder[1] === e.lockId) {
+						resource.holder = null
 
-						break
-					case 'unlock':
-						if (resource.holder && resource.holder[0] === id && resource.holder[1] === e.lockId) {
-							resource.holder = null
+						logger.info(
+							`Resource: ${resource.id} releaseing from "${threadId}". ${resource.waitingWorkers.length} waiting`
+						)
 
-							logger.info(
-								`Resource: ${resource.id} releaseing from "${id}". ${resource.waitingWorkers.length} waiting`
-							)
+						this.#lockChanged(threadId, e.lockId, false).catch((e) => {
+							logger.error(`Failed to report lock change back to worker: ${e}`)
+						})
+					} else {
+						logger.warn(`Worker tried to unlock a lock it doesnt own`)
+					}
 
-							worker.workerLockChange(e.lockId, false).catch((e) => {
-								logger.error(`Failed to report lock to worker: ${e}`)
-							})
-						} else {
-							logger.warn(`Worker tried to unlock a lock it doesnt own`)
-						}
-
-						this.lockNextWorker(resource)
-						break
-					default:
-						assertNever(e)
-						break
-				}
-			} catch (e) {
-				logger.error(`Unexpected error in lock handler: ${e}`)
+					this.lockNextWorker(resource)
+					break
+				default:
+					assertNever(e)
+					break
 			}
+		} catch (e) {
+			logger.error(`Unexpected error in lock handler: ${e}`)
 		}
-		worker.on('lock', cb)
-		this.#subs.set(id, () => {
-			// Unsub function
-			worker.off('lock', cb)
-		})
 	}
 
 	/** Unsubscribe a worker from the lock channels */
-	async unsubscribe(worker: WorkerParentBase): Promise<void> {
-		const idPair = Array.from(this.#ids.entries()).find((w) => w[1] === worker)
-		if (idPair) {
-			const id = idPair[0]
-			this.#ids.delete(id)
+	async releaseAllForThread(threadId: string): Promise<void> {
+		// ensure all locks are freed
+		for (const resource of this.#resources.values()) {
+			if (resource.waitingWorkers.length > 0) {
+				// Remove this worker from any waiting orders
+				resource.waitingWorkers = resource.waitingWorkers.filter((r) => r[0] !== threadId)
+			}
 
-			// stop listening
-			const unsub = this.#subs.get(id)
-			if (unsub) unsub()
-
-			// ensure all locks are freed
-			for (const resource of this.#resources.values()) {
-				if (resource.waitingWorkers.length > 0) {
-					// Remove this worker from any waiting orders
-					resource.waitingWorkers = resource.waitingWorkers.filter((r) => r[0] !== id)
-				}
-
-				if (resource.holder && resource.holder[0] === id) {
-					// Remove this worker from any held locks
-					resource.holder = null
-					this.lockNextWorker(resource)
-				}
+			if (resource.holder && resource.holder[0] === threadId) {
+				// Remove this worker from any held locks
+				resource.holder = null
+				this.lockNextWorker(resource)
 			}
 		}
 	}

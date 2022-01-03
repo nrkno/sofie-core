@@ -8,13 +8,14 @@ import { AnyLockEvent } from '../locks'
 import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { JobManager } from '../../manager'
-import { QueueJobFunc } from '../context'
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
 export class IngestWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<IngestWorkerChild>
 
 	private constructor(
 		workerId: string,
+		threadId: string,
 		studioId: StudioId,
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
@@ -22,7 +23,7 @@ export class IngestWorkerParent extends WorkerParentBase {
 		jobManager: JobManager,
 		thread: Promisify<IngestWorkerChild>
 	) {
-		super(workerId, studioId, mongoClient, locksManager, queueName, jobManager)
+		super(workerId, threadId, studioId, mongoClient, locksManager, queueName, jobManager)
 
 		this.#thread = thread
 	}
@@ -34,14 +35,14 @@ export class IngestWorkerParent extends WorkerParentBase {
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
 		studioId: StudioId,
-		jobManager: JobManager,
-		emitLockEvent: (event: AnyLockEvent) => void,
-		queueJob: QueueJobFunc
+		jobManager: JobManager
 	): Promise<IngestWorkerParent> {
+		const threadId = getRandomString()
+		const emitLockEvent = (e: AnyLockEvent) => locksManager.handleLockEvent(threadId, e)
 		const workerThread = await threadedClass<IngestWorkerChild, typeof IngestWorkerChild>(
 			'./child',
 			'IngestWorkerChild',
-			[emitLockEvent, queueJob],
+			[emitLockEvent, jobManager.queueJob],
 			{
 				instanceName: `Ingest: ${studioId}`,
 			}
@@ -53,6 +54,7 @@ export class IngestWorkerParent extends WorkerParentBase {
 		// create and start the worker
 		const parent = new IngestWorkerParent(
 			workerId,
+			threadId,
 			studioId,
 			mongoClient,
 			locksManager,

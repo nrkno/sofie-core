@@ -35,7 +35,22 @@ export class StudioWorkerSet {
 		this.#studioId = studioId
 		this.#jobManager = jobManager
 
-		this.#locksManager = new LocksManager()
+		this.#locksManager = new LocksManager(async (threadId, lockId, locked) => {
+			// Check each thread in turn, to find the one that should be informed
+			if (this.#studioWorker?.threadId === threadId) {
+				await this.#studioWorker.workerLockChange(lockId, locked)
+				return true
+			} else if (this.#ingestWorker?.threadId === threadId) {
+				await this.#ingestWorker.workerLockChange(lockId, locked)
+				return true
+			} else if (this.#eventsWorker?.threadId === threadId) {
+				await this.#eventsWorker.workerLockChange(lockId, locked)
+				return true
+			} else {
+				// Unhandled lock event
+				return false
+			}
+		})
 	}
 
 	public static async create(
@@ -54,7 +69,6 @@ export class StudioWorkerSet {
 	}
 
 	private async initStudioThread(): Promise<void> {
-		// Note: if this times out, try setting THREADS_WORKER_INIT_TIMEOUT=30000
 		this.#studioWorker = await StudioWorkerParent.start(
 			this.#workerId,
 			this.#mongoUri,
@@ -69,7 +83,6 @@ export class StudioWorkerSet {
 	}
 
 	private async initEventsThread(): Promise<void> {
-		// Note: if this times out, try setting THREADS_WORKER_INIT_TIMEOUT=30000
 		this.#eventsWorker = await EventsWorkerParent.start(
 			this.#workerId,
 			this.#mongoUri,
@@ -84,7 +97,6 @@ export class StudioWorkerSet {
 	}
 
 	private async initIngestThread(): Promise<void> {
-		// Note: if this times out, try setting THREADS_WORKER_INIT_TIMEOUT=30000
 		this.#ingestWorker = await IngestWorkerParent.start(
 			this.#workerId,
 			this.#mongoUri,

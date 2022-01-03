@@ -17,6 +17,7 @@ import { JobManager, JobStream } from '../manager'
 export abstract class WorkerParentBase {
 	// readonly #workerId: string
 	readonly #studioId: StudioId
+	readonly #threadId: string
 
 	readonly #mongoClient: MongoClient
 	readonly #locksManager: LocksManager
@@ -30,8 +31,13 @@ export abstract class WorkerParentBase {
 
 	#pendingInvalidations: InvalidateWorkerDataCache | null = null
 
+	public get threadId(): string {
+		return this.#threadId
+	}
+
 	protected constructor(
 		workerId: string,
+		threadId: string,
 		studioId: StudioId,
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
@@ -40,6 +46,7 @@ export abstract class WorkerParentBase {
 	) {
 		// this.#workerId = workerId
 		this.#studioId = studioId
+		this.#threadId = threadId
 		this.#mongoClient = mongoClient
 		this.#locksManager = locksManager
 
@@ -159,7 +166,6 @@ export abstract class WorkerParentBase {
 
 				// Start the worker running
 				await this.initWorker(mongoUri, dbName, this.#studioId)
-				await this.#locksManager.subscribe(this)
 
 				// Run until told to terminate
 				while (!this.#terminate) {
@@ -225,7 +231,7 @@ export abstract class WorkerParentBase {
 			} catch (e) {
 				// TODO: Worker - report error
 
-				await this.#locksManager.unsubscribe(this)
+				await this.#locksManager.releaseAllForThread(this.#threadId)
 
 				// Ensure the termination is tracked
 				if (!this.#terminate) {
@@ -240,7 +246,7 @@ export abstract class WorkerParentBase {
 
 	/** Terminate and cleanup the worker thread */
 	async terminate(): Promise<void> {
-		await this.#locksManager.unsubscribe(this)
+		await this.#locksManager.releaseAllForThread(this.#threadId)
 
 		if (!this.#terminate) {
 			this.#terminate = createManualPromise()

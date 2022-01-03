@@ -402,7 +402,7 @@ const RundownHeader = withTranslation()(
 			if (ClientAPI.isClientResponseError(err)) {
 				const { t } = this.props
 
-				if (err.error === 404) {
+				if (err.error.key === UserErrorMessage.DisableNoPieceFound) {
 					NotificationCenter.push(
 						new Notification(
 							undefined,

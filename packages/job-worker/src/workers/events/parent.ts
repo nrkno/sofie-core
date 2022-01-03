@@ -8,13 +8,14 @@ import { AnyLockEvent } from '../locks'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { JobManager } from '../../manager'
-import { QueueJobFunc } from '../context'
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
 export class EventsWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<EventsWorkerChild>
 
 	private constructor(
 		workerId: string,
+		threadId: string,
 		studioId: StudioId,
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
@@ -22,7 +23,7 @@ export class EventsWorkerParent extends WorkerParentBase {
 		jobManager: JobManager,
 		thread: Promisify<EventsWorkerChild>
 	) {
-		super(workerId, studioId, mongoClient, locksManager, queueName, jobManager)
+		super(workerId, threadId, studioId, mongoClient, locksManager, queueName, jobManager)
 
 		this.#thread = thread
 	}
@@ -34,14 +35,14 @@ export class EventsWorkerParent extends WorkerParentBase {
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
 		studioId: StudioId,
-		jobManager: JobManager,
-		emitLockEvent: (event: AnyLockEvent) => void,
-		queueJob: QueueJobFunc
+		jobManager: JobManager
 	): Promise<EventsWorkerParent> {
+		const threadId = getRandomString()
+		const emitLockEvent = (e: AnyLockEvent) => locksManager.handleLockEvent(threadId, e)
 		const workerThread = await threadedClass<EventsWorkerChild, typeof EventsWorkerChild>(
 			'./child',
 			'EventsWorkerChild',
-			[emitLockEvent, queueJob],
+			[emitLockEvent, jobManager.queueJob],
 			{
 				instanceName: `Events: ${studioId}`,
 			}
@@ -53,6 +54,7 @@ export class EventsWorkerParent extends WorkerParentBase {
 		// create and start the worker
 		const parent = new EventsWorkerParent(
 			workerId,
+			threadId,
 			studioId,
 			mongoClient,
 			locksManager,
