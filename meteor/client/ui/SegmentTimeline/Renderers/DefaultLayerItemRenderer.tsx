@@ -47,22 +47,24 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 		return (
 			!this.props.isTooSmallForText && (
 				<>
-					<span
-						className="segment-timeline__piece__label"
-						ref={this.setLeftLabelRef}
-						style={this.getItemLabelOffsetLeft()}
-					>
+					{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 						<span
-							className={ClassNames(
-								'segment-timeline__piece__label',
-								'with-duration',
-								`with-duration--${this.getSourceDurationLabelAlignment()}`
-							)}
+							className="segment-timeline__piece__label"
+							ref={this.setLeftLabelRef}
+							style={this.getItemLabelOffsetLeft()}
 						>
-							<span>{this.props.piece.instance.piece.name}</span>
-							{this.renderDuration()}
+							<span
+								className={ClassNames(
+									'segment-timeline__piece__label',
+									'with-duration',
+									`with-duration--${this.getSourceDurationLabelAlignment()}`
+								)}
+							>
+								<span>{this.props.piece.instance.piece.name}</span>
+								{this.renderDuration()}
+							</span>
 						</span>
-					</span>
+					) : null}
 					<span
 						className="segment-timeline__piece__label right-side"
 						ref={this.setRightLabelRef}

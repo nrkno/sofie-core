@@ -5,16 +5,7 @@ import { DBPart, PartId } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import {
-	assertNever,
-	max,
-	flatten,
-	literal,
-	protectString,
-	normalizeArrayFuncFilter,
-	unprotectString,
-	getRandomId,
-} from '../lib'
+import { assertNever, max, flatten, literal, protectString, getRandomId, normalizeArrayToMapFunc } from '../lib'
 import { Mongo } from 'meteor/mongo'
 import { ShowStyleBase, ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { getPieceGroupId } from './timeline'
@@ -170,7 +161,10 @@ export function getPlayheadTrackingInfinitesForPart(
 
 		// Check if we should persist any adlib onEnd infinites
 		if (canContinueAdlibOnEnds) {
-			const piecesByInfiniteMode = _.groupBy(pieceInstances, (p) => p.piece.lifespan)
+			const piecesByInfiniteMode = _.groupBy(
+				pieceInstances.filter((p) => p.dynamicallyInserted),
+				(p) => p.piece.lifespan
+			)
 			for (const mode0 of [
 				PieceLifespan.OutOnRundownEnd,
 				PieceLifespan.OutOnSegmentEnd,
@@ -224,10 +218,7 @@ export function getPlayheadTrackingInfinitesForPart(
 				newInstanceId,
 				isTemporary
 			)
-			instance._id = protectString(`${instance._id}_continue`)
-			instance.dynamicallyInserted = p.dynamicallyInserted
-			instance.adLibSourceId = p.adLibSourceId
-			instance.startedPlayback = p.startedPlayback
+			markPieceInstanceAsContinuation(p, instance)
 
 			if (p.infinite) {
 				// This was copied from before, so we know we can force the time to 0
@@ -254,6 +245,13 @@ export function getPlayheadTrackingInfinitesForPart(
 			return _.compact(Object.values(ps).map(rewrapInstance))
 		})
 	)
+}
+
+function markPieceInstanceAsContinuation(previousInstance: PieceInstance, instance: PieceInstance) {
+	instance._id = protectString(`${instance._id}_continue`)
+	instance.dynamicallyInserted = previousInstance.dynamicallyInserted
+	instance.adLibSourceId = previousInstance.adLibSourceId
+	instance.startedPlayback = previousInstance.startedPlayback
 }
 
 export function isPiecePotentiallyActiveInPart(
@@ -420,24 +418,29 @@ export function getPieceInstancesForPart(
 
 	// Compile the resulting list
 
-	const playingPieceInstancesMap = normalizeArrayFuncFilter(playingPieceInstances ?? [], (p) =>
-		unprotectString(p.infinite?.infiniteInstanceId)
+	const playingPieceInstancesMap = normalizeArrayToMapFunc(
+		playingPieceInstances ?? [],
+		(p) => p.infinite?.infinitePieceId
 	)
 
 	const wrapPiece = (p: PieceInstancePiece) => {
 		const instance = rewrapPieceToInstance(p, playlistActivationId, part.rundownId, newInstanceId, isTemporary)
 
-		if (!instance.infinite && instance.piece.lifespan !== PieceLifespan.WithinPart) {
-			const existingPiece = playingPieceInstancesMap[unprotectString(instance.piece._id)]
+		if (instance.piece.lifespan !== PieceLifespan.WithinPart) {
+			const existingPiece = nextPartIsAfterCurrentPart
+				? playingPieceInstancesMap.get(instance.piece._id)
+				: undefined
 			instance.infinite = {
 				infiniteInstanceId: existingPiece?.infinite?.infiniteInstanceId ?? getRandomId(),
 				infinitePieceId: instance.piece._id,
 				fromPreviousPart: false, // Set below
 			}
-		}
 
-		if (instance.infinite) {
 			instance.infinite.fromPreviousPart = instance.piece.startPartId !== part._id
+			if (existingPiece && (instance.piece.startPartId !== part._id || instance.dynamicallyInserted)) {
+				// If it doesnt start in this part, then mark it as a continuation
+				markPieceInstanceAsContinuation(existingPiece, instance)
+			}
 
 			if (instance.infinite.fromPreviousPart) {
 				// If this is not the start point, it should start at 0

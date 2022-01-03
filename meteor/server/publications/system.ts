@@ -16,6 +16,7 @@ meteorPublish(PubSub.coreSystem, function (token) {
 				systemInfo: 1,
 				apm: 1,
 				name: 1,
+				logLevel: 1,
 				serviceMessages: 1,
 				blueprintId: 1,
 				cron: 1,

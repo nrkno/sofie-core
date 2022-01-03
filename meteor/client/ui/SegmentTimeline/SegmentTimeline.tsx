@@ -10,7 +10,7 @@ import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
-import { SegmentTimelinePart } from './SegmentTimelinePart'
+import { SegmentTimelinePart } from './Parts/SegmentTimelinePart'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
@@ -196,6 +196,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 					isAfterLastValidInSegmentAndItsLive={false}
 					isLastSegment={false}
 					isBudgetGap={false}
+					showDurationSourceLayers={this.props.showDurationSourceLayers}
 				/>
 			)
 		})
@@ -781,6 +782,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							isLastSegment={this.props.isLastSegment}
 							isLastInSegment={false}
 							timelineWidth={this.state.timelineWidth}
+							showDurationSourceLayers={this.props.showDurationSourceLayers}
 						/>
 					)}
 					<SegmentTimelinePart
@@ -831,6 +833,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							isLastSegment={this.props.isLastSegment}
 							isLastInSegment={true}
 							timelineWidth={this.state.timelineWidth}
+							showDurationSourceLayers={this.props.showDurationSourceLayers}
 						/>
 					)}
 				</React.Fragment>
@@ -884,6 +887,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							startsAt: 0,
 							willProbablyAutoNext: false,
 						}}
+						showDurationSourceLayers={this.props.showDurationSourceLayers}
 					/>
 				)}
 			</>

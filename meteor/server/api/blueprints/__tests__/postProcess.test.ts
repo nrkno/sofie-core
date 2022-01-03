@@ -62,18 +62,6 @@ describe('Test blueprint post-process', () => {
 				type: PlaylistTimingType.None,
 			},
 		})
-		// const playlist = new RundownPlaylist({
-		// 	_id: protectString(''),
-		// 	externalId: '',
-		// 	organizationId: protectString(''),
-		// 	studioId: env.studio._id,
-		// 	name: 'playlistmock',
-		// 	created: 0,
-		// 	modified: 0,
-		// 	currentPartInstanceId: null,
-		// 	nextPartInstanceId: null,
-		// 	previousPartInstanceId: null,
-		// })
 
 		const studio = getStudio()
 		const showStyle = {} as ShowStyleCompound

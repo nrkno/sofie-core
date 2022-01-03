@@ -3,7 +3,7 @@ import { Time } from '../lib'
 import { PeripheralDeviceId } from '../collections/PeripheralDevices'
 
 export interface NewClientAPI {
-	clientErrorReport(timestamp: Time, errorObject: any, location: string): Promise<void>
+	clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string): Promise<void>
 	callPeripheralDeviceFunction(
 		context: string,
 		deviceId: PeripheralDeviceId,

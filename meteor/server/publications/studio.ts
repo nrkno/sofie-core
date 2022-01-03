@@ -13,7 +13,7 @@ import { FindOptions, MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
-import { ExpectedPackageDBBase, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDBBase, ExpectedPackageId, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
@@ -24,6 +24,7 @@ import {
 } from '../../lib/collections/PackageContainerPackageStatus'
 import { Match } from 'meteor/check'
 import { PackageInfos } from '../../lib/collections/PackageInfos'
+import { PackageContainerStatuses } from '../../lib/collections/PackageContainerStatus'
 
 meteorPublish(PubSub.studios, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
@@ -103,6 +104,16 @@ meteorPublish(PubSub.expectedPackageWorkStatuses, function (selector, token) {
 	}
 	return null
 })
+meteorPublish(PubSub.packageContainerStatuses, function (selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
+		fields: {},
+	}
+	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+		return PackageContainerStatuses.find(selector, modifier)
+	}
+	return null
+})
 meteorPublish(PubSub.packageInfos, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
@@ -115,7 +126,7 @@ meteorPublish(PubSub.packageInfos, function (selector, token) {
 })
 meteorPublish(
 	PubSub.packageContainerPackageStatuses,
-	function (studioId: StudioId, containerId?: string, packageId?: string) {
+	function (studioId: StudioId, containerId?: string, packageId?: ExpectedPackageId) {
 		if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
 
 		check(studioId, String)

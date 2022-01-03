@@ -122,7 +122,6 @@ meteorCustomPublishArray(
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 		token: string
 	) {
-		logger.info(`Pub.expectedPackagesForDevice: publication`)
 		if (
 			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
 		) {

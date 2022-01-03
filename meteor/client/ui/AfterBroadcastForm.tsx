@@ -84,6 +84,9 @@ export function AfterBroadcastForm(props: IProps) {
 				<p>
 					<em>{t('Please take a minute to fill in this form.')}</em>
 				</p>
+				<p>
+					<b>{t('Be aware that while filling out the form keyboard and streamdeck commands will not be executed!')}</b>
+				</p>
 
 				<div className="form">
 					<div className="question">

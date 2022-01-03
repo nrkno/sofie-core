@@ -25,10 +25,6 @@ import {
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import Mousetrap from 'mousetrap'
-import { RundownViewKbdShortcuts } from './RundownViewKbdShortcuts'
-import { RegisteredHotkeys } from '../../lib/hotkeyRegistry'
 
 interface IRundownViewShelfProps {
 	studio: Studio
@@ -154,7 +150,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 		}
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.isClearable)) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
 					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
@@ -191,72 +187,10 @@ class RundownViewShelfInner extends MeteorReactComponent<
 					this.onToggleSticky(adlibPiece.sourceLayerId, e)
 				}
 			} else {
-				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+				if (sourceLayer && sourceLayer.isClearable) {
 					this.onClearAllSourceLayers([sourceLayer], e)
 				}
 			}
-		}
-	}
-
-	componentDidMount() {
-		this.refreshKeyboardHotkeys()
-	}
-
-	componentDidUpdate(prevProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-		this.usedHotkeys = []
-
-		// Unregister hotkeys if group name has changed
-		if (prevProps.hotkeyGroup !== this.props.hotkeyGroup) {
-			RegisteredHotkeys.remove({
-				tag: prevProps.hotkeyGroup,
-			})
-		}
-
-		this.refreshKeyboardHotkeys()
-	}
-
-	refreshKeyboardHotkeys() {
-		if (!this.props.studioMode) return
-		if (!this.props.registerHotkeys) return
-
-		const preventDefault = (e) => {
-			e.preventDefault()
-		}
-
-		if (this.props.adLibSegmentUi.isLive) {
-			this.props.adLibSegmentUi.pieces.forEach((item) => {
-				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-					mousetrapHelper.bind(
-						item.hotkey,
-						(e: Mousetrap.ExtendedKeyboardEvent) => {
-							preventDefault(e)
-							this.onToggleAdLib(item, false, e)
-						},
-						'keyup',
-						this.props.hotkeyGroup
-					)
-					this.usedHotkeys.push(item.hotkey)
-
-					const sourceLayer = this.props.sourceLayers[item.sourceLayerId]
-					if (sourceLayer && sourceLayer.isQueueable) {
-						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-						mousetrapHelper.bind(
-							queueHotkey,
-							(e: Mousetrap.ExtendedKeyboardEvent) => {
-								preventDefault(e)
-								this.onToggleAdLib(item, true, e)
-							},
-							'keyup',
-							this.props.hotkeyGroup
-						)
-						this.usedHotkeys.push(queueHotkey)
-					}
-				}
-			})
 		}
 	}
 
@@ -314,8 +248,11 @@ export const RundownViewShelf = translateWithTracker<
 
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
 			(_currentPartInstanceId: PartInstanceId | null, _nextPartInstanceId: PartInstanceId | null) => {
-				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(props.playlist)
-				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.showStyleBase, props.playlist)
+				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+					props.playlist,
+					props.showStyleBase
+				)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 				return {
 					unfinishedAdLibIds,
 					unfinishedTags,

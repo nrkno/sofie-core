@@ -15,12 +15,14 @@ import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { GetScriptPreview } from '../scriptPreview'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
+import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IEndsWordsPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutEndWords
 	playlist: RundownPlaylist
+	showStyleBase: DBShowStyleBase
 }
 
 interface IEndsWordsPanelTrackedProps {
@@ -71,7 +73,7 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 
 export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, IEndsWordsPanelTrackedProps>(
 	(props: IEndsWordsPanelProps) => {
-		const { activePieceInstance } = getIsFilterActive(props.playlist, props.panel)
+		const { activePieceInstance } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)
 		return { livePieceInstance: activePieceInstance }
 	},
 	(_data, props: IEndsWordsPanelProps, nextProps: IEndsWordsPanelProps) => {

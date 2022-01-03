@@ -72,7 +72,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	testInFiber('dataRundownCreate', () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 
 		expect(Rundowns.findOne()).toBeFalsy()
 

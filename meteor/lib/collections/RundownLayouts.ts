@@ -362,6 +362,8 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	fixedSegmentDuration: boolean
 	/** SourceLayer ids for which a piece duration label should be shown */
 	showDurationSourceLayers: string[]
+	visibleSourceLayers?: string[]
+	visibleOutputLayers?: string[]
 }
 
 export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {

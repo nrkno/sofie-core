@@ -62,6 +62,12 @@ export const PackageStatus = withTranslation()(
 		componentDidUpdate(): void {
 			this.updateWorkingState()
 		}
+		componentWillUnmount(): void {
+			if (this.updateWorkingStateTimeout) {
+				clearTimeout(this.updateWorkingStateTimeout)
+				this.updateWorkingStateTimeout = null
+			}
+		}
 		updateWorkingState(): void {
 			const requiredProgress = this.getProgress(true)
 			const allProgress = this.getProgress(false)
@@ -193,8 +199,8 @@ export const PackageStatus = withTranslation()(
 							this.toggleOpen()
 						}}
 					>
-						<td></td>
-						<td>{this.getPackageStatus()}</td>
+						<td className="indent"></td>
+						<td className="status">{this.getPackageStatus()}</td>
 						<td>
 							<span className="package__chevron">
 								{this.state.isOpen ? (
@@ -203,7 +209,7 @@ export const PackageStatus = withTranslation()(
 									<FontAwesomeIcon icon={faChevronRight} />
 								)}
 							</span>
-							{this.getPackageName()}
+							<span>{this.getPackageName()}</span>
 						</td>
 						<td>
 							<DisplayFormattedTime displayTimestamp={this.props.package.created} t={t} />

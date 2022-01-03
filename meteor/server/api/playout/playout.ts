@@ -75,10 +75,11 @@ import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../stud
 import { CacheForStudio } from '../studio/cache'
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDBBase, ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { profiler } from '../profiler'
+import { MongoQuery } from '../../../lib/typings/meteor'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -714,7 +715,7 @@ export namespace ServerPlayoutAPI {
 				}
 
 				if (nextPieceInstance) {
-					logger.info((undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
+					logger.debug((undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
 					cache.PieceInstances.update(nextPieceInstance._id, {
 						$set: {
 							disabled: !undo,
@@ -766,7 +767,7 @@ export namespace ServerPlayoutAPI {
 				if (pieceInstance) {
 					const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 					if (!isPlaying) {
-						logger.info(
+						logger.debug(
 							`onPiecePlaybackStarted: Playout reports pieceInstance "${pieceInstanceId}" has started playback on timestamp ${new Date(
 								startedPlayback
 							).toISOString()}`
@@ -819,7 +820,7 @@ export namespace ServerPlayoutAPI {
 				if (pieceInstance) {
 					const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 					if (isPlaying) {
-						logger.info(
+						logger.debug(
 							`onPiecePlaybackStopped: Playout reports pieceInstance "${pieceInstanceId}" has stopped playback on timestamp ${new Date(
 								stoppedPlayback
 							).toISOString()}`
@@ -883,7 +884,7 @@ export namespace ServerPlayoutAPI {
 				const isPlaying =
 					playingPartInstance.timings?.startedPlayback && !playingPartInstance.timings?.stoppedPlayback
 				if (!isPlaying) {
-					logger.info(
+					logger.debug(
 						`Playout reports PartInstance "${partInstanceId}" has started playback on timestamp ${new Date(
 							startedPlayback
 						).toISOString()}`
@@ -1030,7 +1031,7 @@ export namespace ServerPlayoutAPI {
 
 					const isPlaying = partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
 					if (isPlaying) {
-						logger.info(
+						logger.debug(
 							`onPartPlaybackStopped: Playout reports PartInstance "${partInstanceId}" has stopped playback on timestamp ${new Date(
 								stoppedPlayback
 							).toISOString()}`
@@ -1131,34 +1132,6 @@ export namespace ServerPlayoutAPI {
 		check(userData, Match.Any)
 		check(triggerMode, Match.Maybe(String))
 
-		return executeActionInner(access, rundownPlaylistId, actionDocId, async (actionContext, _cache, _rundown) => {
-			const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
-			if (!blueprint.blueprint.executeAction) {
-				throw new Meteor.Error(
-					400,
-					`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
-				)
-			}
-
-			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
-
-			blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
-		})
-	}
-
-	export async function executeActionInner(
-		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId,
-		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
-		func: (
-			context: ActionExecutionContext,
-			cache: CacheForPlayout,
-			rundown: Rundown,
-			currentPartInstance: PartInstance
-		) => Promise<void>
-	): Promise<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }> {
-		const now = getCurrentTime()
-
 		return runPlayoutOperationWithCache(
 			access,
 			'executeActionInner',
@@ -1173,83 +1146,104 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(400, `A part needs to be active to execute an action`)
 			},
 			async (cache) => {
-				const playlist = cache.Playlist.doc
-
-				const currentPartInstance = playlist.currentPartInstanceId
-					? cache.PartInstances.findOne(playlist.currentPartInstanceId)
-					: undefined
-				if (!currentPartInstance)
-					throw new Meteor.Error(
-						501,
-						`Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`
-					)
-
-				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
-				if (!rundown)
-					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
-
-				const [showStyle, watchedPackages] = await Promise.all([
-					cache.activationCache.getShowStyleCompound(rundown),
-					WatchedPackagesHelper.create(cache.Studio.doc._id, {
+				return executeActionInner(
+					cache,
+					{
 						pieceId: actionDocId,
 						fromPieceType: {
 							$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
 						},
-					}),
-				])
-				const actionContext = new ActionExecutionContext(
-					{
-						name: `${rundown.name}(${playlist.name})`,
-						identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-							currentPartInstance._id
-						},execution=${getRandomId()}`,
-						tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
 					},
-					cache,
-					showStyle,
-					rundown,
-					watchedPackages
+					async (actionContext, _rundown) => {
+						const blueprint = await loadShowStyleBlueprint(actionContext.showStyleCompound)
+						if (!blueprint.blueprint.executeAction) {
+							throw new Meteor.Error(
+								400,
+								`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
+							)
+						}
+
+						logger.debug(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
+
+						blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+					}
 				)
-
-				// If any action cannot be done due to timings, that needs to be rejected by the context
-				await func(actionContext, cache, rundown, currentPartInstance)
-
-				if (
-					actionContext.currentPartState !== ActionPartChange.NONE ||
-					actionContext.nextPartState !== ActionPartChange.NONE
-				) {
-					await syncPlayheadInfinitesForNextPartInstance(cache)
-				}
-
-				if (actionContext.takeAfterExecute) {
-					await ServerPlayoutAPI.callTakeWithCache(cache, now)
-					return {
-						queuedPartInstanceId: actionContext.queuedPartInstanceId,
-						taken: true,
-					}
-				} else {
-					if (
-						actionContext.currentPartState !== ActionPartChange.NONE ||
-						actionContext.nextPartState !== ActionPartChange.NONE
-					) {
-						await updateTimeline(cache)
-						return {
-							queuedPartInstanceId: actionContext.queuedPartInstanceId,
-						}
-					}
-
-					if (actionContext.nextPartState !== ActionPartChange.NONE && actionContext.queuedPartInstanceId) {
-						return {
-							queuedPartInstanceId: actionContext.queuedPartInstanceId,
-						}
-					} else {
-						return {}
-					}
-				}
-
-				return {}
 			}
 		)
+	}
+
+	export async function executeActionInner(
+		cache: CacheForPlayout,
+		watchedPackagesFilter: MongoQuery<Omit<ExpectedPackageDBBase, 'studioId'>> | null,
+		func: (context: ActionExecutionContext, rundown: Rundown, currentPartInstance: PartInstance) => Promise<void>
+	): Promise<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }> {
+		const now = getCurrentTime()
+
+		const playlist = cache.Playlist.doc
+
+		const currentPartInstance = playlist.currentPartInstanceId
+			? cache.PartInstances.findOne(playlist.currentPartInstanceId)
+			: undefined
+		if (!currentPartInstance)
+			throw new Meteor.Error(501, `Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
+
+		const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+		if (!rundown)
+			throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
+
+		const [showStyle, watchedPackages] = await Promise.all([
+			cache.activationCache.getShowStyleCompound(rundown),
+			watchedPackagesFilter
+				? WatchedPackagesHelper.create(cache.Studio.doc._id, watchedPackagesFilter)
+				: WatchedPackagesHelper.empty(),
+		])
+		const actionContext = new ActionExecutionContext(
+			{
+				name: `${rundown.name}(${playlist.name})`,
+				identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+					currentPartInstance._id
+				},execution=${getRandomId()}`,
+				tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+			},
+			cache,
+			showStyle,
+			rundown,
+			watchedPackages
+		)
+
+		// If any action cannot be done due to timings, that needs to be rejected by the context
+		await func(actionContext, rundown, currentPartInstance)
+
+		if (
+			actionContext.currentPartState !== ActionPartChange.NONE ||
+			actionContext.nextPartState !== ActionPartChange.NONE
+		) {
+			await syncPlayheadInfinitesForNextPartInstance(cache)
+		}
+
+		if (actionContext.takeAfterExecute) {
+			await ServerPlayoutAPI.callTakeWithCache(cache, now)
+			return {
+				queuedPartInstanceId: actionContext.queuedPartInstanceId,
+				taken: true,
+			}
+		} else {
+			if (
+				actionContext.currentPartState !== ActionPartChange.NONE ||
+				actionContext.nextPartState !== ActionPartChange.NONE
+			) {
+				await updateTimeline(cache)
+				return {
+					queuedPartInstanceId: actionContext.queuedPartInstanceId,
+				}
+			}
+			if (actionContext.nextPartState !== ActionPartChange.NONE && actionContext.queuedPartInstanceId) {
+				return {
+					queuedPartInstanceId: actionContext.queuedPartInstanceId,
+				}
+			}
+		}
+		return {}
 	}
 	/**
 	 * This exists for the purpose of mocking this call for testing.
@@ -1427,43 +1421,51 @@ interface UpdateTimelineFromIngestDataTimeout {
 	timeout?: number
 }
 const updateTimelineFromIngestDataTimeouts = new Map<RundownPlaylistId, UpdateTimelineFromIngestDataTimeout>()
-export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylistId) {
+export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylistId, attempt: number = 1) {
 	if (process.env.JEST_WORKER_ID) {
 		// Don't run this when in jest, as it is not useful and ends up producing errors
 		return
 	}
 
+	const MAX_ATTEMPTS = 5 // Limit the number of times this can recurse
+
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
 	const data = updateTimelineFromIngestDataTimeouts.get(playlistId) ?? {}
 	if (data.timeout) Meteor.clearTimeout(data.timeout)
 
-	data.timeout = Meteor.setTimeout(() => {
+	data.timeout = Meteor.setTimeout(async () => {
 		if (updateTimelineFromIngestDataTimeouts.delete(playlistId)) {
 			const transaction = profiler.startTransaction('triggerUpdateTimelineAfterIngestData', 'playout')
-			runPlayoutOperationWithCache(
-				null,
-				'triggerUpdateTimelineAfterIngestData',
-				playlistId,
-				PlayoutLockFunctionPriority.USER_PLAYOUT,
-				null,
-				async (cache) => {
-					const playlist = cache.Playlist.doc
+			try {
+				await runPlayoutOperationWithCache(
+					null,
+					'triggerUpdateTimelineAfterIngestData',
+					playlistId,
+					PlayoutLockFunctionPriority.USER_PLAYOUT,
+					null,
+					async (cache) => {
+						const playlist = cache.Playlist.doc
 
-					if (playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
-						const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-						if (!currentPartInstance?.timings?.startedPlayback) {
-							// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
-							// We mustn't run before that does, or we will get the timings in playout-gateway confused.
-						} else {
-							// It is safe enough (except adlibs) to update the timeline directly
-							// If the playlist is active, then updateTimeline as lookahead could have been affected
-							await updateTimeline(cache)
+						if (playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
+							const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+							if (currentPartInstance && !currentPartInstance.timings?.startedPlayback) {
+								// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
+								// We mustn't run before that does, or we will get the timings in playout-gateway confused.
+								if (attempt < MAX_ATTEMPTS) {
+									// Try the update again later instead
+									triggerUpdateTimelineAfterIngestData(playlistId, attempt + 1)
+								}
+							} else {
+								// It is safe enough (except adlibs) to update the timeline directly
+								// If the playlist is active, then updateTimeline as lookahead could have been affected
+								await updateTimeline(cache)
+							}
 						}
 					}
-				}
-			).catch((e) => {
+				)
+			} catch (e) {
 				logger.error(`triggerUpdateTimelineAfterIngestData: Execution failed: ${e}`)
-			})
+			}
 			transaction?.end()
 		}
 	}, 1000)

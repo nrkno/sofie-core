@@ -64,7 +64,9 @@ export const DevicePackageManagerSettings = translateWithTracker<
 							doModalDialog({
 								message: t('There was an error: {{error}}', { error: error.toString() }),
 								title: t(''),
-								onAccept: () => {},
+								onAccept: () => {
+									// Do nothing
+								},
 							})
 						}
 					} else {
@@ -87,7 +89,9 @@ export const DevicePackageManagerSettings = translateWithTracker<
 						doModalDialog({
 							message: t('There was an error: {{error}}', { error: error.toString() }),
 							title: t(''),
-							onAccept: () => {},
+							onAccept: () => {
+								// Do nothing
+							},
 						})
 					} else {
 						this.reloadStatus(true)
@@ -115,12 +119,19 @@ export const DevicePackageManagerSettings = translateWithTracker<
 						</div>
 						{this.state.status ? (
 							<div>
+								{this.state.status.updated ? (
+									<div className="row">
+										<div className="col c12">
+											{t('Updated')}: {new Date(this.state.status.updated).toLocaleString()}
+										</div>
+									</div>
+								) : null}
 								<div className="row">
 									<div className="col c12 rl-c6">
 										<h3 className="">{t('Package Manager')}</h3>
 										<table className="table">
 											<tbody>
-												{Object.entries(this.state.status.packageManager).map(([key, value]) => {
+												{Object.entries(this.state.status.packageManager || {}).map(([key, value]) => {
 													return (
 														<tr key={key}>
 															<td>{key}</td>
@@ -133,12 +144,17 @@ export const DevicePackageManagerSettings = translateWithTracker<
 									</div>
 									<div className="col c12 rl-c6">
 										<h3 className="">{t('Expectation Manager')}</h3>
-										Id: {this.state.status.expectationManager.id}
+										<div>Id: {this.state.status.expectationManager?.id}</div>
+										{this.state.status.expectationManager?.updated ? (
+											<div>
+												{t('Updated')}: {new Date(this.state.status.expectationManager.updated).toLocaleString()}
+											</div>
+										) : null}
 										<div>
 											<h4 className="">{t('Statistics')}</h4>
 											<table className="table">
 												<tbody>
-													{Object.entries(this.state.status.expectationManager.expectationStatistics).map(
+													{Object.entries(this.state.status.expectationManager?.expectationStatistics || {}).map(
 														([key, value]) => {
 															return (
 																<tr key={key}>
@@ -152,12 +168,13 @@ export const DevicePackageManagerSettings = translateWithTracker<
 											</table>
 										</div>
 										<div>
-											<h4 className="">{t('Connected Workers')}</h4>
+											<h4 className="">{t('Times')}</h4>
 											<table className="table">
 												<tbody>
-													{this.state.status.expectationManager.workerAgents.map((value, index) => {
+													{Object.entries(this.state.status.expectationManager?.times || {}).map(([key, value]) => {
 														return (
-															<tr key={index}>
+															<tr key={key}>
+																<td>{key}</td>
 																<td>{JSON.stringify(value)}</td>
 															</tr>
 														)
@@ -165,6 +182,16 @@ export const DevicePackageManagerSettings = translateWithTracker<
 												</tbody>
 											</table>
 										</div>
+										<div>
+											<h4 className="">{t('Connected Workers')}</h4>
+											<TableFromObjectArray dataObjs={this.state.status.expectationManager?.workerAgents} />
+										</div>
+									</div>
+								</div>
+								<div className="row">
+									<div className="col c12">
+										<h4 className="">{t('Work-in-progress')}</h4>
+										<TableFromObjectArray dataObjs={this.state.status.expectationManager?.worksInProgress} />
 									</div>
 								</div>
 								<div className="row">
@@ -172,45 +199,19 @@ export const DevicePackageManagerSettings = translateWithTracker<
 										<h3 className="">{t('WorkForce')}</h3>
 										<div className="col c12 rl-c12">
 											<h4 className="">{t('Connected Workers')}</h4>
-											<table className="table">
-												<tbody>
-													{this.state.status.workforce.workerAgents.map((workerAgent) => {
-														return (
-															<tr key={workerAgent.id}>
-																<td>{workerAgent.id}</td>
-																<td>
-																	<button
-																		className="btn btn-secondary btn-tight"
-																		onClick={() => this.killApp(workerAgent.id)}
-																	>
-																		{t('Kill (debug)')}
-																	</button>
-																</td>
-															</tr>
-														)
-													})}
-												</tbody>
-											</table>
+											<TableFromObjectArray
+												dataObjs={this.state.status.workforce?.workerAgents}
+												rowFcn={(workerAgent) => (
+													<button className="btn btn-secondary btn-tight" onClick={() => this.killApp(workerAgent.id)}>
+														{t('Kill (debug)')}
+													</button>
+												)}
+											/>
 										</div>
 									</div>
 									<div>
 										<h4 className="">{t('Connected Expectation Managers')}</h4>
-										<table className="table">
-											<tbody>
-												<tr>
-													<th>Id</th>
-													<th>URL</th>
-												</tr>
-												{this.state.status.workforce.expectationManagers.map((expMan) => {
-													return (
-														<tr key={expMan.id}>
-															<td>{expMan.id}</td>
-															<td>{expMan.url}</td>
-														</tr>
-													)
-												})}
-											</tbody>
-										</table>
+										<TableFromObjectArray dataObjs={this.state.status.workforce?.expectationManagers} />
 									</div>
 									<div>
 										<h4 className="">{t('Connected App Containers')}</h4>
@@ -221,7 +222,7 @@ export const DevicePackageManagerSettings = translateWithTracker<
 													<th>Initialized</th>
 													<th>Available apps</th>
 												</tr>
-												{this.state.status.workforce.appContainers.map((appContainer) => {
+												{this.state.status.workforce?.appContainers?.map((appContainer) => {
 													return (
 														<tr key={appContainer.id}>
 															<td>{appContainer.id}</td>
@@ -246,7 +247,6 @@ export const DevicePackageManagerSettings = translateWithTracker<
 						)}
 					</div>
 				)
-				// return this.renderEditForm(this.props.device)
 			} else {
 				return <Spinner />
 			}
@@ -254,10 +254,12 @@ export const DevicePackageManagerSettings = translateWithTracker<
 	}
 )
 
+// Note: These interfaces are copied from Package Manager. To be replaced with shared types later..
 interface Status {
-	packageManager: PackageManagerStatus
-	workforce: WorkforceStatus
-	expectationManager: ExpectationManagerStatus
+	packageManager?: PackageManagerStatus
+	workforce?: WorkforceStatus
+	expectationManager?: ExpectationManagerStatus
+	updated?: number
 }
 interface PackageManagerStatus {
 	workforceURL: string
@@ -287,6 +289,7 @@ interface WorkforceStatus {
 }
 interface ExpectationManagerStatus {
 	id: string
+	updated: number
 	expectationStatistics: {
 		countTotal: number
 
@@ -302,7 +305,76 @@ interface ExpectationManagerStatus {
 		countNoAvailableWorkers: number
 		countError: number
 	}
+	times: { [key: string]: number }
 	workerAgents: {
 		workerId: string
 	}[]
+	worksInProgress: {
+		id: string
+		lastUpdated: number
+		workerId: string
+		cost: number
+		expectationId: string
+	}[]
+}
+
+interface TableFromObjectArrayData<T> {
+	dataObjs: { [key: string]: T }[] | undefined
+	rowFcn?: (dataObj: T) => JSX.Element
+}
+
+const TableFromObjectArray: React.FC<TableFromObjectArrayData<any>> = function TableFromObject({ dataObjs, rowFcn }) {
+	if (!dataObjs) return <i>No data</i>
+	if (typeof dataObjs !== 'object') return <i>{dataObjs}</i>
+
+	const setOfKeys = new Set<string>()
+	for (const dataObj of Object.values(dataObjs)) {
+		for (const key of Object.keys(dataObj)) {
+			setOfKeys.add(key)
+		}
+	}
+	const keys = Array.from(setOfKeys.keys())
+
+	function displayValue(val: any) {
+		if (typeof val === 'object') return JSON.stringify(val)
+		return val
+	}
+
+	return (
+		<table className="table">
+			<tbody>
+				<tr>
+					{keys.map((key) => {
+						return <th key={key}>{key}</th>
+					})}
+				</tr>
+				{dataObjs.map((dataObj, index) => {
+					if (typeof dataObj === 'object') {
+						return (
+							<tr key={dataObj.id || `__index${index}`}>
+								{keys.map((key) => {
+									let value = dataObj[key]
+									if (typeof value === 'object') {
+										value = JSON.stringify(value)
+									}
+									if (value === true) value = 'true'
+									if (value === false) value = 'false'
+
+									return <td key={key}>{value}</td>
+								})}
+
+								{rowFcn ? <td>{rowFcn(dataObj)}</td> : null}
+							</tr>
+						)
+					} else {
+						return (
+							<tr key={`__index${index}`}>
+								<td colSpan={keys.length}>{displayValue(dataObj)}</td>
+							</tr>
+						)
+					}
+				})}
+			</tbody>
+		</table>
+	)
 }

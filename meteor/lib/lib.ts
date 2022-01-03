@@ -321,6 +321,15 @@ export function getRank<T extends { _rank: number }>(
 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
 }
 
+/**
+ * Convert an array to a object, keyed on an id generator function.
+ * `undefined` key values will get filtered from the object
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArrayFuncFilter([{ a: 1, b: 2}], (o) => `${o.a + o.b}`)
+ * ```
+ */
 export function normalizeArrayFuncFilter<T>(
 	array: Array<T>,
 	getKey: (o: T) => string | undefined
@@ -334,6 +343,14 @@ export function normalizeArrayFuncFilter<T>(
 	}
 	return normalizedObject as { [key: string]: T }
 }
+/**
+ * Convert an array to a object, keyed on an id generator function.
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArrayFunc([{ a: 1, b: 2}], (o) => `${o.a + o.b}`)
+ * ```
+ */
 export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
@@ -342,6 +359,14 @@ export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string)
 	}
 	return normalizedObject as { [key: string]: T }
 }
+/**
+ * Convert an array to a object, keyed on an `id` field.
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArray([{ a: '1', b: 2}], 'a')
+ * ```
+ */
 export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
@@ -350,11 +375,38 @@ export function normalizeArray<T>(array: Array<T>, indexKey: keyof T): { [indexK
 	}
 	return normalizedObject as { [key: string]: T }
 }
+/**
+ * Convert an array to a Map, keyed on an `id` field.
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArrayToMap([{ a: '1', b: 2}], 'a')
+ * ```
+ */
 export function normalizeArrayToMap<T, K extends keyof T>(array: T[], indexKey: K): Map<T[K], T> {
 	const normalizedObject = new Map<T[K], T>()
 	for (const item of array) {
 		const key = item[indexKey]
 		normalizedObject.set(key, item)
+	}
+	return normalizedObject
+}
+/**
+ * Convert an array to a Map, keyed on an id generator function.
+ * `undefined` key values will get filtered from the map
+ * Duplicate keys will cause entries to replace others silently
+ *
+ * ```
+ * normalizeArrayToMapFunc([{ a: 1, b: 2}], (o) => o.a + o.b)
+ * ```
+ */
+export function normalizeArrayToMapFunc<T, K>(array: Array<T>, getKey: (o: T) => K | undefined): Map<K, T> {
+	const normalizedObject = new Map<K, T>()
+	for (const item of array) {
+		const key = getKey(item)
+		if (key !== undefined) {
+			normalizedObject.set(key, item)
+		}
 	}
 	return normalizedObject
 }
@@ -377,7 +429,24 @@ export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1
 	}
 	const cache = cacheResultCache[name]
 	if (!cache || cache.ttl < Date.now()) {
-		const value = fcn()
+		const value: T = fcn()
+		cacheResultCache[name] = {
+			ttl: Date.now() + limitTime,
+			value: value,
+		}
+		return value
+	} else {
+		return cache.value
+	}
+}
+/** Cache the result of function for a limited time */
+export async function cacheResultAsync<T>(name: string, fcn: () => Promise<T>, limitTime: number = 1000): Promise<T> {
+	if (Math.random() < 0.01) {
+		Meteor.setTimeout(cleanOldCacheResult, 10000)
+	}
+	const cache = cacheResultCache[name]
+	if (!cache || cache.ttl < Date.now()) {
+		const value: Promise<T> = fcn()
 		cacheResultCache[name] = {
 			ttl: Date.now() + limitTime,
 			value: value,
@@ -634,8 +703,8 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 					ok = mongoWhere(o, innerSelector)
 				}
 			}
-		} catch (e: any) {
-			logger.warn(e || e.reason || e.toString()) // todo: why this logs empty message for TypeError (or any Error)?
+		} catch (e) {
+			logger.warn(e || (e as any).reason || (e as any).toString()) // todo: why this logs empty message for TypeError (or any Error)?
 			ok = false
 		}
 	})
@@ -1132,4 +1201,13 @@ export function generateTranslation(key: string, args?: { [k: string]: any }): I
 		key,
 		args,
 	}
+}
+
+export enum LogLevel {
+	SILLY = 'silly',
+	DEBUG = 'debug',
+	VERBOSE = 'verbose',
+	INFO = 'info',
+	WARN = 'warn',
+	ERROR = 'error',
 }

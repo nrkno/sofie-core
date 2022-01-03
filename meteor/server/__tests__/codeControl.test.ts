@@ -24,10 +24,6 @@ async function takesALongTimeInnerAsync(name: string) {
 	await sleep(300) // subtract to account for slowness in Jest
 	return 'result yo ' + name
 }
-// function takesALongTimeInnerFiber(name: string) {
-// 	waitForPromise(sleep(300)) // subtract to account for slowness in Jest
-// 	return 'result yo ' + name
-// }
 
 describe('codeControl rundown', () => {
 	beforeEach(() => {
@@ -153,16 +149,14 @@ describe('codeControl', () => {
 		useNextTickDefer()
 	})
 
-	// const takesALongTime = syncFunction((name: string) => {
-	// 	return takesALongTimeInner(name)
-	// }, 'takesALongTime')
-
 	testInFiber('pushWorkToQueue, 1 queue promise', async () => {
 		// Running a syncFunction in a queue
 
 		const res: string[] = []
-		void pushWorkToQueue('run0', '1', async () => takesALongTimeInner('run0')).then((r) => res.push(r))
-		void pushWorkToQueue('run0', '2', async () => takesALongTimeInner('run0')).then((r) => res.push(r))
+		const ps = Promise.all([
+			pushWorkToQueue('run0', '1', async () => takesALongTimeInner('run0')).then((r) => res.push(r)),
+			pushWorkToQueue('run0', '2', async () => takesALongTimeInner('run0')).then((r) => res.push(r)),
+		])
 
 		expect(res).toHaveLength(0)
 
@@ -175,14 +169,17 @@ describe('codeControl', () => {
 		await runTimersUntilNow()
 		// both tasks should complete
 		expect(res).toEqual(['result yo run0', 'result yo run0'])
+		await ps // just to catch any errors
 	})
 
 	testInFiber('pushWorkToQueue, 1 queue async', async () => {
 		// Running a syncFunction in a queue
 
 		const res: string[] = []
-		void pushWorkToQueue('run0', '1', async () => takesALongTimeInnerAsync('run0')).then((r) => res.push(r))
-		void pushWorkToQueue('run0', '2', async () => takesALongTimeInnerAsync('run0')).then((r) => res.push(r))
+		const ps = Promise.all([
+			pushWorkToQueue('run0', '1', async () => takesALongTimeInnerAsync('run0')).then((r) => res.push(r)),
+			pushWorkToQueue('run0', '2', async () => takesALongTimeInnerAsync('run0')).then((r) => res.push(r)),
+		])
 
 		expect(res).toHaveLength(0)
 
@@ -195,19 +192,21 @@ describe('codeControl', () => {
 		await runTimersUntilNow()
 		// both tasks should complete
 		expect(res).toEqual(['result yo run0', 'result yo run0'])
+		await ps // just to catch any errors
 	})
 
 	testInFiber('pushWorkToQueue, 1 queue fiber inner', async () => {
 		// Running a syncFunction in a queue
 
 		const res: string[] = []
-
-		void pushWorkToQueue('run0', '1', async () => waitForPromise(takesALongTimeInnerAsync('run0'))).then((r) =>
-			res.push(r)
-		)
-		void pushWorkToQueue('run0', '2', async () => waitForPromise(takesALongTimeInnerAsync('run0'))).then((r) =>
-			res.push(r)
-		)
+		const ps = Promise.all([
+			pushWorkToQueue('run0', '1', async () => waitForPromise(takesALongTimeInnerAsync('run0'))).then((r) =>
+				res.push(r)
+			),
+			pushWorkToQueue('run0', '2', async () => waitForPromise(takesALongTimeInnerAsync('run0'))).then((r) =>
+				res.push(r)
+			),
+		])
 
 		expect(res).toHaveLength(0)
 
@@ -220,6 +219,7 @@ describe('codeControl', () => {
 		await runTimersUntilNow()
 		// both tasks should complete
 		expect(res).toEqual(['result yo run0', 'result yo run0'])
+		await ps // just to catch any errors
 	})
 
 	testInFiber('pushWorkToQueue, 1 queue fiber outer', async () => {
@@ -416,7 +416,7 @@ describe('codeControl', () => {
 				}, 550)
 				a0 = neverEnding()
 			} catch (e) {
-				error = e
+				error = e + ''
 			}
 
 			expect(toc()).toBeFuzzy(1000, TIME_FUZZY)
