@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+
+
+**Note:** Version bump only for package @tv2media/blueprints-integration
+
+
+
+
+
 # [1.37.0-in-testing.13](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-testing.12...v1.37.0-in-testing.13) (2021-11-02)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
