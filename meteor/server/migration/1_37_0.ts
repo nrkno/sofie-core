@@ -3,7 +3,7 @@ import { addMigrationSteps } from './databaseMigration'
 import { ensureCollectionProperty } from './lib'
 import { CustomizableRegions } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { generateTranslation as t, objectPathGet, protectString } from '../../lib/lib'
+import { generateTranslation as t, getHash, objectPathGet, protectString } from '../../lib/lib'
 import {
 	ClientActions,
 	IBlueprintTriggeredActions,
@@ -492,7 +492,7 @@ export const addSteps = addMigrationSteps('1.37.0', [
 			DEFAULT_CORE_TRIGGERS.forEach((triggeredAction) => {
 				TriggeredActions.insert({
 					...triggeredAction,
-					_id: protectString(triggeredAction._id),
+					_id: protectString(getHash(triggeredAction._id)),
 					showStyleBaseId: null,
 					_rundownVersionHash: '',
 				})

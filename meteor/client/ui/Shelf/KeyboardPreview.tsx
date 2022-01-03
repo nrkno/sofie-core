@@ -1,13 +1,30 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import ClassNames from 'classnames'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { IHotkeyAssignment, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
-import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { SourceLayerLookup } from './AdLibPanel'
+import { IHotkeyAssignment } from '../../lib/hotkeyRegistry'
+import { Translated, translateWithTracker, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { ShowStyleBase, HotkeyDefinition } from '../../../lib/collections/ShowStyleBases'
 import { PhysicalLayout, KeyPositon } from '../../../lib/keyboardLayout'
+import {
+	isMountedAdLibTrigger,
+	MountedAdLibTrigger,
+	MountedAdLibTriggers,
+	MountedGenericTrigger,
+	MountedGenericTriggers,
+} from '../../lib/triggers/TriggersHandler'
+import { getFinalKey, keyLabelsToCodes } from '../../lib/triggers/codesToKeyLabels'
+import { Sorensen } from '@sofie-automation/sorensen'
+import { normalizeArray } from '../../../lib/lib'
+import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { TFunction } from 'i18next'
+import {
+	convertToLenientModifiers,
+	MODIFIER_MAP,
+} from '../Settings/components/triggeredActions/triggerEditors/HotkeyEditor'
+import RundownViewEventBus, { RundownViewEvents } from '../RundownView/RundownViewEventBus'
 
 const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 
@@ -32,11 +49,6 @@ export interface IHotkeyAssignmentExtended extends IHotkeyAssignment {
 	normalizedCombo: string
 }
 
-type IBaseHotkeyAssignment = Pick<
-	IHotkeyAssignmentExtended,
-	'label' | 'eventHandler' | 'eventHandlerArguments' | 'sourceLayer'
->
-
 export type ParsedHotkeyAssignments = {
 	[modifiers: string]: IHotkeyAssignmentExtended[]
 }
@@ -48,11 +60,13 @@ export enum SpecialKeyPositions {
 export interface IProps {
 	physicalLayout: PhysicalLayout
 	showStyleBase: ShowStyleBase
+	sorensen: Sorensen | undefined
 }
 
 interface ITrackedProps {
-	hotkeys: ParsedHotkeyAssignments
 	customLabels: { [key: string]: HotkeyDefinition }
+	hotkeyOverrides: { [key: string]: string }
+	sourceLayerLookup: SourceLayerLookup
 }
 
 interface IState {
@@ -102,6 +116,13 @@ const _modifierKeys = [
 	'MetaRight',
 ]
 
+const knownGeneralizedModifiers = [
+	MODIFIER_MAP.AltLeft,
+	MODIFIER_MAP.ControlLeft,
+	MODIFIER_MAP.MetaLeft,
+	MODIFIER_MAP.ShiftLeft,
+] as const
+
 const COMBINATOR_RE = /\s*\+\s*/
 
 function normalizeModifier(key: string) {
@@ -112,111 +133,158 @@ function parseHotKey(hotkey: string) {
 	return hotkey.toLowerCase().split(COMBINATOR_RE).map(normalizeModifier)
 }
 
-function normalizeHotKey(hotkey: string) {
+function normalizeHotKey(hotkey: string, sorensen: Sorensen) {
 	let allKeys = parseHotKey(hotkey)
 
 	const lastKey = allKeys.pop()!
 	allKeys = allKeys.sort()
 	allKeys.push(lastKey)
-	const normalizedCombo = allKeys.join('+')
+	const normalizedCombo = normalizeControl(keyLabelsToCodes(allKeys.join('+'), sorensen))
 
 	return normalizedCombo
 }
 
-export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
-	const registered = RegisteredHotkeys.find().fetch()
+export function sortAndGeneralizeModifiers(keys: string) {
+	const individualKeys = keys.split(/\+/gi)
+	const generalizedKeys = convertToLenientModifiers(individualKeys)
+	const finalKey = generalizedKeys.pop()
+	const sortedModifiers = generalizedKeys.sort()
+	return [...sortedModifiers, finalKey].join('+')
+}
 
-	const parsed: ParsedHotkeyAssignments = {}
+export function normalizeControl(keys: string) {
+	return keys.replace('Ctrl', 'Control')
+}
 
-	const customLabels: {
-		[key: string]: HotkeyDefinition
-	} = {}
+interface IKeyboardPreviewKeyProps {
+	t: TFunction
+	keyPosition: KeyPositon
+	custom?: HotkeyDefinition
+	mappedCombo: string
+	override?: string
+	modifierKey: string | undefined
+	thisKeyLabel: string
+	keyDown: boolean
+	sourceLayerLookup: SourceLayerLookup
+	onKeyClick: (e: any, mountedTriggers: Array<MountedAdLibTrigger | MountedGenericTrigger> | string) => void
+	toggleModifierOnTouch: (modifier: string) => void
+}
 
-	if (props.showStyleBase && props.showStyleBase.hotkeyLegend) {
-		props.showStyleBase.hotkeyLegend.forEach((hotkey) => {
-			customLabels[normalizeHotKey(hotkey.key)] = hotkey
-		})
-	}
+export const KeyboardPreviewKey: React.FC<IKeyboardPreviewKeyProps> = React.memo(function KeyboardPreviewKey(
+	props: IKeyboardPreviewKeyProps
+) {
+	const keyCode = props.keyPosition.code
 
-	registered.forEach((hotkey) => {
-		const modifiersOriginal: string[] = []
-		const modifiersMapped: string[] = []
-
-		const originalKey = normalizeHotKey(hotkey.combo)
-		let mappedKey = originalKey
-
-		if (customLabels[originalKey]) {
-			mappedKey = normalizeHotKey(customLabels[originalKey].platformKey || customLabels[originalKey].key)
-		}
-
-		const allKeysOriginal = parseHotKey(normalizeHotKey(originalKey))
-		while (allKeysOriginal.length > 1) {
-			const modifier = allKeysOriginal.shift()!
-			modifiersOriginal.push(modifier)
-		}
-
-		const allKeysMapped = parseHotKey(normalizeHotKey(mappedKey))
-		while (allKeysMapped.length > 1) {
-			const modifier = allKeysMapped.shift()!
-			modifiersMapped.push(modifier)
-		}
-
-		const finalKeyMapped = allKeysMapped.shift()
-
-		if (finalKeyMapped) {
-			const normalizedModifiers = modifiersMapped.sort().join('+')
-			const normalizedCombo = modifiersMapped.sort().concat(finalKeyMapped).join('+')
-
-			if (parsed[normalizedModifiers] === undefined) {
-				parsed[normalizedModifiers] = []
-			}
-
-			const parsedHotkey: IHotkeyAssignmentExtended = Object.assign({}, hotkey, {
-				finalKey: finalKeyMapped,
-				normalizedCombo,
+	const finalKeyTriggers = useTracker(() => {
+		const generalizedKey = MODIFIER_MAP[keyCode]
+		const keyQuery = generalizedKey ? { $regex: new RegExp(`^${keyCode}|${generalizedKey}$`) } : keyCode
+		const adLibTriggers = MountedAdLibTriggers.find({
+			finalKeys: keyQuery,
+		}).fetch()
+		const genericTriggers = MountedGenericTriggers.find({
+			finalKeys: keyQuery,
+			adLibOnly: { $ne: true },
+			triggeredActionId: { $nin: adLibTriggers.map((trigger) => trigger.triggeredActionId) },
+		}).fetch()
+		const triggersByKeys = new Map<string, Array<MountedAdLibTrigger | MountedGenericTrigger>>()
+		const insertTriggers = (triggers: Array<MountedAdLibTrigger | MountedGenericTrigger>) => {
+			triggers.forEach((trigger) => {
+				trigger.keys.forEach((keys) => {
+					const finalKey = getFinalKey(keys)
+					if (finalKey === keyCode || (generalizedKey && finalKey === generalizedKey)) {
+						const keysWithSortedModifiers = sortAndGeneralizeModifiers(normalizeControl(keys))
+						const trigersForThisKey = triggersByKeys.get(keysWithSortedModifiers)
+						if (!trigersForThisKey) {
+							triggersByKeys.set(keysWithSortedModifiers, [trigger])
+						} else {
+							trigersForThisKey.push(trigger)
+						}
+					}
+				})
 			})
-
-			if (customLabels[originalKey]) {
-				const sourceLayerType = customLabels[originalKey].sourceLayerType
-
-				parsedHotkey.sourceLayer =
-					sourceLayerType !== undefined
-						? {
-								_id: parsedHotkey.sourceLayer ? parsedHotkey.sourceLayer._id : '',
-								type: sourceLayerType,
-								_rank: 0,
-								name: parsedHotkey.sourceLayer ? parsedHotkey.sourceLayer.name : '',
-						  }
-						: parsedHotkey.sourceLayer
-				parsedHotkey.combo = originalKey
-				parsedHotkey.type = HotkeyAssignmentType.CUSTOM_LABEL
-				parsedHotkey.finalKey = finalKeyMapped
-				parsedHotkey.normalizedCombo = normalizedCombo
-				parsed[normalizedModifiers].push(parsedHotkey)
-			} else {
-				customLabels[normalizedCombo] = {
-					_id: '',
-					key: finalKeyMapped,
-					label: hotkey.label,
-					platformKey: modifiersMapped.sort().concat(finalKeyMapped).join('+'),
-				}
-
-				parsed[normalizedModifiers].push(parsedHotkey)
-			}
 		}
-	})
+		insertTriggers(adLibTriggers)
+		insertTriggers(genericTriggers)
 
-	return {
-		hotkeys: parsed,
-		customLabels: _.object(
-			_.map(customLabels, (value, _key) => [
-				value.platformKey ? value.platformKey.toUpperCase() : value.key.toUpperCase(),
-				value,
-			])
-		),
+		return triggersByKeys
+	}, [keyCode])
+
+	const comboTriggers = finalKeyTriggers?.get(sortAndGeneralizeModifiers(props.mappedCombo))
+	const firstTarget = comboTriggers?.length && isMountedAdLibTrigger(comboTriggers[0]) && comboTriggers[0]
+	return (
+		<div
+			className={ClassNames(
+				'keyboard-preview__key',
+				props.override || (!comboTriggers?.length && !props.custom)
+					? undefined
+					: props.custom?.buttonColor === undefined
+					? props.custom?.sourceLayerType !== undefined
+						? RundownUtils.getSourceLayerClassName(props.custom?.sourceLayerType)
+						: firstTarget && firstTarget.sourceLayerId
+						? RundownUtils.getSourceLayerClassName(props.sourceLayerLookup[firstTarget.sourceLayerId]?.type)
+						: undefined
+					: undefined,
+				{
+					'keyboard-preview__key--fill': props.keyPosition.width < 0,
+					'keyboard-preview__key--down': props.keyDown,
+				}
+			)}
+			style={{
+				fontSize: props.keyPosition.width >= 0 ? (props.keyPosition.width || 1) + 'em' : undefined,
+				backgroundColor: props.custom?.buttonColor,
+			}}
+			onClick={(e) =>
+				props.custom && props.custom?.platformKey !== props.custom?.key
+					? props.onKeyClick(e, props.custom.key)
+					: comboTriggers?.length
+					? props.onKeyClick(e, comboTriggers)
+					: props.modifierKey && props.toggleModifierOnTouch(props.modifierKey)
+			}
+		>
+			<div className="keyboard-preview__key__label">{props.thisKeyLabel}</div>
+			<div className="keyboard-preview__key__function-label">
+				{!props.override &&
+					(props.custom?.label ||
+						(!!comboTriggers?.length &&
+							comboTriggers
+								.map((func) => {
+									const name = (isMountedAdLibTrigger(func) && func.targetName) || func.name
+									return typeof name === 'string' ? name : name ? translateMessage(name, props.t) : ''
+								})
+								.join(', ')))}
+			</div>
+		</div>
+	)
+})
+
+export const KeyboardPreview = translateWithTracker<IProps, IState, ITrackedProps>(
+	(props: IProps) => {
+		const customLabels: {
+			[key: string]: HotkeyDefinition
+		} = {}
+		const hotkeyOverrides: {
+			[key: string]: string
+		} = {}
+		const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
+		if (props.sorensen && props.showStyleBase && props.showStyleBase.hotkeyLegend) {
+			props.showStyleBase.hotkeyLegend.forEach((hotkey) => {
+				const normalizedKey = normalizeHotKey(hotkey.key, props.sorensen!)
+				const normalizedPlatformKey = hotkey.platformKey && normalizeHotKey(hotkey.platformKey, props.sorensen!)
+				hotkey.platformKey = normalizedPlatformKey
+				hotkey.key = normalizedKey
+				customLabels[normalizedPlatformKey || normalizedKey] = hotkey
+				if (normalizedPlatformKey && normalizedKey !== normalizedPlatformKey) {
+					hotkeyOverrides[normalizedKey] = normalizedPlatformKey
+				}
+			})
+		}
+		return { customLabels, sourceLayerLookup, hotkeyOverrides }
+	},
+	(_data, props, nextProps) => {
+		return !_.isEqual(props, nextProps)
 	}
-})(
-	class KeyboardPreview extends MeteorReactComponent<IProps & ITrackedProps, IState> {
+)(
+	class KeyboardPreview extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
 		constructor(props: IProps) {
 			super(props)
 
@@ -260,14 +328,25 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 			}
 		}
 
-		onKeyClick = (e: any, hotkeys: IBaseHotkeyAssignment[]) => {
-			hotkeys.forEach((hotkey) => {
-				if (hotkey.eventHandlerArguments) {
-					hotkey.eventHandler(...hotkey.eventHandlerArguments, e)
-				} else {
-					hotkey.eventHandler(e)
-				}
-			})
+		onKeyClick = (e: any, mountedTriggersOrOverride: Array<MountedAdLibTrigger | MountedGenericTrigger> | string) => {
+			if (typeof mountedTriggersOrOverride === 'string') {
+				const overridingTrigger = mountedTriggersOrOverride
+				const finalKey = getFinalKey(mountedTriggersOrOverride)
+				const generalizedKey = MODIFIER_MAP[finalKey]
+				const keyQuery = generalizedKey ? { $regex: new RegExp(`^${finalKey}|${generalizedKey}$`) } : finalKey
+				const mountedTriggers = MountedGenericTriggers.find({ finalKeys: keyQuery }).fetch()
+				mountedTriggersOrOverride = mountedTriggers.filter((trigger) => {
+					return trigger.keys
+						.map((key) => sortAndGeneralizeModifiers(normalizeControl(key)))
+						.includes(overridingTrigger)
+				})
+			}
+			mountedTriggersOrOverride.forEach((trigger) =>
+				RundownViewEventBus.emit(RundownViewEvents.TRIGGER_ACTION, {
+					context: e,
+					actionId: trigger.triggeredActionId,
+				})
+			)
 		}
 
 		toggleModifierOnTouch = (modifier: string) => {
@@ -312,7 +391,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 			return false
 		}
 
-		private renderBlock(block: KeyPositon[][], modifiers: string) {
+		private renderBlock(block: KeyPositon[][], modifiers: string[]) {
 			return block.map((row, index) => (
 				<div className="keyboard-preview__key-row" key={index}>
 					{row.map((key, index) => {
@@ -329,17 +408,6 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 						} else {
 							let modifierKey: string | undefined
 
-							const allFuncs: IBaseHotkeyAssignment[] | undefined =
-								this.props.hotkeys[modifiers] &&
-								this.props.hotkeys[modifiers].filter(
-									(hotkey) =>
-										hotkey.finalKey.toLowerCase() === key.code.toLowerCase().replace(/key|digit/i, '') ||
-										(this.state.layout
-											? hotkey.finalKey.toLowerCase() === (this.state.layout.get(key.code) || '').toLowerCase()
-											: false)
-								)
-							const func: IBaseHotkeyAssignment | undefined = allFuncs && allFuncs[0]
-
 							let thisKeyLabel = this.state.layout
 								? this.state.layout.get(key.code) || GenericFuncionalKeyLabels[key.code] || key.code
 								: GenericFuncionalKeyLabels[key.code] || key.code
@@ -352,65 +420,23 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 								modifierKey = key.code
 							}
 
-							// Combo mapped to visual key
-							const mappedCombo = (modifiers ? modifiers.replace(' ', '+') + '+' + thisKeyLabel : thisKeyLabel)
-								.toUpperCase()
-								.trim()
-
-							// Combo as recognised natively by the web browser
-							const nativeCombo = (modifiers ? modifiers.replace(' ', '+') + '+' + key.code : key.code)
-								.toUpperCase()
-								.replace(/key|digit/i, '')
-								.trim()
-
-							let customLabel: string | undefined = undefined
-							let customSourceLayer: SourceLayerType | undefined = undefined
-							let customColor: string | undefined = undefined
-
-							if (this.props.customLabels[mappedCombo]) {
-								customLabel = this.props.customLabels[mappedCombo].label
-								customSourceLayer = this.props.customLabels[mappedCombo].sourceLayerType
-								customColor = this.props.customLabels[mappedCombo].buttonColor
-							} else if (this.props.customLabels[nativeCombo]) {
-								customLabel = this.props.customLabels[nativeCombo].label
-								customSourceLayer = this.props.customLabels[nativeCombo].sourceLayerType
-								customColor = this.props.customLabels[nativeCombo].buttonColor
-							}
+							const comboForSorensen = [...modifiers, key.code].join('+').trim()
 
 							return (
-								<div
+								<KeyboardPreviewKey
 									key={key.code}
-									className={ClassNames(
-										'keyboard-preview__key',
-										!func
-											? undefined
-											: customColor === undefined
-											? customSourceLayer !== undefined
-												? RundownUtils.getSourceLayerClassName(customSourceLayer)
-												: func && func.sourceLayer
-												? RundownUtils.getSourceLayerClassName(func.sourceLayer.type)
-												: undefined
-											: undefined,
-										{
-											'keyboard-preview__key--fill': key.width < 0,
-											'keyboard-preview__key--down': this.state.keyDown[key.code] === true,
-										}
-									)}
-									style={{
-										fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined,
-										backgroundColor: customColor,
-									}}
-									onClick={(e) =>
-										func ? this.onKeyClick(e, allFuncs || []) : modifierKey && this.toggleModifierOnTouch(modifierKey)
-									}
-								>
-									<div className="keyboard-preview__key__label">{thisKeyLabel}</div>
-									{func && (
-										<div className="keyboard-preview__key__function-label">
-											{customLabel || allFuncs.map((func) => func.label).join(', ')}
-										</div>
-									)}
-								</div>
+									keyPosition={key}
+									custom={this.props.customLabels[comboForSorensen]}
+									override={this.props.hotkeyOverrides[comboForSorensen]}
+									mappedCombo={comboForSorensen}
+									modifierKey={modifierKey}
+									thisKeyLabel={thisKeyLabel}
+									keyDown={this.state.keyDown[key.code] === true}
+									sourceLayerLookup={this.props.sourceLayerLookup}
+									onKeyClick={this.onKeyClick}
+									toggleModifierOnTouch={this.toggleModifierOnTouch}
+									t={this.props.t}
+								/>
 							)
 						}
 					})}
@@ -426,23 +452,12 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 			const arrowPad = keys.slice(8, 10)
 			const numPad = keys.slice(10, 15)
 
-			const knownModifiers = [
-				GenericFuncionalKeyLabels.AltLeft,
-				GenericFuncionalKeyLabels.ShiftLeft,
-				GenericFuncionalKeyLabels.ControlLeft,
-			]
-
 			const currentModifiers = _.intersection(
-				_.compact(_.map(this.state.keyDown, (value, key) => (value ? key : undefined))).map((keyCode) => {
-					return this.state.layout
-						? this.state.layout.get(keyCode) || GenericFuncionalKeyLabels[keyCode] || keyCode
-						: GenericFuncionalKeyLabels[keyCode] || keyCode
-				}),
-				knownModifiers
-			)
-				.sort()
-				.join('+')
-				.toLowerCase()
+				_.compact(_.map(this.state.keyDown, (value, key) => (value ? key : undefined))).map(
+					(keyCode) => MODIFIER_MAP[keyCode]
+				),
+				knownGeneralizedModifiers
+			).sort()
 
 			return (
 				<div className="keyboard-preview">

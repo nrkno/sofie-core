@@ -90,6 +90,7 @@ import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, {
 	ActivateRundownPlaylistEvent,
 	IEventContext,
+	MiniShelfQueueAdLibEvent,
 	RundownViewEvents,
 } from './RundownView/RundownViewEventBus'
 import StudioContext from './RundownView/StudioContext'
@@ -1670,6 +1671,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_LIVE_SEGMENT, this.onGoToLiveSegment)
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_TOP, this.onGoToTop)
+			RundownViewEventBus.on(RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, this.eventQueueMiniShelfAdLib)
 
 			if (this.props.playlist) {
 				documentTitle.set(this.props.playlist.name)
@@ -1846,6 +1848,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_LIVE_SEGMENT, this.onGoToLiveSegment)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_TOP, this.onGoToTop)
+			RundownViewEventBus.off(RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, this.eventQueueMiniShelfAdLib)
 		}
 
 		onBeforeUnload = (e: any) => {
@@ -1946,6 +1949,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					followLiveSegments: true,
 				})
 			}
+		}
+
+		eventQueueMiniShelfAdLib = (e: MiniShelfQueueAdLibEvent) => {
+			this.queueMinishelfAdLib(e, e.forward)
 		}
 
 		onActivate = () => {
