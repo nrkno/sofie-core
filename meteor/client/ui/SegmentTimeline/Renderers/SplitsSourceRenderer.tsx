@@ -12,7 +12,7 @@ import { getSplitPreview, SplitRole, SplitSubItem } from '../../../lib/ui/splitP
 type IProps = ICustomLayerItemProps
 
 interface IState {
-	subItems: Array<SplitSubItem>
+	subItems: ReadonlyArray<SplitSubItem>
 }
 
 export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
@@ -27,7 +27,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	}
 
 	static getDerivedStateFromProps(props: IProps): IState {
-		let subItems: Array<SplitSubItem> = []
+		let subItems: ReadonlyArray<SplitSubItem> = []
 		const splitContent = props.piece.instance.piece.content as Partial<SplitsContent> | undefined
 		if (splitContent && splitContent.boxSourceConfiguration) {
 			subItems = getSplitPreview(splitContent.boxSourceConfiguration)
