@@ -7,7 +7,7 @@ export const RenderSplitPreview = React.memo(function RenderSplitPreview({
 	subItems,
 	showLabels,
 }: {
-	subItems: SplitSubItem[]
+	subItems: ReadonlyArray<Readonly<SplitSubItem>>
 	showLabels: boolean
 }) {
 	const reversedSubItems = subItems.slice()

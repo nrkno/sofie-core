@@ -34,9 +34,9 @@ export interface SplitSubItem {
 
 export function getSplitPreview(
 	boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
-): SplitSubItem[] {
+): ReadonlyArray<Readonly<SplitSubItem>> {
 	return boxSourceConfiguration.map((item, index) => {
-		return literal<SplitSubItem>({
+		return literal<Readonly<SplitSubItem>>({
 			_id: item.studioLabel + '_' + index,
 			type: item.type,
 			label: item.studioLabel,
