@@ -713,7 +713,6 @@ function generateCurrentInfinitePieceObjects(
 
 	const infiniteGroup = createPartGroup(currentPartInfo.partInstance, {
 		start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
-		// duration: piece.piece.enable.duration || undefined,
 	})
 	infiniteGroup.id = getPartGroupId(protectString<PartInstanceId>(unprotectString(pieceInstance._id))) + '_infinite' // This doesnt want to belong to a part, so force the ids
 	infiniteGroup.priority = 1

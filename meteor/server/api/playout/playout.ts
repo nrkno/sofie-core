@@ -1123,7 +1123,7 @@ export namespace ServerPlayoutAPI {
 			_.each(results, (o) => {
 				check(o.id, String)
 
-				logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
+				logger.debug(`Timeline: Setting time: "${o.id}": ${o.time}`)
 
 				const obj = timelineObjs.find((tlo) => tlo.id === o.id)
 				if (obj) {
@@ -1141,7 +1141,7 @@ export namespace ServerPlayoutAPI {
 
 					const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
 					if (objPieceId && activePlaylist && pieceInstanceCache) {
-						logger.info('Update PieceInstance: ', {
+						logger.debug('Update PieceInstance: ', {
 							pieceId: objPieceId,
 							time: new Date(o.time).toTimeString(),
 						})
