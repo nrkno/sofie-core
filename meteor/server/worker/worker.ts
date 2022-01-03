@@ -135,11 +135,14 @@ function queueJobWrapped<TRes>(queueName: string, job: JobSpec, now: Time): Work
 
 let worker: Promisify<IpcJobWorker> | undefined
 Meteor.startup(() => {
+	const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
+	const dbName = 'meteor'
+
 	// Startup the worker 'parent' at startup
 	worker = waitForPromise(
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
-			'@sofie-automation/job-worker/dist/main.js',
-			'JobWorker',
+			'@sofie-automation/job-worker/dist/ipc.js',
+			'IpcJobWorker',
 			[jobFinished, getNextJob, queueJob],
 			{}
 		)
@@ -148,8 +151,7 @@ Meteor.startup(() => {
 	ThreadedClassManager.onEvent(worker, 'restarted', () => {
 		logger.warn(`Worker threads restarted`)
 
-		// TODO
-		worker!.run().catch((e) => {
+		worker!.run(mongoUri, dbName).catch((e) => {
 			logger.error(`Failed to reinit worker threads after restart: ${stringifyError(e)}`)
 		})
 	})
@@ -162,8 +164,7 @@ Meteor.startup(() => {
 		runningJobs.clear()
 	})
 
-	// TODO
-	waitForPromise(worker.run())
+	waitForPromise(worker.run(mongoUri, dbName))
 })
 
 export interface JobTimings {
