@@ -38,6 +38,7 @@ import {
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { ShowStyleVariant, ShowStyleVariantId, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -478,7 +479,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
 										partAutoNext={currentPart.instance.part.autoNext || false}
-										partExpectedDuration={currentPart.instance.part.expectedDuration}
+										partExpectedDuration={calculatePartInstanceExpectedDurationWithPreroll(currentPart.instance)}
 										partStartedPlayback={currentPart.instance.timings?.startedPlayback}
 									/>
 								</div>

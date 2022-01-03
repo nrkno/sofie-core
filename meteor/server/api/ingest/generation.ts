@@ -17,6 +17,7 @@ import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, stringifyError, unprotectString } from '../../../lib/lib'
+import { calculatePartExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
 import { Settings } from '../../../lib/Settings'
 import { logChanges, saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
@@ -241,6 +242,7 @@ export async function calculateSegmentsFromIngestData(
 
 					// Preserve:
 					status: existingPart?.status, // This property is 'owned' by core and updated via its own flow
+					expectedDurationWithPreroll: undefined, // Below
 				})
 				res.parts.push(part)
 
@@ -250,18 +252,17 @@ export async function calculateSegmentsFromIngestData(
 				}
 
 				// Update pieces
-				res.pieces.push(
-					...postProcessPieces(
-						blueprintPart.pieces,
-						blueprint.blueprintId,
-						rundown._id,
-						newSegment._id,
-						part._id,
-						undefined,
-						undefined,
-						part.invalid
-					)
+				const processedPieces = postProcessPieces(
+					blueprintPart.pieces,
+					blueprint.blueprintId,
+					rundown._id,
+					newSegment._id,
+					part._id,
+					undefined,
+					undefined,
+					part.invalid
 				)
+				res.pieces.push(...processedPieces)
 				res.adlibPieces.push(
 					...postProcessAdLibPieces(blueprint.blueprintId, rundown._id, part._id, blueprintPart.adLibPieces)
 				)
@@ -273,6 +274,8 @@ export async function calculateSegmentsFromIngestData(
 						blueprintPart.actions || []
 					)
 				)
+
+				part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, processedPieces)
 			})
 
 			// If the segment has no parts, then hide it

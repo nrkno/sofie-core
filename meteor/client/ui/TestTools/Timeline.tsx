@@ -8,7 +8,6 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
 import { transformTimeline } from '../../../lib/timeline'
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
-import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
 import { Mongo } from 'meteor/mongo'
@@ -140,7 +139,9 @@ export const ComponentTimelineSimulate = withTracker<
 					<tr key={o.layer}>
 						<td>{o.layer}</td>
 						<td style={{ maxWidth: '25vw', minWidth: '10vw', overflowWrap: 'anywhere' }}>{o.id}</td>
-						<td>{makeTableOfObject(o.enable)}</td>
+						<td style={{ whiteSpace: 'pre', maxWidth: '15vw', overflowX: 'auto' }}>
+							{JSON.stringify(o.enable, undefined, '\t')}
+						</td>
 						<td>
 							Start: {o.instance.start}
 							<br />

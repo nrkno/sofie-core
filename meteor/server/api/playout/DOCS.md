@@ -67,7 +67,7 @@ _Prerequisites: rundown playlist is active and there is no current hold_
 
 ### How does Sofie execute a take?
 
-_Prerequisites: previous take must be over 1000ms (MINIMUM_TAKE_SPAN) ago, playlist must be active, there must be a next part instance, any transitions in the current part must be finished, any autonext must be over 1000ms ahead_
+_Prerequisites: previous take must be over 1000ms (MINIMUM_TAKE_SPAN) ago, playlist must be active, there must be a next part instance, any transitions in the current part must be finished, any autonext must be over 1000ms ahead, current time is after blockTakeUntil from the current part_
 
 *   Load the showstyle blueprints
 *   If hold state is COMPLETE, then clear the hold state (set to NONE)
@@ -75,7 +75,9 @@ _Prerequisites: previous take must be over 1000ms (MINIMUM_TAKE_SPAN) ago, playl
 *   Select the next part after the current next (but don't set it as next yet)
 *   Run blueprint pretake function
 *   Run blueprint.getEndStateForPart
-*   Set isTaken = true on the current part instance
+*   on the current part instance
+    *   Set isTaken = true
+    *   calculate the current preroll/delay timings for the part and store it
 *   Update the playlist with the new previous and current part instance and the hold state
     *   If hold state is missing, set to none or active: update to be None
     *   Otherwise +1 the hold state (going from pending to active, or active to complete)
@@ -197,11 +199,11 @@ _Prerequisite: deactivated rundown, or in rehearsal mode, or Settings.allowRundo
     *   Build the timeline from piece instances
         *   Add a rundown status timeline object
         *   Separate the pieces from the current part into infinites and normal pieces
+        *   Create enable object for the current part (with duration if autonext and start with partInstance.startedPlayback)
+        *   Create timeline group for the current part
         *   If there is a previous part instance, create a timeline group for it with endTime currentPart.start + overlap and priority -1
         *   Remove infinites that are in the current part from the previous one's timeline group
         *   Transform the previous part into a timeline
-        *   Create enable object for the current part (with duration if autonext and start with partInstance.startedPlayback)
-        *   Create timeline group for the current part
         *   For every infinite piece in the current part
             *   Create a part group for the infinite
             *   Add classes 'current_part' and 'continues_infinite' if appropriate
@@ -210,7 +212,7 @@ _Prerequisite: deactivated rundown, or in rehearsal mode, or Settings.allowRundo
             *   If the infinite continues to the next part and has a duration, copy that duration into the current part
             *   If the piece doesn't continue in the next part but the current part has autonext, set it to end in the current part explicitly
             *   Transform the infinite part group into a timeline and add it
-        *   Transform the current part into a timeline (but without infinites)
+        *   Transform the remainder of the current part into a timeline (without infinites)
         *   If the current part has autoNext enabled, add the next part to the timeline as well
     *   Add the lookahead timeline and baseline timeline
     *   If the blueprints implement the onTimelineGenerate method

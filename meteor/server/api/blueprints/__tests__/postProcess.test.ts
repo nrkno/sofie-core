@@ -14,6 +14,7 @@ import {
 	TimelineObjectCoreExt,
 	TSR,
 	PieceLifespan,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
@@ -470,6 +471,7 @@ describe('Test blueprint post-process', () => {
 				startRundownId: protectString(''),
 				status: 0,
 				lifespan: PieceLifespan.WithinPart,
+				pieceType: IBlueprintPieceType.Normal,
 				content: {
 					timelineObjects: [],
 				},

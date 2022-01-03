@@ -36,6 +36,7 @@ import {
 } from './cache'
 import { Settings } from '../../../lib/Settings'
 import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
+import { calculatePartExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -624,7 +625,7 @@ export function substituteObjectIds(
 export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 	objList: T[],
 	prefix: string,
-	ignoreOriginal?: boolean
+	ignoreOriginal?: never
 ): T[] {
 	const getUpdatePrefixedId = (o: T) => {
 		let id = o.id
@@ -716,5 +717,30 @@ export function getRundownsSegmentsAndPartsFromCache(
 	return {
 		segments: segments,
 		parts: parts,
+	}
+}
+
+/**
+ * Update the expectedDurationWithPreroll on the specified PartInstance.
+ * The value is used by the UI to approximate the duration of a PartInstance as it will be played out
+ */
+export function updateExpectedDurationWithPrerollForPartInstance(
+	cache: CacheForPlayout,
+	partInstanceId: PartInstanceId
+): void {
+	const nextPartInstance = cache.PartInstances.findOne(partInstanceId)
+	if (nextPartInstance) {
+		const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
+
+		// Update expectedDurationWithPreroll of the next part instance, as it may have changed and is used by the ui until it is taken
+		const expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
+			nextPartInstance.part,
+			pieceInstances.map((p) => p.piece)
+		)
+
+		cache.PartInstances.update(nextPartInstance._id, (doc) => {
+			doc.part.expectedDurationWithPreroll = expectedDurationWithPreroll
+			return doc
+		})
 	}
 }

@@ -36,6 +36,9 @@ export interface Part extends ProtectedStringProperties<IBlueprintPartDB, '_id' 
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
+
+	/** A modified expectedDuration with the planned preroll and other timings factored in */
+	expectedDurationWithPreroll: number | undefined
 }
 
 /** Note: Use Part instead */

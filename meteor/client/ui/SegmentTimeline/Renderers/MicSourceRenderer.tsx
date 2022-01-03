@@ -7,6 +7,7 @@ import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '../../../../lib/rundown/timings'
 type IProps = ICustomLayerItemProps
 interface IState {}
 
@@ -126,8 +127,10 @@ export const MicSourceRenderer = withTranslation()(
 			if (
 				!_forceSizingRecheck &&
 				this._lineAtEnd === true &&
-				(this.props.part.instance.part.expectedDuration || this.props.partDuration) * this.props.timeScale !==
-					(prevProps.part.instance.part.expectedDuration || prevProps.partDuration) * prevProps.timeScale
+				(calculatePartInstanceExpectedDurationWithPreroll(this.props.part.instance) || this.props.partDuration) *
+					this.props.timeScale !==
+					(calculatePartInstanceExpectedDurationWithPreroll(prevProps.part.instance) || prevProps.partDuration) *
+						prevProps.timeScale
 			) {
 				_forceSizingRecheck = true
 			}

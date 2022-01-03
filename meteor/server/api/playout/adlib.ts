@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { PieceLifespan, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import {
 	getCurrentTime,
 	literal,
@@ -57,6 +57,7 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { ServerPlayoutAPI } from './playout'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
+import { calculatePartExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
 
 export namespace ServerPlayoutAdLibAPI {
 	export async function pieceTakeNow(
@@ -338,7 +339,7 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		)
 	}
-	async function innerStartOrQueueAdLibPiece(
+	export async function innerStartOrQueueAdLibPiece(
 		cache: CacheForPlayout,
 		rundown: Rundown,
 		queue: boolean,
@@ -366,8 +367,8 @@ export namespace ServerPlayoutAdLibAPI {
 					segmentId: currentPartInstance.segmentId,
 					rundownId: rundown._id,
 					title: adLibPiece.name,
-					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
+					expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
 				},
 			}
 			const newPieceInstance = convertAdLibToPieceInstance(
@@ -376,6 +377,12 @@ export namespace ServerPlayoutAdLibAPI {
 				newPartInstance,
 				queue
 			)
+
+			newPartInstance.part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
+				newPartInstance.part,
+				[newPieceInstance.piece]
+			)
+
 			await innerStartQueuedAdLib(cache, rundown, currentPartInstance, newPartInstance, [newPieceInstance])
 
 			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
@@ -701,6 +708,7 @@ export namespace ServerPlayoutAdLibAPI {
 									name: '',
 									startPartId: currentPartInstance.part._id,
 									status: RundownAPI.PieceStatusCode.UNKNOWN,
+									pieceType: IBlueprintPieceType.Normal,
 									virtual: true,
 									content: {
 										timelineObjects: [],

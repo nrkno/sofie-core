@@ -21,7 +21,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
-import { isTooCloseToAutonext } from '../playout/lib'
+import { isTooCloseToAutonext, updateExpectedDurationWithPrerollForPartInstance } from '../playout/lib'
 import { CacheForIngest } from './cache'
 
 export async function syncChangesToPartInstances(
@@ -137,6 +137,10 @@ export async function syncChangesToPartInstances(
 					syncContext.applyChangesToCache(cache)
 				} catch (err) {
 					logger.error(`Error in showStyleBlueprint.syncIngestUpdateToPartInstance: ${stringifyError(err)}`)
+				}
+
+				if (playStatus === 'next') {
+					updateExpectedDurationWithPrerollForPartInstance(cache, existingPartInstance._id)
 				}
 
 				// Save notes:

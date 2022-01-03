@@ -10,6 +10,8 @@ import {
 	IBlueprintAdLibPiece,
 	TSR,
 	IBlueprintActionManifest,
+	PieceLifespan,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
@@ -54,6 +56,8 @@ export function postProcessPieces(
 		externalIds.set(orgPiece.externalId, i + 1)
 
 		const piece: Piece = {
+			pieceType: IBlueprintPieceType.Normal,
+
 			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
 			_id: protectString(getHash(`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
 			continuesRefId: protectString(orgPiece.continuesRefId),
@@ -64,7 +68,16 @@ export function postProcessPieces(
 			invalid: setInvalid ?? false,
 		}
 
-		if (!piece.externalId && !piece.isTransition)
+		if (piece.pieceType !== IBlueprintPieceType.Normal) {
+			// transition pieces must not be infinite, lets enforce that
+			piece.lifespan = PieceLifespan.WithinPart
+		}
+		if (piece.extendOnHold) {
+			// HOLD pieces must not be infinite, as they become that when being held
+			piece.lifespan = PieceLifespan.WithinPart
+		}
+
+		if (!piece.externalId && piece.pieceType === IBlueprintPieceType.Normal)
 			throw new Meteor.Error(
 				400,
 				`Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${piece.name}")`
