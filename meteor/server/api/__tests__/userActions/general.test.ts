@@ -146,7 +146,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the first Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
@@ -157,7 +159,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the second Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
@@ -202,7 +206,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the Nexted Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
@@ -213,7 +219,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the last Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeFalsy()
@@ -249,7 +257,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the nexted Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
