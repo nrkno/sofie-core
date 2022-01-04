@@ -143,7 +143,7 @@ export async function runPlayoutOperationWithLock<T>(
 
 /**
  * Lock the playlist for performing a playout operation and load a cache of data.
- * Note: If the studio lock is not currently held, use 'rundownPlaylistPlayoutLockFunction' insted
+ * Note: If the studio lock is not currently held, use 'runPlayoutOperationWithLockFromStudioOperation' insted
  * @param context Contextual information for the call to this function. to aid debugging
  * @param studioCache Cache of Studio data (used to verify the lock order)
  * @param rundownPlaylistId Id of the playlist to lock

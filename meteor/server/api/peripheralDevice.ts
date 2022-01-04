@@ -460,6 +460,29 @@ export namespace ServerPeripheralDeviceAPI {
 
 		transaction?.end()
 	}
+	export async function playoutPlaybackChanged(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		token: string,
+		r: PeripheralDeviceAPI.PlayoutChangedResult
+	): Promise<void> {
+		const transaction = profiler.startTransaction('playoutPlaybackChanged', apmNamespace)
+
+		// This is called from the playout-gateway when a part starts playing.
+		// Note that this function can / might be called several times from playout-gateway for the same part
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
+		// check(r.time, Number)
+		// check(r.rundownPlaylistId, String)
+		// check(r.partInstanceId, String)
+		if (r.length) {
+			const rundownPlaylistId = r[0].data.rundownPlaylistId // todo - baaad
+
+			await ServerPlayoutAPI.onPlayoutPlaybackChanged(context, peripheralDevice, rundownPlaylistId, r)
+		}
+
+		transaction?.end()
+	}
 	export function pingWithCommand(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
@@ -832,6 +855,14 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		resolveDuration: number
 	) {
 		return ServerPeripheralDeviceAPI.reportResolveDone(this, deviceId, deviceToken, timelineHash, resolveDuration)
+	}
+
+	async playoutPlaybackChanged(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		r: PeripheralDeviceAPI.PlayoutChangedResult
+	) {
+		return ServerPeripheralDeviceAPI.playoutPlaybackChanged(this, deviceId, deviceToken, r)
 	}
 
 	// ------ Spreadsheet Gateway --------

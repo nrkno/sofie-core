@@ -212,22 +212,51 @@ export class TSRHandler {
 				this.logger.error('Error in setTimelineTriggerTime', e)
 			})
 		})
+
+		const playoutChanges = [
+			'partPlaybackStarted',
+			'partPlaybackStopped',
+			'piecePlaybackStarted',
+			'piecePlaybackStopped',
+		]
+		let lastCallbacks: { callbackName: string; data: any; time: number; objId: string }[] = []
+		let sendCallbacksTimeout: NodeJS.Timer | undefined = undefined
+
 		this.tsr.on('timelineCallback', (time, objId, callbackName, data) => {
-			// @ts-expect-error Untyped bunch of methods
-			const method = P.methods[callbackName]
-			if (method) {
-				this._coreHandler.core
-					.callMethod(method, [
-						Object.assign({}, data, {
-							objId: objId,
-							time: time,
-						}),
-					])
-					.catch((e) => {
+			if (playoutChanges.includes(callbackName)) {
+				// debounce
+				lastCallbacks.push({
+					callbackName,
+					objId,
+					time,
+					data,
+				})
+
+				if (sendCallbacksTimeout) clearTimeout(sendCallbacksTimeout)
+				sendCallbacksTimeout = setTimeout(() => {
+					const data = lastCallbacks
+					lastCallbacks = []
+					this._coreHandler.core.callMethod(P.methods.playoutPlaybackChanged, [data]).catch((e) => {
 						this.logger.error('Error in timelineCallback', e)
 					})
+				}, 10)
 			} else {
-				this.logger.error(`Unknown callback method "${callbackName}"`)
+				// @ts-expect-error Untyped bunch of methods
+				const method = P.methods[callbackName]
+				if (method) {
+					this._coreHandler.core
+						.callMethod(method, [
+							Object.assign({}, data, {
+								objId: objId,
+								time: time,
+							}),
+						])
+						.catch((e) => {
+							this.logger.error('Error in timelineCallback', e)
+						})
+				} else {
+					this.logger.error(`Unknown callback method "${callbackName}"`)
+				}
 			}
 		})
 		this.tsr.on('resolveDone', (timelineHash: string, resolveDuration: number) => {

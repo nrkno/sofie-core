@@ -24,7 +24,11 @@ import {
 	reportPartInstanceHasStopped,
 	reportPieceHasStopped,
 } from '../blueprints/events'
-import { RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylistCollectionUtil,
+	RundownPlaylistId,
+	RundownPlaylists,
+} from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { updateStudioTimeline, updateTimeline } from './timeline'
@@ -80,6 +84,7 @@ import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBa
 import { profiler } from '../profiler'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { fetchBlueprintVersion } from '../../../lib/collections/optimizations'
+import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -729,6 +734,305 @@ export namespace ServerPlayoutAPI {
 					cache.assertNoChanges()
 
 					return ClientAPI.responseError(404, 'Found no future pieces')
+				}
+			}
+		)
+	}
+
+	/** very dirty copying of playout started/stopped functions */
+	export async function onPlayoutPlaybackChanged(
+		_context: MethodContext,
+		peripheralDevice: PeripheralDevice,
+		rundownPlaylistId: RundownPlaylistId,
+		changes: PeripheralDeviceAPI.PlayoutChangedResult
+	): Promise<void> {
+		check(rundownPlaylistId, String)
+
+		triggerWriteAccessBecauseNoCheckNecessary() // tmp
+
+		return runPlayoutOperationWithLock(
+			null, // TODO: should security be done?
+			'onPlayoutPlaybackChanged',
+			rundownPlaylistId,
+			PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
+			async (lock, playlist) => {
+				for (const change of changes) {
+					if (
+						PeripheralDeviceAPIMethods[change.callbackName] ===
+						PeripheralDeviceAPIMethods.piecePlaybackStarted
+					) {
+						const typedChange = change.data as Omit<PeripheralDeviceAPI.PiecePlaybackStartedResult, 'time'>
+						const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
+						// This method is called when an auto-next event occurs
+
+						const pieceInstance = await PieceInstances.findOneAsync({
+							_id: typedChange.pieceInstanceId,
+							rundownId: { $in: rundowns.map((r) => r._id) },
+						})
+
+						if (pieceInstance) {
+							const isPlaying: boolean = !!(
+								pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback
+							)
+							if (!isPlaying) {
+								logger.debug(
+									`onPiecePlaybackStarted: Playout reports pieceInstance "${
+										typedChange.pieceInstanceId
+									}" has started playback on timestamp ${new Date(change.time).toISOString()}`
+								)
+								await reportPieceHasStarted(playlist, pieceInstance, change.time)
+
+								// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
+							}
+						} else if (!playlist.activationId) {
+							logger.warn(
+								`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`
+							)
+						} else {
+							throw new Meteor.Error(
+								404,
+								`PieceInstance "${typedChange.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
+							)
+						}
+					} else if (
+						PeripheralDeviceAPIMethods[change.callbackName] ===
+						PeripheralDeviceAPIMethods.piecePlaybackStopped
+					) {
+						const typedChange = change.data as PeripheralDeviceAPI.PiecePlaybackStoppedResult
+						const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
+
+						// This method is called when an auto-next event occurs
+						const pieceInstance = await PieceInstances.findOneAsync({
+							_id: typedChange.pieceInstanceId,
+							rundownId: { $in: rundowns.map((r) => r._id) },
+						})
+
+						if (pieceInstance) {
+							const isPlaying: boolean = !!(
+								pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback
+							)
+							if (isPlaying) {
+								logger.debug(
+									`onPiecePlaybackStopped: Playout reports pieceInstance "${
+										typedChange.pieceInstanceId
+									}" has stopped playback on timestamp ${new Date(change.time).toISOString()}`
+								)
+
+								await reportPieceHasStopped(playlist, pieceInstance, change.time)
+							}
+						} else if (!playlist.activationId) {
+							logger.warn(
+								`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`
+							)
+						} else {
+							throw new Meteor.Error(
+								404,
+								`PieceInstance "${typedChange.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
+							)
+						}
+					} else if (
+						PeripheralDeviceAPIMethods[change.callbackName] ===
+						PeripheralDeviceAPIMethods.partPlaybackStarted
+					) {
+						console.log(PeripheralDeviceAPIMethods.partPlaybackStarted)
+						const typedChange = change.data as PeripheralDeviceAPI.PartPlaybackStartedResult
+						const startedPlayback = change.time
+						const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+
+						if (!playlist) continue
+
+						await runPlayoutOperationWithCacheFromStudioOperation(
+							'onPlayoutPlaybackChanged',
+							lock,
+							playlist,
+							PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
+							async (cache) => {
+								const playlist = cache.Playlist.doc
+								if (playlist.studioId !== peripheralDevice.studioId)
+									throw new Meteor.Error(
+										403,
+										`PeripheralDevice "${peripheralDevice._id}" cannot execute callbacks for RundownPlaylist "${rundownPlaylistId}" !`
+									)
+
+								if (!playlist.activationId)
+									throw new Meteor.Error(
+										501,
+										`Rundown Playlist "${rundownPlaylistId}" is not active!`
+									)
+							},
+							async (cache) => {
+								const playingPartInstance = cache.PartInstances.findOne(typedChange.partInstanceId)
+								if (!playingPartInstance)
+									throw new Meteor.Error(
+										404,
+										`PartInstance "${typedChange.partInstanceId}" in RundownPlayst "${rundownPlaylistId}" not found!`
+									)
+
+								// make sure we don't run multiple times, even if TSR calls us multiple times
+								const isPlaying =
+									playingPartInstance.timings?.startedPlayback &&
+									!playingPartInstance.timings?.stoppedPlayback
+								if (!isPlaying) {
+									logger.debug(
+										`Playout reports PartInstance "${
+											typedChange.partInstanceId
+										}" has started playback on timestamp ${new Date(startedPlayback).toISOString()}`
+									)
+
+									const playlist = cache.Playlist.doc
+
+									const rundown = cache.Rundowns.findOne(playingPartInstance.rundownId)
+									if (!rundown)
+										throw new Meteor.Error(
+											404,
+											`Rundown "${playingPartInstance.rundownId}" not found!`
+										)
+
+									const { currentPartInstance, previousPartInstance } =
+										getSelectedPartInstancesFromCache(cache)
+
+									if (playlist.currentPartInstanceId === typedChange.partInstanceId) {
+										// this is the current part, it has just started playback
+										if (playlist.previousPartInstanceId) {
+											if (!previousPartInstance) {
+												// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
+												logger.error(
+													`Previous PartInstance "${playlist.previousPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
+												)
+											} else if (!previousPartInstance.timings?.duration) {
+												onPartHasStoppedPlaying(cache, previousPartInstance, startedPlayback)
+											}
+										}
+
+										reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
+									} else if (playlist.nextPartInstanceId === typedChange.partInstanceId) {
+										// this is the next part, clearly an autoNext has taken place
+										if (playlist.currentPartInstanceId) {
+											if (!currentPartInstance) {
+												// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
+												logger.error(
+													`Previous PartInstance "${playlist.currentPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
+												)
+											} else if (!currentPartInstance.timings?.duration) {
+												onPartHasStoppedPlaying(cache, currentPartInstance, startedPlayback)
+											}
+										}
+
+										cache.Playlist.update({
+											$set: {
+												previousPartInstanceId: playlist.currentPartInstanceId,
+												currentPartInstanceId: playingPartInstance._id,
+												holdState: RundownHoldState.NONE,
+											},
+										})
+
+										reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
+
+										// Update generated properties on the newly playing partInstance
+										const currentRundown = currentPartInstance
+											? cache.Rundowns.findOne(currentPartInstance.rundownId)
+											: undefined
+										const showStyle = await cache.activationCache.getShowStyleCompound(
+											currentRundown ?? rundown
+										)
+										const blueprint = await loadShowStyleBlueprint(showStyle)
+										updatePartInstanceOnTake(
+											cache,
+											showStyle,
+											blueprint.blueprint,
+											rundown,
+											playingPartInstance,
+											currentPartInstance
+										)
+
+										clearNextSegmentId(cache, currentPartInstance)
+										resetPreviousSegment(cache)
+
+										// Update the next partinstance
+										const nextPart = selectNextPart(
+											playlist,
+											playingPartInstance,
+											getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+										)
+										await libsetNextPart(cache, nextPart)
+									} else {
+										// a part is being played that has not been selected for playback by Core
+										// show must go on, so find next part and update the Rundown, but log an error
+										const previousReported = playlist.lastIncorrectPartPlaybackReported
+
+										if (
+											previousReported &&
+											Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE
+										) {
+											// first time this has happened for a while, let's try to progress the show:
+
+											cache.Playlist.update({
+												$set: {
+													previousPartInstanceId: null,
+													currentPartInstanceId: playingPartInstance._id,
+													lastIncorrectPartPlaybackReported: Date.now(), // save the time to prevent the system to go in a loop
+												},
+											})
+
+											reportPartInstanceHasStarted(cache, playingPartInstance, startedPlayback)
+
+											const nextPart = selectNextPart(
+												playlist,
+												playingPartInstance,
+												getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+											)
+											await libsetNextPart(cache, nextPart)
+										}
+
+										// TODO - should this even change the next?
+										logger.error(
+											`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
+										)
+									}
+
+									// complete the take
+									await afterTake(cache, playingPartInstance)
+								}
+							}
+						)
+					} else if (
+						PeripheralDeviceAPIMethods[change.callbackName] ===
+						PeripheralDeviceAPIMethods.partPlaybackStopped
+					) {
+						// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
+						const typedChange = change.data as PeripheralDeviceAPI.PartPlaybackStoppedResult
+						const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
+
+						const partInstance = await PartInstances.findOneAsync({
+							_id: typedChange.partInstanceId,
+							rundownId: { $in: rundowns.map((r) => r._id) },
+						})
+
+						if (partInstance) {
+							// make sure we don't run multiple times, even if TSR calls us multiple times
+
+							const isPlaying =
+								partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
+							if (isPlaying) {
+								logger.debug(
+									`onPartPlaybackStopped: Playout reports PartInstance "${
+										typedChange.partInstanceId
+									}" has stopped playback on timestamp ${new Date(change.time).toISOString()}`
+								)
+
+								await reportPartInstanceHasStopped(playlist._id, partInstance, change.time)
+							}
+						} else if (!playlist.activationId) {
+							logger.warn(
+								`onPartPlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`
+							)
+						} else {
+							throw new Meteor.Error(
+								404,
+								`PartInstance "${typedChange.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
+							)
+						}
+					}
 				}
 			}
 		)

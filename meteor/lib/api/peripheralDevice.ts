@@ -77,6 +77,11 @@ export interface NewPeripheralDeviceAPI {
 		deviceToken: string,
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	): Promise<void>
+	playoutPlaybackChanged(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		r: PeripheralDeviceAPI.PlayoutChangedResult
+	): Promise<void>
 	pingWithCommand(deviceId: PeripheralDeviceId, deviceToken: string, message: string, cb?: Function): Promise<void>
 	killProcess(deviceId: PeripheralDeviceId, deviceToken: string, really: boolean): Promise<boolean>
 	testMethod(
@@ -383,6 +388,8 @@ export enum PeripheralDeviceAPIMethods {
 	'piecePlaybackStarted' = 'peripheralDevice.rundown.piecePlaybackStarted',
 	'piecePlaybackStopped' = 'peripheralDevice.rundown.piecePlaybackStopped',
 
+	'playoutPlaybackChanged' = 'peripheralDevice.playout.playbackChanged',
+
 	'mosRoCreate' = 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' = 'peripheralDevice.mos.roReplace',
 	'mosRoDelete' = 'peripheralDevice.mos.roDelete',
@@ -534,6 +541,18 @@ export namespace PeripheralDeviceAPI {
 		time: number
 	}
 	export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
+	export type PlayoutChangedResult = {
+		callbackName: string
+		objId: string
+		time: number
+		data: Omit<
+			| PartPlaybackStartedResult
+			| PartPlaybackStoppedResult
+			| PiecePlaybackStartedResult
+			| PiecePlaybackStoppedResult,
+			'time'
+		>
+	}[]
 
 	export async function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,

@@ -104,6 +104,8 @@ export namespace PeripheralDeviceAPI {
 		'piecePlaybackStopped' = 'peripheralDevice.rundown.piecePlaybackStopped',
 		'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
 
+		'playoutPlaybackChanged' = 'peripheralDevice.playout.playbackChanged',
+
 		'mosRoCreate' = 'peripheralDevice.mos.roCreate',
 		'mosRoReplace' = 'peripheralDevice.mos.roReplace',
 		'mosRoDelete' = 'peripheralDevice.mos.roDelete',
