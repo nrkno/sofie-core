@@ -477,7 +477,9 @@ const RundownHeader = withTranslation()(
 						},
 					})
 				} else {
-					doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+					doUserAction(t, e, UserAction.TAKE, (e) =>
+						MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+					)
 				}
 			}
 		}
@@ -1891,7 +1893,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						})
 						if (!err && take && this.props.playlist) {
 							const playlistId = this.props.playlist._id
-							doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, playlistId))
+							const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+							doUserAction(t, e, UserAction.TAKE, (e) =>
+								MeteorCall.userAction.take(e, playlistId, currentPartInstanceId)
+							)
 						}
 					}
 				)
