@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
@@ -8,6 +7,7 @@ import { Segments } from '../../../../lib/collections/Segments'
 import { Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { MeteorCall } from '../../../../lib/api/methods'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../debug.ts') // include in order to create the Meteor methods needed
@@ -19,7 +19,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		device = (await setupDefaultStudioEnvironment()).ingestDevice
 	})
 
-	testInFiber('dataRundownCreate', () => {
+	testInFiber('dataRundownCreate', async () => {
 		expect(Rundowns.findOne()).toBeFalsy()
 
 		const rundownData: IngestRundown = {
@@ -45,7 +45,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			],
 		}
 
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownCreate(device._id, device.token, rundownData)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
