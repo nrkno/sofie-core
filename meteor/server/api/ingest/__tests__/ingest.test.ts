@@ -1406,7 +1406,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			resyncRundown()
 			expect(getRundown().orphaned).toBeUndefined()
 
-			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
+			await ServerPlayoutAPI.takeNextPart(
+				PLAYLIST_ACCESS(playlist._id),
+				playlist._id,
+				playlist.currentPartInstanceId
+			)
 			const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
 			expect(partInstance).toHaveLength(1)
 			expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)
@@ -1543,7 +1547,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(getPlaylist().currentPartInstanceId).toBeNull()
 
 			// Take the first part
-			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
+			await ServerPlayoutAPI.takeNextPart(
+				PLAYLIST_ACCESS(playlist._id),
+				playlist._id,
+				playlist.currentPartInstanceId
+			)
 			expect(getPlaylist().currentPartInstanceId).not.toBeNull()
 
 			{

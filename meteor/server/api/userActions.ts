@@ -89,6 +89,11 @@ export async function take(
 		if (!playlist.nextPartInstanceId) {
 			return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
 		}
+
+		if (playlist.currentPartInstanceId !== fromPartInstanceId) {
+			return ClientAPI.responseError('Ignoring take as playing part has changed since TAKE was requested.')
+		}
+
 		if (playlist.currentPartInstanceId) {
 			const currentPartInstance = await PartInstances.findOneAsync(playlist.currentPartInstanceId)
 			if (currentPartInstance && currentPartInstance.timings) {
@@ -113,7 +118,7 @@ export async function take(
 				)
 			}
 		}
-		return ServerPlayoutAPI.takeNextPart(access, playlist._id)
+		return ServerPlayoutAPI.takeNextPart(access, playlist._id, playlist.currentPartInstanceId)
 	})
 }
 
