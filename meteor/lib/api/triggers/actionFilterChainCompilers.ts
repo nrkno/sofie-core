@@ -9,10 +9,9 @@ import {
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
 import { Mongo } from 'meteor/mongo'
-import { isTranslatableMessage } from '../TranslatableMessage'
 import { AdLibAction, AdLibActions } from '../../collections/AdLibActions'
 import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
-import { PartId } from '../../collections/Parts'
+import { DBPart, PartId, Parts } from '../../collections/Parts'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../../collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../collections/RundownBaselineAdLibPieces'
 import {
@@ -25,7 +24,10 @@ import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { FindOptions, MongoSelector } from '../../typings/meteor'
-import { RundownId } from '../../collections/Rundowns'
+import { DBRundown, RundownId, Rundowns } from '../../collections/Rundowns'
+import { sortAdlibs } from '../../Rundown'
+import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reactiveDataHelper'
+import { SegmentId, Segments, DBSegment } from '../../collections/Segments'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
@@ -50,6 +52,7 @@ type SomeAdLib = RundownBaselineAdLibItem | RundownBaselineAdLibAction | AdLibPi
 interface IWrappedAdLibType<T extends SomeAdLib, typeName extends string> {
 	_id: T['_id']
 	_rank: number
+	partId: PartId | null
 	type: typeName
 	label: string | ITranslatableMessage
 	sourceLayerId?: ISourceLayer['_id']
@@ -64,6 +67,7 @@ function wrapAdLibAction(adLib: AdLibAction, type: 'adLibAction'): IWrappedAdLib
 	return {
 		_id: adLib._id,
 		_rank: adLib.display?._rank || 0,
+		partId: adLib.partId,
 		type: type,
 		label: adLib.display.label,
 		sourceLayerId: (adLib.display as IBlueprintActionManifestDisplayContent).sourceLayerId,
@@ -79,7 +83,8 @@ function wrapRundownBaselineAdLibAction(
 ): IWrappedAdLib {
 	return {
 		_id: adLib._id,
-		_rank: adLib.display?._rank || 0,
+		_rank: adLib.display?._rank ?? 0,
+		partId: adLib.partId ?? null,
 		type: type,
 		label: adLib.display.label,
 		sourceLayerId: (adLib.display as IBlueprintActionManifestDisplayContent).sourceLayerId,
@@ -96,6 +101,7 @@ function wrapAdLibPiece<T extends RundownBaselineAdLibItem | AdLibPiece>(
 	return {
 		_id: adLib._id,
 		_rank: adLib._rank,
+		partId: adLib.partId ?? null,
 		type: type,
 		label: adLib.name,
 		sourceLayerId: adLib.sourceLayerId,
@@ -113,6 +119,7 @@ export type IWrappedAdLib =
 	| {
 			_id: ISourceLayer['_id']
 			_rank: number
+			partId: PartId | null
 			type: 'clearSourceLayer'
 			label: string | ITranslatableMessage
 			sourceLayerId: ISourceLayer['_id']
@@ -123,6 +130,7 @@ export type IWrappedAdLib =
 	| {
 			_id: ISourceLayer['_id']
 			_rank: number
+			partId: PartId | null
 			type: 'sticky'
 			label: string | ITranslatableMessage
 			sourceLayerId: ISourceLayer['_id']
@@ -465,14 +473,6 @@ function compileAdLibPieceFilter(
 	}
 }
 
-function compareLabels(a: string | ITranslatableMessage, b: string | ITranslatableMessage) {
-	const actualA = isTranslatableMessage(a) ? a.key : (a as string)
-	const actualB = isTranslatableMessage(b) ? b.key : (b as string)
-	// can't use .localeCompare, because this needs to be locale-independent and always return
-	// the same sorting order, because that's being relied upon by limit & pick/pickEnd.
-	return actualA >= actualB ? 1 : -1
-}
-
 /**
  * Compile the filter chain and return a reactive function that will return the result set for this adLib filter
  * @param filterChain
@@ -523,6 +523,7 @@ export function compileAdLibFilter(
 				? nextPartId
 				: undefined
 
+		/** Note: undefined means that all parts are to be considered */
 		let partFilter: PartId[] | undefined = undefined
 
 		// Figure out the intersection of the segment current/next filter
@@ -598,7 +599,7 @@ export function compileAdLibFilter(
 		}
 
 		{
-			let skip = adLibPieceTypeFilter.skip
+			let skip = adLibActionTypeFilter.skip
 			const currentNextOverride: MongoSelector<AdLibActionType> = {}
 
 			if (partFilter) {
@@ -612,7 +613,7 @@ export function compileAdLibFilter(
 			}
 
 			if (!skip) {
-				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true)
+				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === true)
 					rundownBaselineAdLibActions = RundownBaselineAdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
@@ -630,7 +631,7 @@ export function compileAdLibFilter(
 							},
 						}
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
-				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
+				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === false)
 					adLibActions = AdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
@@ -651,10 +652,92 @@ export function compileAdLibFilter(
 			}
 		}
 
-		let result: IWrappedAdLib[] = []
+		const rundownRankMap = new Map<RundownId, number>()
+		const segmentRankMap = new Map<SegmentId, number>()
+		const partRankMap = new Map<PartId, { segmentId: SegmentId; _rank: number; rundownId: RundownId }>()
+		{
+			if (partFilter === undefined || partFilter.length > 0) {
+				// Note: We need to return an array from within memoizedIsolatedAutorun,
+				// because _.isEqual (used in memoizedIsolatedAutorun) doesn't work with Maps..
+
+				const rundownRanks = memoizedIsolatedAutorun(
+					() =>
+						Rundowns.find(
+							{
+								playlistId: rundownPlaylistId,
+							},
+							{
+								fields: {
+									_id: 1,
+									_rank: 1,
+								},
+							}
+						).fetch() as Pick<DBRundown, '_id' | '_rank'>[],
+					`rundownsRanksForPlaylist_${rundownPlaylistId}`
+				)
+				rundownRanks.forEach((rundown) => {
+					rundownRankMap.set(rundown._id, rundown._rank)
+				})
+
+				const segmentRanks = memoizedIsolatedAutorun(
+					() =>
+						Segments.find(
+							{
+								rundownId: { $in: Array.from(rundownRankMap.keys()) },
+							},
+							{
+								fields: {
+									_id: 1,
+									_rank: 1,
+								},
+							}
+						).fetch() as Pick<DBSegment, '_id' | '_rank'>[],
+					`segmentRanksForRundowns_${Array.from(rundownRankMap.keys()).join(',')}`
+				)
+				segmentRanks.forEach((segment) => {
+					segmentRankMap.set(segment._id, segment._rank)
+				})
+
+				const partRanks = memoizedIsolatedAutorun(() => {
+					if (!partFilter) {
+						return Parts.find(
+							{
+								rundownId: { $in: Array.from(rundownRankMap.keys()) },
+							},
+							{
+								fields: {
+									_id: 1,
+									segmentId: 1,
+									rundownId: 1,
+									_rank: 1,
+								},
+							}
+						).fetch() as Pick<DBPart, '_id' | '_rank' | 'segmentId' | 'rundownId'>[]
+					} else {
+						return Parts.find(
+							{ _id: { $in: partFilter } },
+							{
+								fields: {
+									_id: 1,
+									segmentId: 1,
+									rundownId: 1,
+									_rank: 1,
+								},
+							}
+						).fetch() as Pick<DBPart, '_id' | '_rank' | 'segmentId' | 'rundownId'>[]
+					}
+				}, `partRanks_${JSON.stringify(partFilter)}`)
+
+				partRanks.forEach((part) => {
+					partRankMap.set(part._id, part)
+				})
+			}
+		}
+
+		let resultingAdLibs: IWrappedAdLib[] = []
 
 		{
-			result = [
+			resultingAdLibs = [
 				...rundownBaselineAdLibItems,
 				...rundownBaselineAdLibActions,
 				...adLibPieces,
@@ -662,21 +745,39 @@ export function compileAdLibFilter(
 				...clearAdLibs,
 				...stickyAdLibs,
 			]
-			result = result.sort((a, b) => a._rank - b._rank || compareLabels(a.label, b.label))
+
+			// Sort the adliba:
+			resultingAdLibs = sortAdlibs(
+				resultingAdLibs.map((adlib) => {
+					const part = adlib.partId && partRankMap.get(adlib.partId)
+					const segmentRank = part?.segmentId && segmentRankMap.get(part.segmentId)
+					const rundownRank = part?.rundownId && rundownRankMap.get(part.rundownId)
+
+					return {
+						adlib: adlib,
+						label: adlib.label,
+						adlibRank: adlib._rank,
+						adlibId: adlib._id,
+						partRank: part?._rank ?? null,
+						segmentRank: segmentRank ?? null,
+						rundownRank: rundownRank ?? null,
+					}
+				})
+			)
 
 			// finalize the process: apply limit and pick
 			if (adLibPieceTypeFilter.limit !== undefined) {
-				result = result.slice(0, adLibPieceTypeFilter.limit)
+				resultingAdLibs = resultingAdLibs.slice(0, adLibPieceTypeFilter.limit)
 			}
 			if (adLibPieceTypeFilter.pick !== undefined && adLibPieceTypeFilter.pick >= 0) {
-				result = [result[adLibPieceTypeFilter.pick]]
+				resultingAdLibs = [resultingAdLibs[adLibPieceTypeFilter.pick]]
 			} else if (adLibPieceTypeFilter.pick !== undefined && adLibPieceTypeFilter.pick < 0) {
-				result = [result[result.length + adLibPieceTypeFilter.pick]]
+				resultingAdLibs = [resultingAdLibs[resultingAdLibs.length + adLibPieceTypeFilter.pick]]
 			}
 		}
 
 		// remove any falsy values from the result set
-		return result.filter(Boolean)
+		return resultingAdLibs.filter(Boolean)
 	}
 }
 
