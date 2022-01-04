@@ -550,7 +550,9 @@ function generateExpectedPackages(
 				}
 
 				if (!combinedSources.length) {
-					logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
+					if (expectedPackage.sources.length !== 0) {
+						logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
+					}
 				}
 				if (!combinedTargets.length) {
 					logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)
