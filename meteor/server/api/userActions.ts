@@ -73,7 +73,8 @@ export function setMinimumTakeSpan(span: number) {
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
 export async function take(
 	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId
+	rundownPlaylistId: RundownPlaylistId,
+	fromPartInstanceId: PartInstanceId | null
 ): Promise<ClientAPI.ClientResponse<void>> {
 	// Called by the user. Wont throw as nasty errors
 	const now = getCurrentTime()
@@ -815,13 +816,13 @@ export async function bucketsSaveActionIntoBucket(
 	return ClientAPI.responseSuccess(result)
 }
 
-export function bucketAdlibStart(
+export async function bucketAdlibStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
 	bucketAdlibId: PieceId,
 	queue?: boolean
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(bucketAdlibId, String)
@@ -835,9 +836,14 @@ export function bucketAdlibStart(
 		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
 	}
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAdLibAPI.startBucketAdlibPiece(access, rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
+	const result = await ServerPlayoutAdLibAPI.startBucketAdlibPiece(
+		access,
+		rundownPlaylistId,
+		partInstanceId,
+		bucketAdlibId,
+		!!queue
 	)
+	return ClientAPI.responseSuccess(result)
 }
 
 let restartToken: string | undefined = undefined
@@ -921,8 +927,8 @@ export async function traceAction<T extends (...args: any[]) => any>(
 }
 
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
-	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return traceAction(UserActionAPIMethods.take, take, this, rundownPlaylistId)
+	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId, fromPartInstanceId: PartInstanceId | null) {
+		return traceAction(UserActionAPIMethods.take, take, this, rundownPlaylistId, fromPartInstanceId)
 	}
 	async setNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
 		return traceAction(UserActionAPIMethods.setNext, setNext, this, rundownPlaylistId, partId, true, timeOffset)
