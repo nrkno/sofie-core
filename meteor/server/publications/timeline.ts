@@ -169,7 +169,9 @@ function createObserverForTimelinePublication(
 			]
 		},
 		(newData) => {
-			if (newData.length) {
+			if (pub.isFirstRun || newData.length === 0) {
+				pub.updatedDocs(newData)
+			} else {
 				// Only update the publication if any data has changed:
 				let changedData = false
 				for (const data of newData) {
@@ -181,8 +183,6 @@ function createObserverForTimelinePublication(
 				if (changedData) {
 					pub.updatedDocs(newData)
 				}
-			} else {
-				pub.updatedDocs(newData)
 			}
 		},
 		0 // ms
