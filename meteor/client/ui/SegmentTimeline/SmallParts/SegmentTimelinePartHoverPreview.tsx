@@ -122,9 +122,6 @@ export const SegmentTimelinePartHoverPreview = ({
 						cropDuration={followingPartPreviewDuration}
 					/>
 				)}
-				{/* !followingPart && isLastInSegment && (
-					<div className="segment-timeline__part segment-timeline__part--end-of-segment"></div>
-				) */}
 			</div>
 		</div>
 	) : null
