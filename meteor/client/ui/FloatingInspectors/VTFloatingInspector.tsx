@@ -57,7 +57,7 @@ function getPackagePreviewUrl(
 	for (const expPackage of expectedPackages) {
 		const sideEffect = getSideEffect(expPackage, studio)
 		packagePreviewPath = sideEffect.previewPackageSettings?.path
-		previewContainerId = sideEffect.previewContainerId
+		previewContainerId = sideEffect.previewContainerId ?? undefined
 		expectedPackage = expPackage
 
 		if (packagePreviewPath && previewContainerId && expectedPackage) {

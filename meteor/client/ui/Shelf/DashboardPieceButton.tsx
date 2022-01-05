@@ -118,7 +118,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				const sideEffect = getSideEffect(expectedPackage, studio)
 
 				packageThumbnailPath = sideEffect.thumbnailPackageSettings?.path
-				thumbnailContainerId = sideEffect.thumbnailContainerId
+				thumbnailContainerId = sideEffect.thumbnailContainerId ?? undefined
 
 				if (packageThumbnailPath && thumbnailContainerId) {
 					break // don't look further
