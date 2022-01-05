@@ -3,7 +3,7 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { Collection as RawCollection } from 'mongodb'
+import type { Collection as RawCollection } from 'mongodb'
 
 // This is a copy of the type used in the Users collection,
 // to avoid nasty dependencies

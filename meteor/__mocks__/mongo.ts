@@ -21,15 +21,7 @@ import {
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
-import {
-	BulkWriteOperation,
-	BulkWriteInsertOneOperation,
-	BulkWriteUpdateOneOperation,
-	BulkWriteUpdateManyOperation,
-	BulkWriteReplaceOneOperation,
-	BulkWriteDeleteOneOperation,
-	BulkWriteDeleteManyOperation,
-} from 'mongodb'
+import type { AnyBulkWriteOperation } from 'mongodb'
 import { AsyncMongoCollection } from '../lib/collections/lib'
 const clone = require('fast-clone')
 
@@ -260,38 +252,32 @@ export namespace MongoMock {
 				// indexes: () => {}
 				// stats: () => {}
 				// drop: () => {}
-				bulkWrite: async (updates: BulkWriteOperation<any>[], _options) => {
+				bulkWrite: async (updates: AnyBulkWriteOperation<any>[], _options) => {
 					await sleep(this.asyncBulkWriteDelay)
 
-					for (let update of updates) {
-						if (update['insertOne']) {
-							update = update as BulkWriteInsertOneOperation<any>
+					for (const update of updates) {
+						if ('insertOne' in update) {
 							this.insert(update.insertOne.document)
-						} else if (update['updateOne']) {
-							update = update as BulkWriteUpdateOneOperation<any>
+						} else if ('updateOne' in update) {
 							if (update.updateOne.upsert) {
 								this.upsert(update.updateOne.filter, update.updateOne.update, { multi: false })
 							} else {
 								this.update(update.updateOne.filter, update.updateOne.update, { multi: false })
 							}
-						} else if (update['updateMany']) {
-							update = update as BulkWriteUpdateManyOperation<any>
+						} else if ('updateMany' in update) {
 							if (update.updateMany.upsert) {
 								this.upsert(update.updateMany.filter, update.updateMany.update, { multi: true })
 							} else {
 								this.update(update.updateMany.filter, update.updateMany.update, { multi: true })
 							}
-						} else if (update['deleteOne']) {
-							update = update as BulkWriteDeleteOneOperation<any>
+						} else if ('deleteOne' in update) {
 							const docs = this.find(update.deleteOne.filter).fetch()
 							if (docs.length) {
 								this.remove(docs[0]._id)
 							}
-						} else if (update['deleteMany']) {
-							update = update as BulkWriteDeleteManyOperation<any>
+						} else if ('deleteMany' in update) {
 							this.remove(update.deleteMany.filter)
 						} else if (update['replaceOne']) {
-							update = update as BulkWriteReplaceOneOperation<any>
 							this.upsert(update.replaceOne.filter, update.replaceOne.replacement)
 						}
 					}

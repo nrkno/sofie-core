@@ -630,7 +630,6 @@ function buildTimelineObjsForRundown(
 		for (const infinitePiece of currentInfinitePieces) {
 			timelineObjs.push(
 				...generateCurrentInfinitePieceObjects(
-					context,
 					activePlaylist,
 					partInstancesInfo.current,
 					partInstancesInfo.next,
@@ -686,7 +685,6 @@ function buildTimelineObjsForRundown(
 }
 
 function generateCurrentInfinitePieceObjects(
-	context: JobContext,
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	currentPartInfo: SelectedPartInstanceTimelineInfo,
 	nextPartInfo: SelectedPartInstanceTimelineInfo | undefined,

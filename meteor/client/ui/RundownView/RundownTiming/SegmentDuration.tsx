@@ -5,7 +5,7 @@ import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { SegmentId } from '../../../../lib/collections/Segments'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '../../../../lib/rundown/timings'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface ISegmentDurationProps {
 	segmentId: SegmentId

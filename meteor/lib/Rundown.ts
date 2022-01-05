@@ -22,7 +22,7 @@ import {
 } from './collections/RundownPlaylists'
 import { Rundown, RundownId } from './collections/Rundowns'
 import { ShowStyleBaseId } from './collections/ShowStyleBases'
-import { isTranslatableMessage } from './api/TranslatableMessage'
+import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */

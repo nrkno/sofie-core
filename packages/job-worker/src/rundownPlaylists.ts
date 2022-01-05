@@ -26,7 +26,6 @@ import { WrappedStudioBlueprint } from './blueprints/cache'
 import { StudioUserContext } from './blueprints/context'
 import { getCurrentTime } from './lib'
 import _ = require('underscore')
-import { mongoFindOptions } from '@sofie-automation/corelib/dist/mongo'
 import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
 import { DbCacheWriteCollection } from './cache/CacheCollection'
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'

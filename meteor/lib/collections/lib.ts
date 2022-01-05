@@ -12,7 +12,7 @@ import {
 import { stringifyObjects, getHash, ProtectedString, makePromise, sleep, registerCollection } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
-import { BulkWriteOperation, Collection as RawCollection } from 'mongodb'
+import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 const ObserveChangeBufferTimeout = 2000
@@ -311,7 +311,7 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		return p
 	}
 
-	async bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void> {
+	async bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void> {
 		if (ops.length > 0) {
 			const rawCollection = this.rawCollection()
 			const bulkWriteResult = await rawCollection.bulkWrite(ops, {
@@ -428,7 +428,7 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 		return this.remove(selector)
 	}
 
-	async bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void> {
+	async bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void> {
 		if (ops.length > 0) {
 			const rawCollection = this.rawCollection()
 			const bulkWriteResult = await rawCollection.bulkWrite(ops, {
@@ -480,5 +480,5 @@ export interface AsyncMongoCollection<DBInterface extends { _id: ProtectedString
 
 	removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number>
 
-	bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void>
+	bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void>
 }

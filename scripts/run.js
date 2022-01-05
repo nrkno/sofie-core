@@ -5,7 +5,8 @@ const concurrently = require("concurrently");
 	await concurrently(
 		[
 			{
-				command: "yarn build:packages",
+				command: "yarn build:try || true",
+				cwd: "packages",
 				name: "PACKAGES-BUILD",
 			},
 		],
