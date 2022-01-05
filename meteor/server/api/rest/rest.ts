@@ -8,6 +8,7 @@ import { MeteorPublications, MeteorPublicationSignatures } from '../../publicati
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
 import { PickerPOST, PickerGET } from '../http'
 import { logger } from '../../../lib/logging'
+import { ClientAPI } from '../../../lib/api/client'
 
 const apiVersion = 0
 
@@ -146,14 +147,22 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 			if (result && typeof result.then === 'function') {
 				result.then(
 					(resolvedResult) => {
-						sendResult(res, 200, resolvedResult)
+						let code = 200
+						if (ClientAPI.isClientResponseError(resolvedResult)) {
+							code = 500
+						}
+						sendResult(res, code, resolvedResult)
 					},
 					(e) => {
 						sendError(res, e)
 					}
 				)
 			} else {
-				sendResult(res, 200, result)
+				let code = 200
+				if (ClientAPI.isClientResponseError(result)) {
+					code = 500
+				}
+				sendResult(res, code, result)
 			}
 		} catch (e) {
 			sendError(res, e)
