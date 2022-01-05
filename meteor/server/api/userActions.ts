@@ -49,6 +49,7 @@ import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibAct
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { checkAccessAndGetPlaylist, checkAccessAndGetRundown, checkAccessToPlaylist } from './lib'
 import { PackageManagerAPI } from './packageManager'
+import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 import { getShowStyleCompound } from './showStyles'
@@ -908,6 +909,21 @@ export async function restoreRundownOrder(
 	return ClientAPI.responseSuccess(await restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
 }
 
+export async function disablePeripheralSubDevice(
+	context: MethodContext,
+	peripheralDeviceId: PeripheralDeviceId,
+	subDeviceId: string,
+	disable: boolean
+): Promise<ClientAPI.ClientResponse<void>> {
+	check(peripheralDeviceId, String)
+	check(subDeviceId, String)
+	check(disable, Boolean)
+
+	return ClientAPI.responseSuccess(
+		ServerPeripheralDeviceAPI.disableSubDevice(context, peripheralDeviceId, undefined, subDeviceId, disable)
+	)
+}
+
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return take(this, rundownPlaylistId)
@@ -1145,6 +1161,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return restoreRundownOrder(this, playlistId)
+	}
+	async disablePeripheralSubDevice(
+		peripheralDeviceId: PeripheralDeviceId,
+		subDeviceId: string,
+		disable: boolean
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return disablePeripheralSubDevice(this, peripheralDeviceId, subDeviceId, disable)
 	}
 }
 registerClassToMeteorMethods(
