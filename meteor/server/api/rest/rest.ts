@@ -7,6 +7,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorPublications, MeteorPublicationSignatures } from '../../publications/lib'
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
 import { PickerPOST, PickerGET } from '../http'
+import { logger } from '../../../lib/logging'
 
 const apiVersion = 0
 
@@ -116,6 +117,13 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 
 	index[routeType].push(indexResource)
 	route.route(resource, (params: Params, req: IncomingMessage, res: ServerResponse) => {
+		logger.info(`REST APIv0: ${req.connection.remoteAddress} ${routeType} "${req.url}"`, {
+			url: req.url,
+			method: routeType,
+			remoteAddress: req.connection.remoteAddress,
+			remotePort: req.connection.remotePort,
+			headers: req.headers,
+		})
 		const p: any[] = []
 		for (let i = 0; i < 20; i++) {
 			if (_.has(params, 'param' + i)) {
