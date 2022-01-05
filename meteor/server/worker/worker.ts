@@ -13,10 +13,15 @@ import {
 	getCurrentTime,
 	getRandomString,
 	ManualPromise,
+	MongoSelector,
 	stringifyError,
 	waitForPromise,
 } from '../../lib/lib'
 import { Time } from 'superfly-timeline'
+import { UserActionsLogItem, UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
+import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { fetchStudioLight } from '../../lib/collections/optimizations'
 
 interface JobEntry {
 	spec: JobSpec
@@ -133,6 +138,41 @@ function queueJobWrapped<TRes>(queueName: string, job: JobSpec, now: Time): Work
 	return res
 }
 
+async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
+	const studio = fetchStudioLight(newTimeline._id)
+	if (!studio) throw new Error(`Studio "${newTimeline._id}" was not found for timeline fast-track`)
+
+	// Also do a fast-track for the timeline to be published faster:
+	triggerFastTrackObserver(FastTrackObservers.TIMELINE, [studio._id], newTimeline)
+
+	// Store the timelineHash to the latest UserLog,
+	// so that it can be looked up later to set .gatewayDuration:
+	const selector: MongoSelector<UserActionsLogItem> = {
+		// Try to match the latest userActionLogItem:
+		success: { $exists: false },
+		// This could be improved (as it relies on that the internal execution takes no longer than 3000 ms),
+		// but should be good enough for now..
+		timestamp: { $gt: getCurrentTime() - 3000 },
+
+		// Only set the timelineHash once:
+		timelineHash: { $exists: false },
+	}
+	if (studio.organizationId) {
+		selector.organizationId = studio.organizationId
+	}
+
+	UserActionsLog.update(
+		selector,
+		{
+			$set: {
+				timelineHash: newTimeline.timelineHash,
+				timelineGenerated: newTimeline.generated,
+			},
+		},
+		{ multi: false }
+	)
+}
+
 let worker: Promisify<IpcJobWorker> | undefined
 Meteor.startup(() => {
 	const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
@@ -143,7 +183,7 @@ Meteor.startup(() => {
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
 			'@sofie-automation/job-worker/dist/ipc.js',
 			'IpcJobWorker',
-			[jobFinished, getNextJob, queueJob],
+			[jobFinished, getNextJob, queueJob, fastTrackTimeline],
 			{}
 		)
 	)

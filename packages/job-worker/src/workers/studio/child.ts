@@ -5,8 +5,9 @@ import { createMongoConnection, getMongoCollections, IDirectCollections } from '
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { setupApmAgent, startTransaction } from '../../profiler'
 import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
-import { JobContextBase, QueueJobFunc } from '../context'
+import { QueueJobFunc, JobContextImpl } from '../context'
 import { AnyLockEvent, LocksManager } from '../locks'
+import { FastTrackTimelineFunc } from '../../main'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -22,10 +23,16 @@ export class StudioWorkerChild {
 
 	readonly #locks: LocksManager
 	readonly #queueJob: QueueJobFunc
+	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
 
-	constructor(emitLockEvent: (event: AnyLockEvent) => void, queueJob: QueueJobFunc) {
+	constructor(
+		emitLockEvent: (event: AnyLockEvent) => void,
+		queueJob: QueueJobFunc,
+		fastTrackTimeline: FastTrackTimelineFunc | null
+	) {
 		this.#locks = new LocksManager(emitLockEvent)
 		this.#queueJob = queueJob
+		this.#fastTrackTimeline = fastTrackTimeline
 	}
 
 	async init(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
@@ -73,12 +80,13 @@ export class StudioWorkerChild {
 			transaction.setLabel('studioId', unprotectString(this.#staticData.dataCache.studio._id))
 		}
 
-		const context = new JobContextBase(
+		const context = new JobContextImpl(
 			this.#staticData.collections,
 			this.#staticData.dataCache,
 			this.#locks,
 			transaction,
-			this.#queueJob
+			this.#queueJob,
+			this.#fastTrackTimeline
 		)
 
 		try {

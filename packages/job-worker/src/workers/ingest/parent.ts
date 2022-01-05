@@ -9,6 +9,7 @@ import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { JobManager } from '../../manager'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { FastTrackTimelineFunc } from '../../main'
 
 export class IngestWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<IngestWorkerChild>
@@ -35,14 +36,15 @@ export class IngestWorkerParent extends WorkerParentBase {
 		mongoClient: MongoClient,
 		locksManager: LocksManager,
 		studioId: StudioId,
-		jobManager: JobManager
+		jobManager: JobManager,
+		fastTrackTimeline: FastTrackTimelineFunc | null
 	): Promise<IngestWorkerParent> {
 		const threadId = getRandomString()
 		const emitLockEvent = (e: AnyLockEvent) => locksManager.handleLockEvent(threadId, e)
 		const workerThread = await threadedClass<IngestWorkerChild, typeof IngestWorkerChild>(
 			'./child',
 			'IngestWorkerChild',
-			[emitLockEvent, jobManager.queueJob],
+			[emitLockEvent, jobManager.queueJob, fastTrackTimeline],
 			{
 				instanceName: `Ingest: ${studioId}`,
 			}

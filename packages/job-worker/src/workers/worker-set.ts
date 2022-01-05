@@ -5,15 +5,17 @@ import { IngestWorkerParent } from './ingest/parent'
 import { StudioWorkerParent } from './studio/parent'
 import { EventsWorkerParent } from './events/parent'
 import { JobManager } from '../manager'
+import { FastTrackTimelineFunc } from '../main'
 
 export class StudioWorkerSet {
-	#workerId: string
-	#mongoUri: string
-	#dbName: string
-	#mongoClient: MongoClient
-	#jobManager: JobManager
+	readonly #workerId: string
+	readonly #mongoUri: string
+	readonly #dbName: string
+	readonly #mongoClient: MongoClient
+	readonly #jobManager: JobManager
+	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
 
-	#studioId: StudioId
+	readonly #studioId: StudioId
 
 	#locksManager: LocksManager
 	#studioWorker!: StudioWorkerParent
@@ -26,7 +28,8 @@ export class StudioWorkerSet {
 		dbName: string,
 		mongoClient: MongoClient,
 		studioId: StudioId,
-		jobManager: JobManager
+		jobManager: JobManager,
+		fastTrackTimeline: FastTrackTimelineFunc | null
 	) {
 		this.#workerId = workerId
 		this.#mongoUri = mongoUri
@@ -34,6 +37,7 @@ export class StudioWorkerSet {
 		this.#mongoClient = mongoClient
 		this.#studioId = studioId
 		this.#jobManager = jobManager
+		this.#fastTrackTimeline = fastTrackTimeline
 
 		this.#locksManager = new LocksManager(async (threadId, lockId, locked) => {
 			// Check each thread in turn, to find the one that should be informed
@@ -59,9 +63,18 @@ export class StudioWorkerSet {
 		dbName: string,
 		mongoClient: MongoClient,
 		studioId: StudioId,
-		jobManager: JobManager
+		jobManager: JobManager,
+		fastTrackTimeline: FastTrackTimelineFunc | null
 	): Promise<StudioWorkerSet> {
-		const result = new StudioWorkerSet(workerId, mongoUri, dbName, mongoClient, studioId, jobManager)
+		const result = new StudioWorkerSet(
+			workerId,
+			mongoUri,
+			dbName,
+			mongoClient,
+			studioId,
+			jobManager,
+			fastTrackTimeline
+		)
 
 		await Promise.all([result.initStudioThread(), result.initEventsThread(), result.initIngestThread()])
 
@@ -76,7 +89,8 @@ export class StudioWorkerSet {
 			this.#mongoClient,
 			this.#locksManager,
 			this.#studioId,
-			this.#jobManager
+			this.#jobManager,
+			this.#fastTrackTimeline
 		)
 
 		// TODO: Worker - listen for termination?
@@ -90,7 +104,8 @@ export class StudioWorkerSet {
 			this.#mongoClient,
 			this.#locksManager,
 			this.#studioId,
-			this.#jobManager
+			this.#jobManager,
+			this.#fastTrackTimeline
 		)
 
 		// TODO: Worker - listen for termination?
@@ -104,7 +119,8 @@ export class StudioWorkerSet {
 			this.#mongoClient,
 			this.#locksManager,
 			this.#studioId,
-			this.#jobManager
+			this.#jobManager,
+			this.#fastTrackTimeline
 		)
 
 		// TODO: Worker - listen for termination?

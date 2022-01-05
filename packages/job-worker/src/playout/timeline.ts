@@ -67,7 +67,6 @@ import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
 import { endTrace, sendTrace, startTrace } from '../influx'
 import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { MongoSelector } from '@sofie-automation/corelib/dist/mongo'
 import {
 	calculatePartTimings,
 	getPartTimingsOrDefaults,
@@ -259,40 +258,9 @@ export function saveTimeline(
 	}
 
 	cache.Timeline.replace(newTimeline)
+
 	// Also do a fast-track for the timeline to be published faster:
-	// TODO: This doesn't work in the worker model, can we do something else?
-	// triggerFastTrackObserver(FastTrackObservers.TIMELINE, [studio._id], newTimeline)
-
-	// Store the timelineHash to the latest UserLog,
-	// so that it can be looked up later to set .gatewayDuration:
-	{
-		const selector: MongoSelector<UserActionsLogItem> = {
-			// Try to match the latest userActionLogItem:
-			success: { $exists: false },
-			// This could be improved (as it relies on that the internal execution takes no longer than 3000 ms),
-			// but should be good enough for now..
-			timestamp: { $gt: getCurrentTime() - 3000 },
-
-			// Only set the timelineHash once:
-			timelineHash: { $exists: false },
-		}
-		if (context.studio.organizationId) {
-			selector.organizationId = context.studio.organizationId
-		}
-
-		cache.deferAfterSave(() => {
-			UserActionsLog.update(
-				selector,
-				{
-					$set: {
-						timelineHash: newTimeline.timelineHash,
-						timelineGenerated: newTimeline.generated,
-					},
-				},
-				{ multi: false }
-			)
-		})
-	}
+	context.hackPublishTimelineToFastTrack(newTimeline)
 }
 
 export interface SelectedPartInstancesTimelineInfo {

@@ -1,4 +1,4 @@
-import { JobSpec, JobWorkerBase } from './main'
+import { FastTrackTimelineFunc, JobSpec, JobWorkerBase } from './main'
 import { JobManager, JobStream } from './manager'
 
 /**
@@ -32,8 +32,9 @@ export class IpcJobWorker extends JobWorkerBase {
 	constructor(
 		jobFinished: (id: string, startedTime: number, finishedTime: number, error: any, result: any) => Promise<void>,
 		getNextJob: (queueName: string) => Promise<JobSpec>,
-		queueJob: (queueName: string, jobName: string, jobData: unknown) => Promise<void>
+		queueJob: (queueName: string, jobName: string, jobData: unknown) => Promise<void>,
+		fastTrackTimeline: FastTrackTimelineFunc
 	) {
-		super(new IpcJobManager(jobFinished, queueJob, getNextJob))
+		super(new IpcJobManager(jobFinished, queueJob, getNextJob), fastTrackTimeline)
 	}
 }

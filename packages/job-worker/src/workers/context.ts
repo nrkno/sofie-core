@@ -15,7 +15,7 @@ import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { clone, deepFreeze, getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { clone, deepFreeze, getRandomString, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import {
@@ -32,10 +32,12 @@ import { IS_PRODUCTION } from '../environment'
 import { LocksManager } from './locks'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { EventsJobFunc, getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
+import { FastTrackTimelineFunc } from '../main'
+import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 export type QueueJobFunc = (queueName: string, jobName: string, jobData: unknown) => Promise<void>
 
-export class JobContextBase implements JobContext {
+export class JobContextImpl implements JobContext {
 	private readonly locks: Array<LockBase> = []
 	private readonly caches: Array<ReadOnlyCacheBase<any>> = []
 
@@ -44,7 +46,8 @@ export class JobContextBase implements JobContext {
 		private readonly cacheData: WorkerDataCache,
 		private readonly locksManager: LocksManager,
 		private readonly transaction: ApmTransaction | undefined,
-		private readonly queueJob: QueueJobFunc
+		private readonly queueJob: QueueJobFunc,
+		private readonly fastTrackTimeline: FastTrackTimelineFunc | null
 	) {}
 
 	get studio(): ReadonlyDeep<DBStudio> {
@@ -246,6 +249,14 @@ export class JobContextBase implements JobContext {
 
 		// Return the raw object, as it was frozen before being cached
 		return config
+	}
+
+	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void {
+		if (this.fastTrackTimeline) {
+			this.fastTrackTimeline(newTimeline).catch((e) => {
+				logger.error(`Failed to publish timeline to fast track: ${stringifyError(e)}`)
+			})
+		}
 	}
 }
 

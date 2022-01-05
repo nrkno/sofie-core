@@ -126,6 +126,6 @@ export class UserError {
 	}
 
 	static isUserError(e: any): e is UserError {
-		return 'rawError' in e && 'message' in e && 'key' in e
+		return !(e instanceof Error) && typeof e === 'object' && 'rawError' in e && 'message' in e && 'key' in e
 	}
 }

@@ -52,11 +52,6 @@ export abstract class WorkerParentBase {
 
 		this.#jobManager = jobManager
 		this.#jobStream = jobManager.subscribeToQueue(queueName, workerId)
-
-		// this.#queue = new Worker(queueName, undefined, options)
-
-		// // This is needed to handle timeouts or something
-		// this.#scheduler = new QueueScheduler(queueName, options)
 	}
 
 	/**

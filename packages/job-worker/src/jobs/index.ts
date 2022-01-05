@@ -17,6 +17,7 @@ import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/c
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { PlaylistLock } from './lock'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
+import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 export { ApmSpan }
 
@@ -57,4 +58,7 @@ export interface JobContext {
 
 	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>>
 	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig
+
+	/** Hack: fast-track the timeline out to the playout-gateway. */
+	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
 }

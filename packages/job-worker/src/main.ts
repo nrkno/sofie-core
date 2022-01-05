@@ -8,6 +8,7 @@ import { StudioWorkerSet } from './workers/worker-set'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Db as MongoDb, MongoClient } from 'mongodb'
 import { JobManager } from './manager'
+import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 setupApmAgent()
 
@@ -17,16 +18,25 @@ export interface JobSpec {
 	data: unknown
 }
 
+export type FastTrackTimelineFunc = (newTimeline: TimelineComplete) => Promise<void>
+
 export abstract class JobWorkerBase {
 	readonly #workerId = getWorkerId()
 	readonly #workers = new Map<StudioId, StudioWorkerSet>()
+
+	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
 
 	#client: MongoClient | undefined
 
 	#jobManager: JobManager
 
-	constructor(jobManager: JobManager) {
+	constructor(jobManager: JobManager, fastTrackTimeline: FastTrackTimelineFunc | null) {
 		this.#jobManager = jobManager
+
+		this.#fastTrackTimeline = fastTrackTimeline
+		if (!this.#fastTrackTimeline) {
+			logger.info(`Fast-track of timeline updates disabled`)
+		}
 	}
 
 	public async run(mongoUri: string, dbName: string): Promise<void> {
@@ -59,7 +69,15 @@ export abstract class JobWorkerBase {
 			// Start up each studio, one at a time
 			this.#workers.set(
 				studioId,
-				await StudioWorkerSet.create(this.#workerId, mongoUri, dbName, this.#client, studioId, this.#jobManager)
+				await StudioWorkerSet.create(
+					this.#workerId,
+					mongoUri,
+					dbName,
+					this.#client,
+					studioId,
+					this.#jobManager,
+					this.#fastTrackTimeline
+				)
 			)
 		}
 	}
