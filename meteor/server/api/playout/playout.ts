@@ -90,8 +90,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PieceGroupMetadata } from '../../../lib/rundown/pieces'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { fetchBlueprintVersion } from '../../../lib/collections/optimizations'
-import { deserializeTimelineBlob, serializeTimelineBlob, TimelineComplete } from '../../../lib/collections/Timeline'
-import { FastTrackObservers, triggerFastTrackObserver } from '../../publications/fastTrack'
+import { deserializeTimelineBlob } from '../../../lib/collections/Timeline'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
