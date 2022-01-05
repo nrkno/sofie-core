@@ -219,6 +219,7 @@ export interface NewUserActionAPI extends MethodContext {
 	): Promise<ClientAPI.ClientResponse<void>>
 	restoreRundownOrder(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	disablePeripheralSubDevice(
+		userEvent: string,
 		peripheralDeviceId: PeripheralDeviceId,
 		subDeviceId: string,
 		disable: boolean

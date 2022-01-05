@@ -1163,6 +1163,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return restoreRundownOrder(this, playlistId)
 	}
 	async disablePeripheralSubDevice(
+		_userEvent: string,
 		peripheralDeviceId: PeripheralDeviceId,
 		subDeviceId: string,
 		disable: boolean
