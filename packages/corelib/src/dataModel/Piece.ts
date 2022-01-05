@@ -1,4 +1,8 @@
-import { IBlueprintPieceGeneric, IBlueprintPieceDB } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPieceGeneric,
+	IBlueprintPieceDB,
+	IBlueprintPieceType,
+} from '@sofie-automation/blueprints-integration'
 import { PieceId, RundownId, SegmentId, PartId } from './Ids'
 
 export enum PieceStatusCode {
@@ -42,6 +46,9 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 	 * If the lifespan is WithinPart, it is the only part the piece could be playing in.
 	 */
 	startPartId: PartId
+
+	/** Whether this piece is a special piece */
+	pieceType: IBlueprintPieceType
 
 	/** This is set when the part is invalid and these pieces should be ignored */
 	invalid: boolean

@@ -8,9 +8,10 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 export * from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
+/** Note: Use ShowStyleBase instead */
 export type ShowStyleBase = DBShowStyleBase
 
-export const ShowStyleBases = createMongoCollection<ShowStyleBase, DBShowStyleBase>(CollectionName.ShowStyleBases)
+export const ShowStyleBases = createMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
 
 registerIndex(ShowStyleBases, {
 	organizationId: 1,

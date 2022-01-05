@@ -2,7 +2,12 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { SourceLayerType, PieceLifespan, PieceTransitionType } from '@sofie-automation/blueprints-integration'
+import {
+	SourceLayerType,
+	PieceLifespan,
+	PieceTransitionType,
+	IBlueprintPieceType,
+} from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
@@ -387,12 +392,30 @@ export const SourceLayerItem = withTranslation()(
 			const itemDuration = this.getItemDuration()
 
 			if (this.props.relative) {
+				if (innerPiece.pieceType === IBlueprintPieceType.OutTransition) {
+					return {
+						// also: don't render transitions in relative mode
+						left:
+							(((this.props.partDuration - itemDuration || 0) / (this.props.partDuration || 1)) * 100).toString() + '%',
+						width: ((itemDuration / (this.props.partDuration || 1)) * 100).toString() + '%',
+					}
+				}
 				return {
 					// also: don't render transitions in relative mode
 					left: (((piece.renderedInPoint || 0) / (this.props.partDuration || 1)) * 100).toString() + '%',
 					width: ((itemDuration / (this.props.partDuration || 1)) * 100).toString() + '%',
 				}
 			} else {
+				if (innerPiece.pieceType === IBlueprintPieceType.OutTransition) {
+					return {
+						left:
+							this.convertTimeToPixels(
+								(this.props.partDuration - itemDuration || 0) + inTransitionDuration
+							).toString() + 'px',
+						width:
+							this.convertTimeToPixels(itemDuration - inTransitionDuration - outTransitionDuration).toString() + 'px',
+					}
+				}
 				return {
 					left: this.convertTimeToPixels((piece.renderedInPoint || 0) + inTransitionDuration).toString() + 'px',
 					width:

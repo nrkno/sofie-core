@@ -113,6 +113,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				segmentId: protectString('mock_segment1'),
 				externalId: 'p1',
 				title: 'Part 1',
+				expectedDurationWithPreroll: undefined,
 			}),
 		}),
 		literal<DBPartInstance>({
@@ -130,6 +131,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				segmentId: protectString('mock_segment1'),
 				externalId: 'p2',
 				title: 'Part 2',
+				expectedDurationWithPreroll: undefined,
 			}),
 		}),
 		literal<DBPartInstance>({
@@ -147,6 +149,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				segmentId: protectString('mock_segment1'),
 				externalId: 'p3',
 				title: 'Part 3',
+				expectedDurationWithPreroll: undefined,
 			}),
 		}),
 		// Segment 2
@@ -165,6 +168,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				segmentId: protectString('mock_segment2'),
 				externalId: 'p4',
 				title: 'Part 4',
+				expectedDurationWithPreroll: undefined,
 			}),
 		}),
 		literal<DBPartInstance>({
@@ -182,6 +186,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				segmentId: protectString('mock_segment2'),
 				externalId: 'p5',
 				title: 'Part 5',
+				expectedDurationWithPreroll: undefined,
 			}),
 		}),
 		// Segment 3
@@ -200,6 +205,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				segmentId: protectString('mock_segment3'),
 				externalId: 'p6',
 				title: 'Part 6',
+				expectedDurationWithPreroll: undefined,
 			}),
 		}),
 		// Segment 4
@@ -218,6 +224,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				segmentId: protectString('mock_segment4'),
 				externalId: 'p7',
 				title: 'Part 7',
+				expectedDurationWithPreroll: undefined,
 			}),
 		}),
 		literal<DBPartInstance>({
@@ -236,6 +243,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				externalId: 'p8',
 				title: 'Part 8',
 				floated: true,
+				expectedDurationWithPreroll: undefined,
 			}),
 		}),
 		literal<DBPartInstance>({
@@ -253,6 +261,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				segmentId: protectString('mock_segment4'),
 				externalId: 'p9',
 				title: 'Part 9',
+				expectedDurationWithPreroll: undefined,
 			}),
 		}),
 
@@ -271,6 +280,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 				segmentId: protectString('mock_segment4'),
 				externalId: 'o1',
 				title: 'Orphan 1',
+				expectedDurationWithPreroll: undefined,
 			}),
 			orphaned: 'adlib-part',
 		}),
@@ -458,6 +468,7 @@ describe('ensureNextPartIsValid', () => {
 					segmentId: protectString('mock_segment4'),
 					externalId: 'o1',
 					title: 'Orphan 1',
+					expectedDurationWithPreroll: undefined,
 				}),
 				orphaned: 'deleted',
 			})

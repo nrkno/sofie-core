@@ -7,9 +7,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 export * from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
-export const IngestDataCache = createMongoCollection<IngestDataCacheObj, IngestDataCacheObj>(
-	CollectionName.IngestDataCache
-)
+export const IngestDataCache = createMongoCollection<IngestDataCacheObj>(CollectionName.IngestDataCache)
 
 registerIndex(IngestDataCache, {
 	rundownId: 1,

@@ -1,4 +1,8 @@
-import { Timeline as TimelineTypes, TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPieceType,
+	Timeline as TimelineTypes,
+	TimelineObjectCoreExt,
+} from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { literal } from '@sofie-automation/corelib/dist/lib'
@@ -101,11 +105,13 @@ export function findLookaheadObjectsForPart(
 	let classesFromPreviousPart: string[] = []
 	if (previousPart && currentPartInstanceId && partInstanceId) {
 		// If we have a previous and not at the start of the rundown
-		allowTransition = !previousPart.disableOutTransition
+		allowTransition = !previousPart.disableNextInTransition
 		classesFromPreviousPart = previousPart.classesForNext || []
 	}
 
-	const transitionPiece = allowTransition ? partInfo.pieces.find((i) => !!i.piece.isTransition) : undefined
+	const transitionPiece = allowTransition
+		? partInfo.pieces.find((i) => i.piece.pieceType === IBlueprintPieceType.InTransition)
+		: undefined
 
 	if (allObjs.length === 1) {
 		// Only one, just return it
@@ -123,12 +129,16 @@ export function findLookaheadObjectsForPart(
 
 		const res: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 		partInfo.pieces.forEach((piece) => {
-			if (!allowTransition && piece.piece.isTransition) {
+			if (!allowTransition && piece.piece.pieceType === IBlueprintPieceType.InTransition) {
 				return
 			}
 
 			// If there is a transition and this piece is abs0, it is assumed to be the primary piece and so does not need lookahead
-			if (hasTransitionObj && !piece.piece.isTransition && piece.piece.enable.start === 0) {
+			if (
+				hasTransitionObj &&
+				piece.piece.pieceType === IBlueprintPieceType.Normal &&
+				piece.piece.enable.start === 0
+			) {
 				return
 			}
 

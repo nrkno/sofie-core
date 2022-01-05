@@ -41,13 +41,14 @@ import {
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceLifespan, IBlueprintDirectPlayType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { executeActionInner } from './playout'
+import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 
 export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -298,7 +299,7 @@ export async function adLibPieceStart(context: JobContext, data: AdlibPieceStart
 		}
 	)
 }
-async function innerStartOrQueueAdLibPiece(
+export async function innerStartOrQueueAdLibPiece(
 	context: JobContext,
 	cache: CacheForPlayout,
 	rundown: DBRundown,
@@ -327,8 +328,8 @@ async function innerStartOrQueueAdLibPiece(
 				segmentId: currentPartInstance.segmentId,
 				rundownId: rundown._id,
 				title: adLibPiece.name,
-				prerollDuration: adLibPiece.adlibPreroll,
 				expectedDuration: adLibPiece.expectedDuration,
+				expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
 			},
 		}
 		const newPieceInstance = convertAdLibToPieceInstance(
@@ -338,6 +339,12 @@ async function innerStartOrQueueAdLibPiece(
 			newPartInstance,
 			queue
 		)
+
+		newPartInstance.part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
+			newPartInstance.part,
+			[newPieceInstance.piece]
+		)
+
 		await innerStartQueuedAdLib(context, cache, rundown, currentPartInstance, newPartInstance, [newPieceInstance])
 
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
@@ -673,6 +680,7 @@ export function innerStopPieces(
 								name: '',
 								startPartId: currentPartInstance.part._id,
 								status: PieceStatusCode.UNKNOWN,
+								pieceType: IBlueprintPieceType.Normal,
 								virtual: true,
 								content: {
 									timelineObjects: [],

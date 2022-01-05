@@ -98,7 +98,7 @@ export function getPlayheadTrackingInfinitesForPart(
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	currentPartInstance: DBPartInstance,
 	currentPartPieceInstances: PieceInstance[],
-	rundown: ReadonlyDeep<DBRundown>,
+	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
 	part: DBPart,
 	newInstanceId: PartInstanceId,
 	nextPartIsAfterCurrentPart: boolean,
@@ -267,7 +267,7 @@ export function isPiecePotentiallyActiveInPart(
 	segmentsBeforeThisInRundown: Set<SegmentId>,
 	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
-	rundown: ReadonlyDeep<DBRundown>,
+	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
 	part: DBPart,
 	pieceToCheck: Piece
 ): boolean {
@@ -337,7 +337,7 @@ export function getPieceInstancesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
 	playingPartInstance: DBPartInstance | undefined,
 	playingPieceInstances: PieceInstance[] | undefined,
-	rundown: ReadonlyDeep<DBRundown>,
+	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
 	part: DBPart,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
@@ -496,7 +496,7 @@ export interface PieceInstanceWithTimings extends PieceInstance {
 }
 
 function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number | string {
-	const offset = newPiece.piece.adlibPreroll
+	const offset = newPiece.piece.prerollDuration
 	if (!offset) return start
 
 	return typeof start === 'number' ? start + offset : `#${getPieceGroupId(newPiece)}.start + ${offset}`
@@ -705,7 +705,7 @@ function continueShowStyleEndInfinites(
 	rundownsBeforeThisInPlaylist: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	previousRundownId: RundownId,
-	rundown: ReadonlyDeep<DBRundown>
+	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>
 ): boolean {
 	let canContinueShowStyleEndInfinites = true
 	if (rundown.showStyleBaseId !== rundownsToShowstyles.get(previousRundownId)) {

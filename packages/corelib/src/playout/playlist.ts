@@ -5,7 +5,7 @@ import { SegmentId } from '../dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { normalizeArrayToMap } from '../lib'
 
-export function sortSegmentsInRundowns(segments: DBSegment[], rundowns: Array<ReadonlyDeep<DBRundown>>): DBSegment[] {
+export function sortSegmentsInRundowns<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(segments: TSegment[], rundowns: Array<ReadonlyDeep<DBRundown>>): TSegment[] {
 	const rundownsMap = normalizeArrayToMap(rundowns, '_id')
 	return segments.sort((a, b) => {
 		if (a.rundownId === b.rundownId) {
@@ -17,10 +17,10 @@ export function sortSegmentsInRundowns(segments: DBSegment[], rundowns: Array<Re
 		}
 	})
 }
-export function sortPartsInSegments(parts: DBPart[], rundowns: DBRundown[], segments: DBSegment[]): DBPart[] {
+export function sortPartsInSegments(parts: DBPart[], rundowns: DBRundown[], segments: Array<Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>): DBPart[] {
 	return sortPartsInSortedSegments(parts, sortSegmentsInRundowns(segments, rundowns))
 }
-export function sortPartsInSortedSegments<P extends DBPart>(parts: P[], sortedSegments: DBSegment[]): P[] {
+export function sortPartsInSortedSegments<P extends DBPart>(parts: P[], sortedSegments: Array<Pick<DBSegment, '_id'>>): P[] {
 	const segmentRanks = new Map<SegmentId, number>()
 	for (let i = 0; i < sortedSegments.length; i++) {
 		segmentRanks.set(sortedSegments[i]._id, i)

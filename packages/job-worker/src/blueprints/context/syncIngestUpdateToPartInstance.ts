@@ -30,6 +30,7 @@ import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext } from '../../jobs'
+import { logChanges } from '../../cache/lib'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownContext
@@ -77,26 +78,17 @@ export class SyncIngestUpdateToPartInstanceContext
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		this.notes.push({
-			type: NoteSeverity.ERROR,
-			message: {
-				key: message,
-				args: params,
-			},
-		})
+		this.addNote(NoteSeverity.ERROR, message, params)
 	}
 	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		this.notes.push({
-			type: NoteSeverity.WARNING,
-			message: {
-				key: message,
-				args: params,
-			},
-		})
+		this.addNote(NoteSeverity.WARNING, message, params)
 	}
 	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.INFO, message, params)
+	}
+	private addNote(type: NoteSeverity, message: string, params?: { [key: string]: any }) {
 		this.notes.push({
-			type: NoteSeverity.INFO,
+			type: type,
 			message: {
 				key: message,
 				args: params,
@@ -111,8 +103,11 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.logInfo(`No ingest changes to apply to PartInstance`)
 		}
 
-		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
-		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
+		const pieceChanges = this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
+		const partChanges = this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
+
+		logChanges('PartInstances', partChanges)
+		logChanges('PieceInstances', pieceChanges)
 	}
 
 	syncPieceInstance(

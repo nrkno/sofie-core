@@ -26,6 +26,7 @@ import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlib'
 import { reportPartInstanceHasStarted } from '../blueprints/events'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
+import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 
 export async function takeNextPartInnerSync(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
 	const span = context.startSpan('takeNextPartInner')
@@ -50,15 +51,23 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	const pShowStyle = context.getShowStyleCompound(currentRundown.showStyleVariantId, currentRundown.showStyleBaseId)
 
 	if (currentPartInstance) {
-		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition
+		const allowTransition = previousPartInstance && !previousPartInstance.part.disableNextInTransition
 		const start = currentPartInstance.timings?.startedPlayback
+
+		const now = getCurrentTime()
+		if (currentPartInstance.blockTakeUntil && currentPartInstance.blockTakeUntil > now) {
+			const remainingTime = currentPartInstance.blockTakeUntil - now
+			// Adlib-actions can arbitrarily block takes from being done
+			logger.debug(`Take is blocked until ${currentPartInstance.blockTakeUntil}. Which is in: ${remainingTime}`)
+			throw UserError.create(UserErrorMessage.TakeBlockedDuration, { duration: remainingTime })
+		}
 
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
 		if (
 			allowTransition &&
-			currentPartInstance.part.transitionDuration &&
+			currentPartInstance.part.inTransition &&
 			start &&
-			now < start + currentPartInstance.part.transitionDuration
+			now < start + currentPartInstance.part.inTransition.blockTakeDuration
 		) {
 			throw UserError.create(UserErrorMessage.TakeDuringTransition)
 		}
@@ -335,11 +344,16 @@ export function updatePartInstanceOnTake(
 	}
 
 	const partInstanceM: any = {
-		$set: {
+		$set: literal<Partial<DBPartInstance>>({
 			isTaken: true,
-			// set transition properties to what will be used to generate timeline later:
-			allowedToUseTransition: currentPartInstance && !currentPartInstance.part.disableOutTransition,
-		},
+			// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
+			partPlayoutTimings: calculatePartTimings(
+				cache.Playlist.doc.holdState,
+				currentPartInstance?.part,
+				takePartInstance.part,
+				cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id).map((p) => p.piece)
+			),
+		}),
 	}
 	if (previousPartEndState) {
 		partInstanceM.$set.previousPartEndState = previousPartEndState

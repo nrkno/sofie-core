@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
-
-import { AsyncTransformedCollection } from './collections/lib'
+import { AsyncMongoCollection } from './collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { Meteor } from 'meteor/meteor'
@@ -67,10 +66,6 @@ export interface ObjId {
 	_id: ProtectedString<any>
 }
 
-export function applyClassToDocument(docClass, document) {
-	return new docClass(document)
-}
-
 /**
  * Formats the time as human-readable time "YYYY-MM-DD hh:ii:ss"
  * @param time
@@ -123,12 +118,12 @@ export function stringifyObjects(objs: any): string {
 		return objs + ''
 	}
 }
-export const Collections = new Map<CollectionName, AsyncTransformedCollection<any, any>>()
-export function registerCollection(name: CollectionName, collection: AsyncTransformedCollection<any, any>) {
+export const Collections = new Map<CollectionName, AsyncMongoCollection<any>>()
+export function registerCollection(name: CollectionName, collection: AsyncMongoCollection<any>) {
 	if (Collections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
 	Collections.set(name, collection)
 }
-export function getCollectionKey(collection: AsyncTransformedCollection<any, any>): string {
+export function getCollectionKey(collection: AsyncMongoCollection<any>): string {
 	const o = Object.entries(Collections).find(([_key, col]) => col === collection)
 	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
 	return o[0] // collectionName
@@ -421,7 +416,7 @@ export async function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => Meteor.setTimeout(resolve, ms))
 }
 
-export function isPromise<T extends any>(val: any): val is Promise<T> {
+export function isPromise<T>(val: any): val is Promise<T> {
 	return _.isObject(val) && typeof val.then === 'function' && typeof val.catch === 'function'
 }
 

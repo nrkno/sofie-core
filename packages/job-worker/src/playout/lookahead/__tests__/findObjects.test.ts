@@ -1,5 +1,10 @@
 import { findLookaheadObjectsForPart } from '../findObjects'
-import { OnGenerateTimelineObj, PieceLifespan, TSR } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPieceType,
+	OnGenerateTimelineObj,
+	PieceLifespan,
+	TSR,
+} from '@sofie-automation/blueprints-integration'
 import { sortPieceInstancesByStart } from '../../pieces'
 import { RundownId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -50,6 +55,7 @@ describe('findLookaheadObjectsForPart', () => {
 			invalid: false,
 			status: 0,
 			lifespan: PieceLifespan.WithinPart,
+			pieceType: IBlueprintPieceType.Normal,
 			sourceLayerId: '',
 			outputLayerId: '',
 			content: {
@@ -249,7 +255,7 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Allowed transition
-		const previousPart: DBPart = { disableOutTransition: false, classesForNext: undefined } as any
+		const previousPart: DBPart = { disableNextInTransition: false, classesForNext: undefined } as any
 		const objects1 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
@@ -267,7 +273,7 @@ describe('findLookaheadObjectsForPart', () => {
 			rundownId: rundownId,
 			piece: {
 				...defaultPieceInstanceProps.piece,
-				isTransition: true,
+				pieceType: IBlueprintPieceType.InTransition,
 			},
 		})
 		const objects2 = findLookaheadObjectsForPart(
@@ -304,7 +310,7 @@ describe('findLookaheadObjectsForPart', () => {
 		expect(stripObjectProperties(objects3, true)).toStrictEqual(stripObjectProperties(objects1, true))
 
 		// Previous disables transition
-		const blockedPreviousPart: DBPart = { disableOutTransition: true, classesForNext: undefined } as any
+		const blockedPreviousPart: DBPart = { disableNextInTransition: true, classesForNext: undefined } as any
 		const objects4 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
@@ -562,7 +568,7 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// Allowed transition
-		const previousPart: DBPart = { disableOutTransition: false, classesForNext: undefined } as any
+		const previousPart: DBPart = { disableNextInTransition: false, classesForNext: undefined } as any
 		const objects1 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
@@ -580,7 +586,7 @@ describe('findLookaheadObjectsForPart', () => {
 			rundownId: rundownId,
 			piece: {
 				...defaultPieceInstanceProps.piece,
-				isTransition: true,
+				pieceType: IBlueprintPieceType.InTransition,
 				// content: {
 				// 	timelineObjects: [
 				// 		{
@@ -638,7 +644,7 @@ describe('findLookaheadObjectsForPart', () => {
 		expect(stripObjectProperties(objects3, true)).toStrictEqual(stripObjectProperties(objects1, true))
 
 		// Previous disables transition
-		const blockedPreviousPart: DBPart = { disableOutTransition: true, classesForNext: undefined } as any
+		const blockedPreviousPart: DBPart = { disableNextInTransition: true, classesForNext: undefined } as any
 		const objects4 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
@@ -729,7 +735,7 @@ describe('findLookaheadObjectsForPart', () => {
 						piece: {
 							...defaultPieceInstanceProps.piece,
 							_id: protectString('piece2'),
-							isTransition: true,
+							pieceType: IBlueprintPieceType.InTransition,
 							content: {
 								timelineObjects: [
 									{
@@ -748,7 +754,7 @@ describe('findLookaheadObjectsForPart', () => {
 		}
 
 		// Allowed transition
-		const previousPart: DBPart = { disableOutTransition: false, classesForNext: undefined } as any
+		const previousPart: DBPart = { disableNextInTransition: false, classesForNext: undefined } as any
 		const objects2 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,

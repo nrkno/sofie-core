@@ -25,10 +25,9 @@ export interface DBTriggeredActions extends ProtectedStringProperties<IBlueprint
 	_rundownVersionHash: string
 }
 
+/** Note: Use DBTriggeredActions instead */
 export type TriggeredActionsObj = DBTriggeredActions
-export const TriggeredActions = createMongoCollection<TriggeredActionsObj, DBTriggeredActions>(
-	CollectionName.TriggeredActions
-)
+export const TriggeredActions = createMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
 
 registerIndex(TriggeredActions, {
 	showStyleBaseId: 1,

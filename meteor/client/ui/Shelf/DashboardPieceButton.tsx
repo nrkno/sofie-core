@@ -12,6 +12,7 @@ import {
 	VTContent,
 	NoraContent,
 	Accessor,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -175,7 +176,13 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}}
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={this.element}
-					piece={{ ...adLib, enable: { start: 0 }, startPartId: protectString(''), invalid: false }}
+					piece={{
+						...adLib,
+						enable: { start: 0 },
+						startPartId: protectString(''),
+						invalid: false,
+						pieceType: IBlueprintPieceType.Normal,
+					}}
 					pieceRenderedDuration={adLib.expectedDuration || null}
 					pieceRenderedIn={null}
 					displayOn="viewport"

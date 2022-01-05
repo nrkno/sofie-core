@@ -7,7 +7,6 @@ import {
 	waitForPromise,
 	getCurrentTime,
 	systemTime,
-	applyClassToDocument,
 	formatDateTime,
 	stringifyObjects,
 	partial,
@@ -47,29 +46,6 @@ describe('lib/lib', () => {
 	testInFiber('getCurrentTime', () => {
 		systemTime.diff = 5439
 		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1)
-	})
-	testInFiber('applyClassToDocument', () => {
-		class MyClass {
-			public publ: string
-			private priv: string
-			constructor(from) {
-				Object.keys(from).forEach((key) => {
-					this[key] = from[key]
-				})
-			}
-			getPriv() {
-				return this.priv
-			}
-			getPubl() {
-				return this.publ
-			}
-		}
-		const doc = applyClassToDocument(MyClass, {
-			priv: 'aaa',
-			publ: 'bbb',
-		})
-		expect(doc.getPriv()).toEqual('aaa')
-		expect(doc.getPubl()).toEqual('bbb')
 	})
 
 	testInFiber('formatDateTime', () => {

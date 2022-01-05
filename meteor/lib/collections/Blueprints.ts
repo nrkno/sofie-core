@@ -7,7 +7,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 export * from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 
-export const Blueprints = createMongoCollection<Blueprint, Blueprint>(CollectionName.Blueprints)
+export const Blueprints = createMongoCollection<Blueprint>(CollectionName.Blueprints)
 
 registerIndex(Blueprints, {
 	organizationId: 1,

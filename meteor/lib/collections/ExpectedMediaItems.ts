@@ -8,9 +8,7 @@ import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/Expe
 export * from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 
 /** @deprecated */
-export const ExpectedMediaItems = createMongoCollection<ExpectedMediaItem, ExpectedMediaItem>(
-	CollectionName.ExpectedMediaItems
-)
+export const ExpectedMediaItems = createMongoCollection<ExpectedMediaItem>(CollectionName.ExpectedMediaItems)
 
 registerIndex(ExpectedMediaItems, {
 	path: 1,

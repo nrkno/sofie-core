@@ -5,7 +5,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 export * from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 
-export const RundownBaselineAdLibPieces = createMongoCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
+export const RundownBaselineAdLibPieces = createMongoCollection<RundownBaselineAdLibItem>(
 	CollectionName.RundownBaselineAdLibPieces
 )
 

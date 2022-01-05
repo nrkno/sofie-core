@@ -6,7 +6,7 @@ import { unprotectString, literal, generateTranslation, normalizeArrayToMap } fr
 import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
-import { RundownPlaylist } from './collections/RundownPlaylists'
+import { RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
@@ -81,8 +81,8 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 		}
 	).fetch()
 
-	const sortedSegments = RundownPlaylist._sortSegments(segments, rundowns)
-	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
+	const sortedSegments = RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
+	const sortedParts = RundownPlaylistCollectionUtil._sortPartsInner(parts, segments)
 
 	return getAllNotesForSegmentAndParts(rundowns, sortedSegments, sortedParts, deletedPartInstances)
 }
@@ -178,7 +178,7 @@ export function getBasicNotesForSegment(
 
 		if (part.invalidReason) {
 			newNotes.push({
-				type: part.invalidReason.level ?? NoteSeverity.ERROR,
+				type: part.invalidReason.severity ?? NoteSeverity.ERROR,
 				message: part.invalidReason.message,
 				origin: {
 					name: part.title,

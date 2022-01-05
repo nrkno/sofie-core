@@ -1,5 +1,10 @@
 import * as _ from 'underscore'
-import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPart,
+	IBlueprintPiece,
+	IBlueprintPieceType,
+	PieceLifespan,
+} from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context/adlibActions'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
@@ -106,6 +111,7 @@ describe('Test blueprint api context', () => {
 							index: o,
 						} as any,
 						lifespan: PieceLifespan.WithinPart,
+						pieceType: IBlueprintPieceType.Normal,
 						invalid: false,
 					},
 				})
@@ -354,7 +360,7 @@ describe('Test blueprint api context', () => {
 					expect(partInstances).toHaveLength(5)
 
 					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toBeUndefined()
@@ -378,6 +384,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -413,6 +420,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -445,7 +453,7 @@ describe('Test blueprint api context', () => {
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstances[2]._id } })
 
 					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toBeUndefined()
@@ -469,6 +477,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -493,6 +502,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -528,7 +538,7 @@ describe('Test blueprint api context', () => {
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstances[2]._id } })
 
 					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toBeUndefined()
@@ -551,6 +561,7 @@ describe('Test blueprint api context', () => {
 							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -578,6 +589,7 @@ describe('Test blueprint api context', () => {
 								prop2: '5',
 							},
 							lifespan: PieceLifespan.OutOnSegmentChange,
+							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
 							content: {
 								timelineObjects: [],
@@ -618,7 +630,7 @@ describe('Test blueprint api context', () => {
 					await cache.saveAllToDatabase()
 
 					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
 					await expect(context.findLastScriptedPieceOnLayer(sourceLayerIds[0])).resolves.toBeUndefined()
@@ -648,7 +660,7 @@ describe('Test blueprint api context', () => {
 					expect(pieceInstances).toHaveLength(10)
 
 					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// Set Part 1 as current part
 					// as any to bypass readonly
@@ -701,7 +713,7 @@ describe('Test blueprint api context', () => {
 					expect(partInstances).toHaveLength(2)
 
 					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// Set Part 1 as current part
 					// as any to bypass readonly
@@ -735,7 +747,7 @@ describe('Test blueprint api context', () => {
 					expect(pieceInstances).toHaveLength(10)
 
 					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
-					expect(sourceLayerIds).toHaveLength(2)
+					expect(sourceLayerIds).toHaveLength(4)
 
 					// Set Part 2 as current part
 					// as any to bypass readonly

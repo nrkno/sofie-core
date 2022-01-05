@@ -471,12 +471,19 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 	})
 }
 
-function sortDefaultRundownInPlaylistOrder(rundowns: ReadonlyDeep<Array<DBRundown>>): ReadonlyDeep<Array<DBRundown>> {
-	return mongoFindOptions<ReadonlyDeep<DBRundown>>(rundowns, {
-		sort: {
-			name: 1,
-			externalId: 1,
-			_id: 1,
-		},
-	}).sort(PlaylistTiming.sortTiminings)
+function sortDefaultRundownInPlaylistOrder(rundowns0: ReadonlyDeep<Array<DBRundown>>): ReadonlyDeep<Array<DBRundown>> {
+	const rundowns = [...rundowns0] // shallow clone array
+	return rundowns.sort((a, b) => {
+		const timingSorting = PlaylistTiming.sortTiminings(a, b)
+		if (timingSorting !== 0) return timingSorting
+
+		const nameSorting = a.name.localeCompare(b.name)
+		if (nameSorting !== 0) return nameSorting
+
+		const externalIdSorting = a.externalId.localeCompare(b.externalId)
+		if (externalIdSorting !== 0) return externalIdSorting
+
+		const idSorting = unprotectString(a._id).localeCompare(unprotectString(b._id))
+		return idSorting
+	})
 }

@@ -18,7 +18,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceLifespan, TSR } from '@sofie-automation/blueprints-integration/dist'
+import { PieceLifespan, TSR, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
 import { clone, getRandomId, literal, normalizeArray, flatten, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
@@ -45,6 +45,12 @@ import {
 import { prefixAllObjectIds } from './lib'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
+	if (a.pieceType === IBlueprintPieceType.OutTransition && b.pieceType !== IBlueprintPieceType.OutTransition) {
+		return 1
+	} else if (a.pieceType !== IBlueprintPieceType.OutTransition && b.pieceType === IBlueprintPieceType.OutTransition) {
+		return -1
+	}
+
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
 	const bStart = b.enable.start === 'now' ? nowInPart : b.enable.start
 	if (aStart < bStart) {
@@ -52,10 +58,12 @@ function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: 
 	} else if (aStart > bStart) {
 		return 1
 	} else {
+		const aIsInTransition = a.pieceType === IBlueprintPieceType.InTransition
+		const bIsInTransition = b.pieceType === IBlueprintPieceType.InTransition
 		// Transitions first
-		if (a.isTransition && !b.isTransition) {
+		if (aIsInTransition && !bIsInTransition) {
 			return -1
-		} else if (!a.isTransition && b.isTransition) {
+		} else if (!aIsInTransition && bIsInTransition) {
 			return 1
 		} else if (a._id < b._id) {
 			// Then go by id to make it consistent
@@ -175,9 +183,12 @@ function resolvePieceTimeline(
 		} else if (a.resolvedStart > b.resolvedStart) {
 			return 1
 		} else {
-			if (a.piece.isTransition === b.piece.isTransition) {
+			// We only care about inTransitions here, outTransitions are either not present or will be timed appropriately
+			const aIsInTransition = a.piece.pieceType === IBlueprintPieceType.InTransition
+			const bIsInTransition = b.piece.pieceType === IBlueprintPieceType.InTransition
+			if (aIsInTransition === bIsInTransition) {
 				return 0
-			} else if (b.piece.isTransition) {
+			} else if (bIsInTransition) {
 				return 1
 			} else {
 				return -1
@@ -382,6 +393,7 @@ export function convertAdLibToPieceInstance(
 			...(_.omit(adLibPiece, '_rank', 'expectedDuration', 'partId', 'rundownId') as PieceInstancePiece), // TODO - this could be typed stronger
 			_id: newPieceId,
 			startPartId: partInstance.part._id,
+			pieceType: IBlueprintPieceType.Normal,
 			enable: {
 				start: queue ? 0 : 'now',
 				duration: !queue && adLibPiece.lifespan === PieceLifespan.WithinPart ? duration : undefined,

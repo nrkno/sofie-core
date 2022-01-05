@@ -57,6 +57,11 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 	onStop(callback: () => void) {
 		this._publication.onStop(callback)
 	}
+
+	public get isFirstRun(): boolean {
+		return this._firstRun
+	}
+
 	updatedDocs(newDocs: DBObj[]) {
 		const newIds: { [id: string]: true } = {}
 		// figure out which documents have changed

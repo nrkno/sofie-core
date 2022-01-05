@@ -12,9 +12,7 @@ import { StudioLight } from './Studios'
 import deepExtend from 'deep-extend'
 export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
-export const ExpectedPackages = createMongoCollection<ExpectedPackageDB, ExpectedPackageDB>(
-	CollectionName.ExpectedPackages
-)
+export const ExpectedPackages = createMongoCollection<ExpectedPackageDB>(CollectionName.ExpectedPackages)
 
 registerIndex(ExpectedPackages, {
 	studioId: 1,

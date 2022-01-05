@@ -8,7 +8,7 @@ export { PackageContainerId }
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 export * from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 
-export const PackageContainerStatuses = createMongoCollection<PackageContainerStatusDB, PackageContainerStatusDB>(
+export const PackageContainerStatuses = createMongoCollection<PackageContainerStatusDB>(
 	CollectionName.PackageContainerStatuses
 )
 

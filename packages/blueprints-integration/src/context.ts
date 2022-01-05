@@ -1,3 +1,4 @@
+import { Time } from './common'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import { PackageInfo } from './packageInfo'
 import {
@@ -193,6 +194,8 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 	moveNextPart(partDelta: number, segmentDelta: number): Promise<void>
 	/** Set flag to perform take after executing the current action. Returns state of the flag after each call. */
 	takeAfterExecuteAction(take: boolean): Promise<boolean>
+	/** Inform core that a take out of the current partinstance should be blocked until the specified time */
+	blockTakeUntil(time: Time | null): Promise<void>
 
 	/** Misc actions */
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different

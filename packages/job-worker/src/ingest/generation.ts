@@ -45,6 +45,7 @@ import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultRundown, BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -252,6 +253,7 @@ export async function calculateSegmentsFromIngestData(
 
 					// Preserve:
 					status: existingPart?.status, // This property is 'owned' by core and updated via its own flow
+					expectedDurationWithPreroll: undefined, // Below
 				})
 				res.parts.push(part)
 
@@ -261,19 +263,18 @@ export async function calculateSegmentsFromIngestData(
 				}
 
 				// Update pieces
-				res.pieces.push(
-					...postProcessPieces(
-						context,
-						blueprintPart.pieces,
-						blueprint.blueprintId,
-						rundown._id,
-						newSegment._id,
-						part._id,
-						undefined,
-						undefined,
-						part.invalid
-					)
+				const processedPieces = postProcessPieces(
+					context,
+					blueprintPart.pieces,
+					blueprint.blueprintId,
+					rundown._id,
+					newSegment._id,
+					part._id,
+					undefined,
+					undefined,
+					part.invalid
 				)
+				res.pieces.push(...processedPieces)
 				res.adlibPieces.push(
 					...postProcessAdLibPieces(
 						context,
@@ -291,6 +292,8 @@ export async function calculateSegmentsFromIngestData(
 						blueprintPart.actions || []
 					)
 				)
+
+				part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, processedPieces)
 			})
 
 			// If the segment has no parts, then hide it

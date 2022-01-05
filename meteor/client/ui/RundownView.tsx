@@ -14,7 +14,12 @@ import Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylists,
+	RundownPlaylistId,
+	RundownPlaylistCollectionUtil,
+} from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../../lib/collections/Segments'
 import { Studio, Studios, StudioRouteSet } from '../../lib/collections/Studios'
@@ -1122,7 +1127,7 @@ interface IState {
 }
 
 type MatchedSegment = {
-	rundown: Rundown
+	rundown: Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
 	segments: Segment[]
 	segmentIdsBeforeEachSegment: Set<SegmentId>[]
 }
@@ -1172,8 +1177,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
-		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
-		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
+		rundowns = memoizedIsolatedAutorun(
+			(_playlistId) => RundownPlaylistCollectionUtil.getRundowns(playlist),
+			'playlist.getRundowns',
+			playlistId
+		)
+		;({ currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist))
 		const somePartInstance = currentPartInstance || nextPartInstance
 		if (somePartInstance) {
 			currentRundown = rundowns.find((rundown) => rundown._id === somePartInstance?.rundownId)
@@ -1200,24 +1209,22 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundowns,
 		currentRundown,
 		matchedSegments: playlist
-			? playlist
-					.getRundownsAndSegments({
-						isHidden: {
-							$ne: true,
-						},
-					})
-					.map((input, rundownIndex, rundownArray) => ({
-						...input,
-						segmentIdsBeforeEachSegment: input.segments.map(
-							(segment, segmentIndex, segmentArray) =>
-								new Set([
-									...(_.flatten(
-										rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
-									) as SegmentId[]),
-									...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
-								])
-						),
-					}))
+			? RundownPlaylistCollectionUtil.getRundownsAndSegments(playlist, {
+					isHidden: {
+						$ne: true,
+					},
+			  }).map((input, rundownIndex, rundownArray) => ({
+					...input,
+					segmentIdsBeforeEachSegment: input.segments.map(
+						(segment, segmentIndex, segmentArray) =>
+							new Set([
+								...(_.flatten(
+									rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
+								) as SegmentId[]),
+								...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
+							])
+					),
+			  }))
 			: [],
 		rundownsToShowstyles,
 		playlist,
@@ -1482,9 +1489,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					fields: {
 						_id: 1,
 					},
-				}) as Pick<RundownPlaylist, '_id' | 'getRundowns'> | undefined
+				}) as Pick<RundownPlaylist, '_id'> | undefined
 				if (playlist) {
-					const rundowns = playlist.getRundowns(undefined, {
+					const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
 						fields: {
 							_id: 1,
 							showStyleBaseId: 1,
@@ -1555,17 +1562,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						previousPartInstanceId: 1,
 					},
 				}) as
-					| Pick<
-							RundownPlaylist,
-							| '_id'
-							| 'currentPartInstanceId'
-							| 'nextPartInstanceId'
-							| 'previousPartInstanceId'
-							| 'getRundownUnorderedIDs'
-					  >
+					| Pick<RundownPlaylist, '_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId'>
 					| undefined
 				if (playlist) {
-					const rundownIds = playlist.getRundownUnorderedIDs()
+					const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 					// Use Meteor.subscribe so that this subscription doesn't mess with this.subscriptionsReady()
 					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
 					// so we don't have to manually clean up after ourselves.
@@ -2669,7 +2669,7 @@ function handleRundownPlaylistReloadResponse(t: i18next.TFunction, result: Reloa
 	if (firstRundownId) {
 		const firstRundown = Rundowns.findOne(firstRundownId)
 		const playlist = RundownPlaylists.findOne(firstRundown?.playlistId)
-		const allRundownIds = playlist?.getRundownUnorderedIDs() || []
+		const allRundownIds = playlist ? RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist) : []
 		if (
 			allRundownIds.length > 0 &&
 			_.difference(

@@ -8,9 +8,7 @@ import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/Ex
 export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 
 /** @deprecated */
-export const ExpectedPlayoutItems = createMongoCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>(
-	CollectionName.ExpectedPlayoutItems
-)
+export const ExpectedPlayoutItems = createMongoCollection<ExpectedPlayoutItem>(CollectionName.ExpectedPlayoutItems)
 
 registerIndex(ExpectedPlayoutItems, {
 	studioId: 1,

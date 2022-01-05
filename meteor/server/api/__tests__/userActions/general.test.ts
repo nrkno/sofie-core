@@ -112,7 +112,7 @@ describe('User Actions - General', () => {
 		expect(getRundown1()).toBeTruthy()
 		expect(getRundown0()._id).not.toEqual(getRundown1()._id)
 
-		const parts = getRundown0().getParts()
+		const parts = RundownCollectionUtil.getParts(getRundown0())
 
 		expect(getPlaylist0()).toMatchObject({
 			activationId: undefined,
@@ -125,7 +125,9 @@ describe('User Actions - General', () => {
 				success: 200,
 			})
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
@@ -147,7 +149,9 @@ describe('User Actions - General', () => {
 			// Take the first Part:
 			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(currentPartInstance!.part._id).toEqual(parts[0]._id)
@@ -158,7 +162,9 @@ describe('User Actions - General', () => {
 			// Take the second Part:
 			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(currentPartInstance!.part._id).toEqual(parts[1]._id)
@@ -171,7 +177,9 @@ describe('User Actions - General', () => {
 				success: 200,
 			})
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(nextPartInstance!.part._id).toEqual(parts[0]._id)
@@ -188,7 +196,9 @@ describe('User Actions - General', () => {
 				Meteor.call(UserActionAPI.methods.setNext, 'e', playlistId0, parts[parts.length - 2]._id)
 			).toMatchObject({ success: 200 })
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(nextPartInstance!.part._id).toEqual(parts[parts.length - 2]._id)
@@ -203,7 +213,9 @@ describe('User Actions - General', () => {
 			// Take the Nexted Part:
 			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(currentPartInstance!.part._id).toEqual(parts[parts.length - 2]._id)
@@ -213,7 +225,9 @@ describe('User Actions - General', () => {
 		{
 			// Take the last Part:
 			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeFalsy()
 			expect(currentPartInstance!.part._id).toEqual(parts[parts.length - 1]._id)
@@ -228,7 +242,9 @@ describe('User Actions - General', () => {
 			// Move the next-point backwards:
 			expect(Meteor.call(UserActionAPI.methods.moveNext, 'e', playlistId0, -1, 0)).toMatchObject({ success: 200 })
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(currentPartInstance!.part._id).toEqual(parts[parts.length - 1]._id)
@@ -239,7 +255,9 @@ describe('User Actions - General', () => {
 			// Move the next-point backwards:
 			expect(Meteor.call(UserActionAPI.methods.moveNext, 'e', playlistId0, -1, 0)).toMatchObject({ success: 200 })
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(currentPartInstance!.part._id).toEqual(parts[parts.length - 1]._id)
@@ -250,7 +268,9 @@ describe('User Actions - General', () => {
 			// Take the nexted Part:
 			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
 
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				getPlaylist0()
+			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
 			expect(currentPartInstance!.part._id).toEqual(parts[parts.length - 3]._id)

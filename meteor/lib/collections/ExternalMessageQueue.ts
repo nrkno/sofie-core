@@ -6,9 +6,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 export { ExternalMessageQueueObjId }
 export * from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 
-export const ExternalMessageQueue = createMongoCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>(
-	CollectionName.ExternalMessageQueue
-)
+export const ExternalMessageQueue = createMongoCollection<ExternalMessageQueueObj>(CollectionName.ExternalMessageQueue)
 
 registerIndex(ExternalMessageQueue, {
 	studioId: 1,

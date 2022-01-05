@@ -39,6 +39,4 @@ export interface TranslationsBundle {
 	data: Translation[]
 }
 
-export const TranslationsBundles = createMongoCollection<TranslationsBundle, TranslationsBundle>(
-	CollectionName.TranslationsBundles
-)
+export const TranslationsBundles = createMongoCollection<TranslationsBundle>(CollectionName.TranslationsBundles)

@@ -42,7 +42,7 @@ import { PackageContainerPackageStatuses } from '../../lib/collections/PackageCo
 import { PackageInfos } from '../../lib/collections/PackageInfos'
 import { Settings } from '../../lib/Settings'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { AsyncTransformedCollection } from '../../lib/collections/lib'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 
 export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
 	if (actuallyCleanup) {
@@ -62,8 +62,8 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 
 	// Preparations: ------------------------------------------------------------------------------
-	const getAllIdsInCollection = <Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-		collection: TransformedCollection<Class, DBInterface>
+	const getAllIdsInCollection = <DBInterface extends { _id: ProtectedString<any> }>(
+		collection: TransformedCollection<DBInterface, DBInterface>
 	): DBInterface['_id'][] => {
 		return collection
 			.find(
@@ -82,9 +82,9 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	const rundownIds = getAllIdsInCollection(Rundowns)
 	const playlistIds = getAllIdsInCollection(RundownPlaylists)
 
-	const removeByQuery = <Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+	const removeByQuery = <DBInterface extends { _id: ProtectedString<any> }>(
 		// collectionName: string,
-		collection: AsyncTransformedCollection<Class, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		query: MongoQuery<DBInterface>
 	): void => {
 		const collectionName = getCollectionKey(collection)
@@ -96,43 +96,33 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		addToResult(collectionName, count)
 	}
 
-	const ownedByRundownId = <
-		Class extends DBInterface,
-		DBInterface extends { _id: ProtectedString<any>; rundownId: RundownId }
-	>(
-		collection: TransformedCollection<Class, DBInterface>
+	const ownedByRundownId = <DBInterface extends { _id: ProtectedString<any>; rundownId: RundownId }>(
+		collection: TransformedCollection<DBInterface, DBInterface>
 	): void => {
-		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncMongoCollection<any>, {
 			rundownId: { $nin: rundownIds },
 		})
 	}
-	const ownedByRundownPlaylistId = <
-		Class extends DBInterface,
-		DBInterface extends { _id: ProtectedString<any>; playlistId: RundownPlaylistId }
-	>(
-		collection: TransformedCollection<Class, DBInterface>
+	const ownedByRundownPlaylistId = <DBInterface extends { _id: ProtectedString<any>; playlistId: RundownPlaylistId }>(
+		collection: TransformedCollection<DBInterface, DBInterface>
 	): void => {
-		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncMongoCollection<any>, {
 			playlistId: { $nin: playlistIds },
 		})
 	}
-	const ownedByStudioId = <
-		Class extends DBInterface,
-		DBInterface extends { _id: ProtectedString<any>; studioId: StudioId }
-	>(
-		collection: TransformedCollection<Class, DBInterface>
+	const ownedByStudioId = <DBInterface extends { _id: ProtectedString<any>; studioId: StudioId }>(
+		collection: TransformedCollection<DBInterface, DBInterface>
 	): void => {
-		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncMongoCollection<any>, {
 			studioId: { $nin: studioIds },
 		})
 	}
 	const ownedByRundownIdOrStudioId = <
-		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; rundownId?: RundownId; studioId: StudioId }
 	>(
-		collection: TransformedCollection<Class, DBInterface>
+		collection: TransformedCollection<DBInterface, DBInterface>
 	): void => {
-		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncMongoCollection<any>, {
 			$or: [
 				{
 					rundownId: { $exists: true, $nin: rundownIds },
@@ -145,12 +135,11 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		})
 	}
 	const ownedByOrganizationId = <
-		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any>; organizationId: OrganizationId | null | undefined }
 	>(
-		collection: TransformedCollection<Class, DBInterface>
+		collection: TransformedCollection<DBInterface, DBInterface>
 	): void => {
-		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncMongoCollection<any>, {
 			$and: [
 				{
 					organizationId: { $nin: [organizationIds] },
@@ -164,13 +153,10 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 			],
 		})
 	}
-	const ownedByDeviceId = <
-		Class extends DBInterface,
-		DBInterface extends { _id: ProtectedString<any>; deviceId: PeripheralDeviceId }
-	>(
-		collection: TransformedCollection<Class, DBInterface>
+	const ownedByDeviceId = <DBInterface extends { _id: ProtectedString<any>; deviceId: PeripheralDeviceId }>(
+		collection: TransformedCollection<DBInterface, DBInterface>
 	): void => {
-		removeByQuery(collection as AsyncTransformedCollection<any, any>, {
+		removeByQuery(collection as AsyncMongoCollection<any>, {
 			deviceId: { $nin: deviceIds },
 		})
 	}

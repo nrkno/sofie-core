@@ -9,7 +9,7 @@ export * from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 export type Segment = DBSegment
 
-export const Segments = createMongoCollection<Segment, DBSegment>(CollectionName.Segments)
+export const Segments = createMongoCollection<Segment>(CollectionName.Segments)
 
 registerIndex(Segments, {
 	rundownId: 1,

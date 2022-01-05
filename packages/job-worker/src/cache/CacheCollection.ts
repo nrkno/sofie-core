@@ -13,7 +13,7 @@ import {
 import { AnyBulkWriteOperation } from 'mongodb'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
-import { Changes } from '../db/changes'
+import { Changes, ChangedIds } from '../db/changes'
 import { JobContext } from '../jobs'
 
 type SelectorFunction<TDoc> = (doc: TDoc) => boolean
@@ -418,19 +418,37 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * Write all the documents in this cache into another. This assumes that this cache is a subset of the other and was populated with a subset of its data
 	 * @param otherCache The cache to update
 	 */
-	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<TDoc>) {
+	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<TDoc>): ChangedIds<TDoc['_id']> {
+		const changes: ChangedIds<TDoc['_id']> = {
+			added: [],
+			updated: [],
+			removed: [],
+			unchanged: [],
+		}
+
 		this.documents.forEach((doc, id) => {
 			if (doc === null) {
 				otherCache.remove(id)
 				this.documents.delete(id)
+				changes.removed.push(id)
 			} else {
-				if (doc.inserted || doc.updated) {
+				if (doc.inserted) {
 					otherCache.replace(doc.document)
+
+					changes.added.push(id)
+				} else if (doc.updated) {
+					otherCache.replace(doc.document)
+
+					changes.updated.push(id)
+				} else {
+					changes.unchanged.push(id)
 				}
 				delete doc.inserted
 				delete doc.updated
 			}
 		})
+
+		return changes
 	}
 	isModified(): boolean {
 		for (const doc of Array.from(this.documents.values())) {

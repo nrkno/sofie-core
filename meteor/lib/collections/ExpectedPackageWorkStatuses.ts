@@ -8,7 +8,7 @@ import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataMo
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
 
-export const ExpectedPackageWorkStatuses = createMongoCollection<ExpectedPackageWorkStatus, ExpectedPackageWorkStatus>(
+export const ExpectedPackageWorkStatuses = createMongoCollection<ExpectedPackageWorkStatus>(
 	CollectionName.ExpectedPackageWorkStatuses
 )
 

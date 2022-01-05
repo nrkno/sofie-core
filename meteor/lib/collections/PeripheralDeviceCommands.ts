@@ -9,7 +9,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 export * from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 
-export const PeripheralDeviceCommands = createMongoCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>(
+export const PeripheralDeviceCommands = createMongoCollection<PeripheralDeviceCommand>(
 	CollectionName.PeripheralDeviceCommands
 )
 

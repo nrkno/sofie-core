@@ -7,7 +7,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 export * from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
-export const PieceInstances = createMongoCollection<PieceInstance, PieceInstance>(CollectionName.PieceInstances)
+export const PieceInstances = createMongoCollection<PieceInstance>(CollectionName.PieceInstances)
 
 registerIndex(PieceInstances, {
 	rundownId: 1,

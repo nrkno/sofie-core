@@ -2,7 +2,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
-import { ClientAPI } from '../../../lib/api/client'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { PackageInfo } from '../../coreSystem'

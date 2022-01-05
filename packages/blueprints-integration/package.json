@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/blueprints-integration",
-	"version": "1.38.0-in-development",
+	"version": "1.39.0-in-development",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -40,7 +40,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"timeline-state-resolver-types": "6.3.0-nightly-release38-20211208-151539-570b2cfb5.0",
+		"timeline-state-resolver-types": "6.3.0-release38.0",
 		"tslib": "^2.3.1"
 	},
 	"lint-staged": {

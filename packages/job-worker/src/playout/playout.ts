@@ -37,10 +37,11 @@ import {
 	selectNextPart,
 	setNextPart as libSetNextPart,
 	setNextSegment as libSetNextSegment,
+	updateExpectedDurationWithPrerollForPartInstance,
 } from './lib'
-import { updateStudioTimeline, updateTimeline } from './timeline'
+import { saveTimeline, updateStudioTimeline, updateTimeline } from './timeline'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
-import { PartHoldMode } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import {
 	activateRundownPlaylist as libActivateRundownPlaylist,
@@ -80,11 +81,7 @@ import { CacheForStudio } from '../studio/cache'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PieceGroupMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import {
-	deserializeTimelineBlob,
-	serializeTimelineBlob,
-	TimelineComplete,
-} from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -635,7 +632,12 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 
 				const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
 					const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
-					if (sourceLayer && sourceLayer.allowDisable && !piece.piece.virtual && !piece.piece.isTransition)
+					if (
+						sourceLayer &&
+						sourceLayer.allowDisable &&
+						!piece.piece.virtual &&
+						piece.piece.pieceType === IBlueprintPieceType.Normal
+					)
 						return true
 					return false
 				})
@@ -1018,7 +1020,7 @@ function timelineTriggerTimeInner(
 		let tlChanged = false
 
 		_.each(results, (o) => {
-			logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
+			logger.debug(`Timeline: Setting time: "${o.id}": ${o.time}`)
 
 			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
 			if (obj) {
@@ -1036,13 +1038,17 @@ function timelineTriggerTimeInner(
 
 				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
 				if (objPieceId && activePlaylist && pieceInstanceCache) {
-					logger.info('Update PieceInstance: ', {
+					logger.debug('Update PieceInstance: ', {
 						pieceId: objPieceId,
 						time: new Date(o.time).toTimeString(),
 					})
 
 					const pieceInstance = pieceInstanceCache.findOne(objPieceId)
-					if (pieceInstance) {
+					if (
+						pieceInstance &&
+						pieceInstance.dynamicallyInserted &&
+						pieceInstance.piece.enable.start === 'now'
+					) {
 						pieceInstanceCache.update(pieceInstance._id, {
 							$set: {
 								'piece.enable.start': o.time,
@@ -1050,9 +1056,7 @@ function timelineTriggerTimeInner(
 						})
 
 						const takeTime = pieceInstance.dynamicallyInserted
-						if (pieceInstance.dynamicallyInserted && takeTime) {
-							lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
-						}
+						lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
 					}
 				}
 			}
@@ -1079,17 +1083,7 @@ function timelineTriggerTimeInner(
 			}
 		}
 		if (tlChanged) {
-			const newTimeline: TimelineComplete = {
-				_id: context.studioId,
-				timelineBlob: serializeTimelineBlob(timelineObjs),
-				timelineHash: getRandomId(),
-				generated: getCurrentTime(),
-				generationVersions: timeline.generationVersions,
-			}
-
-			cache.Timeline.replace(newTimeline)
-			// Also do a fast-track for the timeline to be published faster:
-			// triggerFastTrackObserver(FastTrackObservers.TIMELINE, [cache.Studio.doc._id], newTimeline)
+			saveTimeline(context, cache, timelineObjs, timeline.generationVersions)
 		}
 	}
 }
@@ -1193,6 +1187,13 @@ export async function executeActionInner(
 		actionContext.nextPartState !== ActionPartChange.NONE
 	) {
 		await syncPlayheadInfinitesForNextPartInstance(context, cache)
+	}
+
+	if (actionContext.nextPartState !== ActionPartChange.NONE) {
+		const nextPartInstanceId = cache.Playlist.doc.nextPartInstanceId
+		if (nextPartInstanceId) {
+			updateExpectedDurationWithPrerollForPartInstance(cache, nextPartInstanceId)
+		}
 	}
 
 	if (actionContext.takeAfterExecute) {

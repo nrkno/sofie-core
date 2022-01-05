@@ -25,7 +25,7 @@
 		"set-version": "lerna version --exact --no-changelog --no-git-tag-version --no-push --yes",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001257;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\")\"",
+		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001287;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\");sofie-documentation@$(node -p \"require('sofie-documentation/package.json').version\")\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
 		"test": "lerna run --concurrency 2 --stream test",
 		"docs:typedoc": "yarn typedoc .",
@@ -34,8 +34,7 @@
 	"devDependencies": {
 		"@babel/core": "^7.15.0",
 		"@babel/plugin-transform-modules-commonjs": "^7.15.0",
-		"@sofie-automation/code-standard-preset": "0.5.0",
-		"@strictsoftware/typedoc-plugin-monorepo": "^0.4.2",
+		"@sofie-automation/code-standard-preset": "0.5.1",
 		"@types/ejson": "^2.1.3",
 		"@types/got": "^9.6.12",
 		"@types/ioredis": "^4.28.2",
@@ -55,6 +54,7 @@
 		"nodemon": "^2.0.7",
 		"open-cli": "^6.0.1",
 		"rimraf": "^3.0.2",
+		"semver": "^7.3.5",
 		"ts-jest": "^26.5.6",
 		"ts-node": "^9.1.1",
 		"tslint": "^6.1.3",
@@ -65,6 +65,7 @@
 	"name": "packages",
 	"resolutions": {
 		"node-license-validator/**/minimist": "^1.2.3",
-		"lerna/**/trim-newlines": "^4.0.1"
+		"lerna/**/trim-newlines": "^4.0.1",
+		"**/data-store/set-value": "^4.1.0"
 	}
 }

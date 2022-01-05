@@ -7,9 +7,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 export * from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
-export const PeripheralDevices = createMongoCollection<PeripheralDevice, PeripheralDevice>(
-	CollectionName.PeripheralDevices
-)
+export const PeripheralDevices = createMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
 
 registerIndex(PeripheralDevices, {
 	organizationId: 1,

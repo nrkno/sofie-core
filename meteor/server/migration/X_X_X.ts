@@ -2,9 +2,7 @@ import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { Studios } from '../../lib/collections/Studios'
 import { Settings } from '../../lib/Settings'
-import { TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { getHash } from '@sofie-automation/corelib/dist/lib'
+import { Parts } from '../../lib/collections/Parts'
 
 /*
  * **************************************************************************************
@@ -58,6 +56,7 @@ const oldFrameRate = OldSettings.frameRate ?? 25
 // Release X
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// Add some migrations!
+
 	{
 		id: `Studio.settings.frameRate`,
 		canBeRunAutomatically: true,
@@ -149,23 +148,31 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		},
 	},
 	{
-		id: `TriggeredActions.core.fixIds`,
+		id: `Parts.expectedDurationWithPreroll`,
 		canBeRunAutomatically: true,
 		validate: () => {
-			const existingActions = TriggeredActions.find({ showStyleBaseId: null }).fetch()
-			return existingActions.some((action) => !!unprotectString(action._id).match(/^core_/))
+			const objects = Parts.find({
+				expectedDurationWithPreroll: {
+					$exists: false,
+				},
+			}).count()
+			if (objects > 0) {
+				return `timing is expectedDurationWithPreroll on ${objects} objects`
+			}
+			return false
 		},
 		migrate: () => {
-			const existingActions = TriggeredActions.find({ showStyleBaseId: null }).fetch()
-			for (const action of existingActions) {
-				const actionId = unprotectString(action._id)
-				if (actionId.match(/^core_/) !== null) {
-					TriggeredActions.remove(action._id)
-					TriggeredActions.insert({
-						...action,
-						_id: protectString(getHash(actionId)),
-					})
-				}
+			const objects = Parts.find({
+				expectedDurationWithPreroll: {
+					$exists: false,
+				},
+			}).fetch()
+			for (const obj of objects) {
+				Parts.update(obj._id, {
+					$set: {
+						expectedDurationWithPreroll: obj.expectedDuration,
+					},
+				})
 			}
 		},
 	},

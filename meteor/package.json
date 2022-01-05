@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.38.0-in-development",
+	"version": "1.39.0-in-development",
 	"private": true,
 	"engines": {
 		"node": "^12.22.1 || 14"
@@ -24,7 +24,7 @@
 		"cov": "meteor yarn unitcov && meteor yarn cov-open",
 		"send-coverage": "codecov -p ..",
 		"test-i": "npm run integration-test",
-		"license-validate": "node ../scripts/checkLicenses.js --allowed=\"MIT,BSD,ISC,Apache,Unlicense,CC0,LGPL,CC BY 3.0,CC BY 4.0,MPL 2.0\" --excludePackages=timecode,rxjs/ajax,rxjs/fetch,rxjs/internal-compatibility,nw-pre-gyp-module-test,rxjs/operators,rxjs/testing,rxjs/webSocket,undefined,i18next-conv,@fortawesome/fontawesome-common-types,argv,indexof,custom-license,private,public-domain-module",
+		"license-validate": "node ../scripts/checkLicenses.js --allowed=\"MIT,BSD,ISC,Apache,Unlicense,CC0,LGPL,CC BY 3.0,CC BY 4.0,MPL 2.0,Python 2.0\" --excludePackages=timecode,rxjs/ajax,rxjs/fetch,rxjs/internal-compatibility,nw-pre-gyp-module-test,rxjs/operators,rxjs/testing,rxjs/webSocket,undefined,i18next-conv,@fortawesome/fontawesome-common-types,argv,indexof,custom-license,private,public-domain-module",
 		"lint": "npm run lint:raw -- .",
 		"lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx",
 		"lintfix": "npm run lint -- --fix",

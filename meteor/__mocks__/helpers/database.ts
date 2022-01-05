@@ -30,6 +30,7 @@ import {
 	TriggerType,
 	PlayoutActions,
 	StatusCode,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -68,6 +69,8 @@ import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/Trig
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
 	SOURCE_VT0 = 'vt0',
+	SOURCE_TRANSITION0 = 'transition0',
+	SOURCE_GRAPHICS0 = 'graphics0',
 	OUTPUT_PGM = 'pgm',
 }
 
@@ -236,6 +239,18 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 				name: 'VT',
 				type: SourceLayerType.VT,
 				exclusiveGroup: 'main',
+			}),
+			literal<ISourceLayer>({
+				_id: LAYER_IDS.SOURCE_TRANSITION0,
+				_rank: 2,
+				name: 'Transition',
+				type: SourceLayerType.TRANSITION,
+			}),
+			literal<ISourceLayer>({
+				_id: LAYER_IDS.SOURCE_GRAPHICS0,
+				_rank: 3,
+				name: 'Graphic',
+				type: SourceLayerType.GRAPHICS,
 			}),
 		],
 		blueprintConfig: {},
@@ -571,6 +586,7 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part00)
 
@@ -588,6 +604,7 @@ export function setupDefaultRundown(
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		content: {
 			timelineObjects: [],
@@ -609,6 +626,7 @@ export function setupDefaultRundown(
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		content: {
 			timelineObjects: [],
@@ -642,6 +660,7 @@ export function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part01)
 
@@ -659,6 +678,7 @@ export function setupDefaultRundown(
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		content: {
 			timelineObjects: [],
@@ -683,6 +703,7 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part10)
 
@@ -693,6 +714,7 @@ export function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
 		title: 'Part 1 1',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part11)
 
@@ -703,6 +725,7 @@ export function setupDefaultRundown(
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',
 		title: 'Part 1 2',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part12)
 
@@ -782,6 +805,7 @@ export function setupRundownWithAutoplayPart0(
 		title: 'Part 0 0',
 
 		expectedDuration: 20,
+		expectedDurationWithPreroll: 20,
 		autoNext: true,
 	}
 	Parts.insert(part00)

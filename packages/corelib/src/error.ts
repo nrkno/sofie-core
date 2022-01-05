@@ -43,6 +43,7 @@ export enum UserErrorMessage {
 	TakeNoNextPart = 28,
 	TakeRateLimit = 29,
 	DisableNoPieceFound = 30,
+	TakeBlockedDuration = 31,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -85,6 +86,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.TakeNoNextPart]: t(`No Next point found, please set a part as Next before doing a TAKE.`),
 	[UserErrorMessage.TakeRateLimit]: t(`Ignoring TAKES that are too quick after eachother ({{duration}} ms)`),
 	[UserErrorMessage.DisableNoPieceFound]: t(`Found no future pieces`),
+	[UserErrorMessage.TakeBlockedDuration]: t(`Cannot perform take for {{duration}}ms`),
 }
 
 export class UserError {

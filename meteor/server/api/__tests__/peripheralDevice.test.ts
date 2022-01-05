@@ -21,6 +21,7 @@ import {
 	getRandomId,
 	LogLevel,
 	getRandomString,
+	normalizeArrayToMap,
 } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
@@ -33,7 +34,13 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { deserializeTimelineBlob, Timeline, TimelineEnableExt } from '../../../lib/collections/Timeline'
+import {
+	deserializeTimelineBlob,
+	Timeline,
+	TimelineComplete,
+	TimelineEnableExt,
+	TimelineObjGeneric,
+} from '../../../lib/collections/Timeline'
 import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
@@ -125,6 +132,7 @@ describe('test peripheralDevice general API methods', () => {
 			segmentId: segmentID,
 			rundownId: rundownID,
 			title: 'Part 000',
+			expectedDurationWithPreroll: undefined,
 		})
 		Pieces.insert({
 			_id: protectString('piece0001'),
@@ -140,6 +148,7 @@ describe('test peripheralDevice general API methods', () => {
 			startRundownId: rundownID,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			lifespan: PieceLifespan.WithinPart,
+			pieceType: IBlueprintPieceType.Normal,
 			invalid: false,
 			content: { timelineObjects: [] },
 		})
@@ -150,6 +159,7 @@ describe('test peripheralDevice general API methods', () => {
 			segmentId: segmentID,
 			rundownId: rundownID,
 			title: 'Part 001',
+			expectedDurationWithPreroll: undefined,
 		})
 		Segments.insert({
 			_id: protectString('segment1'),

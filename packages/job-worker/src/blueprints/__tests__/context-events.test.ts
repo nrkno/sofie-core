@@ -24,6 +24,7 @@ import { ReadonlyDeep } from 'type-fest'
 describe('Test blueprint api context', () => {
 	async function generateSparsePieceInstances(rundown: DBRundown) {
 		const playlistActivationId = protectString('active')
+
 		const parts = await jobContext.directCollections.Parts.findFetch({ rundownId: rundown._id })
 		for (let i = 0; i < parts.length; i++) {
 			const part = parts[i]

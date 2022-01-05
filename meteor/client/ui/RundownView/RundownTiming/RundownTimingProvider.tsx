@@ -5,7 +5,7 @@ import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Part, PartId } from '../../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../../lib/lib'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { Rundown } from '../../../../lib/collections/Rundowns'
@@ -59,10 +59,10 @@ export const RundownTimingProvider = withTracker<
 	const partInstancesMap = new Map<PartId, PartInstance>()
 	let currentRundown: Rundown | undefined
 	if (props.playlist) {
-		rundowns = props.playlist.getRundowns()
-		const { parts: incomingParts } = props.playlist.getSegmentsAndPartsSync()
+		rundowns = RundownPlaylistCollectionUtil.getRundowns(props.playlist)
+		const { parts: incomingParts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(props.playlist)
 		parts = incomingParts
-		const partInstances = props.playlist.getActivePartInstances()
+		const partInstances = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist)
 
 		const currentPartInstance = partInstances.find((p) => p._id === props.playlist!.currentPartInstanceId)
 		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]

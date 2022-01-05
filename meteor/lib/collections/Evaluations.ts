@@ -27,7 +27,7 @@ export interface EvaluationBase {
 	snapshots?: Array<SnapshotId>
 }
 
-export const Evaluations = createMongoCollection<Evaluation, Evaluation>(CollectionName.Evaluations)
+export const Evaluations = createMongoCollection<Evaluation>(CollectionName.Evaluations)
 
 registerIndex(Evaluations, {
 	organizationId: 1,

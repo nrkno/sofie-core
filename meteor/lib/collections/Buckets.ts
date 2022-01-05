@@ -28,7 +28,7 @@ export interface Bucket {
 	buttonWidthScale: number
 	buttonHeightScale: number
 }
-export const Buckets = createMongoCollection<Bucket, Bucket>(CollectionName.Buckets)
+export const Buckets = createMongoCollection<Bucket>(CollectionName.Buckets)
 
 registerIndex(Buckets, {
 	studioId: 1,

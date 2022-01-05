@@ -1,5 +1,8 @@
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { JobContext } from '../../jobs'
 
 export async function getSelectedPartInstances(
@@ -29,4 +32,17 @@ export async function getSelectedPartInstances(
 		throw new Error(`Missing currentPartInstance "${playlist.previousPartInstanceId}"`)
 
 	return { currentPartInstance, nextPartInstance, previousPartInstance }
+}
+
+export async function getSortedPartsForRundown(context: JobContext, rundownId: RundownId): Promise<Array<DBPart>> {
+	const segments = await context.directCollections.Segments.findFetch(
+		{ rundownId: rundownId },
+		{
+			sort: { _rank: 1 },
+			projection: { _id: 1 },
+		}
+	)
+	const parts = await context.directCollections.Parts.findFetch({ rundownId: rundownId })
+
+	return sortPartsInSortedSegments(parts, segments)
 }

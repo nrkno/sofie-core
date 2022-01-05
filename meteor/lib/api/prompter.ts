@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { ISourceLayer, ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId, RundownPlaylistCollectionUtil } from '../collections/RundownPlaylists'
 import { getRandomId, normalizeArray, normalizeArrayToMap } from '../lib'
 import { SegmentId } from '../collections/Segments'
 import { PieceId } from '../collections/Pieces'
@@ -50,7 +50,7 @@ export namespace PrompterAPI {
 
 		const playlist = RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		const rundownIdsToShowStyleBaseIds: Map<RundownId, ShowStyleBaseId> = new Map()
 		const rundownIdsToShowStyleBase: Map<RundownId, [ShowStyleBase, Record<string, ISourceLayer>] | undefined> =
 			new Map()
@@ -64,7 +64,8 @@ export namespace PrompterAPI {
 		}
 		const rundownMap = normalizeArrayToMap(rundowns, '_id')
 
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+		const { currentPartInstance, nextPartInstance } =
+			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 		const groupedParts = getSegmentsWithPartInstances(
 			playlist,

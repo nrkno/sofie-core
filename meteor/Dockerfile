@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 # BUILD IMAGE
-FROM node:12.22.6
+FROM node:12.22
 RUN curl "https://install.meteor.com/?release=2.1.1" | sh
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
 ENV NODE_ENV_TMP $NODE_ENV
@@ -20,7 +20,7 @@ WORKDIR /opt/bundle/programs/server/
 RUN npm install
 
 # DEPLOY IMAGE
-FROM node:12.22.6-slim
+FROM node:12.22-slim
 COPY --from=0 /opt/bundle /opt/core
 COPY meteor/docker-entrypoint.sh /opt
 WORKDIR /opt/core/

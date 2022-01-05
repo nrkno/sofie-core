@@ -4,7 +4,7 @@ import ClassNames from 'classnames'
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
-import { NoraContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, NoraContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
@@ -116,6 +116,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 			},
 			startPartId: protectString(''),
 			invalid: !!props.adLibListItem.invalid,
+			pieceType: IBlueprintPieceType.Normal,
 		}),
 		[props.adLibListItem]
 	)

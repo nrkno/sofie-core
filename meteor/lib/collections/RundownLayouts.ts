@@ -368,7 +368,7 @@ export interface DashboardLayout extends RundownLayoutShelfBase {
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts = createMongoCollection<RundownLayoutBase, RundownLayoutBase>(CollectionName.RundownLayouts)
+export const RundownLayouts = createMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
 
 // addIndex(RundownLayouts, {
 // 	studioId: 1,

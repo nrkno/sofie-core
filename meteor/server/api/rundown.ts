@@ -10,7 +10,7 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylistCollectionUtil } from '../../lib/collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
@@ -95,7 +95,7 @@ export namespace ClientRundownAPI {
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const playlist = access.playlist
 
-		const rundowns = playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		const errors = rundowns.map((rundown) => {
 			if (!rundown.importVersions) return 'unknown'
 
@@ -133,11 +133,11 @@ export namespace ClientRundownAPI {
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const rundownPlaylist = access.playlist
 
-		const studio = rundownPlaylist.getStudio()
+		const studio = RundownPlaylistCollectionUtil.getStudio(rundownPlaylist)
 		const studioBlueprint = studio.blueprintId ? await fetchBlueprintLight(studio.blueprintId) : null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
-		const rundowns = rundownPlaylist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(rundownPlaylist)
 		const uniqueShowStyleCompounds = _.uniq(
 			rundowns,
 			undefined,

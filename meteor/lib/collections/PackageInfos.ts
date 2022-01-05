@@ -8,7 +8,7 @@ export { PackageInfoId }
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 export * from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 
-export const PackageInfos = createMongoCollection<PackageInfoDB, PackageInfoDB>(CollectionName.PackageInfos)
+export const PackageInfos = createMongoCollection<PackageInfoDB>(CollectionName.PackageInfos)
 
 registerIndex(PackageInfos, {
 	studioId: 1,

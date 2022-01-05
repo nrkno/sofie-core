@@ -131,8 +131,9 @@ export interface RoutedMappings {
 	mappings: { [layerName: string]: MappingExt }
 }
 
+/** TODO: TransformedCollection */
 export type Studio = DBStudio
-export const Studios = createMongoCollection<Studio, DBStudio>(CollectionName.Studios)
+export const Studios = createMongoCollection<Studio>(CollectionName.Studios)
 
 registerIndex(Studios, {
 	organizationId: 1,

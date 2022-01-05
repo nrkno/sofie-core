@@ -8,10 +8,9 @@ export { PackageContainerPackageId }
 import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 export * from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 
-export const PackageContainerPackageStatuses = createMongoCollection<
-	PackageContainerPackageStatusDB,
-	PackageContainerPackageStatusDB
->(CollectionName.PackageContainerPackageStatuses)
+export const PackageContainerPackageStatuses = createMongoCollection<PackageContainerPackageStatusDB>(
+	CollectionName.PackageContainerPackageStatuses
+)
 
 registerIndex(PackageContainerPackageStatuses, {
 	studioId: 1,

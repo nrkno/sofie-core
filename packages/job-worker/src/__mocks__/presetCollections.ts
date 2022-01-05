@@ -11,6 +11,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import {
+	IBlueprintPieceType,
 	IOutputLayer,
 	ISourceLayer,
 	PieceLifespan,
@@ -196,6 +197,7 @@ export async function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
+		expectedDurationWithPreroll: undefined,
 	}
 	await context.directCollections.Parts.insertOne(part00)
 
@@ -212,6 +214,7 @@ export async function setupDefaultRundown(
 		},
 		sourceLayerId: showStyleCompound.sourceLayers[0]._id,
 		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {
@@ -233,6 +236,7 @@ export async function setupDefaultRundown(
 		},
 		sourceLayerId: showStyleCompound.sourceLayers[1]._id,
 		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {
@@ -267,6 +271,7 @@ export async function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
+		expectedDurationWithPreroll: undefined,
 	}
 	await context.directCollections.Parts.insertOne(part01)
 
@@ -283,6 +288,7 @@ export async function setupDefaultRundown(
 		},
 		sourceLayerId: showStyleCompound.sourceLayers[0]._id,
 		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {
@@ -307,6 +313,7 @@ export async function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
+		expectedDurationWithPreroll: undefined,
 	}
 	await context.directCollections.Parts.insertOne(part10)
 
@@ -317,6 +324,7 @@ export async function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
 		title: 'Part 1 1',
+		expectedDurationWithPreroll: undefined,
 	}
 	await context.directCollections.Parts.insertOne(part11)
 
@@ -327,6 +335,7 @@ export async function setupDefaultRundown(
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',
 		title: 'Part 1 2',
+		expectedDurationWithPreroll: undefined,
 	}
 	await context.directCollections.Parts.insertOne(part12)
 

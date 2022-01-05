@@ -9,7 +9,7 @@ import { AdLibAction, AdLibActionCommon } from '@sofie-automation/corelib/dist/d
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { AdLibAction, AdLibActionCommon }
 
-export const AdLibActions = createMongoCollection<AdLibAction, AdLibAction>(CollectionName.AdLibActions)
+export const AdLibActions = createMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 
 registerIndex(AdLibActions, {
 	rundownId: 1,

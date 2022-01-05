@@ -1,4 +1,5 @@
 import { IBlueprintPartInstance, IBlueprintPartInstanceTimings, Time } from '@sofie-automation/blueprints-integration'
+import { PartCalculatedTimings } from '../playout/timings'
 import { PartialDeep } from 'type-fest'
 import { ProtectedStringProperties } from '../protectedString'
 import { PartInstanceId, RundownId, RundownPlaylistActivationId, SegmentId, SegmentPlayoutId } from './Ids'
@@ -48,8 +49,8 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	part: DBPart
 
-	/** The transition props as used when entering this PartInstance */
-	allowedToUseTransition?: boolean
+	/** Once taken, we should have timings for how the part interacts with the one before */
+	partPlayoutTimings?: PartCalculatedTimings
 }
 
 export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {

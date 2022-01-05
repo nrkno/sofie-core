@@ -2,7 +2,7 @@ import Tooltip from 'rc-tooltip'
 import React, { ReactElement } from 'react'
 import { withTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownCollectionUtil } from '../../../lib/collections/Rundowns'
 import { getAllowStudio } from '../../lib/localStorage'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
@@ -50,7 +50,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		isOnlyRundownInPlaylist,
 	} = props
 
-	const playlist = rundown.getRundownPlaylist()
+	const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
 
 	const classNames = props.classNames.slice()
 	classNames.push('rundown-list-item')

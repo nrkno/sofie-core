@@ -15,9 +15,7 @@ export interface ShowStyleCompound extends ShowStyleBase {
 }
 
 export type ShowStyleVariant = DBShowStyleVariant
-export const ShowStyleVariants = createMongoCollection<ShowStyleVariant, DBShowStyleVariant>(
-	CollectionName.ShowStyleVariants
-)
+export const ShowStyleVariants = createMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants)
 
 registerIndex(ShowStyleVariants, {
 	showStyleBaseId: 1,

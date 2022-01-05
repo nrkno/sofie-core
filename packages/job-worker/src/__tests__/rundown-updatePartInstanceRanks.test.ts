@@ -50,6 +50,7 @@ describe('updatePartInstanceRanks', () => {
 			segmentId,
 			externalId: id,
 			title: id,
+			expectedDurationWithPreroll: undefined,
 		})
 	}
 
@@ -255,6 +256,7 @@ describe('updatePartInstanceRanks', () => {
 				segmentId,
 				externalId: adlibId,
 				title: adlibId,
+				expectedDurationWithPreroll: undefined,
 			},
 			'adlib-part'
 		)
@@ -330,6 +332,7 @@ describe('updatePartInstanceRanks', () => {
 		await insertAllPartInstances()
 
 		const initialInstanceRanks = await getPartInstanceRanks()
+		expect(initialInstanceRanks.filter((r) => r.orphaned)).toHaveLength(0)
 		expect(initialInstanceRanks).toHaveLength(5)
 
 		// Delete the segment

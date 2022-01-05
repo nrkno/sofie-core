@@ -5,9 +5,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 export * from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 
-export const BucketAdLibActions = createMongoCollection<BucketAdLibAction, BucketAdLibAction>(
-	CollectionName.BucketAdLibActions
-)
+export const BucketAdLibActions = createMongoCollection<BucketAdLibAction>(CollectionName.BucketAdLibActions)
 
 registerIndex(BucketAdLibActions, {
 	bucketId: 1,

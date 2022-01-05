@@ -7,10 +7,9 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 export * from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 
-export const RundownBaselineAdLibActions = createMongoCollection<
-	RundownBaselineAdLibAction,
-	RundownBaselineAdLibAction
->(CollectionName.RundownBaselineAdLibActions)
+export const RundownBaselineAdLibActions = createMongoCollection<RundownBaselineAdLibAction>(
+	CollectionName.RundownBaselineAdLibActions
+)
 
 registerIndex(RundownBaselineAdLibActions, {
 	rundownId: 1,

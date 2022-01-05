@@ -11,6 +11,7 @@ import {
 	PieceLifespan,
 	TimelineObjectCoreExt,
 	TSR,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { clone, literal } from '@sofie-automation/corelib/dist/lib'
@@ -472,6 +473,7 @@ describe('Test blueprint post-process', () => {
 				startRundownId: protectString(''),
 				status: 0,
 				lifespan: PieceLifespan.WithinPart,
+				pieceType: IBlueprintPieceType.Normal,
 				content: {
 					timelineObjects: [],
 				},

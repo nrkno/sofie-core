@@ -35,6 +35,7 @@ export interface UserRoles {
 	admin?: boolean
 }
 
+/** @deprecated TODO: TransformedCollection */
 export type Organization = DBOrganization // to be replaced by a class some time later?
 
-export const Organizations = createMongoCollection<Organization, DBOrganization>(CollectionName.Organizations)
+export const Organizations = createMongoCollection<Organization>(CollectionName.Organizations)

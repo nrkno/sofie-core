@@ -7,7 +7,12 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylistId,
+	RundownPlaylists,
+} from '../../../lib/collections/RundownPlaylists'
 import { ISourceLayer, ITranslatableMessage, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import {
@@ -367,7 +372,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				},
 			})
 			if (playlist) {
-				return playlist.getRundownUnorderedIDs()
+				return RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 			}
 			return []
 		}, [props.rundownPlaylistId]) || []
@@ -454,7 +459,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					})
 
 					return () => {
-						console.log('Preview cleanup!')
+						// console.log('Preview cleanup!')
 						MountedAdLibTriggers.remove({
 							triggeredActionId: pair._id,
 						})

@@ -5,7 +5,12 @@ import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylists,
+	RundownPlaylistId,
+	RundownPlaylistCollectionUtil,
+} from '../../../lib/collections/RundownPlaylists'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { parse as queryStringParse } from 'query-string'
 
@@ -596,7 +601,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId)
 				if (playlist) {
-					const rundownIDs = playlist.getRundownIDs()
+					const rundownIDs = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIDs },
 					})

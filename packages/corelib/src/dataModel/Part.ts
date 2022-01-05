@@ -6,7 +6,7 @@ import { PartNote } from './Notes'
 
 export interface PartInvalidReason {
 	message: ITranslatableMessage
-	level?: NoteSeverity
+	severity?: NoteSeverity
 	color?: string
 }
 
@@ -30,6 +30,9 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
+
+	/** A modified expectedDuration with the planned preroll and other timings factored in */
+	expectedDurationWithPreroll: number | undefined
 }
 
 export function isPartPlayable(part: DBPart) {

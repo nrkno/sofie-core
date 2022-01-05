@@ -2,7 +2,7 @@ import React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation } from 'react-i18next'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
@@ -260,7 +260,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	let currentRundown: Rundown | undefined = undefined
 
 	if (props.playlist) {
-		const rundowns = props.playlist.getRundowns()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(props.playlist)
 		const rMap = normalizeArray(rundowns, '_id')
 		currentRundown = rundowns[0]
 		const partInstanceId = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
@@ -361,7 +361,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		sourceLayerLookup,
 		rundownAdLibs,
 		currentRundown,
-		studio: props.playlist.getStudio(),
+		studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
 	}
 })(
 	class GlobalAdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
