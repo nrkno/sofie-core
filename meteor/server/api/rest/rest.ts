@@ -11,7 +11,7 @@ import { PickerPOST, PickerGET } from '../http'
 const apiVersion = 0
 
 const index = {
-	version: apiVersion,
+	version: `${apiVersion}`,
 	GET: [] as string[],
 	POST: [] as string[],
 }
