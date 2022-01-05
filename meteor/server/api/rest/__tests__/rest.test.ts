@@ -137,6 +137,52 @@ describe('REST API', () => {
 			expect(result.bufferStr).toMatch('Mock error')
 		})
 
+		testInFiber('converts URL arguments from string to correct native types', () => {
+			MeteorMock.mockRunMeteorStartup()
+
+			const methodName = Object.keys(UserActionAPIMethods)[0]
+
+			const methodValue = UserActionAPIMethods[methodName]
+			const signature = MeteorMethodSignatures[methodValue]
+
+			let resource = `/api/0/action/${methodName}`
+			let docString = resource
+			_.each(signature || [], (paramName, i) => {
+				resource += `/:param${i}`
+				docString += `/${paramName}`
+			})
+
+			const params: Record<string, any> = {
+				param0: 'one',
+				param1: true,
+				param2: false,
+				param3: { one: 'two' },
+				param4: null,
+				param5: 1.323,
+				param6: 30,
+			}
+
+			const stringified: Record<string, string> = {}
+			Object.entries(params).forEach(([key, value]) => {
+				if (typeof value === 'string') {
+					stringified[key] = value
+				} else {
+					stringified[key] = JSON.stringify(value)
+				}
+			})
+
+			let resultingArgs: any[] = []
+
+			jest.spyOn(MeteorMock.mockMethods as any, methodValue).mockImplementation((...args) => {
+				resultingArgs = args
+				return ClientAPI.responseSuccess(undefined)
+			})
+
+			const result = callRoute(resource, docString, stringified)
+			expect(result.statusCode).toBe(200)
+			expect(resultingArgs).toMatchObject(Object.values(params))
+		})
+
 		testInFiber('lists available endpoints on /api/0', () => {
 			MeteorMock.mockRunMeteorStartup()
 

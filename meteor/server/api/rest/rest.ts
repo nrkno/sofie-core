@@ -22,21 +22,22 @@ function typeConvertUrlParameters(args: any[]) {
 	for (const i in args) {
 		let val = args[i]
 		if (val === 'null') val = null
-		else if (val === 'undefined') val = undefined
 		else if (val === 'true') val = true
 		else if (val === 'false') val = false
-		else val = unescape(val)
+		else {
+			val = unescape(val)
 
-		if (!_.isNaN(Number(val))) {
-			val = Number(val)
-		} else {
-			let json: any = null
-			try {
-				json = JSON.parse(val)
-			} catch (e) {
-				// ignore
+			if (!_.isNaN(Number(val))) {
+				val = Number(val)
+			} else {
+				let json: any = null
+				try {
+					json = JSON.parse(val)
+				} catch (e) {
+					// ignore
+				}
+				if (json) val = json
 			}
-			if (json) val = json
 		}
 
 		convertedArgs[i] = val
