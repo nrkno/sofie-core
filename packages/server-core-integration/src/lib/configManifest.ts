@@ -111,7 +111,9 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	deviceTypesMapping?: any
 	/** The name of the the property used to decide the type of the entry */
 	typeField?: string
-	/** Only one type means that the type option will not be present */
+	/** Only one type means that the type option will not be present. When using this as a subDevice configuration object,
+	 * a property of type BOOLEAN and id `disable` has special meaning and can be operated on outside of the GUI
+	 */
 	config: { [type: string]: ConfigManifestEntry[] }
 }
 
