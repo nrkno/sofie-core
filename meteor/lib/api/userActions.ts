@@ -218,6 +218,12 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	): Promise<ClientAPI.ClientResponse<void>>
 	restoreRundownOrder(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	disablePeripheralSubDevice(
+		userEvent: string,
+		peripheralDeviceId: PeripheralDeviceId,
+		subDeviceId: string,
+		disable: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -270,6 +276,9 @@ export enum UserActionAPIMethods {
 	'removeRundown' = 'userAction.removeRundown',
 	'resyncRundown' = 'userAction.resyncRundown',
 
+	'moveRundown' = 'userAction.moveRundown',
+	'restoreRundownOrder' = 'userAction.restoreRundownOrder',
+
 	'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
 	'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',
 	'mediaRestartAllWorkflows' = 'userAction.mediamanager.restartAllWorkflows',
@@ -289,11 +298,9 @@ export enum UserActionAPIMethods {
 	'guiFocused' = 'userAction.focused',
 	'guiBlurred' = 'userAction.blurred',
 
-	'getTranslationBundle' = 'userAction.getTranslationBundle',
-
 	'switchRouteSet' = 'userAction.switchRouteSet',
-	'moveRundown' = 'userAction.moveRundown',
-	'restoreRundownOrder' = 'userAction.restoreRundownOrder',
+
+	'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
 }
 
 export interface ReloadRundownPlaylistResponse {
