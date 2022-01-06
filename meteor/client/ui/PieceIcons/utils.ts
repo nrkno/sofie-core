@@ -3,6 +3,7 @@ import { normalizeArray } from '../../../lib/lib'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { IPropsHeader } from './PieceIcon'
+import { PieceExtended } from '../../../lib/Rundown'
 
 export interface IFoundPieceInstance {
 	sourceLayer: ISourceLayer | undefined
@@ -35,9 +36,7 @@ export function findPieceInstanceToShow(
 
 export function findPieceInstanceToShowFromInstances(
 	pieceInstances: PieceInstance[],
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	},
+	sourceLayers: Record<string, ISourceLayer>,
 	selectedLayerTypes: Set<SourceLayerType>
 ): IFoundPieceInstance {
 	let foundSourceLayer: ISourceLayer | undefined
@@ -67,4 +66,18 @@ export function findPieceInstanceToShowFromInstances(
 		sourceLayer: foundSourceLayer,
 		pieceInstance: foundPiece,
 	}
+}
+
+export function findPieceExtendedToShowFromOrderedResolvedInstances(
+	pieces: PieceExtended[],
+	selectedLayerTypes: Set<SourceLayerType>
+): PieceExtended | undefined {
+	return pieces
+		.slice()
+		.reverse()
+		.find((piece) => {
+			if (piece.sourceLayer?.onPresenterScreen && selectedLayerTypes.has(piece.sourceLayer?.type)) {
+				return true
+			}
+		})
 }

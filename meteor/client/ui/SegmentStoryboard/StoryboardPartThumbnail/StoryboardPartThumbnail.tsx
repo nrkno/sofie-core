@@ -2,6 +2,7 @@ import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import React, { useEffect, useState } from 'react'
 import { PartExtended, PieceExtended } from '../../../../lib/Rundown'
+import { findPieceExtendedToShowFromOrderedResolvedInstances } from '../../PieceIcons/utils'
 import StudioContext from '../../RundownView/StudioContext'
 import { StoryboardPartThumbnailInner } from './StoryboardPartThumbnailInner'
 
@@ -12,20 +13,18 @@ interface IProps {
 	isFinished: boolean
 }
 
+const supportedSourceLayerTypes = new Set(
+	Object.values(SourceLayerType).filter(
+		// Support all types, apart from TRANSITION and also filter out the inverse-enum strings
+		(val) => typeof val !== 'string' && val !== SourceLayerType.TRANSITION
+	) as SourceLayerType[]
+)
+
 function findMainPiece(pieces: PieceExtended[]) {
-	const mainPiece = pieces
-		.slice()
-		.reverse()
-		.find((piece) => {
-			if (
-				piece.outputLayer?.isPGM &&
-				piece.sourceLayer?.onPresenterScreen &&
-				piece.sourceLayer?.type !== SourceLayerType.TRANSITION
-			) {
-				return true
-			}
-		})
-	return mainPiece
+	return findPieceExtendedToShowFromOrderedResolvedInstances(
+		pieces.filter((piece) => piece.outputLayer?.isPGM),
+		supportedSourceLayerTypes
+	)
 }
 
 export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbnail({
