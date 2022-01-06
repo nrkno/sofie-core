@@ -380,6 +380,7 @@ export namespace ServerPeripheralDeviceAPI {
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
+		// check that the peripheralDevice has subDevices
 		if (!peripheralDevice.settings)
 			throw new Meteor.Error(500, `PeripheralDevice "${deviceId}" does not provide a settings object`)
 		if (!peripheralDevice.configManifest)
@@ -400,6 +401,7 @@ export namespace ServerPeripheralDeviceAPI {
 		const subDevices = peripheralDevice.settings[subDevicesPropId]
 		if (!subDevices) throw new Meteor.Error(500, `PeripheralDevice "${deviceId}" has a malformed settings object`)
 
+		// check if the subDevice supports disabling using the magical 'disable' BOOLEAN property.
 		const subDeviceSettings = subDevices[subDeviceId] as Record<string, any> | undefined
 		if (!subDeviceSettings)
 			throw new Meteor.Error(500, `PeripheralDevice "${deviceId}", subDevice "${subDeviceId}" is not configured`)

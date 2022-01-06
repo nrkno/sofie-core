@@ -18,6 +18,12 @@ const index = {
 	POST: [] as string[],
 }
 
+/**
+ * Takes an array of strings and converts them to Null, Boolean, Number, String primitives or Objects, if the string
+ * seems like a valid JSON.
+ *
+ * @param args Array of URL-encoded strings
+ */
 function typeConvertUrlParameters(args: any[]) {
 	const convertedArgs: any[] = []
 
@@ -98,12 +104,27 @@ Meteor.startup(() => {
 	})
 })
 
+/**
+ * Send a resulting payload back to the HTTP client. If the payload is an Object, it will be sent as JSON, otherwise
+ * will be sent as Plain Text.
+ *
+ * @param {ServerResponse} res
+ * @param {number} statusCode
+ * @param {*} payload
+ */
 function sendResult(res: ServerResponse, statusCode: number, payload: any) {
 	res.statusCode = statusCode
 	res.setHeader('Content-Type', typeof payload === 'object' ? 'application/json' : 'text/plain')
 	res.end(typeof payload === 'object' ? JSON.stringify(payload) : String(payload))
 }
 
+/**
+ * Send an error back to the HTTP client. If the error object is a Meteor.Error, use the Error.error value as
+ * HTTP error code. Otherwise, send generic 500 error.
+ *
+ * @param {ServerResponse} res
+ * @param {*} e
+ */
 function sendError(res: ServerResponse, e: any) {
 	if (e.error && e.reason) {
 		// is Meteor.Error
