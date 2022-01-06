@@ -138,7 +138,7 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 	const route: Router = routeType === 'POST' ? PickerPOST : PickerGET
 
 	index[routeType].push(indexResource)
-	route.route(resource, (params: Params, req: IncomingMessage, res: ServerResponse) => {
+	route.route(resource, async (params: Params, req: IncomingMessage, res: ServerResponse) => {
 		logger.info(`REST APIv0: ${req.connection.remoteAddress} ${routeType} "${req.url}"`, {
 			url: req.url,
 			method: routeType,
@@ -163,28 +163,14 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 					break
 				}
 			}
-			const result = fcn(p)
 
-			if (result && typeof result.then === 'function') {
-				result.then(
-					(resolvedResult) => {
-						let code = 200
-						if (ClientAPI.isClientResponseError(resolvedResult)) {
-							code = 500
-						}
-						sendResult(res, code, resolvedResult)
-					},
-					(e) => {
-						sendError(res, e)
-					}
-				)
-			} else {
-				let code = 200
-				if (ClientAPI.isClientResponseError(result)) {
-					code = 500
-				}
-				sendResult(res, code, result)
+			const result = await fcn(p)
+
+			let code = 200
+			if (ClientAPI.isClientResponseError(result)) {
+				code = 500
 			}
+			sendResult(res, code, result)
 		} catch (e) {
 			sendError(res, e)
 		}
