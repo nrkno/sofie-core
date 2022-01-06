@@ -13,7 +13,7 @@ const worker = new JobWorker(() => {
 	// TODO
 })
 
-const shutdownPromise = createManualPromise<void>() // TODO: Worker - this should be .resolve/.reject in some places
+const shutdownPromise = createManualPromise<void>() // Future: this should be .resolve/.reject in some places
 
 void (async () => {
 	await worker.run(mongoUri, dbName, connection)

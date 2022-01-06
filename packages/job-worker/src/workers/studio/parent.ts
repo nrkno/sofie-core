@@ -4,7 +4,7 @@ import type { StudioWorkerChild } from './child'
 import { MongoClient } from 'mongodb'
 import { InvalidateWorkerDataCache } from '../caches'
 import { LocksManager } from '../../locks'
-import { WorkerParentBase } from '../parent-base'
+import { ThreadStatus, WorkerParentBase } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { JobManager } from '../../manager'
@@ -50,9 +50,6 @@ export class StudioWorkerParent extends WorkerParentBase {
 			}
 		)
 
-		// TODO: Worker - get the events
-		// Thread.events(workerThread).subscribe((event) => console.log('Thread event:', event))
-
 		// create and start the worker
 		const parent = new StudioWorkerParent(
 			workerId,
@@ -64,6 +61,14 @@ export class StudioWorkerParent extends WorkerParentBase {
 			jobManager,
 			workerThread
 		)
+
+		ThreadedClassManager.onEvent(workerThread, 'restarted', () => {
+			parent.threadStatus = ThreadStatus.PendingInit
+		})
+		ThreadedClassManager.onEvent(workerThread, 'thread_closed', () => {
+			parent.threadStatus = ThreadStatus.Closed
+		})
+
 		parent.startWorkerLoop(mongoUri, mongoDb)
 		return parent
 	}

@@ -53,7 +53,7 @@ export async function loadWorkerDataCache(
 	// Load some 'static' data from the db
 	const studio = deepFreeze(await collections.Studios.findOne(studioId))
 	if (!studio) throw new Error('Missing studio')
-	const studioBlueprint = deepFreeze(await loadStudioBlueprintOrPlaceholder(collections, studio)) // TODO: Worker - guard against errors?
+	const studioBlueprint = deepFreeze(await loadStudioBlueprintOrPlaceholder(collections, studio))
 
 	return {
 		studio,
@@ -79,7 +79,7 @@ export async function invalidateWorkerDataCache(
 		if (!newStudio) throw new Error(`Studio is missing during cache invalidation!`)
 		cache.studio = deepFreeze(newStudio)
 
-		cache.studioBlueprint = deepFreeze(await loadStudioBlueprintOrPlaceholder(collections, cache.studio)) // TODO: Worker - guard against errors?
+		cache.studioBlueprint = deepFreeze(await loadStudioBlueprintOrPlaceholder(collections, cache.studio))
 		cache.studioBlueprintConfig = undefined
 
 		cache.showStyleBases.clear()
@@ -110,7 +110,7 @@ export async function invalidateWorkerDataCache(
 
 	// Reload studioBlueprint
 	if (updateStudioBlueprint) {
-		cache.studioBlueprint = deepFreeze(await loadStudioBlueprintOrPlaceholder(collections, cache.studio)) // TODO: Worker - guard against errors?
+		cache.studioBlueprint = deepFreeze(await loadStudioBlueprintOrPlaceholder(collections, cache.studio))
 		cache.studioBlueprintConfig = undefined
 	}
 

@@ -3,7 +3,7 @@ import { EventsWorkerChild } from './child'
 import { MongoClient } from 'mongodb'
 import { InvalidateWorkerDataCache } from '../caches'
 import { LocksManager } from '../../locks'
-import { WorkerParentBase } from '../parent-base'
+import { ThreadStatus, WorkerParentBase } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
@@ -27,6 +27,7 @@ export class EventsWorkerParent extends WorkerParentBase {
 		super(workerId, threadId, studioId, mongoClient, locksManager, queueName, jobManager)
 
 		this.#thread = thread
+		this.threadStatus = ThreadStatus.PendingInit
 	}
 
 	static async start(
@@ -50,9 +51,6 @@ export class EventsWorkerParent extends WorkerParentBase {
 			}
 		)
 
-		// TODO: Worker - do more with the events
-		// Thread.events(workerThread).subscribe((event) => console.log('Thread event:', event))
-
 		// create and start the worker
 		const parent = new EventsWorkerParent(
 			workerId,
@@ -64,6 +62,14 @@ export class EventsWorkerParent extends WorkerParentBase {
 			jobManager,
 			workerThread
 		)
+
+		ThreadedClassManager.onEvent(workerThread, 'restarted', () => {
+			parent.threadStatus = ThreadStatus.PendingInit
+		})
+		ThreadedClassManager.onEvent(workerThread, 'thread_closed', () => {
+			parent.threadStatus = ThreadStatus.Closed
+		})
+
 		parent.startWorkerLoop(mongoUri, mongoDb)
 		return parent
 	}

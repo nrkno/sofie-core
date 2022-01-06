@@ -1,5 +1,11 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ManualPromise, createManualPromise } from '@sofie-automation/corelib/dist/lib'
+import {
+	ManualPromise,
+	createManualPromise,
+	stringifyError,
+	assertNever,
+	sleep,
+} from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { startTransaction } from '../profiler'
 import { ChangeStream, ChangeStreamDocument, MongoClient } from 'mongodb'
@@ -13,6 +19,13 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 import { JobManager, JobStream } from '../manager'
+import { UserError } from '@sofie-automation/corelib/dist/error'
+
+export enum ThreadStatus {
+	Closed = 0,
+	PendingInit = 1,
+	Ready = 2,
+}
 
 export abstract class WorkerParentBase {
 	// readonly #workerId: string
@@ -30,6 +43,8 @@ export abstract class WorkerParentBase {
 	readonly #streams: Array<ChangeStream<any>> = []
 
 	#pendingInvalidations: InvalidateWorkerDataCache | null = null
+
+	protected threadStatus = ThreadStatus.Closed
 
 	public get threadId(): string {
 		return this.#threadId
@@ -159,11 +174,27 @@ export abstract class WorkerParentBase {
 
 				this.subscribeToCacheInvalidations(dbName)
 
-				// Start the worker running
-				await this.initWorker(mongoUri, dbName, this.#studioId)
-
 				// Run until told to terminate
 				while (!this.#terminate) {
+					switch (this.threadStatus) {
+						case ThreadStatus.Closed:
+							// Wait for the thread
+							await sleep(100)
+							// Check again
+							continue
+						case ThreadStatus.PendingInit:
+							logger.debug(`Re-initialising worker thread: "${this.#threadId}"`)
+							// Reinit the worker
+							await this.initWorker(mongoUri, dbName, this.#studioId)
+							this.threadStatus = ThreadStatus.Ready
+							break
+						case ThreadStatus.Ready:
+							// Thread is happy to accept a job
+							break
+						default:
+							assertNever(this.threadStatus)
+					}
+
 					const job = await this.#jobStream.next() // Note: this blocks
 
 					// Handle any invalidations
@@ -174,14 +205,12 @@ export abstract class WorkerParentBase {
 						await this.invalidateWorkerCaches(invalidations)
 					}
 
-					// TODO: Worker - job lock may timeout, we need to run at an interval to make sure it doesnt
 					// TODO: Worker - enforce a timeout? we could kill the thread once it reaches the limit as a hard abort
 
 					// we may not get a job even when blocking, so try again
 					if (job) {
 						// Ensure the lock is still good
-						// TODO: Worker - should jobs time out like this?
-						// await job.extendLock(this.#workerId, 10000) // TODO: Worker - what should the lock duration be?
+						// await job.extendLock(this.#workerId, 10000) // Future - ensure the job is locked for enough to process
 
 						const transaction = startTransaction(job.name, 'worker-parent')
 						if (transaction) {
@@ -191,11 +220,11 @@ export abstract class WorkerParentBase {
 						const startTime = Date.now()
 
 						try {
-							console.log('Running work ', job.id, job.name, JSON.stringify(job.data))
+							logger.debug(`Starting work ${job.id}: "${job.name}"`)
+							logger.verbose(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
 
-							// TODO: Worker - we should call extendLock on an interval with a fairly low duration
-							// TODO: Worker - this never resolves if the worker dies. Hopefully the bug will be fixed, or swap it out for threadedclass https://github.com/andywer/threads.js/issues/386
-							let result
+							// Future - extend the job lock on an interval
+							let result: any
 							if (job.name === FORCE_CLEAR_CACHES_JOB) {
 								const invalidations = this.#pendingInvalidations ?? createInvalidateWorkerDataCache()
 								this.#pendingInvalidations = null
@@ -208,15 +237,25 @@ export abstract class WorkerParentBase {
 								result = await this.runJobInWorker(job.name, job.data)
 							}
 
-							await this.#jobManager.jobFinished(job.id, startTime, Date.now(), null, result)
-						} catch (e) {
-							console.log('job errored', e)
-							// stringify the error to preserve the UserError
-							// const e2 = e instanceof Error ? e : new Error(UserError.toJSON(e))
+							const endTime = Date.now()
+							await this.#jobManager.jobFinished(job.id, startTime, endTime, null, result)
+							logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
+						} catch (e: unknown) {
+							let error: Error | UserError
+							if (e instanceof Error || UserError.isUserError(e)) {
+								error = e
+							} else {
+								error = new Error(typeof e === 'string' ? e : `${e}`)
+							}
 
-							await this.#jobManager.jobFinished(job.id, startTime, Date.now(), e, null)
+							logger.error(`Job errored ${job.id} "${job.name}": ${stringifyError(e)}`)
+
+							await this.#jobManager.jobFinished(job.id, startTime, Date.now(), error, null)
 						}
-						console.log('the end')
+
+						// Ensure all locks have been freed after the job
+						await this.#locksManager.releaseAllForThread(this.#threadId)
+
 						transaction?.end()
 					}
 				}
@@ -224,7 +263,7 @@ export abstract class WorkerParentBase {
 				// Mark completed
 				this.#terminate.manualResolve()
 			} catch (e) {
-				// TODO: Worker - report error
+				logger.error(`Worker thread errored: ${stringifyError(e)}`)
 
 				await this.#locksManager.releaseAllForThread(this.#threadId)
 

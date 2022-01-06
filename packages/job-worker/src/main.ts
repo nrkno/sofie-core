@@ -48,7 +48,8 @@ export abstract class JobWorkerBase {
 
 		this.#client.on('close', () => {
 			console.log('Mongo connection closed. Forcing exit')
-			// TODO: Worker - this isnt a great error handling
+			// Note: This is terribele error handling, but it does the job.
+			// If we start handling this more gracefully, then we will need to make sure to avoid/kill jobs being processed and flush all caches upon reconnection
 			// eslint-disable-next-line no-process-exit
 			process.exit(0)
 		})
@@ -108,7 +109,29 @@ async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 			.find({}, { projection: { _id: 1 } })
 			.toArray()
 
-		// TODO: Worker - watch for creation/deletion
+		// Watch for creation/deletion of studios
+		db.collection(CollectionName.Studios)
+			.watch([], {
+				batchSize: 1,
+			})
+			.on('change', (change) => {
+				if (change.operationType === 'update' || change.operationType === 'replace') {
+					// These are not important
+					return
+				} else {
+					// Something about the list of studios that exist has changed, lets restart
+					// The easiest thing to do is to restart the process. This will happen so rarely, its probably not worth trying to improve on
+
+					// eslint-disable-next-line no-process-exit
+					process.exit(1)
+				}
+			})
+			.on('end', () => {
+				logger.warn(`Changes stream for Studios ended`)
+				// Note: This is terribele error handling, but it does the job.
+				// eslint-disable-next-line no-process-exit
+				process.exit(1)
+			})
 
 		const ids = studios.map((s) => protectString(s._id))
 		logger.warn(`Running for all studios: ${JSON.stringify(ids)}. Make sure there is only one worker running!`)
