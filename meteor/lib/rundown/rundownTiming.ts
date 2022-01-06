@@ -728,7 +728,18 @@ export namespace PlaylistTiming {
 				diff =
 					(timingContext.asPlayedPlaylistDuration || 0) -
 					(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
-				// TODO: take the optional expectedEnd into account
+
+				if (timing.expectedEnd) {
+					diff = startedPlayback + (timingContext.asPlayedPlaylistDuration || 0) - timing.expectedEnd
+				}
+			} else if (isPlaylistTimingNone(timing)) {
+				//  we want to know how heavy/light we were compared to the original plan
+				diff =
+					(timingContext.asPlayedPlaylistDuration || 0) -
+					(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
+			} else if (isPlaylistTimingBackTime(timing)) {
+				// we want to see how late we've ended compared to the expectedEnd
+				diff = startedPlayback + (timingContext.asPlayedPlaylistDuration || 0) - timing.expectedEnd
 			}
 		}
 
