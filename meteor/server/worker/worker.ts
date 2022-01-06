@@ -338,8 +338,6 @@ function wrapResult<TRes>(jobId: string, queueTime: Time): { res: WorkerJob<TRes
 	const getTimings = createManualPromise<JobTimings>()
 
 	// TODO: Worker - timeouts
-	// TODO: Worker - better errors
-	// TODO: Worker - anything else from the old implementation
 
 	const handler: JobCompleted = (startedTime: number, finishedTime: number, err: any, res: any) => {
 		try {

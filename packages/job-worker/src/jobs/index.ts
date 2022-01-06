@@ -49,7 +49,9 @@ export interface JobContext {
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig
 
+	getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>>
 	getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBase>>
+	getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariant>>>
 	getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariant>>
 	getShowStyleCompound(
 		variantId: ShowStyleVariantId,

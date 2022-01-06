@@ -46,6 +46,7 @@ import {
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 // import _ = require('underscore')
 import { defaultStudio } from './defaultCollectionObjects'
+import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const collections = getMockCollections()
@@ -128,10 +129,18 @@ export class MockJobContext implements JobContext {
 	getStudioBlueprintConfig(): ProcessedStudioConfig {
 		return preprocessStudioConfig(this.studio, this.#studioBlueprint)
 	}
+	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>> {
+		return this.directCollections.ShowStyleBases.findFetch()
+	}
 	async getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBase> {
 		const style = await this.directCollections.ShowStyleBases.findOne(id)
 		if (!style) throw new Error(`ShowStyleBase "${id}" Not found!`)
 		return style
+	}
+	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariant>>> {
+		return this.directCollections.ShowStyleVariants.findFetch({
+			showStyleBaseId: id,
+		})
 	}
 	async getShowStyleVariant(id: ShowStyleVariantId): Promise<DBShowStyleVariant> {
 		const style = await this.directCollections.ShowStyleVariants.findOne(id)
@@ -167,6 +176,10 @@ export class MockJobContext implements JobContext {
 	}
 	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig {
 		return preprocessShowStyleConfig(showStyle, this.#showStyleBlueprint)
+	}
+
+	hackPublishTimelineToFastTrack(_newTimeline: TimelineComplete): void {
+		// throw new Error('Method not implemented.')
 	}
 
 	/**

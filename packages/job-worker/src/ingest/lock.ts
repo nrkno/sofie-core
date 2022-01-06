@@ -155,7 +155,7 @@ async function runWithRundownLockInner<TRes>(
 	_rundownId: RundownId,
 	fcn: (lock: unknown) => Promise<TRes>
 ): Promise<TRes> {
-	// TODO: Worker - lock Rundown?
+	// Future: We will want to lock the Rundown, once we have multiple ingest threads
 	return fcn(null)
 }
 

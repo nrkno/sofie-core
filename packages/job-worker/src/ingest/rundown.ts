@@ -8,7 +8,7 @@ import { createShowStyleCompound } from '../showStyles'
 import _ = require('underscore')
 import { StudioUserContext } from '../blueprints/context'
 import { JobContext } from '../jobs'
-import { clone, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 
 export interface SelectedShowStyleVariant {
@@ -27,10 +27,8 @@ export async function selectShowStyleVariant(
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
 	}
-	const showStyleBases = await context.directCollections.ShowStyleBases.findFetch({
-		// TODO: Worker - cache
-		_id: { $in: clone<Array<ShowStyleBaseId>>(studio.supportedShowStyleBase) },
-	})
+
+	const showStyleBases = await context.getShowStyleBases()
 	let showStyleBase = _.first(showStyleBases)
 	if (!showStyleBase) {
 		logger.debug(
@@ -47,7 +45,7 @@ export async function selectShowStyleVariant(
 		showStyleId = protectString(
 			studioBlueprint.blueprint.getShowStyleId(
 				blueprintContext,
-				unprotectObjectArray(showStyleBases),
+				unprotectObjectArray(showStyleBases as any), // TODO: Worker - fix the types here
 				ingestRundown
 			)
 		)
@@ -68,10 +66,7 @@ export async function selectShowStyleVariant(
 		return null
 	}
 
-	const showStyleVariants = await context.directCollections.ShowStyleVariants.findFetch({
-		// TODO: Worker - cache
-		showStyleBaseId: showStyleBase._id,
-	})
+	const showStyleVariants = await context.getShowStyleVariants(showStyleBase._id)
 	if (!showStyleVariants.length) throw new Error(`ShowStyleBase "${showStyleBase._id}" has no variants`)
 
 	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyleBase._id)
@@ -82,7 +77,7 @@ export async function selectShowStyleVariant(
 		variantId = protectString(
 			showStyleBlueprint.blueprint.getShowStyleVariantId(
 				blueprintContext,
-				unprotectObjectArray(showStyleVariants),
+				unprotectObjectArray(showStyleVariants as any), // TODO: Worker - fix the types here
 				ingestRundown
 			)
 		)

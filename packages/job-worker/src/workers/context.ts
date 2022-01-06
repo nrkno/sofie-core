@@ -143,6 +143,45 @@ export class JobContextImpl implements JobContext {
 		return clone(this.cacheData.studioBlueprintConfig)
 	}
 
+	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>> {
+		const docsToLoad: ShowStyleBaseId[] = []
+		const loadedDocs: Array<ReadonlyDeep<DBShowStyleBase>> = []
+
+		// Figure out what is already cached, and what needs loading
+		for (const id of this.cacheData.studio.supportedShowStyleBase) {
+			const doc = this.cacheData.showStyleBases.get(id)
+			if (doc === undefined) {
+				docsToLoad.push(id)
+			} else if (doc) {
+				loadedDocs.push(doc)
+			} else {
+				// Doc missing in db
+			}
+		}
+
+		// Load the uncached docs
+		if (docsToLoad.length > 0) {
+			const newDocs = await this.directCollections.ShowStyleBases.findFetch({ _id: { $in: docsToLoad } })
+
+			// First mark them all in the cache as loaded
+			for (const id of docsToLoad) {
+				this.cacheData.showStyleBases.set(id, null)
+			}
+
+			// Now fill it in with the loaded docs
+			for (const doc0 of newDocs) {
+				// Freeze and cache it
+				const doc = deepFreeze(doc0)
+				this.cacheData.showStyleBases.set(doc._id, doc ?? null)
+
+				// Add it to the result
+				loadedDocs.push(doc)
+			}
+		}
+
+		return loadedDocs
+	}
+
 	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBase>> {
 		// Check if allowed
 		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
@@ -165,6 +204,41 @@ export class JobContextImpl implements JobContext {
 		}
 
 		throw new Error(`ShowStyleBase "${id}" does not exist`)
+	}
+
+	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariant>>> {
+		// Check if allowed
+		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
+			throw new Error(`ShowStyleBase "${id}" is not allowed in studio`)
+		}
+
+		// This is a weirder one, as we can't efficiently know if we have them all loaded, due to needing to lookup docs that contain the id, with no master list of ids to check
+
+		const loadedDocs: Array<ReadonlyDeep<DBShowStyleVariant>> = []
+
+		// Find all the ones already cached
+		for (const doc of this.cacheData.showStyleVariants.values()) {
+			if (doc && doc.showStyleBaseId === id) {
+				loadedDocs.push(doc)
+			}
+		}
+
+		// Do a search for more
+		const uncachedDocs = await this.directCollections.ShowStyleVariants.findFetch({
+			showStyleBaseId: id,
+			_id: { $nin: loadedDocs.map((d) => d._id) },
+		})
+
+		// Cache the freshly loaded docs,
+		for (const doc0 of uncachedDocs) {
+			// Freeze and cache it
+			const doc = deepFreeze(doc0)
+			this.cacheData.showStyleVariants.set(doc._id, doc)
+
+			loadedDocs.push(doc)
+		}
+
+		return loadedDocs
 	}
 	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariant>> {
 		let doc = this.cacheData.showStyleVariants.get(id)

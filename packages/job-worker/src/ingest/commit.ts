@@ -579,11 +579,6 @@ async function getSelectedPartInstances(
 	playlist: DBRundownPlaylist,
 	rundownIds: Array<RundownId>
 ) {
-	// let rundownIds = rundownIds0
-	// if (!rundownIds) {
-	// 	rundownIds = this.getRundownIDs()
-	// }
-
 	const ids = _.compact([
 		playlist.currentPartInstanceId,
 		playlist.previousPartInstanceId,
