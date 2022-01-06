@@ -59,8 +59,10 @@
 		"@sofie-automation/job-worker": "link:../packages/job-worker",
 		"@sofie-automation/sorensen": "^1.2.0",
 		"amqplib": "^0.8.0",
+		"app-root-path": "^3.0.0",
 		"bcrypt": "^5.0.1",
 		"body-parser": "^1.19.0",
+		"chokidar": "^3.5.2",
 		"classnames": "^2.3.1",
 		"core-js": "^3.17.3",
 		"cubic-spline": "^3.0.3",
@@ -117,6 +119,7 @@
 	"devDependencies": {
 		"@sofie-automation/code-standard-preset": "0.5.0",
 		"@types/amqplib": "^0.5.17",
+		"@types/app-root-path": "^1.2.4",
 		"@types/body-parser": "^1.19.1",
 		"@types/classnames": "^2.3.1",
 		"@types/css-font-loading-module": "0.0.4",

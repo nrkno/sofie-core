@@ -19,7 +19,7 @@ export function setupApmAgent(): void {
 			active: true,
 			transactionSampleRate: 1, // system.apm.transactionSampleRate,
 		})
-		active = true
+		active = true // TODO - based on coreSystem field
 	} else {
 		logger.info(`APM agent inactive`)
 		Agent.start({

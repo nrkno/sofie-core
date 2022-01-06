@@ -358,6 +358,7 @@ function wrapResult<TRes>(jobId: string, queueTime: Time): { res: WorkerJob<TRes
 			getTimings.manualResolve({
 				queueTime,
 				startedTime,
+
 				finishedTime,
 				completedTime: getCurrentTime(),
 			})
@@ -374,3 +375,10 @@ function wrapResult<TRes>(jobId: string, queueTime: Time): { res: WorkerJob<TRes
 		handler,
 	}
 }
+
+Meteor.startup(() => {
+	if (Meteor.isDevelopment) {
+		// Load the watcher for changes to the thread source
+		require('./watch')
+	}
+})

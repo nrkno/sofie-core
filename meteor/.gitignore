@@ -3,3 +3,4 @@ src/**/*.js
 src/**/*.js.map
 coverage
 settings.json
+server/_force_restart.js

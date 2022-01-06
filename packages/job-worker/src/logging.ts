@@ -1,4 +1,5 @@
 import * as Winston from 'winston'
+
 export interface LoggerInstance extends Winston.LoggerInstance {
 	warning: never // logger.warning is not a function
 }
