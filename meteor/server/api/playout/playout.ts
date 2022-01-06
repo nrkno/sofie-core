@@ -1515,6 +1515,7 @@ export namespace ServerPlayoutAPI {
 		check(studioId, String)
 		check(routeSetId, String)
 		check(state, Boolean)
+		logger.debug(`switchRouteSet "${studioId}" "${routeSetId}"=${state}`)
 
 		const allowed = StudioContentWriteAccess.routeSet(context, studioId)
 		if (!allowed) throw new Meteor.Error(403, `Not allowed to edit RouteSet on studio ${studioId}`)
@@ -1543,8 +1544,6 @@ export namespace ServerPlayoutAPI {
 		Studios.update(studioId, {
 			$set: modification,
 		})
-
-		// TODO: Run update timeline here
 
 		return ClientAPI.responseSuccess(undefined)
 	}
