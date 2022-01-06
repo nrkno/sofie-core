@@ -67,10 +67,7 @@ export async function loadBlueprintById(
 
 export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 	const vm = new VM({
-		sandbox: {
-			// _,
-			// moment,
-		},
+		sandbox: {},
 	})
 
 	const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)

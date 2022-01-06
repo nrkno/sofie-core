@@ -147,7 +147,7 @@ export type DebugSyncInfinitesForNextPartInstanceProps = RundownPlayoutPropsBase
 
 /**
  * Set of valid functions, of form:
- * `id: [data, return]`
+ * `id: (data) => return`
  */
 export type StudioJobFunc = {
 	[StudioJobs.UpdateTimeline]: () => void
@@ -191,8 +191,3 @@ export type StudioJobFunc = {
 export function getStudioQueueName(id: StudioId): string {
 	return `studio:${id}`
 }
-
-// export type WrappedResult<T> = {
-// 	startedExecution: number
-// 	finishedExecution: number
-// } & ({ error: string } | { result: T })

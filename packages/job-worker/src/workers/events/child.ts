@@ -37,12 +37,7 @@ export class EventsWorkerChild {
 		this.#fastTrackTimeline = fastTrackTimeline
 	}
 
-	async init(
-		mongoUri: string,
-		dbName: string,
-		studioId: StudioId
-		// emitLockEvent: (event: AnyLockEvent) => void
-	): Promise<void> {
+	async init(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
 		if (this.#staticData) throw new Error('Worker already initialised')
 
 		const mongoClient = await createMongoConnection(mongoUri)
@@ -56,8 +51,6 @@ export class EventsWorkerChild {
 			collections,
 
 			dataCache,
-
-			// locks,
 		}
 	}
 	async lockChange(lockId: string, locked: boolean): Promise<void> {

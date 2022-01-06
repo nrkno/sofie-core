@@ -24,7 +24,7 @@ export interface NotifyCurrentlyPlayingPartProps {
 
 /**
  * Set of valid functions, of form:
- * `id: [data, return]`
+ * `id: (data) => return`
  */
 export type EventsJobFunc = {
 	[EventsJobs.PartInstanceTimings]: (data: PartInstanceTimingsProps) => void

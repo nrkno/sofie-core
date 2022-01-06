@@ -177,7 +177,7 @@ export interface BucketEmptyProps {
 
 /**
  * Set of valid functions, of form:
- * `id: [data, return]`
+ * `id: (data) => return`
  */
 export type IngestJobFunc = {
 	[IngestJobs.RemoveRundown]: (data: IngestRemoveRundownProps) => void
