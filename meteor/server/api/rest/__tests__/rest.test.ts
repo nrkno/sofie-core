@@ -14,7 +14,11 @@ import '../rest.ts'
 
 describe('REST API', () => {
 	describe('UNSTABLE v0', () => {
-		function callRoute(routeName: string, url: string, params: Record<string, any>): MockResponseDataString {
+		async function callRoute(
+			routeName: string,
+			url: string,
+			params: Record<string, any>
+		): Promise<MockResponseDataString> {
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
 			const res = new MockResponse()
@@ -23,7 +27,7 @@ describe('REST API', () => {
 				url,
 			})
 
-			route.handler(params, req, res, jest.fn())
+			await route.handler(params, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
 			return resStr
@@ -48,38 +52,40 @@ describe('REST API', () => {
 			})
 		})
 
-		testInFiber('calls the UserActionAPI methods, when doing a POST to the endpoint', () => {
+		testInFiber('calls the UserActionAPI methods, when doing a POST to the endpoint', async () => {
 			MeteorMock.mockRunMeteorStartup()
 
-			Object.keys(UserActionAPIMethods).forEach((methodName) => {
-				const methodValue = UserActionAPIMethods[methodName]
-				const signature = MeteorMethodSignatures[methodValue]
+			await Promise.all(
+				Object.keys(UserActionAPIMethods).map(async (methodName) => {
+					const methodValue = UserActionAPIMethods[methodName]
+					const signature = MeteorMethodSignatures[methodValue]
 
-				let resource = `/api/0/action/${methodName}`
-				let docString = resource
-				const params: Record<string, any> = {}
-				_.each(signature || [], (paramName, i) => {
-					resource += `/:param${i}`
-					docString += `/${paramName}`
-					params[paramName] = ''
-				})
+					let resource = `/api/0/action/${methodName}`
+					let docString = resource
+					const params: Record<string, any> = {}
+					_.each(signature || [], (paramName, i) => {
+						resource += `/:param${i}`
+						docString += `/${paramName}`
+						params[paramName] = ''
+					})
 
-				jest.spyOn(MeteorMock.mockMethods as any, methodValue).mockReturnValue(
-					ClientAPI.responseSuccess(undefined)
-				)
+					jest.spyOn(MeteorMock.mockMethods as any, methodValue).mockReturnValue(
+						ClientAPI.responseSuccess(undefined)
+					)
 
-				const result = callRoute(resource, docString, params)
-				expect(result.statusCode).toBe(200)
-				expect(result.headers).toMatchObject({
-					'content-type': 'application/json',
+					const result = await callRoute(resource, docString, params)
+					expect(result.statusCode).toBe(200)
+					expect(result.headers).toMatchObject({
+						'content-type': 'application/json',
+					})
+					expect(JSON.parse(result.bufferStr)).toMatchObject({
+						success: 200,
+					})
 				})
-				expect(JSON.parse(result.bufferStr)).toMatchObject({
-					success: 200,
-				})
-			})
+			)
 		})
 
-		testInFiber('returns a matching HTTP error code when method throws a Meteor.Error', () => {
+		testInFiber('returns a matching HTTP error code when method throws a Meteor.Error', async () => {
 			MeteorMock.mockRunMeteorStartup()
 
 			const methodName = Object.keys(UserActionAPIMethods)[0]
@@ -100,7 +106,7 @@ describe('REST API', () => {
 				throw new Meteor.Error(401, 'Mock error')
 			})
 
-			const result = callRoute(resource, docString, params)
+			const result = await callRoute(resource, docString, params)
 			expect(result.statusCode).toBe(401)
 			expect(result.headers).toMatchObject({
 				'content-type': 'text/plain',
@@ -108,7 +114,7 @@ describe('REST API', () => {
 			expect(result.bufferStr).toMatch('Mock error')
 		})
 
-		testInFiber('returns a 500 HTTP error code when method throws a Node Exception', () => {
+		testInFiber('returns a 500 HTTP error code when method throws a Node Exception', async () => {
 			MeteorMock.mockRunMeteorStartup()
 
 			const methodName = Object.keys(UserActionAPIMethods)[0]
@@ -129,7 +135,7 @@ describe('REST API', () => {
 				throw new Error('Mock error')
 			})
 
-			const result = callRoute(resource, docString, params)
+			const result = await callRoute(resource, docString, params)
 			expect(result.statusCode).toBe(500)
 			expect(result.headers).toMatchObject({
 				'content-type': 'text/plain',
@@ -137,7 +143,7 @@ describe('REST API', () => {
 			expect(result.bufferStr).toMatch('Mock error')
 		})
 
-		testInFiber('converts URL arguments from string to correct native types', () => {
+		testInFiber('converts URL arguments from string to correct native types', async () => {
 			MeteorMock.mockRunMeteorStartup()
 
 			const methodName = Object.keys(UserActionAPIMethods)[0]
@@ -178,18 +184,18 @@ describe('REST API', () => {
 				return ClientAPI.responseSuccess(undefined)
 			})
 
-			const result = callRoute(resource, docString, stringified)
+			const result = await callRoute(resource, docString, stringified)
 			expect(result.statusCode).toBe(200)
 			expect(resultingArgs).toMatchObject(Object.values(params))
 		})
 
-		testInFiber('lists available endpoints on /api/0', () => {
+		testInFiber('lists available endpoints on /api/0', async () => {
 			MeteorMock.mockRunMeteorStartup()
 
 			const resource = `/api/0`
 			const docString = resource
 
-			const result = callRoute(resource, docString, {})
+			const result = await callRoute(resource, docString, {})
 			expect(result.statusCode).toBe(200)
 			expect(result.headers).toMatchObject({
 				'content-type': 'application/json',
