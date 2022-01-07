@@ -22,6 +22,15 @@ yarn install
 yarn start:single-app -- -- --basePath "C:\Your\Path\To\CasparCG Server\media-folder (i.e. sofie-demo-media)"
 ```
 
+On first startup, Package Manager will exit with the following message:
+
+```
+Not setup yet, exiting process!
+To setup, go into Core and add this device to a Studio
+```
+
+This first run is necessary to get the Package Manager device registered with Sofie Core. We'll restart Package Manager later on in the [Configuration](#configuration) instructions.
+
 ### Configuration
 
 1. Open the Sofie Core Settings page ([http://localhost:3000/settings](http://localhost:3000/settings)), click on your Studio, and scroll down to the Attached Devices section.
