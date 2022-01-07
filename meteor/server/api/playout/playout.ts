@@ -1085,23 +1085,18 @@ export namespace ServerPlayoutAPI {
 						activePlaylist,
 						PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
 						async () => {
-							const rundownIDs = Rundowns.find({ playlistId }, { fields: { _id: 1 } }).map(
-								(r) => r._id
-							)
+							const rundownIDs = Rundowns.find({ playlistId }, { fields: { _id: 1 } }).map((r) => r._id)
 							const partInstanceIDs = [activePlaylist.currentPartInstanceId].filter(
 								(id): id is PartInstanceId => id !== null
 							)
 
 							// We only need the PieceInstances, so load just them
-							const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
-								PieceInstances,
-								{
-									rundownId: { $in: rundownIDs },
-									partInstanceId: {
-										$in: partInstanceIDs,
-									},
-								}
-							)
+							const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(PieceInstances, {
+								rundownId: { $in: rundownIDs },
+								partInstanceId: {
+									$in: partInstanceIDs,
+								},
+							})
 
 							// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
 							timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)
