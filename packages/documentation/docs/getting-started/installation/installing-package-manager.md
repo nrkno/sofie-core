@@ -13,7 +13,7 @@ Although Package Manager can be used to copy any kind of file to/from a wide arr
 
 ### Installation (Quick Start)
 
-Package Manager is a suite of standalone applications, separate from Sofie Core. This guide assumes that Package Manager will be running on the same computer as CasparCG and Sofie Core, as that is the fastest way to set up a demo. To get all parts of Package Manager up and running quickly, follow these instructions:
+Package Manager is a suite of standalone applications, separate from Sofie Core. This guide assumes that Package Manager will be running on the same computer as CasparCG and Sofie Core, as that is the fastest way to set up a demo. To get all parts of Package Manager up and running quickly, execute these commands:
 
 ```bash
 git clone https://github.com/nrkno/tv-automation-package-manager.git
