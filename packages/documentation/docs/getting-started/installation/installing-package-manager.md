@@ -33,7 +33,7 @@ This first run is necessary to get the Package Manager device registered with So
 
 ### Configuration
 
-1. Open the Sofie Core Settings page ([http://localhost:3000/settings](http://localhost:3000/settings)), click on your Studio, and scroll down to the Attached Devices section.
+1. Open the Sofie Core Settings page ([http://localhost:3000/settings?admin=1](http://localhost:3000/settings?admin=1)), click on your Studio, and scroll down to the Attached Devices section.
 1. Click the plus button (`+`) and select Package Manager to add the Package Manager device to your Studio.
 1. On this same settings page, scroll down to the Package Manager section.
 1. Click the plus button under the Package Containers heading, then click the edit icon (pencil) to the right of the newly-created package container.
