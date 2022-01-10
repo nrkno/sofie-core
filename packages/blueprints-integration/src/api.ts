@@ -15,7 +15,7 @@ import {
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
 	IStudioBaselineContext,
-	IRemoveOrphanedPartInstanceContext,
+	IRundownUserContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -154,7 +154,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	 * This call will only be made if the part instance has been orphaned.
 	 */
 	shouldRemoveOrphanedPartInstance?: (
-		context: IRemoveOrphanedPartInstanceContext,
+		context: IRundownUserContext,
 		partInstance: BlueprintRemoveOrphanedPartInstance
 	) => boolean
 

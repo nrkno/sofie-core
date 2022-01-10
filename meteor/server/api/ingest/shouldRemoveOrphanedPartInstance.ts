@@ -8,7 +8,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { clone, literal, unprotectObject, unprotectObjectArray } from '../../../lib/lib'
 import { logger } from '../../logging'
-import { RemoveOrphanedPartInstanceContext } from '../blueprints/context/removeOrphanedPartInstance'
+import { RundownUserContext } from '../blueprints/context'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
 import { isTooCloseToAutonext } from '../playout/lib'
 
@@ -34,7 +34,7 @@ export async function shouldRemoveOrphanedPartInstance(
 		pieceInstances: unprotectObjectArray(pieceInstancesInPart),
 	}
 
-	const orphanedPartInstanceContext = new RemoveOrphanedPartInstanceContext(
+	const orphanedPartInstanceContext = new RundownUserContext(
 		{
 			name: `Update to ${orphanedPartInstance.part.externalId}`,
 			identifier: `rundownId=${orphanedPartInstance.part.rundownId},segmentId=${orphanedPartInstance.part.segmentId}`,
