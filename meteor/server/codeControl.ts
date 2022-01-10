@@ -126,6 +126,22 @@ export async function purgeWorkQueues(): Promise<void> {
 	await Promise.all(running)
 }
 
+/**
+ * Wait for all units of work queued at the time of calling
+ */
+export async function waitAllQueued(): Promise<void> {
+	const running: Array<Promise<void>> = []
+	for (const queue of workQueues.values()) {
+		if (queue.queue.pending) {
+			const syncTask = async () => {
+				return Promise.resolve()
+			}
+			running.push(queue.queue.add(syncTask))
+		}
+	}
+	await Promise.all(running)
+}
+
 function createManualPromise<T>() {
 	let resolve: (val: T) => void = () => null
 	let reject: (err: Error) => void = () => null

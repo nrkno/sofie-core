@@ -4,6 +4,7 @@ import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
 import { SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
+import { MongoFieldSpecifier } from '../typings/meteor'
 
 /** A string, identifying a Segment */
 export type SegmentId = ProtectedString<'SegmentId'>
@@ -11,8 +12,10 @@ export type SegmentId = ProtectedString<'SegmentId'>
 
 export enum SegmentOrphanedReason {
 	DELETED = 'deleted',
-	CHANGED = 'changed',
+	HIDDEN = 'hidden',
 }
+
+export const orphanedHiddenSegmentPropertiesToPreserve: MongoFieldSpecifier<DBSegment> = { showShelf: 1 }
 
 export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB, '_id'> {
 	_id: SegmentId

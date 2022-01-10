@@ -36,6 +36,7 @@ import {
 import { Settings } from '../../../lib/Settings'
 import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { updateSegmentFromIngestData } from '../ingest/generation'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -476,13 +477,13 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 	const removePartInstanceIds: PartInstanceId[] = []
 
 	// Cleanup any orphaned segments once they are no longer being played. This also cleans up any adlib-parts, that have been marked as deleted as a deferred cleanup operation
-	const segments = cache.Segments.findFetch((s) => s.orphaned === 'deleted')
+	const segments = cache.Segments.findFetch((s) => !!s.orphaned)
 	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
 	const groupedPartInstances = _.groupBy(
 		cache.PartInstances.findFetch((p) => orphanedSegmentIds.has(p.segmentId)),
 		(p) => p.segmentId
 	)
-	const removeSegmentsFromRundowns = new Map<RundownId, SegmentId[]>()
+	const alterSegmentsFromRundowns = new Map<RundownId, { deleted: SegmentId[]; hidden: SegmentId[] }>()
 	for (const segment of segments) {
 		const partInstances = groupedPartInstances[unprotectString(segment._id)] || []
 		const partInstanceIds = new Set(partInstances.map((p) => p._id))
@@ -492,18 +493,28 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 			(!playlist.currentPartInstanceId || !partInstanceIds.has(playlist.currentPartInstanceId)) &&
 			(!playlist.nextPartInstanceId || !partInstanceIds.has(playlist.nextPartInstanceId))
 		) {
-			// The segment is finished with. Queue it for attempted removal
-			const existing = removeSegmentsFromRundowns.get(segment.rundownId)
-			if (existing) {
-				existing.push(segment._id)
-			} else {
-				removeSegmentsFromRundowns.set(segment.rundownId, [segment._id])
+			let rundownSegments = alterSegmentsFromRundowns.get(segment.rundownId)
+			if (!rundownSegments) {
+				rundownSegments = { deleted: [], hidden: [] }
+				alterSegmentsFromRundowns.set(segment.rundownId, rundownSegments)
+			}
+			// The segment is finished with. Queue it for attempted removal or reingest
+			switch (segment.orphaned) {
+				case SegmentOrphanedReason.DELETED: {
+					rundownSegments.deleted.push(segment._id)
+					break
+				}
+				case SegmentOrphanedReason.HIDDEN: {
+					// The segment is finished with. Queue it for attempted resync
+					rundownSegments.hidden.push(segment._id)
+					break
+				}
 			}
 		}
 	}
 
 	// We need to run this outside of the current lock, and within an ingest lock, so defer to the work queue
-	for (const [rundownId, candidateSegmentIds] of removeSegmentsFromRundowns) {
+	for (const [rundownId, candidateSegmentIds] of alterSegmentsFromRundowns) {
 		const rundown = cache.Rundowns.findOne(rundownId)
 		if (rundown?.restoredFromSnapshotId) {
 			// This is not valid as the rundownId won't match the externalId, so ingest will fail
@@ -516,17 +527,47 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 						rundown.studioId,
 						rundown.externalId,
 						(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
-						async (ingestCache) => {
+						async (ingestCache, ingestRundown) => {
 							// Find the segments that are still orphaned (in case they have resynced before this executes)
 							// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
-							const stillOrphanedSegments = ingestCache.Segments.findFetch(
-								(s) =>
-									s.orphaned === SegmentOrphanedReason.DELETED && candidateSegmentIds.includes(s._id)
+							const stillOrphanedSegments = ingestCache.Segments.findFetch((s) => !!s.orphaned)
+
+							const stillHiddenSegments = stillOrphanedSegments
+								.filter(
+									(s) =>
+										s.orphaned === SegmentOrphanedReason.HIDDEN &&
+										candidateSegmentIds.hidden.includes(s._id)
+								)
+								.map((s) => s._id)
+
+							const stillDeletedSegments = stillOrphanedSegments
+								.filter(
+									(s) =>
+										s.orphaned === SegmentOrphanedReason.DELETED &&
+										candidateSegmentIds.deleted.includes(s._id)
+								)
+								.map((s) => s._id)
+
+							const hiddenSegmentsExternalIds = cache.Segments.findFetch({
+								_id: { $in: stillHiddenSegments },
+							}).map((s) => s.externalId)
+
+							const hiddenIngestSegments = ingestRundown?.segments?.filter((s) =>
+								hiddenSegmentsExternalIds.includes(s.externalId)
 							)
 
+							const changedHiddenSegments: SegmentId[] = []
+
+							if (hiddenIngestSegments) {
+								for (const s of hiddenIngestSegments) {
+									const changes = await updateSegmentFromIngestData(ingestCache, s, false)
+									changedHiddenSegments.push(...(changes?.changedSegmentIds || []))
+								}
+							}
+
 							return {
-								changedSegmentIds: [],
-								removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
+								changedSegmentIds: changedHiddenSegments,
+								removedSegmentIds: stillDeletedSegments,
 								renamedSegments: new Map(),
 
 								removeRundown: false,

@@ -26,6 +26,7 @@ import { Pieces } from '../../../../lib/collections/Pieces'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import { literal } from '../../../../lib/lib'
 import { Settings } from '../../../../lib/Settings'
+import { waitAllQueued } from '../../../codeControl'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1574,6 +1575,273 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 				// the pieces should have been copied
 				expect(PieceInstances.find({ partInstanceId: nextPartInstance._id }).fetch()).not.toHaveLength(0)
+			}
+		} finally {
+			// forcefully 'deactivate' the playlist to allow for cleanup to happen
+			RundownPlaylists.update({}, { $unset: { activationId: 1 } }, { multi: true })
+		}
+	})
+
+	testInFiber('prevent hiding current segment', async () => {
+		try {
+			// Cleanup any rundowns / playlists
+			await Promise.all(
+				RundownPlaylists.find()
+					.fetch()
+					.map(async (p) => removeRundownPlaylistFromDb(p))
+			)
+
+			Settings.preserveUnsyncedPlayingSegmentContents = true
+			const rundownData: IngestRundown = {
+				externalId: externalId,
+				name: 'MyMockRundown',
+				type: 'mock',
+				segments: [
+					{
+						externalId: 'segment0',
+						name: 'Segment 0',
+						rank: 0,
+						payload: {},
+						parts: [
+							{
+								externalId: 'part0',
+								name: 'Part 0',
+								rank: 0,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece0',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+							{
+								externalId: 'part1',
+								name: 'Part 1',
+								rank: 1,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece1',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+						],
+					},
+					{
+						externalId: 'segment1',
+						name: 'Segment 1',
+						rank: 1,
+						payload: {},
+						parts: [
+							{
+								externalId: 'part2',
+								name: 'Part 2',
+								rank: 0,
+							},
+						],
+					},
+				],
+			}
+
+			// Preparation: set up rundown
+			expect(Rundowns.findOne()).toBeFalsy()
+			Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
+			const rundown = Rundowns.findOne() as Rundown
+			expect(rundown).toMatchObject({
+				externalId: rundownData.externalId,
+			})
+			const playlist = rundown.getRundownPlaylist()
+			expect(playlist).toBeTruthy()
+
+			const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
+			const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+
+			const segments = getRundown().getSegments()
+			const parts = getRundown().getParts()
+
+			expect(segments).toHaveLength(2)
+			expect(parts).toHaveLength(3)
+			expect(Pieces.find({ startRundownId: rundown._id }).fetch()).toHaveLength(2)
+
+			// Activate the rundown
+			await ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
+			expect(getPlaylist().currentPartInstanceId).toBeNull()
+
+			// Take the first part
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
+			expect(getPlaylist().currentPartInstanceId).not.toBeNull()
+
+			{
+				// Check which part is current
+				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+			}
+
+			// Hide segment 1, while not on air
+			const updatedSegment1Data: IngestSegment = rundownData.segments[1]
+			updatedSegment1Data.payload.hidden = true
+
+			Meteor.call(
+				PeripheralDeviceAPIMethods.dataSegmentUpdate,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				updatedSegment1Data
+			)
+			{
+				const segments = getRundown().getSegments()
+
+				expect(segments).toHaveLength(2)
+
+				const segment1 = segments.find((s) => s.externalId === updatedSegment1Data.externalId)
+				expect(segment1?.isHidden).toBeTruthy()
+				expect(segment1?.orphaned).toBeFalsy()
+			}
+
+			// Un-hide segment 1
+			updatedSegment1Data.payload.hidden = false
+
+			Meteor.call(
+				PeripheralDeviceAPIMethods.dataSegmentUpdate,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				updatedSegment1Data
+			)
+			{
+				const segments = getRundown().getSegments()
+				expect(segments).toHaveLength(2)
+				const segment1 = segments.find((s) => s.externalId === updatedSegment1Data.externalId)
+				expect(segment1?.isHidden).toBeFalsy()
+				expect(segment1?.orphaned).toBeFalsy()
+			}
+
+			// Replace segment0 with empty hidden segment, while on air
+			const updatedSegment0Data: IngestSegment = rundownData.segments[0]
+			updatedSegment0Data.payload.hidden = true
+			const oldParts = updatedSegment0Data.parts
+			updatedSegment0Data.parts = []
+
+			Meteor.call(
+				PeripheralDeviceAPIMethods.dataSegmentUpdate,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				updatedSegment0Data
+			)
+			{
+				// Check the segment has been preserved
+				const segments = getRundown().getSegments()
+				const parts2 = getRundown().getParts()
+
+				expect(segments).toHaveLength(2)
+
+				const segment0 = segments.find((s) => s.externalId === updatedSegment0Data.externalId)
+				expect(segment0?.isHidden).toBeFalsy()
+				expect(segment0?.orphaned).toEqual(SegmentOrphanedReason.HIDDEN)
+
+				expect(parts2).toHaveLength(3)
+				expect(parts2.find((p) => p.externalId === 'part1')).toBeTruthy()
+
+				expect(Pieces.find({ startRundownId: rundown._id }).fetch()).toHaveLength(2)
+			}
+
+			{
+				// Check the partInstance
+				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+			}
+
+			// Unhide the segment while on air
+			updatedSegment0Data.parts = oldParts
+			delete updatedSegment0Data.payload['hidden']
+
+			Meteor.call(
+				PeripheralDeviceAPIMethods.dataSegmentUpdate,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				updatedSegment0Data
+			)
+			{
+				// Check the segment is still preserved and un-hidden
+				const segments2 = getRundown().getSegments()
+				const parts2 = getRundown().getParts()
+
+				expect(segments2).toHaveLength(2)
+				const segment0 = segments2.find((s) => s.externalId === updatedSegment0Data.externalId)
+				expect(segment0?.isHidden).toBeFalsy()
+				expect(segment0?.orphaned).toBeFalsy()
+
+				expect(parts2).toHaveLength(3)
+				expect(parts2.find((p) => p.externalId === 'part1')).toBeTruthy()
+
+				expect(Pieces.find({ startRundownId: rundown._id }).fetch()).toHaveLength(2)
+			}
+			{
+				// Check the partInstance
+				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+			}
+
+			// Replace segment0 with empty hidden segment again
+			updatedSegment0Data.payload.hidden = true
+			updatedSegment0Data.parts = []
+
+			Meteor.call(
+				PeripheralDeviceAPIMethods.dataSegmentUpdate,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				updatedSegment0Data
+			)
+
+			// Take Segment 1
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
+			expect(getPlaylist().currentPartInstanceId).not.toBeNull()
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id)
+			expect(getPlaylist().currentPartInstanceId).not.toBeNull()
+
+			await waitAllQueued() // So that defers in cleanups had time to run.
+
+			{
+				// Check the partInstance
+				const selectedInstances = getPlaylist().getSelectedPartInstances()
+				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part2')
+			}
+			{
+				const segments2 = getRundown().getSegments()
+				const parts2 = getRundown().getParts()
+
+				// Check if segment 0 was hidden
+				expect(segments2).toHaveLength(2)
+				const segment0 = segments2.find((s) => s.externalId === updatedSegment0Data.externalId)
+				expect(segment0?.isHidden).toBeTruthy()
+				expect(segment0?.orphaned).toBeFalsy()
+
+				expect(parts2).toHaveLength(1)
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen

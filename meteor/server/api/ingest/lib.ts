@@ -135,7 +135,7 @@ export function canSegmentBeUpdated(
 	}
 
 	if (!segment) return true
-	if (segment.orphaned && !isCreateAction) {
+	if (segment.orphaned === 'deleted' && !isCreateAction) {
 		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
 		return false
 	}
