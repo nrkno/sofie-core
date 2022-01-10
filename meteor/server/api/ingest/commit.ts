@@ -41,9 +41,9 @@ import { updateExpectedPackagesOnRundown } from './expectedPackages'
 import { Studio } from '../../../lib/collections/Studios'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { shouldRemoveOrphanedPartInstance } from './shouldRemoveOrphanedPartInstance'
-import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { Pieces } from '../../../lib/collections/Pieces'
+import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -245,9 +245,17 @@ export async function CommitIngestOperation(
 								// Restore old data
 								const oldParts = Parts.find({ segmentId }).fetch()
 								const oldPartIds = oldParts.map((part) => part._id)
-								const oldPieces = Pieces.find({ startPartId: { $in: oldPartIds } }).fetch()
-								const oldAdLibPieces = AdLibPieces.find({ partId: { $in: oldPartIds } }).fetch()
-								const oldAdLibActions = AdLibActions.find({ partId: { $in: oldPartIds } }).fetch()
+
+								const oldPiecesPs = Pieces.findFetchAsync({ startPartId: { $in: oldPartIds } })
+								const oldAdLibPiecesPs = AdLibPieces.findFetchAsync({ partId: { $in: oldPartIds } })
+								const oldAdLibActionsPs = AdLibActions.findFetchAsync({ partId: { $in: oldPartIds } })
+								const oldDataPs: [Promise<Piece[]>, Promise<AdLibPiece[]>, Promise<AdLibAction[]>] = [
+									oldPiecesPs,
+									oldAdLibPiecesPs,
+									oldAdLibActionsPs,
+								]
+
+								const [oldPieces, oldAdLibPieces, oldAdLibActions] = await Promise.all(oldDataPs)
 
 								for (const part of oldParts) {
 									ingestCache.Parts.insert(part)
