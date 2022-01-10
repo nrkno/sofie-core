@@ -7,7 +7,12 @@ import { getRundown } from './lib'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { CommitIngestData } from './lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
-import { SegmentId, SegmentOrphanedReason } from '../../../lib/collections/Segments'
+import {
+	orphanedHiddenSegmentPropertiesToPreserve,
+	SegmentId,
+	SegmentOrphanedReason,
+	Segments,
+} from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
 import { isTooCloseToAutonext, LOW_PRIO_DEFER_TIME } from '../playout/lib'
 import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -205,7 +210,8 @@ export async function CommitIngestOperation(
 					// Do the segment removals
 					if (data.removedSegmentIds.length > 0 || segmentsChangedToHidden.length) {
 						const purgeSegmentIds = new Set<SegmentId>()
-						const orphanSegmentIds = new Set<SegmentId>()
+						const orphanDeletedSegmentIds = new Set<SegmentId>()
+						const orphanHiddenSegmentIds = new Set<SegmentId>()
 						for (const segmentId of data.removedSegmentIds) {
 							if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
 								purgeSegmentIds.add(segmentId)
@@ -213,7 +219,7 @@ export async function CommitIngestOperation(
 								logger.warn(
 									`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`
 								)
-								orphanSegmentIds.add(segmentId)
+								orphanDeletedSegmentIds.add(segmentId)
 							}
 						}
 
@@ -260,14 +266,20 @@ export async function CommitIngestOperation(
 							if (segment?.document.isHidden) {
 								if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
 									logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
-									ingestCache.Segments.update(segmentId, {
-										$set: { isHidden: false },
+									const oldSegment = Segments.findOne(segmentId, {
+										fields: orphanedHiddenSegmentPropertiesToPreserve,
 									})
+									ingestCache.Segments.update(segmentId, {
+										$set: {
+											...oldSegment,
+											isHidden: false,
+										},
+									})
+									orphanHiddenSegmentIds.add(segmentId)
 								} else {
 									// This ensures that it doesn't accidently get played while hidden
 									ingestCache.Parts.update({ segmentId }, { $set: { invalid: true } })
 								}
-								orphanSegmentIds.add(segmentId)
 							} else if (ingestCache.Parts.findFetch({ segmentId }).length === 0) {
 								// No parts in segment, hide it
 								ingestCache.Segments.update(segmentId, {
@@ -278,12 +290,19 @@ export async function CommitIngestOperation(
 
 						const emptySegmentIds = Settings.preserveUnsyncedPlayingSegmentContents
 							? purgeSegmentIds
-							: new Set([...purgeSegmentIds.values(), ...orphanSegmentIds.values()])
+							: new Set([...purgeSegmentIds.values(), ...orphanDeletedSegmentIds.values()])
 						removeSegmentContents(ingestCache, emptySegmentIds)
-						if (orphanSegmentIds.size) {
-							ingestCache.Segments.update((s) => orphanSegmentIds.has(s._id), {
+						if (orphanDeletedSegmentIds.size) {
+							ingestCache.Segments.update((s) => orphanDeletedSegmentIds.has(s._id), {
 								$set: {
 									orphaned: SegmentOrphanedReason.DELETED,
+								},
+							})
+						}
+						if (orphanHiddenSegmentIds.size) {
+							ingestCache.Segments.update((s) => orphanHiddenSegmentIds.has(s._id), {
+								$set: {
+									orphaned: SegmentOrphanedReason.HIDDEN,
 								},
 							})
 						}
