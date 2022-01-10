@@ -272,10 +272,10 @@ export async function CommitIngestOperation(
 							}
 						}
 
-						// Protect live segment from being hidden
 						for (const [segmentId, segment] of ingestCache.Segments.documents) {
 							if (segment?.document.isHidden) {
 								if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+									// Protect live segment from being hidden
 									logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
 									ingestCache.Segments.update(segmentId, {
 										$set: { isHidden: false },
