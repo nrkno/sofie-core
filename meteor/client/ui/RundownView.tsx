@@ -299,6 +299,7 @@ const TimingDisplay = withTranslation()(
 								expectedEnd={expectedEnd}
 								expectedDuration={expectedDuration}
 								endLabel={this.props.layout?.plannedEndText}
+								hideDiff={this.props.rundownCount > 1} // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 								rundownCount={this.props.rundownCount}
 							/>
 						) : null}
@@ -1477,8 +1478,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
+						activationId: 1,
 					},
-				}) as Pick<RundownPlaylist, '_id' | 'getRundowns'> | undefined
+				}) as Pick<RundownPlaylist, '_id' | 'getRundowns' | 'activationId'> | undefined
 				if (playlist) {
 					const rundowns = playlist.getRundowns(undefined, {
 						fields: {
@@ -1537,6 +1539,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						rundownId: {
 							$in: rundownIDs,
 						},
+						playlistActivationId: playlist.activationId,
 						reset: {
 							$ne: true,
 						},
