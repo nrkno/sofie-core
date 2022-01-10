@@ -9,11 +9,6 @@ export class RemoveOrphanedPartInstanceContext
 	extends RundownUserContext
 	implements IRemoveOrphanedPartInstanceContext
 {
-	/**
-	 * Set to true if blueprints have requested that the instance be removed
-	 */
-	private removeInstance: boolean
-
 	constructor(
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<Studio>,
@@ -21,13 +16,5 @@ export class RemoveOrphanedPartInstanceContext
 		rundown: ReadonlyDeep<Rundown>
 	) {
 		super(contextInfo, studio, showStyleCompound, rundown)
-	}
-
-	removePartInstance() {
-		this.removeInstance = true
-	}
-
-	public instanceIsRemoved(): boolean {
-		return this.removeInstance
 	}
 }

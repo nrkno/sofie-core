@@ -44,8 +44,12 @@ export async function shouldRemoveOrphanedPartInstance(
 		rundown
 	)
 
+	let shouldRemoveInstance = false
 	try {
-		blueprint.shouldRemoveOrphanedPartInstance(orphanedPartInstanceContext, clone(existingResultPartInstance))
+		shouldRemoveInstance = blueprint.shouldRemoveOrphanedPartInstance(
+			orphanedPartInstanceContext,
+			clone(existingResultPartInstance)
+		)
 	} catch (e) {
 		logger.error(e)
 	}
@@ -74,10 +78,7 @@ export async function shouldRemoveOrphanedPartInstance(
 		})
 	}
 
-	if (
-		orphanedPartInstanceContext.instanceIsRemoved() &&
-		!isTooCloseToAutonext(playlistPartInstances.currentPartInstance)
-	) {
+	if (shouldRemoveInstance && !isTooCloseToAutonext(playlistPartInstances.currentPartInstance)) {
 		cache.PartInstances.update(orphanedPartInstance._id, {
 			$set: {
 				reset: true,

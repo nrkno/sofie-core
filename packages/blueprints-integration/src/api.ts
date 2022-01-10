@@ -156,7 +156,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	shouldRemoveOrphanedPartInstance?: (
 		context: IRemoveOrphanedPartInstanceContext,
 		partInstance: BlueprintRemoveOrphanedPartInstance
-	) => void
+	) => boolean
 
 	/** Execute an action defined by an IBlueprintActionManifest */
 	executeAction?: (
