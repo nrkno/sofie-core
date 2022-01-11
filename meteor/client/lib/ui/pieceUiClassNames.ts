@@ -12,10 +12,10 @@ export function pieceUiClassNames(
 	partId?: PartId,
 	highlight?: boolean,
 	relative?: boolean,
+	elementWidth?: number,
 	uiState?: {
 		leftAnchoredWidth: number
 		rightAnchoredWidth: number
-		elementWidth: number
 	}
 ): string {
 	const typeClass = layerType ? RundownUtils.getSourceLayerClassName(layerType) : ''
@@ -34,11 +34,12 @@ export function pieceUiClassNames(
 			innerPiece.transitions.outTransition &&
 			(innerPiece.transitions.outTransition.duration || 0) > 0,
 
-		'hide-overflow-labels': uiState
-			? uiState.leftAnchoredWidth > 0 &&
-			  uiState.rightAnchoredWidth > 0 &&
-			  uiState.leftAnchoredWidth + uiState.rightAnchoredWidth > uiState.elementWidth
-			: undefined,
+		'hide-overflow-labels':
+			uiState && elementWidth
+				? uiState.leftAnchoredWidth > 0 &&
+				  uiState.rightAnchoredWidth > 0 &&
+				  uiState.leftAnchoredWidth + uiState.rightAnchoredWidth > elementWidth
+				: undefined,
 
 		'super-infinite':
 			innerPiece.lifespan !== PieceLifespan.WithinPart &&

@@ -278,7 +278,6 @@ const TimingDisplay = withTranslation()(
 								expectedEnd={expectedEnd}
 								expectedDuration={expectedDuration}
 								endLabel={this.props.layout?.plannedEndText}
-								hideDiff={this.props.rundownCount > 1} // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
 								rundownCount={this.props.rundownCount}
 							/>
 						) : null}
@@ -916,7 +915,7 @@ const RundownHeader = withTranslation()(
 		render() {
 			const { t } = this.props
 			return (
-				<React.Fragment>
+				<>
 					<Escape to="document">
 						<ContextMenu id="rundown-context-menu">
 							<div className="react-contextmenu-label">{this.props.playlist && this.props.playlist.name}</div>
@@ -986,7 +985,7 @@ const RundownHeader = withTranslation()(
 								playlist={this.props.playlist}
 								oneMinuteBeforeAction={this.resetAndActivateRundown}
 							/>
-							<div className="row first-row super-dark" style={{ display: 'flex' }}>
+							<div className="row flex-row first-row super-dark">
 								<div className="flex-col left horizontal-align-left">
 									<div className="badge mod">
 										<Tooltip
@@ -1015,7 +1014,7 @@ const RundownHeader = withTranslation()(
 										onSelectPiece={this.selectPiece}
 									/>
 								) : (
-									<React.Fragment>
+									<>
 										<TimingDisplay
 											rundownPlaylist={this.props.playlist}
 											currentRundown={this.props.currentRundown}
@@ -1028,7 +1027,7 @@ const RundownHeader = withTranslation()(
 											rundownIds={this.props.rundownIds}
 											firstRundown={this.props.firstRundown}
 										/>
-									</React.Fragment>
+									</>
 								)}
 								<div className="flex-col right horizontal-align-right">
 									<div className="links mod close">
@@ -1049,7 +1048,7 @@ const RundownHeader = withTranslation()(
 					>
 						<p>{this.state.errorMessage}</p>
 					</ModalDialog>
-				</React.Fragment>
+				</>
 			)
 		}
 	}
@@ -1447,89 +1446,88 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						studioId: 1,
 					},
 				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
-				if (playlist) {
-					this.subscribe(PubSub.studios, {
-						_id: playlist.studioId,
-					})
-					this.subscribe(PubSub.buckets, {
-						studioId: playlist.studioId,
-					})
-					// TODO: This is a hack, which should be replaced by something more clever, like in withMediaObjectStatus()
-					this.subscribe(PubSub.packageContainerPackageStatuses, playlist.studioId)
-				}
+				if (!playlist) return
+
+				this.subscribe(PubSub.studios, {
+					_id: playlist.studioId,
+				})
+				this.subscribe(PubSub.buckets, {
+					studioId: playlist.studioId,
+				})
+				// TODO: This is a hack, which should be replaced by something more clever, like in withMediaObjectStatus()
+				this.subscribe(PubSub.packageContainerPackageStatuses, playlist.studioId)
 			})
 
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
-						activationId: 1,
 					},
 				}) as Pick<RundownPlaylist, '_id' | 'getRundowns' | 'activationId'> | undefined
-				if (playlist) {
-					const rundowns = playlist.getRundowns(undefined, {
-						fields: {
-							_id: 1,
-							showStyleBaseId: 1,
-							showStyleVariantId: 1,
-						},
-					}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
-					this.subscribe(PubSub.showStyleBases, {
-						_id: {
-							$in: rundowns.map((i) => i.showStyleBaseId),
-						},
-					})
-					this.subscribe(PubSub.showStyleVariants, {
-						_id: {
-							$in: rundowns.map((i) => i.showStyleVariantId),
-						},
-					})
-					this.subscribe(PubSub.rundownLayouts, {
-						showStyleBaseId: {
-							$in: rundowns.map((i) => i.showStyleBaseId),
-						},
-					})
-					const rundownIDs = rundowns.map((i) => i._id)
-					this.subscribe(PubSub.segments, {
-						rundownId: {
-							$in: rundownIDs,
-						},
-					})
-					this.subscribe(PubSub.adLibPieces, {
-						rundownId: {
-							$in: rundownIDs,
-						},
-					})
-					this.subscribe(PubSub.rundownBaselineAdLibPieces, {
-						rundownId: {
-							$in: rundownIDs,
-						},
-					})
-					this.subscribe(PubSub.adLibActions, {
-						rundownId: {
-							$in: rundownIDs,
-						},
-					})
-					this.subscribe(PubSub.rundownBaselineAdLibActions, {
-						rundownId: {
-							$in: rundownIDs,
-						},
-					})
-					this.subscribe(PubSub.parts, {
-						rundownId: {
-							$in: rundownIDs,
-						},
-					})
-					this.subscribe(PubSub.partInstances, {
-						rundownId: {
-							$in: rundownIDs,
-						},
-						playlistActivationId: playlist.activationId,
-						reset: {
-							$ne: true,
-						},
-					})
-				}
+				if (!playlist) return
+
+				const rundowns = playlist.getRundowns(undefined, {
+					fields: {
+						_id: 1,
+						showStyleBaseId: 1,
+						showStyleVariantId: 1,
+					},
+				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId' | 'showStyleVariantId'>[]
+				this.subscribe(PubSub.showStyleBases, {
+					_id: {
+						$in: rundowns.map((i) => i.showStyleBaseId),
+					},
+				})
+				this.subscribe(PubSub.showStyleVariants, {
+					_id: {
+						$in: rundowns.map((i) => i.showStyleVariantId),
+					},
+				})
+				this.subscribe(PubSub.rundownLayouts, {
+					showStyleBaseId: {
+						$in: rundowns.map((i) => i.showStyleBaseId),
+					},
+				})
+				const rundownIDs = rundowns.map((i) => i._id)
+				this.subscribe(PubSub.segments, {
+					rundownId: {
+						$in: rundownIDs,
+					},
+				})
+				this.subscribe(PubSub.adLibPieces, {
+					rundownId: {
+						$in: rundownIDs,
+					},
+				})
+				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+					rundownId: {
+						$in: rundownIDs,
+					},
+				})
+				this.subscribe(PubSub.adLibActions, {
+					rundownId: {
+						$in: rundownIDs,
+					},
+				})
+				this.subscribe(PubSub.rundownBaselineAdLibActions, {
+					rundownId: {
+						$in: rundownIDs,
+					},
+				})
+				this.subscribe(PubSub.parts, {
+					rundownId: {
+						$in: rundownIDs,
+					},
+				})
+				this.subscribe(PubSub.partInstances, {
+					rundownId: {
+						$in: rundownIDs,
+					},
+					playlistActivationId: playlist.activationId,
+					reset: {
+						$ne: true,
+					},
+				})
 			})
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1704,11 +1702,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				})
 			}
 
-			if (
-				typeof this.props.playlist !== typeof prevProps.playlist ||
-				(this.props.playlist || { name: '' }).name !== (prevProps.playlist || { name: '' }).name
-			) {
-				if (this.props.playlist && this.props.playlist.name) {
+			if (this.props.playlist?.name !== prevProps.playlist?.name) {
+				if (this.props.playlist?.name) {
 					documentTitle.set(this.props.playlist.name)
 				} else {
 					documentTitle.set(null)
@@ -2418,8 +2413,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				undefined
 
 			return (
-				<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
-					<StudioContext.Provider value={this.props.studio}>
+				<RundownTimingProvider playlist={playlist} defaultDuration={Settings.defaultDisplayDuration}>
+					<StudioContext.Provider value={studio}>
 						<div
 							className={ClassNames('rundown-view', {
 								'notification-center-open': this.state.isNotificationsCenterOpen !== undefined,
@@ -2429,6 +2424,28 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							onWheelCapture={this.onWheel}
 							onContextMenu={this.onContextMenuTop}
 						>
+							{this.renderSegmentsList()}
+							<ErrorBoundary>
+								{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
+									<AfterBroadcastForm playlist={playlist} />
+								)}
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<RundownHeader
+									playlist={playlist}
+									studio={studio}
+									rundownIds={this.props.rundowns.map((r) => r._id)}
+									firstRundown={this.props.rundowns[0]}
+									onActivate={this.onActivate}
+									studioMode={this.state.studioMode}
+									onRegisterHotkeys={this.onRegisterHotkeys}
+									inActiveRundownView={this.props.inActiveRundownView}
+									currentRundown={this.state.currentRundown || this.props.rundowns[0]}
+									layout={this.state.rundownHeaderLayout}
+									showStyleBase={showStyleBase}
+									showStyleVariant={showStyleVariant}
+								/>
+							</ErrorBoundary>
 							<ErrorBoundary>
 								{this.state.studioMode && !Settings.disableBlurBorder && (
 									<KeyboardFocusIndicator>
@@ -2459,12 +2476,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							<ErrorBoundary>
 								<SorensenContext.Consumer>
 									{(sorensen) =>
-										sorensen &&
-										this.props.studio &&
-										this.props.showStyleBase && (
+										sorensen && (
 											<TriggersHandler
 												rundownPlaylistId={this.props.rundownPlaylistId}
-												showStyleBaseId={this.props.showStyleBase._id}
+												showStyleBaseId={showStyleBase._id}
 												currentRundownId={this.props.currentRundown?._id || null}
 												currentPartId={this.props.currentPartInstance?.part._id || null}
 												nextPartId={this.props.nextPartInstance?.part._id || null}
@@ -2556,28 +2571,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								)}
 							</ErrorBoundary>
 							<ErrorBoundary>
-								<RundownHeader
-									playlist={playlist}
-									studio={studio}
-									rundownIds={this.props.rundowns.map((r) => r._id)}
-									firstRundown={this.props.rundowns[0]}
-									onActivate={this.onActivate}
-									studioMode={this.state.studioMode}
-									onRegisterHotkeys={this.onRegisterHotkeys}
-									inActiveRundownView={this.props.inActiveRundownView}
-									currentRundown={this.state.currentRundown || this.props.rundowns[0]}
-									layout={this.state.rundownHeaderLayout}
-									showStyleBase={showStyleBase}
-									showStyleVariant={showStyleVariant}
-								/>
-							</ErrorBoundary>
-							<ErrorBoundary>
 								<NoraPreviewRenderer />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<SegmentContextMenu
 									contextMenuContext={this.state.contextMenuContext}
-									playlist={this.props.playlist}
+									playlist={playlist}
 									onSetNext={this.onSetNext}
 									onSetNextSegment={this.onSetNextSegment}
 									studioMode={this.state.studioMode}
@@ -2588,8 +2587,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								{this.state.isClipTrimmerOpen &&
 									this.state.selectedPiece &&
 									RundownUtils.isPieceInstance(this.state.selectedPiece) &&
-									this.props.studio &&
-									this.props.playlist &&
 									(selectedPieceRundown === undefined ? (
 										<ModalDialog
 											onAccept={() => this.setState({ selectedPiece: undefined })}
@@ -2609,12 +2606,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											onClose={() => this.setState({ isClipTrimmerOpen: false })}
 										/>
 									))}
-							</ErrorBoundary>
-							{this.renderSegmentsList()}
-							<ErrorBoundary>
-								{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
-									<AfterBroadcastForm playlist={playlist} />
-								)}
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<PointerLockCursor />
@@ -2653,15 +2644,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						{
 							// USE IN CASE OF DEBUGGING EMERGENCY
 							/* getDeveloperMode() && <div id='debug-console' className='debug-console' style={{
-					background: 'rgba(255,255,255,0.7)',
-					color: '#000',
-					position: 'fixed',
-					top: '0',
-					right: '0',
-					zIndex: 10000,
-					pointerEvents: 'none'
-				}}>
-				</div> */
+							background: 'rgba(255,255,255,0.7)',
+							color: '#000',
+							position: 'fixed',
+							top: '0',
+							right: '0',
+							zIndex: 10000,
+							pointerEvents: 'none'
+						}}>
+						</div> */
 						}
 					</StudioContext.Provider>
 				</RundownTimingProvider>
