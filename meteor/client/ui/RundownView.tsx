@@ -1679,17 +1679,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 
 			if (
-				this.props.playlist &&
-				(prevProps.playlist === undefined || this.props.playlist._id !== prevProps.playlist._id)
-			) {
-				this.setState({
-					segmentViewModes: this.props.playlist?._id
-						? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
-						: {},
-				})
-			}
-
-			if (
 				typeof this.props.playlist !== typeof prevProps.playlist ||
 				this.props.playlist?._id !== prevProps.playlist?._id ||
 				!!this.props.playlist?.activationId !== !!prevProps.playlist?.activationId ||
@@ -1700,6 +1689,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				} else {
 					window.removeEventListener('beforeunload', this.onBeforeUnload)
 				}
+			}
+
+			if (
+				this.props.playlist &&
+				(prevProps.playlist === undefined || this.props.playlist._id !== prevProps.playlist._id)
+			) {
+				this.setState({
+					segmentViewModes: this.props.playlist?._id
+						? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
+						: {},
+				})
 			}
 
 			if (
