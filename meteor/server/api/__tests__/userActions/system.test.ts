@@ -1,22 +1,17 @@
-import { Meteor } from 'meteor/meteor'
 import { ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
+import { MeteorCall } from '../../../../lib/api/methods'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { protectString } from '../../../../lib/lib'
 import {
 	DefaultEnvironment,
 	setupDefaultStudioEnvironment,
 	setupMockPeripheralDevice,
 } from '../../../../__mocks__/helpers/database'
+import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 
 require('../../userActions') // include in order to create the Meteor methods needed
-
-namespace UserActionAPI {
-	// Using our own method definition, to catch external API changes
-	export enum methods {
-		'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
-	}
-}
 
 describe('User Actions - Disable Peripheral SubDevice', () => {
 	let env: DefaultEnvironment
@@ -66,10 +61,10 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 		)
 		jest.resetAllMocks()
 	})
-	testInFiber('disable existing subDevice', () => {
-		expect(
-			Meteor.call(UserActionAPI.methods.disablePeripheralSubDevice, 'e', pDevice._id, mockSubDeviceId, true)
-		).toMatchObject({
+	testInFiber('disable existing subDevice', async () => {
+		await expect(
+			MeteorCall.userAction.disablePeripheralSubDevice('e', pDevice._id, mockSubDeviceId, true)
+		).resolves.toMatchObject({
 			success: 200,
 		})
 
@@ -78,11 +73,11 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 		expect(peripheralDevice?.settings).toBeDefined()
 		expect(peripheralDevice?.settings && peripheralDevice?.settings['devices'][mockSubDeviceId].disable).toBe(true)
 	})
-	testInFiber('enable existing subDevice', () => {
+	testInFiber('enable existing subDevice', async () => {
 		{
-			expect(
-				Meteor.call(UserActionAPI.methods.disablePeripheralSubDevice, 'e', pDevice._id, mockSubDeviceId, true)
-			).toMatchObject({
+			await expect(
+				MeteorCall.userAction.disablePeripheralSubDevice('e', pDevice._id, mockSubDeviceId, true)
+			).resolves.toMatchObject({
 				success: 200,
 			})
 
@@ -95,9 +90,9 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 		}
 
 		{
-			expect(
-				Meteor.call(UserActionAPI.methods.disablePeripheralSubDevice, 'e', pDevice._id, mockSubDeviceId, false)
-			).toMatchObject({
+			await expect(
+				MeteorCall.userAction.disablePeripheralSubDevice('e', pDevice._id, mockSubDeviceId, false)
+			).resolves.toMatchObject({
 				success: 200,
 			})
 
@@ -109,33 +104,22 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			)
 		}
 	})
-	testInFiber('edit missing subDevice throws an error', () => {
-		{
-			expect(() =>
-				Meteor.call(
-					UserActionAPI.methods.disablePeripheralSubDevice,
-					'e',
-					pDevice._id,
-					'nonExistentSubDevice',
-					true
-				)
-			).toThrowError(/is not configured/)
-		}
+	testInFiber('edit missing subDevice throws an error', async () => {
+		await expect(
+			MeteorCall.userAction.disablePeripheralSubDevice('e', pDevice._id, 'nonExistentSubDevice', true)
+		).rejects.toMatchToString(/is not configured/)
 	})
-	testInFiber('edit missing device throws an error', () => {
-		{
-			expect(() =>
-				Meteor.call(
-					UserActionAPI.methods.disablePeripheralSubDevice,
-					'e',
-					'nonExistentDevice',
-					'nonExistentSubDevice',
-					true
-				)
-			).toThrowError(/not found/)
-		}
+	testInFiber('edit missing device throws an error', async () => {
+		await expect(
+			MeteorCall.userAction.disablePeripheralSubDevice(
+				'e',
+				protectString('nonExistentDevice'),
+				'nonExistentSubDevice',
+				true
+			)
+		).rejects.toMatchToString(/not found/)
 	})
-	testInFiber("edit device that doesn't support the disable property throws an error", () => {
+	testInFiber("edit device that doesn't support the disable property throws an error", async () => {
 		const pDeviceUnsupported = setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 			PeripheralDeviceAPI.DeviceType.PLAYOUT,
@@ -175,16 +159,8 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			}
 		)
 
-		{
-			expect(() =>
-				Meteor.call(
-					UserActionAPI.methods.disablePeripheralSubDevice,
-					'e',
-					pDeviceUnsupported._id,
-					mockSubDeviceId,
-					true
-				)
-			).toThrowError(/does not support the disable property/)
-		}
+		await expect(
+			MeteorCall.userAction.disablePeripheralSubDevice('e', pDeviceUnsupported._id, mockSubDeviceId, true)
+		).rejects.toMatchToString(/does not support the disable property/)
 	})
 })
