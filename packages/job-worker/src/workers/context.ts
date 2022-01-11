@@ -296,8 +296,7 @@ export class JobContextImpl implements JobContext {
 			// Load the document
 			blueprint = await loadShowStyleBlueprint(this.directCollections, showStyle).catch(() => undefined)
 
-			// Freeze and cache it
-			blueprint = deepFreeze(blueprint)
+			// cache it. It is frozen by the loader
 			this.cacheData.showStyleBlueprints.set(showStyle.blueprintId, blueprint ?? null)
 		}
 
@@ -337,7 +336,7 @@ export class JobContextImpl implements JobContext {
 async function loadShowStyleBlueprint(
 	context: IDirectCollections,
 	showStyleBase: ReadonlyDeep<DBShowStyleBase>
-): Promise<WrappedShowStyleBlueprint> {
+): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>> {
 	if (!showStyleBase.blueprintId) {
 		throw new Error(`ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
 	}
@@ -355,10 +354,10 @@ async function loadShowStyleBlueprint(
 		)
 	}
 
-	return {
+	return Object.freeze({
 		blueprintId: showStyleBase.blueprintId,
 		blueprint: blueprintManifest,
-	}
+	})
 }
 
 class PlaylistLockImpl extends PlaylistLock {

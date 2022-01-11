@@ -8,6 +8,8 @@ import {
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { VM } from 'vm2'
 import { IDirectCollections } from '../db'
+import { ReadonlyDeep } from 'type-fest'
+// import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 
 export interface WrappedSystemBlueprint {
 	blueprintId: BlueprintId
@@ -43,7 +45,7 @@ export interface WrappedShowStyleBlueprint {
 export async function loadBlueprintById(
 	collections: IDirectCollections,
 	blueprintId: BlueprintId
-): Promise<SomeBlueprintManifest | undefined> {
+): Promise<ReadonlyDeep<SomeBlueprintManifest> | undefined> {
 	const blueprint = await collections.Blueprints.findOne(blueprintId)
 	if (!blueprint) return undefined
 
@@ -70,6 +72,7 @@ export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 		sandbox: {},
 	})
 
+	// TODO: Worker - freeze the object inside the vm?
 	const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
 	const manifest: SomeBlueprintManifest = entry.default
 

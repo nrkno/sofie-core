@@ -7,8 +7,10 @@ import {
 	IStudioUserContext,
 	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
+import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
+import { ReadonlyDeep } from 'type-fest'
 
-export const DefaultStudioBlueprint: StudioBlueprintManifest = {
+export const DefaultStudioBlueprint: ReadonlyDeep<StudioBlueprintManifest> = deepFreeze({
 	/** Version of the blueprint */
 	blueprintVersion: '',
 	/** Version of the blueprint-integration that the blueprint depend on */
@@ -36,4 +38,4 @@ export const DefaultStudioBlueprint: StudioBlueprintManifest = {
 	): string | null {
 		return null
 	},
-}
+})
