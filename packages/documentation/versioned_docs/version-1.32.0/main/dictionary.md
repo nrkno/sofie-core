@@ -1,24 +1,24 @@
 # Features
 
-{% hint style="info" %}
+:::info
 Reading tip: [Concepts & Architecture](features-and-configuration/concepts-and-architecture.md)
-{% endhint %}
+:::
 
 ## Lobby
 
 
 
-{% hint style="warning" %}
+:::caution
 Documentation for this section is yet to be written.
-{% endhint %}
+:::
 
 In the lobby, all existing rundowns are listed.
 
 ## Rundown View
 
-{% hint style="warning" %}
+:::caution
 Documentation for this section is yet to be written.
-{% endhint %}
+:::
 
 The Rundown View is the main view that the producer is working in.
 
@@ -60,17 +60,17 @@ The shelf contains lists of AdLibs that can be played out.
 
 ![Shelf](/img/docs/main/shelf.png)
 
-{% hint style="info" %}
+:::info
 The Shelf can be opened by clicking the handle at the bottom of the screen, or by pressing the TAB key
-{% endhint %}
+:::
 
 ### Side panel
 
 #### Notification center
 
-{% hint style="warning" %}
+:::caution
 Documentation for this section is yet to be written.
-{% endhint %}
+:::
 
 #### Switchboard
 
@@ -80,9 +80,9 @@ The Switchboard allows the producer to turn automation _On_ and _Off_ for sets o
 
 The Switchboard panel can be accessed from the Rundown View's right-hand Toolbar, by clicking on the Switchboard button, next to the Support panel button.
 
-{% hint style="info" %}
+:::info
 Technically, the switchboard activates and deactivates Route Sets. The Route Sets are grouped by Exclusivity Group. If an Exclusivity Group contains exactly two elements with the `ACTIVATE_ONLY` mode, the Route Sets will be displayed on either side of the switch. Otherwise, they will be displayed separately in a list next to an _Off_ position. See also [Settings ● Route sets](features-and-configuration/settings-view.md#route-sets).
-{% endhint %}
+:::
 
 ### Playing things
 
@@ -95,17 +95,17 @@ What's played on air is calculated from the timeline objects in the Pieces in th
 
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
 
-{% hint style="info" %}
+:::info
 You can TAKE the next [Part](dictionary.md#part) by pressing F12 or the Numpad Enter key.
-{% endhint %}
+:::
 
 #### Next Point
 
 The Next point is the next queued Part in the rundown. When the user clicks _Take_, the Next Part becomes the currently playing part, and the Next point is also moved.
 
-{% hint style="info" %}
+:::info
 Change the Next point by right-clicking in the GUI, or by pressing \(Shift +\) F9 & F10.
-{% endhint %}
+:::
 
 #### Freeze-frame countdown
 

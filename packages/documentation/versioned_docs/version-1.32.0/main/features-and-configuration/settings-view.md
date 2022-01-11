@@ -1,8 +1,8 @@
 # Settings
 
-{% hint style="warning" %}
+:::caution
 The settings pages are only visible to users with the right [access level](sofie-navigation.md)!
-{% endhint %}
+:::
 
 Recommended read before diving into the settings: [System, \(Organization\), Studio & Show Style](concepts-and-architecture.md#system-organization-studio-and-show-style).
 
@@ -10,9 +10,9 @@ Recommended read before diving into the settings: [System, \(Organization\), Stu
 
 The _System_ settings are settings for this installation of Sofie. In here goes the settings that are applicable system-wide.
 
-{% hint style="warning" %}
+:::caution
 Documentation for this section is yet to be written.
-{% endhint %}
+:::
 
 ## Studio
 
@@ -84,7 +84,7 @@ The Showstyle contains settings like
 * **Output Channels** - Indicates different output targets \(such as the _Program_ or _back-screen in the studio_\)
 * **Blueprint configuration** - ****custom config option defined by the blueprints
 
-{% hint style="warning" %}
+:::caution
 Please note the difference between S_ource Layers_ and _timeline-layers:_
 
 [Pieces ](../dictionary.md#piece)are put onto _Source layers_, to group different types of content \(such as a VT or Camera\), they are therefore intended only as something to indicate to the user what is going to be played, not what is actually going to happen on the technical level.
@@ -93,7 +93,7 @@ Please note the difference between S_ource Layers_ and _timeline-layers:_
 The exact timeline-layer is never exposed to the user, but instead used on the technical level to control play-out.
 
 An example of the difference could be when playing a VT \(that's a Source Layer\), which could involve all of the timeline-layers _video\_player0_, _audio\_fader\_video_, _audio\_fader\_host_ and _mixer\_pgm._
-{% endhint %}
+:::
 
 
 

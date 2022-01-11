@@ -4,23 +4,23 @@
 
 
 
-{% hint style="warning" %}
+:::caution
 Documentation for this feature is yet to be written.
-{% endhint %}
+:::
 
 System and devices statuses are displayed here.
 
 
 
-{% hint style="info" %}
+:::info
 An API endpoint for the system status is also available under the URL `/health`
-{% endhint %}
+:::
 
 ## Media Status
 
-{% hint style="warning" %}
+:::caution
 Documentation for this feature is yet to be written.
-{% endhint %}
+:::
 
 This page displays media transfer statuses.
 
@@ -28,9 +28,9 @@ This page displays media transfer statuses.
 
 ## Message queue
 
-{% hint style="warning" %}
+:::caution
 Documentation for this feature is yet to be written.
-{% endhint %}
+:::
 
 Sofie Core can send messages to external systems \(such as metadata, as-run-logs\) while on air.
 
@@ -75,17 +75,17 @@ The result of the operation. "Success" or an error message.
 
 ## Evaluations
 
-{% hint style="warning" %}
+:::caution
 Documentation for this feature is yet to be written.
-{% endhint %}
+:::
 
 When a broadcast is done, users can input feedback about how the show went in an evaluation form.
 
 The evaluations are listed here.
 
-{% hint style="info" %}
+:::info
 Evaluations can be configured to be sent to Slack, by setting the "Slack webhook URL" under Settings/Studio
-{% endhint %}
+:::
 
 
 

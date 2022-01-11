@@ -1,8 +1,8 @@
 # Configuration
 
-{% hint style="warning" %}
+:::caution
 If you can't see the settings menu, make sure you have the right [access level](sofie-navigation.md).
-{% endhint %}
+:::
 
 {% page-ref page="concepts-and-architecture.md" %}
 

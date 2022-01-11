@@ -97,9 +97,9 @@ There are various settings you can set for an installation. See the list below:
 | `allowRundownResetOnAir` | Should the user be allowed to reset Rundowns when they are On Air | `false` |
 | `defaultDisplayDuration` | The fallback duration of a Part, when it's expectedDuration is 0. __In milliseconds | `3000` |
 
-{% hint style="info" %}
+:::info
 The exact definition for the settings can be found [in the code here](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/lib/Settings.ts#L12).
-{% endhint %}
+:::
 
 
 
