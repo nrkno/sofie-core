@@ -671,10 +671,10 @@ export async function restoreFromRundownPlaylistSnapshot(
 	// Migrate old data:
 	// 1.12.0 Release 24:
 	const partSegmentIds: { [partId: string]: SegmentId } = {}
-	_.each(snapshot.parts, (part) => {
+	for (const part of snapshot.parts) {
 		partSegmentIds[unprotectString(part._id)] = part.segmentId
-	})
-	_.each(snapshot.pieces, (piece) => {
+	}
+	for (const piece of snapshot.pieces) {
 		const pieceOld = piece as any as Partial<Piece_1_11_0>
 		if (pieceOld.rundownId) {
 			piece.startRundownId = pieceOld.rundownId
@@ -685,7 +685,7 @@ export async function restoreFromRundownPlaylistSnapshot(
 			delete pieceOld.partId
 			piece.startSegmentId = partSegmentIds[unprotectString(piece.startPartId)]
 		}
-	})
+	}
 
 	// List any ids that need updating on other documents
 	const rundownIdMap = new Map<RundownId, RundownId>()
@@ -696,34 +696,34 @@ export async function restoreFromRundownPlaylistSnapshot(
 		}
 		return rundownId
 	}
-	_.each(snapshot.rundowns, (rd) => {
+	for (const rd of snapshot.rundowns) {
 		const oldId = rd._id
 		rd._id = getRandomId()
 		rundownIdMap.set(oldId, rd._id)
-	})
+	}
 	const partIdMap = new Map<PartId, PartId>()
-	_.each(snapshot.parts, (part) => {
+	for (const part of snapshot.parts) {
 		const oldId = part._id
 		part._id = part.externalId ? getPartId(getNewRundownId(part.rundownId), part.externalId) : getRandomId()
 
 		partIdMap.set(oldId, part._id)
-	})
+	}
 	const partInstanceIdMap = new Map<PartInstanceId, PartInstanceId>()
-	_.each(snapshot.partInstances, (partInstance) => {
+	for (const partInstance of snapshot.partInstances) {
 		const oldId = partInstance._id
 		partInstance._id = getRandomId()
 		partInstanceIdMap.set(oldId, partInstance._id)
 		partInstance.part._id = partIdMap.get(partInstance.part._id) || getRandomId()
-	})
+	}
 	const segmentIdMap = new Map<SegmentId, SegmentId>()
-	_.each(snapshot.segments, (segment) => {
+	for (const segment of snapshot.segments) {
 		const oldId = segment._id
 		segment._id = getSegmentId(getNewRundownId(segment.rundownId), segment.externalId)
 		segmentIdMap.set(oldId, segment._id)
-	})
+	}
 	type AnyPieceId = PieceId | AdLibActionId | RundownBaselineAdLibActionId
 	const pieceIdMap = new Map<AnyPieceId, AnyPieceId>()
-	_.each(snapshot.pieces, (piece) => {
+	for (const piece of snapshot.pieces) {
 		const oldId = piece._id
 		piece.startRundownId = getNewRundownId(piece.startRundownId)
 		piece.startPartId =
@@ -734,24 +734,21 @@ export async function restoreFromRundownPlaylistSnapshot(
 			getRandomIdAndWarn(`piece.startSegmentId=${piece.startSegmentId} of piece=${piece._id}`)
 		piece._id = getRandomId()
 		pieceIdMap.set(oldId, piece._id)
-	})
-	_.each(
-		[
-			...snapshot.adLibPieces,
-			...snapshot.adLibActions,
-			...snapshot.baselineAdlibs,
-			...snapshot.baselineAdLibActions,
-		],
-		(adlib) => {
-			const oldId = adlib._id
-			if (adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
-			adlib._id = getRandomId()
-			pieceIdMap.set(oldId, adlib._id)
-		}
-	)
+	}
+	for (const adlib of [
+		...snapshot.adLibPieces,
+		...snapshot.adLibActions,
+		...snapshot.baselineAdlibs,
+		...snapshot.baselineAdLibActions,
+	]) {
+		const oldId = adlib._id
+		if (adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
+		adlib._id = getRandomId()
+		pieceIdMap.set(oldId, adlib._id)
+	}
 
 	// const pieceInstanceIdMap = new Map<PieceInstanceId, PieceInstanceId>()
-	_.each(snapshot.pieceInstances, (pieceInstance) => {
+	for (const pieceInstance of snapshot.pieceInstances) {
 		// const oldId = pieceInstance._id
 		pieceInstance._id = getRandomId()
 		// pieceInstanceIdMap.set(oldId, pieceInstance._id)
@@ -761,7 +758,7 @@ export async function restoreFromRundownPlaylistSnapshot(
 			pieceInstance.infinite.infinitePieceId =
 				pieceIdMap.get(pieceInstance.infinite.infinitePieceId) || getRandomId() // Note: don't warn if not found, as the piece may have been deleted
 		}
-	})
+	}
 
 	if (snapshot.playlist.currentPartInstanceId) {
 		snapshot.playlist.currentPartInstanceId =
