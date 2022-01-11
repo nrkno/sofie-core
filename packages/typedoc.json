@@ -13,5 +13,5 @@
 		"*/examples",
 		"*-gateway"
 	],
-	"external-modulemap": ".*packages/([^/]+)/.*"
+	"entryPointStrategy": "packages"
 }

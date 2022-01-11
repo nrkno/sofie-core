@@ -43,8 +43,8 @@ interface PieceGroupMetadataExt extends PieceGroupMetadata {
 
 export namespace RundownUtils {
 	function padZeros(input: number, places?: number): string {
-		places = places || 2
-		return input.toString().padStart(places, '0')
+		places = places ?? 2
+		return input.toString(10).padStart(places, '0')
 	}
 
 	export function getSegmentDuration(parts: Array<PartUi>, display?: boolean) {

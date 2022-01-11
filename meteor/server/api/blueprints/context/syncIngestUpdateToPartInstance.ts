@@ -36,6 +36,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../../lib/collections/Studios'
 import { CacheForPlayout } from '../../playout/cache'
+import { logChanges } from '../../../cache/lib'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownContext
@@ -68,38 +69,20 @@ export class SyncIngestUpdateToPartInstanceContext
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteSeverity.ERROR,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
+		this.addNote(NoteSeverity.ERROR, message, params)
 	}
 	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteSeverity.WARNING,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
+		this.addNote(NoteSeverity.WARNING, message, params)
 	}
-
 	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.INFO, message, params)
+	}
+	private addNote(type: NoteSeverity, message: string, params?: { [key: string]: any }) {
 		if (this.tempSendNotesIntoBlackHole) {
-			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+			this.logNote(`UserNotes: "${message}", ${JSON.stringify(params)}`, type)
 		} else {
 			this.notes.push({
-				type: NoteSeverity.INFO,
+				type: type,
 				message: {
 					key: message,
 					args: params,
@@ -115,8 +98,11 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.logInfo(`No ingest changes to apply to PartInstance`)
 		}
 
-		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
-		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
+		const pieceChanges = this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
+		const partChanges = this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
+
+		logChanges('PartInstances', partChanges)
+		logChanges('PieceInstances', pieceChanges)
 	}
 
 	syncPieceInstance(
