@@ -6,8 +6,8 @@ import { logger } from '../../lib/logging'
 import { Meteor } from 'meteor/meteor'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 import { threadedClass, Promisify, ThreadedClassManager } from 'threadedclass'
-import { JobSpec } from '@sofie-automation/job-worker/dist/main'
-import { IpcJobWorker } from '@sofie-automation/job-worker/dist/ipc'
+import type { JobSpec } from '@sofie-automation/job-worker/dist/main'
+import type { IpcJobWorker } from '@sofie-automation/job-worker/dist/ipc'
 import {
 	createManualPromise,
 	getCurrentTime,
@@ -22,6 +22,7 @@ import { UserActionsLogItem, UserActionsLog } from '../../lib/collections/UserAc
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { fetchStudioLight } from '../../lib/collections/optimizations'
+import * as path from 'path'
 
 interface JobEntry {
 	spec: JobSpec
@@ -178,10 +179,15 @@ Meteor.startup(() => {
 	const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
 	const dbName = 'meteor'
 
+	let workerEntrypoint = '@sofie-automation/job-worker/dist/ipc.js'
+	if (process.env.WORKER_EXEC_DIR) {
+		workerEntrypoint = path.join(process.env.WORKER_EXEC_DIR, 'dist/ipc.js')
+	}
+
 	// Startup the worker 'parent' at startup
 	worker = waitForPromise(
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
-			'@sofie-automation/job-worker/dist/ipc.js',
+			workerEntrypoint,
 			'IpcJobWorker',
 			[jobFinished, getNextJob, queueJob, fastTrackTimeline],
 			{}
