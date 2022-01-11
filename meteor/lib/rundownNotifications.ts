@@ -143,20 +143,22 @@ export function getBasicNotesForSegment(
 	}
 
 	if (segment.orphaned) {
-		let baseMessage: string
+		let message: ITranslatableMessage
 		switch (segment.orphaned) {
 			case SegmentOrphanedReason.DELETED:
-				baseMessage = 'Segment no longer exists in {{nrcs}}'
+				message = generateTranslation('Segment no longer exists in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
 				break
 			case SegmentOrphanedReason.HIDDEN:
-				baseMessage = 'Segment was hidden in {{nrcs}}'
+				message = generateTranslation('Segment was hidden in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
 				break
 		}
 		notes.push({
 			type: NoteSeverity.WARNING,
-			message: generateTranslation(baseMessage, {
-				nrcs: nrcsName,
-			}),
+			message,
 			rank: segment._rank,
 			origin: {
 				segmentId: segment._id,
