@@ -32,15 +32,17 @@ import { SegmentId } from '../../../lib/collections/Segments'
 import { isPartPlayable, PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
+import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/ui/icons/segmentZoomIcon'
+import { Storyboard } from '../../lib/ui/icons/segment'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 
-import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 
 interface IProps {
 	id: string
@@ -79,6 +81,7 @@ interface IProps {
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
+	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
@@ -169,37 +172,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		return Math.round(this.props.timeScale * time)
 	}
 
-	renderZoomTimeline() {
-		return this.props.parts.map((part) => {
-			return (
-				<SegmentTimelinePart
-					key={unprotectString(part.partId)}
-					segment={this.props.segment}
-					playlist={this.props.playlist}
-					studio={this.props.studio}
-					collapsedOutputs={this.props.collapsedOutputs}
-					scrollLeft={0}
-					scrollWidth={1}
-					timeScale={1}
-					relative={true}
-					totalSegmentDuration={this.getSegmentDuration()}
-					part={part}
-					followLiveLine={this.props.followLiveLine}
-					autoNextPart={this.props.autoNextPart}
-					liveLineHistorySize={this.props.liveLineHistorySize}
-					livePosition={
-						part.instance._id === this.props.playlist.currentPartInstanceId && part.instance.timings?.startedPlayback
-							? this.props.livePosition - part.instance.timings.startedPlayback
-							: null
-					}
-					isLastInSegment={false}
-					isAfterLastValidInSegmentAndItsLive={false}
-					isLastSegment={false}
-				/>
-			)
-		})
-	}
-
 	render() {
 		return (
 			<div
@@ -211,7 +183,6 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 				})}
 			>
 				<div className="segment-timeline__zoom-area" onDoubleClick={(e) => this.props.onZoomDblClick(e)}>
-					{/* <div className="segment-timeline__timeline">{this.renderZoomTimeline()}</div> */}
 					<SegmentTimelineZoomControls
 						scrollLeft={this.props.scrollLeft}
 						scrollWidth={this.props.timelineWidth / this.props.timeScale}
@@ -263,8 +234,18 @@ function SegmentTimelineZoomButtons(props: IProps) {
 		}
 	}
 
+	const switchViewMode = () => {
+		props.onSwitchViewMode(SegmentViewMode.Storyboard)
+	}
+
 	return (
 		<div className="segment-timeline__timeline-zoom-buttons">
+			<button
+				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--switch-mode segment-timeline__timeline-zoom-buttons__button--switch-mode--storyboard"
+				onClick={switchViewMode}
+			>
+				<Storyboard />
+			</button>
 			<button
 				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
 				onClick={zoomOut}
@@ -617,7 +598,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			e.stopPropagation()
 		} else if (
 			(!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) ||
-			// @ts-ignore
 			(e.ctrlKey && !e.metaKey && !e.shiftKey && e.altKey)
 		) {
 			// Alt + Scroll

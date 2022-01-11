@@ -18,6 +18,7 @@ import {
 	PlaylistTimingType,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
+import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import {
 	findPartInstanceInMapOrWrapToTemporary,
@@ -26,10 +27,10 @@ import {
 	wrapPartToTemporaryInstance,
 } from '../collections/PartInstances'
 import { Part, PartId } from '../collections/Parts'
-import { RundownPlaylist } from '../collections/RundownPlaylists'
-import { Rundown } from '../collections/Rundowns'
+import { DBRundownPlaylist, RundownPlaylist } from '../collections/RundownPlaylists'
+import { DBRundown, Rundown } from '../collections/Rundowns'
 import { SegmentId } from '../collections/Segments'
-import { unprotectString, literal, protectString } from '../lib'
+import { unprotectString, literal, protectString, getCurrentTime } from '../lib'
 import { Settings } from '../Settings'
 import { calculatePartInstanceExpectedDurationWithPreroll } from './timings'
 
@@ -428,7 +429,10 @@ export class RundownTimingCalculator {
 				// if outOfOrderTiming is true, count parts before current part towards remaining rundown duration
 				// if false (default), past unplayed parts will not count towards remaining time
 				if (!lastStartedPlayback && !partInstance.part.floated && partCounts && !partIsUntimed) {
-					remainingRundownDuration += partExpectedDuration || 0
+					// this needs to use partInstance.part.expectedDuration as opposed to partExpectedDuration, because
+					// partExpectedDuration is affected by displayGroups, and if it hasn't played yet then it shouldn't
+					// add any duration to the "remaining" time pool
+					remainingRundownDuration += partInstance.part.expectedDuration || 0
 					// item is onAir right now, and it's is currently shorter than expectedDuration
 				} else if (
 					lastStartedPlayback &&
@@ -437,7 +441,7 @@ export class RundownTimingCalculator {
 					lastStartedPlayback + partExpectedDuration > now &&
 					!partIsUntimed
 				) {
-					remainingRundownDuration += partExpectedDuration - (now - lastStartedPlayback)
+					remainingRundownDuration += Math.max(0, partExpectedDuration - (now - lastStartedPlayback))
 				}
 
 				if (!rundownExpectedDurations[unprotectString(partInstance.part.rundownId)]) {
@@ -591,7 +595,7 @@ export class RundownTimingCalculator {
 }
 
 export interface RundownTimingContext {
-	/** This is the total duration of the palylist as planned (using expectedDurations). */
+	/** This is the total duration of the playlist as planned (using expectedDurations). */
 	totalPlaylistDuration?: number
 	/** This is the content remaining to be played in the playlist (based on the expectedDurations).  */
 	remainingPlaylistDuration?: number
@@ -710,7 +714,61 @@ export namespace PlaylistTiming {
 			: undefined
 	}
 
-	export function sortTiminings(a, b): number {
+	export function getDiff(
+		playlist: Pick<RundownPlaylist, 'timing' | 'startedPlayback' | 'activationId'>,
+		timingContext: RundownTimingContext
+	): number | undefined {
+		const { timing, startedPlayback, activationId } = playlist
+		const active = !!activationId
+		const currentTime = timingContext.currentTime || getCurrentTime()
+		let frontAnchor: number = currentTime
+		let backAnchor: number = currentTime
+		if (isPlaylistTimingForwardTime(timing)) {
+			backAnchor =
+				timing.expectedEnd ??
+				(startedPlayback ?? Math.max(timing.expectedStart, currentTime)) +
+					(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
+			frontAnchor = Math.max(currentTime, playlist.startedPlayback ?? Math.max(timing.expectedStart, currentTime))
+		} else if (isPlaylistTimingBackTime(timing)) {
+			backAnchor = timing.expectedEnd
+		}
+
+		let diff = isPlaylistTimingNone(timing)
+			? (timingContext.asPlayedPlaylistDuration || 0) -
+			  (timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
+			: frontAnchor + (timingContext.remainingPlaylistDuration || 0) - backAnchor
+
+		// handle special cases
+
+		// the rundown has been played out and now has been deactivated
+		if (!active && startedPlayback) {
+			if (isPlaylistTimingForwardTime(timing)) {
+				// we want to know how heavy/light we were compared to the original plan
+				diff =
+					(timingContext.asPlayedPlaylistDuration || 0) -
+					(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
+
+				if (timing.expectedEnd) {
+					diff = startedPlayback + (timingContext.asPlayedPlaylistDuration || 0) - timing.expectedEnd
+				}
+			} else if (isPlaylistTimingNone(timing)) {
+				//  we want to know how heavy/light we were compared to the original plan
+				diff =
+					(timingContext.asPlayedPlaylistDuration || 0) -
+					(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
+			} else if (isPlaylistTimingBackTime(timing)) {
+				// we want to see how late we've ended compared to the expectedEnd
+				diff = startedPlayback + (timingContext.asPlayedPlaylistDuration || 0) - timing.expectedEnd
+			}
+		}
+
+		return diff
+	}
+
+	export function sortTiminings(
+		a: ReadonlyDeep<DBRundown> | ReadonlyDeep<DBRundownPlaylist>,
+		b: ReadonlyDeep<DBRundown> | ReadonlyDeep<DBRundownPlaylist>
+	): number {
 		// Compare start times, then allow rundowns with start time to be first
 		if (
 			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&
