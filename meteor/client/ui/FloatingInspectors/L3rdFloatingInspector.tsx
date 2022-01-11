@@ -1,12 +1,10 @@
 import React from 'react'
 import * as _ from 'underscore'
-// import { useTranslation } from 'react-i18next'
 
 import { NoraContent, GraphicsContent } from '@sofie-automation/blueprints-integration'
 
 import { NoraFloatingInspector } from './NoraFloatingInspector'
 import { FloatingInspector } from '../FloatingInspector'
-// import { Time } from '../../../lib/lib'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
 interface IProps {
@@ -27,16 +25,10 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	content,
 	floatingInspectorStyle,
 	showMiniInspector,
-	itemElement,
 	piece,
-	// pieceRenderedIn,
-	// pieceRenderedDuration,
 	typeClass,
 	displayOn,
 }) => {
-	// const { t } = useTranslation()
-	// const innerPiece = piece
-
 	const noraContent = (content as NoraContent)?.payload?.content ? (content as NoraContent | undefined) : undefined
 
 	let properties: Array<KeyValue> = []
@@ -73,8 +65,6 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		) as Array<KeyValue>
 	}
 
-	// const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
-
 	const graphicContent = (content as GraphicsContent)?.fileName ? (content as GraphicsContent | undefined) : undefined
 
 	const templateName = noraContent?.payload?.metadata?.templateName ?? piece.name
@@ -83,11 +73,11 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		(piece.name !== graphicContent?.fileName ? graphicContent?.fileName : undefined)
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
-		showMiniInspector && !!itemElement ? (
+		showMiniInspector ? (
 			<NoraFloatingInspector noraContent={noraContent} style={floatingInspectorStyle} displayOn={displayOn} />
 		) : null
 	) : (
-		<FloatingInspector shown={showMiniInspector && !!itemElement} displayOn={displayOn}>
+		<FloatingInspector shown={showMiniInspector} displayOn={displayOn}>
 			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle}>
 				{templateName && (
 					<div className="mini-inspector__header">

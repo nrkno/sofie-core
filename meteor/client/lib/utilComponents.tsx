@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import * as VelocityReact from 'velocity-react'
 
 export function makeTableOfObject(o: any) {
 	return (
@@ -35,5 +36,15 @@ export function makeTableOfObject(o: any) {
 				})}
 			</tbody>
 		</table>
+	)
+}
+
+export function OptionalVelocityComponent(props: any) {
+	return props.shouldAnimate ? (
+		<VelocityReact.VelocityComponent animation={props.animation} duration={props.duration}>
+			{props.children}
+		</VelocityReact.VelocityComponent>
+	) : (
+		<>{props.children}</>
 	)
 }
