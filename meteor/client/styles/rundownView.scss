@@ -79,12 +79,6 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	border-radius: $segment-border-radius;
 	overflow: hidden;
 
-	animation-duration: 1s;
-	animation-fill-mode: forwards;
-	animation-iteration-count: infinite;
-	// animation-name: placeholder-shimmer;
-	animation-timing-function: linear;
-
 	&::before {
 		content: ' ';
 		display: block;
@@ -93,18 +87,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		width: $segment-header-width;
 		left: 0;
 		bottom: 0;
-		background: darken($segment-title-background-color, 20%);
-		mix-blend-mode: screen;
-	}
-}
-
-@keyframes placeholder-shimmer {
-	0% {
-		background-position: -800px 0;
-	}
-
-	100% {
-		background-position: 100vw 0;
+		background: lighten($segment-title-background-color, 70%);
+		opacity: 0.1;
 	}
 }
 
@@ -521,6 +505,8 @@ svg.icon {
 	.segment-timeline__output-layers,
 	.segment-timeline__timeline {
 		padding: $segment-timeline-padding;
+		--segment-timeline-padding-top: #{$segment-header-height};
+		--segment-timeline-padding-bottom: 1.5em;
 	}
 
 	.segment-timeline__title {
@@ -1323,16 +1309,8 @@ svg.icon {
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
 			position: relative;
-			z-index: 1;
-			transform-style: preserve-3d;
-
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
-
-			* {
-				backface-visibility: hidden;
-				-webkit-backface-visibility: hidden;
-			}
 
 			&.segment-timeline__part--end-of-segment {
 				background: $segment-background-color;
@@ -1384,11 +1362,12 @@ svg.icon {
 				flex: 0;
 				border-left: 2px solid $part-start-color;
 				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
-				transform: translate3d(0, 0, 50px);
+				z-index: 20;
 
 				&.segment-timeline__part__nextline--endline {
 					left: auto;
 					right: -1px;
+					z-index: 30;
 				}
 
 				.segment-timeline__part__nextline__label {
@@ -1442,7 +1421,7 @@ svg.icon {
 				left: 1px;
 				bottom: 0;
 				right: 1px;
-				z-index: 1;
+				z-index: 10;
 				pointer-events: none;
 				background-image: repeating-linear-gradient(
 						45deg,
@@ -1466,7 +1445,7 @@ svg.icon {
 				left: 0;
 				bottom: 0;
 				right: 0;
-				z-index: 1;
+				z-index: 10;
 				pointer-events: none;
 				background-image: repeating-linear-gradient(
 					-45deg,
@@ -1612,7 +1591,6 @@ svg.icon {
 				bottom: 0;
 				right: 0;
 				background: linear-gradient(to left, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 50%);
-				transform: translate3d(0, 0, 10px);
 			}
 
 			&.next {
@@ -1725,7 +1703,6 @@ svg.icon {
 			.segment-timeline__output-group {
 				min-height: $segment-layer-height;
 				border-bottom: 0px solid $segment-layer-separator-color;
-				transform-style: preserve-3d;
 				overflow: hidden;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
@@ -1735,7 +1712,6 @@ svg.icon {
 					min-height: $segment-layer-height;
 					line-height: $segment-layer-height;
 					border-bottom: 2px solid $segment-layer-separator-color;
-					transform-style: preserve-3d;
 					overflow: hidden;
 
 					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
@@ -1746,7 +1722,6 @@ svg.icon {
 						transition: box-shadow 0.5s ease-out;
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
-						transform-style: preserve-3d;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
@@ -1827,7 +1802,6 @@ svg.icon {
 								rgba(0, 0, 0, 0.2) 6px
 							);
 							overflow: hidden;
-							// transform: translate3d(0,0,-2px)
 						}
 						.segment-timeline__piece__anomaly-marker::after {
 							content: '';
@@ -1846,7 +1820,6 @@ svg.icon {
 							// );
 							background: yellow;
 							overflow: hidden;
-							// transform: translate3d(0,0,2px)
 						}
 
 						.segment-timeline__piece__anomaly-marker__freezes {
@@ -1869,7 +1842,6 @@ svg.icon {
 							background-repeat: repeat-x;
 							background-size: auto 1em;
 							background-color: rgba(0, 0, 0, 0.6);
-							z-index: 2;
 						}
 
 						&.hide-overflow-labels {
@@ -2020,7 +1992,6 @@ svg.icon {
 
 			.segment-timeline__piece__label {
 				position: relative;
-				z-index: 10;
 				margin: 0 0.3em;
 				text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 				font-weight: 400;
@@ -2030,8 +2001,6 @@ svg.icon {
 				display: inline-block;
 				white-space: nowrap;
 				line-height: 1.5em;
-
-				transform: translate3d(0, 0, 1px); // Just to make it render in front
 
 				&.no-left-margin {
 					margin-left: 0;
@@ -2076,7 +2045,6 @@ svg.icon {
 				&.right-side {
 					position: absolute;
 					right: 0;
-					transform: translate3d(0, 0, 15px);
 					text-align: right;
 					margin: 0;
 					padding: 0 0.3em;
@@ -2177,7 +2145,6 @@ svg.icon {
 			.segment-timeline__piece-appendage {
 				&.script-line {
 					width: 0;
-					transform: translate3d(0, 0, 30px);
 					border-left: 2px dotted $segment-layer-background-mic;
 					margin-left: -2px;
 					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
@@ -2192,9 +2159,14 @@ svg.icon {
 					left: auto;
 					right: 0;
 					bottom: auto;
+					opacity: 1;
+					visibility: visible;
+					transition: 500ms opacity 250ms, 0s visibility 0s;
 
 					&.hidden {
-						display: none;
+						transition: none;
+						visibility: hidden;
+						opacity: 0;
 					}
 				}
 			}
