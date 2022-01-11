@@ -67,7 +67,7 @@ describe('Playout API', () => {
 			rundownId = rundownId0
 
 			await ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_ACCESS(playlistId), playlistId, true)
-			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId, null)
 
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()

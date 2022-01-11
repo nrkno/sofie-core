@@ -303,7 +303,8 @@ export namespace ServerPlayoutAPI {
 	 */
 	export async function takeNextPart(
 		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId
+		rundownPlaylistId: RundownPlaylistId,
+		fromPartInstanceId: PartInstanceId | null
 	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 
@@ -314,7 +315,12 @@ export namespace ServerPlayoutAPI {
 			'takeNextPartInner',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
+			async (cache) => {
+				const playlist = cache.Playlist.doc
+				if (playlist.currentPartInstanceId !== fromPartInstanceId) {
+					throw new Meteor.Error(500, 'Ignoring take as playing part has changed since TAKE was requested.')
+				}
+			},
 			async (cache) => {
 				return takeNextPartInnerSync(cache, now)
 			}

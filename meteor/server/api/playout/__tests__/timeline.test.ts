@@ -156,7 +156,12 @@ async function doTakePart(
 	expectedCurrentPartId: PartId | null,
 	expectedNextPartId: PartId | null
 ) {
-	await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId)
+	{
+		const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
+		await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId), playlistId, playlist.currentPartInstanceId)
+	}
 
 	const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 	expect(playlist).toBeTruthy()

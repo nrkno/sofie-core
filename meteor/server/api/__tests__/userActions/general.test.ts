@@ -152,7 +152,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the first Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
 				getPlaylist0()
@@ -165,7 +167,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the second Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
 				getPlaylist0()
@@ -216,7 +220,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the Nexted Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
 				getPlaylist0()
@@ -229,7 +235,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the last Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
 				getPlaylist0()
 			)
@@ -271,7 +279,9 @@ describe('User Actions - General', () => {
 
 		{
 			// Take the nexted Part:
-			expect(Meteor.call(UserActionAPI.methods.take, 'e', playlistId0)).toMatchObject({ success: 200 })
+			expect(
+				Meteor.call(UserActionAPI.methods.take, 'e', playlistId0, getPlaylist0().currentPartInstanceId)
+			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
 				getPlaylist0()

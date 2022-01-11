@@ -74,7 +74,8 @@ export function setMinimumTakeSpan(span: number) {
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
 export async function take(
 	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId
+	rundownPlaylistId: RundownPlaylistId,
+	fromPartInstanceId: PartInstanceId | null
 ): Promise<ClientAPI.ClientResponse<void>> {
 	// Called by the user. Wont throw as nasty errors
 	const now = getCurrentTime()
@@ -89,6 +90,11 @@ export async function take(
 		if (!playlist.nextPartInstanceId) {
 			return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
 		}
+
+		if (playlist.currentPartInstanceId !== fromPartInstanceId) {
+			return ClientAPI.responseError('Ignoring take as playing part has changed since TAKE was requested.')
+		}
+
 		if (playlist.currentPartInstanceId) {
 			const currentPartInstance = await PartInstances.findOneAsync(playlist.currentPartInstanceId)
 			if (currentPartInstance && currentPartInstance.timings) {
@@ -113,7 +119,7 @@ export async function take(
 				)
 			}
 		}
-		return ServerPlayoutAPI.takeNextPart(access, playlist._id)
+		return ServerPlayoutAPI.takeNextPart(access, playlist._id, playlist.currentPartInstanceId)
 	})
 }
 
@@ -817,13 +823,13 @@ export async function bucketsSaveActionIntoBucket(
 	return ClientAPI.responseSuccess(result)
 }
 
-export function bucketAdlibStart(
+export async function bucketAdlibStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
 	bucketAdlibId: PieceId,
 	queue?: boolean
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(bucketAdlibId, String)
@@ -837,9 +843,14 @@ export function bucketAdlibStart(
 		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
 	}
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAdLibAPI.startBucketAdlibPiece(access, rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
+	const result = await ServerPlayoutAdLibAPI.startBucketAdlibPiece(
+		access,
+		rundownPlaylistId,
+		partInstanceId,
+		bucketAdlibId,
+		!!queue
 	)
+	return ClientAPI.responseSuccess(result)
 }
 
 let restartToken: string | undefined = undefined
@@ -925,8 +936,8 @@ export async function disablePeripheralSubDevice(
 }
 
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
-	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return take(this, rundownPlaylistId)
+	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId, fromPartInstanceId: PartInstanceId | null) {
+		return take(this, rundownPlaylistId, fromPartInstanceId)
 	}
 	async setNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
 		return setNext(this, rundownPlaylistId, partId, true, timeOffset)

@@ -319,7 +319,7 @@ describe('test peripheralDevice general API methods', () => {
 			rundownPlaylistID,
 			false
 		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
 
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -345,7 +345,7 @@ describe('test peripheralDevice general API methods', () => {
 			rundownPlaylistID,
 			false
 		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
 
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -372,7 +372,7 @@ describe('test peripheralDevice general API methods', () => {
 			rundownPlaylistID,
 			false
 		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
 
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -407,7 +407,7 @@ describe('test peripheralDevice general API methods', () => {
 			rundownPlaylistID,
 			false
 		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
 
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
@@ -442,7 +442,7 @@ describe('test peripheralDevice general API methods', () => {
 			rundownPlaylistID,
 			false
 		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
 
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
