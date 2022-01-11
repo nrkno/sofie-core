@@ -32,10 +32,11 @@ import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
+import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/ui/icons/segmentZoomIcon'
+import { Storyboard } from '../../lib/ui/icons/segment'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 
-import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
@@ -233,8 +234,18 @@ function SegmentTimelineZoomButtons(props: IProps) {
 		}
 	}
 
+	const switchViewMode = () => {
+		props.onSwitchViewMode(SegmentViewMode.Storyboard)
+	}
+
 	return (
 		<div className="segment-timeline__timeline-zoom-buttons">
+			<button
+				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--switch-mode segment-timeline__timeline-zoom-buttons__button--switch-mode--storyboard"
+				onClick={switchViewMode}
+			>
+				<Storyboard />
+			</button>
 			<button
 				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
 				onClick={zoomOut}
@@ -1013,7 +1024,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					<h2
 						className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '')}
 						data-identifier={this.props.segment.identifier}
-						onDoubleClick={() => this.props.onSwitchViewMode(SegmentViewMode.STORYBOARD)}
 					>
 						{this.props.segment.name}
 					</h2>

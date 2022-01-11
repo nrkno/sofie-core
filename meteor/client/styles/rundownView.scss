@@ -804,13 +804,12 @@ svg.icon {
 .segment-timeline {
 	.segment-timeline__timeline-zoom-buttons {
 		position: relative;
-		display: flex;
-		flex-direction: row;
+		display: grid;
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / end;
-		align-items: flex-end;
-		justify-content: space-between;
-		padding: 0 10px 0.05em 20px;
+		align-self: end;
+		grid-template-columns: 1.3fr 1fr 1fr 1fr;
+		padding: 0 0.3em 0.05em 0.3em;
 
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 22px;
@@ -833,6 +832,9 @@ svg.icon {
 				.btn-bkg {
 					transition: 0.3s fill;
 				}
+				.btn-icon {
+					transition: 0.3s fill;
+				}
 			}
 
 			&:disabled {
@@ -844,6 +846,10 @@ svg.icon {
 					> svg {
 						.btn-bkg {
 							fill: #8c8c8c;
+							transition: 0s fill;
+						}
+						.btn-icon {
+							fill: #ffffff;
 							transition: 0s fill;
 						}
 					}

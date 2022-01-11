@@ -121,6 +121,8 @@ export const MAGIC_TIME_SCALE_FACTOR = 0.03
 const REHEARSAL_MARGIN = 1 * 60 * 1000
 const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
 
+const DEFAULT_SEGMENT_VIEW_MODE = SegmentViewMode.Timeline
+
 interface ITimingWarningProps {
 	playlist: RundownPlaylist
 	inActiveRundownView?: boolean
@@ -222,32 +224,6 @@ interface ITimingDisplayProps {
 	currentRundown: Rundown | undefined
 	rundownCount: number
 	layout: RundownLayoutRundownHeader | undefined
-}
-
-export enum RundownViewKbdShortcuts {
-	RUNDOWN_TAKE = 'f12',
-	RUNDOWN_TAKE2 = 'enter', // is only going to use the rightmost enter key for take
-	RUNDOWN_HOLD = 'h',
-	RUNDOWN_UNDO_HOLD = 'shift+h',
-	RUNDOWN_ACTIVATE = '§',
-	RUNDOWN_ACTIVATE2 = '\\',
-	RUNDOWN_ACTIVATE3 = '|',
-	RUNDOWN_ACTIVATE_REHEARSAL = 'mod+§',
-	RUNDOWN_DEACTIVATE = 'mod+shift+§',
-	RUNDOWN_GO_TO_LIVE = 'mod+home',
-	RUNDOWN_REWIND_SEGMENTS = 'shift+home',
-	RUNDOWN_RESET_RUNDOWN = 'mod+shift+f12',
-	RUNDOWN_RESET_RUNDOWN2 = 'mod+shift+enter',
-	RUNDOWN_TOGGLE_SHELF = 'tab',
-	ADLIB_QUEUE_MODIFIER = 'shift',
-	RUNDOWN_NEXT_FORWARD = 'f9',
-	RUNDOWN_NEXT_DOWN = 'f10',
-	RUNDOWN_NEXT_BACK = 'shift+f9',
-	RUNDOWN_NEXT_UP = 'shift+f10',
-	RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
-	RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNDOWN_LOG_ERROR = 'backspace',
-	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = '',
 }
 
 const TimingDisplay = withTranslation()(
@@ -2051,7 +2027,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const userSegmentDisplaymode = this.state.segmentViewModes[unprotectString(segment._id)] as
 				| SegmentViewMode
 				| undefined
-			return userSegmentDisplaymode !== undefined && userSegmentDisplaymode === SegmentViewMode.STORYBOARD ? (
+			const displayMode = userSegmentDisplaymode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
+
+			return displayMode === SegmentViewMode.Storyboard ? (
 				<SegmentStoryboardContainer
 					id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 					studio={studio}

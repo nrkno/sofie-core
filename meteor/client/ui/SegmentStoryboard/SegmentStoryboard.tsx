@@ -8,6 +8,7 @@ import { IContextMenuContext } from '../RundownView'
 import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
+import { Timeline } from '../../lib/ui/icons/segment'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
@@ -158,6 +159,10 @@ export const SegmentStoryboard = React.memo(
 				`segment.${props.segment._id}.useTimeOfDayCountdowns`,
 				newUseTimeOfDayCountdowns
 			)
+		}
+
+		const onSwitchViewMode = () => {
+			props.onSwitchViewMode(SegmentViewMode.Timeline)
 		}
 
 		const onClickPartIdent = (partId: PartId) => {
@@ -518,7 +523,6 @@ export const SegmentStoryboard = React.memo(
 						<h2
 							className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
 							data-identifier={props.segment.identifier}
-							onDoubleClick={() => props.onSwitchViewMode(SegmentViewMode.TIMELINE)}
 						>
 							{props.segment.name}
 						</h2>
@@ -610,6 +614,14 @@ export const SegmentStoryboard = React.memo(
 									)}
 								</div>
 							))}
+					</div>
+					<div className="segment-storyboard__storyboard-view-controls">
+						<button
+							className="segment-storyboard__storyboard-view-controls__button segment-storyboard__storyboard-view-controls__button--switch-mode segment-storyboard__storyboard-view-controls--switch-mode--timeline"
+							onClick={onSwitchViewMode}
+						>
+							<Timeline />
+						</button>
 					</div>
 					<div className="segment-storyboard__part-list__container" ref={listRef} onPointerDown={onListPointerDown}>
 						<OptionalVelocityComponent

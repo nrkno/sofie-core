@@ -138,7 +138,7 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	identifier?: string
 
 	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
-	displayMode?: SegmentDisplayMode
+	displayAs?: SegmentDisplayMode
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {

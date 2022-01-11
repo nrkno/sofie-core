@@ -1,4 +1,3 @@
-export enum SegmentViewMode {
-	TIMELINE = 'timeline',
-	STORYBOARD = 'storyboard',
-}
+import { SegmentDisplayMode } from '@sofie-automation/blueprints-integration'
+
+export { SegmentDisplayMode as SegmentViewMode }

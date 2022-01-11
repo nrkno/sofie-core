@@ -21,6 +21,72 @@ $part-right-padding: 5px;
 		cursor: url(/images/cursor_zoom_area_move.png) 15 8, ew-resize;
 	}
 
+	> .segment-storyboard__storyboard-view-controls {
+		position: relative;
+		display: grid;
+		grid-column: segment-group-controls / timeline;
+		grid-row: main-view / end;
+		align-self: end;
+		grid-template-columns: 1.3fr 1fr 1fr 1fr;
+		padding: 0 0.3em 0.05em 0.3em;
+
+		> .segment-storyboard__storyboard-view-controls__button {
+			min-width: 22px;
+			min-height: 22px;
+			max-height: 22px;
+			border: none;
+			background: transparent;
+			overflow: visible;
+			font-size: 1em;
+			padding: 0;
+			transition: 0.2s opacity;
+
+			color: #dddddd;
+
+			> svg {
+				height: 22px;
+				width: 22px;
+				margin-top: -0.05em;
+
+				.btn-bkg {
+					transition: 0.3s fill;
+				}
+				.btn-icon {
+					transition: 0.3s fill;
+				}
+			}
+
+			&:disabled {
+				opacity: 0.5;
+			}
+
+			&:not(:disabled) {
+				&:hover {
+					> svg {
+						.btn-bkg {
+							fill: #8c8c8c;
+							transition: 0s fill;
+						}
+						.btn-icon {
+							fill: #ffffff;
+							transition: 0s fill;
+						}
+					}
+				}
+
+				&:active {
+					> svg {
+						.btn-bkg {
+							fill: $ui-button-primary;
+							border-color: $ui-button-primary;
+							transition: 0s fill;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	> .segment-storyboard__part-list__container {
 		> .segment-storyboard__part-list {
 			position: relative;
