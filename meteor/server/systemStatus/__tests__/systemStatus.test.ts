@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
@@ -14,10 +13,6 @@ import { MeteorCall } from '../../../lib/api/methods'
 
 require('../api')
 const PackageInfo = require('../../../package.json')
-
-enum SystemStatusAPIMethods {
-	'getSystemStatus' = 'systemStatus.getSystemStatus',
-}
 
 describe('systemStatus', () => {
 	let env: DefaultEnvironment
