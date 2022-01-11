@@ -19,6 +19,9 @@ $segment-layer-background-guest: #008a92;
 $segment-layer-background-local: #ba00e8;
 $segment-layer-background-local--second: darken($segment-layer-background-local, 10%);
 
+$segment-item-disabled-background: #898989;
+$segment-item-disabled-color: #c9c9c9;
+
 $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'remote', 'vt', 'local', 'script', 'mic',
 	'guest';
 
@@ -242,6 +245,7 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 @mixin item-type-before-background {
 	@each $layer-type in $layer-types {
 		&.#{$layer-type}::before {
+			pointer-events: none;
 			background: var(--segment-layer-background-#{$layer-type});
 		}
 	}
@@ -316,6 +320,7 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 				transparent 16px
 			);
 			opacity: 0.4;
+			pointer-events: none;
 		}
 	}
 

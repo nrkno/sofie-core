@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { SourceLayerType, PieceLifespan, PieceTransitionType } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import ClassNames from 'classnames'
@@ -20,6 +19,7 @@ import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { Studio } from '../../../lib/collections/Studios'
+import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
@@ -607,46 +607,16 @@ export const SourceLayerItem = withTranslation()(
 
 				return (
 					<div
-						className={ClassNames('segment-timeline__piece', typeClass, {
-							'with-in-transition':
-								!this.props.relative &&
-								innerPiece.transitions &&
-								innerPiece.transitions.inTransition &&
-								(innerPiece.transitions.inTransition.duration || 0) > 0,
-							'with-out-transition':
-								!this.props.relative &&
-								innerPiece.transitions &&
-								innerPiece.transitions.outTransition &&
-								(innerPiece.transitions.outTransition.duration || 0) > 0,
-
-							'hide-overflow-labels':
-								this.state.leftAnchoredWidth > 0 &&
-								this.state.rightAnchoredWidth > 0 &&
-								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > elementWidth,
-
-							'super-infinite':
-								innerPiece.lifespan !== PieceLifespan.WithinPart &&
-								innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
-								innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd,
-							'infinite-starts':
-								innerPiece.lifespan !== PieceLifespan.WithinPart &&
-								innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
-								innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd &&
-								piece.instance.piece.startPartId === this.props.part.partId,
-
-							'not-in-vision': piece.instance.piece.notInVision,
-
-							'next-is-touching': this.props.piece.cropped,
-
-							'source-missing':
-								innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-								innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
-							'source-broken': innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-							'unknown-state': innerPiece.status === RundownAPI.PieceStatusCode.UNKNOWN,
-							disabled: piece.instance.disabled,
-
-							'invert-flash': this.state.highlight,
-						})}
+						className={pieceUiClassNames(
+							piece,
+							'segment-timeline__piece',
+							this.props.layer.type,
+							this.props.part.partId,
+							this.state.highlight,
+							this.props.relative,
+							elementWidth,
+							this.state
+						)}
 						data-obj-id={piece.instance._id}
 						ref={this.setRef}
 						onClick={this.itemClick}

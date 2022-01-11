@@ -74,7 +74,7 @@ describe('Timeline', () => {
 
 		{
 			// Take the first Part:
-			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0)
+			await ServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(playlistId0), playlistId0, null)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()

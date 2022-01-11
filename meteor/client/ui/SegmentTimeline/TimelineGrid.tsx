@@ -23,9 +23,9 @@ declare class FontFace {
 }
 
 const LABEL_FONT_URL = 'url("/fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
-const LABEL_COLOR = 'rgb(175,175,175)'
+const LABEL_COLOR = 'rgb(80,80,80)'
 const SHORT_LINE_GRID_COLOR = 'rgb(112,112,112)'
-const LONG_LINE_GRID_COLOR = 'rgb(112,112,112)'
+const LONG_LINE_GRID_COLOR = 'rgb(80,80,80)'
 const TIMELINE_FINISHED_BACKGROUND_COLOR = 'rgb(0,0,0)'
 
 const FONT_SIZE = 15

@@ -40,6 +40,7 @@ import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallP
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { IOutputLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
+import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 
 interface IProps {
 	id: string
@@ -78,6 +79,7 @@ interface IProps {
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
+	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
@@ -519,7 +521,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			e.stopPropagation()
 		} else if (
 			(!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) ||
-			// @ts-ignore
 			(e.ctrlKey && !e.metaKey && !e.shiftKey && e.altKey)
 		) {
 			// Alt + Scroll
@@ -1089,6 +1090,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						onScroll={this.props.onScroll}
 						onShowEntireSegment={this.props.onShowEntireSegment}
 						onZoomChange={this.props.onZoomChange}
+						onSwitchViewMode={this.props.onSwitchViewMode}
 					/>
 				</ErrorBoundary>
 				<ErrorBoundary>

@@ -33,6 +33,10 @@ export interface PlaylistTimingBase {
 
 export interface PlaylistTimingNone {
 	type: PlaylistTimingType.None
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
 }
 
 export interface PlaylistTimingForwardTime extends PlaylistTimingBase {
@@ -121,6 +125,11 @@ export interface IBlueprintSegmentRundown<TMetadata = unknown> {
 	metaData?: TMetadata
 }
 
+export enum SegmentDisplayMode {
+	Timeline = 'timeline',
+	Storyboard = 'storyboard',
+}
+
 /** The Segment generated from Blueprint */
 export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-presentable name (Slug) for the Title */
@@ -131,6 +140,9 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	isHidden?: boolean
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
+
+	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
+	displayAs?: SegmentDisplayMode
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {
@@ -352,12 +364,6 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	 * @deprecated replaced by .expectedPackages
 	 */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
-	/** When queued, should the adlib autonext */
-	adlibAutoNext?: boolean
-	/** When queued, how much overlap with the next part */
-	adlibAutoNextOverlap?: number
-	/** When queued, block transition at the end of the part */
-	adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
 

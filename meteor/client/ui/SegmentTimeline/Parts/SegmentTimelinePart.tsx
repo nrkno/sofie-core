@@ -84,17 +84,6 @@ interface IState {
 	isTooSmallForDisplay: boolean
 	highlight: boolean
 }
-
-const CARRIAGE_RETURN_ICON = (
-	<div className="segment-timeline__part__nextline__label__carriage-return">
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 11.36 7.92">
-			<g>
-				<path d="M10.36,0V2.2A3.06,3.06,0,0,1,7.3,5.25H3.81V3.51L0,5.71,3.81,7.92V6.25H7.3a4.06,4.06,0,0,0,4.06-4V0Z" />
-			</g>
-		</svg>
-	</div>
-)
-
 export class SegmentTimelinePartClass extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	constructor(props: Readonly<Translated<WithTiming<IProps>>>) {
 		super(props)
@@ -509,7 +498,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						</div>
 					</div>
 				)}
-				{!isEndOfShow && this.props.isLastInSegment && (
+				{!isEndOfShow && this.props.isLastInSegment && !innerPart.invalid && (
 					<div
 						className={ClassNames('segment-timeline__part__segment-end', {
 							'is-next':
@@ -643,8 +632,11 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								>
 									{innerPart.invalid && !innerPart.gap ? null : (
 										<React.Fragment>
-											{(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' '}
-											{this.state.isNext && t('Next')}
+											{this.props.autoNextPart || this.props.part.willProbablyAutoNext
+												? t('Auto')
+												: this.state.isNext
+												? t('Next')
+												: null}
 										</React.Fragment>
 									)}
 								</div>
@@ -673,13 +665,15 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							>
 								{innerPart.invalid && !innerPart.gap ? null : (
 									<React.Fragment>
-										{((this.state.isNext && this.props.autoNextPart) ||
-											(!this.state.isNext && this.props.part.willProbablyAutoNext)) &&
-											t('Auto') + ' '}
-										{(this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive) && t('Next')}
+										{(this.state.isNext && this.props.autoNextPart) ||
+										(!this.state.isNext && this.props.part.willProbablyAutoNext)
+											? t('Auto')
+											: this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive
+											? t('Next')
+											: null}
 									</React.Fragment>
 								)}
-								{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && CARRIAGE_RETURN_ICON}
+								{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && <SegmentEnd />}
 								{this.props.isAfterLastValidInSegmentAndItsLive && this.props.playlist.loop && <LoopingIcon />}
 							</div>
 							{(!this.props.relative || this.props.isPreview) && this.props.part.instance.part.identifier && (

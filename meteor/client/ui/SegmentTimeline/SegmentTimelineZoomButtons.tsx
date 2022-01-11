@@ -1,5 +1,7 @@
 import React from 'react'
-import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
+import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/ui/icons/segmentZoomIcon'
+import { Storyboard } from '../../lib/ui/icons/segment'
+import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 
 interface IProps {
 	timeScale: number
@@ -9,6 +11,7 @@ interface IProps {
 	onScroll: (scrollLeft: number, e: React.MouseEvent<HTMLElement>) => void
 	onShowEntireSegment?: (e: React.MouseEvent<HTMLElement>) => void
 	onZoomChange: (zoomLevel: number, e: React.MouseEvent<HTMLElement>) => void
+	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
 	onRecalculateMaxTimeScale: () => Promise<number>
 }
 
@@ -47,8 +50,18 @@ export function SegmentTimelineZoomButtons(props: IProps) {
 		}
 	}
 
+	const switchViewMode = () => {
+		props.onSwitchViewMode(SegmentViewMode.Storyboard)
+	}
+
 	return (
 		<div className="segment-timeline__timeline-zoom-buttons">
+			<button
+				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--switch-mode segment-timeline__timeline-zoom-buttons__button--switch-mode--storyboard"
+				onClick={switchViewMode}
+			>
+				<Storyboard />
+			</button>
 			<button
 				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
 				onClick={zoomOut}
