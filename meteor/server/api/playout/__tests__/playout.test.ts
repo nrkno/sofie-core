@@ -465,7 +465,7 @@ describe('Playout API', () => {
 			await ServerPlayoutAPI.setNextPart(
 				DEFAULT_ACCESS(getPlaylist1()),
 				playlistId1,
-				getRundown1().getParts()[0]._id
+				RundownCollectionUtil.getParts(getRundown1())[0]._id
 			)
 			await ServerPlayoutAPI.takeNextPart(
 				DEFAULT_ACCESS(getPlaylist1()),
@@ -515,7 +515,7 @@ describe('Playout API', () => {
 			await ServerPlayoutAPI.setNextPart(
 				DEFAULT_ACCESS(getPlaylist1()),
 				playlistId1,
-				getRundown1().getParts()[0]._id
+				RundownCollectionUtil.getParts(getRundown1())[0]._id
 			)
 			await ServerPlayoutAPI.takeNextPart(
 				DEFAULT_ACCESS(getPlaylist1()),
