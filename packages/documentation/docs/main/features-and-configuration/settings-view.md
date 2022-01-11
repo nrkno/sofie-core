@@ -82,7 +82,7 @@ The Showstyle contains settings like
 
 * **Source Layers -** Groups different types of content in the GUI
 * **Output Channels** - Indicates different output targets \(such as the _Program_ or _back-screen in the studio_\)
-* **Blueprint configuration** - ****custom config option defined by the blueprints
+* **Blueprint configuration** - custom config option defined by the blueprints
 
 :::caution
 Please note the difference between S_ource Layers_ and _timeline-layers:_

@@ -4,21 +4,11 @@
 If you can't see the settings menu, make sure you have the right [access level](sofie-navigation.md).
 :::
 
-{% page-ref page="concepts-and-architecture.md" %}
-
-{% page-ref page="sofie-core-settings.md" %}
-
-{% page-ref page="sofie-navigation.md" %}
-
-{% page-ref page="rundown-view.md" %}
-
-{% page-ref page="settings-view.md" %}
-
-{% page-ref page="status-views.md" %}
-
-{% page-ref page="prompter.md" %}
-
-{% page-ref page="api.md" %}
-
-
-
+* [Concepts And Architecture](./concepts-and-architecture)
+* [Sofie Core Settings](./sofie-core-settings)
+* [Sofie Navigation](./sofie-navigation)
+* [Rundown View](./rundown-view)
+* [Settings View](./settings-view)
+* [Status Views](./status-views)
+* [Prompter](./prompter)
+* [Api](./api)
