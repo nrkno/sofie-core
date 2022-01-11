@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
@@ -10,20 +9,17 @@ import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { stripVersion } from '../../../lib/collections/CoreSystem'
 import semver from 'semver'
+import { MeteorCall } from '../../../lib/api/methods'
 
 require('../api')
 const PackageInfo = require('../../../package.json')
 
-enum SystemStatusAPIMethods {
-	'getSystemStatus' = 'systemStatus.getSystemStatus',
-}
-
 describe('systemStatus', () => {
 	let env: DefaultEnvironment
-	testInFiber('getSystemStatus: before startup', () => {
+	testInFiber('getSystemStatus: before startup', async () => {
 		// Before starting the system up, the system status will be unknown
 		const expectedStatus0 = StatusCode.UNKNOWN
-		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+		const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
 			_status: expectedStatus0,
@@ -34,7 +30,7 @@ describe('systemStatus', () => {
 		env = await setupDefaultStudioEnvironment()
 		MeteorMock.mockRunMeteorStartup()
 
-		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+		const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
 		// Intial expected status is BAD, because the databaseVersion doesn't match
 		const expectedStatus0 = StatusCode.BAD
@@ -49,14 +45,14 @@ describe('systemStatus', () => {
 			status: status2ExternalStatus(StatusCode.BAD),
 		})
 	})
-	testInFiber('getSystemStatus: after all migrations completed', () => {
+	testInFiber('getSystemStatus: after all migrations completed', async () => {
 		// simulate migrations completed
 		setSystemStatus('databaseVersion', {
 			statusCode: StatusCode.GOOD,
 			messages: [`${'databaseVersion'} version: ${PackageInfo.version}`],
 		})
 
-		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+		const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
 		// Expected status is GOOD, because the databaseVersion matches
 		const expectedStatus0 = StatusCode.GOOD
@@ -69,7 +65,7 @@ describe('systemStatus', () => {
 			status: status2ExternalStatus(StatusCode.GOOD),
 		})
 	})
-	testInFiber('getSystemStatus: a component has a fault', () => {
+	testInFiber('getSystemStatus: a component has a fault', async () => {
 		// simulate device failure
 		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
@@ -80,7 +76,7 @@ describe('systemStatus', () => {
 			},
 		})
 
-		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+		const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
 		// Expected status is WARNING_MAJOR, because the the device has a warning status
 		const expectedStatus0 = StatusCode.WARNING_MAJOR
@@ -95,7 +91,7 @@ describe('systemStatus', () => {
 			status: status2ExternalStatus(expectedStatus0),
 		})
 	})
-	testInFiber('getSystemStatus: a component has a library version mismatch', () => {
+	testInFiber('getSystemStatus: a component has a library version mismatch', async () => {
 		// simulate device failure
 		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
@@ -106,7 +102,7 @@ describe('systemStatus', () => {
 			},
 		})
 
-		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+		const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
 		// Expected status is GOOD, because the device is GOOD, check that the system is reset
 		const expectedStatus0 = StatusCode.GOOD
@@ -134,7 +130,7 @@ describe('systemStatus', () => {
 					},
 				},
 			})
-			const result1: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+			const result1: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
 			// Expected status is BAD, because the device expects a different major version
 			const expectedStatus1 = StatusCode.BAD
@@ -157,7 +153,7 @@ describe('systemStatus', () => {
 					},
 				},
 			})
-			const result2: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+			const result2: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
 			// Expected status is BAD, because the device expects a different minor version
 			const expectedStatus2 = StatusCode.BAD
@@ -180,7 +176,7 @@ describe('systemStatus', () => {
 					},
 				},
 			})
-			const result3: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+			const result3: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
 			// Expected status is GOOD, because this should have no effect
 			const expectedStatus3 = StatusCode.GOOD
@@ -198,7 +194,7 @@ describe('systemStatus', () => {
 				},
 			},
 		})
-		const result4: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+		const result4: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
 		// Expected status is BAD, because the device expects a different version
 		const expectedStatus4 = StatusCode.BAD
@@ -213,7 +209,7 @@ describe('systemStatus', () => {
 				disableVersionChecks: true,
 			},
 		})
-		const result5: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+		const result5: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
 		// Expected status is GOOD, as the check has been skipped
 		const expectedStatus5 = StatusCode.GOOD

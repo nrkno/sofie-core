@@ -9,6 +9,7 @@ import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { MeteorCall } from '../../../lib/api/methods'
 
 require('../client') // include in order to create the Meteor methods needed
 
@@ -30,9 +31,9 @@ describe('ClientAPI', () => {
 		testInFiber('Exports a Meteor method to the client', () => {
 			expect(MeteorMock.mockMethods[ClientAPIMethods.clientErrorReport]).toBeTruthy()
 		})
-		testInFiber('Returns a success response to the client', () => {
+		testInFiber('Returns a success response to the client', async () => {
 			// should not throw:
-			Meteor.call(ClientAPIMethods.clientErrorReport, 1000, { error: 'Some Error' }, 'MockLocation')
+			await MeteorCall.client.clientErrorReport(1000, { error: 'Some Error' }, 'MockString', 'MockLocation')
 		})
 	})
 
@@ -51,15 +52,12 @@ describe('ClientAPI', () => {
 			let promise: Promise<any>
 			beforeAllInFiber(async () => {
 				logMethodName = `${mockDeviceId}: ${mockFunctionName}`
-				promise = makePromise(() =>
-					Meteor.call(
-						ClientAPIMethods.callPeripheralDeviceFunction,
-						mockContext,
-						mockDeviceId,
-						undefined,
-						mockFunctionName,
-						...mockArgs
-					)
+				promise = MeteorCall.client.callPeripheralDeviceFunction(
+					mockContext,
+					mockDeviceId,
+					undefined,
+					mockFunctionName,
+					...mockArgs
 				)
 				await new Promise((resolve) => orgSetTimeout(resolve, 100))
 			})

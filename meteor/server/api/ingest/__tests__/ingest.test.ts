@@ -1,5 +1,5 @@
-import { Meteor } from 'meteor/meteor'
-import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
+import '../../../../__mocks__/_extendJest'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
@@ -23,7 +23,7 @@ import {
 	RundownPlaylistCollectionUtil,
 } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
-import { MethodContext } from '../../../../lib/api/methods'
+import { MeteorCall, MethodContext } from '../../../../lib/api/methods'
 import { removeRundownPlaylistFromDb } from '../../rundownPlaylist'
 import { Random } from 'meteor/random'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
@@ -71,7 +71,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		)
 	})
 
-	testInFiber('dataRundownCreate', () => {
+	testInFiber('dataRundownCreate', async () => {
 		// setLogLevel(LogLevel.DEBUG)
 
 		expect(Rundowns.findOne()).toBeFalsy()
@@ -113,7 +113,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			],
 		}
 
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownCreate(device._id, device.token, rundownData)
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
 		const rundown = Rundowns.findOne() as Rundown
@@ -136,7 +136,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts1).toHaveLength(1)
 	})
 
-	testInFiber('dataRundownUpdate change name', () => {
+	testInFiber('dataRundownUpdate change name', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -174,7 +174,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownUpdate(device._id, device.token, rundownData)
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
 		const rundown = Rundowns.findOne() as Rundown
@@ -201,7 +201,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts1).toHaveLength(1)
 	})
 
-	testInFiber('dataRundownUpdate add a segment', () => {
+	testInFiber('dataRundownUpdate add a segment', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -251,7 +251,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownUpdate(device._id, device.token, rundownData)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
@@ -272,7 +272,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts2).toHaveLength(1)
 	})
 
-	testInFiber('dataRundownUpdate add a part', () => {
+	testInFiber('dataRundownUpdate add a part', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -327,7 +327,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownUpdate(device._id, device.token, rundownData)
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
 		const rundown = Rundowns.findOne() as Rundown
@@ -355,7 +355,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts2).toHaveLength(1)
 	})
 
-	testInFiber('dataRundownUpdate remove a segment', () => {
+	testInFiber('dataRundownUpdate remove a segment', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -393,7 +393,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownUpdate(device._id, device.token, rundownData)
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
 		const rundown = Rundowns.findOne() as Rundown
@@ -417,7 +417,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts1).toHaveLength(1)
 	})
 
-	testInFiber('dataRundownUpdate remove a part', () => {
+	testInFiber('dataRundownUpdate remove a part', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -450,7 +450,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownUpdate(device._id, device.token, rundownData)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
@@ -469,14 +469,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts1).toHaveLength(1)
 	})
 
-	testInFiber('dataRundownMetaDataUpdate change name, does not remove segments', () => {
+	testInFiber('dataRundownMetaDataUpdate change name, does not remove segments', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		const rundownData: Omit<IngestRundown, 'segments'> = {
 			externalId: externalId,
 			name: 'MyMockRundownRenamed',
 			type: 'mock',
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownMetaDataUpdate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownMetaDataUpdate(device._id, device.token, rundownData)
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
 		const rundown = Rundowns.findOne() as Rundown
@@ -503,19 +503,19 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts1).toHaveLength(1)
 	})
 
-	testInFiber('dataRundownDelete', () => {
+	testInFiber('dataRundownDelete', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownDelete, device._id, device.token, externalId)
+		await MeteorCall.peripheralDevice.dataRundownDelete(device._id, device.token, externalId)
 		expect(Rundowns.findOne()).toBeFalsy()
 		expect(Segments.find().count()).toBe(0)
 		expect(Parts.find().count()).toBe(0)
 	})
 
-	testInFiber('dataRundownDelete for a second time', () => {
+	testInFiber('dataRundownDelete for a second time', async () => {
 		expect(Rundowns.findOne()).toBeFalsy()
-		expect(() =>
-			Meteor.call(PeripheralDeviceAPIMethods.dataRundownDelete, device._id, device.token, externalId)
-		).toThrow(/Rundown.*not found/i)
+		await expect(
+			MeteorCall.peripheralDevice.dataRundownDelete(device._id, device.token, externalId)
+		).rejects.toMatchToString(/Rundown.*not found/i)
 	})
 
 	// Note: this test fails, due to a backwards-compatibility hack in #c579c8f0
@@ -533,7 +533,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	// 		expect(e.message).toBe('[404] PeripheralDevice "mockDevice" not found')
 	// 	}
 	// 	try {
-	// 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownDelete, device._id, device.token.slice(0, -1), externalId)
+	// 		await 		MeteorCall.peripheralDevice.dataRundownDelete(device._id, device.token.slice(0, -1), externalId)
 	// 		fail('expected to throw')
 	// 	} catch (e) {
 	// 		expect(e.message).toBe('[401] Not allowed access to peripheralDevice')
@@ -541,7 +541,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	// })
 
 	// Reject update when no preceeding create
-	testInFiber('dataRundownUpdate when not yet created', () => {
+	testInFiber('dataRundownUpdate when not yet created', async () => {
 		expect(Rundowns.findOne()).toBeFalsy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -575,13 +575,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			],
 		}
 
-		expect(() =>
-			Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
-		).toThrow(/Rundown.*not found/)
+		await expect(
+			MeteorCall.peripheralDevice.dataRundownUpdate(device._id, device.token, rundownData)
+		).rejects.toMatchToString(/Rundown.*not found/)
 		expect(Rundowns.findOne()).toBeFalsy()
 	})
 
-	testInFiber('dataRundownUpdate fail when rundown is orphaned', () => {
+	testInFiber('dataRundownUpdate fail when rundown is orphaned', async () => {
 		expect(Rundowns.findOne()).toBeFalsy()
 		const rundownData0: IngestRundown = {
 			externalId: externalId,
@@ -615,7 +615,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			],
 		}
 
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData0)
+		await MeteorCall.peripheralDevice.dataRundownCreate(device._id, device.token, rundownData0)
 		expect(Rundowns.findOne()).toBeTruthy()
 		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
 
@@ -643,13 +643,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			],
 		}
 
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownUpdate(device._id, device.token, rundownData)
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown.orphaned).toEqual('deleted')
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
 	})
 
-	testInFiber('dataRundownCreate replace orphaned rundown', () => {
+	testInFiber('dataRundownCreate replace orphaned rundown', async () => {
 		expect(Rundowns.find({ orphaned: 'deleted' }).count()).toEqual(1)
 
 		const rundownData: IngestRundown = {
@@ -683,11 +683,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownCreate(device._id, device.token, rundownData)
 		expect(Rundowns.find({ orphaned: 'deleted' }).count()).toEqual(0)
 	})
 
-	testInFiber('dataSegmentCreate in deleted rundown', () => {
+	testInFiber('dataSegmentCreate in deleted rundown', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
 
@@ -699,14 +699,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 			parts: [],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, externalId, ingestSegment)
+		await MeteorCall.peripheralDevice.dataSegmentCreate(device._id, device.token, externalId, ingestSegment)
 
 		const segment = Segments.find({ externalId: segExternalId }).fetch()
 		expect(segment).toHaveLength(0)
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
 	})
 
-	testInFiber('dataSegmentCreate', () => {
+	testInFiber('dataSegmentCreate', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		Rundowns.update({}, { $unset: { orphaned: 1 } })
 
@@ -718,7 +718,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 			parts: [],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, externalId, ingestSegment)
+		await MeteorCall.peripheralDevice.dataSegmentCreate(device._id, device.token, externalId, ingestSegment)
 
 		const segment = Segments.find({ externalId: segExternalId }).fetch()
 		expect(segment).toHaveLength(1)
@@ -731,7 +731,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(segments).toHaveLength(3)
 	})
 
-	testInFiber('dataSegmentCreate replace deleted segment', () => {
+	testInFiber('dataSegmentCreate replace deleted segment', async () => {
 		expect(Rundowns.findOne()).toBeTruthy()
 		Rundowns.update({}, { $unset: { orphaned: 1 } })
 
@@ -747,7 +747,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 			parts: [],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, externalId, ingestSegment)
+		await MeteorCall.peripheralDevice.dataSegmentCreate(device._id, device.token, externalId, ingestSegment)
 
 		const segment = Segments.find({ externalId: segExternalId }).fetch()
 		expect(segment).toHaveLength(1)
@@ -756,7 +756,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 	})
 
-	testInFiber('dataSegmentUpdate add a part', () => {
+	testInFiber('dataSegmentUpdate add a part', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
@@ -773,7 +773,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+		await MeteorCall.peripheralDevice.dataSegmentUpdate(device._id, device.token, externalId, ingestSegment)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		expect(segments).toHaveLength(3)
@@ -786,7 +786,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 	})
 
-	testInFiber('dataSegmentUpdate deleted segment', () => {
+	testInFiber('dataSegmentUpdate deleted segment', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 
@@ -805,7 +805,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+		await MeteorCall.peripheralDevice.dataSegmentUpdate(device._id, device.token, externalId, ingestSegment)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		expect(segments).toHaveLength(3)
@@ -813,7 +813,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Segments.findOne({ externalId: segExternalId })).toMatchObject(segmentBefore)
 	})
 
-	testInFiber('dataSegmentUpdate deleted rundown', () => {
+	testInFiber('dataSegmentUpdate deleted rundown', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		Rundowns.update({}, { $set: { orphaned: 'deleted' } })
 		Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
@@ -833,7 +833,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+		await MeteorCall.peripheralDevice.dataSegmentUpdate(device._id, device.token, externalId, ingestSegment)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		expect(segments).toHaveLength(3)
@@ -841,7 +841,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Segments.findOne({ externalId: segExternalId })).toMatchObject(segmentBefore)
 	})
 
-	testInFiber('dataSegmentUpdate non-existant rundown', () => {
+	testInFiber('dataSegmentUpdate non-existant rundown', async () => {
 		const segExternalId2 = Random.id()
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId2,
@@ -852,13 +852,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		expect(Segments.findOne({ externalId: segExternalId2 })).toBeFalsy()
 
-		expect(() =>
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, 'wibble', ingestSegment)
-		).toThrow(/Rundown.*not found/)
+		await expect(
+			MeteorCall.peripheralDevice.dataSegmentUpdate(device._id, device.token, 'wibble', ingestSegment)
+		).rejects.toMatchToString(/Rundown.*not found/)
 		expect(Segments.findOne({ externalId: segExternalId2 })).toBeFalsy()
 	})
 
-	testInFiber('dataSegmentUpdate no change', () => {
+	testInFiber('dataSegmentUpdate no change', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		Rundowns.update({}, { $unset: { orphaned: 1 } })
 		Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
@@ -876,7 +876,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+		await MeteorCall.peripheralDevice.dataSegmentUpdate(device._id, device.token, externalId, ingestSegment)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		expect(segments).toHaveLength(3)
@@ -889,7 +889,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 	})
 
-	testInFiber('dataSegmentUpdate remove a part', () => {
+	testInFiber('dataSegmentUpdate remove a part', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 
@@ -899,7 +899,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 			parts: [],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, externalId, ingestSegment)
+		await MeteorCall.peripheralDevice.dataSegmentUpdate(device._id, device.token, externalId, ingestSegment)
 
 		const segments = Segments.find({ rundownId: rundown._id }).fetch()
 		expect(segments).toHaveLength(3)
@@ -908,7 +908,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts3).toHaveLength(0)
 	})
 
-	testInFiber('dataSegmentUpdate no external id', () => {
+	testInFiber('dataSegmentUpdate no external id', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 		const ingestSegment: IngestSegment = {
@@ -917,18 +917,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 			parts: [],
 		}
-		expect(() =>
-			Meteor.call(
-				PeripheralDeviceAPIMethods.dataSegmentUpdate,
-				device._id,
-				device.token,
-				externalId,
-				ingestSegment
-			)
-		).toThrow(`[401] getSegmentId: segmentExternalId must be set!`)
+		await expect(
+			MeteorCall.peripheralDevice.dataSegmentUpdate(device._id, device.token, externalId, ingestSegment)
+		).rejects.toThrowMeteor(401, `getSegmentId: segmentExternalId must be set!`)
 	})
 
-	testInFiber('dataSegmentDelete already orphaned segment', () => {
+	testInFiber('dataSegmentDelete already orphaned segment', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id, externalId: segExternalId }).count()).toBe(1)
 
@@ -937,13 +931,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
+		await MeteorCall.peripheralDevice.dataSegmentDelete(device._id, device.token, externalId, segExternalId)
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 		expect(Segments.findOne({ externalId: segExternalId })).toBeTruthy()
 	})
 
-	testInFiber('dataSegmentDelete in deleted rundown', () => {
+	testInFiber('dataSegmentDelete in deleted rundown', async () => {
 		// reset rundown
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -988,7 +982,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownCreate(device._id, device.token, rundownData)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id, externalId: segExternalId }).count()).toBe(1)
@@ -998,13 +992,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
+		await MeteorCall.peripheralDevice.dataSegmentDelete(device._id, device.token, externalId, segExternalId)
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
 		expect(Segments.findOne({ externalId: segExternalId })).toBeTruthy()
 	})
 
-	testInFiber('dataSegmentDelete', () => {
+	testInFiber('dataSegmentDelete', async () => {
 		// reset rundown
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -1049,7 +1043,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownCreate(device._id, device.token, rundownData)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(3)
@@ -1057,39 +1051,33 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Rundowns.update({}, { $unset: { orphaned: 1 } })
 		Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
 
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
+		await MeteorCall.peripheralDevice.dataSegmentDelete(device._id, device.token, externalId, segExternalId)
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
 		expect(Segments.findOne({ externalId: segExternalId })).toBeFalsy()
 	})
 
-	testInFiber('dataSegmentDelete for a second time', () => {
+	testInFiber('dataSegmentDelete for a second time', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id, externalId: segExternalId }).count()).toBe(0)
 
-		expect(() =>
-			Meteor.call(
-				PeripheralDeviceAPIMethods.dataSegmentDelete,
-				device._id,
-				device.token,
-				externalId,
-				segExternalId
-			)
-		).toThrow(`[404] Rundown "${externalId}" does not have a Segment "${segExternalId}" to remove`)
+		await expect(
+			MeteorCall.peripheralDevice.dataSegmentDelete(device._id, device.token, externalId, segExternalId)
+		).rejects.toThrowMeteor(404, `Rundown "${externalId}" does not have a Segment "${segExternalId}" to remove`)
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
 	})
 
-	testInFiber('dataSegmentDelete from non-existant rundown', () => {
+	testInFiber('dataSegmentDelete from non-existant rundown', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
 
-		expect(() =>
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, 'wibble', segExternalId)
-		).toThrow(/Rundown.*not found/i)
+		await expect(
+			MeteorCall.peripheralDevice.dataSegmentDelete(device._id, device.token, 'wibble', segExternalId)
+		).rejects.toMatchToString(/Rundown.*not found/i)
 	})
 
-	testInFiber('dataSegmentCreate non-existant rundown', () => {
+	testInFiber('dataSegmentCreate non-existant rundown', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
 
@@ -1099,72 +1087,45 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 			parts: [],
 		}
-		expect(() =>
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, 'wibble', ingestSegment)
-		).toThrow(/not found/)
+		await expect(
+			MeteorCall.peripheralDevice.dataSegmentCreate(device._id, device.token, 'wibble', ingestSegment)
+		).rejects.toMatchToString(/not found/)
 	})
 
-	testInFiber('dataRundownCreate with not enough arguments', () => {
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate)
-			expect(0).toBe(1)
-		} catch (e) {
-			expect(e).toBeTruthy()
-		}
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id)
-			expect(0).toBe(1)
-		} catch (e) {
-			expect(e).toBeTruthy()
-		}
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token)
-			expect(0).toBe(1)
-		} catch (e) {
-			expect(e).toBeTruthy()
-		}
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, null)
-			expect(0).toBe(1)
-		} catch (e) {
-			expect(e).toBeTruthy()
-		}
+	testInFiber('dataRundownCreate with not enough arguments', async () => {
+		// @ts-expect-error
+		await expect(MeteorCall.peripheralDevice.dataRundownCreate()).rejects.toThrow()
+
+		// @ts-expect-error
+		await expect(MeteorCall.peripheralDevice.dataRundownCreate(device._id)).rejects.toThrow()
+
+		// @ts-expect-error
+		await expect(MeteorCall.peripheralDevice.dataRundownCreate(device._id, device.token)).rejects.toThrow()
+
+		await expect(MeteorCall.peripheralDevice.dataRundownCreate(device._id, device.token, null)).rejects.toThrow()
 	})
 
-	testInFiber('dataSegmentCreate with not enough arguments', () => {
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate)
-			expect(0).toBe(1)
-		} catch (e) {
-			expect(e).toBeTruthy()
-		}
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id)
-			expect(0).toBe(1)
-		} catch (e) {
-			expect(e).toBeTruthy()
-		}
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token)
-			expect(0).toBe(1)
-		} catch (e) {
-			expect(e).toBeTruthy()
-		}
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, externalId)
-			expect(0).toBe(1)
-		} catch (e) {
-			expect(e).toBeTruthy()
-		}
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, externalId, null)
-			expect(0).toBe(1)
-		} catch (e) {
-			expect(e).toBeTruthy()
-		}
+	testInFiber('dataSegmentCreate with not enough arguments', async () => {
+		// @ts-expect-error
+		await expect(MeteorCall.peripheralDevice.dataSegmentCreate()).rejects.toThrow()
+
+		// @ts-expect-error
+		await expect(MeteorCall.peripheralDevice.dataSegmentCreate(device._id)).rejects.toThrow()
+
+		// @ts-expect-error
+		await expect(MeteorCall.peripheralDevice.dataSegmentCreate(device._id, device.token)).rejects.toThrow()
+
+		await expect(
+			// @ts-expect-error
+			MeteorCall.peripheralDevice.dataSegmentCreate(device._id, device.token, externalId)
+		).rejects.toThrow()
+
+		await expect(
+			MeteorCall.peripheralDevice.dataSegmentCreate(device._id, device.token, externalId, null)
+		).rejects.toThrow()
 	})
 
-	testInFiber('dataPartCreate', () => {
+	testInFiber('dataPartCreate', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		const segment = Segments.findOne({ externalId: 'segment0' }) as Segment
 		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(1)
@@ -1175,8 +1136,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 		}
 
-		Meteor.call(
-			PeripheralDeviceAPIMethods.dataPartCreate,
+		await MeteorCall.peripheralDevice.dataPartCreate(
 			device._id,
 			device.token,
 			externalId,
@@ -1193,7 +1153,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 	})
 
-	testInFiber('dataPartUpdate', () => {
+	testInFiber('dataPartUpdate', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		const segment = Segments.findOne({ externalId: 'segment0' }) as Segment
 		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
@@ -1204,8 +1164,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rank: 0,
 		}
 
-		Meteor.call(
-			PeripheralDeviceAPIMethods.dataPartUpdate,
+		await MeteorCall.peripheralDevice.dataPartUpdate(
 			device._id,
 			device.token,
 			externalId,
@@ -1222,13 +1181,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 	})
 
-	testInFiber('dataPartDelete', () => {
+	testInFiber('dataPartDelete', async () => {
 		const rundown = Rundowns.findOne() as Rundown
 		const segment = Segments.findOne({ rundownId: rundown._id, externalId: 'segment0' }) as Segment
 		expect(Parts.find({ rundownId: rundown._id, segmentId: segment._id }).count()).toBe(2)
 
-		Meteor.call(
-			PeripheralDeviceAPIMethods.dataPartDelete,
+		await MeteorCall.peripheralDevice.dataPartDelete(
 			device._id,
 			device.token,
 			externalId,
@@ -1242,7 +1200,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 	// TODO Part tests are minimal/happy path only on the assumption the API gets little use
 
-	testInFiber('dataSegmentRanksUpdate', () => {
+	testInFiber('dataSegmentRanksUpdate', async () => {
 		Rundowns.remove({})
 		expect(Rundowns.findOne()).toBeFalsy()
 		const rundownData: IngestRundown = {
@@ -1294,7 +1252,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				},
 			],
 		}
-		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
+		await MeteorCall.peripheralDevice.dataRundownCreate(device._id, device.token, rundownData)
 
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toBeTruthy()
@@ -1302,7 +1260,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
 
-		Meteor.call(PeripheralDeviceAPIMethods.dataSegmentRanksUpdate, device._id, device.token, externalId, {
+		await MeteorCall.peripheralDevice.dataSegmentRanksUpdate(device._id, device.token, externalId, {
 			['segment0']: 6,
 			['segment2']: 1,
 			['segment5']: 3,
@@ -1365,7 +1323,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			// Preparation: set up rundown
 			expect(Rundowns.findOne()).toBeFalsy()
-			Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
+			await MeteorCall.peripheralDevice.dataRundownCreate(device2._id, device2.token, rundownData)
 			const rundown = Rundowns.findOne() as Rundown
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
@@ -1383,12 +1341,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 					if (e.toString().match(/does not support the method "reloadRundown"/)) {
 						// This is expected
 
-						Meteor.call(
-							PeripheralDeviceAPIMethods.dataRundownCreate,
-							device2._id,
-							device2.token,
-							rundownData
-						)
+						await MeteorCall.peripheralDevice.dataRundownCreate(device2._id, device2.token, rundownData)
 						return
 					}
 					throw e
@@ -1528,7 +1481,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			// Preparation: set up rundown
 			expect(Rundowns.findOne()).toBeFalsy()
-			Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
+			await MeteorCall.peripheralDevice.dataRundownCreate(device2._id, device2.token, rundownData)
 			const rundown = Rundowns.findOne() as Rundown
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
@@ -1575,8 +1528,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			const updatedSegmentData: IngestSegment = rundownData.segments[0]
 			updatedSegmentData.parts[1].externalId = 'new-part'
 
-			Meteor.call(
-				PeripheralDeviceAPIMethods.dataSegmentUpdate,
+			await MeteorCall.peripheralDevice.dataSegmentUpdate(
 				device2._id,
 				device2.token,
 				rundownData.externalId,

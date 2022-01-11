@@ -1,7 +1,6 @@
-import { Meteor } from 'meteor/meteor'
+import '../../../__mocks__/_extendJest'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { queueExternalMessages } from '../ExternalMessageQueue'
-import { ExternalMessageQueueAPIMethods } from '../../../lib/api/ExternalMessageQueue'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import {
@@ -14,6 +13,7 @@ import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mo
 import { getCurrentTime, protectString } from '../../../lib/lib'
 import { sendSlackMessageToWebhook } from '../integration/slack'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { MeteorCall } from '../../../lib/api/methods'
 
 describe('Test external message queue static methods', () => {
 	let studioEnv: DefaultEnvironment
@@ -91,33 +91,34 @@ describe('Test external message queue static methods', () => {
 		expect(message.expires).toBeGreaterThan(getCurrentTime())
 	})
 
-	testInFiber('toggleHold', () => {
+	testInFiber('toggleHold', async () => {
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.hold).toBeUndefined()
 
-		Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, message._id)
+		await MeteorCall.externalMessages.toggleHold(message._id)
 		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.hold).toBe(true)
 
-		Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, message._id)
+		await MeteorCall.externalMessages.toggleHold(message._id)
 		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.hold).toBe(false)
 	})
 
-	testInFiber('toggleHold unknown id', () => {
-		expect(() => Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, 'cake')).toThrow(
-			'[404] ExternalMessage "cake" not found'
+	testInFiber('toggleHold unknown id', async () => {
+		await expect(MeteorCall.externalMessages.toggleHold(protectString('cake'))).rejects.toThrowMeteor(
+			404,
+			'ExternalMessage "cake" not found!'
 		)
 	})
 
-	testInFiber('retry', () => {
+	testInFiber('retry', async () => {
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 
-		Meteor.call(ExternalMessageQueueAPIMethods.retry, message._id)
+		await MeteorCall.externalMessages.retry(message._id)
 
 		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
@@ -128,27 +129,24 @@ describe('Test external message queue static methods', () => {
 		})
 	})
 
-	testInFiber('retry unknown id', () => {
-		expect(() => Meteor.call(ExternalMessageQueueAPIMethods.retry, 'is_a_lie')).toThrow(
-			'[404] ExternalMessage "is_a_lie" not found'
+	testInFiber('retry unknown id', async () => {
+		await expect(MeteorCall.externalMessages.retry(protectString('is_a_lie'))).rejects.toThrowMeteor(
+			404,
+			'ExternalMessage "is_a_lie" not found!'
 		)
 	})
 
-	testInFiber('setRunMessageQueue', () => {
-		Meteor.call(ExternalMessageQueueAPIMethods.setRunMessageQueue, false, (err: Error) => {
-			expect(err).toBeFalsy()
-		})
+	testInFiber('setRunMessageQueue', async () => {
+		await MeteorCall.externalMessages.setRunMessageQueue(false)
 
-		Meteor.call(ExternalMessageQueueAPIMethods.setRunMessageQueue, true, (err: Error) => {
-			expect(err).toBeFalsy()
-		})
+		await MeteorCall.externalMessages.setRunMessageQueue(true)
 	})
 
-	testInFiber('remove', () => {
+	testInFiber('remove', async () => {
 		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 
-		Meteor.call(ExternalMessageQueueAPIMethods.remove, message._id)
+		await MeteorCall.externalMessages.remove(message._id)
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
@@ -236,7 +234,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		expect(message.lastTry).toBeGreaterThanOrEqual(sendTime)
 		expect(message.sentReply).toBeTruthy()
 		expect(message.tryCount).toBe(1)
-		Meteor.call(ExternalMessageQueueAPIMethods.remove, message._id)
+		await MeteorCall.externalMessages.remove(message._id)
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
