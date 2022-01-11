@@ -1702,11 +1702,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				})
 			}
 
-			if (
-				typeof this.props.playlist !== typeof prevProps.playlist ||
-				(this.props.playlist || { name: '' }).name !== (prevProps.playlist || { name: '' }).name
-			) {
-				if (this.props.playlist && this.props.playlist.name) {
+			if (this.props.playlist?.name !== prevProps.playlist?.name) {
+				if (this.props.playlist?.name) {
 					documentTitle.set(this.props.playlist.name)
 				} else {
 					documentTitle.set(null)
