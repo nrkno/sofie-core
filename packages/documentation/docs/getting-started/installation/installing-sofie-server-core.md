@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Quick install
 
 ## Installing for testing \(or production\)
@@ -11,7 +15,7 @@
 
 This docker-compose file automates the basic setup of the [Sofie-Core application](../../for-developers/libraries.md#main-application), the backend database and different Gateway options.
 
-{% file src="/gitbook/assets/docker-compose \(2\).yaml" %}
+[Docker Compose File](/attachments/docs/getting-started/installation/docker-compose.yaml)
 
 After you've downloaded the file, open it in a text editor and navigate to the _ingest-gateway_ section, and select which type of _ingest-gateway_ you'd like installed by commenting out the others.
 
@@ -21,7 +25,7 @@ Then open a terminal, `cd your-sofie-folder` and `sudo docker-compose up` \(just
 
 Once the installation is done, Sofie should be running on [http://localhost:3000](http://localhost:3000)
 
-Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom Systems](installing-a-gateway/rundown-or-newsroom-system-connection/) to see which _Rundown Gateway_ is best suited for ~~_your_~~ production environment.
+Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom Systems](./installing-a-gateway/rundown-or-newsroom-system-connection/README) to see which _Rundown Gateway_ is best suited for ~~_your_~~ production environment.
 
 To get a demo rundown up and running quickly, check out the [Sofie Rundown Editor](installing-a-gateway/rundown-or-newsroom-system-connection/rundown-editor.md).
 

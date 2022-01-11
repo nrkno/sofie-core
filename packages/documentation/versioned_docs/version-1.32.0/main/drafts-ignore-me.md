@@ -40,7 +40,7 @@ The producer gets the overview of the entire show. This view also lets them cont
 
 
 
-![The Producer&apos;s view and naming conventions of components](/gitbook/assets/sofie-naming-conventions.png)
+![The Producer&apos;s view and naming conventions of components](/img/docs/main/sofie-naming-conventions.png)
 
 #### Media status
 

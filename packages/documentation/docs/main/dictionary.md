@@ -28,11 +28,11 @@ Things that should be covered:
 
 
 
-![The Rundown view and naming conventions of components](/gitbook/assets/sofie-naming-conventions.png)
+![The Rundown view and naming conventions of components](/img/docs/main/sofie-naming-conventions.png)
 
 #### Segment Header countdowns
 
-![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/gitbook/assets/obraz (5).png)
+![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/img/docs/main/segment-budget-and-countdown.png)
 
 {% tabs %}
 {% tab title="Left: Segment Time Budget" %}
@@ -50,7 +50,7 @@ In the illustration above, the first Segment \(_Ny Sak_\) has been playing for 4
 
 When using a workflow and blueprints that combine multiple NRCS Rundowns into a single Sofie Rundown \(such as when using the "Ready To Air" functionality in AP ENPS\), information about these individual NRCS Rundowns will be inserted into the Rundown View at the point where each of these incoming Rundowns start.
 
-![Rundown divider between two NRCS Rundowns in a &quot;Ready To Air&quot; Rundown](/gitbook/assets/obraz (3).png)
+![Rundown divider between two NRCS Rundowns in a "Ready To Air" Rundown](/img/docs/main/rundown-divider.png)
 
 For reference, these headers show the Name, Planned Start and Planned Duration of the individual NRCS Rundown.
 
@@ -58,7 +58,7 @@ For reference, these headers show the Name, Planned Start and Planned Duration o
 
 The shelf contains lists of AdLibs that can be played out.
 
-![](/gitbook/assets/shelf.png)
+![Shelf](/img/docs/main/shelf.png)
 
 {% hint style="info" %}
 The Shelf can be opened by clicking the handle at the bottom of the screen, or by pressing the TAB key
@@ -74,7 +74,7 @@ Documentation for this section is yet to be written.
 
 #### Switchboard
 
-![Switchboard](/gitbook/assets/switchboard.png)
+![Switchboard](/img/docs/main/switchboard.png)
 
 The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](features-and-configuration/concepts-and-architecture.md#system-organization-studio-and-show-style).
 
@@ -86,7 +86,7 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 ### Playing things
 
-![](/gitbook/assets/takenext (1) (1).png)
+![Take Next](/img/docs/main/take-next.png)
 
 #### Take Point
 
@@ -109,7 +109,7 @@ Change the Next point by right-clicking in the GUI, or by pressing \(Shift +\) F
 
 #### Freeze-frame countdown
 
-![Part is 1 second heavy, LiveSpeak piece has 7 seconds of playback until it freezes](/gitbook/assets/obraz (7).png)
+![Part is 1 second heavy, LiveSpeak piece has 7 seconds of playback until it freezes](/img/docs/main/freeze-frame-countdown.png)
 
 If a Piece has more or less content than the Part's expected duration allows, an additional counter with a Snowflake icon will be displayed, attached to the On Air line, counting down to the moment when content from that Piece will freeze-frame at the last frame. The time span in which the content from the Piece will be visible on the output, but will be frozen, is displayed with an overlay of icicles.
 
@@ -121,5 +121,4 @@ Elements in the [Next point ](dictionary.md#next-point)\(or beyond\) might be pr
 
 Sofie features a few separate views, such as the prompter, [read about them here](features-and-configuration/sofie-pages.md).
 
-![](/gitbook/assets/image (7) (1).png)
-
+![Prompter View](/img/docs/main/prompter-view.png)

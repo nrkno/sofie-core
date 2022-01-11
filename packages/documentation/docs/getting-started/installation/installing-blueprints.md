@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # Installing Blueprints
 
 #### Prerequisites
@@ -9,9 +13,9 @@ Blueprints are little plug-in programs that runs inside _Sofie_. They are the lo
 
 Blueprints are custom scripts that you create yourself \(or download an existing one\). There are a set of example Blueprints for the Spreadsheet Gateway available for use here: [https://github.com/SuperFlyTV/sofie-demo-blueprints](https://github.com/SuperFlyTV/sofie-demo-blueprints).
 
-To begin installing any Blueprint, navigate to the _Settings page_. Getting there is covered in the [Sofie Access Levels](../../features-and-configuration/sofie-navigation.md) page.
+To begin installing any Blueprint, navigate to the _Settings page_. Getting there is covered in the [Sofie Access Levels](/docs/getting-started/sofie-navigation) page.
 
-![The Settings Page](/gitbook/assets/settings-page.jpg)
+![The Settings Page](/img/docs/getting-started/settings-page.jpg)
 
 To upload a new blueprint, click the _+_ icon next to Blueprints menu option. Select the newly created Blueprint and upload the local blueprint JS file. You will get a confirmation if the installation was successful.
 

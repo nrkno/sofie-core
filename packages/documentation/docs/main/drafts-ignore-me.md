@@ -1,4 +1,4 @@
-# Drafts \(ignore this\)
+# Drafts (ignore this)
 
 {% hint style="danger" %}
 This page contains loose notes, which will be refactored, rewritten, removed or relocated to other parts in the documentation.
@@ -40,7 +40,7 @@ The producer gets the overview of the entire show. This view also lets them cont
 
 
 
-![The Producer&apos;s view and naming conventions of components](/gitbook/assets/sofie-naming-conventions.png)
+![The Producer&apos;s view and naming conventions of components](/img/docs/main/sofie-naming-conventions.png)
 
 #### Media status
 

@@ -1,3 +1,7 @@
+---
+sidebar_position: 7
+---
+
 # Installing Package Manager
 
 #### Prerequisites
