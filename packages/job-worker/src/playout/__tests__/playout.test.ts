@@ -31,7 +31,6 @@ import {
 	takeNextPart,
 } from '../playout'
 import { getSelectedPartInstances } from './lib'
-import * as lib from '../../lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MockMongoCollection } from '../../__mocks__/collection'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
@@ -56,8 +55,9 @@ import { PieceLifespan } from '../../../../blueprints-integration/dist'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
+import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mocks__/time'
 
-const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
+// const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
 	.spyOn(peripheralDeviceLib, 'executePeripheralDeviceFunction')
 	.mockImplementation(() => sleep(10))
@@ -122,7 +122,7 @@ describe('Playout API', () => {
 		jest.clearAllMocks()
 	})
 	afterEach(() => {
-		mockGetCurrentTime.mockClear()
+		// mockGetCurrentTime.mockClear()
 		mockExecutePeripheralDeviceFunction.mockClear()
 	})
 	test('Basic rundown control', async () => {
@@ -500,11 +500,11 @@ describe('Playout API', () => {
 		const { parts } = await getAllRundownData(await getRundown0())
 
 		// just any time, such as 2020-01-01 12:00:00
-		let now = new Date(2020, 0, 1, 12, 0, 0).getTime()
-
-		mockGetCurrentTime.mockImplementation(() => now)
+		useFakeCurrentTime(new Date(2020, 0, 1, 12, 0, 0).getTime())
 
 		{
+			const now = getCurrentTime()
+
 			// Take the first Part:
 			await takeNextPart(context, { playlistId: playlistId0 })
 
@@ -546,6 +546,8 @@ describe('Playout API', () => {
 		}
 
 		{
+			const now = getCurrentTime()
+
 			// the rundown timings are set
 			const playlist = await getPlaylist0()
 			expect(playlist.startedPlayback).toBe(now)
@@ -566,15 +568,15 @@ describe('Playout API', () => {
 		}
 
 		{
-			const nowBuf = now
+			const nowBuf = getCurrentTime()
 			const { currentPartInstance } = await getSelectedPartInstances(context, await getPlaylist0())
 			expect(currentPartInstance?.part.expectedDuration).toBeTruthy()
-			now += (currentPartInstance?.part.expectedDuration ?? 0) - 500
+			adjustFakeTime((currentPartInstance?.part.expectedDuration ?? 0) - 500)
 			// try to take just before an autonext
 			await expect(takeNextPart(context, { playlistId: playlistId0 })).rejects.toMatchUserError(
 				UserErrorMessage.TakeCloseToAutonext
 			)
-			now = nowBuf
+			useFakeCurrentTime(nowBuf)
 		}
 
 		{
@@ -585,7 +587,7 @@ describe('Playout API', () => {
 			const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
 
 			expect(currentPartInstanceBeforeTake?.part.expectedDuration).toBeTruthy()
-			now += currentPartInstanceBeforeTake?.part.expectedDuration ?? 0
+			const now = adjustFakeTime(currentPartInstanceBeforeTake?.part.expectedDuration ?? 0)
 			await onPartPlaybackStarted(context, {
 				playlistId: playlistId0,
 				partInstanceId: nextPartInstanceBeforeTakeId!,

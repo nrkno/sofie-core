@@ -12,7 +12,7 @@ module.exports = {
 			},
 		},
 	},
-	moduleFileExtensions: ['js', 'ts'],
+	moduleFileExtensions: ['js', 'ts', 'json'],
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest',
 		'^.+\\.(js|jsx|mjs)$': path.resolve('./scripts/babel-jest.js'),

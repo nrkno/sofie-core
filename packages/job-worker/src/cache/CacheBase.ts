@@ -80,7 +80,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 			const anyThingChanged = anythingChanged(
 				sumChanges(...(await Promise.all(highPrioDBs.map(async (db) => db.updateDatabaseWithData()))))
 			)
-			if (anyThingChanged) {
+			if (anyThingChanged && !process.env.JEST_WORKER_ID) {
 				// Wait a little bit before saving the rest.
 				// The idea is that this allows for the high priority publications to update (such as the Timeline),
 				// sending the updated timeline to Playout-gateway

@@ -14,6 +14,9 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 jest.mock('../../../corelib/dist/random', (...args) => require('./random').setup(args), {
 	virtual: true,
 })
+jest.mock('../lib/time', (...args) => require('./time').setup(args), {
+	virtual: true,
+})
 
 // Add references to all "meteor" mocks below, so that jest resolves the imports properly.
 // jest.mock('@sofie-automation/corelib/dist/random', (...args) => require('./random').setup(args), { virtual: true })

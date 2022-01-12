@@ -38,6 +38,8 @@ import { ReadonlyDeep } from 'type-fest'
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
 	SOURCE_VT0 = 'vt0',
+	SOURCE_TRANSITION0 = 'transition0',
+	SOURCE_GRAPHICS0 = 'graphics0',
 	OUTPUT_PGM = 'pgm',
 }
 
@@ -89,6 +91,18 @@ export async function setupMockShowStyleBase(
 				name: 'VT',
 				type: SourceLayerType.VT,
 				exclusiveGroup: 'main',
+			}),
+			literal<ISourceLayer>({
+				_id: LAYER_IDS.SOURCE_TRANSITION0,
+				_rank: 2,
+				name: 'Transition',
+				type: SourceLayerType.TRANSITION,
+			}),
+			literal<ISourceLayer>({
+				_id: LAYER_IDS.SOURCE_GRAPHICS0,
+				_rank: 3,
+				name: 'Graphic',
+				type: SourceLayerType.GRAPHICS,
 			}),
 		],
 		blueprintConfig: {},

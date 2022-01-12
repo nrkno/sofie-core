@@ -212,7 +212,6 @@ export async function activateRundownPlaylist(context: JobContext, data: Activat
 		data,
 		async (cache) => {
 			const playlist = cache.Playlist.doc
-
 			await checkNoOtherPlaylistsActive(context, playlist)
 		},
 		async (cache) => {

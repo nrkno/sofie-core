@@ -19,7 +19,7 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getRundownId } from '../ingest/lib'
 import { getCurrentTime } from '../lib'
-import { PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -127,6 +127,7 @@ export function defaultPart(_id: PartId, rundownId: RundownId, segmentId: Segmen
 		_rank: 0,
 		externalId: unprotectString(_id),
 		title: 'Default Part',
+		expectedDurationWithPreroll: undefined,
 	}
 }
 export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: SegmentId, partId: PartId): Piece {
@@ -146,6 +147,7 @@ export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: Segm
 		sourceLayerId: '',
 		outputLayerId: '',
 		content: { timelineObjects: [] },
+		pieceType: IBlueprintPieceType.Normal,
 	}
 }
 export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: PartId): AdLibPiece {

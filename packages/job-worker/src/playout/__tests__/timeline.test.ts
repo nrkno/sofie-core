@@ -59,6 +59,7 @@ import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/Show
 import { ReadonlyDeep } from 'type-fest'
 import { innerStartOrQueueAdLibPiece } from '../adlib'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 
 interface PartTimelineTimings {
 	previousPart: TimelineEnableExt | null
@@ -159,6 +160,8 @@ async function doTakePart(
 	expectedCurrentPartId: PartId | null,
 	expectedNextPartId: PartId | null
 ) {
+	adjustFakeTime(1500)
+
 	await takeNextPart(context, {
 		playlistId: playlistId,
 	})
@@ -197,6 +200,8 @@ async function doTakePart(
 
 /** Perform an activate and check the next part id is as expected */
 async function doActivatePlaylist(context: MockJobContext, playlistId: RundownPlaylistId, nextPartId: PartId) {
+	adjustFakeTime(1000)
+
 	await activateRundownPlaylist(context, {
 		playlistId: playlistId,
 		rehearsal: false,
@@ -219,6 +224,8 @@ async function doActivatePlaylist(context: MockJobContext, playlistId: RundownPl
 
 /** Perform an activate and check the selected part ids are cleared */
 async function doDeactivatePlaylist(context: MockJobContext, playlistId: RundownPlaylistId) {
+	adjustFakeTime(1000)
+
 	await deactivateRundownPlaylist(context, {
 		playlistId: playlistId,
 	})
@@ -262,16 +269,24 @@ describe('Timeline', () => {
 	beforeEach(async () => {
 		context = setupDefaultJobEnvironment()
 
+		useFakeCurrentTime()
+
 		showStyle = await setupMockShowStyleCompound(context)
 
+		// Ignore calls to queueEventJob, they are expected
+		context.queueEventJob = () => Promise.resolve()
+	})
+	afterEach(() => {
+		useRealCurrentTime()
+	})
+	test('Basic rundown', async () => {
 		await setupMockPeripheralDevice(
 			context,
 			PeripheralDeviceCategory.PLAYOUT,
 			PeripheralDeviceType.PLAYOUT,
 			PERIPHERAL_SUBTYPE_PROCESS
 		)
-	})
-	test('Basic rundown', async () => {
+
 		const { rundownId: rundownId0, playlistId: playlistId0 } = await setupDefaultRundownPlaylist(context)
 		expect(rundownId0).toBeTruthy()
 		expect(playlistId0).toBeTruthy()
@@ -382,15 +397,20 @@ describe('Timeline', () => {
 			async () =>
 				runTimelineTimings(
 					customRundownFactory,
-					async (playlistId, rundownId, parts, getPartInstances, checkTimings) => {
+					async (playlistId, rundownId, parts, _getPartInstances, checkTimings) => {
 						// Take the first Part:
 						await doTakePart(context, playlistId, null, parts[0]._id, parts[1]._id)
 
 						// Take the second Part:
-						await doTakePart(context, playlistId, parts[0]._id, parts[1]._id, null)
+						const { currentPartInstance, previousPartInstance } = await doTakePart(
+							context,
+							playlistId,
+							parts[0]._id,
+							parts[1]._id,
+							null
+						)
 
 						// Run the result check
-						const { currentPartInstance, previousPartInstance } = await getPartInstances()
 						await checkFcn(rundownId, null, currentPartInstance!, previousPartInstance!, checkTimings)
 					}
 				),
@@ -792,7 +812,7 @@ describe('Timeline', () => {
 				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId) as Rundown
 				expect(rundown).toBeTruthy()
 
-				await innerStartOrQueueAdLibPiece(context, cache, rundown, false, currentPartInstance, adlibSource)
+				return innerStartOrQueueAdLibPiece(context, cache, rundown, false, currentPartInstance, adlibSource)
 			})
 		}
 
@@ -880,7 +900,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9017'
+					const adlibbedPieceId = 'randomId9163'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({
@@ -987,7 +1007,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9017'
+					const adlibbedPieceId = 'randomId9177'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({

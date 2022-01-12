@@ -3,16 +3,16 @@
 exports[`Timeline Adlib pieces Current part with preroll 1`] = `
 Array [
   Object {
-    "_id": "mockStudio95",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint91",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9033",
+    "timelineHash": "randomId9169",
   },
 ]
 `;
@@ -20,16 +20,16 @@ Array [
 exports[`Timeline Adlib pieces Current part with preroll and adlib preroll 1`] = `
 Array [
   Object {
-    "_id": "mockStudio101",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint97",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9033",
+    "timelineHash": "randomId9183",
   },
 ]
 `;
@@ -88,10 +88,10 @@ Array [
 exports[`Timeline In transitions Basic inTransition 1`] = `
 Array [
   Object {
-    "_id": "mockStudio11",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint7",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
@@ -105,16 +105,16 @@ Array [
 exports[`Timeline In transitions Basic inTransition with contentDelay + preroll 1`] = `
 Array [
   Object {
-    "_id": "mockStudio35",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint31",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9021",
+    "timelineHash": "randomId9061",
   },
 ]
 `;
@@ -122,16 +122,16 @@ Array [
 exports[`Timeline In transitions Basic inTransition with contentDelay 1`] = `
 Array [
   Object {
-    "_id": "mockStudio29",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint25",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9021",
+    "timelineHash": "randomId9051",
   },
 ]
 `;
@@ -139,16 +139,16 @@ Array [
 exports[`Timeline In transitions Basic inTransition with planned pieces 1`] = `
 Array [
   Object {
-    "_id": "mockStudio17",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint13",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9021",
+    "timelineHash": "randomId9031",
   },
 ]
 `;
@@ -156,16 +156,16 @@ Array [
 exports[`Timeline In transitions Preroll 1`] = `
 Array [
   Object {
-    "_id": "mockStudio23",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint19",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9021",
+    "timelineHash": "randomId9041",
   },
 ]
 `;
@@ -173,16 +173,16 @@ Array [
 exports[`Timeline In transitions inTransition disabled 1`] = `
 Array [
   Object {
-    "_id": "mockStudio59",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint55",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9021",
+    "timelineHash": "randomId9104",
   },
 ]
 `;
@@ -190,16 +190,16 @@ Array [
 exports[`Timeline In transitions inTransition is disabled during hold 1`] = `
 Array [
   Object {
-    "_id": "mockStudio53",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint49",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9024",
+    "timelineHash": "randomId9094",
   },
 ]
 `;
@@ -207,16 +207,16 @@ Array [
 exports[`Timeline In transitions inTransition with existing infinites 1`] = `
 Array [
   Object {
-    "_id": "mockStudio41",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint37",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9022",
+    "timelineHash": "randomId9072",
   },
 ]
 `;
@@ -224,16 +224,16 @@ Array [
 exports[`Timeline In transitions inTransition with new infinite 1`] = `
 Array [
   Object {
-    "_id": "mockStudio47",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint43",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9022",
+    "timelineHash": "randomId9083",
   },
 ]
 `;
@@ -241,16 +241,16 @@ Array [
 exports[`Timeline Out transitions Basic outTransition 1`] = `
 Array [
   Object {
-    "_id": "mockStudio65",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint61",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9021",
+    "timelineHash": "randomId9114",
   },
 ]
 `;
@@ -258,16 +258,16 @@ Array [
 exports[`Timeline Out transitions outTransition + inTransition 1`] = `
 Array [
   Object {
-    "_id": "mockStudio83",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint79",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9021",
+    "timelineHash": "randomId9144",
   },
 ]
 `;
@@ -275,16 +275,16 @@ Array [
 exports[`Timeline Out transitions outTransition + preroll (2) 1`] = `
 Array [
   Object {
-    "_id": "mockStudio77",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint73",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9021",
+    "timelineHash": "randomId9134",
   },
 ]
 `;
@@ -292,16 +292,16 @@ Array [
 exports[`Timeline Out transitions outTransition + preroll 1`] = `
 Array [
   Object {
-    "_id": "mockStudio71",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint67",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9021",
+    "timelineHash": "randomId9124",
   },
 ]
 `;
@@ -309,16 +309,16 @@ Array [
 exports[`Timeline Out transitions outTransition is disabled during hold 1`] = `
 Array [
   Object {
-    "_id": "mockStudio89",
+    "_id": "mockStudio0",
     "generated": 12345,
     "generationVersions": Object {
-      "blueprintId": "mockBlueprint85",
+      "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9024",
+    "timelineHash": "randomId9155",
   },
 ]
 `;
