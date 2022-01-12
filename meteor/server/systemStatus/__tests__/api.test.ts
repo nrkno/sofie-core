@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
@@ -10,13 +9,10 @@ import { StatusResponse } from '../../../lib/api/systemStatus'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { MeteorCall } from '../../../lib/api/methods'
 
 require('../api')
 const PackageInfo = require('../../../package.json')
-
-enum SystemStatusAPIMethods {
-	'getSystemStatus' = 'systemStatus.getSystemStatus',
-}
 
 describe('systemStatus API', () => {
 	let env: DefaultEnvironment
@@ -54,7 +50,7 @@ describe('systemStatus API', () => {
 
 			// The system is uninitialized, the status will be BAD
 			const expectedStatus0 = StatusCode.BAD
-			const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+			const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 			expect(result0).toMatchObject({
 				status: status2ExternalStatus(expectedStatus0),
 				_status: expectedStatus0,
@@ -119,7 +115,7 @@ describe('systemStatus API', () => {
 
 			// The system is initialized, the status will be GOOD
 			const expectedStatus0 = StatusCode.GOOD
-			const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+			const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 			expect(result0).toMatchObject({
 				status: status2ExternalStatus(expectedStatus0),
 				_status: expectedStatus0,

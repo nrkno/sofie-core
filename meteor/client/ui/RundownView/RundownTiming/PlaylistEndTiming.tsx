@@ -7,6 +7,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import { withTiming, WithTiming } from './withTiming'
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { getPlaylistTimingDiff } from '../../../lib/rundownTiming'
 
 interface IEndTimingProps {
 	rundownPlaylist: RundownPlaylist
@@ -29,6 +30,8 @@ export const PlaylistEndTiming = withTranslation()(
 			render() {
 				const { t } = this.props
 				const { rundownPlaylist, expectedStart, expectedEnd, expectedDuration } = this.props
+
+				const overUnderClock = getPlaylistTimingDiff(rundownPlaylist, this.props.timingDurations) ?? 0
 
 				return (
 					<React.Fragment>
@@ -104,27 +107,23 @@ export const PlaylistEndTiming = withTranslation()(
 								</span>
 							) : null)}
 						{!this.props.hideDiff ? (
-							this.props.timingDurations ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
+							this.props.timingDurations ? (
 								<span
 									className={ClassNames('timing-clock heavy-light right', {
-										heavy:
-											(this.props.timingDurations.asPlayedPlaylistDuration || 0) <
-											(expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0),
-										light:
-											(this.props.timingDurations.asPlayedPlaylistDuration || 0) >
-											(expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0),
+										heavy: overUnderClock < 0,
+										light: overUnderClock >= 0,
 									})}
 								>
 									{!this.props.hideDiffLabel && <span className="timing-clock-label right">{t('Diff')}</span>}
 									{RundownUtils.formatDiffToTimecode(
-										(this.props.timingDurations.asPlayedPlaylistDuration || 0) -
-											(expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0),
+										overUnderClock,
 										true,
 										false,
 										true,
 										true,
 										true,
 										undefined,
+										true,
 										true
 									)}
 								</span>

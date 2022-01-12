@@ -162,9 +162,15 @@ async function doTakePart(
 ) {
 	adjustFakeTime(1500)
 
-	await takeNextPart(context, {
-		playlistId: playlistId,
-	})
+	{
+		const playlist = (await context.directCollections.RundownPlaylists.findOne(playlistId)) as DBRundownPlaylist
+		expect(playlist).toBeTruthy()
+
+		await takeNextPart(context, {
+			playlistId: playlistId,
+			fromPartInstanceId: playlist.currentPartInstanceId,
+		})
+	}
 
 	const playlist = (await context.directCollections.RundownPlaylists.findOne(playlistId)) as DBRundownPlaylist
 	expect(playlist).toBeTruthy()

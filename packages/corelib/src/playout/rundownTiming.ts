@@ -61,7 +61,10 @@ export namespace PlaylistTiming {
 			: undefined
 	}
 
-	export function sortTiminings(a: ReadonlyDeep<{ timing: RundownPlaylistTiming}>, b: ReadonlyDeep<{ timing: RundownPlaylistTiming}>): number {
+	export function sortTiminings(
+		a: ReadonlyDeep<{ timing: RundownPlaylistTiming }>,
+		b: ReadonlyDeep<{ timing: RundownPlaylistTiming }>
+	): number {
 		// Compare start times, then allow rundowns with start time to be first
 		if (
 			PlaylistTiming.isPlaylistTimingForwardTime(a.timing) &&

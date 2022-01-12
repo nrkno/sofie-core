@@ -1248,6 +1248,7 @@ describe('Test recieved mos ingest payloads', () => {
 			})
 			await takeNextPart(context, {
 				playlistId: rundown.playlistId,
+				fromPartInstanceId: null,
 			})
 
 			const partInstances0 = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })
@@ -1294,6 +1295,7 @@ describe('Test recieved mos ingest payloads', () => {
 			})
 			await takeNextPart(context, {
 				playlistId: rundown.playlistId,
+				fromPartInstanceId: null,
 			})
 
 			const partInstances0 = await context.directCollections.PartInstances.findFetch({ rundownId: rundown._id })

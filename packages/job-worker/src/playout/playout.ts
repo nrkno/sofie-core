@@ -256,6 +256,9 @@ export async function takeNextPart(context: JobContext, data: TakeNextPartProps)
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
 			if (!playlist.nextPartInstanceId) throw UserError.create(UserErrorMessage.TakeNoNextPart)
+
+			if (playlist.currentPartInstanceId !== data.fromPartInstanceId)
+				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart)
 		},
 		async (cache) => {
 			const playlist = cache.Playlist.doc

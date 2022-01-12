@@ -103,7 +103,9 @@ export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	userData: any
 	triggerMode?: string
 }
-export type TakeNextPartProps = RundownPlayoutPropsBase
+export interface TakeNextPartProps extends RundownPlayoutPropsBase {
+	fromPartInstanceId: PartInstanceId | null
+}
 export interface DisableNextPieceProps extends RundownPlayoutPropsBase {
 	undo: boolean
 }

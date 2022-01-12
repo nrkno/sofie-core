@@ -1616,7 +1616,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await resyncRundown()
 			await expect(getRundownOrphaned()).resolves.toBeUndefined()
 
-			await takeNextPart(context, { playlistId: rundown.playlistId })
+			await takeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })
 			const partInstance = await context.directCollections.PartInstances.findFetch({ 'part._id': parts[0]._id })
 			expect(partInstance).toHaveLength(1)
 			await expect(getPlaylist()).resolves.toMatchObject({ currentPartInstanceId: partInstance[0]._id })
@@ -1760,7 +1760,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await expect(getPlaylist()).resolves.toMatchObject({ currentPartInstanceId: null })
 
 			// Take the first part
-			await takeNextPart(context, { playlistId: rundown.playlistId })
+			await takeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })
 			await expect(getPlaylist()).resolves.toMatchObject({
 				currentPartInstanceId: expect.stringContaining('random'),
 			})

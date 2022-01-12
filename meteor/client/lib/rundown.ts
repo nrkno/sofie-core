@@ -44,9 +44,9 @@ interface PieceGroupMetadataExt extends PieceGroupMetadata {
 }
 
 export namespace RundownUtils {
-	function padZerundown(input: number, places?: number): string {
-		places = places || 2
-		return input < Math.pow(10, places - 1) ? '0'.repeat(places - 1) + input.toString(10) : input.toString(10)
+	function padZeros(input: number, places?: number): string {
+		places = places ?? 2
+		return input.toString(10).padStart(places, '0')
 	}
 
 	export function getSegmentDuration(parts: Array<PartUi>, display?: boolean) {
@@ -179,10 +179,10 @@ export namespace RundownUtils {
 				: showPlus && milliseconds > 0
 				? '+'
 				: '') +
-			(showHours || (useSmartHours && hours > 0) ? padZerundown(hours) + ':' : '') +
-			padZerundown(minutes) +
+			(showHours || (useSmartHours && hours > 0) ? padZeros(hours) + ':' : '') +
+			padZeros(minutes) +
 			':' +
-			padZerundown(secondsRest)
+			padZeros(secondsRest)
 		)
 	}
 

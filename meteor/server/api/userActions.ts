@@ -37,6 +37,7 @@ import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibAct
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { checkAccessAndGetPlaylist, checkAccessAndGetRundown, checkAccessToPlaylist } from './lib'
 import { PackageManagerAPI } from './packageManager'
+import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { getShowStyleCompound } from './showStyles'
 import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
@@ -89,13 +90,15 @@ async function runUserAction<T extends keyof StudioJobFunc>(
 
 export async function take(
 	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId
+	rundownPlaylistId: RundownPlaylistId,
+	fromPartInstanceId: PartInstanceId | null
 ): Promise<ClientAPI.ClientResponse<void>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
 	return runUserAction(playlist.studioId, StudioJobs.TakeNextPart, {
 		playlistId: rundownPlaylistId,
+		fromPartInstanceId,
 	})
 }
 
@@ -667,7 +670,7 @@ export async function bucketAdlibStart(
 	partInstanceId: PartInstanceId,
 	bucketAdlibId: PieceId,
 	queue?: boolean
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(bucketAdlibId, String)
@@ -761,9 +764,24 @@ export async function restoreRundownOrder(
 	})
 }
 
+export async function disablePeripheralSubDevice(
+	context: MethodContext,
+	peripheralDeviceId: PeripheralDeviceId,
+	subDeviceId: string,
+	disable: boolean
+): Promise<ClientAPI.ClientResponse<void>> {
+	check(peripheralDeviceId, String)
+	check(subDeviceId, String)
+	check(disable, Boolean)
+
+	return ClientAPI.responseSuccess(
+		ServerPeripheralDeviceAPI.disableSubDevice(context, peripheralDeviceId, undefined, subDeviceId, disable)
+	)
+}
+
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
-	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return take(this, rundownPlaylistId)
+	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId, fromPartInstanceId: PartInstanceId | null) {
+		return take(this, rundownPlaylistId, fromPartInstanceId)
 	}
 	async setNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
 		return setNext(this, rundownPlaylistId, partId, true, timeOffset)
@@ -998,6 +1016,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return restoreRundownOrder(this, playlistId)
+	}
+	async disablePeripheralSubDevice(
+		_userEvent: string,
+		peripheralDeviceId: PeripheralDeviceId,
+		subDeviceId: string,
+		disable: boolean
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return disablePeripheralSubDevice(this, peripheralDeviceId, subDeviceId, disable)
 	}
 }
 registerClassToMeteorMethods(

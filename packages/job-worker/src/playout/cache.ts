@@ -20,6 +20,7 @@ import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlaylistLock } from '../jobs/lock'
 import { CacheForIngest } from '../ingest/cache'
+import { MongoQuery } from '../db'
 
 /**
  * This is a cache used for playout operations.
@@ -260,6 +261,26 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		const baselineFromIngest = ingestCache && ingestCache.RundownBaselineObjs.getIfLoaded()
 		const loadBaselineIds = baselineFromIngest ? loadRundownIds : rundownIds
 
+		const partInstancesSelector: MongoQuery<DBPartInstance> = {
+			rundownId: { $in: rundownIds },
+			$or: [
+				{
+					reset: { $ne: true },
+				},
+				{
+					_id: { $in: selectedPartInstanceIds },
+				},
+			],
+		}
+		const pieceInstancesSelector: MongoQuery<PieceInstance> = {
+			rundownId: { $in: rundownIds },
+			partInstanceId: { $in: selectedPartInstanceIds },
+		}
+		if (playlist.activationId) {
+			partInstancesSelector.playlistActivationId = playlist.activationId
+			pieceInstancesSelector.playlistActivationId = playlist.activationId
+		}
+
 		const [segments, parts, baselineObjects, ...collections] = await Promise.all([
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.Segments, {
 				rundownId: { $in: loadRundownIds },
@@ -270,23 +291,16 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.RundownBaselineObjects, {
 				rundownId: { $in: loadBaselineIds },
 			}),
-			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.PartInstances, {
-				playlistActivationId: playlist.activationId,
-				rundownId: { $in: rundownIds },
-				$or: [
-					{
-						reset: { $ne: true },
-					},
-					{
-						_id: { $in: selectedPartInstanceIds },
-					},
-				],
-			}),
-			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.PieceInstances, {
-				playlistActivationId: playlist.activationId,
-				rundownId: { $in: rundownIds },
-				partInstanceId: { $in: selectedPartInstanceIds },
-			}),
+			DbCacheWriteCollection.createFromDatabase(
+				context,
+				context.directCollections.PartInstances,
+				partInstancesSelector
+			),
+			DbCacheWriteCollection.createFromDatabase(
+				context,
+				context.directCollections.PieceInstances,
+				pieceInstancesSelector
+			),
 			// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Timelines, {
 				_id: playlist.studioId,

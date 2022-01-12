@@ -1,31 +1,16 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-import { getRandomId } from '../../../../lib/lib'
+import { getRandomId, protectString } from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
 import { Bucket, BucketId, Buckets } from '../../../../lib/collections/Buckets'
 import { BucketAdLibs } from '../../../../lib/collections/BucketAdlibs'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { CreateFakeResult, QueueIngestJobSpy } from '../../../../__mocks__/worker'
+import { MeteorCall } from '../../../../lib/api/methods'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
-
-namespace UserActionAPI {
-	// Using our own method definition, to catch external API changes
-	export enum methods {
-		'bucketAdlibImport' = 'userAction.bucketAdlibImport',
-		'bucketAdlibStart' = 'userAction.bucketAdlibStart',
-
-		'bucketsCreateNewBucket' = 'userAction.createBucket',
-		'bucketsRemoveBucket' = 'userAction.removeBucket',
-		'bucketsEmptyBucket' = 'userAction.emptyBucket',
-		'bucketsModifyBucket' = 'userAction.modifyBucket',
-		'bucketsRemoveBucketAdLib' = 'userAction.removeBucketAdLib',
-		'bucketsModifyBucketAdLib' = 'userAction.bucketsModifyBucketAdLib',
-	}
-}
 
 describe('User Actions - Buckets', () => {
 	let env: DefaultEnvironment
@@ -83,31 +68,22 @@ describe('User Actions - Buckets', () => {
 			throw new Error('Not implemented')
 		})
 	})
-	testInFiber('createBucket', () => {
+	testInFiber('createBucket', async () => {
 		const NAME = 'Test bucket'
 
-		{
-			// should fail if the studio doesn't exist
-			expect(() => {
-				Meteor.call(
-					UserActionAPI.methods.bucketsCreateNewBucket,
-					'',
-					NAME,
-					'FAKE_ID',
-					null
-				) as ClientAPI.ClientResponseSuccess<Bucket>
-			}).toThrowError(/studio .* not found/gi)
-		}
+		// should fail if the studio doesn't exist
+		await expect(
+			MeteorCall.userAction.bucketsCreateNewBucket('', NAME, protectString('FAKE_ID'), null)
+		).rejects.toMatchToString(/studio .* not found/gi)
 
 		{
 			// should create a bucket
-			const result = Meteor.call(
-				UserActionAPI.methods.bucketsCreateNewBucket,
+			const result = (await MeteorCall.userAction.bucketsCreateNewBucket(
 				'',
 				NAME,
 				env.studio._id,
 				null
-			) as ClientAPI.ClientResponseSuccess<Bucket>
+			)) as ClientAPI.ClientResponseSuccess<Bucket>
 			expect(result).toMatchObject({ success: 200 })
 			expect(result.result?.name).toBe(NAME)
 
@@ -119,7 +95,7 @@ describe('User Actions - Buckets', () => {
 			})
 		}
 	})
-	testInFiber('removeBucket', () => {
+	testInFiber('removeBucket', async () => {
 		const { bucketId } = setUpMockBucket()
 
 		expect(
@@ -128,16 +104,14 @@ describe('User Actions - Buckets', () => {
 			}).fetch().length
 		).toBeGreaterThan(0)
 
-		{
-			// should fail if the ID doesn't exist
-			expect(() => {
-				Meteor.call(UserActionAPI.methods.bucketsRemoveBucket, '', 'FAKE_ID')
-			}).toThrowError(/not found/gi)
-		}
+		// should fail if the ID doesn't exist
+		await expect(MeteorCall.userAction.bucketsRemoveBucket('', protectString('FAKE_ID'))).rejects.toMatchToString(
+			/not found/gi
+		)
 
 		{
 			// should delete the bucket
-			const result = Meteor.call(UserActionAPI.methods.bucketsRemoveBucket, '', bucketId)
+			const result = await MeteorCall.userAction.bucketsRemoveBucket('', bucketId)
 			expect(result).toMatchObject({ success: 200 })
 
 			expect(Buckets.findOne(bucketId)).toBeUndefined()
@@ -148,22 +122,20 @@ describe('User Actions - Buckets', () => {
 			).toHaveLength(0)
 		}
 	})
-	testInFiber('modifyBucket', () => {
+	testInFiber('modifyBucket', async () => {
 		const { bucketId } = setUpMockBucket()
 
-		{
-			// should throw if the bucket doesn't exist
-			expect(() => {
-				Meteor.call(UserActionAPI.methods.bucketsModifyBucket, '', 'FAKE_ID', {
-					name: 'New Name',
-				})
-			}).toThrowError(/not found/gi)
-		}
+		// should throw if the bucket doesn't exist
+		await expect(
+			MeteorCall.userAction.bucketsModifyBucket('', protectString('FAKE_ID'), {
+				name: 'New Name',
+			})
+		).rejects.toMatchToString(/not found/gi)
 
 		{
 			// should rename the bucket
 			const newName = 'New Name'
-			const result = Meteor.call(UserActionAPI.methods.bucketsModifyBucket, '', bucketId, {
+			const result = await MeteorCall.userAction.bucketsModifyBucket('', bucketId, {
 				name: newName,
 			})
 
@@ -176,19 +148,17 @@ describe('User Actions - Buckets', () => {
 			})
 		}
 	})
-	testInFiber('emptyBucket', () => {
+	testInFiber('emptyBucket', async () => {
 		const { bucketId } = setUpMockBucket()
 
-		{
-			// should throw if the bucket doesn't exist
-			expect(() => {
-				Meteor.call(UserActionAPI.methods.bucketsEmptyBucket, '', 'FAKE_ID')
-			}).toThrowError(/not found/gi)
-		}
+		// should throw if the bucket doesn't exist
+		await expect(MeteorCall.userAction.bucketsEmptyBucket('', protectString('FAKE_ID'))).rejects.toMatchToString(
+			/not found/gi
+		)
 
 		{
 			// should remove all adlibs
-			const result = Meteor.call(UserActionAPI.methods.bucketsEmptyBucket, '', bucketId)
+			const result = await MeteorCall.userAction.bucketsEmptyBucket('', bucketId)
 
 			expect(result).toMatchObject({ success: 200 })
 
@@ -199,67 +169,57 @@ describe('User Actions - Buckets', () => {
 			).toHaveLength(0)
 		}
 	})
-	testInFiber('removeBucketAdLib', () => {
+	testInFiber('removeBucketAdLib', async () => {
 		const { bucketAdlibs } = setUpMockBucket()
 
-		{
-			// should throw if the adlib doesn't exits
-			expect(() => {
-				Meteor.call(UserActionAPI.methods.bucketsRemoveBucketAdLib, '', 'FAKE_ID')
-			}).toThrowError(/not found/gi)
-		}
+		// should throw if the adlib doesn't exits
+		await expect(
+			MeteorCall.userAction.bucketsRemoveBucketAdLib('', protectString('FAKE_ID'))
+		).rejects.toMatchToString(/not found/gi)
 
 		{
 			// should delete adlib
-			const result = Meteor.call(UserActionAPI.methods.bucketsRemoveBucketAdLib, '', bucketAdlibs[0]._id)
+			const result = await MeteorCall.userAction.bucketsRemoveBucketAdLib('', bucketAdlibs[0]._id)
 
 			expect(result).toMatchObject({ success: 200 })
 
 			expect(BucketAdLibs.findOne(bucketAdlibs[0]._id)).toBeUndefined()
 		}
 	})
-	testInFiber('modifyBucketAdLib', () => {
+	testInFiber('modifyBucketAdLib', async () => {
 		const { bucketAdlibs } = setUpMockBucket()
 
-		{
-			// check that the adlib exists
-			expect(() => {
-				Meteor.call(UserActionAPI.methods.bucketsModifyBucketAdLib, '', 'FAKE_ID', {
-					_rank: 5,
-				})
-			}).toThrowError(/not found/gi)
-		}
+		// check that the adlib exists
+		await expect(
+			MeteorCall.userAction.bucketsModifyBucketAdLib('', protectString('FAKE_ID'), {
+				_rank: 5,
+			})
+		).rejects.toMatchToString(/not found/gi)
 
-		{
-			// check that the new show style variant exists
-			expect(() => {
-				Meteor.call(UserActionAPI.methods.bucketsModifyBucketAdLib, '', bucketAdlibs[0]._id, {
-					showStyleVariantId: 'FAKE_ID',
-				})
-			}).toThrowError(/not find/gi)
-		}
+		// check that the new show style variant exists
+		await expect(
+			MeteorCall.userAction.bucketsModifyBucketAdLib('', bucketAdlibs[0]._id, {
+				showStyleVariantId: protectString('FAKE_ID'),
+			})
+		).rejects.toMatchToString(/not find/gi)
 
-		{
-			// check tghat the new bucket exists
-			expect(() => {
-				Meteor.call(UserActionAPI.methods.bucketsModifyBucketAdLib, '', bucketAdlibs[0]._id, {
-					bucketId: 'FAKE_ID',
-				})
-			}).toThrowError(/not find/gi)
-		}
+		// check tghat the new bucket exists
+		await expect(
+			MeteorCall.userAction.bucketsModifyBucketAdLib('', bucketAdlibs[0]._id, {
+				bucketId: protectString('FAKE_ID'),
+			})
+		).rejects.toMatchToString(/not find/gi)
 
-		{
-			// check that the new studio exists
-			expect(() => {
-				Meteor.call(UserActionAPI.methods.bucketsModifyBucketAdLib, '', bucketAdlibs[0]._id, {
-					studioId: 'FAKE_ID',
-				})
-			}).toThrowError(/not find/gi)
-		}
+		// check that the new studio exists
+		await expect(
+			MeteorCall.userAction.bucketsModifyBucketAdLib('', bucketAdlibs[0]._id, {
+				studioId: protectString('FAKE_ID'),
+			})
+		).rejects.toMatchToString(/not find/gi)
 
 		{
 			// change the rank, should work
-			const result = Meteor.call(UserActionAPI.methods.bucketsModifyBucketAdLib, '', bucketAdlibs[0]._id, {
+			const result = await MeteorCall.userAction.bucketsModifyBucketAdLib('', bucketAdlibs[0]._id, {
 				_rank: 5,
 			})
 

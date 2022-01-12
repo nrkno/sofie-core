@@ -44,6 +44,7 @@ export enum UserErrorMessage {
 	TakeRateLimit = 29,
 	DisableNoPieceFound = 30,
 	TakeBlockedDuration = 31,
+	TakeFromIncorrectPart = 32,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -87,6 +88,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.TakeRateLimit]: t(`Ignoring TAKES that are too quick after eachother ({{duration}} ms)`),
 	[UserErrorMessage.DisableNoPieceFound]: t(`Found no future pieces`),
 	[UserErrorMessage.TakeBlockedDuration]: t(`Cannot perform take for {{duration}}ms`),
+	[UserErrorMessage.TakeFromIncorrectPart]: t(`Ignoring take as playing part has changed since TAKE was requested.`),
 }
 
 export class UserError {

@@ -47,6 +47,7 @@ import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 // import { FastTrackObservers, triggerFastTrackObserver } from '../publications/fastTrack'
+import { ConfigManifestEntryType, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -385,6 +386,59 @@ export namespace ServerPeripheralDeviceAPI {
 			return true
 		}
 		return false
+	}
+	export function disableSubDevice(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		token: string | undefined,
+		subDeviceId: string,
+		disable: boolean
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
+		// check that the peripheralDevice has subDevices
+		if (!peripheralDevice.settings)
+			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not provide a settings object`)
+		if (!peripheralDevice.configManifest)
+			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not provide a configuration manifest`)
+
+		const subDevicesProp = peripheralDevice.configManifest.deviceConfig.find(
+			(prop) => prop.type === ConfigManifestEntryType.TABLE && prop.isSubDevices === true
+		) as TableConfigManifestEntry | undefined
+
+		if (!subDevicesProp)
+			throw new Meteor.Error(
+				405,
+				`PeripheralDevice "${deviceId}" does not provide a subDevices configuration property`
+			)
+
+		const subDevicesPropId = subDevicesProp.id
+
+		const subDevices = peripheralDevice.settings[subDevicesPropId]
+		if (!subDevices) throw new Meteor.Error(500, `PeripheralDevice "${deviceId}" has a malformed settings object`)
+
+		// check if the subDevice supports disabling using the magical 'disable' BOOLEAN property.
+		const subDeviceSettings = subDevices[subDeviceId] as Record<string, any> | undefined
+		if (!subDeviceSettings)
+			throw new Meteor.Error(404, `PeripheralDevice "${deviceId}", subDevice "${subDeviceId}" is not configured`)
+
+		const subDeviceType = subDeviceSettings[subDevicesProp.typeField || 'type']
+		const subDeviceSettingTopology = subDevicesProp.config[subDeviceType]
+
+		const hasDisableProperty = subDeviceSettingTopology.find(
+			(prop) => prop.id === 'disable' && prop.type === ConfigManifestEntryType.BOOLEAN
+		)
+		if (!hasDisableProperty)
+			throw new Meteor.Error(
+				405,
+				`PeripheralDevice "${deviceId}, subDevice "${subDeviceId}" of type "${subDeviceType}" does not support the disable property`
+			)
+
+		PeripheralDevices.update(deviceId, {
+			$set: {
+				[`settings.${subDevicesPropId}.${subDeviceId}.disable`]: disable,
+			},
+		})
 	}
 	export function testMethod(
 		context: MethodContext,

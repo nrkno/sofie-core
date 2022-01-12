@@ -459,7 +459,6 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					})
 
 					return () => {
-						// console.log('Preview cleanup!')
 						MountedAdLibTriggers.remove({
 							triggeredActionId: pair._id,
 						})

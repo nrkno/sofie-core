@@ -417,7 +417,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 			})
 
 			return this.state.displayList ? (
-				<div className="notification-pop-ups">
+				<div
+					className={ClassNames('notification-pop-ups', {
+						'notification-pop-ups--empty': displayList.length === 0,
+					})}
+				>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{
 							animation: {

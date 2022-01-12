@@ -5,10 +5,8 @@ import { literal, getRandomId, protectString } from '../../../../lib/lib'
 import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { CoreSystem, SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/CoreSystem'
-import { BlueprintAPIMethods } from '../../../../lib/api/blueprint'
-import { Meteor } from 'meteor/meteor'
 import { insertBlueprint, uploadBlueprint } from '../api'
-import { MethodContext } from '../../../../lib/api/methods'
+import { MeteorCall, MethodContext } from '../../../../lib/api/methods'
 import '../../../../__mocks__/_extendJest'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
@@ -77,46 +75,47 @@ describe('Test blueprint management api', () => {
 			return core.blueprintId
 		}
 
-		testInFiber('empty id', () => {
+		testInFiber('empty id', async () => {
 			const initialBlueprintId = getActiveSystemBlueprintId()
 
-			expect(() => Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, '')).toThrowError(
-				'[404] Blueprint not found'
+			await expect(MeteorCall.blueprint.assignSystemBlueprint(protectString(''))).rejects.toThrowMeteor(
+				404,
+				'Blueprint not found'
 			)
 
 			expect(getActiveSystemBlueprintId()).toEqual(initialBlueprintId)
 		})
-		testInFiber('unknown id', () => {
+		testInFiber('unknown id', async () => {
 			const blueprint = ensureSystemBlueprint()
 			const initialBlueprintId = getActiveSystemBlueprintId()
 
-			expect(() => Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, blueprint._id + '_no')).toThrowError(
-				'[404] Blueprint not found'
-			)
+			await expect(
+				MeteorCall.blueprint.assignSystemBlueprint(protectString(blueprint._id + '_no'))
+			).rejects.toThrowMeteor(404, 'Blueprint not found')
 
 			expect(getActiveSystemBlueprintId()).toEqual(initialBlueprintId)
 		})
-		testInFiber('good', () => {
+		testInFiber('good', async () => {
 			const blueprint = ensureSystemBlueprint()
 
 			// Ensure starts off 'wrong'
 			expect(getActiveSystemBlueprintId()).not.toEqual(blueprint._id)
 
-			Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, blueprint._id)
+			await MeteorCall.blueprint.assignSystemBlueprint(blueprint._id)
 
 			// Ensure ends up good
 			expect(getActiveSystemBlueprintId()).toEqual(blueprint._id)
 		})
-		testInFiber('unassign', () => {
+		testInFiber('unassign', async () => {
 			// Ensure starts off 'wrong'
 			expect(getActiveSystemBlueprintId()).toBeTruthy()
 
-			Meteor.call(BlueprintAPIMethods.assignSystemBlueprint)
+			await MeteorCall.blueprint.assignSystemBlueprint()
 
 			// Ensure ends up good
 			expect(getActiveSystemBlueprintId()).toBeFalsy()
 		})
-		testInFiber('wrong type', () => {
+		testInFiber('wrong type', async () => {
 			const blueprint = Blueprints.findOne({ blueprintType: BlueprintManifestType.SHOWSTYLE }) as Blueprint
 			expect(blueprint).toBeTruthy()
 
@@ -124,8 +123,9 @@ describe('Test blueprint management api', () => {
 			const initialBlueprintId = getActiveSystemBlueprintId()
 			expect(initialBlueprintId).not.toEqual(blueprint._id)
 
-			expect(() => Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, blueprint._id)).toThrowError(
-				'[404] Blueprint not of type SYSTEM'
+			await expect(MeteorCall.blueprint.assignSystemBlueprint(blueprint._id)).rejects.toThrowMeteor(
+				404,
+				'Blueprint not of type SYSTEM'
 			)
 
 			// Ensure ends up good
@@ -134,36 +134,37 @@ describe('Test blueprint management api', () => {
 	})
 
 	describe('removeBlueprint', () => {
-		testInFiber('undefined id', () => {
-			expect(() => Meteor.call(BlueprintAPIMethods.removeBlueprint)).toThrowError(
+		testInFiber('undefined id', async () => {
+			await expect(MeteorCall.blueprint.removeBlueprint(undefined as any)).rejects.toThrowError(
 				'Match error: Expected string, got undefined'
 			)
 		})
 
-		testInFiber('empty id', () => {
-			expect(() => Meteor.call(BlueprintAPIMethods.removeBlueprint, '')).toThrowError(
-				'[404] Blueprint id "" was not found'
+		testInFiber('empty id', async () => {
+			await expect(MeteorCall.blueprint.removeBlueprint(protectString(''))).rejects.toThrowMeteor(
+				404,
+				'Blueprint id "" was not found'
 			)
 		})
-		testInFiber('missing id', () => {
+		testInFiber('missing id', async () => {
 			// Should not error
-			Meteor.call(BlueprintAPIMethods.removeBlueprint, 'not_a_real_blueprint')
+			await MeteorCall.blueprint.removeBlueprint(protectString('not_a_real_blueprint'))
 		})
-		testInFiber('good', () => {
+		testInFiber('good', async () => {
 			const blueprint = ensureSystemBlueprint()
 			expect(Blueprints.findOne(blueprint._id)).toBeTruthy()
 
-			Meteor.call(BlueprintAPIMethods.removeBlueprint, blueprint._id)
+			await MeteorCall.blueprint.removeBlueprint(blueprint._id)
 
 			expect(Blueprints.findOne(blueprint._id)).toBeFalsy()
 		})
 	})
 
 	describe('insertBlueprint', () => {
-		testInFiber('no params', () => {
+		testInFiber('no params', async () => {
 			const initialBlueprints = getCurrentBlueprintIds()
 
-			const newId = Meteor.call(BlueprintAPIMethods.insertBlueprint)
+			const newId = await MeteorCall.blueprint.insertBlueprint()
 			expect(newId).toBeTruthy()
 
 			const finalBlueprints = getCurrentBlueprintIds()

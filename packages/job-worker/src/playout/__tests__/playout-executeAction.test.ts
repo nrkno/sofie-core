@@ -35,6 +35,7 @@ describe('Playout API', () => {
 			})
 			await takeNextPart(context, {
 				playlistId: playlistId,
+				fromPartInstanceId: null,
 			})
 
 			syncPlayheadInfinitesForNextPartInstanceMock.mockClear()

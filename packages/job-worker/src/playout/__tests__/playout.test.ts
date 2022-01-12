@@ -28,6 +28,7 @@ import {
 	onPiecePlaybackStopped,
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
+	setNextPart,
 	takeNextPart,
 } from '../playout'
 import { getSelectedPartInstances } from './lib'
@@ -86,8 +87,14 @@ describe('Playout API', () => {
 			),
 		}
 	}
+	async function getAllParts(rundownId: RundownId) {
+		return context.directCollections.Parts.findFetch({ rundownId })
+	}
 	async function getAllPartInstances() {
 		return context.directCollections.PartInstances.findFetch()
+	}
+	async function getAllPieceInstances() {
+		return context.directCollections.PieceInstances.findFetch()
 	}
 	async function getAllPieceInstancesForPartInstance(partInstanceId: PartInstanceId) {
 		return context.directCollections.PieceInstances.findFetch({
@@ -185,7 +192,7 @@ describe('Playout API', () => {
 
 		{
 			// Take the first Part:
-			await takeNextPart(context, { playlistId: playlistId0 })
+			await takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
@@ -351,7 +358,7 @@ describe('Playout API', () => {
 
 		{
 			// Take the first Part:
-			await takeNextPart(context, { playlistId: playlistId0 })
+			await takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
@@ -383,12 +390,12 @@ describe('Playout API', () => {
 		mockExecutePeripheralDeviceFunction.mockClear()
 
 		// Attempt to take the first Part of inactive playlist0, should throw
-		await expect(takeNextPart(context, { playlistId: playlistId0 })).rejects.toMatchUserError(
-			UserErrorMessage.InactiveRundown
-		)
+		await expect(
+			takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+		).rejects.toMatchUserError(UserErrorMessage.InactiveRundown)
 
 		// Take the first Part of active playlist1:
-		await takeNextPart(context, { playlistId: playlistId1 })
+		await takeNextPart(context, { playlistId: playlistId1, fromPartInstanceId: null })
 
 		expect(
 			(await getAllPartInstances()).filter(
@@ -404,7 +411,7 @@ describe('Playout API', () => {
 		await resetRundownPlaylist(context, { playlistId: playlistId1, activate: 'rehearsal' })
 
 		// Take the first Part of active playlist1 again:
-		await takeNextPart(context, { playlistId: playlistId1 })
+		await takeNextPart(context, { playlistId: playlistId1, fromPartInstanceId: null })
 
 		// still should only contain a single taken instance, as rehearsal partInstances should be removed
 		expect(
@@ -421,7 +428,13 @@ describe('Playout API', () => {
 		await resetRundownPlaylist(context, { playlistId: playlistId1, activate: 'active' })
 
 		// Take the first Part of active playlist1 once more:
-		await takeNextPart(context, { playlistId: playlistId1 })
+		await takeNextPart(context, { playlistId: playlistId1, fromPartInstanceId: null })
+
+		// Take the second Part of active playlist1 so that we have more pieceInstances to reset
+		await takeNextPart(context, {
+			playlistId: playlistId1,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+		})
 
 		// should throw with 402 code, as resetting the rundown when active is forbidden, with default configuration
 		await expect(
@@ -432,19 +445,129 @@ describe('Playout API', () => {
 
 		await resetRundownPlaylist(context, { playlistId: playlistId1, activate: 'rehearsal' })
 
-		await takeNextPart(context, { playlistId: playlistId1 })
-
-		// should contain one not-reset taken instance
-		const playlist1 = await getPlaylist1()
-		expect(
-			(await getAllPartInstances()).filter(
-				(partInstance) =>
-					partInstance.rundownId === rundownId1 &&
-					!partInstance.reset &&
-					partInstance.isTaken &&
-					partInstance.playlistActivationId === playlist1.activationId
+		// should contain two nonreset pieceInstance (from the first part)
+		await expect(
+			getAllPieceInstances().then((ps) =>
+				ps.filter((pieceInstance) => pieceInstance.rundownId === rundownId1 && !pieceInstance.reset)
 			)
-		).toHaveLength(1)
+		).resolves.toHaveLength(2)
+
+		await takeNextPart(context, {
+			playlistId: playlistId1,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+		})
+
+		// should contain one nonreset taken partInstance
+		await expect(
+			getAllPartInstances().then((ps) =>
+				ps.filter(
+					(partInstance) =>
+						partInstance.rundownId === rundownId1 && !partInstance.reset && partInstance.isTaken
+				)
+			)
+		).resolves.toHaveLength(1)
+
+		// should contain three non-reset pieceInstance (two from the first part, one from the second)
+		await expect(
+			getAllPieceInstances().then((ps) =>
+				ps.filter((pieceInstance) => pieceInstance.rundownId === rundownId1 && !pieceInstance.reset)
+			)
+		).resolves.toHaveLength(3)
+
+		// take the second part
+		await takeNextPart(context, {
+			playlistId: playlistId1,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+		})
+
+		// Setting as next a part that is previous
+
+		// set and take first Part again
+		await setNextPart(context, {
+			playlistId: playlistId1,
+			nextPartId: (await getAllParts(rundownId1))[0]._id,
+		})
+		await takeNextPart(context, {
+			playlistId: playlistId1,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+		})
+
+		// take the second part to check if we reset all previous partInstances correctly
+		await takeNextPart(context, {
+			playlistId: playlistId1,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+		})
+
+		// should contain two nonreset taken partInstances
+		await expect(
+			getAllPartInstances().then((ps) =>
+				ps.filter(
+					(partInstance) =>
+						partInstance.rundownId === rundownId1 && !partInstance.reset && partInstance.isTaken
+				)
+			)
+		).resolves.toHaveLength(2)
+
+		// should contain one nonreset untaken partInstance
+		await expect(
+			getAllPartInstances().then((ps) =>
+				ps.filter(
+					(partInstance) =>
+						partInstance.rundownId === rundownId1 && !partInstance.reset && !partInstance.isTaken
+				)
+			)
+		).resolves.toHaveLength(1)
+
+		// should contain three nonreset pieceInstances
+		await expect(
+			getAllPieceInstances().then((ps) =>
+				ps.filter((pieceInstance) => pieceInstance.rundownId === rundownId1 && !pieceInstance.reset)
+			)
+		).resolves.toHaveLength(3)
+
+		await takeNextPart(context, {
+			playlistId: playlistId1,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+		})
+
+		// Setting as next a non-previous and non-current part:
+
+		// set and take first Part again
+		await setNextPart(context, {
+			playlistId: playlistId1,
+			nextPartId: (await getAllParts(rundownId1))[0]._id,
+		})
+		await takeNextPart(context, {
+			playlistId: playlistId1,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+		})
+
+		// should contain two nonreset taken instance
+		await expect(
+			getAllPartInstances().then((ps) =>
+				ps.filter(
+					(partInstance) =>
+						partInstance.rundownId === rundownId1 && !partInstance.reset && partInstance.isTaken
+				)
+			)
+		).resolves.toHaveLength(2)
+
+		// should contain one nonreset untaken partInstance (next)
+		await expect(
+			getAllPartInstances().then((ps) =>
+				ps.filter(
+					(partInstance) =>
+						partInstance.rundownId === rundownId1 && !partInstance.reset && !partInstance.isTaken
+				)
+			)
+		).resolves.toHaveLength(1)
+
+		// should contain three nonreset pieceInstance
+		await expect(
+			getAllPieceInstances().then((ps) =>
+				ps.filter((pieceInstance) => pieceInstance.rundownId === rundownId1 && !pieceInstance.reset)
+			)
+		).resolves.toHaveLength(3)
 	})
 	// TODO: Worker - continue these
 	// test('reloadRundownPlaylistData', async () => {
@@ -506,7 +629,7 @@ describe('Playout API', () => {
 			const now = getCurrentTime()
 
 			// Take the first Part:
-			await takeNextPart(context, { playlistId: playlistId0 })
+			await takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
@@ -573,9 +696,9 @@ describe('Playout API', () => {
 			expect(currentPartInstance?.part.expectedDuration).toBeTruthy()
 			adjustFakeTime((currentPartInstance?.part.expectedDuration ?? 0) - 500)
 			// try to take just before an autonext
-			await expect(takeNextPart(context, { playlistId: playlistId0 })).rejects.toMatchUserError(
-				UserErrorMessage.TakeCloseToAutonext
-			)
+			await expect(
+				takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: currentPartInstance?._id ?? null })
+			).rejects.toMatchUserError(UserErrorMessage.TakeCloseToAutonext)
 			useFakeCurrentTime(nowBuf)
 		}
 
