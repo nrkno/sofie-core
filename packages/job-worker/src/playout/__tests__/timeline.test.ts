@@ -60,6 +60,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { innerStartOrQueueAdLibPiece } from '../adlib'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
+import { restartRandomId } from '../../__mocks__/random'
 
 interface PartTimelineTimings {
 	previousPart: TimelineEnableExt | null
@@ -273,6 +274,8 @@ describe('Timeline', () => {
 	let context: MockJobContext
 	let showStyle: ReadonlyDeep<ShowStyleCompound>
 	beforeEach(async () => {
+		restartRandomId()
+
 		context = setupDefaultJobEnvironment()
 
 		useFakeCurrentTime()
@@ -338,7 +341,7 @@ describe('Timeline', () => {
 
 		{
 			// Take the first Part:
-			await takeNextPart(context, { playlistId: playlistId0 })
+			await takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
 				await getPlaylist0()
@@ -906,7 +909,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9163'
+					const adlibbedPieceId = 'randomId9007'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({
@@ -1013,7 +1016,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9177'
+					const adlibbedPieceId = 'randomId9007'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({
