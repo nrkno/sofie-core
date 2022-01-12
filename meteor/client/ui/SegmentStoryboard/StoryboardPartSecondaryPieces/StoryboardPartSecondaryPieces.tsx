@@ -1,6 +1,7 @@
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React from 'react'
 import { ISourceLayerExtended, PartExtended } from '../../../../lib/Rundown'
+import { getShowHiddenSourceLayers } from '../../../lib/localStorage'
 import { IOutputLayerUi } from '../../SegmentContainer/withResolvedSegment'
 import { StoryboardSourceLayer } from './StoryboardSourceLayer'
 
@@ -9,10 +10,14 @@ interface IProps {
 	outputLayers: Record<string, IOutputLayerUi>
 }
 
+const showHiddenSourceLayers = getShowHiddenSourceLayers()
+
 export function filterSecondarySourceLayers(sourceLayers: ISourceLayerExtended[]) {
 	return sourceLayers.filter(
 		(sourceLayer) =>
-			!sourceLayer.isHidden && !sourceLayer.onPresenterScreen && sourceLayer.type !== SourceLayerType.TRANSITION
+			(showHiddenSourceLayers || !sourceLayer.isHidden) &&
+			!sourceLayer.onPresenterScreen &&
+			sourceLayer.type !== SourceLayerType.TRANSITION
 	)
 }
 
