@@ -35,7 +35,6 @@ import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifica
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 
-import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/segmentZoomIcon'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'

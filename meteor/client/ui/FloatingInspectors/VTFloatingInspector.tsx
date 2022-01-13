@@ -84,6 +84,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 								seek={seek}
 								previewUrl={previewUrl}
 								timePosition={offsetTimePosition}
+								studioSettings={props.studio?.settings}
 							/>
 						) : null}
 						{props.noticeLevel !== null ? (

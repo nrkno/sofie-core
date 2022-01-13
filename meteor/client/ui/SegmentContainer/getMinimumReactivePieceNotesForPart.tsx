@@ -1,5 +1,5 @@
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { PartNote } from '../../../lib/api/notes'
+import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'

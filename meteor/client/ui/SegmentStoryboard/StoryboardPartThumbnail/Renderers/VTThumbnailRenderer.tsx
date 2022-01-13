@@ -71,6 +71,7 @@ export function VTThumbnailRenderer({
 							previewUrl={previewUrl}
 							seek={vtContent?.seek || 0}
 							timePosition={hoverScrubTimePosition}
+							studioSettings={studio.settings}
 						/>
 					) : (
 						<img src={thumbnailUrl} />

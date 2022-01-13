@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { SegmentNote } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -35,6 +34,7 @@ import { SegmentScrollbar } from './SegmentScrollbar'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
+import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 

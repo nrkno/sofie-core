@@ -18,7 +18,6 @@ import {
 } from '../../../lib/Rundown'
 import { IContextMenuContext } from '../RundownView'
 import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { SegmentNote, TrackedNote } from '../../../lib/api/notes'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -28,11 +27,12 @@ import { PartId, Part } from '../../../lib/collections/Parts'
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
 import { getMinimumReactivePieceNotesForPart } from './getMinimumReactivePieceNotesForPart'
 import { SegmentViewMode } from './SegmentViewModes'
+import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
