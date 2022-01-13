@@ -123,7 +123,7 @@ export function registerCollection(name: CollectionName, collection: AsyncMongoC
 	if (Collections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
 	Collections.set(name, collection)
 }
-export function getCollectionKey(collection: AsyncMongoCollection<any>): string {
+export function getCollectionKey(collection: AsyncMongoCollection<any>): CollectionName {
 	const o = Array.from(Collections.entries()).find(([_key, col]) => col === collection)
 	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
 	return o[0] // collectionName
