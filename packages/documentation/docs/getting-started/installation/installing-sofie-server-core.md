@@ -21,22 +21,23 @@ Then open a terminal, `cd your-sofie-folder` and `sudo docker-compose up` \(just
 
 Once the installation is done, Sofie should be running on [http://localhost:3000](http://localhost:3000)
 
-Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom Systems](installing-a-gateway/rundown-or-newsroom-system-connection/) to see which _Rundown Gateway_ is best suited for ~~_your_~~ production environment. 
+Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom Systems](installing-a-gateway/rundown-or-newsroom-system-connection/) to see which _Rundown Gateway_ is best suited for ~~_your_~~ production environment.
+
+To get a demo rundown up and running quickly, check out the [Sofie Rundown Editor](installing-a-gateway/rundown-or-newsroom-system-connection/rundown-editor.md).
 
 ### Tips for running in production
 
 There are some things not covered in this guide needed to run Sofie in a production environment:
 
-* Logging: Collect, store and track error messages. [Kibana ](https://www.elastic.co/kibana)and [logstash](https://www.elastic.co/logstash) is one way to do it.
-* NGINX: It is customary to put a load-balancer in front of Sofie-Core.
-* Memory and CPU usage monitoring.
+- Logging: Collect, store and track error messages. [Kibana ](https://www.elastic.co/kibana)and [logstash](https://www.elastic.co/logstash) is one way to do it.
+- NGINX: It is customary to put a load-balancer in front of Sofie-Core.
+- Memory and CPU usage monitoring.
 
 ## Installing for Development
 
-Installation instructions for installing Sofie-Core or the various gateways are available in the README-file in their respective github-repos. 
+Installation instructions for installing Sofie-Core or the various gateways are available in the README-file in their respective github-repos.
 
 Common prerequisites are [Node.js](https://nodejs.org/) and [Yarn](https://yarnpkg.com/).  
 Links to the repos are listed at [Applications & Libraries](../../for-developers/libraries.md).
 
 [Sofie Core GitHub Page for Developers](https://github.com/nrkno/tv-automation-server-core)
-

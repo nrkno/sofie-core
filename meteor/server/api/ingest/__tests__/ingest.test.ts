@@ -17,14 +17,17 @@ import { ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../../lib/api/methods'
 import { removeRundownPlaylistFromDb } from '../../rundownPlaylist'
 import { Random } from 'meteor/random'
 import { VerifiedRundownPlaylistContentAccess } from '../../lib'
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
-import { literal } from '../../../../lib/lib'
+import { getRandomId, literal, protectString } from '../../../../lib/lib'
+import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../../playout/lockFunction'
+import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
+import { getSelectedPartInstancesFromCache } from '../../playout/cache'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1608,6 +1611,288 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 				// the pieces should have been copied
 				expect(PieceInstances.find({ partInstanceId: nextPartInstance._id }).fetch()).not.toHaveLength(0)
+			}
+		} finally {
+			// forcefully 'deactivate' the playlist to allow for cleanup to happen
+			RundownPlaylists.update({}, { $unset: { activationId: 1 } }, { multi: true })
+		}
+	})
+
+	testInFiber('previous partinstance getting removed if an adlib part', async () => {
+		try {
+			// Cleanup any rundowns / playlists
+			await Promise.all(
+				RundownPlaylists.find()
+					.fetch()
+					.map(async (p) => removeRundownPlaylistFromDb(p))
+			)
+
+			const rundownData: IngestRundown = {
+				externalId: externalId,
+				name: 'MyMockRundown',
+				type: 'mock',
+				segments: [
+					{
+						externalId: 'segment0',
+						name: 'Segment 0',
+						rank: 0,
+						parts: [
+							{
+								externalId: 'part0',
+								name: 'Part 0',
+								rank: 0,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece0',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+							{
+								externalId: 'part1',
+								name: 'Part 1',
+								rank: 1,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece1',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+						],
+					},
+					{
+						externalId: 'segment1',
+						name: 'Segment 1',
+						rank: 1,
+						parts: [
+							{
+								externalId: 'part2',
+								name: 'Part 2',
+								rank: 0,
+							},
+						],
+					},
+					{
+						externalId: 'segment2',
+						name: 'Segment 2',
+						rank: 1,
+						parts: [
+							{
+								externalId: 'part3',
+								name: 'Part 3',
+								rank: 0,
+							},
+						],
+					},
+				],
+			}
+			Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
+
+			const rundown = Rundowns.findOne() as Rundown
+			expect(rundown).toBeTruthy()
+
+			// Take into first part
+			await ServerPlayoutAPI.activateRundownPlaylist(
+				PLAYLIST_ACCESS(rundown.playlistId),
+				rundown.playlistId,
+				true
+			)
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(rundown.playlistId), rundown.playlistId)
+
+			const doQueuePart = async (partInstanceId: PartInstanceId): Promise<void> =>
+				runPlayoutOperationWithCache(
+					PLAYLIST_ACCESS(rundown.playlistId),
+					'adlib-part',
+					rundown.playlistId,
+					PlayoutLockFunctionPriority.USER_PLAYOUT,
+					null,
+					async (cache) => {
+						const rundown0 = cache.Rundowns.findOne() as Rundown
+						expect(rundown0).toBeTruthy()
+
+						const currentPartInstance = getSelectedPartInstancesFromCache(cache)
+							.currentPartInstance as PartInstance
+						expect(currentPartInstance).toBeTruthy()
+
+						const newPartInstance = new PartInstance({
+							_id: partInstanceId,
+							rundownId: rundown0._id,
+							segmentId: currentPartInstance.segmentId,
+							playlistActivationId: currentPartInstance.playlistActivationId,
+							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
+							takeCount: currentPartInstance.takeCount + 1,
+							rehearsal: true,
+							part: new Part({
+								_id: protectString(`${partInstanceId}_part`),
+								_rank: 0,
+								rundownId: rundown0._id,
+								segmentId: currentPartInstance.segmentId,
+								externalId: `${partInstanceId}_externalId`,
+								title: 'New part',
+							}),
+						})
+
+						// Simulate a queued part
+						await ServerPlayoutAdLibAPI.innerStartQueuedAdLib(
+							cache,
+							rundown0,
+							currentPartInstance,
+							newPartInstance,
+							[]
+						)
+					}
+				)
+
+			// Queue and take an adlib-part
+			const partInstanceId0: PartInstanceId = getRandomId()
+			await doQueuePart(partInstanceId0)
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(rundown.playlistId), rundown.playlistId)
+
+			{
+				// Verify it was taken properly
+				const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+				expect(playlist).toBeTruthy()
+				expect(playlist.currentPartInstanceId).toBe(partInstanceId0)
+
+				const currentPartInstance = playlist.getSelectedPartInstances().currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.orphaned).toBe('adlib-part')
+			}
+
+			// Ingest update should have no effect
+			const ingestSegment: IngestSegment = {
+				externalId: 'segment2',
+				name: 'Segment 2a',
+				rank: 1,
+				parts: [
+					{
+						externalId: 'part3',
+						name: 'Part 3',
+						rank: 0,
+					},
+				],
+			}
+
+			{
+				// Check props before
+				const segment2 = Segments.findOne({
+					externalId: ingestSegment.externalId,
+					rundownId: rundown._id,
+				}) as Segment
+				expect(segment2).toBeTruthy()
+				expect(segment2.name).not.toBe(ingestSegment.name)
+			}
+
+			Meteor.call(
+				PeripheralDeviceAPIMethods.dataSegmentUpdate,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				ingestSegment
+			)
+
+			{
+				// Check props after
+				const segment2 = Segments.findOne({
+					externalId: ingestSegment.externalId,
+					rundownId: rundown._id,
+				}) as Segment
+				expect(segment2).toBeTruthy()
+				expect(segment2.name).toBe(ingestSegment.name)
+			}
+
+			{
+				// Verify the adlibbed part-instance didnt change
+				const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+				expect(playlist).toBeTruthy()
+				expect(playlist.currentPartInstanceId).toBe(partInstanceId0)
+
+				const currentPartInstance = playlist.getSelectedPartInstances().currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.orphaned).toBe('adlib-part')
+			}
+
+			// Queue and take another adlib-part
+			const partInstanceId1: PartInstanceId = getRandomId()
+			await doQueuePart(partInstanceId1)
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(rundown.playlistId), rundown.playlistId)
+
+			{
+				// Verify the take was correct
+				const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+				expect(playlist).toBeTruthy()
+				expect(playlist.currentPartInstanceId).toBe(partInstanceId1)
+				expect(playlist.previousPartInstanceId).toBe(partInstanceId0)
+
+				const currentPartInstance = playlist.getSelectedPartInstances().currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.orphaned).toBe('adlib-part')
+
+				const previousPartInstance = playlist.getSelectedPartInstances().previousPartInstance as PartInstance
+				expect(previousPartInstance).toBeTruthy()
+				expect(previousPartInstance.orphaned).toBe('adlib-part')
+			}
+
+			// Another ingest update
+			ingestSegment.name += '2'
+
+			{
+				// Check props before
+				const segment2 = Segments.findOne({
+					externalId: ingestSegment.externalId,
+					rundownId: rundown._id,
+				}) as Segment
+				expect(segment2).toBeTruthy()
+				expect(segment2.name).not.toBe(ingestSegment.name)
+			}
+
+			Meteor.call(
+				PeripheralDeviceAPIMethods.dataSegmentUpdate,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				ingestSegment
+			)
+
+			{
+				// Check props after
+				const segment2 = Segments.findOne({
+					externalId: ingestSegment.externalId,
+					rundownId: rundown._id,
+				}) as Segment
+				expect(segment2).toBeTruthy()
+				expect(segment2.name).toBe(ingestSegment.name)
+			}
+
+			{
+				// Verify the part-instances havent changed
+				const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+				expect(playlist).toBeTruthy()
+				expect(playlist.currentPartInstanceId).toBe(partInstanceId1)
+				expect(playlist.previousPartInstanceId).toBe(partInstanceId0)
+
+				const currentPartInstance = playlist.getSelectedPartInstances().currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.orphaned).toBe('adlib-part')
+
+				const previousPartInstance = playlist.getSelectedPartInstances().previousPartInstance as PartInstance
+				expect(previousPartInstance).toBeTruthy()
+				expect(previousPartInstance.orphaned).toBe('adlib-part')
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen

@@ -432,7 +432,7 @@ function updatePartInstancesBasicProperties(
 	const partInstances = cache.PartInstances.findFetch((p) => !p.reset && p.rundownId === rundownId)
 	for (const partInstance of partInstances) {
 		const part = cache.Parts.findOne(partInstance.part._id)
-		if (!part) {
+		if (!part && !partInstance.orphaned) {
 			// Part is deleted, so reset this instance if it isnt on-air
 			if (
 				playlist.currentPartInstanceId !== partInstance._id &&

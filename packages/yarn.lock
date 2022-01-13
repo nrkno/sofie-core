@@ -13887,10 +13887,10 @@ threadedclass@^0.8.0:
     is-running "^2.1.0"
     tslib "^1.13.0"
 
-threadedclass@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.0.tgz#6011eba6e0d7be03f933911ba336d928c829cee6"
-  integrity sha512-0r4zVIOWE2Y93rwzfPaidJUBEVikEMs4HjZv+wQEq95xKjMG82Ih/S1GJmKIB4P0pXaiM82hIKs8Z41v06yIOw==
+threadedclass@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.1.tgz#2952274cbb0e675ec118f3ddef6a69e71e24d75d"
+  integrity sha512-Lgclu4nKQUgsr70RSAQxsIVNd5PaSIybmPkN94kErqNuVzI+EDhQDAc76YdPIGUOOx/VgJKEFYkzohsWbcvVMA==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
@@ -13934,10 +13934,17 @@ timeline-state-resolver-types@6.3.0-release38.0:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.3.0-release38.0:
-  version "6.3.0-release38.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.3.0-release38.0.tgz#e877dc8850205f2072ff0fe3750f5c339afd661b"
-  integrity sha512-jaQwGfcJ2tJrY0Cr95Ros//O6LUiYhAzMO8meWKRaOegqyvKtpCPleKYA8iT4/7ep5zqSenL88sH+wUo+x6HEQ==
+timeline-state-resolver-types@6.2.1:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.2.1.tgz#0c8450e5e8e9afc994fc1c71c228f3a010e1d57d"
+  integrity sha512-p8J6JQoqodIAe8vqspTWeLqw9wN5EEc8U7yxQRCNHetJghZsNUD5JkWhaJc8XgB43XjUA92NLpewBp1Pbc9sWQ==
+  dependencies:
+    tslib "^2.3.1"
+
+timeline-state-resolver@6.2.1:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.2.1.tgz#71b1271c3f52205dc35ddaadb074e30faa2574f2"
+  integrity sha512-68Kd2bDbhdTPZKuPNbKkmeSLI4ZkilKxFboNOcSupJVKnAy9/SBW/PwxhEYZCGhCLC9JmHWAG7kgOCICAkMlrw==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "2.4.0"
@@ -13957,9 +13964,9 @@ timeline-state-resolver@6.3.0-release38.0:
     p-timeout "^3.2.0"
     request "^2.88.0"
     sprintf-js "^1.1.2"
-    superfly-timeline "8.2.2"
-    threadedclass "^1.0.0"
-    timeline-state-resolver-types "6.3.0-release38.0"
+    superfly-timeline "8.2.1"
+    threadedclass "^1.0.1"
+    timeline-state-resolver-types "6.2.1"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
