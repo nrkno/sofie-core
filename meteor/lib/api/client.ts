@@ -49,7 +49,7 @@ export namespace ClientAPI {
 	}
 	export type ClientResponse<Result> = ClientResponseError | ClientResponseSuccess<Result>
 	export function isClientResponseError(res: any): res is ClientResponseError {
-		return res && 'error' in res && UserError.isUserError(res.error)
+		return res && typeof res === 'object' && 'error' in res && UserError.isUserError(res.error)
 	}
 	export function isClientResponseSuccess(res: any): res is ClientResponseSuccess<any> {
 		return !!(_.isObject(res) && !_.isArray(res) && res.error === undefined && res.success)

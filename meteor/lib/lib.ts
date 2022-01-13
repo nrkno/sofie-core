@@ -124,7 +124,7 @@ export function registerCollection(name: CollectionName, collection: AsyncMongoC
 	Collections.set(name, collection)
 }
 export function getCollectionKey(collection: AsyncMongoCollection<any>): string {
-	const o = Object.entries(Collections).find(([_key, col]) => col === collection)
+	const o = Array.from(Collections.entries()).find(([_key, col]) => col === collection)
 	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
 	return o[0] // collectionName
 }

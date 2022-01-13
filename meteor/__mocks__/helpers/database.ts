@@ -99,7 +99,7 @@ export function setupMockPeripheralDevice(
 	category: PeripheralDeviceCategory,
 	type: PeripheralDeviceType,
 	subType: PeripheralDeviceAPI.DeviceSubType,
-	studio?: Studio,
+	studio?: Pick<Studio, '_id'>,
 	doc?: Partial<PeripheralDevice>
 ) {
 	doc = doc || {}

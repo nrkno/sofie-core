@@ -91,7 +91,7 @@ describe('User Actions - Buckets', () => {
 				_id: result.result?._id,
 				name: NAME,
 				studioId: env.studio._id,
-				userId: null,
+				// userId: null,
 			})
 		}
 	})

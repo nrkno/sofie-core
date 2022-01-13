@@ -119,10 +119,10 @@ describe('Migrations', () => {
 			migrationStatus1.migration.hash,
 			userInput(migrationStatus1, {
 				'CoreSystem.storePath': 'mock',
-				'Studios.settings.mediaPreviewsUrl': 'mock',
-				'Studios.settings.sofieUrl': 'http://localhost',
-				'Studios.settings.slackEvaluationUrls': 'mock',
-				'Studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff',
+				'studios.settings.mediaPreviewsUrl': 'mock',
+				'studios.settings.sofieUrl': 'http://localhost',
+				'studios.settings.slackEvaluationUrls': 'mock',
+				'studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff',
 			})
 		)
 		expect(migrationResult1).toMatchObject({

@@ -1,6 +1,5 @@
 import { ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
@@ -127,9 +126,9 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 	})
 	testInFiber("edit device that doesn't support the disable property throws an error", async () => {
 		const pDeviceUnsupported = setupMockPeripheralDevice(
-			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-			PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			PeripheralDeviceAPI.SUBTYPE_PROCESS,
+			PeripheralDeviceCategory.PLAYOUT,
+			PeripheralDeviceType.PLAYOUT,
+			PERIPHERAL_SUBTYPE_PROCESS,
 			env.studio,
 			{
 				organizationId: null,

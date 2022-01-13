@@ -302,7 +302,7 @@ export async function moveRundownIntoPlaylist(
 			throw new Error(`RundownPlaylist "${data.intoPlaylistId}" not found`)
 	}
 
-	if (data.intoPlaylistId && rundown.playlistId !== data.intoPlaylistId) {
+	if (data.intoPlaylistId === null || rundown.playlistId !== data.intoPlaylistId) {
 		// Do a check if we're allowed to move out of currently playing playlist:
 		await runJobWithPlaylistLock(
 			context,
@@ -394,10 +394,10 @@ export async function moveRundownIntoPlaylist(
 					// When updating the rundowns in the playlist, the newly moved rundown will be given it's proper _rank:
 					updateRundownsInPlaylist(
 						intoPlaylist,
-						_.object(
-							literal<Array<[string, number]>>(
-								data.rundownsIdsInPlaylistInOrder.map((id, index) => [unprotectString(id), index + 1])
-							)
+						Object.fromEntries(
+							rundownsCollection
+								.findFetch({ _id: { $ne: rundown._id } })
+								.map((r) => [unprotectString(r._id), r._rank])
 						),
 						rundownsCollection
 					)

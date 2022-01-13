@@ -43,6 +43,7 @@ import { PackageInfos } from '../../lib/collections/PackageInfos'
 import { Settings } from '../../lib/Settings'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
 	if (actuallyCleanup) {
@@ -51,7 +52,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 
 	const result: CollectionCleanupResult = {}
-	const addToResult = (collectionName: string, docsToRemove: number) => {
+	const addToResult = (collectionName: CollectionName, docsToRemove: number) => {
 		if (!result[collectionName]) {
 			result[collectionName] = {
 				collectionName: collectionName,
@@ -164,7 +165,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	// Going Through data and removing old data: --------------------------------------------------
 	// CoreSystem:
 	{
-		addToResult('CoreSystem', 0) // Do nothing
+		addToResult(CollectionName.CoreSystem, 0) // Do nothing
 	}
 	// AdLibActions
 	{
@@ -226,8 +227,8 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 			},
 			{ fields: { _id: 1 } }
 		).fetch()
-		addToResult('ExpectedMediaItems', emiFromBuckets.length)
-		addToResult('ExpectedMediaItems', emiFromRundowns.length)
+		addToResult(CollectionName.ExpectedMediaItems, emiFromBuckets.length)
+		addToResult(CollectionName.ExpectedMediaItems, emiFromRundowns.length)
 		if (actuallyCleanup) {
 			ExpectedMediaItems.remove({
 				_id: { $in: [...emiFromBuckets, ...emiFromRundowns].map((o) => o._id) },
@@ -274,7 +275,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 	// Organizations
 	{
-		addToResult('Organizations', 0) // Do nothing
+		addToResult(CollectionName.Organizations, 0) // Do nothing
 	}
 	// PackageContainerPackageStatuses
 	{
@@ -384,7 +385,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 	// Users
 	{
-		addToResult('Users', 0) // Do nothing
+		addToResult(CollectionName.Users, 0) // Do nothing
 	}
 
 	return result
