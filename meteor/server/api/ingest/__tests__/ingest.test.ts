@@ -1716,7 +1716,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			// Queue and take an adlib-part
 			const partInstanceId0: PartInstanceId = getRandomId()
 			await doQueuePart(partInstanceId0)
-
 			{
 				const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
 				expect(playlist).toBeTruthy()
@@ -1796,7 +1795,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			// Queue and take another adlib-part
 			const partInstanceId1: PartInstanceId = getRandomId()
 			await doQueuePart(partInstanceId1)
-
 			{
 				const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
 				expect(playlist).toBeTruthy()
