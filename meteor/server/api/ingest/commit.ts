@@ -8,6 +8,7 @@ import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { CommitIngestData } from './lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
 import {
+	DBSegment,
 	orphanedHiddenSegmentPropertiesToPreserve,
 	SegmentId,
 	SegmentOrphanedReason,
@@ -283,15 +284,6 @@ export async function CommitIngestOperation(
 								if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
 									// Protect live segment from being hidden
 									logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
-									const oldSegment = Segments.findOne(segmentId, {
-										fields: orphanedHiddenSegmentPropertiesToPreserve,
-									})
-									ingestCache.Segments.update(segmentId, {
-										$set: {
-											...oldSegment,
-											isHidden: false,
-										},
-									})
 									orphanHiddenSegmentIds.add(segmentId)
 								} else {
 									// This ensures that it doesn't accidently get played while hidden
@@ -310,17 +302,38 @@ export async function CommitIngestOperation(
 							: new Set([...purgeSegmentIds.values(), ...orphanDeletedSegmentIds.values()])
 						removeSegmentContents(ingestCache, emptySegmentIds)
 						if (orphanDeletedSegmentIds.size) {
-							ingestCache.Segments.update((s) => orphanDeletedSegmentIds.has(s._id), {
-								$set: {
-									orphaned: SegmentOrphanedReason.DELETED,
-								},
+							orphanDeletedSegmentIds.forEach((segmentId) => {
+								ingestCache.Segments.update(segmentId, {
+									$set: {
+										orphaned: SegmentOrphanedReason.DELETED,
+									},
+								})
 							})
 						}
 						if (orphanHiddenSegmentIds.size) {
-							ingestCache.Segments.update((s) => orphanHiddenSegmentIds.has(s._id), {
-								$set: {
-									orphaned: SegmentOrphanedReason.HIDDEN,
-								},
+							const preserveSomeProperties =
+								Object.keys(orphanedHiddenSegmentPropertiesToPreserve).length > 0
+							const oldSegments = preserveSomeProperties
+								? Segments.find(
+										{ _id: { $in: [...orphanHiddenSegmentIds] } },
+										{
+											fields: { _id: 1, ...orphanedHiddenSegmentPropertiesToPreserve },
+										}
+								  )
+										.fetch()
+										.reduce((map, current) => {
+											map.set(current._id!, current)
+											return map
+										}, new Map<SegmentId, DBSegment>())
+								: undefined
+							orphanHiddenSegmentIds.forEach((segmentId) => {
+								ingestCache.Segments.update(segmentId, {
+									$set: {
+										...oldSegments?.get(segmentId),
+										isHidden: false,
+										orphaned: SegmentOrphanedReason.HIDDEN,
+									},
+								})
 							})
 						}
 						if (purgeSegmentIds.size) {
