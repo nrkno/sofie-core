@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.1-0...v1.37.1) (2022-01-13)
+
+
+### Bug Fixes
+
+* PGW: update TSR dep (performance improvements) ([083bc5b](https://github.com/nrkno/tv-automation-server-core/commit/083bc5ba208250ffed6fdbeba531a8dbf2468772))
+
+
+
+
+
 ## [1.37.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0...v1.37.1-0) (2021-12-17)
 
 **Note:** Version bump only for package playout-gateway
