@@ -2,9 +2,9 @@
 
 This is the "Core" application of the [**Sofie** TV News Studio Automation System](https://github.com/nrkno/Sofie-TV-automation/).
 
-The Core is a Meteor/Node.JS-based web server that serves the web-GUI:s as well as handling the business logic for the Sofie TV Automation system.
+The Core is a Meteor/Node.JS-based web server that serves the web-GUIs as well as handling the business logic for the Sofie TV Automation system.
 
-System documentation can be found here: [Sofie system documentation](https://sofie.gitbook.io/sofie-tv-automation/documentation).
+System documentation can be found here: [Sofie system documentation](https://nrkno.github.io/tv-automation-server-core/).
 
 # For developers
 
@@ -14,49 +14,64 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 ### Prerequisites
 
-- Install [Meteor](https://www.meteor.com/install)
-- Install [Node.js](https://nodejs.org) 12
-- Install [Yarn](https://yarnpkg.com)
-- If on windows `npm install --global windows-build-tools`
+- Install [Node.js](https://nodejs.org) 12 or 14 (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
+- If on Windows: `npm install --global windows-build-tools`
+- Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
+- Install [Yarn](https://yarnpkg.com) (`npm install --global corepack && corepack enable`)
 
 ### Quick-start:
 
-```
+```bash
 git clone -b master https://github.com/nrkno/tv-automation-server-core.git
 cd tv-automation-server-core
 yarn start
 ```
 
+> 💡 First startup may take a while, especially on Windows. To speed things up, consider adding `%LOCALAPPDATA%\.meteor` and the directory where you cloned `server-core` to your Windows Defender virus protection exclusions.
+
 ### Slightly more detailed start:
 
 1. Clone the repository (for development, it is recommended to base your work on the latest unstable release branch)
 
-   `git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git`
+   ```bash
+   git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git
+   ```
 
 2. Go into the cloned directory
 
-   `cd tv-automation-server-core`
+   ```bash
+   cd tv-automation-server-core
+   ```
 
 3. Setup meteor and dependencies. (Before this, make sure your NODE_ENV environment variable is NOT set to "production"!)
 
-   `yarn install`
+   ```bash
+   yarn install
+   ```
 
 4. Start development mode
 
-   `yarn dev`
+   ```bash
+   yarn dev
+   ```
 
 5. In another window, start the playout-gateway. You will need to manually restart this upon making changes
 
-   `cd tv-automation-server-core/packages/playout-gateway`
-   `yarn buildstart`
+   ```bash
+   cd tv-automation-server-core/packages/playout-gateway
+   yarn buildstart
+   ```
 
 If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.
- `cd tv-automation-server-core/packages`
- `yarn watch` # or yarn build to build just once
+
+```bash
+cd tv-automation-server-core/packages
+yarn watch # or yarn build to build just once
+```
 
 If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For example, for `tv-automation-mos-connection` library:
 
-```
+```bash
 git clone -b master https://github.com/nrkno/tv-automation-mos-connection.git
 cd tv-automation-mos-connection
 npm run build
@@ -83,7 +98,7 @@ yarn start # Set up, install and run in dev mode
 
 For support of various languages in the GUI, Sofie uses the i18next framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:
 
-```
+```bash
 cd meteor
 npm run i18n-extract-pot
 ```
@@ -99,7 +114,7 @@ Next, modify the `package.json` scripts and create a new language compilations s
 
 Then, run the compilation script:
 
-```
+```bash
 npm run i18n-compile-json
 ```
 

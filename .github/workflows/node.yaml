@@ -390,6 +390,8 @@ jobs:
             echo "No Token"
           else
 
+            yarn --ignore-scripts
+
             cd packages/${{ matrix.package-name }}
             PACKAGE_NAME=$(yarn info -s . name)
             PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
