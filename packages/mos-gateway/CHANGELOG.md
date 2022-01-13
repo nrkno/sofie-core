@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.2-1...v1.37.2) (2022-01-13)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+## [1.37.2-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.2-0...v1.37.2-1) (2022-01-13)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+## [1.37.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.1...v1.37.2-0) (2022-01-13)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+## [1.37.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.1-0...v1.37.1) (2022-01-13)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+## [1.37.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0...v1.37.1-0) (2021-12-17)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
 # [1.37.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.13...v1.37.0) (2021-12-08)
 
 **Note:** Version bump only for package mos-gateway
