@@ -1837,7 +1837,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				expect(segment2.name).not.toBe(ingestSegment.name)
 			}
 
-			MeteorCall.peripheralDevice.dataSegmentUpdate(
+			await MeteorCall.peripheralDevice.dataSegmentUpdate(
 				device2._id,
 				device2.token,
 				rundownData.externalId,
