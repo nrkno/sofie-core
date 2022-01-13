@@ -376,18 +376,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - name: Prepare Environment
-        run: |
-          cd packages
-          yarn install
-        env:
-          CI: true
       - name: Check release is desired
         id: do-publish
         run: |
           if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
             echo "No Token"
           else
+
+            yarn --ignore-scripts
 
             cd packages/${{ matrix.package-name }}
             PACKAGE_NAME=$(yarn info -s . name)
@@ -399,6 +395,13 @@ jobs:
             echo ::set-output name=tag::"$NPM_TAG"
 
           fi
+      - name: Prepare Environment
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          cd packages
+          yarn install
+        env:
+          CI: true
       - name: Build
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
