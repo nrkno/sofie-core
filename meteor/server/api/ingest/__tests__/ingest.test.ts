@@ -1712,7 +1712,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				rundown.playlistId,
 				true
 			)
-			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(rundown.playlistId), rundown.playlistId)
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(rundown.playlistId), rundown.playlistId, null)
 
 			const doQueuePart = async (partInstanceId: PartInstanceId): Promise<void> =>
 				runPlayoutOperationWithCache(
@@ -1761,7 +1761,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 			// Queue and take an adlib-part
 			const partInstanceId0: PartInstanceId = getRandomId()
 			await doQueuePart(partInstanceId0)
-			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(rundown.playlistId), rundown.playlistId)
+			{
+				const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+				expect(playlist).toBeTruthy()
+
+				await ServerPlayoutAPI.takeNextPart(
+					PLAYLIST_ACCESS(rundown.playlistId),
+					rundown.playlistId,
+					playlist.currentPartInstanceId
+				)
+			}
 
 			{
 				// Verify it was taken properly
@@ -1830,7 +1839,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 			// Queue and take another adlib-part
 			const partInstanceId1: PartInstanceId = getRandomId()
 			await doQueuePart(partInstanceId1)
-			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(rundown.playlistId), rundown.playlistId)
+			{
+				const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
+				expect(playlist).toBeTruthy()
+
+				await ServerPlayoutAPI.takeNextPart(
+					PLAYLIST_ACCESS(rundown.playlistId),
+					rundown.playlistId,
+					playlist.currentPartInstanceId
+				)
+			}
 
 			{
 				// Verify the take was correct
