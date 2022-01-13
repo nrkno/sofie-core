@@ -10,7 +10,7 @@ import {
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { SegmentId, Segment } from '../../../lib/collections/Segments'
+import { SegmentId, Segment, SegmentOrphanedReason } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
@@ -127,7 +127,7 @@ export function canSegmentBeUpdated(
 	}
 
 	if (!segment) return true
-	if (segment.orphaned === 'deleted' && !isCreateAction) {
+	if (segment.orphaned === SegmentOrphanedReason.DELETED && !isCreateAction) {
 		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
 		return false
 	}

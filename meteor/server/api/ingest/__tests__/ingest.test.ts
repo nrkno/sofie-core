@@ -1429,7 +1429,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				segments[0].externalId
 			)
 			expect(getRundown().orphaned).toBeUndefined()
-			expect(getSegment(segments[0]._id).orphaned).toEqual('deleted')
+			expect(getSegment(segments[0]._id).orphaned).toEqual(SegmentOrphanedReason.DELETED)
 
 			resyncRundown()
 			expect(getRundown().orphaned).toBeUndefined()
