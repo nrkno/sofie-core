@@ -1,22 +1,20 @@
-import '../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { PieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { literal, protectString, getCurrentTime } from '../../../lib/lib'
-import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPieceType,
+	PieceLifespan,
+	PlaylistTimingType,
+	SourceLayerType,
+} from '@sofie-automation/blueprints-integration'
+import { DBPartInstance } from '../../dataModel/PartInstance'
+import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '../../dataModel/Ids'
+import { DBPart } from '../../dataModel/Part'
+import { Piece } from '../../dataModel/Piece'
+import { PieceInstance, PieceInstancePiece } from '../../dataModel/PieceInstance'
+import { Rundown, DBRundown } from '../../dataModel/Rundown'
+import { literal } from '../../lib'
+import { protectString } from '../../protectedString'
 import { getPlayheadTrackingInfinitesForPart, processAndPrunePieceInstanceTimings } from '../infinites'
-import { Piece } from '../../../lib/collections/Pieces'
-import { PartInstance, PartInstanceId } from '../../collections/PartInstances'
-import { DBPart, PartId } from '../../collections/Parts'
-import { DBRundown, Rundown, RundownId } from '../../collections/Rundowns'
-import { RundownPlaylistId } from '../../collections/RundownPlaylists'
 
 describe('Infinites', () => {
-	let env: DefaultEnvironment
-	beforeEach(async () => {
-		env = await setupDefaultStudioEnvironment()
-	})
-
 	function createPieceInstance(
 		id: string,
 		enable: Piece['enable'],
@@ -45,7 +43,7 @@ describe('Infinites', () => {
 				content: { timelineObjects: [] },
 				pieceType: IBlueprintPieceType.Normal,
 			}),
-			dynamicallyInserted: clearOrAdlib === true ? getCurrentTime() : clearOrAdlib || undefined,
+			dynamicallyInserted: clearOrAdlib === true ? Date.now() : clearOrAdlib || undefined,
 			infinite,
 		})
 	}
@@ -53,7 +51,22 @@ describe('Infinites', () => {
 	describe('processAndPrunePieceInstanceTimings', () => {
 		function runAndTidyResult(pieceInstances: PieceInstance[], nowInPart: number, includeVirtual?: boolean) {
 			const resolvedInstances = processAndPrunePieceInstanceTimings(
-				env.showStyleBase,
+				{
+					sourceLayers: [
+						{
+							_id: 'one',
+							_rank: 0,
+							type: SourceLayerType.UNKNOWN,
+							name: 'One',
+						},
+						{
+							_id: 'two',
+							_rank: 0,
+							type: SourceLayerType.UNKNOWN,
+							name: 'Two',
+						},
+					],
+				},
 				pieceInstances,
 				nowInPart,
 				undefined,
@@ -67,7 +80,7 @@ describe('Infinites', () => {
 			}))
 		}
 
-		testInFiber('simple seperate layers', () => {
+		test('simple seperate layers', () => {
 			const pieceInstances = [
 				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnRundownEnd),
 				createPieceInstance('two', { start: 1000 }, 'two', PieceLifespan.OutOnRundownEnd),
@@ -89,7 +102,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('basic collision', () => {
+		test('basic collision', () => {
 			const pieceInstances = [
 				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnRundownEnd),
 				createPieceInstance('two', { start: 1000, duration: 5000 }, 'one', PieceLifespan.OutOnRundownEnd),
@@ -111,7 +124,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('onEnd type override', () => {
+		test('onEnd type override', () => {
 			const pieceInstances = [
 				createPieceInstance('zero', { start: 0 }, 'one', PieceLifespan.OutOnShowStyleEnd),
 				createPieceInstance('one', { start: 500 }, 'one', PieceLifespan.OutOnRundownEnd),
@@ -161,7 +174,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('clear onEnd', () => {
+		test('clear onEnd', () => {
 			const pieceInstances = [
 				createPieceInstance('zero', { start: 0 }, 'one', PieceLifespan.OutOnShowStyleEnd),
 				createPieceInstance('one', { start: 500 }, 'one', PieceLifespan.OutOnRundownEnd),
@@ -193,7 +206,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('clear onEnd; include virtuals', () => {
+		test('clear onEnd; include virtuals', () => {
 			const pieceInstances = [
 				createPieceInstance('zero', { start: 0 }, 'one', PieceLifespan.OutOnShowStyleEnd),
 				createPieceInstance('one', { start: 500 }, 'one', PieceLifespan.OutOnRundownEnd),
@@ -243,7 +256,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('stop onSegmentChange with onEnd', () => {
+		test('stop onSegmentChange with onEnd', () => {
 			const pieceInstances = [
 				createPieceInstance('zero', { start: 0 }, 'one', PieceLifespan.OutOnShowStyleEnd),
 				createPieceInstance('one', { start: 500 }, 'one', PieceLifespan.OutOnSegmentEnd),
@@ -293,7 +306,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('prefer newer adlib', () => {
+		test('prefer newer adlib', () => {
 			const pieceInstances = [
 				createPieceInstance('one', { start: 1000 }, 'one', PieceLifespan.OutOnSegmentEnd, 6000),
 				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnSegmentEnd, 5500),
@@ -309,7 +322,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('prefer newer adlib2', () => {
+		test('prefer newer adlib2', () => {
 			const pieceInstances = [
 				createPieceInstance('one', { start: 1000 }, 'one', PieceLifespan.OutOnRundownChange, 6000),
 				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnRundownChange, 5500),
@@ -327,7 +340,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('prefer newer adlib3', () => {
+		test('prefer newer adlib3', () => {
 			const pieceInstances = [
 				createPieceInstance('one', { start: 1000 }, 'one', PieceLifespan.OutOnShowStyleEnd, 6000),
 				createPieceInstance('two', { start: 1000 }, 'one', PieceLifespan.OutOnShowStyleEnd, 5500),
@@ -343,7 +356,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('continue onChange when start=0 and onEnd is present, and both are infinite continuations', () => {
+		test('continue onChange when start=0 and onEnd is present, and both are infinite continuations', () => {
 			const pieceInstances = [
 				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnSegmentChange, 6000, {
 					fromPreviousPart: true,
@@ -374,7 +387,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('stop onChange when start=0 and onEnd is present, and both are infinite continuations', () => {
+		test('stop onChange when start=0 and onEnd is present, and both are infinite continuations', () => {
 			const pieceInstances = [
 				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnSegmentChange, 6000, {
 					fromPreviousPart: true,
@@ -402,7 +415,7 @@ describe('Infinites', () => {
 	})
 	describe('getPlayheadTrackingInfinitesForPart', () => {
 		function runAndTidyResult(
-			previousPartInstance: Pick<PartInstance, 'rundownId' | 'segmentId'> & { partId: PartId },
+			previousPartInstance: Pick<DBPartInstance, 'rundownId' | 'segmentId'> & { partId: PartId },
 			previousPartPieces: PieceInstance[],
 			rundown: Rundown,
 			part: Pick<DBPart, 'rundownId' | 'segmentId'>,
@@ -457,7 +470,7 @@ describe('Infinites', () => {
 					content: { timelineObjects: [] },
 					pieceType: IBlueprintPieceType.Normal,
 				}),
-				dynamicallyInserted: clear ? getCurrentTime() : undefined,
+				dynamicallyInserted: clear ? Date.now() : undefined,
 				infinite: {
 					infiniteInstanceId: protectString(`${id}_inf`),
 					infinitePieceId: protectString(`${id}_p`),
@@ -498,7 +511,7 @@ describe('Infinites', () => {
 			})
 		}
 
-		testInFiber('multiple continued pieces starting at 0 should preserve the newest', () => {
+		test('multiple continued pieces starting at 0 should preserve the newest', () => {
 			const playlistId = protectString('playlist0')
 			const rundownId = protectString('rundown0')
 			const segmentId = protectString('segment0')
@@ -556,7 +569,7 @@ describe('Infinites', () => {
 				},
 			])
 		})
-		testInFiber('ignore pieces that have stopped', () => {
+		test('ignore pieces that have stopped', () => {
 			const playlistId = protectString('playlist0')
 			const rundownId = protectString('rundown0')
 			const segmentId = protectString('segment0')

@@ -1,11 +1,13 @@
-import '../../../__mocks__/_extendJest'
-import { literal, getRandomId } from '../../../lib/lib'
-import { Piece } from '../../../lib/collections/Pieces'
+import { getRandomId, literal } from '../../lib'
+import { Piece } from '../../dataModel/Piece'
 import { createPieceGroupAndCap } from '../pieces'
-import { TimelineObjRundown } from '../../collections/Timeline'
-import { TimelineEnable } from 'superfly-timeline'
+import { TimelineObjRundown } from '../../dataModel/Timeline'
+import { TSR } from '@sofie-automation/blueprints-integration'
+import { protectString } from '../../protectedString'
 
 type PieceInstanceParam = Parameters<typeof createPieceGroupAndCap>[0]
+
+type TimelineEnable = TSR.Timeline.TimelineEnable
 
 describe('Pieces', () => {
 	describe('createPieceGroupAndCap', () => {
@@ -17,9 +19,9 @@ describe('Pieces', () => {
 		}
 
 		const simplePieceInstance = literal<PieceInstanceParam>({
-			_id: getRandomId(),
+			_id: protectString('randomId9000'),
 			rundownId: getRandomId(),
-			partInstanceId: getRandomId(),
+			partInstanceId: protectString('randomId9002'),
 			piece: createFakePiece({ start: 10 }, 'some-layer'),
 			infinite: undefined,
 			resolvedEndCap: undefined,
@@ -49,7 +51,7 @@ describe('Pieces', () => {
 			partInstanceId: 'randomId9002',
 			priority: 123,
 		}
-		const partGroup = { id: getRandomId() } as any as TimelineObjRundown
+		const partGroup = { id: 'randomId9003' } as any as TimelineObjRundown
 
 		test('Basic piece', () => {
 			const res = createPieceGroupAndCap(simplePieceInstance)

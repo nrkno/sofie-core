@@ -508,7 +508,7 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
  * The stacking order of infinites is considered, to define the stop times
  */
 export function processAndPrunePieceInstanceTimings(
-	showStyle: ReadonlyDeep<DBShowStyleBase>,
+	showStyle: ReadonlyDeep<Pick<DBShowStyleBase, 'sourceLayers'>>,
 	pieces: PieceInstance[],
 	nowInPart: number,
 	keepDisabledPieces?: boolean,

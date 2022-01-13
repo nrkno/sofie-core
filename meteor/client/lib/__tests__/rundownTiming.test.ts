@@ -1,8 +1,8 @@
-import { PartInstance } from '../../collections/PartInstances'
-import { DBPart, Part, PartId } from '../../collections/Parts'
-import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
-import { DBRundown } from '../../collections/Rundowns'
-import { literal, protectString, unprotectString } from '../../lib'
+import { RundownPlaylist, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { DBPart, Part, PartId } from '../../../lib/collections/Parts'
+import { DBRundown } from '../../../lib/collections/Rundowns'
+import { literal, protectString, unprotectString } from '../../../lib/lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 
 const DEFAULT_DURATION = 4000
