@@ -11,6 +11,12 @@ Package Manager is used by Sofie to copy, analyze, and process media files. It i
 
 Although Package Manager can be used to copy any kind of file to/from a wide array of devices, we'll be focusing on a basic CasparCG setup for this guide.
 
+:::caution
+
+At this time, the Package Manager worker process is Windows-only. Therefore, these instructions as a whole will only work on Windows. The worker will not work on WSL2.
+
+:::
+
 ### Installation (Quick Start)
 
 Package Manager is a suite of standalone applications, separate from Sofie Core. This guide assumes that Package Manager will be running on the same computer as CasparCG and Sofie Core, as that is the fastest way to set up a demo. To get all parts of Package Manager up and running quickly, execute these commands:
@@ -43,6 +49,8 @@ This first run is necessary to get the Package Manager device registered with So
 1. Click the plus button under "Accessors", then click the edit icon to the right of the newly-created accessor.
 1. Give this accessor an ID of `casparcgHttpProxy0`, a Label of `CasparCG HTTP Proxy Accessor`, an Accessor Type of `HTTP_PROXY`, and a Base URL of `http://localhost:8080/package`. Then, ensure that both the "Allow Read access" and "Allow Write access" boxes are checked. Finally, click the done button (checkmark icon) in the bottom right.
 1. Scroll back up a bit to the "Studio Settings" subsection (still in the Package Manager section) and select "CasparCG Package Container" for both "Package Containers to use for previews" and "Package Containers to use for thumbnails".
+1. Your settings should look like this once all the above steps have been completed:
+   ![Package Manager demo settings](/img/docs/Package_Manager_demo_settings.png)
 1. If Package Manager `start:single-app` is running, restart it. If not, start it (see the above [Installation instructions](#installation-quick-start) for the relevant command line).
 
 ### Usage
