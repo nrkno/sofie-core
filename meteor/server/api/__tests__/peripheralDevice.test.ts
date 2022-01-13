@@ -36,8 +36,13 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
-import { MediaObjects } from '../../../lib/collections/MediaObjects'
-import { PieceLifespan, PlaylistTimingType, StatusCode } from '@sofie-automation/blueprints-integration'
+import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import {
+	IBlueprintPieceType,
+	PieceLifespan,
+	PlaylistTimingType,
+	StatusCode,
+} from '@sofie-automation/blueprints-integration'
 import { CreateFakeResult, QueueStudioJobSpy } from '../../../__mocks__/worker'
 
 import '../peripheralDevice'

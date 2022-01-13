@@ -4,6 +4,7 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
+	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
@@ -490,7 +491,7 @@ export async function setupDefaultStudioEnvironment(
 	const ingestDevice = setupMockPeripheralDevice(
 		PeripheralDeviceCategory.INGEST,
 		PeripheralDeviceType.MOS,
-		PeripheralDeviceAPI.SUBTYPE_PROCESS,
+		PERIPHERAL_SUBTYPE_PROCESS,
 		studio,
 		{ organizationId: organizationId }
 	)

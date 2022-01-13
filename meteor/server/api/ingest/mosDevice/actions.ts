@@ -16,7 +16,7 @@ import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 export namespace MOSDeviceActions {
 	export async function reloadRundown(
 		peripheralDevice: PeripheralDevice,
-		rundown: Rundown
+		rundown: Pick<Rundown, '_id' | 'studioId' | 'externalId'>
 	): Promise<TriggerReloadDataResponse> {
 		logger.info('reloadRundown ' + rundown._id)
 

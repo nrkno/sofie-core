@@ -1,4 +1,4 @@
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -984,6 +984,9 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 					const rundownIDs = (
 						await context.directCollections.Rundowns.findFetch({ playlistId }, { projection: { _id: 1 } })
 					).map((r) => r._id)
+					const partInstanceIDs = [activePlaylist.currentPartInstanceId].filter(
+						(id): id is PartInstanceId => id !== null
+					)
 
 					// We only need the PieceInstances, so load just them
 					const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
@@ -991,6 +994,9 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 						context.directCollections.PieceInstances,
 						{
 							rundownId: { $in: rundownIDs },
+							partInstanceId: {
+								$in: partInstanceIDs,
+							},
 						}
 					)
 

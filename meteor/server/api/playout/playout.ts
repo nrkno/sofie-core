@@ -10,6 +10,7 @@ import { StudioContentWriteAccess } from '../../security/studio'
 import { check } from '../../../lib/check'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { Timeline } from '../../../lib/collections/Timeline'
+import { logger } from '../../logging'
 
 export namespace ServerPlayoutAPI {
 	export async function shouldUpdateStudioBaseline(
