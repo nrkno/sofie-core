@@ -250,6 +250,8 @@ jobs:
             server-core-integration,
             playout-gateway,
             mos-gateway,
+            corelib,
+            job-worker,
           ]
 
     steps:
@@ -282,9 +284,17 @@ jobs:
       matrix:
         package-name: [blueprints-integration, server-core-integration]
         node-version: [12.x, 14.x, 16.x]
-
-    # Gateways dont support node 10. but no tests to run anyway :)
-    # if: "!(endsWith(matrix.package-name, 'gateway') & matrix.node-version == '10.x')"
+        include:
+          # include additional configs, to run certain packages in a single version of node
+          - node-version: 12.x
+            package-name: corelib
+          - node-version: 12.x
+            package-name: job-worker
+          # No tests for the gateways yet
+          # - node-version: 12.x
+          #   package-name: playout-gateway
+          # - node-version: 12.x
+          #   package-name: mos-gateway
 
     steps:
       - uses: actions/checkout@v2
