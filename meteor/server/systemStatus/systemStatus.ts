@@ -8,6 +8,7 @@ import {
 	parseCoreIntegrationCompatabilityRange,
 	stripVersion,
 	compareSemverVersions,
+	isPrerelease,
 } from '../../lib/collections/CoreSystem'
 import {
 	StatusResponse,
@@ -28,6 +29,7 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
+const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 
 // Any libraries that if a gateway uses should match a certain version
 const expectedLibraryVersions: { [libName: string]: string } = {
@@ -90,6 +92,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 			const checkMessage = compareSemverVersions(
 				integrationVersion,
 				integrationVersionRange,
+				integrationVersionAllowPrerelease,
 				`Device has to be updated`,
 				`Device "${device.name}"`,
 				'@sofie-automation/server-core-integration'
@@ -107,6 +110,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 			const checkMessage = compareSemverVersions(
 				integrationVersion,
 				integrationVersionRange,
+				integrationVersionAllowPrerelease,
 				`Device has to be updated`,
 				`Device "${device.name}"`,
 				'@sofie-automation/blueprint-integration'
@@ -121,6 +125,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 				const checkMessage = compareSemverVersions(
 					deviceLibVersion,
 					targetVersion,
+					integrationVersionAllowPrerelease,
 					`Device has mismatched library version`,
 					`Device "${device.name}"`,
 					libName

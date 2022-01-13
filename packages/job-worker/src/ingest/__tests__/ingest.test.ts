@@ -15,7 +15,7 @@ import {
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
 import { removeRundownPlaylistFromDb } from '../../rundownPlaylists'
 import { MongoQuery } from '../../db'
@@ -32,9 +32,13 @@ import {
 	handleUpdatedSegmentRanks,
 } from '../rundownInput'
 import { activateRundownPlaylist, takeNextPart } from '../../playout/playout'
-import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getSelectedPartInstances } from '../../playout/__tests__/lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { runJobWithPlayoutCache } from '../../playout/lock'
+import { getSelectedPartInstancesFromCache } from '../../playout/cache'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { innerStartQueuedAdLib } from '../../playout/adlib'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1829,6 +1833,322 @@ describe('Test ingest actions for rundowns and segments', () => {
 				await expect(
 					context.directCollections.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
 				).resolves.not.toHaveLength(0)
+			}
+		} finally {
+			// forcefully 'deactivate' the playlist to allow for cleanup to happen
+			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
+		}
+	})
+
+	test('previous partinstance getting removed if an adlib part', async () => {
+		try {
+			{
+				// Cleanup any rundowns / playlists
+				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+				await Promise.all(playlists.map(async (p) => removeRundownPlaylistFromDb(context, p)))
+			}
+
+			const rundownData: IngestRundown = {
+				externalId: externalId,
+				name: 'MyMockRundown',
+				type: 'mock',
+				segments: [
+					{
+						externalId: 'segment0',
+						name: 'Segment 0',
+						rank: 0,
+						parts: [
+							{
+								externalId: 'part0',
+								name: 'Part 0',
+								rank: 0,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece0',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+							{
+								externalId: 'part1',
+								name: 'Part 1',
+								rank: 1,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece1',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+						],
+					},
+					{
+						externalId: 'segment1',
+						name: 'Segment 1',
+						rank: 1,
+						parts: [
+							{
+								externalId: 'part2',
+								name: 'Part 2',
+								rank: 0,
+							},
+						],
+					},
+					{
+						externalId: 'segment2',
+						name: 'Segment 2',
+						rank: 1,
+						parts: [
+							{
+								externalId: 'part3',
+								name: 'Part 3',
+								rank: 0,
+							},
+						],
+					},
+				],
+			}
+
+			await handleUpdatedRundown(context, {
+				rundownExternalId: rundownData.externalId,
+				peripheralDeviceId: device2._id,
+				ingestRundown: rundownData,
+				isCreateAction: true,
+			})
+
+			const rundown = (await context.directCollections.Rundowns.findOne()) as DBRundown
+			expect(rundown).toBeTruthy()
+
+			// Take into first part
+			await activateRundownPlaylist(context, {
+				playlistId: rundown.playlistId,
+				rehearsal: true,
+			})
+			await takeNextPart(context, {
+				playlistId: rundown.playlistId,
+				fromPartInstanceId: null,
+			})
+
+			const doQueuePart = async (partInstanceId: PartInstanceId): Promise<void> =>
+				runJobWithPlayoutCache(
+					context,
+					{
+						playlistId: rundown.playlistId,
+					},
+					null,
+					async (cache) => {
+						const rundown0 = cache.Rundowns.findOne({}) as DBRundown
+						expect(rundown0).toBeTruthy()
+
+						const currentPartInstance = getSelectedPartInstancesFromCache(cache)
+							.currentPartInstance as DBPartInstance
+						expect(currentPartInstance).toBeTruthy()
+
+						const newPartInstance: DBPartInstance = {
+							_id: partInstanceId,
+							rundownId: rundown0._id,
+							segmentId: currentPartInstance.segmentId,
+							playlistActivationId: currentPartInstance.playlistActivationId,
+							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
+							takeCount: currentPartInstance.takeCount + 1,
+							rehearsal: true,
+							part: {
+								_id: protectString(`${partInstanceId}_part`),
+								_rank: 0,
+								rundownId: rundown0._id,
+								segmentId: currentPartInstance.segmentId,
+								externalId: `${partInstanceId}_externalId`,
+								title: 'New part',
+								expectedDurationWithPreroll: undefined,
+							},
+						}
+
+						// Simulate a queued part
+						await innerStartQueuedAdLib(context, cache, rundown0, currentPartInstance, newPartInstance, [])
+					}
+				)
+
+			// Queue and take an adlib-part
+			const partInstanceId0: PartInstanceId = getRandomId()
+			await doQueuePart(partInstanceId0)
+			{
+				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+					rundown.playlistId
+				)) as DBRundownPlaylist
+				expect(playlist).toBeTruthy()
+
+				await takeNextPart(context, {
+					playlistId: rundown.playlistId,
+					fromPartInstanceId: playlist.currentPartInstanceId,
+				})
+			}
+
+			{
+				// Verify it was taken properly
+				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+					rundown.playlistId
+				)) as DBRundownPlaylist
+				expect(playlist).toBeTruthy()
+				expect(playlist.currentPartInstanceId).toBe(partInstanceId0)
+
+				const currentPartInstance = (await getSelectedPartInstances(context, playlist))
+					.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.orphaned).toBe('adlib-part')
+			}
+
+			// Ingest update should have no effect
+			const ingestSegment: IngestSegment = {
+				externalId: 'segment2',
+				name: 'Segment 2a',
+				rank: 1,
+				parts: [
+					{
+						externalId: 'part3',
+						name: 'Part 3',
+						rank: 0,
+					},
+				],
+			}
+
+			{
+				// Check props before
+				const segment2 = (await context.directCollections.Segments.findOne({
+					externalId: ingestSegment.externalId,
+					rundownId: rundown._id,
+				})) as DBSegment
+				expect(segment2).toBeTruthy()
+				expect(segment2.name).not.toBe(ingestSegment.name)
+			}
+
+			await handleUpdatedSegment(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestSegment: ingestSegment,
+				isCreateAction: false,
+			})
+
+			{
+				// Check props after
+				const segment2 = (await context.directCollections.Segments.findOne({
+					externalId: ingestSegment.externalId,
+					rundownId: rundown._id,
+				})) as DBSegment
+				expect(segment2).toBeTruthy()
+				expect(segment2.name).toBe(ingestSegment.name)
+			}
+
+			{
+				// Verify the adlibbed part-instance didnt change
+				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+					rundown.playlistId
+				)) as DBRundownPlaylist
+				expect(playlist).toBeTruthy()
+				expect(playlist.currentPartInstanceId).toBe(partInstanceId0)
+
+				const currentPartInstance = (await getSelectedPartInstances(context, playlist))
+					.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.orphaned).toBe('adlib-part')
+			}
+
+			// Queue and take another adlib-part
+			const partInstanceId1: PartInstanceId = getRandomId()
+			await doQueuePart(partInstanceId1)
+			{
+				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+					rundown.playlistId
+				)) as DBRundownPlaylist
+				expect(playlist).toBeTruthy()
+
+				await takeNextPart(context, {
+					playlistId: rundown.playlistId,
+					fromPartInstanceId: playlist.currentPartInstanceId,
+				})
+			}
+
+			{
+				// Verify the take was correct
+				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+					rundown.playlistId
+				)) as DBRundownPlaylist
+				expect(playlist).toBeTruthy()
+				expect(playlist.currentPartInstanceId).toBe(partInstanceId1)
+				expect(playlist.previousPartInstanceId).toBe(partInstanceId0)
+
+				const currentPartInstance = (await getSelectedPartInstances(context, playlist))
+					.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.orphaned).toBe('adlib-part')
+
+				const previousPartInstance = (await getSelectedPartInstances(context, playlist))
+					.previousPartInstance as DBPartInstance
+				expect(previousPartInstance).toBeTruthy()
+				expect(previousPartInstance.orphaned).toBe('adlib-part')
+			}
+
+			// Another ingest update
+			ingestSegment.name += '2'
+
+			{
+				// Check props before
+				const segment2 = (await context.directCollections.Segments.findOne({
+					externalId: ingestSegment.externalId,
+					rundownId: rundown._id,
+				})) as DBSegment
+				expect(segment2).toBeTruthy()
+				expect(segment2.name).not.toBe(ingestSegment.name)
+			}
+
+			await handleUpdatedSegment(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestSegment: ingestSegment,
+				isCreateAction: false,
+			})
+
+			{
+				// Check props after
+				const segment2 = (await context.directCollections.Segments.findOne({
+					externalId: ingestSegment.externalId,
+					rundownId: rundown._id,
+				})) as DBSegment
+				expect(segment2).toBeTruthy()
+				expect(segment2.name).toBe(ingestSegment.name)
+			}
+
+			{
+				// Verify the part-instances havent changed
+				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+					rundown.playlistId
+				)) as DBRundownPlaylist
+				expect(playlist).toBeTruthy()
+				expect(playlist.currentPartInstanceId).toBe(partInstanceId1)
+				expect(playlist.previousPartInstanceId).toBe(partInstanceId0)
+
+				const currentPartInstance = (await getSelectedPartInstances(context, playlist))
+					.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.orphaned).toBe('adlib-part')
+
+				const previousPartInstance = (await getSelectedPartInstances(context, playlist))
+					.previousPartInstance as DBPartInstance
+				expect(previousPartInstance).toBeTruthy()
+				expect(previousPartInstance.orphaned).toBe('adlib-part')
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen

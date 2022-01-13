@@ -8,6 +8,7 @@ import {
 	GENESIS_SYSTEM_VERSION,
 	parseCoreIntegrationCompatabilityRange,
 	compareSemverVersions,
+	isPrerelease,
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime, unprotectString, waitForPromiseAll } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
@@ -121,7 +122,7 @@ function checkDatabaseVersions() {
 
 		setSystemStatus(
 			'databaseVersion',
-			compareSemverVersions(currentVersion, dbVersion, 'to fix, run migration', 'core', 'system database')
+			compareSemverVersions(currentVersion, dbVersion, false, 'to fix, run migration', 'core', 'system database')
 		)
 
 		// Blueprints:
@@ -158,6 +159,7 @@ function checkDatabaseVersions() {
 						o = compareSemverVersions(
 							parseVersion(blueprint.blueprintVersion),
 							parseRange(blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)]),
+							false,
 							'to fix, run migration',
 							'blueprint version',
 							`showStyle "${showStyleBase._id}" migrations`
@@ -176,6 +178,7 @@ function checkDatabaseVersions() {
 								o = compareSemverVersions(
 									parseVersion(blueprint.blueprintVersion),
 									parseRange(blueprint.databaseVersion.studio[unprotectString(studio._id)]),
+									false,
 									'to fix, run migration',
 									'blueprint version',
 									`studio "${studio._id}]" migrations`
@@ -203,6 +206,7 @@ function onCoreSystemChanged() {
 }
 
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
+const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 
 function checkBlueprintCompability(blueprint: Blueprint) {
 	const systemStatusId = 'blueprintCompability_' + blueprint._id
@@ -216,6 +220,7 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 		const integrationStatus = compareSemverVersions(
 			parseVersion(blueprint.integrationVersion),
 			parseRange(integrationVersionRange),
+			integrationVersionAllowPrerelease,
 			'Blueprint has to be updated',
 			'blueprint.integrationVersion',
 			'@sofie-automation/blueprints-integration'
