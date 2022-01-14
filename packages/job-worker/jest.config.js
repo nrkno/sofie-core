@@ -23,14 +23,14 @@ module.exports = {
 	testMatch: ['**/__tests__/**/*.(spec|test).(ts|js)'],
 	testPathIgnorePatterns: ['integrationTests'],
 	testEnvironment: 'node',
-	coverageThreshold: {
-		global: {
-			branches: 80,
-			functions: 100,
-			lines: 95,
-			statements: 90,
-		},
-	},
+	// coverageThreshold: {
+	// 	global: {
+	// 		branches: 80,
+	// 		functions: 100,
+	// 		lines: 95,
+	// 		statements: 90,
+	// 	},
+	// },
 	coverageDirectory: './coverage/',
 	collectCoverage: true,
 	preset: 'ts-jest',
