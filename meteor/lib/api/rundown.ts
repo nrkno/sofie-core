@@ -1,7 +1,6 @@
 import { RundownId } from '../collections/Rundowns'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
-import { PieceStatusCode as PieceStatusCode0 } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export interface RundownPlaylistValidateBlueprintConfigResult {
 	studio: string[]
