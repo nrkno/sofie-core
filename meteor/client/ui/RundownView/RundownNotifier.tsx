@@ -10,7 +10,7 @@ import {
 	NoticeLevel,
 	getNoticeLevelForPieceStatus,
 } from '../../lib/notifications/notifications'
-import { RundownAPI, RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
+import { RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
@@ -28,7 +28,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
 import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { PieceId, Piece } from '../../../lib/collections/Pieces'
+import { PieceId, Piece, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
 import {
@@ -577,7 +577,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							if (!this.subscriptionsReady()) return
 
 							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
-							if (status !== RundownAPI.PieceStatusCode.UNKNOWN || message) {
+							if (status !== PieceStatusCode.UNKNOWN || message) {
 								localStatus.push({
 									name: piece.name,
 									rundownId: part.rundownId,
@@ -605,7 +605,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				const { status, message } = issue
 
 				let newNotification: Notification | undefined = undefined
-				if (status !== RundownAPI.PieceStatusCode.OK && status !== RundownAPI.PieceStatusCode.UNKNOWN) {
+				if (status !== PieceStatusCode.OK && status !== PieceStatusCode.UNKNOWN) {
 					newNotification = new Notification(
 						issue.pieceId,
 						getNoticeLevelForPieceStatus(status) || NoticeLevel.WARNING,

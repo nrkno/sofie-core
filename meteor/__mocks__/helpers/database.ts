@@ -47,8 +47,7 @@ import { literal, getCurrentTime, protectString, unprotectString, getRandomId } 
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
-import { Piece, Pieces } from '../../lib/collections/Pieces'
-import { RundownAPI } from '../../lib/api/rundown'
+import { Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
@@ -599,7 +598,7 @@ export function setupDefaultRundown(
 		startSegmentId: part00.segmentId,
 		startPartId: part00._id,
 		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
@@ -621,7 +620,7 @@ export function setupDefaultRundown(
 		startSegmentId: part00.segmentId,
 		startPartId: part00._id,
 		name: 'Piece 001',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
@@ -644,7 +643,7 @@ export function setupDefaultRundown(
 		externalId: 'MOCK_ADLIB_000',
 		partId: part00._id,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -673,7 +672,7 @@ export function setupDefaultRundown(
 		startSegmentId: part01.segmentId,
 		startPartId: part01._id,
 		name: 'Piece 010',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
@@ -747,7 +746,7 @@ export function setupDefaultRundown(
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
 		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -762,7 +761,7 @@ export function setupDefaultRundown(
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
 		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -834,7 +833,7 @@ export function setupRundownWithAutoplayPart0(
 		...defaultAdLibPiece(protectString(rundownId + '_adLib000'), segment0.rundownId, part00._id),
 		expectedDuration: 1000,
 		externalId: 'MOCK_ADLIB_000',
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -905,7 +904,7 @@ export function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
 		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -920,7 +919,7 @@ export function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
 		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,

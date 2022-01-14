@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import {
@@ -27,6 +26,7 @@ import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailUrlForAdLibPieceUi } from '../../lib/ui/clipPreview'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -370,9 +370,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						floated: this.props.piece.floated,
 						active: this.state.active,
 
-						'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
+						'source-missing': this.props.piece.status === PieceStatusCode.SOURCE_MISSING,
+						'source-broken': this.props.piece.status === PieceStatusCode.SOURCE_BROKEN,
+						'unknown-state': this.props.piece.status === PieceStatusCode.UNKNOWN,
 
 						live: this.props.isOnAir,
 						disabled: this.props.disabled,

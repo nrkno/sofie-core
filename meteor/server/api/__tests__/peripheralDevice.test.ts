@@ -11,7 +11,7 @@ import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDev
 import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Parts } from '../../../lib/collections/Parts'
-import { Pieces } from '../../../lib/collections/Pieces'
+import { Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 import {
 	getCurrentTime,
@@ -33,7 +33,6 @@ import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
@@ -144,7 +143,7 @@ describe('test peripheralDevice general API methods', () => {
 			startPartId: protectString('part000'),
 			startSegmentId: segmentID,
 			startRundownId: rundownID,
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			status: PieceStatusCode.UNKNOWN,
 			lifespan: PieceLifespan.WithinPart,
 			pieceType: IBlueprintPieceType.Normal,
 			invalid: false,

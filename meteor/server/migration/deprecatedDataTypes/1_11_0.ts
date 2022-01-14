@@ -9,8 +9,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PartId } from '../../../lib/collections/Parts'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { PieceId } from '../../../lib/collections/Pieces'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { PieceId, PieceStatusCode } from '../../../lib/collections/Pieces'
 
 export interface IBlueprintPartDBTimings {
 	/** Point in time the Part was taken, (ie the time of the user action) */
@@ -62,7 +61,7 @@ export interface PieceGeneric {
 	_id: PieceId
 	externalId: string
 
-	status: RundownAPI.PieceStatusCode
+	status: PieceStatusCode
 	disabled?: boolean
 	hidden?: boolean
 	virtual?: boolean

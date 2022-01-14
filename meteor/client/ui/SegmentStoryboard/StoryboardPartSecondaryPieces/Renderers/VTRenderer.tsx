@@ -2,8 +2,8 @@ import React from 'react'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
 import { IDefaultRendererProps } from './DefaultRenderer'
-import { RundownAPI } from '../../../../../lib/api/rundown'
 import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export function VTRenderer({
 	piece: pieceInstance,
@@ -23,7 +23,7 @@ export function VTRenderer({
 	return (
 		<>
 			<VTFloatingInspector
-				status={status || RundownAPI.PieceStatusCode.UNKNOWN}
+				status={status || PieceStatusCode.UNKNOWN}
 				showMiniInspector={!!hovering}
 				timePosition={timePosition}
 				content={vtContent}

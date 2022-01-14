@@ -43,9 +43,3 @@ export enum RundownAPIMethods {
 	'moveRundown' = 'rundown.moveRundown',
 	'restoreRundownsInPlaylistToDefaultOrder' = 'rundown.restoreRundownsInPlaylistToDefaultOrder',
 }
-
-export namespace RundownAPI {
-	/** A generic list of playback availability statuses for a Piece */
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	export import PieceStatusCode = PieceStatusCode0
-}

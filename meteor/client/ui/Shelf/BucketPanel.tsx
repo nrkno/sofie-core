@@ -48,7 +48,7 @@ import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
-import { PieceId } from '../../../lib/collections/Pieces'
+import { PieceId, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { BucketPieceButton } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
@@ -58,7 +58,6 @@ import { AdLibPieceUi } from './AdLibPanel'
 import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
@@ -188,7 +187,7 @@ export function actionToAdLibPieceUi(
 			typeof action.display.label === 'string'
 				? action.display.label
 				: translateMessage(action.display.label, i18nTranslator),
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
 		externalId: unprotectString(action._id),

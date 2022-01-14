@@ -18,9 +18,8 @@ import {
 	WithTimeline,
 } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings, Studio } from '../collections/Studios'
-import { RundownAPI } from '../api/rundown'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
-import { PieceGeneric } from '../collections/Pieces'
+import { PieceGeneric, PieceStatusCode } from '../collections/Pieces'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {
@@ -238,7 +237,7 @@ describe('lib/mediaObjects', () => {
 
 		const piece1 = literal<PieceGeneric>({
 			_id: protectString('piece1'),
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file',
 			prerollDuration: 0,
 			externalId: '',
@@ -326,7 +325,7 @@ describe('lib/mediaObjects', () => {
 
 		const piece2 = literal<PieceGeneric>({
 			_id: protectString('piece2'),
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file_2',
 			prerollDuration: 0,
 			externalId: '',
@@ -343,7 +342,7 @@ describe('lib/mediaObjects', () => {
 
 		const piece3 = literal<PieceGeneric>({
 			_id: protectString('piece3'),
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file_3',
 			prerollDuration: 0,
 			externalId: '',
@@ -359,15 +358,15 @@ describe('lib/mediaObjects', () => {
 		})
 
 		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudio)
-		expect(status1.status).toEqual(RundownAPI.PieceStatusCode.OK)
+		expect(status1.status).toEqual(PieceStatusCode.OK)
 		expect(status1.message).toBeFalsy()
 
 		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudio)
-		expect(status2.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_BROKEN)
+		expect(status2.status).toEqual(PieceStatusCode.SOURCE_BROKEN)
 		expect(status2.message).toContain('has the wrong format:')
 
 		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudio)
-		expect(status3.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_MISSING)
+		expect(status3.status).toEqual(PieceStatusCode.SOURCE_MISSING)
 		expect(status3.message).toContain('is not yet ready on the playout system')
 	})
 })

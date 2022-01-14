@@ -1,6 +1,6 @@
 import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import classNames from 'classnames'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { PartId } from '../../../lib/collections/Parts'
 import { PieceUi } from '../../ui/SegmentContainer/withResolvedSegment'
 import { RundownUtils } from '../rundown'
@@ -56,10 +56,10 @@ export function pieceUiClassNames(
 		'next-is-touching': pieceInstance.cropped,
 
 		'source-missing':
-			innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-			innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
-		'source-broken': innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-		'unknown-state': innerPiece.status === RundownAPI.PieceStatusCode.UNKNOWN,
+			innerPiece.status === PieceStatusCode.SOURCE_MISSING ||
+			innerPiece.status === PieceStatusCode.SOURCE_NOT_SET,
+		'source-broken': innerPiece.status === PieceStatusCode.SOURCE_BROKEN,
+		'unknown-state': innerPiece.status === PieceStatusCode.UNKNOWN,
 		disabled: pieceInstance.instance.disabled,
 
 		'invert-flash': highlight,
