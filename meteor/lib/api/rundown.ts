@@ -46,5 +46,6 @@ export enum RundownAPIMethods {
 
 export namespace RundownAPI {
 	/** A generic list of playback availability statuses for a Piece */
-	export type PieceStatusCode = PieceStatusCode0
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	export import PieceStatusCode = PieceStatusCode0
 }

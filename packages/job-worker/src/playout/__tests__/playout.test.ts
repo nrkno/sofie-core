@@ -28,6 +28,7 @@ import {
 	onPiecePlaybackStopped,
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
+	setMinimumTakeSpan,
 	setNextPart,
 	takeNextPart,
 } from '../playout'
@@ -119,14 +120,10 @@ describe('Playout API', () => {
 			PeripheralDeviceType.PLAYOUT,
 			PERIPHERAL_SUBTYPE_PROCESS
 		)
-		// // @ts-ignore
-		// Timeline.insert.mockClear()
-		// // @ts-ignore
-		// Timeline.upsert.mockClear()
-		// // @ts-ignore
-		// Timeline.update.mockClear()
 
 		jest.clearAllMocks()
+
+		setMinimumTakeSpan(0)
 	})
 	afterEach(() => {
 		// mockGetCurrentTime.mockClear()
