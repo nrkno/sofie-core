@@ -26,13 +26,19 @@ export namespace UIStateStorage {
 	export function setItem(
 		scope: string,
 		tag: string,
-		value: boolean | BooleanMap | string | number,
+		value: boolean | BooleanMap | string | number | Record<string, any>,
 		permament?: boolean
 	) {
 		_collapsedState[scope] = _collapsedState[scope] || {}
 		_collapsedState[scope]['_modified'] = permament ? null : Date.now()
 		_collapsedState[scope][tag] = value
 		_persist()
+	}
+
+	export function getItemRecord<T extends Record<string, any>>(scope: string, tag: string, defaultValue: T): T {
+		return typeof (_collapsedState[scope] || {})[tag] === 'object'
+			? (_collapsedState[scope][tag] as T)
+			: defaultValue
 	}
 
 	export function getItemBooleanMap(scope: string, tag: string, defaultValue: BooleanMap): BooleanMap {

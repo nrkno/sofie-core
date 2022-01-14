@@ -37,6 +37,8 @@ import {
 import { Settings } from '../../../lib/Settings'
 import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
 import { updateSegmentFromIngestData } from '../ingest/generation'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { MongoQuery } from '../../../lib/typings/meteor'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -49,19 +51,19 @@ export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void
 	// Remove all dunamically inserted pieces (adlibs etc)
 	// const rundownIds = new Set(getRundownIDsFromCache(cache))
 
-	const partInstancesToRemove = new Set(cache.PartInstances.remove((p) => p.rehearsal))
-	cache.PieceInstances.remove((p) => partInstancesToRemove.has(p.partInstanceId))
-
-	cache.PartInstances.update((p) => !p.reset, {
-		$set: {
-			reset: true,
-		},
-	})
-	cache.PieceInstances.update((p) => !p.reset, {
-		$set: {
-			reset: true,
-		},
-	})
+	const partInstancesToRemove = cache.PartInstances.remove((p) => p.rehearsal)
+	if (partInstancesToRemove.length) {
+		const cachedRemovedPieceInstances = cache.PieceInstances.remove({
+			partInstanceId: { $in: partInstancesToRemove },
+		})
+		cache.deferAfterSave(() => {
+			PieceInstances.remove({
+				partInstanceId: { $in: partInstancesToRemove },
+				_id: { $nin: cachedRemovedPieceInstances },
+			})
+		})
+	}
+	resetPartInstancesWithPieceInstances(cache)
 
 	cache.Playlist.update({
 		$set: {
@@ -347,32 +349,12 @@ export async function setNextPart(
 			cache.Playlist.doc.previousPartInstanceId,
 		])
 		// reset any previous instances of this part
-		cache.PartInstances.update(
-			{
-				_id: { $nin: selectedPartInstanceIds },
-				rundownId: nextPart.rundownId,
-				'part._id': nextPart._id,
-				reset: { $ne: true },
-			},
-			{
-				$set: {
-					reset: true,
-				},
-			}
-		)
-		cache.PieceInstances.update(
-			{
-				partInstanceId: { $nin: selectedPartInstanceIds },
-				rundownId: nextPart.rundownId,
-				'piece.startPartId': nextPart._id,
-				reset: { $ne: true },
-			},
-			{
-				$set: {
-					reset: true,
-				},
-			}
-		)
+
+		resetPartInstancesWithPieceInstances(cache, {
+			_id: { $nin: selectedPartInstanceIds },
+			rundownId: nextPart.rundownId,
+			'part._id': nextPart._id,
+		})
 
 		const nextPartInstanceTmp = nextPartInfo.type === 'partinstance' ? nextPartInfo.instance : null
 		cache.Playlist.update({
@@ -625,6 +607,55 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 	if (removePartInstanceIds.length > 0) {
 		cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
 		cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+	}
+}
+
+/**
+ * Reset selected or all partInstances with their pieceInstances
+ * @param cache
+ * @param selector if not provided, all partInstances will be reset
+ */
+function resetPartInstancesWithPieceInstances(cache: CacheForPlayout, selector?: MongoQuery<PartInstance>) {
+	const partInstancesToReset = cache.PartInstances.update(
+		selector
+			? {
+					...selector,
+					reset: { $ne: true },
+			  }
+			: (p) => !p.reset,
+		{
+			$set: {
+				reset: true,
+			},
+		}
+	)
+	if (partInstancesToReset.length) {
+		const cachedResetPieceInstances = cache.PieceInstances.update(
+			{
+				partInstanceId: { $in: partInstancesToReset },
+				reset: { $ne: true },
+			},
+			{
+				$set: {
+					reset: true,
+				},
+			}
+		)
+		cache.deferAfterSave(() => {
+			PieceInstances.update(
+				{
+					partInstanceId: { $in: partInstancesToReset },
+					reset: { $ne: true },
+					_id: { $nin: cachedResetPieceInstances },
+				},
+				{
+					$set: {
+						reset: true,
+					},
+				},
+				{ multi: true }
+			)
+		})
 	}
 }
 
