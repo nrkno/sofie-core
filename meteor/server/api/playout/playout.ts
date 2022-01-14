@@ -382,7 +382,7 @@ export namespace ServerPlayoutAPI {
 		}
 
 		// If we're setting the next point to somewhere other than the current segment, and in the queued segment, clear the queued segment
-		const { currentPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+		const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 		if (
 			currentPartInstance &&
 			nextPart &&
