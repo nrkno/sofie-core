@@ -25,7 +25,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MongoQuery } from '../../../db'
 import { handleRemovedRundown } from '../../rundownInput'
-import * as MOS from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { getPartId } from '../../lib'
@@ -608,6 +608,7 @@ describe('Test recieved mos ingest payloads', () => {
 	})
 
 	// TODO - check if this should be allowed
+	// eslint-disable-next-line jest/no-commented-out-tests
 	// test('mosRoStoryInsert: Insert at end', async () => {
 	// 	const rundown = Rundowns.findOne() as DBRundown
 	// 	expect(rundown).toBeTruthy()

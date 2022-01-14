@@ -1,4 +1,4 @@
-import * as MOS from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 
 export const mockRO = {

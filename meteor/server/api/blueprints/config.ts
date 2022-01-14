@@ -1,16 +1,9 @@
 import * as _ from 'underscore'
-import {
-	ConfigItemValue,
-	ConfigManifestEntry,
-	IBlueprintConfig,
-	BasicConfigItemValue,
-	TableConfigItemValue,
-} from '@sofie-automation/blueprints-integration'
+import { ConfigItemValue, ConfigManifestEntry, IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { Studios, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
-import { logger } from '../../../lib/logging'
+import { protectString, objectPathGet } from '../../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { getShowStyleCompound } from '../showStyles'
 
@@ -19,12 +12,6 @@ import { getShowStyleCompound } from '../showStyles'
  * Especially relevant for multi-user.
  */
 export namespace ConfigRef {
-	export function getStudioConfigRef(studioId: StudioId, configKey: string): string {
-		return '${studio.' + studioId + '.' + configKey + '}'
-	}
-	export function getShowStyleConfigRef(showStyleVariantId: ShowStyleVariantId, configKey: string): string {
-		return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
-	}
 	export async function retrieveRefs(
 		stringWithReferences: string,
 		modifier?: (str: string) => string,

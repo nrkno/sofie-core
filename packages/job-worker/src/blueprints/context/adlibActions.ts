@@ -482,7 +482,12 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			part === 'current' ? ActionPartChange.SAFE_CHANGE : ActionPartChange.NONE
 		)
 
-		return clone(unprotectObject(this._cache.PartInstances.findOne(partInstance._id)!))
+		const updatedPartInstance = this._cache.PartInstances.findOne(partInstance._id)
+		if (!updatedPartInstance) {
+			throw new Error('PartInstance could not be found, after applying changes')
+		}
+
+		return clone(unprotectObject(updatedPartInstance))
 	}
 
 	async stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): Promise<string[]> {

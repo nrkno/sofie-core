@@ -249,7 +249,7 @@ export function postProcessStudioBaselineObjects(
 	studio: ReadonlyDeep<DBStudio>,
 	objs: TSR.TSRTimelineObjBase[]
 ): TimelineObjRundown[] {
-	return postProcessTimelineObjects(protectString('studio'), studio.blueprintId!, objs, false)
+	return postProcessTimelineObjects(protectString('studio'), studio.blueprintId ?? protectString(''), objs, false)
 }
 
 export function postProcessRundownBaselineItems(

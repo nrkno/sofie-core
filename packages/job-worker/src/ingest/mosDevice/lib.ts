@@ -1,4 +1,4 @@
-import * as MOS from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { getPartId, getRundownId } from '../lib'
 import { PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'

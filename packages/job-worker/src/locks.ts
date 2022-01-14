@@ -66,6 +66,9 @@ export class LocksManager {
 							}
 						}
 					})
+					.catch((e) => {
+						logger.error(`Failed to lock next worker: ${e}`)
+					})
 			}
 		}
 	}

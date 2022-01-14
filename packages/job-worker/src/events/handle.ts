@@ -23,7 +23,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import * as MOS from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { executePeripheralDeviceFunction } from '../peripheralDevice'
 
 async function getBlueprintAndDependencies(context: JobContext, rundown: ReadonlyDeep<DBRundown>) {

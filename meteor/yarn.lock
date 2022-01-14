@@ -9337,7 +9337,7 @@ read-pkg-up@^3.0.0:
     find-up "^2.0.0"
     read-pkg "^3.0.0"
 
-read-pkg-up@^7.0.1:
+read-pkg-up@^7.0.0, read-pkg-up@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/read-pkg-up/-/read-pkg-up-7.0.1.tgz#f3a6135758459733ae2b95638056e1854e7ef507"
   integrity sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg==
@@ -10796,10 +10796,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@6.3.0-release38.0:
-  version "6.3.0-release38.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.3.0-release38.0.tgz#1125f15e4354cdc9999333d0c708c9de0b19a6bb"
-  integrity sha512-DCMGsOIM52Zql91OqKawKtXH8j9lpMHo/mQ9b1T0GlcWs/hOmjckdbaOoLc4VILNuKSHsOrcfc4cvxCoxK8zZQ==
+timeline-state-resolver-types@6.4.0-nightly-release39-20220113-131814-5ea1df54c.0:
+  version "6.4.0-nightly-release39-20220113-131814-5ea1df54c.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.4.0-nightly-release39-20220113-131814-5ea1df54c.0.tgz#4b74c8b5688b1f21952bb5ac43f7ae4b9a3716e5"
+  integrity sha512-ye7ckKPkz7QgqI+pFS3U1Bt6U5jGGpB+pdpkv5KkyLyM18lzE7CEXd5oHzdbTLtfC57qbcW6KVQzwnwe7X0crg==
   dependencies:
     tslib "^2.3.1"
 

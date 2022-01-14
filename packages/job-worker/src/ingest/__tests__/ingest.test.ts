@@ -595,6 +595,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	// Note: this test fails, due to a backwards-compatibility hack in #c579c8f0
+	// eslint-disable-next-line jest/no-commented-out-tests
 	// test('dataRundownDelete bad device', () => {
 	// 	await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
 	// 	try {
@@ -857,9 +858,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
 		await context.directCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
 
-		const segment0 = await context.directCollections.Segments.findOne({ externalId: segExternalId })
+		const segment0 = (await context.directCollections.Segments.findOne({ externalId: segExternalId })) as DBSegment
 		expect(segment0).toBeTruthy()
-		await context.directCollections.Segments.update(segment0!._id, { $set: { orphaned: 'deleted' } })
+		await context.directCollections.Segments.update(segment0._id, { $set: { orphaned: 'deleted' } })
 
 		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()

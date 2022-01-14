@@ -595,7 +595,7 @@ export const SegmentStoryboard = React.memo(
 								}
 							/>
 						)}
-						{Settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
+						{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
 							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 						)}
 					</div>

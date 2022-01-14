@@ -210,7 +210,12 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		this._pieceInstanceCache.update(pieceInstance._id, update)
 
-		return clone(unprotectObject(this._pieceInstanceCache.findOne(pieceInstance._id)!))
+		const updatedPieceInstance = this._pieceInstanceCache.findOne(pieceInstance._id)
+		if (!updatedPieceInstance) {
+			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found, after applying changes`)
+		}
+
+		return clone(unprotectObject(updatedPieceInstance))
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones
@@ -233,7 +238,13 @@ export class SyncIngestUpdateToPartInstanceContext
 		}
 
 		this._partInstanceCache.update(this.partInstance._id, update)
-		return clone(unprotectObject(this._partInstanceCache.findOne(this.partInstance._id)!))
+
+		const updatedPartInstance = this._partInstanceCache.findOne(this.partInstance._id)
+		if (!updatedPartInstance) {
+			throw new Error(`PartInstance could not be found, after applying changes`)
+		}
+
+		return clone(unprotectObject(updatedPartInstance))
 	}
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
 		const pieceInstances = this._pieceInstanceCache.findFetch({

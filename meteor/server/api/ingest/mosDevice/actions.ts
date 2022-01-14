@@ -1,4 +1,4 @@
-import * as MOS from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { logger } from '../../../logging'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'

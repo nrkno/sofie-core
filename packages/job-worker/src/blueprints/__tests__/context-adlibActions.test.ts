@@ -876,20 +876,24 @@ describe('Test blueprint api context', () => {
 					const partInstances = cache.PartInstances.findFetch({})
 					expect(partInstances).toHaveLength(5)
 
-					const pieceInstance0 = cache.PieceInstances.findOne({ partInstanceId: partInstances[0]._id })
+					const pieceInstance0 = cache.PieceInstances.findOne({
+						partInstanceId: partInstances[0]._id,
+					}) as PieceInstance
 					expect(pieceInstance0).not.toBeUndefined()
 
 					await expect(
-						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance0!.piece._id) })
+						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance0.piece._id) })
 					).resolves.toMatchObject({
 						_id: partInstances[0].part._id,
 					})
 
-					const pieceInstance1 = cache.PieceInstances.findOne({ partInstanceId: partInstances[1]._id })
+					const pieceInstance1 = cache.PieceInstances.findOne({
+						partInstanceId: partInstances[1]._id,
+					}) as PieceInstance
 					expect(pieceInstance1).not.toBeUndefined()
 
 					await expect(
-						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance1!.piece._id) })
+						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance1.piece._id) })
 					).resolves.toMatchObject({
 						_id: partInstances[1].part._id,
 					})

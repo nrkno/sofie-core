@@ -144,8 +144,11 @@ export async function setupDefaultRundownPlaylist(
 	const rundownId: RundownId = rundownId0 ?? getRandomId()
 
 	const showStyleCompound =
-		showStyleCompound0! ||
-		(await context.directCollections.ShowStyleVariants.findOne().then((v) => context.getShowStyleCompound(v!._id)))
+		showStyleCompound0 ||
+		(await context.directCollections.ShowStyleVariants.findOne().then(
+			(v) => v && context.getShowStyleCompound(v._id)
+		))
+	if (!showStyleCompound) throw new Error('No ShowStyle compound exists in the database yet')
 
 	const playlistId = await context.directCollections.RundownPlaylists.insertOne(
 		defaultRundownPlaylist(protectString('playlist_' + rundownId), context.studioId)

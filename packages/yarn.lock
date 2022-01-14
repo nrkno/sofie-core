@@ -2878,7 +2878,7 @@
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
   version "1.39.0-in-development"
   dependencies:
-    timeline-state-resolver-types "6.3.0-release38.0"
+    timeline-state-resolver-types "6.4.0-nightly-release39-20220113-131814-5ea1df54c.0"
     tslib "^2.3.1"
 
 "@sofie-automation/code-standard-preset@0.5.1":
@@ -14317,7 +14317,15 @@ stylehacks@^5.0.1:
     browserslist "^4.16.0"
     postcss-selector-parser "^6.0.4"
 
-superfly-timeline@8.2.2, superfly-timeline@^8.2.0:
+superfly-timeline@8.2.1:
+  version "8.2.1"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.1.tgz#07c0dfee351ae0597c9dcf0a33794ff53f90829e"
+  integrity sha512-cwd5mGL/2KP8JSBxdxU1bIG4zB3KtWUB/DwhyxBKtTQksAxgplZmWxSqkrE69LfmEQ/8nYBct2NFZ0fCTZzEnQ==
+  dependencies:
+    tslib "^2.2.0"
+    underscore "^1.13.1"
+
+superfly-timeline@^8.2.0:
   version "8.2.2"
   resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.2.tgz#dede70ff10f2cb600c3eb344c314dcb931ca04b8"
   integrity sha512-RZz9fULViZJ3lIGf5VW1lsrbWdtU8HFUX/UjAXItFqXaMXBXdS5jrjSPFqMmxV+ep6KMStqFJvjyFNVzy7b6WQ==
@@ -14555,7 +14563,7 @@ threadedclass@^0.8.0:
     is-running "^2.1.0"
     tslib "^1.13.0"
 
-threadedclass@^1.0.1:
+threadedclass@^1.0.0, threadedclass@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.1.tgz#2952274cbb0e675ec118f3ddef6a69e71e24d75d"
   integrity sha512-Lgclu4nKQUgsr70RSAQxsIVNd5PaSIybmPkN94kErqNuVzI+EDhQDAc76YdPIGUOOx/VgJKEFYkzohsWbcvVMA==
@@ -14600,10 +14608,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@6.3.0-release38.0:
-  version "6.3.0-release38.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.3.0-release38.0.tgz#1125f15e4354cdc9999333d0c708c9de0b19a6bb"
-  integrity sha512-DCMGsOIM52Zql91OqKawKtXH8j9lpMHo/mQ9b1T0GlcWs/hOmjckdbaOoLc4VILNuKSHsOrcfc4cvxCoxK8zZQ==
+timeline-state-resolver-types@6.4.0-nightly-release39-20220113-131814-5ea1df54c.0:
+  version "6.4.0-nightly-release39-20220113-131814-5ea1df54c.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.4.0-nightly-release39-20220113-131814-5ea1df54c.0.tgz#4b74c8b5688b1f21952bb5ac43f7ae4b9a3716e5"
+  integrity sha512-ye7ckKPkz7QgqI+pFS3U1Bt6U5jGGpB+pdpkv5KkyLyM18lzE7CEXd5oHzdbTLtfC57qbcW6KVQzwnwe7X0crg==
   dependencies:
     tslib "^2.3.1"
 

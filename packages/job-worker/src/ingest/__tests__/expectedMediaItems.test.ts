@@ -1,28 +1,3 @@
-// import { literal, protectString, getRandomId } from '../../../../lib/lib'
-// import { setupDefaultStudioEnvironment, LAYER_IDS, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-// import { DBPart, Parts, PartId } from '../../../../lib/collections/Parts'
-// import { VTContent, PieceLifespan, WithTimeline, ExpectedPackage } from '@sofie-automation/blueprints-integration'
-// import { Segments, DBSegment } from '../../../../lib/collections/Segments'
-// import { Pieces, Piece, PieceId } from '../../../../lib/collections/Pieces'
-// import { RundownAPI } from '../../../../lib/api/rundown'
-// import { ExpectedMediaItems } from '../../../../lib/collections/ExpectedMediaItems'
-// import { test, beforeAllInFiber } from '../../../../__mocks__/helpers/jest'
-// import { AdLibPieces, AdLibPiece } from '../../../../lib/collections/AdLibPieces'
-// import { RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-// import {
-// 	defaultRundownPlaylist,
-// 	defaultRundown,
-// 	defaultSegment,
-// 	defaultPart,
-// 	defaultPiece,
-// 	defaultAdLibPiece,
-// } from '../../../../__mocks__/defaultCollectionObjects'
-// import { runIngestOperationFromRundown } from '../lockFunction'
-// import { updateExpectedPackagesOnRundown } from '../expectedPackages'
-// import { ExpectedPackages } from '../../../../lib/collections/ExpectedPackages'
-// import { DBRundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
-// require('../expectedMediaItems') // include in order to create the Meteor methods needed
-
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownPlaylistId, RundownId, PartId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -254,22 +229,5 @@ describe('Expected Media Items', () => {
 			})
 			expect(items).toHaveLength(4)
 		})
-		// test('Removes associated ExpectedMediaItems if a Rundown has been removed', () => {
-		// 	const rd = Rundowns.findOne(rdId0)
-		// 	if (!rd) {
-		// 		fail()
-		// 		return
-		// 	}
-		// 	const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId0))
-		// 	removeRundownFromCache(cache, rd)
-		// 	updateExpectedPackagesOnRundown(cache)
-
-		// 	waitForPromise(cache.saveAllToDatabase())
-		// 	const items = ExpectedMediaItems.find({
-		// 		rundownId: rdId0,
-		// 		studioId: env.studio._id,
-		// 	}).fetch()
-		// 	expect(items).toHaveLength(0)
-		// })
 	})
 })

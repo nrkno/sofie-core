@@ -12,7 +12,7 @@ import {
 	MosStoryStatusProps,
 	MosSwapStoryProps,
 } from '@sofie-automation/corelib/dist/worker/ingest'
-import * as MOS from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { logger } from '../../logging'
 import _ = require('underscore')
 import { JobContext } from '../../jobs'

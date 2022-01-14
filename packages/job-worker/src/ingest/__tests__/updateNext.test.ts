@@ -361,13 +361,6 @@ describe('ensureNextPartIsValid', () => {
 
 		// expectNextPartId('mock_part4')
 	})
-	// test('Missing distant future part', () => {
-	// 	resetPartIds('mock_part_instance3', 'mock_part_instance4')
-
-	// 	UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
-
-	// 	expectNextPartId(null)
-	// })
 	test('Missing current PartInstance with valid next', async () => {
 		await resetPartIds('fake_part', 'mock_part_instance4')
 

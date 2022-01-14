@@ -398,7 +398,7 @@ describe('Test blueprint post-process', () => {
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([piece])
 
-			const tlObjId = res[0].content!.timelineObjects![0].id
+			const tlObjId = res[0].content.timelineObjects[0].id
 			expect(tlObjId).not.toEqual('')
 		})
 	})

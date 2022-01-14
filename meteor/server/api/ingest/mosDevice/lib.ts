@@ -1,4 +1,4 @@
-import * as MOS from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { Meteor } from 'meteor/meteor'
 
 export function parseMosString(str: MOS.MosString128): string {

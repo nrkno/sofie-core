@@ -23,7 +23,8 @@ import {
 	LogLevel,
 	getRandomString,
 } from '../../../lib/lib'
-import * as MOS from 'mos-connection'
+
+import { MOS } from '@sofie-automation/corelib'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'

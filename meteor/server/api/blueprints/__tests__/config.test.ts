@@ -11,13 +11,6 @@ describe('Test blueprint config', () => {
 		await setupDefaultStudioEnvironment()
 	})
 
-	test('getStudioConfigRef', () => {
-		expect(ConfigRef.getStudioConfigRef(protectString('st0'), 'key0')).toEqual('${studio.st0.key0}')
-	})
-	test('getShowStyleConfigRef', () => {
-		expect(ConfigRef.getShowStyleConfigRef(protectString('var0'), 'key1')).toEqual('${showStyle.var0.key1}')
-	})
-
 	describe('retrieveRefs', () => {
 		test('empty/invalid', async () => {
 			expect(await ConfigRef.retrieveRefs('')).toEqual('')
