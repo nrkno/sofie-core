@@ -326,7 +326,6 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 
 export class RundownUserContext extends RundownContext implements IRundownUserContext {
 	public readonly notes: INoteBase[] = []
-	private readonly tempSendNotesIntoBlackHole: boolean
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
 		this.addNote(NoteSeverity.ERROR, message, params)
@@ -338,17 +337,13 @@ export class RundownUserContext extends RundownContext implements IRundownUserCo
 		this.addNote(NoteSeverity.INFO, message, params)
 	}
 	private addNote(type: NoteSeverity, message: string, params?: { [key: string]: any }) {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logNote(`UserNotes: "${message}", ${JSON.stringify(params)}`, type)
-		} else {
-			this.notes.push({
-				type: type,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
+		this.notes.push({
+			type: type,
+			message: {
+				key: message,
+				args: params,
+			},
+		})
 	}
 }
 
