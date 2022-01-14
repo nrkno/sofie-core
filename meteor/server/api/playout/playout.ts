@@ -381,6 +381,17 @@ export namespace ServerPlayoutAPI {
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 
+		// If we're setting the next point to somewhere other than the current segment, and in the queued segment, clear the queued segment
+		const { currentPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+		if (
+			currentPartInstance &&
+			nextPart &&
+			currentPartInstance.segmentId !== nextPart.segmentId &&
+			playlist.nextSegmentId === nextPart.segmentId
+		) {
+			clearNextSegment = true
+		}
+
 		if (clearNextSegment) {
 			libSetNextSegment(cache, null)
 		}
