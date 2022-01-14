@@ -8,7 +8,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { CacheForIngest } from './cache'
 import { logger } from '../logging'
 import { ExtendedIngestRundown, IngestRundown } from '@sofie-automation/blueprints-integration'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 export function getRundownId(studio: ReadonlyDeep<DBStudio> | StudioId, rundownExternalId: string): RundownId {
@@ -53,7 +53,7 @@ export function canSegmentBeUpdated(
 	}
 
 	if (!segment) return true
-	if (segment.orphaned && !isCreateAction) {
+	if (segment.orphaned === SegmentOrphanedReason.DELETED && !isCreateAction) {
 		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
 		return false
 	}

@@ -397,6 +397,7 @@ export async function setupMockShowStyleBlueprint(
 					const segment: IBlueprintSegment = {
 						name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
 						metaData: ingestSegment.payload,
+						isHidden: ingestSegment.payload?.hidden,
 					}
 					const parts: BlueprintResultPart[] = []
 

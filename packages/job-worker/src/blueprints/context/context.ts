@@ -20,6 +20,7 @@ import {
 	IRundownTimingEventContext,
 	NoteSeverity,
 	IBlueprintSegmentRundown,
+	IRundownUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
@@ -317,6 +318,29 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		this.rundown = rundownToSegmentRundown(rundown)
 		this._rundown = rundown
 		this.playlistId = rundown.playlistId
+	}
+}
+
+export class RundownUserContext extends RundownContext implements IRundownUserContext {
+	public readonly notes: INoteBase[] = []
+
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.ERROR, message, params)
+	}
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.WARNING, message, params)
+	}
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.INFO, message, params)
+	}
+	private addNote(type: NoteSeverity, message: string, params?: { [key: string]: any }) {
+		this.notes.push({
+			type: type,
+			message: {
+				key: message,
+				args: params,
+			},
+		})
 	}
 }
 

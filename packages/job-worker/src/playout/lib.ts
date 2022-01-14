@@ -2,7 +2,7 @@ import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Tim
 import { applyToArray, assertNever, clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Time, TSR } from '@sofie-automation/blueprints-integration'
 import _ = require('underscore')
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -480,13 +480,13 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 	const removePartInstanceIds: PartInstanceId[] = []
 
 	// Cleanup any orphaned segments once they are no longer being played. This also cleans up any adlib-parts, that have been marked as deleted as a deferred cleanup operation
-	const segments = cache.Segments.findFetch((s) => s.orphaned === 'deleted')
+	const segments = cache.Segments.findFetch((s) => !!s.orphaned)
 	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
 	const groupedPartInstances = _.groupBy(
 		cache.PartInstances.findFetch((p) => orphanedSegmentIds.has(p.segmentId)),
 		(p) => unprotectString(p.segmentId)
 	)
-	const removeSegmentsFromRundowns = new Map<RundownId, SegmentId[]>()
+	const alterSegmentsFromRundowns = new Map<RundownId, { deleted: SegmentId[]; hidden: SegmentId[] }>()
 	for (const segment of segments) {
 		const partInstances = groupedPartInstances[unprotectString(segment._id)] || []
 		const partInstanceIds = new Set(partInstances.map((p) => p._id))
@@ -496,18 +496,27 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 			(!playlist.currentPartInstanceId || !partInstanceIds.has(playlist.currentPartInstanceId)) &&
 			(!playlist.nextPartInstanceId || !partInstanceIds.has(playlist.nextPartInstanceId))
 		) {
-			// The segment is finished with. Queue it for attempted removal
-			const existing = removeSegmentsFromRundowns.get(segment.rundownId)
-			if (existing) {
-				existing.push(segment._id)
-			} else {
-				removeSegmentsFromRundowns.set(segment.rundownId, [segment._id])
+			let rundownSegments = alterSegmentsFromRundowns.get(segment.rundownId)
+			if (!rundownSegments) {
+				rundownSegments = { deleted: [], hidden: [] }
+				alterSegmentsFromRundowns.set(segment.rundownId, rundownSegments)
+			}
+			// The segment is finished with. Queue it for attempted removal or reingest
+			switch (segment.orphaned) {
+				case SegmentOrphanedReason.DELETED: {
+					rundownSegments.deleted.push(segment._id)
+					break
+				}
+				case SegmentOrphanedReason.HIDDEN: {
+					rundownSegments.hidden.push(segment._id)
+					break
+				}
 			}
 		}
 	}
 
 	// We need to run this outside of the current lock, and within an ingest lock, so defer to the work queue
-	for (const [rundownId, candidateSegmentIds] of removeSegmentsFromRundowns) {
+	for (const [rundownId, candidateSegmentIds] of alterSegmentsFromRundowns) {
 		const rundown = cache.Rundowns.findOne(rundownId)
 		if (rundown?.restoredFromSnapshotId) {
 			// This is not valid as the rundownId won't match the externalId, so ingest will fail
@@ -516,7 +525,8 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 			await context.queueIngestJob(IngestJobs.RemoveOrphanedSegments, {
 				rundownExternalId: rundown.externalId,
 				peripheralDeviceId: null,
-				candidateSegmentIds,
+				orphanedHiddenSegmentIds: candidateSegmentIds.hidden,
+				orphanedDeletedSegmentIds: candidateSegmentIds.deleted,
 			})
 		}
 	}

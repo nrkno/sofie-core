@@ -7,8 +7,13 @@ $segment-layer-background-lower-third: #ed7200;
 $segment-layer-background-lower-third--second: darken($segment-layer-background-lower-third, 10%);
 $segment-layer-background-graphics: #dc5c00;
 $segment-layer-background-graphics--second: darken($segment-layer-background-graphics, 10%);
+$segment-layer-border-live-speak: #2f74ff;
 $segment-layer-background-live-speak: linear-gradient(to bottom, #2f74ff 50%, #39762b 50%);
-$segment-layer-background-live-speak--second: linear-gradient(to bottom, darken(#2f74ff, 10%) 50%, darken(#39762b, 10%) 50%);
+$segment-layer-background-live-speak--second: linear-gradient(
+	to bottom,
+	darken(#2f74ff, 10%) 50%,
+	darken(#39762b, 10%) 50%
+);
 $segment-layer-background-remote: #e80064;
 $segment-layer-background-remote--second: darken($segment-layer-background-remote, 10%);
 $segment-layer-background-vt: #0a20ed;
@@ -237,7 +242,8 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 @mixin item-type-borders {
 	@each $layer-type in $layer-types {
 		&.#{$layer-type} {
-			border-color: var(--segment-layer-background-#{$layer-type});
+			border-color: #000;
+			border-color: var(--segment-layer-border-#{$layer-type}, var(--segment-layer-background-#{$layer-type}));
 		}
 	}
 }
@@ -246,7 +252,7 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 	@each $layer-type in $layer-types {
 		&.#{$layer-type}::before {
 			pointer-events: none;
-			background: var(--segment-layer-background-#{$layer-type});
+			background: var(--segment-layer-border-#{$layer-type}, var(--segment-layer-background-#{$layer-type}));
 		}
 	}
 }

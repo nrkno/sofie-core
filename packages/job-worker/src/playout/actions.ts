@@ -188,6 +188,7 @@ export async function deactivateRundownPlaylistInner(
 		},
 		$unset: {
 			activationId: 1,
+			nextSegmentId: 1,
 		},
 	})
 	await setNextPart(context, cache, null)

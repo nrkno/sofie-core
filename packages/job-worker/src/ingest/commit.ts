@@ -21,7 +21,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { runJobWithPlaylistLock, runWithPlaylistCache } from '../playout/lock'
 import { removeSegmentContents } from './cleanup'
 import { CommitIngestData } from './lock'
-import { clone, max } from '@sofie-automation/corelib/dist/lib'
+import { clone, max, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { ensureNextPartIsValid } from './updateNext'
@@ -31,6 +31,11 @@ import { getTranslatedMessage, ServerTranslatedMesssages } from '../notes'
 import _ = require('underscore')
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import {
+	orphanedHiddenSegmentPropertiesToPreserve,
+	SegmentOrphanedReason,
+} from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { shouldRemoveOrphanedPartInstance } from './shouldRemoveOrphanedPartInstance'
 
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
 
@@ -203,33 +208,136 @@ export async function CommitIngestOperation(
 				oldPlaylist
 			)
 
-			// Do the segment removals
-			if (data.removedSegmentIds.length > 0) {
-				const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
-					context,
-					newPlaylist,
-					rundownsCollection.findFetch({}).map((r) => r._id)
-				)
+			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
+				context,
+				newPlaylist,
+				rundownsCollection.findFetch({}).map((r) => r._id)
+			)
 
+			const segmentsChangedToHidden = ingestCache.Segments.findFetch({
+				_id: { $in: data.changedSegmentIds as SegmentId[] },
+				isHidden: true,
+			}).map((segment) => segment._id)
+
+			// Do the segment removals
+			if (data.removedSegmentIds.length > 0 || segmentsChangedToHidden.length) {
 				const purgeSegmentIds = new Set<SegmentId>()
-				const orphanSegmentIds = new Set<SegmentId>()
+				const orphanDeletedSegmentIds = new Set<SegmentId>()
+				const orphanHiddenSegmentIds = new Set<SegmentId>()
 				for (const segmentId of data.removedSegmentIds) {
 					if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
 						purgeSegmentIds.add(segmentId)
 					} else {
-						orphanSegmentIds.add(segmentId)
+						logger.warn(
+							`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`
+						)
+						orphanDeletedSegmentIds.add(segmentId)
+					}
+				}
+
+				if (context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
+					// Find segments that are hidden, not removed, and are not safe to remove (e.g. a live segment)
+					const hiddenSegmentsToRestore = segmentsChangedToHidden
+						.filter((segmentId) => !data.removedSegmentIds.includes(segmentId))
+						.filter((segmentId) => !canRemoveSegment(currentPartInstance, nextPartInstance, segmentId))
+
+					for (const segmentId of [...data.removedSegmentIds, ...hiddenSegmentsToRestore]) {
+						const newParts = ingestCache.Parts.findFetch({ segmentId: segmentId })
+
+						// Blueprints have updated the hidden segment, so we won't try to preserve the contents
+						if (newParts.length) {
+							continue
+						}
+
+						// Restore old data
+						const oldParts = await context.directCollections.Parts.findFetch({
+							rundownId: ingestCache.RundownId,
+							segmentId,
+						})
+						const oldPartIds = oldParts.map((part) => part._id)
+
+						const [oldPieces, oldAdLibPieces, oldAdLibActions] = await Promise.all([
+							await context.directCollections.Pieces.findFetch({
+								startRundownId: ingestCache.RundownId,
+								startPartId: { $in: oldPartIds },
+							}),
+							await context.directCollections.AdLibPieces.findFetch({
+								rundownId: ingestCache.RundownId,
+								partId: { $in: oldPartIds },
+							}),
+							await context.directCollections.AdLibActions.findFetch({
+								rundownId: ingestCache.RundownId,
+								partId: { $in: oldPartIds },
+							}),
+						])
+
+						for (const part of oldParts) {
+							ingestCache.Parts.insert(part)
+						}
+						for (const piece of oldPieces) {
+							ingestCache.Pieces.insert(piece)
+						}
+						for (const adLib of oldAdLibPieces) {
+							ingestCache.AdLibPieces.insert(adLib)
+						}
+						for (const action of oldAdLibActions) {
+							ingestCache.AdLibActions.insert(action)
+						}
+					}
+				}
+
+				for (const [segmentId, segment] of ingestCache.Segments.documents) {
+					if (segment?.document.isHidden) {
+						if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+							// Protect live segment from being hidden
+							logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
+							orphanHiddenSegmentIds.add(segmentId)
+						} else {
+							// This ensures that it doesn't accidently get played while hidden
+							ingestCache.Parts.update({ segmentId }, { $set: { invalid: true } })
+						}
+					} else if (ingestCache.Parts.findFetch({ segmentId }).length === 0) {
+						// No parts in segment, hide it
+						ingestCache.Segments.update(segmentId, {
+							$set: { isHidden: true },
+						})
 					}
 				}
 
 				const emptySegmentIds = context.studio.settings.preserveUnsyncedPlayingSegmentContents
 					? purgeSegmentIds
-					: new Set([...purgeSegmentIds.values(), ...orphanSegmentIds.values()])
+					: new Set([...purgeSegmentIds.values(), ...orphanDeletedSegmentIds.values()])
 				removeSegmentContents(ingestCache, emptySegmentIds)
-				if (orphanSegmentIds.size) {
-					ingestCache.Segments.update((s) => orphanSegmentIds.has(s._id), {
-						$set: {
-							orphaned: 'deleted',
-						},
+				if (orphanDeletedSegmentIds.size) {
+					orphanDeletedSegmentIds.forEach((segmentId) => {
+						ingestCache.Segments.update(segmentId, {
+							$set: {
+								orphaned: SegmentOrphanedReason.DELETED,
+							},
+						})
+					})
+				}
+				if (orphanHiddenSegmentIds.size) {
+					const preserveSomeProperties = Object.keys(orphanedHiddenSegmentPropertiesToPreserve).length > 0
+					const oldSegments = preserveSomeProperties
+						? normalizeArrayToMap(
+								await context.directCollections.Segments.findFetch(
+									{ _id: { $in: [...orphanHiddenSegmentIds] }, rundownId: ingestCache.RundownId },
+									{
+										projection: { _id: 1, ...orphanedHiddenSegmentPropertiesToPreserve },
+									}
+								),
+								'_id'
+						  )
+						: undefined
+					orphanHiddenSegmentIds.forEach((segmentId) => {
+						ingestCache.Segments.update(segmentId, {
+							$set: {
+								...oldSegments?.get(segmentId),
+								isHidden: false,
+								orphaned: SegmentOrphanedReason.HIDDEN,
+							},
+						})
 					})
 				}
 				if (purgeSegmentIds.size) {
@@ -276,6 +384,14 @@ export async function CommitIngestOperation(
 
 				// sync changes to the 'selected' partInstances
 				await syncChangesToPartInstances(context, playoutCache, ingestCache, showStyle, blueprint, newRundown)
+
+				await shouldRemoveOrphanedPartInstance(
+					context,
+					playoutCache,
+					showStyle,
+					blueprint.blueprint,
+					newRundown
+				)
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this

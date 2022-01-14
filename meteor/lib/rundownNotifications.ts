@@ -1,13 +1,13 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
 import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { Segments, DBSegment } from './collections/Segments'
+import { Segments, DBSegment, SegmentOrphanedReason } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { unprotectString, literal, generateTranslation, normalizeArrayToMap } from './lib'
 import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
 import { RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
-import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { ITranslatableMessage, NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 	const rundowns = Rundowns.find(
@@ -141,12 +141,23 @@ export function getBasicNotesForSegment(
 		)
 	}
 
-	if (segment.orphaned === 'deleted') {
+	if (segment.orphaned) {
+		let message: ITranslatableMessage
+		switch (segment.orphaned) {
+			case SegmentOrphanedReason.DELETED:
+				message = generateTranslation('Segment no longer exists in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
+				break
+			case SegmentOrphanedReason.HIDDEN:
+				message = generateTranslation('Segment was hidden in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
+				break
+		}
 		notes.push({
 			type: NoteSeverity.WARNING,
-			message: generateTranslation('Segment no longer exists in {{nrcs}}', {
-				nrcs: nrcsName,
-			}),
+			message,
 			rank: segment._rank,
 			origin: {
 				segmentId: segment._id,

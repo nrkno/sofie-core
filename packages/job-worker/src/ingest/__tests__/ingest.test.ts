@@ -12,9 +12,9 @@ import {
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
 import { removeRundownPlaylistFromDb } from '../../rundownPlaylists'
@@ -25,13 +25,14 @@ import {
 	handleRemovedPart,
 	handleRemovedRundown,
 	handleRemovedSegment,
+	handleRemoveOrphanedSegemnts,
 	handleUpdatedPart,
 	handleUpdatedRundown,
 	handleUpdatedRundownMetaData,
 	handleUpdatedSegment,
 	handleUpdatedSegmentRanks,
 } from '../rundownInput'
-import { activateRundownPlaylist, takeNextPart } from '../../playout/playout'
+import { activateRundownPlaylist, setMinimumTakeSpan, takeNextPart } from '../../playout/playout'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getSelectedPartInstances } from '../../playout/__tests__/lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -39,6 +40,7 @@ import { runJobWithPlayoutCache } from '../../playout/lock'
 import { getSelectedPartInstancesFromCache } from '../../playout/cache'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { innerStartQueuedAdLib } from '../../playout/adlib'
+import { IngestJobs, RemoveOrphanedSegmentsProps } from '@sofie-automation/corelib/dist/worker/ingest'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -74,6 +76,23 @@ describe('Test ingest actions for rundowns and segments', () => {
 		)
 
 		jest.clearAllMocks()
+
+		setMinimumTakeSpan(0)
+	})
+
+	beforeEach(async () => {
+		// Ensure the preserveUnsyncedPlayingSegmentContents setting is disabled
+		context.setStudio({
+			...context.studio,
+			settings: {
+				...context.studio.settings,
+				preserveUnsyncedPlayingSegmentContents: false,
+			},
+		})
+
+		context.queueIngestJob = jest.fn(() => {
+			throw new Error('Not implemented')
+		})
 	})
 
 	async function getRundownData(query?: MongoQuery<DBRundown>) {
@@ -860,7 +879,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		const segment0 = (await context.directCollections.Segments.findOne({ externalId: segExternalId })) as DBSegment
 		expect(segment0).toBeTruthy()
-		await context.directCollections.Segments.update(segment0._id, { $set: { orphaned: 'deleted' } })
+		await context.directCollections.Segments.update(segment0._id, {
+			$set: { orphaned: SegmentOrphanedReason.DELETED },
+		})
 
 		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
@@ -931,7 +952,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
 		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
-		await context.directCollections.Segments.update({ rundownId: rundown._id }, { $set: { orphaned: 'deleted' } })
+		await context.directCollections.Segments.update(
+			{ rundownId: rundown._id },
+			{ $set: { orphaned: SegmentOrphanedReason.DELETED } }
+		)
 
 		const segmentBefore = (await context.directCollections.Segments.findOne({
 			externalId: segExternalId,
@@ -1133,7 +1157,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		await context.directCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
 		await context.directCollections.Segments.update(
 			{ rundownId: rundown._id, externalId: segExternalId },
-			{ $set: { orphaned: 'deleted' } }
+			{ $set: { orphaned: SegmentOrphanedReason.DELETED } }
 		)
 
 		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
@@ -1633,7 +1657,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				segmentExternalId: segments[0].externalId,
 			})
 			await expect(getRundownOrphaned()).resolves.toBeUndefined()
-			await expect(getSegmentOrphaned(segments[0]._id)).resolves.toEqual('deleted')
+			await expect(getSegmentOrphaned(segments[0]._id)).resolves.toEqual(SegmentOrphanedReason.DELETED)
 
 			await resyncRundown()
 			await expect(getRundownOrphaned()).resolves.toBeUndefined()
@@ -2150,6 +2174,319 @@ describe('Test ingest actions for rundowns and segments', () => {
 					.previousPartInstance as DBPartInstance
 				expect(previousPartInstance).toBeTruthy()
 				expect(previousPartInstance.orphaned).toBe('adlib-part')
+			}
+		} finally {
+			// forcefully 'deactivate' the playlist to allow for cleanup to happen
+			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
+		}
+	})
+	test('prevent hiding current segment', async () => {
+		try {
+			// Cleanup any rundowns / playlists
+			{
+				// Cleanup any rundowns / playlists
+				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+				await Promise.all(playlists.map(async (p) => removeRundownPlaylistFromDb(context, p)))
+			}
+
+			context.setStudio({
+				...context.studio,
+				settings: {
+					...context.studio.settings,
+					preserveUnsyncedPlayingSegmentContents: true,
+				},
+			})
+
+			const rundownData: IngestRundown = {
+				externalId: externalId,
+				name: 'MyMockRundown',
+				type: 'mock',
+				segments: [
+					{
+						externalId: 'segment0',
+						name: 'Segment 0',
+						rank: 0,
+						payload: {},
+						parts: [
+							{
+								externalId: 'part0',
+								name: 'Part 0',
+								rank: 0,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece0',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+							{
+								externalId: 'part1',
+								name: 'Part 1',
+								rank: 1,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece1',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+						],
+					},
+					{
+						externalId: 'segment1',
+						name: 'Segment 1',
+						rank: 1,
+						payload: {},
+						parts: [
+							{
+								externalId: 'part2',
+								name: 'Part 2',
+								rank: 0,
+							},
+						],
+					},
+				],
+			}
+
+			// Preparation: set up rundown
+			await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+			await handleUpdatedRundown(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestRundown: rundownData,
+				isCreateAction: true,
+			})
+			const rundown = (await context.directCollections.Rundowns.findOne()) as Rundown
+			expect(rundown).toMatchObject({
+				externalId: rundownData.externalId,
+			})
+
+			const getPlaylist = async () =>
+				(await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
+			const getCurrentPartInstanceId = async () => {
+				const playlist = await getPlaylist()
+				return playlist.currentPartInstanceId
+			}
+
+			const playlist = await getPlaylist()
+			expect(playlist).toBeTruthy()
+
+			// const getRundown = async () => (await context.directCollections.Rundowns.findOne(rundown._id)) as Rundown
+
+			const { segments, parts } = await getRundownData({ _id: rundown._id })
+			expect(segments).toHaveLength(2)
+			expect(parts).toHaveLength(3)
+			await expect(
+				context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+			).resolves.toHaveLength(2)
+
+			// Activate the rundown
+			await activateRundownPlaylist(context, {
+				playlistId: playlist._id,
+				rehearsal: true,
+			})
+			await expect(getCurrentPartInstanceId()).resolves.toBeNull()
+
+			// Take the first part
+			await takeNextPart(context, {
+				playlistId: playlist._id,
+				fromPartInstanceId: null,
+			})
+			await expect(getCurrentPartInstanceId()).resolves.not.toBeNull()
+
+			{
+				// Check which part is current
+				const selectedInstances = await getSelectedPartInstances(context, await getPlaylist())
+				const currentPartInstance = selectedInstances.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+			}
+
+			// Hide segment 1, while not on air
+			const updatedSegment1Data: IngestSegment = rundownData.segments[1]
+			updatedSegment1Data.payload.hidden = true
+
+			await handleUpdatedSegment(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestSegment: updatedSegment1Data,
+				isCreateAction: false,
+			})
+			{
+				const { segments } = await getRundownData({ _id: rundown._id })
+				expect(segments).toHaveLength(2)
+
+				const segment1 = segments.find((s) => s.externalId === updatedSegment1Data.externalId)
+				expect(segment1?.isHidden).toBeTruthy()
+				expect(segment1?.orphaned).toBeFalsy()
+			}
+
+			// Un-hide segment 1
+			updatedSegment1Data.payload.hidden = false
+
+			await handleUpdatedSegment(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestSegment: updatedSegment1Data,
+				isCreateAction: false,
+			})
+			{
+				const { segments } = await getRundownData({ _id: rundown._id })
+				expect(segments).toHaveLength(2)
+				const segment1 = segments.find((s) => s.externalId === updatedSegment1Data.externalId)
+				expect(segment1?.isHidden).toBeFalsy()
+				expect(segment1?.orphaned).toBeFalsy()
+			}
+
+			// Replace segment0 with empty hidden segment, while on air
+			const updatedSegment0Data: IngestSegment = rundownData.segments[0]
+			updatedSegment0Data.payload.hidden = true
+			const oldParts = updatedSegment0Data.parts
+			updatedSegment0Data.parts = []
+
+			await handleUpdatedSegment(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestSegment: updatedSegment0Data,
+				isCreateAction: false,
+			})
+			{
+				// Check the segment has been preserved
+				const { segments, parts: parts2 } = await getRundownData({ _id: rundown._id })
+
+				expect(segments).toHaveLength(2)
+
+				const segment0 = segments.find((s) => s.externalId === updatedSegment0Data.externalId)
+				expect(segment0?.isHidden).toBeFalsy()
+				expect(segment0?.orphaned).toEqual(SegmentOrphanedReason.HIDDEN)
+
+				expect(parts2).toHaveLength(3)
+				expect(parts2.find((p) => p.externalId === 'part1')).toBeTruthy()
+
+				await expect(
+					context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+				).resolves.toHaveLength(2)
+			}
+
+			{
+				// Check the partInstance
+				const selectedInstances = await getSelectedPartInstances(context, await getPlaylist())
+				const currentPartInstance = selectedInstances.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+			}
+
+			// Unhide the segment while on air
+			updatedSegment0Data.parts = oldParts
+			delete updatedSegment0Data.payload['hidden']
+
+			await handleUpdatedSegment(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestSegment: updatedSegment0Data,
+				isCreateAction: false,
+			})
+			{
+				// Check the segment is still preserved and un-hidden
+				const { segments: segments2, parts: parts2 } = await getRundownData({ _id: rundown._id })
+
+				expect(segments2).toHaveLength(2)
+				const segment0 = segments2.find((s) => s.externalId === updatedSegment0Data.externalId)
+				expect(segment0?.isHidden).toBeFalsy()
+				expect(segment0?.orphaned).toBeFalsy()
+
+				expect(parts2).toHaveLength(3)
+				expect(parts2.find((p) => p.externalId === 'part1')).toBeTruthy()
+
+				await expect(
+					context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+				).resolves.toHaveLength(2)
+			}
+			{
+				// Check the partInstance
+				const selectedInstances = await getSelectedPartInstances(context, await getPlaylist())
+				const currentPartInstance = selectedInstances.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+			}
+
+			// Replace segment0 with empty hidden segment again
+			updatedSegment0Data.payload.hidden = true
+			updatedSegment0Data.parts = []
+
+			await handleUpdatedSegment(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestSegment: updatedSegment0Data,
+				isCreateAction: false,
+			})
+
+			// Intercept the calls to queueIngestJob
+			context.queueIngestJob = jest.fn(() => Promise.resolve())
+			expect(context.queueIngestJob).toHaveBeenCalledTimes(0)
+
+			// Take Segment 1
+			await takeNextPart(context, {
+				playlistId: playlist._id,
+				fromPartInstanceId: await getCurrentPartInstanceId(),
+			})
+			await expect(getCurrentPartInstanceId()).resolves.not.toBeNull()
+			await takeNextPart(context, {
+				playlistId: playlist._id,
+				fromPartInstanceId: await getCurrentPartInstanceId(),
+			})
+			await expect(getCurrentPartInstanceId()).resolves.not.toBeNull()
+
+			{
+				// should have gotten a call to the ingest function RemoveOrphanedSegments
+				expect(context.queueIngestJob).toHaveBeenCalledTimes(1)
+				const expectedRemoveOrphanedSegmentsProps: RemoveOrphanedSegmentsProps = {
+					rundownExternalId: rundown.externalId,
+					peripheralDeviceId: null,
+					orphanedHiddenSegmentIds: [protectString('RSv03K_yrl1oBVUEk4JjxWHlGiw_')],
+					orphanedDeletedSegmentIds: [],
+				}
+				expect(context.queueIngestJob).toHaveBeenNthCalledWith(
+					1,
+					IngestJobs.RemoveOrphanedSegments,
+					expectedRemoveOrphanedSegmentsProps
+				)
+
+				// Call it manually, as we intercepted the call earlier
+				await handleRemoveOrphanedSegemnts(context, expectedRemoveOrphanedSegmentsProps)
+			}
+
+			{
+				// Check the partInstance
+				const selectedInstances = await getSelectedPartInstances(context, await getPlaylist())
+				const currentPartInstance = selectedInstances.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part2')
+			}
+			{
+				const { segments: segments2, parts: parts2 } = await getRundownData({ _id: rundown._id })
+
+				// Check if segment 0 was hidden
+				expect(segments2).toHaveLength(2)
+				const segment0 = segments2.find((s) => s.externalId === updatedSegment0Data.externalId)
+				expect(segment0?.isHidden).toBeTruthy()
+				expect(segment0?.orphaned).toBeFalsy()
+
+				expect(parts2).toHaveLength(1)
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen

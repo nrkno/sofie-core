@@ -94,7 +94,8 @@ export interface IngestRegenerateSegmentProps extends IngestPropsBase {
 }
 
 export interface RemoveOrphanedSegmentsProps extends IngestPropsBase {
-	candidateSegmentIds: SegmentId[]
+	orphanedDeletedSegmentIds: SegmentId[]
+	orphanedHiddenSegmentIds: SegmentId[]
 }
 
 export interface MosRundownProps extends IngestPropsBase {

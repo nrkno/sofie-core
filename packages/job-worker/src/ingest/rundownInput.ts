@@ -20,6 +20,7 @@ import { logger } from '../logging'
 import { CacheForIngest } from './cache'
 import {
 	getRundownFromIngestData,
+	regenerateSegmentsFromIngestData,
 	resolveSegmentChangesForUpdatedRundown,
 	saveChangesForRundown,
 	saveSegmentChangesToCache,
@@ -34,7 +35,7 @@ import { removeRundownsFromDb } from '../rundownPlaylists'
 import { rundownToSegmentRundown, StudioUserContext } from '../blueprints/context'
 import { selectShowStyleVariant } from './rundown'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
@@ -438,15 +439,40 @@ export async function handleRemoveOrphanedSegemnts(
 		context,
 		data,
 		(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
-		async (_context, ingestCache) => {
+		async (_context, ingestCache, ingestRundown) => {
+			if (!ingestRundown) throw new Error(`handleRemoveOrphanedSegemnts lost the IngestRundown...`)
+
 			// Find the segments that are still orphaned (in case they have resynced before this executes)
 			// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
-			const stillOrphanedSegments = ingestCache.Segments.findFetch(
-				(s) => s.orphaned === 'deleted' && data.candidateSegmentIds.includes(s._id)
+			const stillOrphanedSegments = ingestCache.Segments.findFetch((s) => !!s.orphaned)
+
+			const stillHiddenSegments = stillOrphanedSegments
+				.filter(
+					(s) => s.orphaned === SegmentOrphanedReason.HIDDEN && data.orphanedHiddenSegmentIds.includes(s._id)
+				)
+				.map((s) => s._id)
+
+			const stillDeletedSegments = stillOrphanedSegments
+				.filter(
+					(s) =>
+						s.orphaned === SegmentOrphanedReason.DELETED && data.orphanedDeletedSegmentIds.includes(s._id)
+				)
+				.map((s) => s._id)
+
+			const hiddenSegmentIds = ingestCache.Segments.findFetch({
+				_id: { $in: stillHiddenSegments },
+			}).map((s) => s._id)
+
+			const { result } = await regenerateSegmentsFromIngestData(
+				context,
+				ingestCache,
+				ingestRundown,
+				hiddenSegmentIds
 			)
+
 			return {
-				changedSegmentIds: [],
-				removedSegmentIds: stillOrphanedSegments.map((s) => s._id),
+				changedSegmentIds: result?.changedSegmentIds ?? [],
+				removedSegmentIds: stillDeletedSegments,
 				renamedSegments: new Map(),
 				removeRundown: false,
 				showStyle: undefined,

@@ -1,5 +1,4 @@
 import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -15,7 +14,7 @@ import { CacheForPlayout } from '../../playout/cache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
-import { RundownContext, ContextInfo } from '.'
+import { ContextInfo, RundownUserContext } from './context'
 import {
 	ISyncIngestUpdateToPartInstanceContext,
 	IBlueprintPiece,
@@ -23,7 +22,6 @@ import {
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
-	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
@@ -33,13 +31,12 @@ import { JobContext } from '../../jobs'
 import { logChanges } from '../../cache/lib'
 
 export class SyncIngestUpdateToPartInstanceContext
-	extends RundownContext
+	extends RundownUserContext
 	implements ISyncIngestUpdateToPartInstanceContext
 {
 	private readonly _partInstanceCache: DbCacheWriteCollection<DBPartInstance>
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
-	public readonly notes: INoteBase[] = []
 
 	constructor(
 		private readonly _context: JobContext,
@@ -75,25 +72,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		)
 
 		this._proposedPieceInstances = normalizeArrayToMap(proposedPieceInstances, '_id')
-	}
-
-	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		this.addNote(NoteSeverity.ERROR, message, params)
-	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		this.addNote(NoteSeverity.WARNING, message, params)
-	}
-	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
-		this.addNote(NoteSeverity.INFO, message, params)
-	}
-	private addNote(type: NoteSeverity, message: string, params?: { [key: string]: any }) {
-		this.notes.push({
-			type: type,
-			message: {
-				key: message,
-				args: params,
-			},
-		})
 	}
 
 	applyChangesToCache(cache: CacheForPlayout): void {

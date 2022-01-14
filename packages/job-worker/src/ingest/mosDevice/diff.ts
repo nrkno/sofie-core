@@ -8,7 +8,7 @@ import _ = require('underscore')
 import { clone, deleteAllUndefinedProperties, literal, normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestSegment } from '@sofie-automation/blueprints-integration'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { CommitIngestData } from '../lock'
 import { removeSegmentContents } from '../cleanup'
 
@@ -81,7 +81,7 @@ export async function diffAndApplyChanges(
 	// We orphan it and queue for deletion. the commit phase will complete if possible
 	const orphanedSegmentIds = cache.Segments.update((s) => segmentIdsToRemove.has(s._id), {
 		$set: {
-			orphaned: 'deleted',
+			orphaned: SegmentOrphanedReason.DELETED,
 		},
 	})
 

@@ -351,6 +351,17 @@ export async function setNextPartInner(
 		if (!nextPart) throw UserError.create(UserErrorMessage.PartNotFound)
 	}
 
+	// If we're setting the next point to somewhere other than the current segment, and in the queued segment, clear the queued segment
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+	if (
+		currentPartInstance &&
+		nextPart &&
+		currentPartInstance.segmentId !== nextPart.segmentId &&
+		playlist.nextSegmentId === nextPart.segmentId
+	) {
+		clearNextSegment = true
+	}
+
 	if (clearNextSegment) {
 		libSetNextSegment(context, cache, null)
 	}
@@ -502,32 +513,7 @@ export async function setNextSegment(context: JobContext, data: SetNextSegmentPr
 				if (!nextSegment) throw new Error(`Segment "${data.nextSegmentId}" not found!`)
 			}
 
-			if (nextSegment) {
-				// TODO - some of this is replicated inside of libSetNextSegment
-
-				// Just run so that errors will be thrown if something wrong:
-				const playablePartsInSegment = cache.Parts.findFetch((p) => p.segmentId === data.nextSegmentId).filter(
-					(p) => isPartPlayable(p)
-				)
-				if (playablePartsInSegment.length === 0) {
-					throw new Error('Segment contains no valid parts')
-				}
-
-				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-				if (
-					!currentPartInstance ||
-					!nextPartInstance ||
-					nextPartInstance.segmentId !== currentPartInstance.segmentId
-				) {
-					// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart and clear previous nextSegmentId
-					await setNextPartInner(context, cache, playablePartsInSegment[0], true, 0, true)
-				} else {
-					// Set the whole segemnt as next
-					libSetNextSegment(context, cache, nextSegment)
-				}
-			} else {
-				libSetNextSegment(context, cache, null)
-			}
+			libSetNextSegment(context, cache, null)
 
 			// Update any future lookaheads
 			await updateTimeline(context, cache)

@@ -9,7 +9,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -257,11 +257,6 @@ export async function calculateSegmentsFromIngestData(
 				})
 				res.parts.push(part)
 
-				// This ensures that it doesn't accidently get played while hidden
-				if (blueprintSegment.segment.isHidden) {
-					part.invalid = true
-				}
-
 				// Update pieces
 				const processedPieces = postProcessPieces(
 					context,
@@ -295,11 +290,6 @@ export async function calculateSegmentsFromIngestData(
 
 				part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, processedPieces)
 			})
-
-			// If the segment has no parts, then hide it
-			if (blueprintSegment.parts.length === 0) {
-				newSegment.isHidden = true
-			}
 		}
 
 		span?.end()
@@ -731,21 +721,8 @@ export async function resolveSegmentChangesForUpdatedRundown(
 	for (const oldSegment of removedSegments) {
 		segmentChanges.segments.push({
 			...oldSegment,
-			orphaned: 'deleted',
+			orphaned: SegmentOrphanedReason.DELETED,
 		})
-	}
-
-	if (context.studio.settings.preserveUnsyncedPlayingSegmentContents && removedSegments.length > 0) {
-		// Preserve any old content, unless the part is referenced in another segment
-		const retainSegments = new Set(removedSegments.map((s) => s._id))
-		const newPartIds = new Set(segmentChanges.parts.map((p) => p._id))
-		const oldParts = cache.Parts.findFetch((p) => retainSegments.has(p.segmentId) && !newPartIds.has(p._id))
-		segmentChanges.parts.push(...oldParts)
-
-		const oldPartIds = new Set(oldParts.map((p) => p._id))
-		segmentChanges.pieces.push(...cache.Pieces.findFetch((p) => oldPartIds.has(p.startPartId)))
-		segmentChanges.adlibPieces.push(...cache.AdLibPieces.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
-		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 	}
 
 	return { segmentChanges, removedSegments }
