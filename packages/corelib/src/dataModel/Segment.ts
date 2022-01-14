@@ -1,9 +1,8 @@
 import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
-import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnes } from '../mongo'
 import { ProtectedStringProperties } from '../protectedString'
 import { SegmentId, RundownId } from './Ids'
 import { SegmentNote } from './Notes'
-
 
 export enum SegmentOrphanedReason {
 	DELETED = 'deleted',
@@ -12,7 +11,6 @@ export enum SegmentOrphanedReason {
 
 // TV 2 uses this for the not-yet-contributed MiniShelf
 export const orphanedHiddenSegmentPropertiesToPreserve: MongoFieldSpecifierOnes<DBSegment> = {}
-
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB, '_id'> {
