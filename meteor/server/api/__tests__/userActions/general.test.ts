@@ -1,6 +1,6 @@
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { RESTART_SALT, UserActionAPIMethods } from '../../../../lib/api/userActions'
 import { getHash } from '../../../../lib/lib'
 import { UserActionsLog } from '../../../../lib/collections/UserActionsLog'
@@ -11,9 +11,9 @@ require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
 
 describe('User Actions - General', () => {
-	let env: DefaultEnvironment
+	// let env: DefaultEnvironment
 	beforeEach(async () => {
-		env = await setupDefaultStudioEnvironment()
+		await setupDefaultStudioEnvironment()
 	})
 
 	testInFiber('Restart Core', async () => {

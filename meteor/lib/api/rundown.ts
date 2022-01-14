@@ -46,5 +46,5 @@ export enum RundownAPIMethods {
 
 export namespace RundownAPI {
 	/** A generic list of playback availability statuses for a Piece */
-	export import PieceStatusCode = PieceStatusCode0
+	export type PieceStatusCode = PieceStatusCode0
 }

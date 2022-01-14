@@ -267,18 +267,18 @@ describe('Lookahead', () => {
 		// It does have assertions, but hidden inside helper methods
 		expect(true).toBeTruthy()
 
-		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {
-			previous: {
-				partInstance: { _id: 'abc2', part: { _id: 'abc' } } as any,
-				nowInPart: 987,
-				pieceInstances: ['1', '2'] as any,
-			},
+		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
+		partInstancesInfo.previous = {
+			partInstance: { _id: 'abc2', part: { _id: 'abc' } } as any,
+			nowInPart: 987,
+			pieceInstances: ['1', '2'] as any,
 		}
+
 		const expectedPrevious = {
-			part: partInstancesInfo.previous!.partInstance,
+			part: partInstancesInfo.previous.partInstance,
 			onTimeline: true,
-			nowInPart: partInstancesInfo.previous!.nowInPart,
-			allPieces: partInstancesInfo.previous!.pieceInstances,
+			nowInPart: partInstancesInfo.previous.nowInPart,
+			allPieces: partInstancesInfo.previous.pieceInstances,
 		}
 
 		// With a previous
@@ -294,10 +294,10 @@ describe('Lookahead', () => {
 			pieceInstances: ['3', '4'] as any,
 		}
 		const expectedCurrent = {
-			part: partInstancesInfo.current!.partInstance,
+			part: partInstancesInfo.current.partInstance,
 			onTimeline: true,
-			nowInPart: partInstancesInfo.current!.nowInPart,
-			allPieces: partInstancesInfo.current!.pieceInstances,
+			nowInPart: partInstancesInfo.current.nowInPart,
+			allPieces: partInstancesInfo.current.pieceInstances,
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
 			getLookeaheadObjects(context, cache, partInstancesInfo)
@@ -311,10 +311,10 @@ describe('Lookahead', () => {
 			pieceInstances: ['5'] as any,
 		}
 		const expectedNext = {
-			part: partInstancesInfo.next!.partInstance,
+			part: partInstancesInfo.next.partInstance,
 			onTimeline: false,
-			nowInPart: partInstancesInfo.next!.nowInPart,
-			allPieces: partInstancesInfo.next!.pieceInstances,
+			nowInPart: partInstancesInfo.next.nowInPart,
+			allPieces: partInstancesInfo.next.pieceInstances,
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
 			getLookeaheadObjects(context, cache, partInstancesInfo)

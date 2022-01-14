@@ -1219,6 +1219,7 @@ describe('Test blueprint api context', () => {
 
 					// Verify some properties not exposed to the blueprints
 					const newPartInstance = cache.PartInstances.findOne(
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						cache.Playlist.doc.nextPartInstanceId!
 					) as DBPartInstance
 					expect(newPartInstance).toBeTruthy()
@@ -1374,6 +1375,7 @@ describe('Test blueprint api context', () => {
 					cache.Playlist.update({ $set: { nextPartInstanceId: protectString('abc') } })
 					await expect(context.removePieceInstances('next', [])).resolves.toEqual([])
 					await expect(
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						context.removePieceInstances('next', [unprotectString(cache.PieceInstances.findOne({})!._id)])
 					).resolves.toEqual([]) // Try and remove something belonging to a different part
 					expect(cache.PieceInstances.findFetch({}).length).toEqual(beforePieceInstancesCount)

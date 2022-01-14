@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { protectString, unprotectString } from '../lib'
 import { createMongoCollection } from './lib'
 import { DBPart } from './Parts'

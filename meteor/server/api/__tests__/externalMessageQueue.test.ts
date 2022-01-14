@@ -18,7 +18,7 @@ import '../ExternalMessageQueue'
 
 describe('Test external message queue static methods', () => {
 	let studioEnv: DefaultEnvironment
-	let rundown: Rundown
+	// let rundown: Rundown
 	beforeAll(async () => {
 		studioEnv = await setupDefaultStudioEnvironment()
 		const now = getCurrentTime()
@@ -63,7 +63,7 @@ describe('Test external message queue static methods', () => {
 				type: PlaylistTimingType.None,
 			},
 		})
-		rundown = Rundowns.findOne() as Rundown
+		// rundown = Rundowns.findOne() as Rundown
 
 		ExternalMessageQueue.insert({
 			_id: getRandomId(),

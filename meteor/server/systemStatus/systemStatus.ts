@@ -34,6 +34,7 @@ const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 // Any libraries that if a gateway uses should match a certain version
 const expectedLibraryVersions: { [libName: string]: string } = {
 	'superfly-timeline': stripVersion(require('superfly-timeline/package.json').version),
+	// eslint-disable-next-line node/no-extraneous-require
 	'mos-connection': stripVersion(require('mos-connection/package.json').version),
 }
 

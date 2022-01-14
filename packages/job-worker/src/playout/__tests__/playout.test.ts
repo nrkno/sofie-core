@@ -174,7 +174,7 @@ describe('Playout API', () => {
 			)
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
-			expect(nextPartInstance!.part._id).toEqual(orgRundownData.parts[0]._id)
+			expect(nextPartInstance?.part._id).toEqual(orgRundownData.parts[0]._id)
 
 			await expect(getPlaylist0()).resolves.toMatchObject({
 				activationId: expect.stringMatching(/^randomId/),
@@ -200,8 +200,8 @@ describe('Playout API', () => {
 			)
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
-			expect(currentPartInstance!.part._id).toEqual(orgRundownData.parts[0]._id)
-			expect(nextPartInstance!.part._id).toEqual(orgRundownData.parts[1]._id)
+			expect(currentPartInstance?.part._id).toEqual(orgRundownData.parts[0]._id)
+			expect(nextPartInstance?.part._id).toEqual(orgRundownData.parts[1]._id)
 		}
 
 		expect(Timeline.operations).toMatchObject([
@@ -569,26 +569,6 @@ describe('Playout API', () => {
 			)
 		).resolves.toHaveLength(3)
 	})
-	// TODO: Worker - continue these
-	// test('reloadRundownPlaylistData', async () => {
-	// 	// mock reloadRundown for test
-	// 	const origReloadRundown = IngestActions.reloadRundown
-	// 	IngestActions.reloadRundown = jest.fn(() => TriggerReloadDataResponse.COMPLETED)
-
-	// 	expect(() => {
-	// 		ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, protectString('fake_id'))
-	// 	}).toThrowError(/not found/gi)
-
-	// 	const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
-	// 	ServerRundownAPI.resyncRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
-
-	// 	expect(IngestActions.reloadRundown).toHaveBeenCalled()
-	// 	expect((IngestActions.reloadRundown as jest.Mock).mock.calls[0][0]).toMatchObject({
-	// 		_id: rundownId0,
-	// 	})
-
-	// 	IngestActions.reloadRundown = origReloadRundown
-	// })
 	test('onPartPlaybackStarted, onPiecePlaybackStarted, onPartPlaybackStopped, onPiecePlaybackStopped', async () => {
 		const TIME_RANDOM = 5
 
@@ -713,14 +693,17 @@ describe('Playout API', () => {
 			const now = adjustFakeTime(currentPartInstanceBeforeTake?.part.expectedDuration ?? 0)
 			await onPartPlaybackStarted(context, {
 				playlistId: playlistId0,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				partInstanceId: nextPartInstanceBeforeTakeId!,
 				startedPlayback: now,
 			})
 			await onPartPlaybackStopped(context, {
 				playlistId: playlistId0,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				partInstanceId: currentPartInstanceBeforeTakeId!,
 				stoppedPlayback: now,
 			})
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const pieceInstances = await getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId!)
 			expect(pieceInstances).toHaveLength(2)
 			await Promise.all(
@@ -750,6 +733,7 @@ describe('Playout API', () => {
 			expect(previousPartInstanceAfterTake).toBeTruthy()
 			expect(previousPartInstanceAfterTake?.timings?.stoppedPlayback).toBe(now)
 
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const pieceInstances2 = await getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId!)
 			pieceInstances2.forEach((pieceInstance) => {
 				expect(pieceInstance.stoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)

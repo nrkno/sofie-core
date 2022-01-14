@@ -3,7 +3,6 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 
 import '../../../lib/main' // include this in order to get all of the collection set up
 import { cleanupOldDataInner } from '../cleanup'
-import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 
 describe('Cleanup', () => {
 	testInFiber('Check that all collections are covered', () => {

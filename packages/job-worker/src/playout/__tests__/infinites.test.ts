@@ -1,6 +1,6 @@
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { ReadonlyDeep } from 'type-fest'
+import { ReadonlyDeep, SetRequired } from 'type-fest'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache } from '../cache'
 import { canContinueAdlibOnEndInfinites } from '../infinites'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
@@ -20,7 +20,10 @@ describe('canContinueAdlibOnEndInfinites', () => {
 	})
 
 	async function wrapWithCache<T>(
-		fcn: (cache: CacheForPlayout, playlist: ReadonlyDeep<DBRundownPlaylist>) => Promise<T>
+		fcn: (
+			cache: CacheForPlayout,
+			playlist: SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
+		) => Promise<T>
 	): Promise<T> {
 		const defaultSetup = await setupDefaultRundownPlaylist(context)
 
@@ -39,9 +42,11 @@ describe('canContinueAdlibOnEndInfinites', () => {
 		const rundown = (await context.directCollections.Rundowns.findOne(defaultSetup.rundownId)) as DBRundown
 		expect(rundown).toBeTruthy()
 
-		return runJobWithPlayoutCache(context, { playlistId: tmpPlaylist._id }, null, async (cache) =>
-			fcn(cache, cache.Playlist.doc)
-		)
+		return runJobWithPlayoutCache(context, { playlistId: tmpPlaylist._id }, null, async (cache) => {
+			const playlist = cache.Playlist.doc as SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
+			if (!playlist.activationId) throw new Error('Missing activationId')
+			return fcn(cache, playlist)
+		})
 	}
 
 	test('Basic case', async () => {
@@ -55,7 +60,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId!, orderedPartsAndSegments.parts[0]),
+					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[0]),
 					orderedPartsAndSegments.parts[1]
 				)
 			).toBeTruthy()
@@ -66,7 +71,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId!, orderedPartsAndSegments.parts[0]),
+					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[0]),
 					orderedPartsAndSegments.parts[2]
 				)
 			).toBeTruthy()
@@ -78,7 +83,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 					playlist,
 					orderedPartsAndSegments.segments,
 					wrapPartToTemporaryInstance(
-						playlist.activationId!,
+						playlist.activationId,
 						orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 2]
 					),
 					orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 1]
@@ -91,7 +96,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId!, orderedPartsAndSegments.parts[0]),
+					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[0]),
 
 					orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 1]
 				)
@@ -126,7 +131,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId!, orderedPartsAndSegments.parts[1]),
+					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[1]),
 					orderedPartsAndSegments.parts[0]
 				)
 			).toBeFalsy()
@@ -138,7 +143,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 					playlist,
 					orderedPartsAndSegments.segments,
 					wrapPartToTemporaryInstance(
-						playlist.activationId!,
+						playlist.activationId,
 						orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 1]
 					),
 					orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 2]
@@ -152,7 +157,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 					playlist,
 					orderedPartsAndSegments.segments,
 					wrapPartToTemporaryInstance(
-						playlist.activationId!,
+						playlist.activationId,
 						orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 1]
 					),
 					orderedPartsAndSegments.parts[0]
@@ -179,7 +184,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId!, orderedPartsAndSegments.parts[0]),
+					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[0]),
 					candidatePart
 				)
 			).toBeTruthy()
@@ -190,7 +195,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId!, orderedPartsAndSegments.parts[1]),
+					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[1]),
 					candidatePart
 				)
 			).toBeFalsy()

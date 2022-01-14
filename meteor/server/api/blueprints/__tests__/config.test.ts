@@ -3,7 +3,6 @@ import { ConfigRef } from '../config'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { protectString } from '../../../../lib/lib'
 import '../../../../__mocks__/_extendJest'
 
 describe('Test blueprint config', () => {
