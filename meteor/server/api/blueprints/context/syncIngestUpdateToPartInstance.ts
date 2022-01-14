@@ -1,4 +1,4 @@
-import { ContextInfo, RundownContext } from './context'
+import { ContextInfo, RundownUserContext } from './context'
 import {
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
@@ -6,7 +6,6 @@ import {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	ISyncIngestUpdateToPartInstanceContext,
-	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
@@ -30,7 +29,6 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../cache/CacheCollection'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
-import { INoteBase } from '../../../../lib/api/notes'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
@@ -39,14 +37,12 @@ import { CacheForPlayout } from '../../playout/cache'
 import { logChanges } from '../../../cache/lib'
 
 export class SyncIngestUpdateToPartInstanceContext
-	extends RundownContext
+	extends RundownUserContext
 	implements ISyncIngestUpdateToPartInstanceContext
 {
 	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
-	public readonly notes: INoteBase[] = []
-	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(
 		contextInfo: ContextInfo,
@@ -66,29 +62,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		this._partInstanceCache = DbCacheWriteCollection.createFromArray(PartInstances, [partInstance])
 
 		this._proposedPieceInstances = normalizeArrayToMap(proposedPieceInstances, '_id')
-	}
-
-	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		this.addNote(NoteSeverity.ERROR, message, params)
-	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		this.addNote(NoteSeverity.WARNING, message, params)
-	}
-	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
-		this.addNote(NoteSeverity.INFO, message, params)
-	}
-	private addNote(type: NoteSeverity, message: string, params?: { [key: string]: any }) {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logNote(`UserNotes: "${message}", ${JSON.stringify(params)}`, type)
-		} else {
-			this.notes.push({
-				type: type,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
 	}
 
 	applyChangesToCache(cache: CacheForPlayout) {

@@ -1,6 +1,6 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
 import { TrackedNote } from './api/notes'
-import { Segments, DBSegment } from './collections/Segments'
+import { Segments, DBSegment, SegmentOrphanedReason } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { unprotectString, literal, generateTranslation, normalizeArrayToMap, assertNever } from './lib'
 import * as _ from 'underscore'
@@ -142,12 +142,23 @@ export function getBasicNotesForSegment(
 		)
 	}
 
-	if (segment.orphaned === 'deleted') {
+	if (segment.orphaned) {
+		let message: ITranslatableMessage
+		switch (segment.orphaned) {
+			case SegmentOrphanedReason.DELETED:
+				message = generateTranslation('Segment no longer exists in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
+				break
+			case SegmentOrphanedReason.HIDDEN:
+				message = generateTranslation('Segment was hidden in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
+				break
+		}
 		notes.push({
 			type: NoteSeverity.WARNING,
-			message: generateTranslation('Segment no longer exists in {{nrcs}}', {
-				nrcs: nrcsName,
-			}),
+			message,
 			rank: segment._rank,
 			origin: {
 				segmentId: segment._id,
