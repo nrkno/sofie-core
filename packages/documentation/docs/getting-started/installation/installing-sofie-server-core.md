@@ -5,25 +5,116 @@
 ### **Prerequisites**
 
 **\(Linux\)** Install [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and [docker-compose](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-18-04).  
-**\(Windows\)** Install [Docker for Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows) \(Please note that Docker for Windows using WSL2 may come with severe performance issues\)
+**\(Windows\)** Install [Docker for Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows).
 
 ### Installation
 
 This docker-compose file automates the basic setup of the [Sofie-Core application](../../for-developers/libraries.md#main-application), the backend database and different Gateway options.
 
-{% file src="/gitbook/assets/docker-compose \(2\).yaml" %}
+```yaml
+# This is NOT recommended to be used for a production deployment.
+# It aims to quickly get an evaluation version of Sofie running and serve as a basis for how to set up a production deployment.
+version: '3.3'
+services:
+  db:
+    hostname: mongo
+    image: mongo:4.2.18
+    restart: always
+    entrypoint: ['/usr/bin/mongod', '--replSet', 'rs0', '--bind_ip_all']
+    # the healthcheck avoids the need to initiate the replica set
+    healthcheck:
+      test: test $$(echo "rs.initiate().ok || rs.status().ok" | mongo --quiet) -eq 1
+      interval: 10s
+      start_period: 30s
+    ports:
+      - '27017:27017'
+    volumes:
+      - db-data:/data/db
+    networks:
+      - sofie
 
-After you've downloaded the file, open it in a text editor and navigate to the _ingest-gateway_ section, and select which type of _ingest-gateway_ you'd like installed by commenting out the others.
+  core:
+    hostname: core
+    image: sofietv/tv-automation-server-core:release37
+    restart: always
+    ports:
+      - '3000:3000' # Same port as meteor uses by default
+    environment:
+      PORT: '3000'
+      MONGO_URL: 'mongodb://db:27017/meteor'
+      MONGO_OPLOG_URL: 'mongodb://db:27017/local'
+      ROOT_URL: 'http://localhost:3000'
+    networks:
+      - sofie
+    volumes:
+      - snapshots:/mnt/snapshots
+    depends_on:
+      - db
 
-Create a `Sofie` folder and copy the docker-compose-file into it.
+  playout-gateway:
+    image: sofietv/tv-automation-playout-gateway:release37
+    restart: always
+    command: yarn start -host core -port 3000 -id playoutGateway0
+    networks:
+      - sofie
+      - lan_access
+    depends_on:
+      - core
+
+  # Choose one of the following images, depending on which type of ingest gateway is wanted.
+  # If using the Rundown Editor, then none of the below images are needed.
+  # The Rundown Editor can be found here: https://github.com/SuperFlyTV/sofie-automation-rundown-editor
+
+  # spreadsheet-gateway:
+  #   image: superflytv/sofie-spreadsheet-gateway:latest
+  #   restart: always
+  #   command: yarn start -host core -port 3000 -id spreadsheetGateway0
+  #   networks:
+  #     - sofie
+  #   depends_on:
+  #     - core
+
+  # mos-gateway:
+  #   image: sofietv/tv-automation-mos-gateway:release37
+  #   restart: always
+  #   ports:
+  #     - "10540:10540" # MOS Lower port
+  #     - "10541:10541" # MOS Upper port
+  #     # - "10542:10542" # MOS query port - not used
+  #   command: yarn start -host core -port 3000 -id mosGateway0
+  #   networks:
+  #     - sofie
+  #   depends_on:
+  #     - core
+
+  # inews-gateway:
+  #   image: tv2media/inews-ftp-gateway:1.37.0-in-testing.20
+  #   restart: always
+  #   command: yarn start -host core -port 3000 -id inewsGateway0
+  #   networks:
+  #     - sofie
+  #   depends_on:
+  #     - core
+
+networks:
+  sofie:
+  lan_access:
+    driver: bridge
+
+volumes:
+  db-data:
+  snapshots:
+```
+
+Create a `Sofie` folder, copy the above content, and save it as `docker-compose.yaml` within the `Sofie` folder.
+
+Navigate to the _ingest-gateway_ section of `docker-compose.yaml` and select which type of _ingest-gateway_ you'd like installed by uncommenting it. Save your changes. If you are using the [Rundown Editor](installing-a-gateway/rundown-or-newsroom-system-connection/rundown-editor), then no ingest gateways need to be uncommented.
 
 Then open a terminal, `cd your-sofie-folder` and `sudo docker-compose up` \(just `docker-compose up` on windows\).
 
 Once the installation is done, Sofie should be running on [http://localhost:3000](http://localhost:3000)
 
-Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom Systems](installing-a-gateway/rundown-or-newsroom-system-connection/) to see which _Rundown Gateway_ is best suited for ~~_your_~~ production environment.
-
-To get a demo rundown up and running quickly, check out the [Sofie Rundown Editor](installing-a-gateway/rundown-or-newsroom-system-connection/rundown-editor.md).
+Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom Systems](installing-a-gateway/rundown-or-newsroom-system-connection/README) to see which _Rundown Gateway_ is best suited for _your_ production environment.
 
 ### Tips for running in production
 
