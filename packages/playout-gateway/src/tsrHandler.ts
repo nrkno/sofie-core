@@ -686,6 +686,11 @@ export class TSRHandler {
 					deviceStatus = connectedOrStatus
 				}
 				coreTsrHandler.statusChanged(deviceStatus)
+
+				// When the status has changed, the deviceName might have changed:
+				device.reloadProps().catch((err) => {
+					this.logger.error(`Error in reloadProps: ${err}`)
+				})
 				// hack to make sure atem has media after restart
 				if (
 					(deviceStatus.statusCode === P.StatusCode.GOOD ||
@@ -779,10 +784,8 @@ export class TSRHandler {
 			const onClearMediaObjectCollection = (collectionId: string) => {
 				coreTsrHandler.onClearMediaObjectCollection(collectionId)
 			}
-			let deviceName = device.deviceName
-			const deviceInstanceId = device.instanceId
 			const fixError = (e: any): string => {
-				const name = `Device "${deviceName || deviceId}" (${deviceInstanceId})`
+				const name = `Device "${device.deviceName || deviceId}" (${device.instanceId})`
 				if (e.reason) e.reason = name + ': ' + e.reason
 				if (e.message) e.message = name + ': ' + e.message
 				if (e.stack) {
@@ -793,8 +796,6 @@ export class TSRHandler {
 				return e
 			}
 			await coreTsrHandler.init()
-
-			deviceName = device.deviceName
 
 			device.onChildClose = () => {
 				// Called if a child is closed / crashed
