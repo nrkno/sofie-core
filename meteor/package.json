@@ -111,7 +111,7 @@
 		"velocity-react": "^1.4.3",
 		"vm2": "^3.9.5",
 		"webmidi": "^2.5.3",
-		"winston": "^3.3.3",
+		"winston": "^3.4.0",
 		"xml2json": "^0.12.0",
 		"xmlbuilder": "^15.1.1"
 	},

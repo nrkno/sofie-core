@@ -8,6 +8,8 @@ import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCac
 import { JobContextImpl, QueueJobFunc } from '../context'
 import { AnyLockEvent, LocksManager } from '../locks'
 import { FastTrackTimelineFunc } from '../../main'
+import { logger } from '../../logging'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -52,6 +54,8 @@ export class EventsWorkerChild {
 
 			dataCache,
 		}
+
+		logger.info(`Events thread for ${studioId} initialised`)
 	}
 	async lockChange(lockId: string, locked: boolean): Promise<void> {
 		if (!this.#staticData) throw new Error('Worker not initialised')
@@ -101,6 +105,9 @@ export class EventsWorkerChild {
 			} else {
 				throw new Error(`Unknown job name: "${jobName}"`)
 			}
+		} catch (e) {
+			logger.error(`Events job errored: ${stringifyError(e)}`)
+			throw e
 		} finally {
 			await context.cleanupResources()
 

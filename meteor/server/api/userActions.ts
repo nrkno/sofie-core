@@ -1,7 +1,7 @@
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
+import { getCurrentTime, getHash, makePromise, stringifyError } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
@@ -67,7 +67,7 @@ async function runUserAction<T extends keyof StudioJobFunc>(
 		const res = await job.complete
 		span?.end()
 
-		// TODO: Worker - track timings
+		// TODO: Worker - track timingss
 		// console.log(await job.getTimings)
 
 		return ClientAPI.responseSuccess(res)
@@ -81,7 +81,7 @@ async function runUserAction<T extends keyof StudioJobFunc>(
 			userError = UserError.from(err, UserErrorMessage.InternalError)
 		}
 
-		logger.error(`UserAction "${name}" failed: ${userError.rawError.toString()}`)
+		logger.error(`UserAction "${name}" failed: ${stringifyError(userError.rawError)}`)
 
 		// Forward the error to the caller
 		return ClientAPI.responseError(userError)

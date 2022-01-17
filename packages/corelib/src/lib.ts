@@ -7,6 +7,7 @@ import * as objectPath from 'object-path'
 import { Timecode } from 'timecode'
 import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from './dataModel/Studio'
+import { UserError } from './error'
 
 export * from './hash'
 
@@ -321,7 +322,9 @@ export function removeNullyProperties<T>(obj: T): T {
 export function stringifyError(error: unknown, noStack = false): string {
 	let str: string
 
-	if (error && typeof error === 'object' && (error as Error).message) {
+	if (error && UserError.isUserError(error)) {
+		str = UserError.toJSON(error)
+	} else if (error && typeof error === 'object' && (error as Error).message) {
 		str = `${(error as Error).message}`
 	} else if (error && typeof error === 'object' && (error as any).reason) {
 		str = `${(error as any).reason}`

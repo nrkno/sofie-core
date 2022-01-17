@@ -1,14 +1,14 @@
 import * as Winston from 'winston'
 
-export interface LoggerInstance extends Winston.LoggerInstance {
-	warning: never // logger.warning is not a function
-}
+// Log all to console for now. Can be improved later
+const consoleTransport = new Winston.transports.Console({
+	level: 'silly',
+	handleExceptions: true,
+	handleRejections: true,
+})
 
 // Setup logging --------------------------------------
-export const logger = new Winston.Logger({}) as LoggerInstance
-// Log all to console for now. Will be improved later
-logger.add(Winston.transports.Console, {
-	level: 'verbose',
-	handleExceptions: true,
-	json: false,
+export const logger = Winston.createLogger({
+	format: Winston.format.json(),
+	transports: [consoleTransport],
 })

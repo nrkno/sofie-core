@@ -3,7 +3,7 @@ import { IngestWorkerChild } from './child'
 import { MongoClient } from 'mongodb'
 import { InvalidateWorkerDataCache } from '../caches'
 import { LocksManager } from '../../locks'
-import { ThreadStatus, WorkerParentBase } from '../parent-base'
+import { WorkerParentBase } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
@@ -62,12 +62,7 @@ export class IngestWorkerParent extends WorkerParentBase {
 			workerThread
 		)
 
-		ThreadedClassManager.onEvent(workerThread, 'restarted', () => {
-			parent.threadStatus = ThreadStatus.PendingInit
-		})
-		ThreadedClassManager.onEvent(workerThread, 'thread_closed', () => {
-			parent.threadStatus = ThreadStatus.Closed
-		})
+		parent.registerStatusEvents(workerThread)
 
 		parent.startWorkerLoop(mongoUri, mongoDb)
 		return parent

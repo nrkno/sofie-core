@@ -7,6 +7,7 @@ import { EventsWorkerParent } from './events/parent'
 import { JobManager } from '../manager'
 import { FastTrackTimelineFunc } from '../main'
 import { WorkerParentBase } from './parent-base'
+import { logger } from '../logging'
 
 export class StudioWorkerSet {
 	readonly #threads: WorkerParentBase[]
@@ -94,7 +95,9 @@ export class StudioWorkerSet {
 			)
 		)
 
+		logger.info(`Starting threads for ${studioId}`)
 		await Promise.allSettled(ps)
+		logger.info(`Started threads for ${studioId}`)
 
 		if (failed > 0) {
 			// terminate all the successful threads

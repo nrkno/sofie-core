@@ -184,6 +184,7 @@ Meteor.startup(() => {
 		workerEntrypoint = path.join(process.env.WORKER_EXEC_DIR, 'dist/ipc.js')
 	}
 
+	logger.info('Worker threads initializing')
 	// Startup the worker 'parent' at startup
 	worker = waitForPromise(
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
@@ -210,7 +211,9 @@ Meteor.startup(() => {
 		runningJobs.clear()
 	})
 
+	logger.info('Worker threads starting')
 	waitForPromise(worker.run(mongoUri, dbName))
+	logger.info('Worker threads ready')
 })
 
 export interface JobTimings {

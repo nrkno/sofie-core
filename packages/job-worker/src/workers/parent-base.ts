@@ -20,6 +20,7 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 import { JobManager, JobStream } from '../manager'
 import { UserError } from '@sofie-automation/corelib/dist/error'
+import { Promisify, ThreadedClassManager } from 'threadedclass'
 
 export enum ThreadStatus {
 	Closed = 0,
@@ -44,7 +45,7 @@ export abstract class WorkerParentBase {
 
 	#pendingInvalidations: InvalidateWorkerDataCache | null = null
 
-	protected threadStatus = ThreadStatus.Closed
+	#threadStatus = ThreadStatus.Closed
 
 	public get threadId(): string {
 		return this.#threadId
@@ -67,6 +68,17 @@ export abstract class WorkerParentBase {
 
 		this.#jobManager = jobManager
 		this.#jobStream = jobManager.subscribeToQueue(queueName, workerId)
+
+		this.#threadStatus = ThreadStatus.PendingInit
+	}
+
+	protected registerStatusEvents(workerThread: Promisify<any>): void {
+		ThreadedClassManager.onEvent(workerThread, 'restarted', () => {
+			this.#threadStatus = ThreadStatus.PendingInit
+		})
+		ThreadedClassManager.onEvent(workerThread, 'thread_closed', () => {
+			this.#threadStatus = ThreadStatus.Closed
+		})
 	}
 
 	/**
@@ -176,7 +188,7 @@ export abstract class WorkerParentBase {
 
 				// Run until told to terminate
 				while (!this.#terminate) {
-					switch (this.threadStatus) {
+					switch (this.#threadStatus) {
 						case ThreadStatus.Closed:
 							// Wait for the thread
 							await sleep(100)
@@ -186,13 +198,13 @@ export abstract class WorkerParentBase {
 							logger.debug(`Re-initialising worker thread: "${this.#threadId}"`)
 							// Reinit the worker
 							await this.initWorker(mongoUri, dbName, this.#studioId)
-							this.threadStatus = ThreadStatus.Ready
+							this.#threadStatus = ThreadStatus.Ready
 							break
 						case ThreadStatus.Ready:
 							// Thread is happy to accept a job
 							break
 						default:
-							assertNever(this.threadStatus)
+							assertNever(this.#threadStatus)
 					}
 
 					const job = await this.#jobStream.next() // Note: this blocks
@@ -241,6 +253,7 @@ export abstract class WorkerParentBase {
 							await this.#jobManager.jobFinished(job.id, startTime, endTime, null, result)
 							logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
 						} catch (e: unknown) {
+							console.log('inner err2', e, typeof e, JSON.stringify(e))
 							let error: Error | UserError
 							if (e instanceof Error || UserError.isUserError(e)) {
 								error = e
@@ -253,6 +266,7 @@ export abstract class WorkerParentBase {
 							await this.#jobManager.jobFinished(job.id, startTime, Date.now(), error, null)
 						}
 
+						console.log('after work')
 						// Ensure all locks have been freed after the job
 						await this.#locksManager.releaseAllForThread(this.#threadId)
 
