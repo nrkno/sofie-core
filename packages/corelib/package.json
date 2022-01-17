@@ -43,7 +43,6 @@
 	],
 	"dependencies": {
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
-		"@types/meteor": "1.4.47",
 		"fast-clone": "^1.5.13",
 		"i18next": "^19.9.2",
 		"mos-connection": "1.0.5-nightly-latest-20211118-081133-434af7d.0",

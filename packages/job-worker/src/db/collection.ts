@@ -29,7 +29,7 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		}
 		const res = await this.#collection.find(selector as any, options).toArray()
 		if (span) span.end()
-		return res
+		return res as Array<TDoc>
 	}
 
 	async findOne(selector: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined> {
