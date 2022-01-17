@@ -173,12 +173,12 @@ export function checkPieceContentStatus(
 	t =
 		t ||
 		((s: string, options?: _.Dictionary<any> | string) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options)) // kz: TODO not sure if this is ok - the second param can be a defaultValue
-	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	let message: string | null = null
 	const contentDuration: number | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
+	let pieceStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
@@ -186,8 +186,12 @@ export function checkPieceContentStatus(
 		if (piece.expectedPackages) {
 			// Using Expected Packages:
 
-			const messages: Array<string> = []
+			const messages: Array<{
+				status: RundownAPI.PieceStatusCode
+				message: string
+			}> = []
 			const packageInfos: ScanInfoForPackages = {}
+			let readyCount = 0
 
 			if (piece.expectedPackages.length) {
 				// Route the mappings
@@ -234,52 +238,53 @@ export function checkPieceContentStatus(
 							packageOnPackageContainer.status.status ===
 								ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
 						) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-							messages.push(
-								t(
-									`Clip "{{fileName}}" can't be played because it isn't present on the playout system`,
+							messages.push({
+								status: RundownAPI.PieceStatusCode.SOURCE_MISSING,
+								message: t(
+									`Clip "{{fileName}}" can't be played because it doesn't exist on the playout system`,
 									{
 										fileName: packageName,
 									}
-								)
-							)
+								),
+							})
 						} else if (
 							packageOnPackageContainer.status.status ===
 							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_READY
 						) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-							messages.push(
-								t('{{sourceLayer}} is not yet ready on the playout system', {
+							messages.push({
+								status: RundownAPI.PieceStatusCode.SOURCE_MISSING,
+								message: t('{{sourceLayer}} is not yet ready on the playout system', {
 									sourceLayer: sourceLayer.name,
-								})
-							)
+								}),
+							})
 						} else if (
 							packageOnPackageContainer.status.status ===
 							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_READY
 						) {
-							newStatus = RundownAPI.PieceStatusCode.OK
-							messages.push(
-								t('{{sourceLayer}} is transferring to the the playout system', {
+							messages.push({
+								status: RundownAPI.PieceStatusCode.OK,
+								message: t('{{sourceLayer}} is transferring to the the playout system', {
 									sourceLayer: sourceLayer.name,
-								})
-							)
+								}),
+							})
 						} else if (
 							packageOnPackageContainer.status.status ===
 							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_NOT_READY
 						) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-							messages.push(
-								t(
+							messages.push({
+								status: RundownAPI.PieceStatusCode.SOURCE_MISSING,
+								message: t(
 									'{{sourceLayer}} is transferring to the the playout system and cannot be played yet',
 									{
 										sourceLayer: sourceLayer.name,
 									}
-								)
-							)
+								),
+							})
 						} else if (
 							packageOnPackageContainer.status.status ===
 							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY
 						) {
+							readyCount++
 							packageInfos[expectedPackage._id] = {
 								packageName,
 							}
@@ -304,18 +309,17 @@ export function checkPieceContentStatus(
 				}
 			}
 			if (Object.keys(packageInfos).length) {
-				newStatus = RundownAPI.PieceStatusCode.OK
 				for (const [_packageId, packageInfo] of Object.entries(packageInfos)) {
 					const { scan, deepScan } = packageInfo
 
 					if (scan && scan.streams) {
 						if (!ignoreMediaAudioStatus && scan.streams.length < 2) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-							messages.push(
-								t("{{sourceLayer}} doesn't have both audio & video", {
+							messages.push({
+								status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+								message: t("{{sourceLayer}} doesn't have both audio & video", {
 									sourceLayer: sourceLayer.name,
-								})
-							)
+								}),
+							})
 						}
 						const formats = getAcceptedFormats(settings)
 						const audioConfig = settings ? settings.supportedAudioStreams : ''
@@ -340,12 +344,13 @@ export function checkPieceContentStatus(
 								if (deepScan) {
 									const format = buildPackageFormatString(deepScan, stream)
 									if (!acceptFormat(format, formats)) {
-										messages.push(
-											t('{{sourceLayer}} has the wrong format: {{format}}', {
+										messages.push({
+											status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+											message: t('{{sourceLayer}} has the wrong format: {{format}}', {
 												sourceLayer: sourceLayer.name,
 												format,
-											})
-										)
+											}),
+										})
 									}
 								}
 							} else if (stream.codec_type === 'audio') {
@@ -365,12 +370,13 @@ export function checkPieceContentStatus(
 							(!expectedAudioStreams.has(audioStreams.toString()) ||
 								(isStereo && !expectedAudioStreams.has('stereo')))
 						) {
-							messages.push(
-								t('{{sourceLayer}} has {{audioStreams}} audio streams', {
+							messages.push({
+								status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+								message: t('{{sourceLayer}} has {{audioStreams}} audio streams', {
 									sourceLayer: sourceLayer.name,
 									audioStreams,
-								})
-							)
+								}),
+							})
 						}
 						if (timebase) {
 							// check for black/freeze frames
@@ -383,41 +389,45 @@ export function checkPieceContentStatus(
 									/** Number of frames */
 									const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
 									if (anomalies[0].start === 0) {
-										messages.push(
-											t('Clip starts with {{frames}} {{type}} frame', {
+										messages.push({
+											status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+											message: t('Clip starts with {{frames}} {{type}} frames', {
 												frames,
 												type,
 												count: frames,
-											})
-										)
+											}),
+										})
 									} else if (scan.format && anomalies[0].end === Number(scan.format.duration)) {
 										const freezeStartsAt = Math.round(anomalies[0].start)
-										messages.push(
-											t('This clip ends with {{type}} frames after {{count}} second', {
+										messages.push({
+											status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+											message: t('This clip ends with {{type}} frames after {{count}} seconds', {
 												frames,
 												type,
 												count: freezeStartsAt,
-											})
-										)
+											}),
+										})
 									} else if (frames > 0) {
-										messages.push(
-											t('{{frames}} {{type}} frame detected within the clip', {
+										messages.push({
+											status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+											message: t('{{frames}} {{type}} frames detected within the clip', {
 												frames,
 												type,
 												count: frames,
-											})
-										)
+											}),
+										})
 									}
 								} else if (anomalies.length > 0) {
 									const dur = anomalies.map((b) => b.duration).reduce((a, b) => a + b, 0)
 									const frames = Math.ceil((dur * 1000) / timebase)
-									messages.push(
-										t('{{frames}} {{type}} frame detected in clip', {
+									messages.push({
+										status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+										message: t('{{frames}} {{type}} frames detected in the clip', {
 											frames,
 											type,
 											count: frames,
-										})
-									)
+										}),
+									})
 								}
 							}
 							if (deepScan?.blacks) {
@@ -433,15 +443,23 @@ export function checkPieceContentStatus(
 				packageInfoToForward = packageInfos
 			}
 			if (messages.length) {
-				if (newStatus === RundownAPI.PieceStatusCode.OK) {
-					newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+				pieceStatus = messages.reduce(
+					(prev, msg) => Math.max(prev, msg.status),
+					RundownAPI.PieceStatusCode.UNKNOWN
+				)
+				message = _.uniq(messages.map((m) => m.message)).join('; ') + '.'
+			} else {
+				if (readyCount > 0) {
+					pieceStatus = RundownAPI.PieceStatusCode.OK
 				}
-
-				message = _.uniq(messages).join('; ') + '.'
 			}
 		} else {
 			// Fallback to MediaObject statuses:
-			const messages: Array<string> = []
+			const messages: Array<{
+				status: RundownAPI.PieceStatusCode
+				message: string
+			}> = []
+			let contentSeemsOK = false
 			const fileName = getMediaObjectMediaId(piece, sourceLayer)
 			const displayName = piece.name
 			switch (sourceLayer.type) {
@@ -449,8 +467,10 @@ export function checkPieceContentStatus(
 				case SourceLayerType.LIVE_SPEAK:
 					// If the fileName is not set...
 					if (!fileName) {
-						newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-						messages.push(t('{{sourceLayer}} is missing a file path', { sourceLayer: sourceLayer.name }))
+						messages.push({
+							status: RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
+							message: t('{{sourceLayer}} is missing a file path', { sourceLayer: sourceLayer.name }),
+						})
 					} else {
 						const mediaObject = MediaObjects.findOne({
 							studioId: studio._id,
@@ -458,22 +478,24 @@ export function checkPieceContentStatus(
 						})
 						// If media object not found, then...
 						if (!mediaObject) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-							messages.push(
-								t('{{sourceLayer}} is not yet ready on the playout system', {
+							messages.push({
+								status: RundownAPI.PieceStatusCode.SOURCE_MISSING,
+								message: t('{{sourceLayer}} is not yet ready on the playout system', {
 									sourceLayer: sourceLayer.name,
-								})
-							)
+								}),
+							})
 							// All VT content should have at least two streams
 						} else {
-							newStatus = RundownAPI.PieceStatusCode.OK
+							contentSeemsOK = true
 
 							// Do a format check:
 							if (mediaObject.mediainfo) {
 								if (mediaObject.mediainfo.streams) {
 									if (!ignoreMediaAudioStatus && mediaObject.mediainfo.streams.length < 2) {
-										newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-										messages.push(t("Clip doesn't have audio & video", { fileName: displayName }))
+										messages.push({
+											status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+											message: t("Clip doesn't have audio & video", { fileName: displayName }),
+										})
 									}
 									const formats = getAcceptedFormats(settings)
 									const audioConfig = settings ? settings.supportedAudioStreams : ''
@@ -498,12 +520,13 @@ export function checkPieceContentStatus(
 
 											const format = buildFormatString(mediaObject.mediainfo, stream)
 											if (!acceptFormat(format, formats)) {
-												messages.push(
-													t('{{sourceLayer}} has the wrong format: {{format}}', {
+												messages.push({
+													status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+													message: t('{{sourceLayer}} has the wrong format: {{format}}', {
 														sourceLayer: sourceLayer.name,
 														format,
-													})
-												)
+													}),
+												})
 											}
 										} else if (stream.codec.type === 'audio') {
 											// this is the first (and hopefully last) track of audio, and has 2 channels
@@ -522,12 +545,13 @@ export function checkPieceContentStatus(
 										(!expectedAudioStreams.has(audioStreams.toString()) ||
 											(isStereo && !expectedAudioStreams.has('stereo')))
 									) {
-										messages.push(
-											t('{{sourceLayer}} has {{audioStreams}} audio streams', {
+										messages.push({
+											status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+											message: t('{{sourceLayer}} has {{audioStreams}} audio streams', {
 												sourceLayer: sourceLayer.name,
 												audioStreams,
-											})
-										)
+											}),
+										})
 									}
 									if (timebase) {
 										// check for black/freeze frames
@@ -539,48 +563,55 @@ export function checkPieceContentStatus(
 											if (arr.length === 1) {
 												const frames = Math.ceil((arr[0].duration * 1000) / timebase)
 												if (arr[0].start === 0) {
-													messages.push(
-														t('Clip starts with {{frames}} {{type}} frame', {
+													messages.push({
+														status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+														message: t('Clip starts with {{frames}} {{type}} frame', {
 															frames,
 															type,
 															count: frames,
-														})
-													)
+														}),
+													})
 												} else if (
 													mediaObject.mediainfo &&
 													mediaObject.mediainfo.format &&
 													arr[0].end === Number(mediaObject.mediainfo.format.duration)
 												) {
 													const freezeStartsAt = Math.round(arr[0].start)
-													messages.push(
-														t(
+													messages.push({
+														status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+														message: t(
 															'This clip ends with {{type}} frames after {{count}} second',
 															{
 																frames,
 																type,
 																count: freezeStartsAt,
 															}
-														)
-													)
+														),
+													})
 												} else {
-													messages.push(
-														t('{{frames}} {{type}} frame detected within the clip', {
-															frames,
-															type,
-															count: frames,
-														})
-													)
+													messages.push({
+														status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+														message: t(
+															'{{frames}} {{type}} frame detected within the clip',
+															{
+																frames,
+																type,
+																count: frames,
+															}
+														),
+													})
 												}
 											} else if (arr.length > 0) {
 												const dur = arr.map((b) => b.duration).reduce((a, b) => a + b, 0)
 												const frames = Math.ceil((dur * 1000) / timebase)
-												messages.push(
-													t('{{frames}} {{type}} frame detected in clip', {
+												messages.push({
+													status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+													message: t('{{frames}} {{type}} frame detected in clip', {
 														frames,
 														type,
 														count: frames,
-													})
-												)
+													}),
+												})
 											}
 										}
 										if (mediaObject.mediainfo.blacks) {
@@ -592,12 +623,12 @@ export function checkPieceContentStatus(
 									}
 								}
 							} else {
-								messages.push(
-									t('{{sourceLayer}} is being ingested', {
+								messages.push({
+									status: RundownAPI.PieceStatusCode.SOURCE_MISSING,
+									message: t('{{sourceLayer}} is being ingested', {
 										sourceLayer: sourceLayer.name,
-									})
-								)
-								newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+									}),
+								})
 							}
 
 							metadata = mediaObject
@@ -612,10 +643,12 @@ export function checkPieceContentStatus(
 							mediaId: fileName,
 						})
 						if (!mediaObject) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-							messages.push(t('Source is missing', { fileName: displayName }))
+							messages.push({
+								status: RundownAPI.PieceStatusCode.SOURCE_MISSING,
+								message: t('Source is missing', { fileName: displayName }),
+							})
 						} else {
-							newStatus = RundownAPI.PieceStatusCode.OK
+							contentSeemsOK = true
 							metadata = mediaObject
 						}
 					}
@@ -625,23 +658,27 @@ export function checkPieceContentStatus(
 				// * withMediaObjectStatus.tsx (updateMediaObjectSubscription)
 			}
 			if (messages.length) {
-				if (newStatus === RundownAPI.PieceStatusCode.OK) {
-					newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+				pieceStatus = messages.reduce(
+					(prev, msg) => Math.max(prev, msg.status),
+					RundownAPI.PieceStatusCode.UNKNOWN
+				)
+				message = _.uniq(messages.map((m) => m.message)).join('; ') + '.'
+			} else {
+				if (contentSeemsOK) {
+					pieceStatus = RundownAPI.PieceStatusCode.OK
 				}
-				message = messages.join('; ') + '.'
 			}
 		}
 	}
 
 	return {
-		status: newStatus,
+		status: pieceStatus,
 		metadata: metadata,
 		packageInfos: packageInfoToForward,
 		message: message,
 		contentDuration: contentDuration,
 	}
 }
-
 export function getNoteSeverityForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoteSeverity | null {
 	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
 		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
