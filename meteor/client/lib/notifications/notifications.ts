@@ -477,19 +477,21 @@ export class Notification extends EventEmitter {
 }
 
 export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoticeLevel | null {
-	if (statusCode === RundownAPI.PieceStatusCode.OK || statusCode === RundownAPI.PieceStatusCode.UNKNOWN) {
-		return null
-	} else if (statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET) {
-		return NoticeLevel.CRITICAL
-	} else if (statusCode === RundownAPI.PieceStatusCode.SOURCE_MISSING) {
-		return NoticeLevel.WARNING
-	} else if (statusCode === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
-		return NoticeLevel.WARNING
-	} else if (statusCode === RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES) {
-		return NoticeLevel.NOTIFICATION
-	} else {
-		assertNever(statusCode)
-		return NoticeLevel.WARNING
+	switch (statusCode) {
+		case RundownAPI.PieceStatusCode.OK:
+		case RundownAPI.PieceStatusCode.UNKNOWN:
+			return null
+		case RundownAPI.PieceStatusCode.SOURCE_NOT_SET:
+			return NoticeLevel.CRITICAL
+		case RundownAPI.PieceStatusCode.SOURCE_MISSING:
+			return NoticeLevel.WARNING
+		case RundownAPI.PieceStatusCode.SOURCE_BROKEN:
+			return NoticeLevel.WARNING
+		case RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES:
+			return NoticeLevel.NOTIFICATION
+		default:
+			assertNever(statusCode)
+			return NoticeLevel.WARNING
 	}
 }
 
