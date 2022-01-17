@@ -24,7 +24,6 @@
 		"watch": "jest --watch",
 		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"send-coverage": "codecov -p ../..",
 		"changelog": "standard-version",
 		"release": "yarn reset && yarn test && yarn changelog",
 		"reset": "git clean -dfx && git reset --hard && yarn",

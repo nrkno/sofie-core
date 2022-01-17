@@ -42,7 +42,6 @@
 		"copytypes": "copyfiles -u 1 src/types/* dist",
 		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"send-coverage": "codecov -p ../..",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-2-Clause BSD-3-Clause 0BSD ISC Apache Apache-2.0 Unlicense"

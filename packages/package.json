@@ -44,7 +44,6 @@
 		"@types/object-path": "^0.11.1",
 		"@types/underscore": "^1.11.4",
 		"babel-jest": "^27.4.6",
-		"codecov": "^3.8.3",
 		"copyfiles": "^2.4.1",
 		"jest": "^27.4.7",
 		"lerna": "^4.0.0",

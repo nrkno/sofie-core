@@ -31,7 +31,6 @@
 		"watch": "jest --watch",
 		"cov": "jest; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"send-coverage": "codecov -p ../..",
 		"ci": "yarn test",
 		"inspect": "node --inspect dist/index.js",
 		"start": "node dist/index.js",

@@ -65,9 +65,14 @@ jobs:
       - name: Run Tests
         run: |
           cd meteor
-          meteor npm run ci
+          meteor yarn unitci
         env:
           CI: true
+      - name: Send coverage
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          # name: codecov-umbrella
 
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -288,8 +293,10 @@ jobs:
           # include additional configs, to run certain packages in a single version of node
           - node-version: 12.x
             package-name: corelib
+            send-coverage: true
           - node-version: 12.x
             package-name: job-worker
+            send-coverage: true
           # No tests for the gateways yet
           # - node-version: 12.x
           #   package-name: playout-gateway
@@ -316,12 +323,11 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        if: matrix.node-version == '12.x'
-        run: |
-          cd packages/${{ matrix.package-name }}
-          yarn send-coverage
-        env:
-          CI: true
+        if: matrix.node-version == '12.x' || matrix.send-coverage == true
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          # name: codecov-umbrella
 
   publish-docs:
     name: Publish Docs
