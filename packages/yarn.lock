@@ -14697,10 +14697,17 @@ timeline-state-resolver-types@6.4.0-nightly-release39-20220113-131814-5ea1df54c.
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.4.0-nightly-release39-20220113-131814-5ea1df54c.0:
-  version "6.4.0-nightly-release39-20220113-131814-5ea1df54c.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.4.0-nightly-release39-20220113-131814-5ea1df54c.0.tgz#57950775ad5b2c9566508be4ada9f306d2500d8f"
-  integrity sha512-o/4a8znmIqXPjd/wXfjgTE9pwiUtltXvsa/ZpNZV/U/h9E9rn3oxJi15WUrS8pgcmFF5gRsXmXnMWGVpMgI7Mw==
+timeline-state-resolver-types@6.4.0-nightly-release39-20220117-082017-52480f42b.0:
+  version "6.4.0-nightly-release39-20220117-082017-52480f42b.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.4.0-nightly-release39-20220117-082017-52480f42b.0.tgz#11244c42b95f2ca61ef0af20c7705b481bee577a"
+  integrity sha512-TyyfH77rSZRzrUTz7QuycB5VJ3qO7d6pvP0gvBzCb7+Pcj9A8B0e4LAfKtIrnf1NSczo21fnFcBLqUEpXd4FSg==
+  dependencies:
+    tslib "^2.3.1"
+
+timeline-state-resolver@6.4.0-nightly-release39-20220117-082017-52480f42b.0:
+  version "6.4.0-nightly-release39-20220117-082017-52480f42b.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.4.0-nightly-release39-20220117-082017-52480f42b.0.tgz#9d6fdb6f065cd4a7137e23e12f82031a13f19c32"
+  integrity sha512-ze2gu4w0vprT+3Jvoak63LyvRdY5ECnR/4A3dhq0FM+yGbkNEzSyDRtEtKoeJ41MHQofubIVOcfPE28ySoYUIg==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "2.4.0"
@@ -14722,7 +14729,7 @@ timeline-state-resolver@6.4.0-nightly-release39-20220113-131814-5ea1df54c.0:
     sprintf-js "^1.1.2"
     superfly-timeline "8.2.1"
     threadedclass "^1.0.1"
-    timeline-state-resolver-types "6.4.0-nightly-release39-20220113-131814-5ea1df54c.0"
+    timeline-state-resolver-types "6.4.0-nightly-release39-20220117-082017-52480f42b.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
