@@ -11,7 +11,7 @@ interface CollectionIndexes<DBInterface extends { _id: ProtectedString<any> }> {
 	indexes: IndexSpecifier<DBInterface>[]
 }
 
-const indexes: CollectionsIndexes = {}
+const registeredIndexes: CollectionsIndexes = {}
 /**
  * Register an index for a collection. This function should be called right after a collection has been created.
  * @param collection
@@ -26,10 +26,10 @@ export function registerIndex<DBInterface extends { _id: ProtectedString<any> }>
 	const collectionName = collection.rawCollection().collectionName
 	// const collectionName = collection['name']
 	if (!collectionName) throw new Meteor.Error(500, `Error: collection.rawCollection.collectionName not set`)
-	if (!indexes[collectionName]) indexes[collectionName] = { collection: collection, indexes: [] }
+	if (!registeredIndexes[collectionName]) registeredIndexes[collectionName] = { collection: collection, indexes: [] }
 
-	indexes[collectionName].indexes.push(index)
+	registeredIndexes[collectionName].indexes.push(index)
 }
-export function getAllIndexes() {
-	return indexes
+export function getTargetRegisteredIndexes() {
+	return registeredIndexes
 }

@@ -22,6 +22,10 @@ import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { MeteorCall } from '../../../lib/api/methods'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -100,8 +104,8 @@ describe('Migrations', () => {
 
 		// Connect a Playout-gateway to the system:
 		setupMockPeripheralDevice(
-			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceCategory.PLAYOUT,
+			PeripheralDeviceType.PLAYOUT,
 			PeripheralDeviceAPI.SUBTYPE_PROCESS
 		)
 
@@ -115,10 +119,10 @@ describe('Migrations', () => {
 			migrationStatus1.migration.hash,
 			userInput(migrationStatus1, {
 				'CoreSystem.storePath': 'mock',
-				'Studios.settings.mediaPreviewsUrl': 'mock',
-				'Studios.settings.sofieUrl': 'http://localhost',
-				'Studios.settings.slackEvaluationUrls': 'mock',
-				'Studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff',
+				'studios.settings.mediaPreviewsUrl': 'mock',
+				'studios.settings.sofieUrl': 'http://localhost',
+				'studios.settings.slackEvaluationUrls': 'mock',
+				'studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff',
 			})
 		)
 		expect(migrationResult1).toMatchObject({
@@ -155,6 +159,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							sofieUrl: '',
+							frameRate: 25,
 						},
 						mappings: {},
 						// @ts-ignore
@@ -182,6 +187,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							sofieUrl: '',
+							frameRate: 25,
 						},
 						mappings: {},
 						// @ts-ignore
@@ -209,6 +215,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							sofieUrl: '',
+							frameRate: 25,
 						},
 						mappings: {},
 						// @ts-ignore

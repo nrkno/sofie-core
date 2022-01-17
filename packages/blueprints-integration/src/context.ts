@@ -140,11 +140,11 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 	/** Data fetching */
 	// getIngestRundown(): IngestRundown // TODO - for which part?
 	/** Get a PartInstance which can be modified */
-	getPartInstance(part: 'current' | 'next'): IBlueprintPartInstance | undefined
+	getPartInstance(part: 'current' | 'next'): Promise<IBlueprintPartInstance | undefined>
 	/** Get the PieceInstances for a modifiable PartInstance */
-	getPieceInstances(part: 'current' | 'next'): IBlueprintPieceInstance[]
+	getPieceInstances(part: 'current' | 'next'): Promise<IBlueprintPieceInstance[]>
 	/** Get the resolved PieceInstances for a modifiable PartInstance */
-	getResolvedPieceInstances(part: 'current' | 'next'): IBlueprintResolvedPieceInstance[]
+	getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]>
 	/** Get the last active piece on given layer */
 	findLastPieceOnLayer(
 		sourceLayerId: string | string[],
@@ -153,7 +153,7 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 			originalOnly?: boolean
 			pieceMetaDataFilter?: any // Mongo query against properties inside of piece.metaData
 		}
-	): IBlueprintPieceInstance | undefined
+	): Promise<IBlueprintPieceInstance | undefined>
 	/** Get the previous scripted piece on a given layer, looking backwards from the current part. */
 	findLastScriptedPieceOnLayer(
 		sourceLayerId: string | string[],
@@ -161,38 +161,41 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 			excludeCurrentPart?: boolean
 			pieceMetaDataFilter?: any
 		}
-	): IBlueprintPiece | undefined
+	): Promise<IBlueprintPiece | undefined>
 	/** Gets the PartInstance for a PieceInstance retrieved from findLastPieceOnLayer. This primarily allows for accessing metadata of the PartInstance */
-	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): IBlueprintPartInstance
+	getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): Promise<IBlueprintPartInstance>
 	/** Gets the Part for a Piece retrieved from findLastScriptedPieceOnLayer. This primarily allows for accessing metadata of the Part */
-	getPartForPreviousPiece(piece: IBlueprintPieceDB): IBlueprintPart | undefined
+	getPartForPreviousPiece(piece: IBlueprintPieceDB): Promise<IBlueprintPart | undefined>
 	/** Fetch the showstyle config for the specified part */
 	// getNextShowStyleConfig(): Readonly<{ [key: string]: ConfigItemValue }>
 
 	/** Creative actions */
 	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
-	insertPiece(part: 'current' | 'next', piece: IBlueprintPiece): IBlueprintPieceInstance
+	insertPiece(part: 'current' | 'next', piece: IBlueprintPiece): Promise<IBlueprintPieceInstance>
 	/** Update a piecesInstance */
-	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): IBlueprintPieceInstance
+	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): Promise<IBlueprintPieceInstance>
 	/** Insert a queued part to follow the current part */
-	queuePart(part: IBlueprintPart, pieces: IBlueprintPiece[]): IBlueprintPartInstance
+	queuePart(part: IBlueprintPart, pieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance>
 	/** Update a partInstance */
-	updatePartInstance(part: 'current' | 'next', props: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance
+	updatePartInstance(
+		part: 'current' | 'next',
+		props: Partial<IBlueprintMutatablePart>
+	): Promise<IBlueprintPartInstance>
 
 	/** Destructive actions */
 	/** Stop any piecesInstances on the specified sourceLayers. Returns ids of piecesInstances that were affected */
-	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number): string[]
+	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number): Promise<string[]>
 	/** Stop piecesInstances by id. Returns ids of piecesInstances that were removed */
-	stopPieceInstances(pieceInstanceIds: string[], timeOffset?: number): string[]
+	stopPieceInstances(pieceInstanceIds: string[], timeOffset?: number): Promise<string[]>
 	/** Remove piecesInstances by id. Returns ids of piecesInstances that were removed. Note: For now we only allow removing from the next, but this might change to include current if there is justification */
-	removePieceInstances(part: 'next', pieceInstanceIds: string[]): string[]
+	removePieceInstances(part: 'next', pieceInstanceIds: string[]): Promise<string[]>
 
 	/** Move the next part through the rundown. Can move by either a number of parts, or segments in either direction. */
-	moveNextPart(partDelta: number, segmentDelta: number): void
+	moveNextPart(partDelta: number, segmentDelta: number): Promise<void>
 	/** Set flag to perform take after executing the current action. Returns state of the flag after each call. */
-	takeAfterExecuteAction(take: boolean): boolean
+	takeAfterExecuteAction(take: boolean): Promise<boolean>
 	/** Inform core that a take out of the current partinstance should be blocked until the specified time */
-	blockTakeUntil(time: Time | null): void
+	blockTakeUntil(time: Time | null): Promise<void>
 
 	/** Misc actions */
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different
@@ -266,7 +269,7 @@ export interface IRundownDataChangedEventContext extends IEventContext, IRundown
 	formatDurationAsTimecode(time: number): string
 
 	/** Get all unsent and queued messages in the rundown */
-	getAllUnsentQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]>
+	getAllUnsentQueuedMessages(): Promise<Readonly<IBlueprintExternalMessageQueueObj[]>>
 }
 
 export interface IRundownTimingEventContext extends IRundownDataChangedEventContext {
@@ -279,7 +282,7 @@ export interface IRundownTimingEventContext extends IRundownDataChangedEventCont
 	 * This allows for a start time for the Rundown to be determined
 	 * @param allowUntimed Whether to consider a Part which has the untimed property set
 	 */
-	getFirstPartInstanceInRundown(allowUntimed?: boolean): Readonly<IBlueprintPartInstance>
+	getFirstPartInstanceInRundown(allowUntimed?: boolean): Promise<Readonly<IBlueprintPartInstance>>
 
 	/**
 	 * Returns the partInstances in the Segment, limited to the playthrough of the segment that refPartInstance is part of
@@ -287,17 +290,17 @@ export interface IRundownTimingEventContext extends IRundownDataChangedEventCont
 	 */
 	getPartInstancesInSegmentPlayoutId(
 		refPartInstance: Readonly<IBlueprintPartInstance>
-	): Readonly<IBlueprintPartInstance[]>
+	): Promise<Readonly<IBlueprintPartInstance[]>>
 
 	/**
 	 * Returns pieces in a partInstance
 	 * @param id Id of partInstance to fetch items in
 	 */
-	getPieceInstances(...partInstanceIds: string[]): Readonly<IBlueprintPieceInstance[]>
+	getPieceInstances(...partInstanceIds: string[]): Promise<Readonly<IBlueprintPieceInstance[]>>
 
 	/**
 	 * Returns a segment
 	 * @param id Id of segment to fetch
 	 */
-	getSegment(id: string): Readonly<IBlueprintSegmentDB> | undefined
+	getSegment(id: string): Promise<Readonly<IBlueprintSegmentDB> | undefined>
 }

@@ -9,7 +9,6 @@ import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import { Spinner } from '../../lib/Spinner'
 import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
@@ -33,9 +32,10 @@ import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBas
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
-import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -118,7 +118,7 @@ const AdLibListView = withTranslation()(
 									literal<IAdLibListItem & { souceLayer?: ISourceLayer; isSticky: boolean }>({
 										_id: protectString(layer._id),
 										name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
-										status: RundownAPI.PieceStatusCode.UNKNOWN,
+										status: PieceStatusCode.UNKNOWN,
 										sourceLayer: layer,
 										outputLayer: undefined,
 										lifespan: PieceLifespan.WithinPart,
@@ -323,7 +323,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				return literal<AdLibPieceUi>({
 					_id: protectString(`${action._id}`),
 					name: translateMessage(action.display.label, i18nTranslator),
-					status: RundownAPI.PieceStatusCode.UNKNOWN,
+					status: PieceStatusCode.UNKNOWN,
 					isAction: true,
 					isGlobal: true,
 					expectedDuration: 0,

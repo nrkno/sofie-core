@@ -24,7 +24,7 @@ import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../../lib/ui/icons/segment'
 import { getShowHiddenSourceLayers } from '../../../lib/localStorage'
 import { Part } from '../../../../lib/collections/Parts'
-import { RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
+import { RundownTimingContext } from '../../../lib/rundownTiming'
 import { OutputGroup } from './OutputGroup'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'

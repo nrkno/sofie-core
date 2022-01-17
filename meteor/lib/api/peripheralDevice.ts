@@ -3,14 +3,15 @@ import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
-import {
-	ExpectedPackageStatusAPI,
-	IngestPlaylist,
-	TSR,
-	StatusCode as BPStatusCode,
-} from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageStatusAPI, IngestPlaylist, TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '../collections/PartInstances'
-import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
+import {
+	PeripheralDeviceId,
+	PeripheralDevice,
+	PeripheralDeviceStatusObject,
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
 import { MediaWorkFlowId, MediaWorkFlow } from '../collections/MediaWorkFlows'
 import { MediaObject } from '../collections/MediaObjects'
@@ -471,33 +472,8 @@ export interface MediaWorkFlowStepRevision {
 	_rev: string
 }
 export namespace PeripheralDeviceAPI {
-	export const StatusCode = BPStatusCode
+	export type StatusObject = PeripheralDeviceStatusObject
 
-	// Note The actual type of a device is determined by the Category, Type and SubType
-
-	export interface StatusObject {
-		statusCode: BPStatusCode
-		messages?: Array<string>
-	}
-	// Note The actual type of a device is determined by the Category, Type and SubType
-	export enum DeviceCategory {
-		INGEST = 'ingest',
-		PLAYOUT = 'playout',
-		MEDIA_MANAGER = 'media_manager',
-		PACKAGE_MANAGER = 'package_manager',
-	}
-	export enum DeviceType {
-		// Ingest devices:
-		MOS = 'mos',
-		SPREADSHEET = 'spreadsheet',
-		INEWS = 'inews',
-		// Playout devices:
-		PLAYOUT = 'playout',
-		// Media-manager devices:
-		MEDIA_MANAGER = 'media_manager',
-		// Package_manager devices:
-		PACKAGE_MANAGER = 'package_manager',
-	}
 	export type DeviceSubType = SUBTYPE_PROCESS | TSR.DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
 	/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
@@ -507,8 +483,8 @@ export namespace PeripheralDeviceAPI {
 	export type Spreadsheet_DeviceType = 'spreadsheet_connection'
 
 	export interface InitOptions {
-		category: DeviceCategory
-		type: DeviceType
+		category: PeripheralDeviceCategory
+		type: PeripheralDeviceType
 		subType: DeviceSubType
 
 		name: string

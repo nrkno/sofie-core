@@ -66,8 +66,7 @@ import { NotificationCenterPanel } from '../lib/notifications/NotificationCenter
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
@@ -105,8 +104,8 @@ import RundownViewEventBus, {
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
-import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
 import { SorensenContext } from '../lib/SorensenContext'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { BreakSegment } from './SegmentTimeline/BreakSegment'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { RundownName } from './RundownView/RundownTiming/RundownName'
@@ -117,6 +116,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowS
 import { BucketAdLibItem } from './Shelf/RundownViewBuckets'
 import { IAdLibListItem } from './Shelf/AdLibListItem'
 import { ShelfDashboardLayout } from './Shelf/ShelfDashboardLayout'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { SegmentStoryboardContainer } from './SegmentStoryboard/SegmentStoryboardContainer'
 import { SegmentViewMode } from './SegmentContainer/SegmentViewModes'
 import { UIStateStorage } from '../lib/UIStateStorage'
@@ -386,7 +386,7 @@ const RundownHeader = withTranslation()(
 			if (ClientAPI.isClientResponseError(err)) {
 				const { t } = this.props
 
-				if (err.error === 404) {
+				if (err.error.key === UserErrorMessage.DisableNoPieceFound) {
 					NotificationCenter.push(
 						new Notification(
 							undefined,
@@ -439,8 +439,8 @@ const RundownHeader = withTranslation()(
 						if (!err) {
 							onSuccess()
 						} else if (ClientAPI.isClientResponseError(err)) {
-							if (err.error === 409) {
-								this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+							if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+								this.handleAnotherPlaylistActive(this.props.playlist._id, true, err.error, onSuccess)
 								return false
 							}
 						}
@@ -536,7 +536,7 @@ const RundownHeader = withTranslation()(
 		handleAnotherPlaylistActive = (
 			playlistId: RundownPlaylistId,
 			rehersal: boolean,
-			err: ClientAPI.ClientResponseError,
+			err: UserError,
 			clb?: Function
 		) => {
 			const { t } = this.props
@@ -559,13 +559,13 @@ const RundownHeader = withTranslation()(
 				}
 			}
 
-			const otherRundowns = err.details as Rundown[]
 			doModalDialog({
 				title: t('Another Rundown is Already Active!'),
 				message: t(
 					'The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?',
 					{
-						rundownName: otherRundowns.map((i) => i.name).join(', '),
+						// TODO: Worker this is a bit of a hack, could a better string sent from the server instead?
+						rundownName: err.message.args?.names ?? '',
 					}
 				),
 				yes: t('Activate Anyway (Rehearsal)'),
@@ -620,8 +620,8 @@ const RundownHeader = withTranslation()(
 							if (!err) {
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 							} else if (ClientAPI.isClientResponseError(err)) {
-								if (err.error === 409) {
-									this.handleAnotherPlaylistActive(this.props.playlist._id, false, err, () => {
+								if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+									this.handleAnotherPlaylistActive(this.props.playlist._id, false, err.error, () => {
 										if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 									})
 									return false
@@ -647,8 +647,8 @@ const RundownHeader = withTranslation()(
 									if (!err) {
 										onSuccess()
 									} else if (ClientAPI.isClientResponseError(err)) {
-										if (err.error === 409) {
-											this.handleAnotherPlaylistActive(this.props.playlist._id, false, err, onSuccess)
+										if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+											this.handleAnotherPlaylistActive(this.props.playlist._id, false, err.error, onSuccess)
 											return false
 										}
 									}
@@ -693,8 +693,8 @@ const RundownHeader = withTranslation()(
 							if (!err) {
 								onSuccess()
 							} else if (ClientAPI.isClientResponseError(err)) {
-								if (err.error === 409) {
-									this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+								if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+									this.handleAnotherPlaylistActive(this.props.playlist._id, true, err.error, onSuccess)
 									return false
 								}
 							}
@@ -714,8 +714,8 @@ const RundownHeader = withTranslation()(
 								if (!err) {
 									onSuccess()
 								} else if (ClientAPI.isClientResponseError(err)) {
-									if (err.error === 409) {
-										this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+									if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+										this.handleAnotherPlaylistActive(this.props.playlist._id, true, err.error, onSuccess)
 										return false
 									}
 								}
@@ -801,7 +801,11 @@ const RundownHeader = withTranslation()(
 					}
 				)
 			}
-			if (this.props.playlist.activationId && !this.props.playlist.rehearsal && !Settings.allowRundownResetOnAir) {
+			if (
+				this.props.playlist.activationId &&
+				!this.props.playlist.rehearsal &&
+				!this.props.studio.settings.allowRundownResetOnAir
+			) {
 				// The rundown is active and not in rehersal
 				doModalDialog({
 					title: this.props.playlist.name,
@@ -952,7 +956,7 @@ const RundownHeader = withTranslation()(
 									{!(
 										this.props.playlist.activationId &&
 										!this.props.playlist.rehearsal &&
-										!Settings.allowRundownResetOnAir
+										!this.props.studio.settings.allowRundownResetOnAir
 									) ? (
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
@@ -1236,7 +1240,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							.fetch()
 							.map((i) => i._id),
 					},
-					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+					type: PeripheralDeviceType.PLAYOUT,
 					subType: TSR.DeviceType.CASPARCG,
 				}).fetch()) ||
 			undefined,
@@ -2265,7 +2269,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const attachedPlayoutGateways = PeripheralDevices.find({
 				studioId: this.props.studio._id,
 				connected: true,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
 			}).fetch()
 			if (attachedPlayoutGateways.length === 0) {
 				NotificationCenter.push(

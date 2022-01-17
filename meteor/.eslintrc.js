@@ -46,6 +46,12 @@ const tsBase = {
 				tryExtensions: ['.js', '.json', '.node', '.ts', '.tsx', '.d.ts'],
 			},
 		],
+		'node/no-extraneous-import': [
+			'error',
+			{
+				allowModules: ['meteor', 'mongodb'],
+			},
+		],
 		'jest/no-standalone-expect': 'off', // testInFiber confuses the rule
 
 		'@typescript-eslint/promise-function-async': ['error'], // TODO - move to preset

@@ -9,18 +9,19 @@ import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { TransformedCollection } from '../../lib/typings/meteor'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /**
  * Returns a migration step that ensures the provided property is set in the collection
  */
 export function ensureCollectionProperty<T = any>(
-	collectionName: string,
+	collectionName: CollectionName,
 	selector: Mongo.Selector<T>,
 	property: string,
 	defaultValue: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
-	const collection: TransformedCollection<T, any> = Collections[collectionName]
+	const collection = Collections.get(collectionName)
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {
@@ -58,7 +59,7 @@ export function ensureCollectionProperty<T = any>(
  * Returns a migration step that ensures the provided property is set in the collection
  */
 export function ensureCollectionPropertyManual<T = any>(
-	collectionName: string,
+	collectionName: CollectionName,
 	selector: Mongo.Selector<T>,
 	property: string,
 	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
@@ -67,7 +68,7 @@ export function ensureCollectionPropertyManual<T = any>(
 	defaultValue?: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
-	const collection: TransformedCollection<T, any> = Collections[collectionName]
+	const collection = Collections.get(collectionName)
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {
@@ -120,12 +121,12 @@ export function ensureCollectionPropertyManual<T = any>(
 	}
 }
 export function removeCollectionProperty<T = any>(
-	collectionName: string,
+	collectionName: CollectionName,
 	selector: Mongo.Selector<T>,
 	property: string,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
-	const collection: TransformedCollection<T, any> = Collections[collectionName]
+	const collection = Collections.get(collectionName)
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {

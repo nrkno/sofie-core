@@ -24,9 +24,18 @@ export function setLogLevel(level: LogLevel, startup = false) {
 	}
 }
 
+declare module 'winston' {
+	// TODO: workaround from https://github.com/winstonjs/winston/pull/2021
+	// To be removed once winston 3.4.1 or 3.5.0 is published
+	export interface LoggerOptions {
+		handleRejections?: boolean
+	}
+}
+
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
 interface LoggerInstanceFixed extends Winston.Logger {
+	// for cli and npm levels
 	error: LeveledLogMethodFixed
 	warn: LeveledLogMethodFixed
 	help: LeveledLogMethodFixed
@@ -34,10 +43,12 @@ interface LoggerInstanceFixed extends Winston.Logger {
 	info: LeveledLogMethodFixed
 	debug: LeveledLogMethodFixed
 	prompt: LeveledLogMethodFixed
+	http: LeveledLogMethodFixed
 	verbose: LeveledLogMethodFixed
 	input: LeveledLogMethodFixed
 	silly: LeveledLogMethodFixed
 
+	// for syslog levels only
 	emerg: LeveledLogMethodFixed
 	alert: LeveledLogMethodFixed
 	crit: LeveledLogMethodFixed
@@ -104,10 +115,12 @@ if (logToFile || logPath !== '') {
 	const transportConsole = new Winston.transports.Console({
 		level: 'verbose',
 		handleExceptions: true,
+		handleRejections: true,
 	})
 	const transportFile = new Winston.transports.File({
 		level: 'silly',
 		handleExceptions: true,
+		handleRejections: true,
 		filename: logPath,
 	})
 
@@ -124,6 +137,7 @@ if (logToFile || logPath !== '') {
 	const transportConsole = new Winston.transports.Console({
 		level: 'silly',
 		handleExceptions: true,
+		handleRejections: true,
 	})
 	transports = {
 		console: transportConsole,
@@ -145,5 +159,9 @@ if (logToFile || logPath !== '') {
 		})
 	}
 }
+
+process.on('exit', (code) => {
+	logger.info(`Process exiting with code: ${code}`)
+})
 
 export { logger, transports, LogLevel }

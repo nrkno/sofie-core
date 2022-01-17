@@ -6,9 +6,9 @@ import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
 import { Time, ProtectedString, unprotectString, isProtectedString, protectString, assertNever } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { RundownId } from '../../../lib/collections/Rundowns'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 /**
  * Priority level for Notifications.
@@ -476,18 +476,18 @@ export class Notification extends EventEmitter {
 	}
 }
 
-export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoticeLevel | null {
+export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode): NoticeLevel | null {
 	switch (statusCode) {
-		case RundownAPI.PieceStatusCode.OK:
-		case RundownAPI.PieceStatusCode.UNKNOWN:
+		case PieceStatusCode.OK:
+		case PieceStatusCode.UNKNOWN:
 			return null
-		case RundownAPI.PieceStatusCode.SOURCE_NOT_SET:
+		case PieceStatusCode.SOURCE_NOT_SET:
 			return NoticeLevel.CRITICAL
-		case RundownAPI.PieceStatusCode.SOURCE_MISSING:
+		case PieceStatusCode.SOURCE_MISSING:
 			return NoticeLevel.WARNING
-		case RundownAPI.PieceStatusCode.SOURCE_BROKEN:
+		case PieceStatusCode.SOURCE_BROKEN:
 			return NoticeLevel.WARNING
-		case RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES:
+		case PieceStatusCode.SOURCE_HAS_ISSUES:
 			return NoticeLevel.NOTIFICATION
 		default:
 			assertNever(statusCode)

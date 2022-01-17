@@ -27,7 +27,6 @@ import { MeteorCall } from '../../../lib/api/methods'
 import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { AdLibPieceUi } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from './AdLibListItem'
@@ -38,11 +37,12 @@ import RundownViewEventBus, {
 	BucketEvent,
 	IEventContext,
 } from '../RundownView/RundownViewEventBus'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export interface BucketAdLibUi extends BucketAdLib {
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
-	status: RundownAPI.PieceStatusCode
+	status: PieceStatusCode
 }
 
 export interface BucketAdLibActionUi extends AdLibPiece {

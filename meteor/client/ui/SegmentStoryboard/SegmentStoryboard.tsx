@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { SegmentNote } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -13,7 +12,6 @@ import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
 import { isPartPlayable, PartId } from '../../../lib/collections/Parts'
-import { Settings } from '../../../lib/Settings'
 import { useTranslation } from 'react-i18next'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { literal, unprotectString } from '../../../lib/lib'
@@ -35,6 +33,7 @@ import { SegmentScrollbar } from './SegmentScrollbar'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
+import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -595,7 +594,7 @@ export const SegmentStoryboard = React.memo(
 								}
 							/>
 						)}
-						{Settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
+						{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
 							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 						)}
 					</div>

@@ -7,7 +7,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import { withTiming, WithTiming } from './withTiming'
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
+import { getPlaylistTimingDiff } from '../../../lib/rundownTiming'
 
 interface IEndTimingProps {
 	rundownPlaylist: RundownPlaylist
@@ -31,7 +31,7 @@ export const PlaylistEndTiming = withTranslation()(
 				const { t } = this.props
 				const { rundownPlaylist, expectedStart, expectedEnd, expectedDuration } = this.props
 
-				const overUnderClock = PlaylistTiming.getDiff(rundownPlaylist, this.props.timingDurations) ?? 0
+				const overUnderClock = getPlaylistTimingDiff(rundownPlaylist, this.props.timingDurations) ?? 0
 
 				return (
 					<React.Fragment>

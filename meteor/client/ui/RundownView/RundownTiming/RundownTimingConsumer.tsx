@@ -1,4 +1,4 @@
-import { RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
+import { RundownTimingContext } from '../../../lib/rundownTiming'
 import { WithTiming, withTiming } from './withTiming'
 
 interface IProps {

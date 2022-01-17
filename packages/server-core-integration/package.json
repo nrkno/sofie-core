@@ -71,7 +71,7 @@
 	],
 	"dependencies": {
 		"data-store": "^4.0.3",
-		"ejson": "^2.2.0",
+		"ejson": "^2.2.2",
 		"faye-websocket": "^0.11.4",
 		"got": "^11.8.2",
 		"tslib": "^2.3.1",

@@ -1,14 +1,13 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
-import { TrackedNote } from './api/notes'
+import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Segments, DBSegment, SegmentOrphanedReason } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
-import { unprotectString, literal, generateTranslation, normalizeArrayToMap, assertNever } from './lib'
+import { unprotectString, literal, generateTranslation, normalizeArrayToMap } from './lib'
 import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
 import { RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
-import { ITranslatableMessage } from './api/TranslatableMessage'
-import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { ITranslatableMessage, NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 	const rundowns = Rundowns.find(
@@ -217,24 +216,4 @@ export function getBasicNotesForSegment(
 	}
 
 	return notes
-}
-
-export enum ServerTranslatedMesssages {
-	PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN,
-}
-export function getTranslatedMessage(
-	key: ServerTranslatedMesssages,
-	args?: { [key: string]: any }
-): ITranslatableMessage {
-	switch (key) {
-		case ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN:
-			return generateTranslation(
-				'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
-				args
-			)
-
-		default:
-			assertNever(key)
-			return { key, args }
-	}
 }

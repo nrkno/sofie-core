@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { RundownTiming } from './RundownTiming'
-import { RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
+import { RundownTimingContext } from '../../../lib/rundownTiming'
 
 export type TimingFilterFunction = (durations: RundownTimingContext) => any
 

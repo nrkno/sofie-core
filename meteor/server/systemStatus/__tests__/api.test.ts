@@ -4,10 +4,11 @@ import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mo
 import { literal, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
-import { StatusCode, StatusResponse } from '../../../lib/api/systemStatus'
+import { StatusResponse } from '../../../lib/api/systemStatus'
 
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 
 require('../api')

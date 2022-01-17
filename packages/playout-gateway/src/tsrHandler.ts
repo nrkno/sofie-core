@@ -28,7 +28,7 @@ import * as cp from 'child_process'
 import * as _ from 'underscore'
 import { CoreConnection, PeripheralDeviceAPI as P } from '@sofie-automation/server-core-integration'
 import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
-import { LoggerInstance } from './index'
+import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
 import { FinishedTrace, sendTrace } from './influxdb'
@@ -107,7 +107,7 @@ const INIT_TIMEOUT = 10000
  * Represents a connection between Gateway and TSR
  */
 export class TSRHandler {
-	logger: LoggerInstance
+	logger: Logger
 	tsr!: Conductor
 	// private _config: TSRConfig
 	private _coreHandler!: CoreHandler
@@ -126,7 +126,7 @@ export class TSRHandler {
 	private _triggerUpdateDevicesCheckAgain = false
 	private _triggerUpdateDevicesTimeout: NodeJS.Timeout | undefined
 
-	constructor(logger: LoggerInstance) {
+	constructor(logger: Logger) {
 		this.logger = logger
 	}
 

@@ -35,7 +35,6 @@ import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
-import { isAnyQueuedWorkRunning } from '../codeControl'
 import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageWorkStatuses'
@@ -44,6 +43,7 @@ import { PackageInfos } from '../../lib/collections/PackageInfos'
 import { Settings } from '../../lib/Settings'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
 	if (actuallyCleanup) {
@@ -52,7 +52,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 
 	const result: CollectionCleanupResult = {}
-	const addToResult = (collectionName: string, docsToRemove: number) => {
+	const addToResult = (collectionName: CollectionName, docsToRemove: number) => {
 		if (!result[collectionName]) {
 			result[collectionName] = {
 				collectionName: collectionName,
@@ -165,7 +165,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	// Going Through data and removing old data: --------------------------------------------------
 	// CoreSystem:
 	{
-		addToResult('CoreSystem', 0) // Do nothing
+		addToResult(CollectionName.CoreSystem, 0) // Do nothing
 	}
 	// AdLibActions
 	{
@@ -227,8 +227,8 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 			},
 			{ fields: { _id: 1 } }
 		).fetch()
-		addToResult('ExpectedMediaItems', emiFromBuckets.length)
-		addToResult('ExpectedMediaItems', emiFromRundowns.length)
+		addToResult(CollectionName.ExpectedMediaItems, emiFromBuckets.length)
+		addToResult(CollectionName.ExpectedMediaItems, emiFromRundowns.length)
 		if (actuallyCleanup) {
 			ExpectedMediaItems.remove({
 				_id: { $in: [...emiFromBuckets, ...emiFromRundowns].map((o) => o._id) },
@@ -275,7 +275,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 	// Organizations
 	{
-		addToResult('Organizations', 0) // Do nothing
+		addToResult(CollectionName.Organizations, 0) // Do nothing
 	}
 	// PackageContainerPackageStatuses
 	{
@@ -385,15 +385,16 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 	// Users
 	{
-		addToResult('Users', 0) // Do nothing
+		addToResult(CollectionName.Users, 0) // Do nothing
 	}
 
 	return result
 }
 function isAllowedToRunCleanup(): string | void {
-	if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
+	// HACK: TODO - should we check this?
+	// if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
 
-	const studios = Studios.find().fetch()
+	const studios = Studios.find({}, { fields: { _id: 1 } }).fetch()
 	for (const studio of studios) {
 		const activePlaylist: RundownPlaylist | undefined = waitForPromise(
 			getActiveRundownPlaylistsInStudioFromDb(studio._id)

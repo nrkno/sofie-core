@@ -9,10 +9,11 @@ import {
 	UpdateOptions,
 	UpsertOptions,
 } from '../typings/meteor'
-import { stringifyObjects, getHash, ProtectedString, makePromise, sleep } from '../lib'
+import { stringifyObjects, getHash, ProtectedString, makePromise, sleep, registerCollection } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
-import { BulkWriteOperation, Collection as RawCollection } from 'mongodb'
+import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 const ObserveChangeBufferTimeout = 2000
 
@@ -73,7 +74,7 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 }
 
 export function createMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
-	name: string | null,
+	name: CollectionName | null,
 	options?: {
 		connection?: Object | null
 		idGeneration?: string
@@ -84,17 +85,24 @@ export function createMongoCollection<DBInterface extends { _id: ProtectedString
 		options
 	) as any
 
+	let collection2: AsyncMongoCollection<DBInterface>
 	if ((collection as any)._isMock) {
-		return new WrappedMockCollection(collection, name)
+		collection2 = new WrappedMockCollection(collection, name)
 	} else {
 		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
-		return new WrappedAsyncMongoCollection(collection, name)
+		collection2 = new WrappedAsyncMongoCollection(collection, name)
 	}
+
+	if (name) {
+		registerCollection(name, collection2)
+	}
+
+	return collection2
 }
 
 export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: Mongo.Collection<DBInterface>,
-	name: string
+	name: CollectionName
 ): AsyncMongoCollection<DBInterface> {
 	return new WrappedAsyncMongoCollection<DBInterface>(collection as any, name)
 }
@@ -303,7 +311,7 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		return p
 	}
 
-	async bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void> {
+	async bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void> {
 		if (ops.length > 0) {
 			const rawCollection = this.rawCollection()
 			const bulkWriteResult = await rawCollection.bulkWrite(ops, {
@@ -420,7 +428,7 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 		return this.remove(selector)
 	}
 
-	async bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void> {
+	async bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void> {
 		if (ops.length > 0) {
 			const rawCollection = this.rawCollection()
 			const bulkWriteResult = await rawCollection.bulkWrite(ops, {
@@ -472,5 +480,5 @@ export interface AsyncMongoCollection<DBInterface extends { _id: ProtectedString
 
 	removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number>
 
-	bulkWriteAsync(ops: Array<BulkWriteOperation<DBInterface>>): Promise<void>
+	bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void>
 }

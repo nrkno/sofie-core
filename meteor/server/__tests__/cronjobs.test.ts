@@ -8,10 +8,14 @@ import { getRandomId, protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
-import { PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
+import { PlaylistTimingType, StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import {
+	PeripheralDevices,
+	PeripheralDeviceId,
+	PeripheralDeviceType,
+	PeripheralDeviceCategory,
+} from '../../lib/collections/PeripheralDevices'
 import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
 
@@ -253,8 +257,8 @@ describe('cronjobs', () => {
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
 				organizationId: null,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				configManifest: {
 					deviceConfig: [],
 				},
@@ -265,7 +269,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'Playout gateway',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
@@ -275,8 +279,8 @@ describe('cronjobs', () => {
 				_id: mockCasparCg,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
 				configManifest: {
 					deviceConfig: [],
@@ -288,7 +292,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'CasparCG',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
@@ -297,8 +301,8 @@ describe('cronjobs', () => {
 				_id: mockATEM,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
 				configManifest: {
 					deviceConfig: [],
@@ -310,7 +314,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'ATEM',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
@@ -350,8 +354,8 @@ describe('cronjobs', () => {
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
 				organizationId: null,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				configManifest: {
 					deviceConfig: [],
 				},
@@ -362,7 +366,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'Playout gateway',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
@@ -372,8 +376,8 @@ describe('cronjobs', () => {
 				_id: mockCasparCg,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
 				configManifest: {
 					deviceConfig: [],
@@ -385,7 +389,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'CasparCG',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
@@ -394,8 +398,8 @@ describe('cronjobs', () => {
 				_id: mockATEM,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
 				configManifest: {
 					deviceConfig: [],
@@ -407,7 +411,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'ATEM',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})

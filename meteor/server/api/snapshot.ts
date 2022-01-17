@@ -46,7 +46,7 @@ import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { VTContent } from '@sofie-automation/blueprints-integration'
+import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import {
@@ -557,7 +557,7 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
 		const studioExists = checkStudioExists(studioId)
 		if (studioExists) {
-			importIngestRundown(studioId, snapshot)
+			importIngestRundown(studioId, snapshot as unknown as IngestRundown)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)

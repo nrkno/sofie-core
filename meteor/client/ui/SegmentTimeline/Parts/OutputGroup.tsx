@@ -142,7 +142,9 @@ export function OutputGroup(props: IOutputGroupProps) {
 			data-layer-group-id={props.layer._id}
 		>
 			{DEBUG_MODE && (
-				<div className="segment-timeline__debug-info red">{RundownUtils.formatTimeToTimecode(props.startsAt)}</div>
+				<div className="segment-timeline__debug-info red">
+					{RundownUtils.formatTimeToTimecode(props.studio.settings, props.startsAt)}
+				</div>
 			)}
 			{renderInside(isCollapsed)}
 		</div>

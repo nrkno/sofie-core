@@ -1,0 +1,27 @@
+import { RedisOptions } from 'bullmq'
+import { createManualPromise } from '@sofie-automation/corelib/dist/lib'
+import { parseRedisEnvVariables } from '@sofie-automation/corelib/dist/redis'
+import { JobWorker } from './main'
+
+console.log('process started') // This is a message all Sofie processes log upon startup
+
+const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
+const dbName = 'meteor'
+const connection: RedisOptions = parseRedisEnvVariables()
+
+const worker = new JobWorker(() => {
+	// TODO
+})
+
+const shutdownPromise = createManualPromise<void>() // Future: this should be .resolve/.reject in some places
+
+void (async () => {
+	await worker.run(mongoUri, dbName, connection)
+
+	try {
+		// Wait for something to trigger a shutdown
+		await shutdownPromise
+	} finally {
+		await worker.stop()
+	}
+})()

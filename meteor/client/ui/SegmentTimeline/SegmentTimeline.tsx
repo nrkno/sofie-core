@@ -22,7 +22,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { SegmentNote } from '../../../lib/api/notes'
+import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
@@ -34,10 +34,11 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
-import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
+import { RundownTimingContext } from '../../lib/rundownTiming'
 import { IOutputLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
@@ -1044,7 +1045,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								}
 							/>
 						)}
-					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
+					{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}
 				</div>
@@ -1055,6 +1056,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					onResize={this.onTimelineResize}
 					scrollLeft={this.props.scrollLeft}
 					timeScale={this.props.timeScale}
+					frameRate={this.props.studio.settings.frameRate}
 					isLiveSegment={this.props.isLiveSegment}
 					partInstances={this.props.parts}
 					currentPartInstanceId={this.props.isLiveSegment ? this.props.playlist.currentPartInstanceId : null}

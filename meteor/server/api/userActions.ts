@@ -1,15 +1,14 @@
-import * as _ from 'underscore'
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
-import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { Parts, Part, PartId, isPartPlayable } from '../../lib/collections/Parts'
+import { getCurrentTime, getHash, makePromise, stringifyError } from '../../lib/lib'
+import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
+import { Parts, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { StudioId, Studios } from '../../lib/collections/Studios'
+import { StudioId } from '../../lib/collections/Studios'
 import { Pieces, PieceId } from '../../lib/collections/Pieces'
 import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
@@ -19,29 +18,18 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
-import { IngestActions } from './ingest/actions'
-import { RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
-import {
-	PieceInstances,
-	PieceInstanceId,
-	PieceInstancePiece,
-	omitPiecePropertiesForInstance,
-} from '../../lib/collections/PieceInstances'
+import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
-import { SegmentId, Segment, Segments } from '../../lib/collections/Segments'
-import { Settings } from '../../lib/Settings'
+import { SegmentId } from '../../lib/collections/Segments'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { pushWorkToQueue } from '../codeControl'
 import { ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
-import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
-import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { profiler } from './profiler'
@@ -51,75 +39,66 @@ import { checkAccessAndGetPlaylist, checkAccessAndGetRundown, checkAccessToPlayl
 import { PackageManagerAPI } from './packageManager'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from './rundownPlaylist'
 import { getShowStyleCompound } from './showStyles'
 import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { SnapshotId } from '../../lib/collections/Snapshots'
+import { QueueStudioJob } from '../worker/worker'
+import { StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { runIngestOperation } from './ingest/lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
-let MINIMUM_TAKE_SPAN = 1000
-export function setMinimumTakeSpan(span: number) {
-	// Used in tests
-	MINIMUM_TAKE_SPAN = span
+/**
+ * Run a user action via the worker. Before calling you MUST check the user is allowed to do the operation
+ * @param studioId Id of the studio
+ * @param name The name/id of the operation
+ * @param data Data for the operation
+ * @returns Wrapped 'client safe' response. Includes translatable friendly error messages
+ */
+async function runUserAction<T extends keyof StudioJobFunc>(
+	studioId: StudioId,
+	name: T,
+	data: Parameters<StudioJobFunc[T]>[0]
+): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
+	try {
+		const job = await QueueStudioJob(name, studioId, data)
+
+		const span = profiler.startSpan('queued-job')
+		const res = await job.complete
+		span?.end()
+
+		// TODO: Worker - track timingss
+		// console.log(await job.getTimings)
+
+		return ClientAPI.responseSuccess(res)
+	} catch (e) {
+		let userError: UserError
+		if (UserError.isUserError(e)) {
+			userError = e
+		} else {
+			// Rewrap errors as a UserError
+			const err = e instanceof Error ? e : new Error(e)
+			userError = UserError.from(err, UserErrorMessage.InternalError)
+		}
+
+		logger.error(`UserAction "${name}" failed: ${stringifyError(userError.rawError)}`)
+
+		// Forward the error to the caller
+		return ClientAPI.responseError(userError)
+	}
 }
-/*
-	The functions in this file are used to provide a pre-check, before calling the real functions.
-	The pre-checks should contain relevant checks, to return user-friendly messages instead of throwing a nasty error.
 
-	If it's not possible to perform an action due to an internal error (such as data not found, etc)
-		-> throw an error
-	If it's not possible to perform an action due to something the user can easily fix
-		-> ClientAPI.responseError('Friendly message')
-*/
-
-// TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
 export async function take(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	fromPartInstanceId: PartInstanceId | null
 ): Promise<ClientAPI.ClientResponse<void>> {
-	// Called by the user. Wont throw as nasty errors
-	const now = getCurrentTime()
+	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
-	return pushWorkToQueue(`userActionsTake_${rundownPlaylistId}`, 'take', async () => {
-		const access = checkAccessToPlaylist(context, rundownPlaylistId)
-		const playlist = access.playlist
-
-		if (!playlist.activationId) {
-			return ClientAPI.responseError(`Rundown is not active, please activate the rundown before doing a TAKE.`)
-		}
-		if (!playlist.nextPartInstanceId) {
-			return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
-		}
-
-		if (playlist.currentPartInstanceId !== fromPartInstanceId) {
-			return ClientAPI.responseError('Ignoring take as playing part has changed since TAKE was requested.')
-		}
-
-		if (playlist.currentPartInstanceId) {
-			const currentPartInstance = await PartInstances.findOneAsync(playlist.currentPartInstanceId)
-			if (currentPartInstance && currentPartInstance.timings) {
-				const lastStartedPlayback = currentPartInstance.timings.startedPlayback || 0
-				const lastTake = currentPartInstance.timings.take || 0
-				const lastChange = Math.max(lastTake, lastStartedPlayback)
-				if (now - lastChange < MINIMUM_TAKE_SPAN) {
-					logger.debug(
-						`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentPartInstance._id}: ${
-							getCurrentTime() - lastStartedPlayback
-						}`
-					)
-					logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
-					return ClientAPI.responseError(
-						`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`
-					)
-				}
-			} else {
-				// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
-				logger.error(
-					`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${rundownPlaylistId}", not found!`
-				)
-			}
-		}
-		return ServerPlayoutAPI.takeNextPart(access, playlist._id, playlist.currentPartInstanceId)
+	return runUserAction(playlist.studioId, StudioJobs.TakeNextPart, {
+		playlistId: rundownPlaylistId,
+		fromPartInstanceId,
 	})
 }
 
@@ -128,30 +107,20 @@ export async function setNext(
 	rundownPlaylistId: RundownPlaylistId,
 	nextPartId: PartId | null,
 	setManually?: boolean,
-	timeOffset?: number | undefined
+	nextTimeOffset?: number | undefined
 ): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	if (nextPartId) check(nextPartId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
-	if (!playlist.activationId)
-		return ClientAPI.responseError(
-			'RundownPlaylist is not active, please activate it before setting a part as Next'
-		)
 
-	let nextPart: Part | undefined
-	if (nextPartId) {
-		nextPart = await Parts.findOneAsync(nextPartId)
-		if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
-
-		if (!isPartPlayable(nextPart)) return ClientAPI.responseError('Part is unplayable, cannot set as next.')
-	}
-
-	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
-		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
-	}
-	return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, nextPartId, setManually, timeOffset)
+	return runUserAction(playlist.studioId, StudioJobs.SetNextPart, {
+		playlistId: rundownPlaylistId,
+		nextPartId,
+		setManually,
+		nextTimeOffset,
+	})
 }
 export async function setNextSegment(
 	context: MethodContext,
@@ -164,17 +133,11 @@ export async function setNextSegment(
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
-	if (!playlist.activationId)
-		return ClientAPI.responseError('Rundown is not active, please activate it before setting a part as Next')
 
-	let nextSegment: Segment | null = null
-
-	if (nextSegmentId) {
-		nextSegment = (await Segments.findOneAsync(nextSegmentId)) || null
-		if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
-	}
-
-	return ServerPlayoutAPI.setNextSegment(access, rundownPlaylistId, nextSegmentId)
+	return runUserAction(playlist.studioId, StudioJobs.SetNextSegment, {
+		playlistId: rundownPlaylistId,
+		nextSegmentId,
+	})
 }
 export async function moveNext(
 	context: MethodContext,
@@ -184,19 +147,12 @@ export async function moveNext(
 ): Promise<ClientAPI.ClientResponse<PartId | null>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
-	if (!playlist.activationId)
-		return ClientAPI.responseError('Rundown Playlist is not active, please activate it first')
 
-	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
-		return ClientAPI.responseError('The Next cannot be changed during a Hold!')
-	}
-	if (!playlist.nextPartInstanceId && !playlist.currentPartInstanceId) {
-		return ClientAPI.responseError('RundownPlaylist has no next and no current part!')
-	}
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.moveNextPart(access, rundownPlaylistId, horisontalDelta, verticalDelta)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.MoveNextPart, {
+		playlistId: rundownPlaylistId,
+		partDelta: horisontalDelta,
+		segmentDelta: verticalDelta,
+	})
 }
 export async function prepareForBroadcast(
 	context: MethodContext,
@@ -207,22 +163,9 @@ export async function prepareForBroadcast(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (playlist.activationId)
-		return ClientAPI.responseError(
-			'Rundown Playlist is active, please deactivate before preparing it for broadcast'
-		)
-	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
-	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError(
-			409,
-			'Only one rundown can be active at the same time. Currently active rundowns: ' +
-				_.map(anyOtherActiveRundowns, (p) => p.name).join(', '),
-			anyOtherActiveRundowns
-		)
-	}
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(access, rundownPlaylistId)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.PrepareRundownForBroadcast, {
+		playlistId: rundownPlaylistId,
+	})
 }
 export async function resetRundownPlaylist(
 	context: MethodContext,
@@ -233,13 +176,9 @@ export async function resetRundownPlaylist(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
-		return ClientAPI.responseError(
-			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
-		)
-	}
-
-	return ClientAPI.responseSuccess(await ServerPlayoutAPI.resetRundownPlaylist(access, rundownPlaylistId))
+	return runUserAction(playlist.studioId, StudioJobs.ResetRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+	})
 }
 export async function resetAndActivate(
 	context: MethodContext,
@@ -251,27 +190,10 @@ export async function resetAndActivate(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (playlist.activationId && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
-		return ClientAPI.responseError(
-			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
-		)
-	}
-	const anyOtherActiveRundownPlaylists = await getActiveRundownPlaylistsInStudioFromDb(
-		playlist.studioId,
-		playlist._id
-	)
-	if (anyOtherActiveRundownPlaylists.length) {
-		return ClientAPI.responseError(
-			409,
-			'Only one rundownPlaylist can be active at the same time. Currently active rundownPlaylists: ' +
-				_.map(anyOtherActiveRundownPlaylists, (p) => p.name).join(', '),
-			anyOtherActiveRundownPlaylists
-		)
-	}
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.resetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.ResetRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+		activate: rehearsal ? 'rehearsal' : 'active',
+	})
 }
 export async function forceResetAndActivate(
 	context: MethodContext,
@@ -282,10 +204,13 @@ export async function forceResetAndActivate(
 
 	check(rehearsal, Boolean)
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.forceResetAndActivateRundownPlaylist(access, rundownPlaylistId, rehearsal)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.ResetRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+		activate: rehearsal ? 'rehearsal' : 'active',
+		forceActivate: true,
+	})
 }
 export async function activate(
 	context: MethodContext,
@@ -298,31 +223,28 @@ export async function activate(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
-
-	if (anyOtherActiveRundowns.length) {
-		return ClientAPI.responseError(
-			409,
-			'Only one rundown can be active at the same time. Currently active rundowns: ' +
-				_.map(anyOtherActiveRundowns, (p) => p.name).join(', '),
-			anyOtherActiveRundowns
-		)
-	}
-	return ClientAPI.responseSuccess(await ServerPlayoutAPI.activateRundownPlaylist(access, playlist._id, rehearsal))
+	return runUserAction(playlist.studioId, StudioJobs.ActivateRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+		rehearsal,
+	})
 }
 export async function deactivate(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId
 ): Promise<ClientAPI.ClientResponse<void>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
-	return ClientAPI.responseSuccess(await ServerPlayoutAPI.deactivateRundownPlaylist(access, rundownPlaylistId))
+	return runUserAction(playlist.studioId, StudioJobs.DeactivateRundownPlaylist, {
+		playlistId: rundownPlaylistId,
+	})
 }
 export async function unsyncRundown(
 	context: MethodContext,
 	rundownId: RundownId
 ): Promise<ClientAPI.ClientResponse<void>> {
-	return ClientAPI.responseSuccess(await ServerRundownAPI.unsyncRundown(context, rundownId))
+	await ServerRundownAPI.unsyncRundown(context, rundownId)
+	return ClientAPI.responseSuccess(undefined)
 }
 export async function disableNextPiece(
 	context: MethodContext,
@@ -330,8 +252,12 @@ export async function disableNextPiece(
 	undo?: boolean
 ): Promise<ClientAPI.ClientResponse<void>> {
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+	const playlist = access.playlist
 
-	return ServerPlayoutAPI.disableNextPiece(access, rundownPlaylistId, undo)
+	return runUserAction(playlist.studioId, StudioJobs.DisableNextPiece, {
+		playlistId: rundownPlaylistId,
+		undo: !!undo,
+	})
 }
 export async function pieceTakeNow(
 	context: MethodContext,
@@ -346,44 +272,11 @@ export async function pieceTakeNow(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	if (playlist.currentPartInstanceId !== partInstanceId)
-		return ClientAPI.responseError(`Part AdLib-pieces can be only placed in a current part!`)
-
-	let pieceToCopy: PieceInstancePiece | undefined
-	let rundownId: RundownId | undefined
-	const pieceInstanceToCopy = await PieceInstances.findOneAsync(pieceInstanceIdOrPieceIdToCopy)
-	if (pieceInstanceToCopy) {
-		pieceToCopy = pieceInstanceToCopy.piece
-		rundownId = pieceInstanceToCopy.rundownId
-	} else {
-		const piece = await Pieces.findOneAsync(pieceInstanceIdOrPieceIdToCopy)
-		if (piece) {
-			pieceToCopy = omitPiecePropertiesForInstance(piece)
-			rundownId = piece.startRundownId
-		}
-	}
-	if (!pieceToCopy || !rundownId) {
-		throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
-	}
-
-	const rundown = await Rundowns.findOneAsync(rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-
-	const partInstance = await PartInstances.findOneAsync({
-		_id: partInstanceId,
-		rundownId: rundown._id,
+	return runUserAction(playlist.studioId, StudioJobs.TakePieceAsAdlibNow, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		pieceInstanceIdOrPieceIdToCopy: pieceInstanceIdOrPieceIdToCopy,
 	})
-	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
-
-	if (!pieceToCopy.allowDirectPlay) {
-		return ClientAPI.responseError(`PieceInstance or Piece "${pieceToCopy.name}" cannot be direct played!`)
-	}
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.pieceTakeNow(access, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
-	)
 }
 export async function pieceSetInOutPoints(
 	context: MethodContext,
@@ -430,7 +323,7 @@ export async function pieceSetInOutPoints(
 		) // MOS data is in seconds
 		return ClientAPI.responseSuccess(undefined)
 	} catch (error) {
-		return ClientAPI.responseError(error as any)
+		return ClientAPI.responseError(UserError.from(error, UserErrorMessage.InternalError))
 	}
 }
 export async function executeAction(
@@ -450,14 +343,13 @@ export async function executeAction(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before executing an action!`)
-	if (!playlist.currentPartInstanceId)
-		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.executeAction(access, rundownPlaylistId, actionDocId, actionId, userData, triggerMode)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.ExecuteAction, {
+		playlistId: rundownPlaylistId,
+		actionDocId,
+		actionId,
+		userData,
+		triggerMode,
+	})
 }
 export async function segmentAdLibPieceStart(
 	context: MethodContext,
@@ -473,15 +365,13 @@ export async function segmentAdLibPieceStart(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
-	}
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.segmentAdLibPieceStart(access, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.AdlibPieceStart, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		adLibPieceId: adlibPieceId,
+		pieceType: 'normal',
+		queue: !!queue,
+	})
 }
 export async function sourceLayerOnPartStop(
 	context: MethodContext,
@@ -491,17 +381,16 @@ export async function sourceLayerOnPartStop(
 ): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
-	check(sourceLayerIds, Match.OneOf(String, Array))
+	check(sourceLayerIds, Array)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.sourceLayerOnPartStop(access, rundownPlaylistId, partInstanceId, sourceLayerIds)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.StopPiecesOnSourceLayers, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		sourceLayerIds: sourceLayerIds,
+	})
 }
 export async function rundownBaselineAdLibPieceStart(
 	context: MethodContext,
@@ -517,20 +406,13 @@ export async function rundownBaselineAdLibPieceStart(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Can't start AdLib piece when the Rundown is in Hold mode!`)
-	}
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.rundownBaselineAdLibPieceStart(
-			access,
-			rundownPlaylistId,
-			partInstanceId,
-			adlibPieceId,
-			queue
-		)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.AdlibPieceStart, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		adLibPieceId: adlibPieceId,
+		pieceType: 'baseline',
+		queue: !!queue,
+	})
 }
 export async function sourceLayerStickyPieceStart(
 	context: MethodContext,
@@ -543,14 +425,10 @@ export async function sourceLayerStickyPieceStart(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting a sticky-item!`)
-	if (!playlist.currentPartInstanceId)
-		return ClientAPI.responseError(`No part is playing, please Take a part before starting a sticky-item.`)
-
-	return ClientAPI.responseSuccess(
-		await ServerPlayoutAPI.sourceLayerStickyPieceStart(access, rundownPlaylistId, sourceLayerId)
-	)
+	return runUserAction(playlist.studioId, StudioJobs.StartStickyPieceOnSourceLayer, {
+		playlistId: rundownPlaylistId,
+		sourceLayerId: sourceLayerId,
+	})
 }
 export async function activateHold(
 	context: MethodContext,
@@ -562,29 +440,14 @@ export async function activateHold(
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (!playlist.currentPartInstanceId)
-		return ClientAPI.responseError(`No part is currently playing, please Take a part before activating Hold mode!`)
-	if (!playlist.nextPartInstanceId)
-		return ClientAPI.responseError(`No part is set as Next, please set a Next before activating Hold mode!`)
-
-	const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
-	if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${playlist.currentPartInstanceId}" not found!`)
-	if (!nextPartInstance) throw new Meteor.Error(404, `PartInstance "${playlist.nextPartInstanceId}" not found!`)
-	if (!undo && playlist.holdState) {
-		return ClientAPI.responseError(`Rundown is already doing a hold!`)
-	}
-	if (undo && playlist.holdState !== RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Can't undo hold from state: ${RundownHoldState[playlist.holdState || 0]}`)
-	}
-
-	if (!undo && currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId) {
-		return ClientAPI.responseError(400, `Can't do hold between segments!`)
-	}
-
 	if (undo) {
-		return ClientAPI.responseSuccess(await ServerPlayoutAPI.deactivateHold(access, rundownPlaylistId))
+		return runUserAction(playlist.studioId, StudioJobs.DeactivateHold, {
+			playlistId: rundownPlaylistId,
+		})
 	} else {
-		return ClientAPI.responseSuccess(await ServerPlayoutAPI.activateHold(access, rundownPlaylistId))
+		return runUserAction(playlist.studioId, StudioJobs.ActivateHold, {
+			playlistId: rundownPlaylistId,
+		})
 	}
 }
 export function userSaveEvaluation(context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {
@@ -600,7 +463,12 @@ export async function userStoreRundownSnapshot(
 export async function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
 
-	return ClientAPI.responseSuccess(await ServerRundownAPI.removeRundownPlaylist(context, playlist._id))
+	logger.info('removeRundownPlaylist ' + playlistId)
+
+	const job = await QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
+		playlistId,
+	})
+	return ClientAPI.responseSuccess(await job.complete)
 }
 export async function resyncRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
@@ -731,17 +599,16 @@ export async function bucketsModifyBucketAdLibAction(
 
 	return ClientAPI.responseSuccess(undefined)
 }
-export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
+export async function regenerateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
 	check(rundownPlaylistId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
 	const playlist = access.playlist
 
-	if (playlist.activationId) {
-		return ClientAPI.responseError(`Rundown Playlist is active, please deactivate it before regenerating it.`)
-	}
-
-	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(access, rundownPlaylistId))
+	return runUserAction(playlist.studioId, StudioJobs.RegeneratePlaylist, {
+		playlistId: playlist._id,
+		purgeExisting: false,
+	})
 }
 
 export async function bucketAdlibImport(
@@ -753,9 +620,6 @@ export async function bucketAdlibImport(
 ): Promise<ClientAPI.ClientResponse<undefined>> {
 	const o = OrganizationContentWriteAccess.studio(context, studioId)
 	const studioLight = o.studio
-
-	// Optimization: since
-	const pStudio = studioLight ? Studios.findOneAsync(studioLight._id) : Promise.resolve(undefined)
 
 	check(studioId, String)
 	check(showStyleVariantId, String)
@@ -773,11 +637,11 @@ export async function bucketAdlibImport(
 	const bucket = await Buckets.findOneAsync(bucketId)
 	if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found`)
 
-	const studio = await pStudio
-	if (!studio)
-		throw new Meteor.Error(404, `Studio "${studioLight._id}" not found (even though the studioLight was found)`)
-
-	await updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
+	await runIngestOperation(bucket.studioId, IngestJobs.BucketItemImport, {
+		bucketId: bucket._id,
+		showStyleVariantId: showStyleVariantId,
+		payload: ingestItem,
+	})
 
 	return ClientAPI.responseSuccess(undefined)
 }
@@ -812,22 +676,15 @@ export async function bucketAdlibStart(
 	check(bucketAdlibId, String)
 
 	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-
 	const playlist = access.playlist
-	if (!playlist.activationId)
-		return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
-	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
-	}
 
-	const result = await ServerPlayoutAdLibAPI.startBucketAdlibPiece(
-		access,
-		rundownPlaylistId,
-		partInstanceId,
-		bucketAdlibId,
-		!!queue
-	)
-	return ClientAPI.responseSuccess(result)
+	return runUserAction(playlist.studioId, StudioJobs.AdlibPieceStart, {
+		playlistId: rundownPlaylistId,
+		partInstanceId: partInstanceId,
+		adLibPieceId: bucketAdlibId,
+		pieceType: 'bucket',
+		queue: !!queue,
+	})
 }
 
 let restartToken: string | undefined = undefined
@@ -872,7 +729,8 @@ export function switchRouteSet(
 	check(routeSetId, String)
 	check(state, Boolean)
 
-	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
+	ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
+	return ClientAPI.responseSuccess(undefined)
 }
 
 export async function moveRundown(
@@ -884,9 +742,13 @@ export async function moveRundown(
 	check(rundownId, String)
 	if (intoPlaylistId) check(intoPlaylistId, String)
 
-	return ClientAPI.responseSuccess(
-		await moveRundownIntoPlaylist(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
-	)
+	const rundown = checkAccessAndGetRundown(context, rundownId)
+
+	return runUserAction(rundown.studioId, StudioJobs.OrderMoveRundownToPlaylist, {
+		rundownId: rundownId,
+		intoPlaylistId,
+		rundownsIdsInPlaylistInOrder: rundownsIdsInPlaylistInOrder,
+	})
 }
 export async function restoreRundownOrder(
 	context: MethodContext,
@@ -894,7 +756,12 @@ export async function restoreRundownOrder(
 ): Promise<ClientAPI.ClientResponse<void>> {
 	check(playlistId, String)
 
-	return ClientAPI.responseSuccess(await restoreRundownsInPlaylistToDefaultOrder(context, playlistId))
+	const access = checkAccessToPlaylist(context, playlistId)
+	const playlist = access.playlist
+
+	return runUserAction(playlist.studioId, StudioJobs.OrderRestoreToDefault, {
+		playlistId: playlist._id,
+	})
 }
 
 export async function disablePeripheralSubDevice(

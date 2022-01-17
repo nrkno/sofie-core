@@ -1,0 +1,324 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Timeline Adlib pieces Current part with preroll 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9013",
+  },
+]
+`;
+
+exports[`Timeline Adlib pieces Current part with preroll and adlib preroll 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9013",
+  },
+]
+`;
+
+exports[`Timeline Basic rundown 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "blueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[{\\"id\\":\\"playlist_randomId9000_status\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"while\\":1},\\"layer\\":\\"rundown_status\\",\\"content\\":{\\"deviceType\\":0},\\"classes\\":[\\"rundown_active\\"]},{\\"id\\":\\"part_group_randomId9000_part0_0_randomId9003\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":\\"now\\"},\\"priority\\":5,\\"layer\\":\\"\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"isGroup\\":true,\\"isPartGroup\\":true,\\"metaData\\":{\\"isPieceTimeline\\":true}},{\\"id\\":\\"part_group_firstobject_randomId9000_part0_0_randomId9003\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"group_first_object\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"partPlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"partInstanceId\\":\\"randomId9000_part0_0_randomId9003\\"},\\"callBackStopped\\":\\"partPlaybackStopped\\"},\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9003\\",\\"classes\\":[]},{\\"id\\":\\"piece_group_randomId9000_part0_0_randomId9003_randomId9000_piece001\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9003\\",\\"isGroup\\":true,\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"vt0\\",\\"priority\\":5,\\"metaData\\":{\\"pieceId\\":\\"randomId9000_part0_0_randomId9003_randomId9000_piece001\\",\\"isPieceTimeline\\":true}},{\\"id\\":\\"piece_group_firstobject_randomId9000_part0_0_randomId9003_randomId9000_piece001\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"vt0_firstobject\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"piecePlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"pieceInstanceId\\":\\"randomId9000_part0_0_randomId9003_randomId9000_piece001\\",\\"dynamicallyInserted\\":false},\\"callBackStopped\\":\\"piecePlaybackStopped\\"},\\"classes\\":[\\"current_part\\"],\\"inGroup\\":\\"piece_group_randomId9000_part0_0_randomId9003_randomId9000_piece001\\"}]",
+    "timelineHash": "randomId9008",
+  },
+]
+`;
+
+exports[`Timeline Basic rundown 2`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "blueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[{\\"id\\":\\"playlist_randomId9000_status\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"while\\":1},\\"layer\\":\\"rundown_status\\",\\"content\\":{\\"deviceType\\":0},\\"classes\\":[\\"rundown_active\\"]},{\\"id\\":\\"part_group_randomId9000_part0_0_randomId9003\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":100000,\\"setFromNow\\":true},\\"priority\\":5,\\"layer\\":\\"\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"isGroup\\":true,\\"isPartGroup\\":true,\\"metaData\\":{\\"isPieceTimeline\\":true}},{\\"id\\":\\"part_group_firstobject_randomId9000_part0_0_randomId9003\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"group_first_object\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"partPlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"partInstanceId\\":\\"randomId9000_part0_0_randomId9003\\"},\\"callBackStopped\\":\\"partPlaybackStopped\\"},\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9003\\",\\"classes\\":[]},{\\"id\\":\\"piece_group_randomId9000_part0_0_randomId9003_randomId9000_piece001\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9003\\",\\"isGroup\\":true,\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"vt0\\",\\"priority\\":5,\\"metaData\\":{\\"pieceId\\":\\"randomId9000_part0_0_randomId9003_randomId9000_piece001\\",\\"isPieceTimeline\\":true}},{\\"id\\":\\"piece_group_firstobject_randomId9000_part0_0_randomId9003_randomId9000_piece001\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"vt0_firstobject\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"piecePlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"pieceInstanceId\\":\\"randomId9000_part0_0_randomId9003_randomId9000_piece001\\",\\"dynamicallyInserted\\":false},\\"callBackStopped\\":\\"piecePlaybackStopped\\"},\\"classes\\":[\\"current_part\\"],\\"inGroup\\":\\"piece_group_randomId9000_part0_0_randomId9003_randomId9000_piece001\\"}]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline Basic rundown 3`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9011",
+  },
+]
+`;
+
+exports[`Timeline In transitions Basic inTransition 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline In transitions Basic inTransition with contentDelay + preroll 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline In transitions Basic inTransition with contentDelay 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline In transitions Basic inTransition with planned pieces 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline In transitions Preroll 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline In transitions inTransition disabled 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline In transitions inTransition is disabled during hold 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9010",
+  },
+]
+`;
+
+exports[`Timeline In transitions inTransition with existing infinites 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9010",
+  },
+]
+`;
+
+exports[`Timeline In transitions inTransition with new infinite 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9010",
+  },
+]
+`;
+
+exports[`Timeline Out transitions Basic outTransition 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline Out transitions outTransition + inTransition 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline Out transitions outTransition + preroll (2) 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline Out transitions outTransition + preroll 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9009",
+  },
+]
+`;
+
+exports[`Timeline Out transitions outTransition is disabled during hold 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9010",
+  },
+]
+`;

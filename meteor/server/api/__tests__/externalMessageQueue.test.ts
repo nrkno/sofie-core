@@ -1,6 +1,5 @@
 import '../../../__mocks__/_extendJest'
 import { MeteorMock } from '../../../__mocks__/meteor'
-import { queueExternalMessages } from '../ExternalMessageQueue'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import {
@@ -10,14 +9,16 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { testInFiber, runAllTimers, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
-import { getCurrentTime, protectString } from '../../../lib/lib'
+import { getCurrentTime, getRandomId, omit, protectString } from '../../../lib/lib'
 import { sendSlackMessageToWebhook } from '../integration/slack'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 
+import '../ExternalMessageQueue'
+
 describe('Test external message queue static methods', () => {
 	let studioEnv: DefaultEnvironment
-	let rundown: Rundown
+	// let rundown: Rundown
 	beforeAll(async () => {
 		studioEnv = await setupDefaultStudioEnvironment()
 		const now = getCurrentTime()
@@ -62,33 +63,18 @@ describe('Test external message queue static methods', () => {
 				type: PlaylistTimingType.None,
 			},
 		})
-		rundown = Rundowns.findOne() as Rundown
-	})
+		// rundown = Rundowns.findOne() as Rundown
 
-	testInFiber('add a slack-type message', () => {
-		// setLogLevel(LogLevel.DEBUG)
-
-		expect(ExternalMessageQueue.findOne()).toBeFalsy()
-
-		const slackMessage: ExternalMessageQueueObjSlack = {
-			type: IBlueprintExternalMessageQueueType.SLACK,
-			receiver: 'fred',
-			message: 'whats up doc?',
-		}
-		expect(rundown).toBeTruthy()
-		queueExternalMessages(rundown, [slackMessage])
-
-		expect(ExternalMessageQueue.findOne()).toBeTruthy()
-		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
-		expect(message).toBeTruthy()
-		expect(message).toMatchObject({
-			type: 'slack',
-			receiver: slackMessage.receiver,
+		ExternalMessageQueue.insert({
+			_id: getRandomId(),
+			studioId: studioEnv.studio._id,
+			expires: now + 3600,
+			created: now,
 			tryCount: 0,
-			studioId: rundown.studioId,
-			rundownId: rundown._id,
+			type: IBlueprintExternalMessageQueueType.SLACK,
+			receiver: 'some receiver',
+			message: 'some message',
 		})
-		expect(message.expires).toBeGreaterThan(getCurrentTime())
 	})
 
 	testInFiber('toggleHold', async () => {
@@ -222,7 +208,15 @@ describe('Test sending messages to mocked endpoints', () => {
 		}
 		expect(rundown).toBeTruthy()
 		const sendTime = getCurrentTime()
-		queueExternalMessages(rundown, [slackMessage])
+
+		ExternalMessageQueue.insert({
+			_id: getRandomId(),
+			studioId: studioEnv.studio._id,
+			expires: getCurrentTime() + 3600,
+			created: getCurrentTime(),
+			tryCount: 0,
+			...omit(slackMessage, '_id'),
+		})
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
 		await runAllTimers()

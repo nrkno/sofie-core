@@ -25,9 +25,9 @@ import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { FindOptions, MongoSelector } from '../../typings/meteor'
 import { DBRundown, RundownId, Rundowns } from '../../collections/Rundowns'
-import { sortAdlibs } from '../../Rundown'
 import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reactiveDataHelper'
-import { SegmentId, Segments, DBSegment } from '../../collections/Segments'
+import { DBSegment, Segments, SegmentId } from '../../collections/Segments'
+import { sortAdlibs } from '../../Rundown'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
