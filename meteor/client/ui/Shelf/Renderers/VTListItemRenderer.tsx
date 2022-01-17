@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
 import ClassNames from 'classnames'
-import { RundownAPI } from '../../../../lib/api/rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
@@ -10,6 +9,7 @@ import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positio
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -101,9 +101,9 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					'adlib-panel__list-view__list__table__cell--icon',
 					props.layer && RundownUtils.getSourceLayerClassName(props.layer.type),
 					{
-						'source-missing': props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-						'source-broken': props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': props.status === RundownAPI.PieceStatusCode.UNKNOWN,
+						'source-missing': props.status === PieceStatusCode.SOURCE_MISSING,
+						'source-broken': props.status === PieceStatusCode.SOURCE_BROKEN,
+						'unknown-state': props.status === PieceStatusCode.UNKNOWN,
 					}
 				)}
 				ref={itemIcon}
@@ -122,7 +122,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 			<td className="adlib-panel__list-view__list__table__cell--name">
 				{props.adLibListItem.name}
 				<VTFloatingInspector
-					status={props.status || RundownAPI.PieceStatusCode.UNKNOWN}
+					status={props.status || PieceStatusCode.UNKNOWN}
 					showMiniInspector={showMiniInspector}
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}
@@ -146,7 +146,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 				/>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">
-				{sourceDuration ? <StyledTimecode time={sourceDuration} /> : null}
+				{sourceDuration ? <StyledTimecode time={sourceDuration} studioSettings={props.studio?.settings} /> : null}
 			</td>
 			{/*<td className='adlib-panel__list-view__list__table__cell--data'>
 			&nbsp;

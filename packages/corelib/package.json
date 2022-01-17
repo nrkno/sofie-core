@@ -1,0 +1,70 @@
+{
+	"name": "@sofie-automation/corelib",
+	"version": "1.38.0-in-development",
+	"private": true,
+	"description": "Internal library for some types shared by core and workers",
+	"main": "dist/index.js",
+	"typings": "dist/index.d.ts",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"directory": "packages/corelib"
+	},
+	"bugs": {
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+	},
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/corelib#readme",
+	"scripts": {
+		"build": "rimraf dist && yarn build:main",
+		"build:main": "tsc -p tsconfig.build.json",
+		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
+		"unit": "jest",
+		"test": "yarn lint && yarn unit",
+		"watch": "jest --watch",
+		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
+		"cov-open": "open-cli coverage/lcov-report/index.html",
+		"send-coverage": "codecov -p ../..",
+		"changelog": "standard-version",
+		"release": "yarn reset && yarn test && yarn changelog",
+		"reset": "git clean -dfx && git reset --hard && yarn",
+		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
+		"validate:dev-dependencies": "yarn audit --groups devDependencies",
+		"license-validate": "yarn sofie-licensecheck"
+	},
+	"engines": {
+		"node": ">=12.20"
+	},
+	"files": [
+		"/dist",
+		"/CHANGELOG.md",
+		"/README.md",
+		"/LICENSE"
+	],
+	"dependencies": {
+		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
+		"@types/meteor": "1.4.47",
+		"fast-clone": "^1.5.13",
+		"i18next": "^19.9.2",
+		"mos-connection": "1.0.5-nightly-latest-20211118-081133-434af7d.0",
+		"object-path": "^0.11.5",
+		"timecode": "0.0.4",
+		"tslib": "^2.1.0",
+		"type-fest": "^1.2.2",
+		"underscore": "1.12.0"
+	},
+	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
+	"husky": {
+		"hooks": {
+			"pre-commit": "lint-staged"
+		}
+	},
+	"lint-staged": {
+		"*.{js,css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"yarn lint --fix"
+		]
+	}
+}

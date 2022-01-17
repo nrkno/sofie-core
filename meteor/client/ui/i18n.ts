@@ -14,7 +14,7 @@ import {
 import { I18NextData } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/api/methods'
 import { ClientAPI } from '../../lib/api/client'
-import { interpollateTranslation } from '../../lib/api/TranslatableMessage'
+import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 const i18nOptions = {
 	fallbackLng: {

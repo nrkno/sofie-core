@@ -7,7 +7,7 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../../lib/rundown'
 import { WithTiming, withTiming } from './withTiming'
 import ClassNames from 'classnames'
-import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface INextBreakTimingProps {
 	loop?: boolean

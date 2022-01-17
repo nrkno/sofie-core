@@ -2,104 +2,34 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import { Time, registerCollection, normalizeArray, normalizeArrayFunc, ProtectedString, unprotectString } from '../lib'
-import { RundownHoldState, Rundowns, Rundown, RundownId, DBRundown } from './Rundowns'
-import { Studio, Studios, StudioId } from './Studios'
-import { Segments, Segment, DBSegment, SegmentId } from './Segments'
-import { Parts, Part, DBPart, PartId } from './Parts'
-import { RundownPlaylistTiming, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
-import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
+import { normalizeArrayFunc, unprotectString } from '../lib'
+import { Rundowns, Rundown, DBRundown } from './Rundowns'
+import { Studio, Studios } from './Studios'
+import { Segments, Segment, DBSegment } from './Segments'
+import { Parts, Part, DBPart } from './Parts'
+import {
+	sortPartsInSegments,
+	sortPartsInSortedSegments,
+	sortSegmentsInRundowns,
+} from '@sofie-automation/corelib/dist/playout/playlist'
+import { PartInstance, PartInstances } from './PartInstances'
 import { createMongoCollection } from './lib'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
-import { PieceInstanceInfiniteId } from './PieceInstances'
 import { ReadonlyDeep } from 'type-fest'
+import {
+	RundownPlaylistId,
+	ActiveInstanceId,
+	RundownPlaylistActivationId,
+	RundownId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { RundownPlaylistId, ActiveInstanceId, RundownPlaylistActivationId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-/** A string, identifying a RundownPlaylist */
-export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
-/** A string, identifying an activation of a playlist */
-export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
-/** A string, identifying an activation of a playlist */
-export type RundownPlaylistActivationId = ProtectedString<'RundownPlaylistActivationId'>
-
-/** Details of an ab-session requested by the blueprints in onTimelineGenerate */
-export interface ABSessionInfo {
-	/** The unique id of the session. */
-	id: string
-	/** The name of the session from the blueprints */
-	name: string
-	/** Set if the session is being by lookahead for a future part */
-	lookaheadForPartId?: PartId
-	/** Set if the session is being used by an infinite PieceInstance */
-	infiniteInstanceId?: PieceInstanceInfiniteId
-	/** Set to the PartInstances this session is used by, if not just used for lookahead */
-	partInstanceIds?: Array<PartInstanceId>
-}
-
-export interface RundownPlaylist {
-	_id: RundownPlaylistId
-	/** External ID (source) of the playlist */
-	externalId: string
-	/** ID of the organization that owns the playlist */
-	organizationId?: OrganizationId | null
-	/** Studio that this playlist is assigned to */
-	studioId: StudioId
-
-	restoredFromSnapshotId?: RundownPlaylistId
-
-	/** A name to be displayed to the user */
-	name: string
-	/** Created timestamp */
-	created: Time
-	/** Last modified timestamp */
-	modified: Time
-	/** Rundown timing information */
-	timing: RundownPlaylistTiming
-	/** Is the playlist in rehearsal mode (can be used, when active: true) */
-	rehearsal?: boolean
-	/** Playout hold state */
-	holdState?: RundownHoldState
-	/** Truthy when the playlist is currently active in the studio. This is regenerated upon each activation/reset. */
-	activationId?: RundownPlaylistActivationId
-	/** Should the playlist loop at the end */
-	loop?: boolean
-	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
-	outOfOrderTiming?: boolean
-	/** Should time-of-day clocks be used instead of countdowns by default */
-	timeOfDayCountdowns?: boolean
-
-	/** the id of the Live Part - if empty, no part in this rundown is live */
-	currentPartInstanceId: PartInstanceId | null
-	/** the id of the Next Part - if empty, no segment will follow Live Part */
-	nextPartInstanceId: PartInstanceId | null
-	/** The time offset of the next line */
-	nextTimeOffset?: number | null
-	/** if nextPartId was set manually (ie from a user action) */
-	nextPartManual?: boolean
-	/** the id of the Previous Part */
-	previousPartInstanceId: PartInstanceId | null
-
-	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
-	nextSegmentId?: SegmentId
-
-	/** Actual time of playback starting */
-	startedPlayback?: Time
-	/** Timestamp for the last time an incorrect part was reported as started */
-	lastIncorrectPartPlaybackReported?: Time
-	/** Actual time of each rundown starting playback */
-	rundownsStartedPlayback?: Record<string, Time>
-
-	/** If the _rank of rundowns in this playlist has ben set manually by a user in Sofie */
-	rundownRanksAreSetInSofie?: boolean
-
-	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
-	previousPersistentState?: TimelinePersistentState
-	/** AB playback sessions calculated in the last call to ShowStyleBlueprint.onTimelineGenerate */
-	trackedAbSessions?: ABSessionInfo[]
-}
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+export * from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 /** Note: Use RundownPlaylist instead */
-export type DBRundownPlaylist = RundownPlaylist
+export type RundownPlaylist = DBRundownPlaylist
 
 /**
  * Direct database accessors for the RundownPlaylist
@@ -403,16 +333,7 @@ export class RundownPlaylistCollectionUtil {
 		segments: Array<TSegment>,
 		rundowns: Array<ReadonlyDeep<DBRundown>>
 	) {
-		const rundownsMap = normalizeArray(rundowns, '_id')
-		return segments.sort((a, b) => {
-			if (a.rundownId === b.rundownId) {
-				return a._rank - b._rank
-			} else {
-				const rdA = rundownsMap[unprotectString(a.rundownId)]
-				const rdB = rundownsMap[unprotectString(b.rundownId)]
-				return rdA._rank - rdB._rank
-			}
-		})
+		return sortSegmentsInRundowns(segments, rundowns)
 	}
 	static _matchSegmentsAndRundowns<T extends DBRundown, E extends DBSegment>(segments: E[], rundowns: T[]) {
 		const rundownsMap = new Map<
@@ -438,29 +359,14 @@ export class RundownPlaylistCollectionUtil {
 		rundowns: DBRundown[],
 		segments: Array<Pick<Segment, '_id' | 'rundownId' | '_rank'>>
 	) {
-		return RundownPlaylistCollectionUtil._sortPartsInner(
-			parts,
-			RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
-		)
+		return sortPartsInSegments(parts, rundowns, segments)
 	}
 	static _sortPartsInner<P extends DBPart>(parts: P[], sortedSegments: Array<Pick<Segment, '_id'>>): P[] {
-		const segmentRanks: { [segmentId: string]: number } = {}
-		_.each(sortedSegments, (segment, i) => (segmentRanks[unprotectString(segment._id)] = i))
-
-		return parts.sort((a, b) => {
-			if (a.segmentId === b.segmentId) {
-				return a._rank - b._rank
-			} else {
-				const segA = segmentRanks[unprotectString(a.segmentId)]
-				const segB = segmentRanks[unprotectString(b.segmentId)]
-				return segA - segB
-			}
-		})
+		return sortPartsInSortedSegments(parts, sortedSegments)
 	}
 }
 
-export const RundownPlaylists = createMongoCollection<RundownPlaylist>('rundownPlaylists')
-registerCollection('RundownPlaylists', RundownPlaylists)
+export const RundownPlaylists = createMongoCollection<RundownPlaylist>(CollectionName.RundownPlaylists)
 
 registerIndex(RundownPlaylists, {
 	studioId: 1,

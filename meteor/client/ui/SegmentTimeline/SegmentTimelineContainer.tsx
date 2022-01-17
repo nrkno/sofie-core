@@ -24,7 +24,6 @@ import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
-import { computeSegmentDuration, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,
@@ -33,6 +32,7 @@ import {
 	ITrackedProps as ITrackedResolvedSegmentProps,
 	IOutputLayerUi,
 } from '../SegmentContainer/withResolvedSegment'
+import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownTiming'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'

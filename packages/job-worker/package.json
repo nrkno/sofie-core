@@ -1,0 +1,77 @@
+{
+	"name": "@sofie-automation/job-worker",
+	"version": "1.38.0-in-development",
+	"description": "Worker for things",
+	"main": "dist/index.js",
+	"license": "MIT",
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"directory": "packages/job-worker"
+	},
+	"bugs": {
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+	},
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/job-worker#readme",
+	"scripts": {
+		"dev": "nodemon --config nodemon.json src/index.ts",
+		"dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
+		"build": "rimraf dist && yarn build:main",
+		"build:main": "tsc -p tsconfig.build.json",
+		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
+		"unit": "jest",
+		"test": "yarn lint && yarn unit",
+		"watch": "jest --watch",
+		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
+		"cov-open": "open-cli coverage/lcov-report/index.html",
+		"send-coverage": "codecov -p ../..",
+		"changelog": "standard-version",
+		"release": "yarn reset && yarn test && yarn changelog",
+		"reset": "git clean -dfx && git reset --hard && yarn",
+		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
+		"validate:dev-dependencies": "yarn audit --groups devDependencies",
+		"license-validate": "yarn sofie-licensecheck"
+	},
+	"engines": {
+		"node": "^12.22.0 || >=14.17"
+	},
+	"files": [
+		"/dist",
+		"/CHANGELOG.md",
+		"/README.md",
+		"/LICENSE"
+	],
+	"dependencies": {
+		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
+		"@sofie-automation/corelib": "link:../corelib",
+		"debounce-fn": "^4.0.0",
+		"deepmerge": "^4.2.2",
+		"elastic-apm-node": "^3.11.0",
+		"eventemitter3": "^4.0.7",
+		"mongodb": "^4.0.0",
+		"p-lazy": "^3.1.0",
+		"read-pkg-up": "^7.0.0",
+		"superfly-timeline": "^8.2.0",
+		"threadedclass": "^1.0.0",
+		"tslib": "^2.1.0",
+		"type-fest": "^0.21.1",
+		"underscore": "1.12.0",
+		"vm2": "^3.9.5",
+		"winston": "^3.4.0"
+	},
+	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
+	"husky": {
+		"hooks": {
+			"pre-commit": "lint-staged"
+		}
+	},
+	"lint-staged": {
+		"*.{js,css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"yarn lint --fix"
+		]
+	}
+}

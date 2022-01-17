@@ -9,7 +9,6 @@ import {
 	PackageInfo,
 	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
-import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
@@ -17,7 +16,7 @@ import { PackageInfos } from './collections/PackageInfos'
 import { assertNever, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
-import { PieceGeneric } from './collections/Pieces'
+import { PieceGeneric, PieceStatusCode } from './collections/Pieces'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a
@@ -173,7 +172,7 @@ export function checkPieceContentStatus(
 	t =
 		t ||
 		((s: string, options?: _.Dictionary<any> | string) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options)) // kz: TODO not sure if this is ok - the second param can be a defaultValue
-	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
+	let newStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	let message: string | null = null
@@ -234,7 +233,7 @@ export function checkPieceContentStatus(
 							packageOnPackageContainer.status.status ===
 								ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
 						) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							newStatus = PieceStatusCode.SOURCE_MISSING
 							messages.push(
 								t(
 									`Clip "{{fileName}}" can't be played because it isn't present on the playout system`,
@@ -247,7 +246,7 @@ export function checkPieceContentStatus(
 							packageOnPackageContainer.status.status ===
 							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_READY
 						) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							newStatus = PieceStatusCode.SOURCE_MISSING
 							messages.push(
 								t('{{sourceLayer}} is not yet ready on the playout system', {
 									sourceLayer: sourceLayer.name,
@@ -257,7 +256,7 @@ export function checkPieceContentStatus(
 							packageOnPackageContainer.status.status ===
 							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_READY
 						) {
-							newStatus = RundownAPI.PieceStatusCode.OK
+							newStatus = PieceStatusCode.OK
 							messages.push(
 								t('{{sourceLayer}} is transferring to the the playout system', {
 									sourceLayer: sourceLayer.name,
@@ -267,7 +266,7 @@ export function checkPieceContentStatus(
 							packageOnPackageContainer.status.status ===
 							ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_NOT_READY
 						) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							newStatus = PieceStatusCode.SOURCE_MISSING
 							messages.push(
 								t(
 									'{{sourceLayer}} is transferring to the the playout system and cannot be played yet',
@@ -304,13 +303,13 @@ export function checkPieceContentStatus(
 				}
 			}
 			if (Object.keys(packageInfos).length) {
-				newStatus = RundownAPI.PieceStatusCode.OK
+				newStatus = PieceStatusCode.OK
 				for (const [_packageId, packageInfo] of Object.entries(packageInfos)) {
 					const { scan, deepScan } = packageInfo
 
 					if (scan && scan.streams) {
 						if (!ignoreMediaAudioStatus && scan.streams.length < 2) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+							newStatus = PieceStatusCode.SOURCE_BROKEN
 							messages.push(
 								t("{{sourceLayer}} doesn't have both audio & video", {
 									sourceLayer: sourceLayer.name,
@@ -433,8 +432,8 @@ export function checkPieceContentStatus(
 				packageInfoToForward = packageInfos
 			}
 			if (messages.length) {
-				if (newStatus === RundownAPI.PieceStatusCode.OK) {
-					newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+				if (newStatus === PieceStatusCode.OK) {
+					newStatus = PieceStatusCode.SOURCE_BROKEN
 				}
 
 				message = _.uniq(messages).join('; ') + '.'
@@ -449,7 +448,7 @@ export function checkPieceContentStatus(
 				case SourceLayerType.LIVE_SPEAK:
 					// If the fileName is not set...
 					if (!fileName) {
-						newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+						newStatus = PieceStatusCode.SOURCE_NOT_SET
 						messages.push(t('{{sourceLayer}} is missing a file path', { sourceLayer: sourceLayer.name }))
 					} else {
 						const mediaObject = MediaObjects.findOne({
@@ -458,7 +457,7 @@ export function checkPieceContentStatus(
 						})
 						// If media object not found, then...
 						if (!mediaObject) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							newStatus = PieceStatusCode.SOURCE_MISSING
 							messages.push(
 								t('{{sourceLayer}} is not yet ready on the playout system', {
 									sourceLayer: sourceLayer.name,
@@ -466,13 +465,13 @@ export function checkPieceContentStatus(
 							)
 							// All VT content should have at least two streams
 						} else {
-							newStatus = RundownAPI.PieceStatusCode.OK
+							newStatus = PieceStatusCode.OK
 
 							// Do a format check:
 							if (mediaObject.mediainfo) {
 								if (mediaObject.mediainfo.streams) {
 									if (!ignoreMediaAudioStatus && mediaObject.mediainfo.streams.length < 2) {
-										newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+										newStatus = PieceStatusCode.SOURCE_BROKEN
 										messages.push(t("Clip doesn't have audio & video", { fileName: displayName }))
 									}
 									const formats = getAcceptedFormats(settings)
@@ -597,7 +596,7 @@ export function checkPieceContentStatus(
 										sourceLayer: sourceLayer.name,
 									})
 								)
-								newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+								newStatus = PieceStatusCode.SOURCE_MISSING
 							}
 
 							metadata = mediaObject
@@ -612,10 +611,10 @@ export function checkPieceContentStatus(
 							mediaId: fileName,
 						})
 						if (!mediaObject) {
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							newStatus = PieceStatusCode.SOURCE_MISSING
 							messages.push(t('Source is missing', { fileName: displayName }))
 						} else {
-							newStatus = RundownAPI.PieceStatusCode.OK
+							newStatus = PieceStatusCode.OK
 							metadata = mediaObject
 						}
 					}
@@ -625,8 +624,8 @@ export function checkPieceContentStatus(
 				// * withMediaObjectStatus.tsx (updateMediaObjectSubscription)
 			}
 			if (messages.length) {
-				if (newStatus === RundownAPI.PieceStatusCode.OK) {
-					newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+				if (newStatus === PieceStatusCode.OK) {
+					newStatus = PieceStatusCode.SOURCE_BROKEN
 				}
 				message = messages.join('; ') + '.'
 			}
@@ -642,12 +641,12 @@ export function checkPieceContentStatus(
 	}
 }
 
-export function getNoteSeverityForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoteSeverity | null {
-	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
-		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+export function getNoteSeverityForPieceStatus(statusCode: PieceStatusCode): NoteSeverity | null {
+	return statusCode !== PieceStatusCode.OK && statusCode !== PieceStatusCode.UNKNOWN
+		? statusCode === PieceStatusCode.SOURCE_NOT_SET
 			? NoteSeverity.ERROR
-			: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-			  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
+			: // : innerPiece.status === PieceStatusCode.SOURCE_MISSING ||
+			  // innerPiece.status === PieceStatusCode.SOURCE_BROKEN
 			  NoteSeverity.WARNING
 		: null
 }

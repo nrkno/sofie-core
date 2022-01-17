@@ -181,7 +181,7 @@ export function doUserAction<Result>(
 							undefined,
 							NoticeLevel.CRITICAL,
 							t('Action {{actionName}} failed: {{error}}', {
-								error: res.message || res.error,
+								error: res.error.message || res.error,
 								actionName: actionName,
 							}),
 							'userAction'

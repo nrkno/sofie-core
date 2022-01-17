@@ -1,3 +1,4 @@
+import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import classNames from 'classnames'
 import React, { useEffect, useRef } from 'react'
 import { StyledTimecode } from './StyledTimecode'
@@ -20,6 +21,7 @@ function setVideoElementPosition(
 }
 
 interface IProps {
+	studioSettings: Pick<IStudioSettings, 'frameRate'> | undefined
 	previewUrl: string
 	timePosition: number
 	itemDuration: number
@@ -27,7 +29,7 @@ interface IProps {
 	loop: boolean
 }
 
-export function VideoPreviewPlayer({ previewUrl, timePosition, itemDuration, seek, loop }: IProps) {
+export function VideoPreviewPlayer({ previewUrl, timePosition, itemDuration, seek, loop, studioSettings }: IProps) {
 	const videoElement = useRef<HTMLVideoElement>(null)
 
 	useEffect(() => {
@@ -55,7 +57,7 @@ export function VideoPreviewPlayer({ previewUrl, timePosition, itemDuration, see
 				</div>
 			)}
 			<span className="video-preview-player__timecode">
-				<StyledTimecode time={offsetTimePosition} />
+				<StyledTimecode studioSettings={studioSettings} time={offsetTimePosition} />
 			</span>
 		</>
 	)

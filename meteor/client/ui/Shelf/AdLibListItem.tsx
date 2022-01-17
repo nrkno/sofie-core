@@ -1,8 +1,6 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownAPI } from '../../../lib/api/rundown'
-
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
@@ -15,9 +13,10 @@ import { Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export interface IAdLibListItem extends AdLibPieceUi {
-	status: RundownAPI.PieceStatusCode
+	status: PieceStatusCode
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
 	sourceLayer?: ISourceLayer

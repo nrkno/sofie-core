@@ -1,8 +1,7 @@
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { PartNote } from '../../../lib/api/notes'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Part } from '../../../lib/collections/Parts'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { Piece, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
 import { normalizeArray } from '../../../lib/lib'
@@ -39,11 +38,7 @@ export function getMinimumReactivePieceNotesForPart(
 		if (sourceLayerMap && piece.sourceLayerId && sourceLayerMap[piece.sourceLayerId]) {
 			const sourceLayer = sourceLayerMap[piece.sourceLayerId]
 			const st = checkPieceContentStatus(piece, sourceLayer, studio)
-			if (
-				st.status !== RundownAPI.PieceStatusCode.OK &&
-				st.status !== RundownAPI.PieceStatusCode.UNKNOWN &&
-				!getIgnorePieceContentStatus()
-			) {
+			if (st.status !== PieceStatusCode.OK && st.status !== PieceStatusCode.UNKNOWN && !getIgnorePieceContentStatus()) {
 				notes.push({
 					type: getNoteSeverityForPieceStatus(st.status) || NoteSeverity.WARNING,
 					origin: {

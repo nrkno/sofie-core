@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime, Time, getRandomId, assertNever } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
@@ -17,7 +17,6 @@ import {
 	CheckError,
 	SystemInstanceId,
 	Component,
-	StatusCode,
 } from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
 import { StudioId } from '../../lib/collections/Studios'
@@ -26,6 +25,7 @@ import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemWriteAccess } from '../security/system'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -34,6 +34,7 @@ const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 // Any libraries that if a gateway uses should match a certain version
 const expectedLibraryVersions: { [libName: string]: string } = {
 	'superfly-timeline': stripVersion(require('superfly-timeline/package.json').version),
+	// eslint-disable-next-line node/no-extraneous-require
 	'mos-connection': stripVersion(require('mos-connection/package.json').version),
 }
 
@@ -150,17 +151,17 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		},
 		checks: checks,
 	}
-	if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+	if (device.type === PeripheralDeviceType.MOS) {
 		so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+	} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
 		so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) {
+	} else if (device.type === PeripheralDeviceType.PLAYOUT) {
 		so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) {
+	} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
 		so.documentation = 'https://github.com/nrkno/tv-automation-media-management'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
+	} else if (device.type === PeripheralDeviceType.INEWS) {
 		so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER) {
+	} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
 		so.documentation = 'https://github.com/nrkno/tv-automation-package-manager'
 	} else {
 		assertNever(device.type)

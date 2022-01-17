@@ -8,13 +8,12 @@ import { ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integra
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
-import { RundownAPI } from '../../../lib/api/rundown'
-import { PieceId } from '../../../lib/collections/Pieces'
+import { PieceId, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { getPreviewUrlForExpectedPackagesAndContentMetaData } from '../../lib/ui/clipPreview'
 import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
 
 interface IProps {
-	status: RundownAPI.PieceStatusCode
+	status: PieceStatusCode
 	mediaPreviewUrl?: string
 	typeClass?: string
 	showMiniInspector: boolean
@@ -84,6 +83,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 								seek={seek}
 								previewUrl={previewUrl}
 								timePosition={offsetTimePosition}
+								studioSettings={props.studio?.settings}
 							/>
 						) : null}
 						{props.noticeLevel !== null ? (
@@ -120,7 +120,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 					style={props.floatingInspectorStyle}
 				>
 					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.noticeMessage) : null}
-					{props.status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET ? (
+					{props.status !== PieceStatusCode.SOURCE_NOT_SET ? (
 						<div className="segment-timeline__mini-inspector__properties">
 							<span className="mini-inspector__label">{t('Clip:')}</span>
 							<span className="mini-inspector__value">{props.content && props.content.fileName}</span>

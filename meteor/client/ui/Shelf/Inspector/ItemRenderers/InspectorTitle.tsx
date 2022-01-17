@@ -5,8 +5,7 @@ import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownUtils } from '../../../../lib/rundown'
-import { RundownAPI } from '../../../../../lib/api/rundown'
-import { Piece } from '../../../../../lib/collections/Pieces'
+import { Piece, PieceStatusCode } from '../../../../../lib/collections/Pieces'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../../../SegmentTimeline/withMediaObjectStatus'
 import { IAdLibListItem } from '../../AdLibListItem'
@@ -31,9 +30,9 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 					'shelf-inspector__title__icon',
 					layer && RundownUtils.getSourceLayerClassName(layer.type),
 					{
-						'source-missing': piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-						'source-broken': piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
+						'source-missing': piece.status === PieceStatusCode.SOURCE_MISSING,
+						'source-broken': piece.status === PieceStatusCode.SOURCE_BROKEN,
+						'unknown-state': piece.status === PieceStatusCode.UNKNOWN,
 					}
 				)}
 			>

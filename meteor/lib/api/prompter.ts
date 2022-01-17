@@ -13,7 +13,7 @@ import { FindOptions } from '../typings/meteor'
 import { PieceInstance, PieceInstances } from '../collections/PieceInstances'
 import { Rundown, RundownId } from '../collections/Rundowns'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../collections/ShowStyleBases'
-import { processAndPrunePieceInstanceTimings } from '../rundown/infinites'
+import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>

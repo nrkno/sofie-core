@@ -1,6 +1,15 @@
 import { check } from '../../lib/check'
 
-import { literal, getCurrentTime, Time, getRandomId, makePromise, waitForPromise, Awaited } from '../../lib/lib'
+import {
+	literal,
+	getCurrentTime,
+	Time,
+	getRandomId,
+	makePromise,
+	waitForPromise,
+	Awaited,
+	stringifyError,
+} from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
@@ -16,6 +25,7 @@ import { resolveCredentials } from '../security/lib/credentials'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { endTrace, sendTrace, startTrace } from './integration/influx'
+import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export namespace ServerClientAPI {
 	export function clientErrorReport(
@@ -81,7 +91,11 @@ export namespace ServerClientAPI {
 						success: false,
 						doneTime: getCurrentTime(),
 						executionTime: Date.now() - startTime,
-						errorMessage: `ClientResponseError: ${result.error}: ${result.message}`,
+						// TODO: Worker - this could be better?
+						errorMessage: `ClientResponseError: ${translateMessage(
+							result.error.message,
+							interpollateTranslation
+						)}: ${stringifyError(result.error.rawError)}`,
 					},
 				})
 			} else {

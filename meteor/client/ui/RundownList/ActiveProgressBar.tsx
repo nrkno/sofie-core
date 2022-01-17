@@ -1,8 +1,8 @@
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import React from 'react'
 import timer from 'react-timer-hoc'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../../lib/lib'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 export interface IActiveProgressBarProps {
 	rundownPlaylist: RundownPlaylist

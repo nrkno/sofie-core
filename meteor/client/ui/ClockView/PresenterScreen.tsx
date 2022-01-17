@@ -25,20 +25,21 @@ import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Part } from '../../../lib/collections/Parts'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
-import { parse as queryStringParse } from 'query-string'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import {
 	DashboardLayout,
 	RundownLayoutBase,
-	RundownLayoutId,
 	RundownLayoutPresenterView,
 	RundownLayouts,
 } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
-import { ShowStyleVariant, ShowStyleVariantId, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
+import { parse as queryStringParse } from 'query-string'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -442,7 +443,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 			const nextSegment = this.props.nextSegment
 
 			const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
-			const overUnderClock = PlaylistTiming.getDiff(playlist, this.props.timingDurations) ?? 0
+			const overUnderClock = getPlaylistTimingDiff(playlist, this.props.timingDurations) ?? 0
 
 			return (
 				<div className="presenter-screen">

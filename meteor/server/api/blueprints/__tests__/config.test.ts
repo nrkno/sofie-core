@@ -1,38 +1,13 @@
-import { setupDefaultStudioEnvironment, setupMockStudio } from '../../../../__mocks__/helpers/database'
-import { preprocessStudioConfig, ConfigRef } from '../config'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { ConfigRef } from '../config'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { protectString } from '../../../../lib/lib'
 import '../../../../__mocks__/_extendJest'
 
 describe('Test blueprint config', () => {
 	beforeAll(async () => {
 		await setupDefaultStudioEnvironment()
-	})
-
-	test('compileStudioConfig', () => {
-		const studio = setupMockStudio({
-			settings: {
-				sofieUrl: 'host url',
-				mediaPreviewsUrl: '',
-			},
-			blueprintConfig: { sdfsdf: 'one', another: 5 },
-		})
-
-		const res = preprocessStudioConfig(studio)
-		expect(res).toEqual({
-			SofieHostURL: 'host url',
-			sdfsdf: 'one',
-			another: 5,
-		})
-	})
-
-	test('getStudioConfigRef', () => {
-		expect(ConfigRef.getStudioConfigRef(protectString('st0'), 'key0')).toEqual('${studio.st0.key0}')
-	})
-	test('getShowStyleConfigRef', () => {
-		expect(ConfigRef.getShowStyleConfigRef(protectString('var0'), 'key1')).toEqual('${showStyle.var0.key1}')
 	})
 
 	describe('retrieveRefs', () => {

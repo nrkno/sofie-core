@@ -1,5 +1,11 @@
 import * as _ from 'underscore'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PeripheralDeviceType,
+	PeripheralDeviceCategory,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
@@ -24,6 +30,7 @@ import {
 	IBlueprintPiece,
 	TriggerType,
 	PlayoutActions,
+	StatusCode,
 	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
@@ -40,8 +47,7 @@ import { literal, getCurrentTime, protectString, unprotectString, getRandomId } 
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
-import { Piece, Pieces } from '../../lib/collections/Pieces'
-import { RundownAPI } from '../../lib/api/rundown'
+import { Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
@@ -57,7 +63,6 @@ import {
 	defaultStudio,
 } from '../defaultCollectionObjects'
 import { OrganizationId } from '../../lib/collections/Organization'
-import { StatusCode } from '../../lib/api/systemStatus'
 import { PackageInfo } from '../../server/coreSystem'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 
@@ -90,10 +95,10 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 
 let dbI: number = 0
 export function setupMockPeripheralDevice(
-	category: PeripheralDeviceAPI.DeviceCategory,
-	type: PeripheralDeviceAPI.DeviceType,
+	category: PeripheralDeviceCategory,
+	type: PeripheralDeviceType,
 	subType: PeripheralDeviceAPI.DeviceSubType,
-	studio?: Studio,
+	studio?: Pick<Studio, '_id'>,
 	doc?: Partial<PeripheralDevice>
 ) {
 	doc = doc || {}
@@ -484,9 +489,9 @@ export async function setupDefaultStudioEnvironment(
 		organizationId: organizationId,
 	})
 	const ingestDevice = setupMockPeripheralDevice(
-		PeripheralDeviceAPI.DeviceCategory.INGEST,
-		PeripheralDeviceAPI.DeviceType.MOS,
-		PeripheralDeviceAPI.SUBTYPE_PROCESS,
+		PeripheralDeviceCategory.INGEST,
+		PeripheralDeviceType.MOS,
+		PERIPHERAL_SUBTYPE_PROCESS,
 		studio,
 		{ organizationId: organizationId }
 	)
@@ -593,7 +598,7 @@ export function setupDefaultRundown(
 		startSegmentId: part00.segmentId,
 		startPartId: part00._id,
 		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
@@ -615,7 +620,7 @@ export function setupDefaultRundown(
 		startSegmentId: part00.segmentId,
 		startPartId: part00._id,
 		name: 'Piece 001',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
@@ -638,7 +643,7 @@ export function setupDefaultRundown(
 		externalId: 'MOCK_ADLIB_000',
 		partId: part00._id,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -667,7 +672,7 @@ export function setupDefaultRundown(
 		startSegmentId: part01.segmentId,
 		startPartId: part01._id,
 		name: 'Piece 010',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
@@ -741,7 +746,7 @@ export function setupDefaultRundown(
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
 		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -756,7 +761,7 @@ export function setupDefaultRundown(
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
 		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -828,7 +833,7 @@ export function setupRundownWithAutoplayPart0(
 		...defaultAdLibPiece(protectString(rundownId + '_adLib000'), segment0.rundownId, part00._id),
 		expectedDuration: 1000,
 		externalId: 'MOCK_ADLIB_000',
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -899,7 +904,7 @@ export function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
 		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -914,7 +919,7 @@ export function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
 		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,

@@ -8,7 +8,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { protectString } from '../../../lib/lib'
+import { protectString, stringifyError } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
@@ -63,7 +63,11 @@ export const ClipTrimDialog = withTranslation()(
 				(err) => {
 					clearTimeout(pendingInOutPoints)
 
-					if (ClientAPI.isClientResponseError(err) && err.message && err.message.match(/timed out/)) {
+					if (
+						ClientAPI.isClientResponseError(err) &&
+						err.error.rawError &&
+						stringifyError(err.error.rawError).match(/timed out/)
+					) {
 						NotificationCenter.push(
 							new Notification(
 								undefined,

@@ -13,7 +13,7 @@ import {
 	RundownPlaylistId,
 	RundownPlaylists,
 } from '../../../lib/collections/RundownPlaylists'
-import { ISourceLayer, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, ITranslatableMessage, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import {
 	ActionContext,
@@ -29,7 +29,6 @@ import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { preventDefault } from '../SorensenContext'
 import { logger } from '../../../lib/logging'
 

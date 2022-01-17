@@ -4,11 +4,12 @@ import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mo
 import { literal, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
-import { StatusCode, StatusResponse } from '../../../lib/api/systemStatus'
+import { StatusResponse } from '../../../lib/api/systemStatus'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { stripVersion } from '../../../lib/collections/CoreSystem'
 import semver from 'semver'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 
 require('../api')

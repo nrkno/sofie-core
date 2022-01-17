@@ -1,16 +1,18 @@
 import '../../../__mocks__/_extendJest'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDevices,
+	PeripheralDeviceType,
+} from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Parts } from '../../../lib/collections/Parts'
-import { Pieces } from '../../../lib/collections/Pieces'
-
+import { Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
-
 import {
 	getCurrentTime,
 	literal,
@@ -19,58 +21,45 @@ import {
 	waitTime,
 	getRandomId,
 	LogLevel,
-	normalizeArrayToMap,
+	getRandomString,
 } from '../../../lib/lib'
-import * as MOS from 'mos-connection'
+
+import { MOS } from '@sofie-automation/corelib'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
-import {
-	RundownPlaylists,
-	RundownPlaylistId,
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
-} from '../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
-
-jest.mock('../playout/playout.ts')
-jest.mock('ntp-client')
-
-const { ServerPlayoutAPI: _ActualServerPlayoutAPI } = jest.requireActual('../playout/playout.ts')
-
-import { ServerPlayoutAPI } from '../playout/playout'
-import { RundownAPI } from '../../../lib/api/rundown'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import {
-	deserializeTimelineBlob,
-	Timeline,
-	TimelineComplete,
-	TimelineEnableExt,
-	TimelineObjGeneric,
-} from '../../../lib/collections/Timeline'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
-import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
-import { VerifiedRundownPlaylistContentAccess } from '../lib'
-import { PartInstance } from '../../../lib/collections/PartInstances'
-import { MeteorCall } from '../../../lib/api/methods'
+import {
+	IBlueprintPieceType,
+	PieceLifespan,
+	PlaylistTimingType,
+	StatusCode,
+} from '@sofie-automation/blueprints-integration'
+import { CreateFakeResult, QueueStudioJobSpy } from '../../../__mocks__/worker'
 
 import '../peripheralDevice'
+import {
+	OnPartPlaybackStartedProps,
+	OnPartPlaybackStoppedProps,
+	OnPiecePlaybackStartedProps,
+	OnPiecePlaybackStoppedProps,
+	OnTimelineTriggerTimeProps,
+	StudioJobs,
+} from '@sofie-automation/corelib/dist/worker/studio'
+import { MeteorCall } from '../../../lib/api/methods'
+
+// import * as Workers from '../../worker/worker'
+// const queueStudioJobSpy = jest.spyOn(Workers, 'QueueStudioJob')
 
 const DEBUG = false
-
-const ActualServerPlayoutAPI: typeof ServerPlayoutAPI = _ActualServerPlayoutAPI
-
-function DEFAULT_ACCESS(rundownPlaylistID: RundownPlaylistId): VerifiedRundownPlaylistContentAccess {
-	const playlist = RundownPlaylists.findOne(rundownPlaylistID) as RundownPlaylist
-	expect(playlist).toBeTruthy()
-	return { userId: null, organizationId: null, studioId: null, playlist: playlist, cred: {} }
-}
 
 describe('test peripheralDevice general API methods', () => {
 	let device: PeripheralDevice
@@ -154,7 +143,7 @@ describe('test peripheralDevice general API methods', () => {
 			startPartId: protectString('part000'),
 			startSegmentId: segmentID,
 			startRundownId: rundownID,
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			status: PieceStatusCode.UNKNOWN,
 			lifespan: PieceLifespan.WithinPart,
 			pieceType: IBlueprintPieceType.Normal,
 			invalid: false,
@@ -186,6 +175,10 @@ describe('test peripheralDevice general API methods', () => {
 			externalModified: 1,
 		})
 	})
+	beforeEach(async () => {
+		QueueStudioJobSpy.mockReset()
+		QueueStudioJobSpy.mockClear()
+	})
 
 	testInFiber('initialize', async () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
@@ -193,8 +186,8 @@ describe('test peripheralDevice general API methods', () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 
 		const options: PeripheralDeviceAPI.InitOptions = {
-			category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-			type: PeripheralDeviceAPI.DeviceType.MOS,
+			category: PeripheralDeviceCategory.INGEST,
+			type: PeripheralDeviceType.MOS,
 			subType: 'mos_connection',
 			name: 'test',
 			connectionId: 'test',
@@ -213,14 +206,14 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('setStatus', async () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
-			statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 		})
 		await MeteorCall.peripheralDevice.setStatus(device._id, device.token, {
-			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
+			statusCode: StatusCode.WARNING_MINOR,
 			messages: ["Something's not right"],
 		})
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
-			statusCode: PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
+			statusCode: StatusCode.WARNING_MINOR,
 			messages: ["Something's not right"],
 		})
 	})
@@ -315,174 +308,132 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('partPlaybackStarted', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
-		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
-		expect(playlist).toBeTruthy()
-		const currentPartInstance = (playlist &&
-			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)?.currentPartInstance) as PartInstance
-		expect(currentPartInstance).toBeTruthy()
+
+		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
+
 		const partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: currentPartInstance._id,
+			partInstanceId: getRandomId(),
 			time: getCurrentTime(),
 		}
 		await MeteorCall.peripheralDevice.partPlaybackStarted(device._id, device.token, partPlaybackStartedResult)
 
-		expect(ServerPlayoutAPI.onPartPlaybackStarted).toHaveBeenCalled()
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		expect(QueueStudioJobSpy).toHaveBeenCalledTimes(1)
+		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
+			1,
+			StudioJobs.OnPartPlaybackStarted,
+			device.studioId,
+			literal<OnPartPlaybackStartedProps>({
+				playlistId: partPlaybackStartedResult.rundownPlaylistId,
+				partInstanceId: partPlaybackStartedResult.partInstanceId,
+				startedPlayback: partPlaybackStartedResult.time,
+			})
+		)
 	})
 
 	testInFiber('partPlaybackStopped', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
-		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
-		expect(playlist).toBeTruthy()
-		const currentPartInstance = (playlist &&
-			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)?.currentPartInstance) as PartInstance
-		expect(currentPartInstance).toBeTruthy()
+
+		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
+
 		const partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: currentPartInstance._id,
+			partInstanceId: getRandomId(),
 			time: getCurrentTime(),
 		}
 
 		await MeteorCall.peripheralDevice.partPlaybackStopped(device._id, device.token, partPlaybackStoppedResult)
 
-		expect(ServerPlayoutAPI.onPartPlaybackStopped).toHaveBeenCalled()
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		expect(QueueStudioJobSpy).toHaveBeenCalledTimes(1)
+		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
+			1,
+			StudioJobs.OnPartPlaybackStopped,
+			device.studioId,
+			literal<OnPartPlaybackStoppedProps>({
+				playlistId: partPlaybackStoppedResult.rundownPlaylistId,
+				partInstanceId: partPlaybackStoppedResult.partInstanceId,
+				stoppedPlayback: partPlaybackStoppedResult.time,
+			})
+		)
 	})
 
 	testInFiber('piecePlaybackStarted', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
-		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
-		expect(playlist).toBeTruthy()
-		const currentPartInstance = (playlist &&
-			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)?.currentPartInstance) as PartInstance
-		expect(currentPartInstance).toBeTruthy()
-		const pieces = PieceInstances.find({
-			partInstanceId: currentPartInstance._id,
-		}).fetch()
+
+		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
+
 		const piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
-			pieceInstanceId: pieces[0]._id,
+			pieceInstanceId: getRandomId(),
 			time: getCurrentTime(),
 		}
 
 		await MeteorCall.peripheralDevice.piecePlaybackStarted(device._id, device.token, piecePlaybackStartedResult)
 
-		expect(ServerPlayoutAPI.onPiecePlaybackStarted).toHaveBeenCalled()
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		expect(QueueStudioJobSpy).toHaveBeenCalledTimes(1)
+		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
+			1,
+			StudioJobs.OnPiecePlaybackStarted,
+			device.studioId,
+			literal<OnPiecePlaybackStartedProps>({
+				playlistId: piecePlaybackStartedResult.rundownPlaylistId,
+				pieceInstanceId: piecePlaybackStartedResult.pieceInstanceId,
+				startedPlayback: piecePlaybackStartedResult.time,
+			})
+		)
 	})
 
 	testInFiber('piecePlaybackStopped', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
-		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
-		expect(playlist).toBeTruthy()
-		const currentPartInstance = (playlist &&
-			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)?.currentPartInstance) as PartInstance
-		expect(currentPartInstance).toBeTruthy()
-		const pieces = PieceInstances.find({
-			partInstanceId: currentPartInstance._id,
-		}).fetch()
+
+		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
+
 		const piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,
-			pieceInstanceId: pieces[0]._id,
+			pieceInstanceId: getRandomId(),
 			time: getCurrentTime(),
 		}
 
 		await MeteorCall.peripheralDevice.piecePlaybackStopped(device._id, device.token, piecePlaybackStoppedResult)
 
-		expect(ServerPlayoutAPI.onPiecePlaybackStopped).toHaveBeenCalled()
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		expect(QueueStudioJobSpy).toHaveBeenCalledTimes(1)
+		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
+			1,
+			StudioJobs.OnPiecePlaybackStopped,
+			device.studioId,
+			literal<OnPiecePlaybackStoppedProps>({
+				playlistId: piecePlaybackStoppedResult.rundownPlaylistId,
+				pieceInstanceId: piecePlaybackStoppedResult.pieceInstanceId,
+				stoppedPlayback: piecePlaybackStoppedResult.time,
+			})
+		)
 	})
 
 	testInFiber('timelineTriggerTime', async () => {
-		await ActualServerPlayoutAPI.activateRundownPlaylist(
-			DEFAULT_ACCESS(rundownPlaylistID),
-			rundownPlaylistID,
-			false
-		)
-		await ActualServerPlayoutAPI.takeNextPart(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID, null)
-
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
-		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
-		expect(playlist).toBeTruthy()
-		expect(playlist?.activationId).toBeTruthy()
 
-		const studioTimeline = Timeline.findOne({
-			_id: env.studio._id,
-		}) as TimelineComplete
-		expect(studioTimeline).toBeTruthy()
+		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
 
-		const timeline0 = studioTimeline && deserializeTimelineBlob(studioTimeline.timelineBlob)
-		const nowTimelineObjs =
-			(studioTimeline &&
-				timeline0 &&
-				timeline0.filter((x) => x.enable && !Array.isArray(x.enable) && x.enable.start === 'now')) ||
-			[]
-		expect(nowTimelineObjs.length).toBe(1)
-		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = nowTimelineObjs.map(
-			(tObj) => ({
-				id: tObj.id,
+		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = []
+		for (let i = 0; i < 10; i++) {
+			timelineTriggerTimeResult.push({
+				id: getRandomString(),
 				time: getCurrentTime(),
 			})
-		)
-
-		// Let the call through to the real implementation
-		;(ServerPlayoutAPI.timelineTriggerTimeForStudioId as jest.Mock).mockImplementationOnce(
-			ActualServerPlayoutAPI.timelineTriggerTimeForStudioId
-		)
+		}
 
 		await MeteorCall.peripheralDevice.timelineTriggerTime(device._id, device.token, timelineTriggerTimeResult)
 
-		const updatedStudioTimeline = Timeline.findOne({
-			_id: env.studio._id,
-		})
-		const prevIds = nowTimelineObjs.map((x) => x.id)
-		const timeline1 = updatedStudioTimeline && deserializeTimelineBlob(updatedStudioTimeline.timelineBlob)
-		const timelineUpdatedObjs = (timeline1 && timeline1.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
-		const updatedObjectMap = normalizeArrayToMap(timelineUpdatedObjs, 'id')
-		for (const prevObj of nowTimelineObjs) {
-			const tlObj = updatedObjectMap.get(prevObj.id) as TimelineObjGeneric
-			expect(tlObj).toBeTruthy()
-			expect(Array.isArray(tlObj.enable)).toBeFalsy()
-			const enable = tlObj.enable as TimelineEnableExt
-			expect(enable.setFromNow).toBe(true)
-			expect(enable.start).toBeGreaterThan(0)
-		}
-
-		await ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_ACCESS(rundownPlaylistID), rundownPlaylistID)
+		expect(QueueStudioJobSpy).toHaveBeenCalledTimes(1)
+		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
+			1,
+			StudioJobs.OnTimelineTriggerTime,
+			device.studioId,
+			literal<OnTimelineTriggerTimeProps>({
+				results: timelineTriggerTimeResult,
+			})
+		)
 	})
 
 	testInFiber('killProcess with a rundown present', async () => {
@@ -521,7 +472,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		PeripheralDevices.update(device._id, {
 			$set: {
-				type: PeripheralDeviceAPI.DeviceType.SPREADSHEET,
+				type: PeripheralDeviceType.SPREADSHEET,
 			},
 		})
 		await MeteorCall.peripheralDevice.requestUserAuthToken(device._id, device.token, 'http://auth.url/')
@@ -531,7 +482,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		PeripheralDevices.update(device._id, {
 			$set: {
-				type: PeripheralDeviceAPI.DeviceType.MOS,
+				type: PeripheralDeviceType.MOS,
 			},
 		})
 	})
@@ -545,7 +496,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		PeripheralDevices.update(device._id, {
 			$set: {
-				type: PeripheralDeviceAPI.DeviceType.SPREADSHEET,
+				type: PeripheralDeviceType.SPREADSHEET,
 			},
 		})
 
@@ -571,8 +522,8 @@ describe('test peripheralDevice general API methods', () => {
 	// Note: this test fails, due to a backwards-compatibility hack in #c579c8f0
 	// testInFiber('initialize with bad arguments', () => {
 	// 	let options: PeripheralDeviceAPI.InitOptions = {
-	// 		category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-	// 		type: PeripheralDeviceAPI.DeviceType.MOS,
+	// 		category: PeripheralDeviceCategory.INGEST,
+	// 		type: PeripheralDeviceType.MOS,
 	// 		subType: 'mos_connection',
 	// 		name: 'test',
 	// 		connectionId: 'test',
@@ -642,7 +593,7 @@ describe('test peripheralDevice general API methods', () => {
 				organizationId: null,
 				name: 'Mock Media Manager',
 				studioId: env.studio._id,
-				category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
+				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
 					deviceConfig: [],
 				},
@@ -652,11 +603,11 @@ describe('test peripheralDevice general API methods', () => {
 				lastConnected: 0,
 				lastSeen: 0,
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: '_process',
 				token: 'MockToken',
-				type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+				type: PeripheralDeviceType.MEDIA_MANAGER,
 			})
 			device = PeripheralDevices.findOne(deviceId)!
 			MediaWorkFlows.insert({
@@ -795,7 +746,7 @@ describe('test peripheralDevice general API methods', () => {
 				organizationId: null,
 				name: 'Mock Media Manager',
 				studioId: env.studio._id,
-				category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
+				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
 					deviceConfig: [],
 				},
@@ -805,11 +756,11 @@ describe('test peripheralDevice general API methods', () => {
 				lastConnected: 0,
 				lastSeen: 0,
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: '_process',
 				token: 'MockToken',
-				type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+				type: PeripheralDeviceType.MEDIA_MANAGER,
 			})
 			device = PeripheralDevices.findOne(deviceId)!
 

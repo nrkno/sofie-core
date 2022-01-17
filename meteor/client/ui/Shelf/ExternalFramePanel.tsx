@@ -24,7 +24,7 @@ import {
 	UIMetricMode as MOSUIMetricMode,
 	Events as MOSEvents,
 } from '../../lib/data/mos/plugin-support'
-import { IMOSItem } from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -184,7 +184,7 @@ export const ExternalFramePanel = withTranslation()(
 			return undefined
 		}
 
-		receiveMOSItem(e: any, mosItem: IMOSItem) {
+		receiveMOSItem(e: any, mosItem: MOS.IMOSItem) {
 			const { t, playlist } = this.props
 
 			console.log('Object received, passing onto blueprints', mosItem)

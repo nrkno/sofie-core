@@ -1,7 +1,7 @@
 import * as SuperTimeline from 'superfly-timeline'
 import * as _ from 'underscore'
 import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
-import { Timecode } from 'timecode'
+import { Timecode } from '@sofie-automation/corelib/dist/index'
 import { Settings } from '../../lib/Settings'
 import {
 	SourceLayerType,
@@ -28,15 +28,16 @@ import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
-import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
-import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
+import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
+import { createPieceGroupAndCap, PieceGroupMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { FindOptions } from '../../lib/typings/meteor'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown, RundownId } from '../../lib/collections/Rundowns'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '../../lib/rundown/timings'
+import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId
@@ -61,6 +62,7 @@ export namespace RundownUtils {
 	}
 
 	export function formatTimeToTimecode(
+		studioSettings: Pick<IStudioSettings, 'frameRate'>,
 		milliseconds: number,
 		showPlus?: boolean,
 		enDashAsMinus?: boolean,
@@ -74,9 +76,9 @@ export namespace RundownUtils {
 			if (showPlus) sign = '+'
 		}
 		const tc = Timecode.init({
-			framerate: Settings.frameRate + '',
-			timecode: (milliseconds * Settings.frameRate) / 1000,
-			drop_frame: !Number.isInteger(Settings.frameRate),
+			framerate: studioSettings.frameRate + '',
+			timecode: (milliseconds * studioSettings.frameRate) / 1000,
+			drop_frame: !Number.isInteger(studioSettings.frameRate),
 		})
 		const timeCodeString: string = tc.toString()
 		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)

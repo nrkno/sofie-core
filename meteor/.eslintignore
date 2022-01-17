@@ -2,3 +2,4 @@
 public
 eslint-rules
 scripts
+server/_force_restart.js

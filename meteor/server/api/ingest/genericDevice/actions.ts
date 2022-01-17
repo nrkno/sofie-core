@@ -7,7 +7,8 @@ import { logger } from '../../../logging'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import * as _ from 'underscore'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
-import { handleUpdatedRundown } from '../rundownInput'
+import { runIngestOperation } from '../lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 export namespace GenericDeviceActions {
 	export async function reloadRundown(
@@ -39,7 +40,12 @@ export namespace GenericDeviceActions {
 					)
 				}
 
-				await handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, true)
+				await runIngestOperation(rundown.studioId, IngestJobs.UpdateRundown, {
+					rundownExternalId: ingestRundown.externalId,
+					peripheralDeviceId: peripheralDevice._id,
+					ingestRundown: ingestRundown,
+					isCreateAction: true,
+				})
 
 				return TriggerReloadDataResponse.COMPLETED
 			}
