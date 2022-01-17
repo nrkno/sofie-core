@@ -20,7 +20,7 @@ import { CollectionObj } from '@sofie-automation/server-core-integration'
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
 import { TSRHandler } from './tsrHandler'
-import { LoggerInstance } from './index'
+import { Logger } from 'winston'
 // eslint-disable-next-line node/no-extraneous-import
 import { ThreadedClass, MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
 import { Process } from './process'
@@ -55,7 +55,7 @@ export interface MemoryUsageReport {
  */
 export class CoreHandler {
 	core!: CoreConnection
-	logger: LoggerInstance
+	logger: Logger
 	public _observers: Array<any> = []
 	public deviceSettings: { [key: string]: any } = {}
 
@@ -78,7 +78,7 @@ export class CoreHandler {
 	private _statusInitialized = false
 	private _statusDestroyed = false
 
-	constructor(logger: LoggerInstance, deviceOptions: DeviceConfig) {
+	constructor(logger: Logger, deviceOptions: DeviceConfig) {
 		this.logger = logger
 		this._deviceOptions = deviceOptions
 	}
