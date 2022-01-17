@@ -3,7 +3,7 @@ import { protectString, protectStringArray } from '@sofie-automation/corelib/dis
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupApmAgent } from './profiler'
 import { createMongoConnection } from './db'
-import { getRandomString, sleep } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { StudioWorkerSet } from './workers/worker-set'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Db as MongoDb, MongoClient } from 'mongodb'
@@ -57,15 +57,6 @@ export abstract class JobWorkerBase {
 		const db = this.#client.db(dbName)
 		// Find the current studios
 		const studioIds = await getStudioIdsToRun(db)
-
-		if (studioIds.length === 0) {
-			console.error('No studios to run for. Exiting')
-			await sleep(10000)
-
-			// eslint-disable-next-line no-process-exit
-			process.exit(1)
-		}
-
 		for (const studioId of studioIds) {
 			// Start up each studio, one at a time
 			this.#workers.set(

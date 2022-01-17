@@ -176,9 +176,17 @@ async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
 
 let worker: Promisify<IpcJobWorker> | undefined
 Meteor.startup(() => {
-	const mongoUri = 'mongodb://127.0.0.1:3001?retryWrites=true&writeConcern=majority'
-	const dbName = 'meteor'
+	if (!process.env.MONGO_URL) throw new Error('MONGO_URL must be defined to launch Sofie')
+	// Note: MONGO_OPLOG_URL isn't required for the worker, but is required for meteor to not lag badly
+	if (!process.env.MONGO_OPLOG_URL) throw new Error('MONGO_OPLOG_URL must be defined to launch Sofie')
 
+	// Meteor wants the dbname as the path of the mongo url, but the mongodb driver needs it separate
+	const rawUrl = new URL(process.env.MONGO_URL)
+	const dbName = rawUrl.pathname.substring(1) // Trim off first '/'
+	rawUrl.pathname = ''
+	const mongoUri = rawUrl.toString()
+
+	// In dev, the path is predictable. In bundled meteor the path will be different, so take it from an env variable
 	let workerEntrypoint = '@sofie-automation/job-worker/dist/ipc.js'
 	if (process.env.WORKER_EXEC_DIR) {
 		workerEntrypoint = path.join(process.env.WORKER_EXEC_DIR, 'dist/ipc.js')

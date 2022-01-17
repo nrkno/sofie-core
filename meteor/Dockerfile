@@ -30,6 +30,9 @@ FROM node:12.22-slim
 COPY --from=0 /opt/bundle /opt/core
 COPY --from=0 /opt/core/packages /opt/packages
 COPY meteor/docker-entrypoint.sh /opt
+
+# Tell meteor where the worker code is located
 ENV WORKER_EXEC_DIR=/opt/packages/job-worker
+
 WORKDIR /opt/core/
 CMD ["/opt/docker-entrypoint.sh"]
