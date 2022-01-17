@@ -15,7 +15,7 @@ module.exports = {
 	moduleFileExtensions: ['js', 'ts', 'json'],
 	transform: {
 		'^.+\\.(ts|tsx)$': 'ts-jest',
-		'^.+\\.(js|jsx|mjs)$': path.resolve('./scripts/babel-jest.js'),
+		'^.+\\.(js|jsx|mjs)$': path.resolve('./scripts/babel-jest.mjs'),
 	},
 	transformIgnorePatterns: ['node_modules/(?!(debounce-fn|p-queue|p-timeout)/)', '\\.pnp\\.[^\\/]+$'],
 	globalSetup: './src/__mocks__/global-setup.js',
