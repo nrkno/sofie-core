@@ -4,7 +4,7 @@ import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
-import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
+import { Time, ProtectedString, unprotectString, isProtectedString, protectString, assertNever } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -477,13 +477,18 @@ export class Notification extends EventEmitter {
 }
 
 export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoticeLevel | null {
-	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
-		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-			? NoticeLevel.CRITICAL
-			: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-			  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
-			  NoticeLevel.WARNING
-		: null
+	if (statusCode === RundownAPI.PieceStatusCode.OK || statusCode === RundownAPI.PieceStatusCode.UNKNOWN) {
+		return null
+	} else if (statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET) {
+		return NoticeLevel.CRITICAL
+	} else if (statusCode === RundownAPI.PieceStatusCode.SOURCE_MISSING) {
+		return NoticeLevel.WARNING
+	} else if (statusCode === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
+		return NoticeLevel.WARNING
+	} else {
+		assertNever(statusCode)
+		return NoticeLevel.WARNING
+	}
 }
 
 window['testNotification'] = function (
