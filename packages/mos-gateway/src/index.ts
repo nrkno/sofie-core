@@ -107,18 +107,18 @@ if (logPath) {
 	const transportConsole = new Winston.transports.Console({
 		level: 'debug',
 		handleExceptions: true,
-		handleRejections: true,
+		handleRejections: true
 	})
 	const transportFile = new Winston.transports.File({
 		level: 'debug',
 		handleExceptions: true,
 		handleRejections: true,
 		filename: logPath,
-		format: combine(splat(), myLogFormat),
+		format: combine(splat(), myLogFormat)
 	})
 
 	logger = Winston.createLogger({
-		transports: [transportConsole, transportFile],
+		transports: [transportConsole, transportFile]
 	})
 	logger.info('Logging to', logPath)
 
@@ -148,11 +148,11 @@ if (logPath) {
 		level: 'debug',
 		handleExceptions: true,
 		handleRejections: true,
-		format: combine(splat(), myLogFormat),
+		format: combine(splat(), myLogFormat)
 	})
 
 	logger = Winston.createLogger({
-		transports: [transportConsole],
+		transports: [transportConsole]
 	})
 	logger.info('Logging to Console')
 
@@ -195,16 +195,16 @@ logger.debug(`Test debug logging`)
 let config: Config = {
 	process: {
 		unsafeSSL: unsafeSSL,
-		certificates: _.compact(certs),
+		certificates: _.compact(certs)
 	},
 	device: {
 		deviceId: deviceId,
-		deviceToken: deviceToken,
+		deviceToken: deviceToken
 	},
 	core: {
 		host: host,
 		port: port,
-		watchdog: !disableWatchdog,
+		watchdog: !disableWatchdog
 	},
 	mos: {
 		self: {
@@ -221,10 +221,10 @@ let config: Config = {
 				'4': false,
 				'5': false,
 				'6': false,
-				'7': false,
+				'7': false
 			},
-			offspecFailover: true,
-		},
+			offspecFailover: true
+		}
 		// devices: [{
 		// 	primary: {
 		// 		id: '2012R2ENPS8VM',
@@ -235,7 +235,7 @@ let config: Config = {
 		// 		host: string;
 		// 	},*/
 		// }]
-	},
+	}
 }
 
 let c = new Connector(logger)

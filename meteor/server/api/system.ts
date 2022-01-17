@@ -32,7 +32,7 @@ async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<In
 	await Promise.all(
 		Object.entries(targetIndexes).map(async ([collectionName, targetInfo]) => {
 			const rawCollection = targetInfo.collection.rawCollection()
-			const existingIndexes = await rawCollection.indexes()
+			const existingIndexes = (await rawCollection.indexes()) as any[]
 
 			const targetIndexes: IndexSpecifier<any>[] = [...targetInfo.indexes, { _id: 1 }]
 

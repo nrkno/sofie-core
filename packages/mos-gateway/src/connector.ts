@@ -26,11 +26,11 @@ export class Connector {
 	private _logger: Winston.Logger
 	private _process: Process
 
-	constructor(logger: Winston.Logger) {
+	constructor (logger: Winston.Logger) {
 		this._logger = logger
 	}
 
-	init(config: Config): Promise<void> {
+	init (config: Config): Promise<void> {
 		this._config = config
 
 		return Promise.resolve()
@@ -67,19 +67,19 @@ export class Connector {
 				return
 			})
 	}
-	initProcess() {
+	initProcess () {
 		this._process = new Process(this._logger)
 		this._process.init(this._config.process)
 	}
-	initCore() {
+	initCore () {
 		this.coreHandler = new CoreHandler(this._logger, this._config.device)
 		return this.coreHandler.init(this._config.core, this._process)
 	}
-	initMos(): Promise<void> {
+	initMos (): Promise<void> {
 		this.mosHandler = new MosHandler(this._logger)
 		return this.mosHandler.init(this._config.mos, this.coreHandler)
 	}
-	dispose(): Promise<void> {
+	dispose (): Promise<void> {
 		return (this.mosHandler ? this.mosHandler.dispose() : Promise.resolve())
 			.then(() => {
 				return this.coreHandler ? this.coreHandler.dispose() : Promise.resolve()

@@ -19,7 +19,7 @@ import {
 	IConnectionConfig,
 	IMOSDeviceConnectionOptions,
 	MosDevice,
-	IMOSListMachInfo,
+	IMOSListMachInfo
 } from 'mos-connection'
 import * as _ from 'underscore'
 import * as Winston from 'winston'
@@ -76,10 +76,10 @@ export class MosHandler {
 	private _observers: Array<any> = []
 	private _triggerupdateDevicesTimeout: any = null
 
-	constructor(logger: Winston.Logger) {
+	constructor (logger: Winston.Logger) {
 		this._logger = logger
 	}
-	init(config: MosConfig, coreHandler: CoreHandler): Promise<void> {
+	init (config: MosConfig, coreHandler: CoreHandler): Promise<void> {
 		this.mosOptions = config
 		this._coreHandler = coreHandler
 		/*{
@@ -129,7 +129,7 @@ export class MosHandler {
 				})
 		)
 	}
-	dispose(): Promise<void> {
+	dispose (): Promise<void> {
 		this._disposed = true
 		if (this.mos) {
 			return this.mos.dispose()
@@ -137,7 +137,7 @@ export class MosHandler {
 			return Promise.resolve()
 		}
 	}
-	setupObservers() {
+	setupObservers () {
 		if (this._observers.length) {
 			this._observers.forEach((obs) => {
 				obs.stop()
@@ -172,12 +172,12 @@ export class MosHandler {
 
 		this._deviceOptionsChanged()
 	}
-	debugLog(msg: any, ...args: any[]) {
+	debugLog (msg: any, ...args: any[]) {
 		if (this.debugLogging) {
 			this._logger.debug(msg, ...args)
 		}
 	}
-	private _deviceOptionsChanged() {
+	private _deviceOptionsChanged () {
 		let peripheralDevice = this.getThisPeripheralDevice()
 		if (peripheralDevice) {
 			let settings: MosDeviceSettings = peripheralDevice.settings || {}
@@ -208,7 +208,7 @@ export class MosHandler {
 			})
 		}, 20)
 	}
-	private _initMosConnection(): Promise<void> {
+	private _initMosConnection (): Promise<void> {
 		if (this._disposed) return Promise.resolve()
 		if (!this._settings) throw Error('Mos-Settings are not set')
 
@@ -382,7 +382,7 @@ export class MosHandler {
 			return
 		})
 	}
-	private sendStatusOfAllMosDevices() {
+	private sendStatusOfAllMosDevices () {
 		// Send an update to Core of the status of all mos devices
 		for (const handler of Object.values(this.allMosDevices)) {
 			if (handler.coreMosHandler) {
@@ -390,11 +390,11 @@ export class MosHandler {
 			}
 		}
 	}
-	private getThisPeripheralDevice(): CollectionObj | undefined {
+	private getThisPeripheralDevice (): CollectionObj | undefined {
 		let peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
 		return peripheralDevices.findOne(this._coreHandler.core.deviceId)
 	}
-	private _updateDevices(): Promise<void> {
+	private _updateDevices (): Promise<void> {
 		if (this._disposed) return Promise.resolve()
 		return (!this.mos ? this._initMosConnection() : Promise.resolve())
 			.then(() => {
@@ -464,7 +464,7 @@ export class MosHandler {
 				return
 			})
 	}
-	private _addDevice(deviceId: string, deviceOptions: IMOSDeviceConnectionOptions): Promise<MosDevice> {
+	private _addDevice (deviceId: string, deviceOptions: IMOSDeviceConnectionOptions): Promise<MosDevice> {
 		if (this._getDevice(deviceId)) {
 			// the device is already there
 			throw new Error('Unable to add device "' + deviceId + '", because it already exists!')
@@ -522,7 +522,7 @@ export class MosHandler {
 				})
 		})
 	}
-	private _removeDevice(deviceId: string): Promise<void> {
+	private _removeDevice (deviceId: string): Promise<void> {
 		// let mosDevice = this.mos.getDevice(deviceId)
 		let mosDevice = this._getDevice(deviceId) as MosDevice
 
@@ -553,16 +553,16 @@ export class MosHandler {
 		}
 		return Promise.resolve()
 	}
-	private _getDevice(deviceId: string): MosDevice | null {
+	private _getDevice (deviceId: string): MosDevice | null {
 		return this._ownMosDevices[deviceId] || null
 	}
-	private _getROAck(roId: MosString128, p: Promise<IMOSROAck>) {
+	private _getROAck (roId: MosString128, p: Promise<IMOSROAck>) {
 		return p
 			.then(() => {
 				let roAck: IMOSROAck = {
 					ID: roId,
 					Status: new MosString128('OK'),
-					Stories: [], // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)
+					Stories: [] // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)
 				}
 				return roAck
 			})
@@ -571,7 +571,7 @@ export class MosHandler {
 				let roAck: IMOSROAck = {
 					ID: roId,
 					Status: new MosString128('Error: ' + err.toString()),
-					Stories: [], // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)
+					Stories: [] // Array<IMOSROAckStory> // todo: implement this later (?) (unknown if we really need to)
 				}
 				return roAck
 			})
