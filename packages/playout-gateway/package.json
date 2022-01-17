@@ -36,7 +36,7 @@
 		"start": "node dist/index.js",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck --allowPackages cycle@1.0.3",
+		"license-validate": "yarn sofie-licensecheck",
 		"precommit": "lint-staged"
 	},
 	"engines": {
@@ -61,7 +61,7 @@
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.2",
-		"timeline-state-resolver": "6.4.0-nightly-release39-20220113-131814-5ea1df54c.0",
+		"timeline-state-resolver": "6.4.0-nightly-release39-20220117-145627-f32e78af4.0",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
 		"winston": "^3.4.0"

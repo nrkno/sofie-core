@@ -69,12 +69,18 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.launcherPort',
 			name: 'Launcher Port',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.fps',
 			name: 'Frame rate',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.FLOAT,
+		},
+		{
+			id: 'options.retryInterval',
+			name: 'Retry interval',
+			hint: 'Time between retries for media that could not be loaded on first try. Set to -1 to disable.',
+			type: ConfigManifestEntryType.INT,
 		},
 	],
 	[TSRDeviceType.ATEM]: [
