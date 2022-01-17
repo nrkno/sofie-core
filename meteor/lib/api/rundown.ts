@@ -54,6 +54,9 @@ export namespace RundownAPI {
 		/** No fault with piece, can be played */
 		OK = 0,
 
+		/** The source can be played, but some issues have been detected with it. It can be played fine from a technical standpoint, but the user should be notified. */
+		SOURCE_HAS_ISSUES = 10,
+
 		/** The source is present, but should not be played due to a technical malfunction (file is broken, camera robotics failed, REMOTE input is just bars, etc.) */
 		SOURCE_BROKEN = 20,
 

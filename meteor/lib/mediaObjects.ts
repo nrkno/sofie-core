@@ -390,7 +390,7 @@ export function checkPieceContentStatus(
 									const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
 									if (anomalies[0].start === 0) {
 										messages.push({
-											status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+											status: RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES,
 											message: t('Clip starts with {{frames}} {{type}} frames', {
 												frames,
 												type,
@@ -400,7 +400,7 @@ export function checkPieceContentStatus(
 									} else if (scan.format && anomalies[0].end === Number(scan.format.duration)) {
 										const freezeStartsAt = Math.round(anomalies[0].start)
 										messages.push({
-											status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+											status: RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES,
 											message: t('This clip ends with {{type}} frames after {{count}} seconds', {
 												frames,
 												type,
@@ -409,7 +409,7 @@ export function checkPieceContentStatus(
 										})
 									} else if (frames > 0) {
 										messages.push({
-											status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+											status: RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES,
 											message: t('{{frames}} {{type}} frames detected within the clip', {
 												frames,
 												type,
@@ -421,7 +421,7 @@ export function checkPieceContentStatus(
 									const dur = anomalies.map((b) => b.duration).reduce((a, b) => a + b, 0)
 									const frames = Math.ceil((dur * 1000) / timebase)
 									messages.push({
-										status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+										status: RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES,
 										message: t('{{frames}} {{type}} frames detected in the clip', {
 											frames,
 											type,
@@ -564,7 +564,7 @@ export function checkPieceContentStatus(
 												const frames = Math.ceil((arr[0].duration * 1000) / timebase)
 												if (arr[0].start === 0) {
 													messages.push({
-														status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+														status: RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES,
 														message: t('Clip starts with {{frames}} {{type}} frame', {
 															frames,
 															type,
@@ -578,7 +578,7 @@ export function checkPieceContentStatus(
 												) {
 													const freezeStartsAt = Math.round(arr[0].start)
 													messages.push({
-														status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+														status: RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES,
 														message: t(
 															'This clip ends with {{type}} frames after {{count}} second',
 															{
@@ -590,7 +590,7 @@ export function checkPieceContentStatus(
 													})
 												} else {
 													messages.push({
-														status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+														status: RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES,
 														message: t(
 															'{{frames}} {{type}} frame detected within the clip',
 															{
@@ -605,7 +605,7 @@ export function checkPieceContentStatus(
 												const dur = arr.map((b) => b.duration).reduce((a, b) => a + b, 0)
 												const frames = Math.ceil((dur * 1000) / timebase)
 												messages.push({
-													status: RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+													status: RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES,
 													message: t('{{frames}} {{type}} frame detected in clip', {
 														frames,
 														type,

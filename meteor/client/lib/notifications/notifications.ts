@@ -485,6 +485,8 @@ export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusC
 		return NoticeLevel.WARNING
 	} else if (statusCode === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
 		return NoticeLevel.WARNING
+	} else if (statusCode === RundownAPI.PieceStatusCode.SOURCE_HAS_ISSUES) {
+		return NoticeLevel.NOTIFICATION
 	} else {
 		assertNever(statusCode)
 		return NoticeLevel.WARNING
