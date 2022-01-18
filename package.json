@@ -22,6 +22,7 @@
 		"docs:serve": "cd packages && yarn docs:serve"
 	},
 	"devDependencies": {
-		"rimraf": "^3.0.2"
+		"rimraf": "^3.0.2",
+		"semver": "^7.3.5"
 	}
 }

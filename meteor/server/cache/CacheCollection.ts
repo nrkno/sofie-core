@@ -17,7 +17,7 @@ import { Meteor } from 'meteor/meteor'
 import { BulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
-import { Changes } from '../lib/database'
+import { ChangedIds, Changes } from '../lib/database'
 import { AsyncTransformedCollection } from '../../lib/collections/lib'
 
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
@@ -446,19 +446,37 @@ export class DbCacheWriteCollection<
 	 * Write all the documents in this cache into another. This assumes that this cache is a subset of the other and was populated with a subset of its data
 	 * @param otherCache The cache to update
 	 */
-	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<Class, DBInterface>) {
+	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<Class, DBInterface>): ChangedIds<DBInterface['_id']> {
+		const changes: ChangedIds<DBInterface['_id']> = {
+			added: [],
+			updated: [],
+			removed: [],
+			unchanged: [],
+		}
+
 		this.documents.forEach((doc, id) => {
 			if (doc === null) {
 				otherCache.remove(id)
 				this.documents.delete(id)
+				changes.removed.push(id)
 			} else {
-				if (doc.inserted || doc.updated) {
+				if (doc.inserted) {
 					otherCache.replace(doc.document)
+
+					changes.added.push(id)
+				} else if (doc.updated) {
+					otherCache.replace(doc.document)
+
+					changes.updated.push(id)
+				} else {
+					changes.unchanged.push(id)
 				}
 				delete doc.inserted
 				delete doc.updated
 			}
 		})
+
+		return changes
 	}
 	isModified(): boolean {
 		for (const doc of Array.from(this.documents.values())) {

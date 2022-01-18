@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 # BUILD IMAGE
-FROM node:12.22.6
+FROM node:12.22
 WORKDIR /opt
 
 COPY package.json lerna.json yarn.lock tsconfig.json ./
@@ -13,7 +13,7 @@ RUN yarn build
 RUN yarn install --check-files --frozen-lockfile --production --force --ignore-scripts # purge dev-dependencies
 
 # DEPLOY IMAGE
-FROM node:12.22.6-alpine
+FROM node:12.22-alpine
 RUN apk add --no-cache tzdata
 
 COPY --from=0 /opt/package.json /opt/package.json

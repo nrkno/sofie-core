@@ -383,25 +383,16 @@ jobs:
             echo "No Token"
           else
 
+            yarn --ignore-scripts
+
             cd packages/${{ matrix.package-name }}
             PACKAGE_NAME=$(yarn info -s . name)
             PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
             THIS_VERSION=$(node -p "require('./package.json').version")
-            # Simple bash helper to comapre version numbers
-            verlte() {
-              [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
-            }
-            verlt() {
-              [ "$1" = "$2" ] && return 1 || verlte $1 $2
-            }
-            if verlt $PUBLISHED_VERSION $THIS_VERSION
-            then
-              echo "Publishing latest"
-              echo ::set-output name=tag::"latest"
-            else
-              echo "Publishing hotfix"
-              echo ::set-output name=tag::"hotfix"
-            fi
+            NPM_TAG=$(node ../../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)
+
+            echo "Publishing $NPM_TAG"
+            echo ::set-output name=tag::"$NPM_TAG"
 
           fi
       - name: Prepare Environment
