@@ -5,17 +5,27 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PieceId, RundownId, SegmentId, PartId } from './Ids'
 
+/** A generic list of playback availability statuses for a Piece */
 export enum PieceStatusCode {
+	// Note: Higher is worse
+
 	/** No status has been determined (yet) */
 	UNKNOWN = -1,
+
 	/** No fault with piece, can be played */
 	OK = 0,
-	/** The source (file, live input) is missing and cannot be played, as it would result in BTA */
-	SOURCE_MISSING = 1,
+
+	/** The source can be played, but some issues have been detected with it. It can be played fine from a technical standpoint, but the user should be notified. */
+	SOURCE_HAS_ISSUES = 10,
+
 	/** The source is present, but should not be played due to a technical malfunction (file is broken, camera robotics failed, REMOTE input is just bars, etc.) */
-	SOURCE_BROKEN = 2,
+	SOURCE_BROKEN = 20,
+
+	/** The source (file, live input) is missing and cannot be played, as it would result in BTA */
+	SOURCE_MISSING = 30,
+
 	/** Source not set - the source object is not set to an actual source */
-	SOURCE_NOT_SET = 3,
+	SOURCE_NOT_SET = 40,
 }
 
 /** A Single item in a Part: script, VT, cameras */

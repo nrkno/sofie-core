@@ -4,7 +4,7 @@ import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
-import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
+import { Time, ProtectedString, unprotectString, isProtectedString, protectString, assertNever } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { RundownId } from '../../../lib/collections/Rundowns'
@@ -477,13 +477,22 @@ export class Notification extends EventEmitter {
 }
 
 export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode): NoticeLevel | null {
-	return statusCode !== PieceStatusCode.OK && statusCode !== PieceStatusCode.UNKNOWN
-		? statusCode === PieceStatusCode.SOURCE_NOT_SET
-			? NoticeLevel.CRITICAL
-			: // : innerPiece.status === PieceStatusCode.SOURCE_MISSING ||
-			  // innerPiece.status === PieceStatusCode.SOURCE_BROKEN
-			  NoticeLevel.WARNING
-		: null
+	switch (statusCode) {
+		case PieceStatusCode.OK:
+		case PieceStatusCode.UNKNOWN:
+			return null
+		case PieceStatusCode.SOURCE_NOT_SET:
+			return NoticeLevel.CRITICAL
+		case PieceStatusCode.SOURCE_MISSING:
+			return NoticeLevel.WARNING
+		case PieceStatusCode.SOURCE_BROKEN:
+			return NoticeLevel.WARNING
+		case PieceStatusCode.SOURCE_HAS_ISSUES:
+			return NoticeLevel.NOTIFICATION
+		default:
+			assertNever(statusCode)
+			return NoticeLevel.WARNING
+	}
 }
 
 window['testNotification'] = function (
