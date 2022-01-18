@@ -10,6 +10,7 @@ import { AnyLockEvent, LocksManager } from '../locks'
 import { FastTrackTimelineFunc } from '../../main'
 import { logger } from '../../logging'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { setupInfluxDb } from '../../influx'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -19,6 +20,7 @@ interface StaticData {
 }
 
 setupApmAgent()
+setupInfluxDb()
 
 export class StudioWorkerChild {
 	#staticData: StaticData | undefined

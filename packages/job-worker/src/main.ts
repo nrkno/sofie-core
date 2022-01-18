@@ -9,8 +9,10 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { Db as MongoDb, MongoClient } from 'mongodb'
 import { JobManager } from './manager'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { setupInfluxDb } from './influx'
 
 setupApmAgent()
+setupInfluxDb()
 
 export interface JobSpec {
 	id: string
