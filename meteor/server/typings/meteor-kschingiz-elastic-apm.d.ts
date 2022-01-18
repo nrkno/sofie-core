@@ -2,6 +2,11 @@
  * This is mostly copied from https://github.com/elastic/apm-agent-nodejs/blob/master/index.d.ts
  * As they do not export any of the inner types, adding `disableMeteorInstrumentations` to `AgentConfigOptions` is not trivial without just copying it all
  */
+
+/*
+Note: meteor-elastic-apm has been temporarily disabled due to being incompatible Meteor 2.3
+See https://github.com/Meteor-Community-Packages/meteor-elastic-apm/pull/61
+
 declare module 'meteor/kschingiz:meteor-elastic-apm' {
 	/// <reference types="node" />
 
@@ -352,3 +357,4 @@ declare module 'meteor/kschingiz:meteor-elastic-apm' {
 		type ErrorHandleFunction = (err: any, req: IncomingMessage, res: ServerResponse, next: NextFunction) => void
 	}
 }
+*/
