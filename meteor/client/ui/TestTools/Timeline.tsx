@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { deserializeTimelineBlob } from '../../../lib/collections/Timeline'
+import { deserializeTimelineBlob, RoutedTimeline } from '../../../lib/collections/Timeline'
 import { Time, applyToArray, clone } from '../../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
@@ -12,7 +12,6 @@ import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
 import { Mongo } from 'meteor/mongo'
-import { RoutedTimeline } from '../../../lib/collections/Timeline'
 
 const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
 
