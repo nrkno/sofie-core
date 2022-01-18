@@ -546,14 +546,13 @@ export function processAndPrunePieceInstanceTimings(
 				activePiece.resolvedEndCap = offsetFromStart(start, newPiece)
 			}
 			// track the new piece
-			console.log(key, newPiece._id)
 			activePieces[key] = newPiece
 
 			// We don't want to include virtual pieces in the output (most of the time)
 			// TODO - do we want to always output virtual pieces from the 'other' group?
 			if (
-				(!isClear(newPiece) || key === 'other' || includeVirtual) &&
-				!isCappedByAVirtual(activePieces, key, newPiece)
+				includeVirtual ||
+				((!isClear(newPiece) || key === 'other') && !isCappedByAVirtual(activePieces, key, newPiece))
 			) {
 				// add the piece to results
 				result.push(newPiece)
