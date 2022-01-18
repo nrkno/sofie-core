@@ -304,6 +304,11 @@ export class CoreHandler {
 	get logDebug(): boolean {
 		return !!this.deviceSettings['debugLogging']
 	}
+	get estimateResolveTimeMultiplier(): number {
+		if (!isNaN(Number(this.deviceSettings['estimateResolveTimeMultiplier']))) {
+			return this.deviceSettings['estimateResolveTimeMultiplier'] || 1
+		} else return 1
+	}
 
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreTSRDeviceHandler): void {
 		if (cmd) {

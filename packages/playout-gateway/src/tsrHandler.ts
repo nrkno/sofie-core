@@ -391,6 +391,10 @@ export class TSRHandler {
 
 			this.logger.info('ErrorReporting: ' + this._multiThreaded)
 		}
+		if (this.tsr.estimateResolveTimeMultiplier !== this._coreHandler.estimateResolveTimeMultiplier) {
+			this.tsr.estimateResolveTimeMultiplier = this._coreHandler.estimateResolveTimeMultiplier
+			this.logger.info('estimateResolveTimeMultiplier: ' + this._coreHandler.estimateResolveTimeMultiplier)
+		}
 		if (this._multiThreaded !== this._coreHandler.multithreading) {
 			this._multiThreaded = this._coreHandler.multithreading
 

@@ -680,6 +680,12 @@ export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{
+			id: 'estimateResolveTimeMultiplier',
+			name: 'Adjust resolve-time estimation',
+			type: ConfigManifestEntryType.FLOAT,
+			defaultVal: 1,
+		},
+		{
 			id: 'devices',
 			name: 'Sub Devices',
 			type: ConfigManifestEntryType.TABLE,
