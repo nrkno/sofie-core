@@ -127,7 +127,7 @@ export abstract class WorkerParentBase {
 			`Blueprints"`,
 			(invalidations, change) => {
 				if (change.documentKey) {
-					invalidations.blueprints.push(change.documentKey)
+					invalidations.blueprints.push((change.documentKey as any)._id)
 				}
 			}
 		)
@@ -144,7 +144,7 @@ export abstract class WorkerParentBase {
 			`ShowStyleBases"`,
 			(invalidations, change) => {
 				if (change.documentKey) {
-					invalidations.showStyleBases.push(change.documentKey)
+					invalidations.showStyleBases.push((change.documentKey as any)._id)
 				}
 			}
 		)
@@ -161,7 +161,7 @@ export abstract class WorkerParentBase {
 			`ShowStyleVariants"`,
 			(invalidations, change) => {
 				if (change.documentKey) {
-					invalidations.showStyleVariants.push(change.documentKey)
+					invalidations.showStyleVariants.push((change.documentKey as any)._id)
 				}
 			}
 		)
@@ -211,6 +211,7 @@ export abstract class WorkerParentBase {
 
 					// Handle any invalidations
 					if (this.#pendingInvalidations) {
+						logger.debug(`Invalidating worker caches: ${JSON.stringify(this.#pendingInvalidations)}`)
 						const invalidations = this.#pendingInvalidations
 						this.#pendingInvalidations = null
 

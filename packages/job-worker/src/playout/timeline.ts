@@ -415,7 +415,7 @@ async function getTimelineRundown(
 		}
 	} catch (e) {
 		if (span) span.end()
-		logger.error(e)
+		logger.error(`Error in getTimelineRundown: ${stringifyError(e)}`)
 		return {
 			objs: [],
 			versions: generateTimelineVersions(context.studio, undefined, '-'),

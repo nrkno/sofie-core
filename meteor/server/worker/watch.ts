@@ -20,6 +20,8 @@ chokidar
 		cwd: appRoot.path,
 	})
 	.on('all', () => {
+		console.log('detected file change')
+
 		// The simplest way to trigger a restart of meteor is by changing the source
 		writeFileSync(join(appRoot.path, 'server/_force_restart.js'), Date.now().toString())
 	})

@@ -15,6 +15,7 @@ import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/c
 import { DefaultStudioBlueprint } from '../blueprints/defaults/studio'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
+import { logger } from '../logging'
 
 export interface WorkerDataCache {
 	studio: ReadonlyDeep<DBStudio>
@@ -93,6 +94,7 @@ export async function invalidateWorkerDataCache(
 	let updateStudioBlueprint = false
 
 	if (data.studio) {
+		logger.debug('WorkerDataCache: Reloading studio')
 		const newStudio = await collections.Studios.findOne(cache.studio._id)
 		if (!newStudio) throw new Error(`Studio is missing during cache invalidation!`)
 
@@ -110,6 +112,7 @@ export async function invalidateWorkerDataCache(
 
 	// Reload studioBlueprint
 	if (updateStudioBlueprint) {
+		logger.debug('WorkerDataCache: Reloading studioBlueprint')
 		cache.studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, cache.studio)
 		cache.studioBlueprintConfig = undefined
 	}
@@ -117,6 +120,7 @@ export async function invalidateWorkerDataCache(
 	const purgeShowStyleVariants = (keep: (variant: ReadonlyDeep<DBShowStyleVariant>) => boolean) => {
 		for (const [id, v] of Array.from(cache.showStyleVariants.entries())) {
 			if (v === null || !keep(v)) {
+				logger.debug(`WorkerDataCache: Discarding ShowStyleVariant "${id}"`)
 				cache.showStyleVariants.delete(id)
 				cache.showStyleBlueprintConfig.delete(id)
 			}
@@ -129,6 +133,7 @@ export async function invalidateWorkerDataCache(
 
 		for (const id of Array.from(cache.showStyleBases.keys())) {
 			if (!allowedBases.has(id)) {
+				logger.debug(`WorkerDataCache: Discarding showStyleBase "${id}"`)
 				cache.showStyleBases.delete(id)
 			}
 		}
@@ -143,6 +148,7 @@ export async function invalidateWorkerDataCache(
 
 	// Purge any ShowStyleBase (and its Variants) that has changes
 	for (const id of data.showStyleBases) {
+		logger.debug(`WorkerDataCache: Discarding showStyleBase "${id}"`)
 		cache.showStyleBases.delete(id)
 
 		purgeShowStyleVariants((v) => v.showStyleBaseId !== id)
@@ -154,16 +160,49 @@ export async function invalidateWorkerDataCache(
 		purgeShowStyleVariants((v) => !variantIds.has(v._id))
 	}
 
-	// Clear out any currently unreferenced blueprints
-	const allowedBlueprints = new Set<BlueprintId>()
-	for (const showStyleBase of cache.showStyleBases.values()) {
-		if (showStyleBase) {
-			allowedBlueprints.add(showStyleBase.blueprintId)
+	{
+		// Clear out any currently unreferenced blueprints
+		const allowedBlueprints = new Set<BlueprintId>()
+		for (const showStyleBase of cache.showStyleBases.values()) {
+			if (showStyleBase) {
+				allowedBlueprints.add(showStyleBase.blueprintId)
+			}
 		}
-	}
-	for (const id of cache.showStyleBlueprints.keys()) {
-		if (!allowedBlueprints.has(id)) {
-			allowedBlueprints.delete(id)
+		const removedBlueprints = new Set<BlueprintId>()
+		for (const id of cache.showStyleBlueprints.keys()) {
+			if (!allowedBlueprints.has(id)) {
+				logger.debug(`WorkerDataCache: Discarding unreferenced Blueprint "${id}"`)
+
+				cache.showStyleBlueprints.delete(id)
+				removedBlueprints.add(id)
+			}
+		}
+		// Clear out changed blueprints
+		for (const id of data.blueprints) {
+			logger.debug(`WorkerDataCache: Discarding changed Blueprint "${id}"`)
+
+			cache.showStyleBlueprints.delete(id)
+			removedBlueprints.add(id)
+		}
+
+		if (removedBlueprints.size > 0) {
+			const cleanupBases = new Set<ShowStyleBaseId>()
+
+			// Figure out which bases used the blueprint
+			for (const [baseId, base] of cache.showStyleBases.entries()) {
+				if (base && removedBlueprints.has(base.blueprintId)) {
+					cleanupBases.add(baseId)
+				}
+			}
+
+			if (cleanupBases.size > 0) {
+				for (const [variantId, variant] of cache.showStyleVariants.entries()) {
+					if (variant && cleanupBases.has(variant.showStyleBaseId)) {
+						logger.debug(`WorkerDataCache: Discarding cached config for ShowStyleVariant "${variantId}"`)
+						cache.showStyleBlueprintConfig.delete(variantId)
+					}
+				}
+			}
 		}
 	}
 }
