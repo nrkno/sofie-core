@@ -32,6 +32,7 @@ import {
 	ProtectedString,
 	protectStringArray,
 	assertNever,
+	stringifyError,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -467,11 +468,11 @@ async function handleResponse(response: ServerResponse, snapshotFcn: () => Promi
 		response.end(content)
 	} catch (e) {
 		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e.errorCode || 500
-		response.end('Error: ' + e.toString())
+		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		response.end('Error: ' + stringifyError(e))
 
-		if (e.errorCode !== 404) {
-			logger.error(e)
+		if (response.statusCode !== 404) {
+			logger.error(stringifyError(e))
 		}
 	}
 }
@@ -1093,11 +1094,11 @@ PickerPOST.route('/snapshot/restore', async (params, req: IncomingMessage, respo
 		response.end(content)
 	} catch (e) {
 		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e.errorCode || 500
-		response.end('Error: ' + e.toString())
+		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		response.end('Error: ' + stringifyError(e))
 
-		if (e.errorCode !== 404) {
-			logger.error(e)
+		if (response.statusCode !== 404) {
+			logger.error(stringifyError(e))
 		}
 	}
 })

@@ -5,7 +5,7 @@ import { logger } from '../../logging'
 import { ExternalMessageQueueObjRabbitMQ } from '@sofie-automation/blueprints-integration'
 import { ExternalMessageQueueObj, ExternalMessageQueueObjId } from '../../../lib/collections/ExternalMessageQueue'
 import { ConfigRef } from '../blueprints/config'
-import { unprotectString } from '../../../lib/lib'
+import { stringifyError, unprotectString } from '../../../lib/lib'
 
 interface Message {
 	_id: ExternalMessageQueueObjId
@@ -72,7 +72,8 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 		} catch (e) {
 			// make sure this doesn't hang around
 			delete this.initializing
-			throw new Error(e)
+
+			throw e instanceof Error ? e : new Error(stringifyError(e))
 		}
 		delete this.initializing
 

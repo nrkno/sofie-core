@@ -26,6 +26,7 @@ import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/secur
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { endTrace, sendTrace, startTrace } from './integration/influx'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { Meteor } from 'meteor/meteor'
 
 export namespace ServerClientAPI {
 	export function clientErrorReport(
@@ -114,8 +115,10 @@ export namespace ServerClientAPI {
 		} catch (e) {
 			// allow the exception to be handled by the Client code
 			logger.error(`Error in ${methodName}`)
-			const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-			logger.error(errMsg + '\n' + (e.stack || ''))
+			const errMsg = stringifyError(e)
+			if ((e instanceof Error || e instanceof Meteor.Error) && e.stack) {
+				logger.error(e.stack)
+			}
 			UserActionsLog.update(actionId, {
 				$set: {
 					success: false,

@@ -77,7 +77,7 @@ async function runUserAction<T extends keyof StudioJobFunc>(
 			userError = e
 		} else {
 			// Rewrap errors as a UserError
-			const err = e instanceof Error ? e : new Error(e)
+			const err = e instanceof Error ? e : new Error(stringifyError(e))
 			userError = UserError.from(err, UserErrorMessage.InternalError)
 		}
 
@@ -323,7 +323,7 @@ export async function pieceSetInOutPoints(
 		) // MOS data is in seconds
 		return ClientAPI.responseSuccess(undefined)
 	} catch (error) {
-		return ClientAPI.responseError(UserError.from(error, UserErrorMessage.InternalError))
+		return ClientAPI.responseError(UserError.fromUnknown(error, UserErrorMessage.InternalError))
 	}
 }
 export async function executeAction(

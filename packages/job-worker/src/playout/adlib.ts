@@ -135,7 +135,7 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 								} catch (err) {
 									logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
 									// TODO: should we throw here?
-									throw UserError.from(err, UserErrorMessage.InternalError)
+									throw UserError.fromUnknown(err, UserErrorMessage.InternalError)
 								}
 							}
 						)

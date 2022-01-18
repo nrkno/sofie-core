@@ -1,7 +1,10 @@
+import { Meteor } from 'meteor/meteor'
+import { stringifyError } from '../lib/lib'
+
 let Fiber
 try {
 	Fiber = require('fibers-npm')
-} catch (e) {
+} catch (e: any) {
 	if (e.toString().match(/Missing binary/)) {
 		// Temporary workaround:
 		throw Error(`
@@ -47,8 +50,8 @@ export async function runInFiber<T>(fcn: () => T | Promise<T>): Promise<T> {
 					resolve(out)
 				}
 			} catch (e) {
-				console.log('Error: ' + e)
-				if (e.stack) console.log(e.stack)
+				console.log('Error: ' + stringifyError(e))
+				if ((e instanceof Error || e instanceof Meteor.Error) && e.stack) console.log(e.stack)
 				reject(e)
 			}
 		}).run()

@@ -5,7 +5,7 @@ import { StudioId } from '../../../lib/collections/Studios'
 import { check } from '../../../lib/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getRundownId, runIngestOperation } from './lib'
-import { protectString, waitForPromise } from '../../../lib/lib'
+import { protectString, stringifyError, waitForPromise } from '../../../lib/lib'
 import { PickerPOST } from '../http'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
@@ -31,11 +31,11 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 		response.end(content)
 	} catch (e) {
 		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e.errorCode || 500
-		response.end('Error: ' + e.toString())
+		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		response.end('Error: ' + stringifyError(e))
 
-		if (e.errorCode !== 404) {
-			logger.error(e)
+		if (response.statusCode !== 404) {
+			logger.error(stringifyError(e))
 		}
 	}
 })

@@ -5,7 +5,7 @@ import {
 import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { unprotectObject, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from 'elastic-apm-node'
 import { JobContext } from '../jobs'
@@ -56,8 +56,8 @@ export async function shouldRemoveOrphanedPartInstance(
 			orphanedPartInstanceContext,
 			clone(existingResultPartInstance)
 		)
-	} catch (e) {
-		logger.error(e)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.shouldRemoveOrphanedPartInstance: ${stringifyError(err)}`)
 	}
 
 	// Save notes:

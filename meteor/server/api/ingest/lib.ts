@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString } from '../../../lib/lib'
+import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
 import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
@@ -56,7 +56,7 @@ export async function runIngestOperation<T extends keyof IngestJobFunc>(
 
 		return res
 	} catch (e) {
-		logger.error(`Ingest operation "${name}" failed: ${e.toString()}`)
+		logger.error(`Ingest operation "${name}" failed: ${stringifyError(e)}`)
 
 		throw e
 	}

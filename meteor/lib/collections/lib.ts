@@ -9,7 +9,15 @@ import {
 	UpdateOptions,
 	UpsertOptions,
 } from '../typings/meteor'
-import { stringifyObjects, getHash, ProtectedString, makePromise, sleep, registerCollection } from '../lib'
+import {
+	stringifyObjects,
+	getHash,
+	ProtectedString,
+	makePromise,
+	sleep,
+	registerCollection,
+	stringifyError,
+} from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
@@ -378,7 +386,7 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 		try {
 			return this.insert(doc)
 		} catch (err) {
-			if (err.toString().match(/duplicate key/i)) {
+			if (stringifyError(err).match(/duplicate key/i)) {
 				// @ts-ignore id duplicate, doc._id must exist
 				return doc._id
 			} else {

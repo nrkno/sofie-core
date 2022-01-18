@@ -1,3 +1,4 @@
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { CoreSystem, getCoreSystem, ServiceMessage } from '../../../lib/collections/CoreSystem'
 import { logger } from '../../logging'
 
@@ -50,8 +51,8 @@ function writeMessage(message: ServiceMessage): WriteStatus {
 		CoreSystem.update(coreSystem._id, { $set: { serviceMessages } })
 		return { isUpdate }
 	} catch (error) {
-		logger.error(error.message)
-		throw new Error(`Unable to store service message: ${error.message}`)
+		logger.error(stringifyError(error))
+		throw new Error(`Unable to store service message: ${stringifyError(error)}`)
 	}
 }
 
@@ -73,7 +74,7 @@ function deleteMessage(id: string): ServiceMessage {
 			throw new Error(`Message with id ${id} can not be found, and therefore not deleted`)
 		}
 	} catch (error) {
-		logger.error(error.message)
-		throw new Error(`Unable to delete service message ${id}: ${error.message}`)
+		logger.error(stringifyError(error))
+		throw new Error(`Unable to delete service message ${id}: ${stringifyError(error)}`)
 	}
 }

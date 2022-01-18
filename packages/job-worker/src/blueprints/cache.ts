@@ -9,6 +9,7 @@ import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { VM } from 'vm2'
 import { IDirectCollections } from '../db'
 import { ReadonlyDeep } from 'type-fest'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 // import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 
 export interface WrappedSystemBlueprint {
@@ -54,7 +55,7 @@ export async function loadBlueprintById(
 		try {
 			manifest = evalBlueprint(blueprint)
 		} catch (e) {
-			throw new Error('Syntax error in blueprint "' + blueprint._id + '": ' + e.toString())
+			throw new Error(`Syntax error in blueprint "${blueprint._id}": ${stringifyError(e)}`)
 		}
 		if (manifest.blueprintType !== blueprint.blueprintType) {
 			throw new Error(

@@ -1,16 +1,14 @@
 import * as _ from 'underscore'
-import moment from 'moment'
 import { VM } from 'vm2'
 import { logger } from '../../logging'
 import { Blueprint } from '../../../lib/collections/Blueprints'
 import { SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { Meteor } from 'meteor/meteor'
 
 export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 	const vm = new VM({
-		sandbox: {
-			_,
-			moment,
-		},
+		sandbox: {},
 	})
 
 	const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
@@ -24,8 +22,8 @@ export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 				try {
 					return value(...args)
 				} catch (e) {
-					let msg = `Error in Blueprint "${blueprint._id}".${key}: "${e.toString()}"`
-					if (e.stack) msg += '\n' + e.stack
+					let msg = `Error in Blueprint "${blueprint._id}".${key}: "${stringifyError(e)}"`
+					if ((e instanceof Error || e instanceof Meteor.Error) && e.stack) msg += '\n' + e.stack
 					logger.error(msg)
 					throw e
 				}

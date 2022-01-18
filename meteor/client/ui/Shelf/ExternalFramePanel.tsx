@@ -418,7 +418,7 @@ export const ExternalFramePanel = withTranslation()(
 					e.dataTransfer.files.length === 0
 				) {
 					const idx = e.dataTransfer.types.indexOf('text/plain')
-					e.dataTransfer.items.item(idx).getAsString((text: string) => {
+					e.dataTransfer.items[idx]?.getAsString((text: string) => {
 						if (text.trim().endsWith('</mos>')) {
 							this.actMOSMessage(e, e.dataTransfer!.getData('Text'))
 						}
