@@ -217,7 +217,7 @@ export const ComponentTimelineSimulate = withTracker<
 								type="text"
 								value={this.state.layerFilterText}
 								onChange={this.changeLayerFilter}
-								placeholder="Text or RegEx"
+								placeholder="Text or /RegEx/"
 							/>
 						</div>
 					</div>
