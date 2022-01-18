@@ -5448,11 +5448,6 @@ html-encoding-sniffer@^2.0.1:
   dependencies:
     whatwg-encoding "^1.0.5"
 
-html-entities@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/html-entities/-/html-entities-1.4.0.tgz#cfbd1b01d2afaf9adca1b10ae7dffab98c71d2dc"
-  integrity sha512-8nxjcBcd8wovbeKx7h3wTji4e6+rhaVuPNpMqwWgnHh+N9ToqsCs6XztWRBPQ+UtzsoMAdKZtUENoVzU/EMtZA==
-
 html-escaper@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
@@ -10084,10 +10079,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@6.4.0-nightly-release39-20220113-131814-5ea1df54c.0:
-  version "6.4.0-nightly-release39-20220113-131814-5ea1df54c.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.4.0-nightly-release39-20220113-131814-5ea1df54c.0.tgz#4b74c8b5688b1f21952bb5ac43f7ae4b9a3716e5"
-  integrity sha512-ye7ckKPkz7QgqI+pFS3U1Bt6U5jGGpB+pdpkv5KkyLyM18lzE7CEXd5oHzdbTLtfC57qbcW6KVQzwnwe7X0crg==
+timeline-state-resolver-types@6.4.0-nightly-release39-20220117-145627-f32e78af4.0:
+  version "6.4.0-nightly-release39-20220117-145627-f32e78af4.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.4.0-nightly-release39-20220117-145627-f32e78af4.0.tgz#fc839625ce353bff02dae1967d52b750ed98750d"
+  integrity sha512-/AHYHNxOfwJktd5vchrieTTHnUEAudYvw2nTeSHtt+pvUYZuBpvC+I6fOg9GfAbUT1Opu3/Wc1ZXnS2ACf14rw==
   dependencies:
     tslib "^2.3.1"
 

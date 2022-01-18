@@ -67,7 +67,6 @@
 		"deep-extend": "0.6.0",
 		"deepmerge": "^4.2.2",
 		"eslint-plugin-custom-rules": "file:eslint-rules",
-		"html-entities": "^1.4.0",
 		"i18next": "^19.9.2",
 		"i18next-browser-languagedetector": "^4.3.1",
 		"i18next-xhr-backend": "^3.2.2",
