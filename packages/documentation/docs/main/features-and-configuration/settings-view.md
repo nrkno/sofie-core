@@ -40,7 +40,7 @@ Sofie allows the Blueprints to expose custom configuration fields that allow the
 
 This section allows you to add, remove and configure how logical device-control will be translated to physical automation control. [Blueprints](concepts-and-architecture.md#blueprints) control devices through objects placed on a [Timeline](concepts-and-architecture.md#timeline) using logical device identifiers called _Layers_. A layer represents a single aspect of a device that can be controlled at a given time: a video switcher's M/E bus, an audio mixers's fader, an OSC control node, a video server's output channel. Layer Mappings translate these logical identifiers into physical device aspects, for example:
 
-![A sample configuration of a Layer Mapping for the M/E1 Bus of an ATEM switcher](/gitbook/assets/atem-layer-mapping.png)
+![A sample configuration of a Layer Mapping for the M/E1 Bus of an ATEM switcher](/img/docs/main/features-and-configuration/atem-layer-mapping-example.png)
 
 This _Layer Mapping_ configures the `atem_me_program` Timeline-layer to control the `atem0` device of the `ATEM` type. No Lookahead will be enabled for this layer. This layer will control a `MixEffect` aspect with the Index of `0` \(so M/E 1 Bus\).
 
@@ -58,7 +58,7 @@ A Route Set is essentially a distinct set of Layer Mappings, which can modify th
 
 Route Sets can be grouped into Exclusivity Groups, in which only a single Route Set can be enabled at a time. When activating a Route Set within an Exclusivity Group, all other Route Sets in that group will be deactivated. This in turn, allows the System Administrator to create entire sections of exclusive automation control within the Studio that the Producer can then switch between. One such example could be switching between Primary and Backup playout servers, or switching between Primary and Backup talent microphone.
 
-![The Exclusivity Group Name will be displayed as a header in the Switchboard panel](/gitbook/assets/obraz.png)
+![The Exclusivity Group Name will be displayed as a header in the Switchboard panel](/img/docs/main/features-and-configuration/route-sets-exclusivity-groups.png)
 
 A Route Set has a Behavior property which will dictate what happens how the Route Set operates:
 
@@ -68,7 +68,7 @@ A Route Set has a Behavior property which will dictate what happens how the Rout
 | `TOGGLE`        | The RouteSet can be activated and deactivated. As a result, it's possible for the Exclusivity Group to have no Route Set active |
 | `HIDDEN`        | The RouteSet can be activated and deactivated, but it will not be presented to the user in the Switchboard panel                |
 
-![An active RouteSet with a single Layer Mapping being re-configured](/gitbook/assets/route-set-example.png)
+![An active RouteSet with a single Layer Mapping being re-configured](/img/docs/main/features-and-configuration/route-set-remap.png)
 
 Route Sets can also be configured with a _Default State_. This can be used to contrast a normal, day-to-day configuration with an exceptional one \(like using a backup device\) in the [Switchboard ](../dictionary#switchboard)panel.
 
@@ -103,7 +103,7 @@ An example of the difference could be when playing a VT \(that's a Source Layer\
 
 This is a way to set up how - outside of the Point-and-Click Graphical User Interface - actions can be performed in the User Interface. Commonly, these are the *hotkey combinations* that can be used to either trigger AdLib content or other actions in the larger system. This is done by creating sets of Triggers and Actions to be triggered by them. These pairs can be set at the Show Style level or at the Core (System) level, for common actions such as doing a Take or activating a Rundown, where you want a shared method of operation. Core migrations will set up a base set of basic, system-wide Action Triggers for interacting with rundowns, but they can be changed by the System blueprint.
 
-![Action triggers define modes of interacting with a Rundown](/gitbook/assets/action_triggers_3.png)
+![Action triggers define modes of interacting with a Rundown](/img/docs/main/features-and-configuration/action_triggers_3.png)
 
 #### Triggers
 
@@ -120,11 +120,11 @@ The actions are built using a base *action* (such as *Activate a Rundown* or *Ad
 
 The Action Triggers user interface guides the user in a wizzard-like fashion through the available *filter* options on a given *action*.
 
-![Actions can take additional parameters](/gitbook/assets/action_triggers_2.png)
+![Actions can take additional parameters](/img/docs/main/features-and-configuration/action_triggers_2.png)
 
 If the action provides a preview of the triggered items and there is an available matching Rundown, a preview will be displayed for the matching objects in that Rundown. The system will select the current active rundown, if it is of the currently-edited ShowStyle, and if not, it will select the first available Rundown of the currently-edited ShowStyle.
 
-![A preview of the action, as scoped by the filters](/gitbook/assets/action_triggers_4.png)
+![A preview of the action, as scoped by the filters](/img/docs/main/features-and-configuration/action_triggers_4.png)
 
 Clicking on the action and filter pills allows you to edit the action parameters and filter parameters. *Limit* limits the amount of objects to only the first *N* objects matched - this can significantly improve performance on large data sets. *Pick* and *Pick last* filters end the chain of the filters by selecting a single item from the filtered set of objects (the *N-th* object from the beginning or the end, respectively). *Pick* implicitly contains a *Limit* for the performance improvement. This is not true for *Pick last*, though.
 

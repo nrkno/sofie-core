@@ -1,4 +1,4 @@
-# Sofie: The Modern TV News Studio Automation System (tv-automation-server-core)
+# Sofie: The Modern TV News Studio Automation System (Sofie Core)
 
 This is the "Core" application of the [**Sofie** TV News Studio Automation System](https://github.com/nrkno/Sofie-TV-automation/).
 

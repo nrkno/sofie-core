@@ -27,18 +27,18 @@ Things that should be covered:
 
 - What are all the labels, countdowns, colors, signs etc?
 
-![The Rundown view and naming conventions of components](/gitbook/assets/sofie-naming-conventions.png)
+![The Rundown view and naming conventions of components](/img/docs/main/sofie-naming-conventions.png)
 
-#### Segment Header countdowns
+### Segment Header countdowns
 
-![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/gitbook/assets/segment-header.png)
+![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/img/docs/main/segment-budget-and-countdown.png)
 
 <Tabs>
-<TabItem label="Left: Segment Time Budget" value="left" default>
-Clock on the left is an indicator of how much time has been spent playing Parts from that Segment in relation to how much time was planned for Parts in that Segment. If more time was spent playing than was planned for, this clock will turn red, there will be a <b>+</b> sign in front of it and will begin counting upwards.
+<TabItem value="segment-time-budget" label="Left: Segment Time Budget" default>
+Clock on the left is an indicator of how much time has been spent playing Parts from that Segment in relation to how much time was planned for Parts in that Segment. If more time was spent playing than was planned for, this clock will turn red, there will be a **+** sign in front of it and will begin counting upwards.
 </TabItem>
 
-<TabItem label="Right: Segment Countdown" value="right">
+<TabItem value="segment-countdown" label="Right: Segment Countdown">
 Clock on the right is a countdown to the beginning of a given segment. This takes into account unplayed time in the On Air Part and all unplayed Parts between the On Air Part and a given Segment. If there are no unplayed Parts between the On Air Part and the Segment, this counter will disappear.
 </TabItem>
 </Tabs>
@@ -47,13 +47,13 @@ In the illustration above, the first Segment \(_OLJE_\) has been playing for 41 
 
 If you click on the Segment header countdowns, you can switch the _Segment Countdown_ to a _Segment OnAir Clock_ where this will show the time-of-day when a given Segment is expected to air.
 
-![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/gitbook/assets/segment-header-2.png)
+![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/img/docs/main/features-and-configuration/segment-header-2.png)
 
-#### Rundown dividers
+### Rundown dividers
 
 When using a workflow and blueprints that combine multiple NRCS Rundowns into a single Sofie Rundown \(such as when using the "Ready To Air" functionality in AP ENPS\), information about these individual NRCS Rundowns will be inserted into the Rundown View at the point where each of these incoming Rundowns start.
 
-![Rundown divider between two NRCS Rundowns in a "Ready To Air" Rundown](/gitbook/assets/rundown-divider.png)
+![Rundown divider between two NRCS Rundowns in a "Ready To Air" Rundown](/img/docs/main/rundown-divider.png)
 
 For reference, these headers show the Name, Planned Start and Planned Duration of the individual NRCS Rundown.
 
@@ -61,7 +61,7 @@ For reference, these headers show the Name, Planned Start and Planned Duration o
 
 The shelf contains lists of AdLibs that can be played out.
 
-![](/gitbook/assets/shelf.png)
+![Shelf](/img/docs/main/shelf.png)
 
 :::info
 The Shelf can be opened by clicking the handle at the bottom of the screen, or by pressing the TAB key
@@ -77,7 +77,7 @@ Documentation for this section is yet to be written.
 
 #### Switchboard
 
-![Switchboard](/gitbook/assets/switchboard.png)
+![Switchboard](/img/docs/main/switchboard.png)
 
 The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](features-and-configuration/concepts-and-architecture.md#system-organization-studio-and-show-style).
 
@@ -89,7 +89,7 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 ### Playing things
 
-![](/gitbook/assets/takenext.png)
+![Take Next](/img/docs/main/take-next.png)
 
 #### Take Point
 
@@ -112,7 +112,7 @@ Change the Next point by right-clicking in the GUI, or by pressing \(Shift +\) F
 
 #### Freeze-frame countdown
 
-![Part is 1 second heavy, LiveSpeak piece has 7 seconds of playback until it freezes](/gitbook/assets/freeze-countdown.png)
+![Part is 1 second heavy, LiveSpeak piece has 7 seconds of playback until it freezes](/img/docs/main/freeze-frame-countdown.png)
 
 If a Piece has more or less content than the Part's expected duration allows, an additional counter with a Snowflake icon will be displayed, attached to the On Air line, counting down to the moment when content from that Piece will freeze-frame at the last frame. The time span in which the content from the Piece will be visible on the output, but will be frozen, is displayed with an overlay of icicles.
 
@@ -124,4 +124,4 @@ Elements in the [Next point ](dictionary#next-point)\(or beyond\) might be pre-l
 
 Sofie features a few separate views, such as the prompter, [read about them here](features-and-configuration/sofie-pages.md).
 
-![](/gitbook/assets/prompter.png)
+![Prompter View](/img/docs/main/prompter-view.png)
