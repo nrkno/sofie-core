@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Quick install
 
 ## Installing for testing \(or production\)

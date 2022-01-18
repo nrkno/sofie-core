@@ -11,31 +11,31 @@ description: >-
 
 | Release | Status |
 | :--- | :--- |
-| [Release 31](releases.md#release-31) | Released 2021-05-05 |
-| [Release 30](releases.md#release-30) | _Released 2021-03-22_ |
-| [Release 29](releases.md#release-29) | _Released 2021-02-08_ |
-| [Release 28](releases.md#release-27) | _Released 2021-01-19_ |
-| [Release 27](releases.md#release-27) | _Released 2020-12-08_ |
-| [Release 26](releases.md#release-26) | _Released 2020-11-10_ |
-| [Release 25](releases.md#release-25) | _Released 2020-10-19_ |
-| [Release 24](releases.md#release-24) | _Released 2020-09-28_ |
-| [Release 23](releases.md#release-23-skipped) | Skipped |
-| [Release 22](releases.md#release-22) | Released 2020-08-17 |
+| [Release 31](#release-31) | Released 2021-05-05 |
+| [Release 30](#release-30) | _Released 2021-03-22_ |
+| [Release 29](#release-29) | _Released 2021-02-08_ |
+| [Release 28](#release-27) | _Released 2021-01-19_ |
+| [Release 27](#release-27) | _Released 2020-12-08_ |
+| [Release 26](#release-26) | _Released 2020-11-10_ |
+| [Release 25](#release-25) | _Released 2020-10-19_ |
+| [Release 24](#release-24) | _Released 2020-09-28_ |
+| [Release 23](#release-23-skipped) | Skipped |
+| [Release 22](#release-22) | Released 2020-08-17 |
 | [Release 21](https://github.com/nrkno/Sofie-TV-automation/issues/17) | Skipped |
 | [Release 20](https://github.com/nrkno/Sofie-TV-automation/issues/16) | _Released 2020-05-12_ |
-| [Release 19](releases.md#release-19) | _Released 2020-03-31_ |
-| [Release 18](releases.md#release-18) | _Released 2020-03-04_ |
-| [Release 17](releases.md#release-17) | _Released 2020-01-24_ |
-| [Release 16](releases.md#release-16) | _Released 2020-01-02_ |
-| [Release 15](releases.md#release-15) | _Released 2019-11-25_ |
-| [Release 14](releases.md#release-14) | _Released 2019-11-06_ |
-| [Release 13](releases.md#release-13) | _Released 2019-10-17_ |
-| [Release 12](releases.md#release-12) | _Released 2019-09-11_ |
-| [Release 11](releases.md#release-11) | _Released 2019-08-19_ |
-| [Release 10](releases.md#release-10) | _Released 2019-07-05_ |
-| [Release 9](releases.md#release-9) | _Released 2019-05-16_ |
-| [Release 8](releases.md#release-8) | _Released 2019-04-08_ |
-| [Release 7](releases.md#release-7) | _Released 2019-03-15_ |
+| [Release 19](#release-19) | _Released 2020-03-31_ |
+| [Release 18](#release-18) | _Released 2020-03-04_ |
+| [Release 17](#release-17) | _Released 2020-01-24_ |
+| [Release 16](#release-16) | _Released 2020-01-02_ |
+| [Release 15](#release-15) | _Released 2019-11-25_ |
+| [Release 14](#release-14) | _Released 2019-11-06_ |
+| [Release 13](#release-13) | _Released 2019-10-17_ |
+| [Release 12](#release-12) | _Released 2019-09-11_ |
+| [Release 11](#release-11) | _Released 2019-08-19_ |
+| [Release 10](#release-10) | _Released 2019-07-05_ |
+| [Release 9](#release-9) | _Released 2019-05-16_ |
+| [Release 8](#release-8) | _Released 2019-04-08_ |
+| [Release 7](#release-7) | _Released 2019-03-15_ |
 ## _Release 31_
 
 Release date: 2021-05-05 \(1.19.1\)
