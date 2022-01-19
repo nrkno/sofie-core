@@ -13,7 +13,7 @@ const FRAMES_INLINE_STYLE: React.CSSProperties = {
 }
 
 export function StyledTimecode({ time, studioSettings }: IProps) {
-	const timecode = formatDurationAsTimecode(studioSettings ?? { frameRate: 25 }, time)
+	const timecode = formatDurationAsTimecode({ frameRate: studioSettings?.frameRate ?? 25 }, time)
 	const hours = timecode.substring(0, 3)
 	const minutesSeconds = timecode.substring(3, 8)
 	const frames = timecode.substring(8)
