@@ -532,6 +532,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											showThumbnailsInList={filter.showThumbnailsInList}
 											toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
+											disabled={adLibPiece.disabled}
 										>
 											{adLibPiece.name}
 										</DashboardPieceButton>

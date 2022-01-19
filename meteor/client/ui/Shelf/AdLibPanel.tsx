@@ -283,6 +283,7 @@ const AdLibListView = withTranslation()(
 											this.props.selectedPiece._id === adLibPiece._id) ||
 										false
 									}
+									disabled={adLibPiece.disabled ?? false}
 									onToggleAdLib={this.props.onToggleAdLib}
 									onSelectAdLib={this.props.onSelectAdLib}
 									playlist={this.props.playlist}
@@ -339,6 +340,7 @@ const AdLibListView = withTranslation()(
 											this.props.selectedPiece._id === adLibPiece._id) ||
 										false
 									}
+									disabled={adLibPiece.disabled ?? false}
 									onToggleAdLib={this.props.onToggleAdLib}
 									onSelectAdLib={this.props.onSelectAdLib}
 									playlist={this.props.playlist}
@@ -443,6 +445,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isSticky?: boolean
 	isAction?: boolean
 	isClearSourceLayer?: boolean
+	disabled?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
@@ -455,6 +458,7 @@ export interface AdlibSegmentUi extends DBSegment {
 	pieces: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
+	isCompatibleShowStyle: boolean
 }
 
 export interface IAdLibPanelProps {
@@ -479,7 +483,12 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-type SourceLayerLookup = { [id: string]: ISourceLayer }
+type SourceLayerLookup = Record<string, ISourceLayer>
+
+type MinimalRundown = Pick<
+	Rundown,
+	'_id' | 'name' | '_rank' | 'playlistId' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'
+>
 
 export interface AdLibFetchAndFilterProps {
 	uiSegments: Array<AdlibSegmentUi>
@@ -547,10 +556,36 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		}
 	}
 
-	const segments = RundownPlaylistCollectionUtil.getSegments(props.playlist)
+	const { segments, rundowns } = memoizedIsolatedAutorun(
+		(playlist) => {
+			const rundownsAndSegments = RundownPlaylistCollectionUtil.getRundownsAndSegments(playlist)
+			const segments: DBSegment[] = []
+			const rundowns: Record<string, MinimalRundown> = {}
+			rundownsAndSegments.forEach((pair) => {
+				segments.push(...pair.segments)
+				rundowns[unprotectString(pair.rundown._id)] = pair.rundown
+			})
+
+			return {
+				segments,
+				rundowns,
+			}
+		},
+		'rundownsAndSegments',
+		props.playlist
+	)
 
 	const { uiSegments, liveSegment, uiPartSegmentMap, uiPartMap } = memoizedIsolatedAutorun(
-		(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, segments: Segment[]) => {
+		(
+			currentPartInstanceId: PartInstanceId | null,
+			nextPartInstanceId: PartInstanceId | null,
+			segments: Segment[],
+			rundowns: Record<string, MinimalRundown>
+		) => {
+			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
+				props.playlist
+			)
+
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 			const uiPartMap = new Map<PartId, DBPart>()
@@ -564,6 +599,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 				}
 			}
 
+			const partInstances = RundownPlaylistCollectionUtil.getActivePartInstancesMap(props.playlist)
+
 			let liveSegment: AdlibSegmentUi | undefined
 			const uiSegmentMap = new Map<SegmentId, AdlibSegmentUi>()
 			const uiSegments: Array<AdlibSegmentUi> = segments.map((segment) => {
@@ -573,17 +610,16 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					pieces: [],
 					isLive: false,
 					isNext: false,
+					isCompatibleShowStyle: currentPartInstance?.rundownId
+						? rundowns[unprotectString(currentPartInstance.rundownId)].showStyleBaseId ===
+						  rundowns[unprotectString(segment.rundownId)].showStyleBaseId
+						: true,
 				})
 
 				uiSegmentMap.set(segmentUi._id, segmentUi)
 
 				return segmentUi
 			})
-
-			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
-				props.playlist
-			)
-			const partInstances = RundownPlaylistCollectionUtil.getActivePartInstancesMap(props.playlist)
 
 			RundownPlaylistCollectionUtil.getUnorderedParts(props.playlist, {
 				segmentId: {
@@ -630,7 +666,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		'uiSegments',
 		props.playlist.currentPartInstanceId,
 		props.playlist.nextPartInstanceId,
-		segments
+		segments,
+		rundowns
 	)
 
 	uiSegments.forEach((segment) => (segment.pieces.length = 0))
@@ -704,7 +741,10 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		// Sort the pieces:
 		segment.pieces = sortAdlibs(
 			segment.pieces.map((piece) => ({
-				adlib: piece,
+				adlib: {
+					...piece,
+					disabled: !segment.isCompatibleShowStyle,
+				},
 				label: piece.adlibAction?.display?.label ?? piece.name,
 				adlibRank: piece._rank,
 				adlibId: piece._id,
