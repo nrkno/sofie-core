@@ -56,7 +56,7 @@ _Prerequisites: rundown playlist is active and there is no current hold_
 
 ### How does Sofie remove orphaned segments and part instances
 
-[https://github.com/nrkno/tv-automation-server-core/blob/release35/meteor/server/api/playout/lib.ts#L442](https://github.com/nrkno/tv-automation-server-core/blob/release35/meteor/server/api/playout/lib.ts#L442)
+[https://github.com/nrkno/sofie-core/blob/release35/meteor/server/api/playout/lib.ts#L442](https://github.com/nrkno/sofie-core/blob/release35/meteor/server/api/playout/lib.ts#L442)
 
 *   Gather segments that have `orphaned === 'deleted'`
 *   Find the part instances from the orphaned segment
