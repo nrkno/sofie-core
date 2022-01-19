@@ -67,7 +67,8 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 							type: MenuContextType.ADLIB,
 							details: {
 								adLib: this.props.piece,
-								onToggle: this.props.onToggleAdLib,
+								onToggle: !this.props.disabled ? this.props.onToggleAdLib : undefined,
+								disabled: this.props.disabled,
 							},
 						})
 					}

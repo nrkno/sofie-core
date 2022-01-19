@@ -503,7 +503,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 												type: ContextType.ADLIB,
 												details: {
 													adLib: adLibPiece,
-													onToggle: this.onToggleAdLib,
+													onToggle: !adLibPiece.disabled ? this.onToggleAdLib : undefined,
+													disabled: adLibPiece.disabled,
 												},
 											})
 										}
