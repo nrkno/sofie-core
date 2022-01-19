@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunksofie_documentation=self.webpackChunksofie_documentation||[]).push([[917],{6951:function(o){o.exports=JSON.parse('{"allTagsPath":"/sofie-core/blog/tags","slug":"/sofie-core/blog/tags/facebook","name":"facebook","count":1,"permalink":"/sofie-core/blog/tags/facebook"}')}}]);

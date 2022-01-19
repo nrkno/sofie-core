@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunksofie_documentation=self.webpackChunksofie_documentation||[]).push([[1785],{5847:function(e){e.exports=JSON.parse('{"permalink":"/tv-automation-server-core/blog","page":1,"postsPerPage":10,"totalPages":1,"totalCount":3,"previousPage":null,"nextPage":null,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);

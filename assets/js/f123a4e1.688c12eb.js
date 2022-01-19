@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunksofie_documentation=self.webpackChunksofie_documentation||[]).push([[6631],{6068:function(s){s.exports=JSON.parse('{"allTagsPath":"/sofie-core/blog/tags","slug":"/sofie-core/blog/tags/docusaurus","name":"docusaurus","count":3,"permalink":"/sofie-core/blog/tags/docusaurus"}')}}]);
