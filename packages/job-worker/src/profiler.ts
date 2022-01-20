@@ -29,16 +29,25 @@ export function setupApmAgent(): void {
 	}
 }
 
-// APM types are not exported https://github.com/elastic/apm-agent-nodejs/pull/1775
-export type ApmTransaction = ReturnType<typeof Agent.startTransaction>
-export type ApmSpan = ReturnType<typeof Agent.startSpan>
+// Re-export types with better names
+export type ApmTransaction = Agent.Transaction
+export type ApmSpan = Agent.Span
 
+/**
+ * Start an Apm Transaction
+ * This should only be necessary at the outer scope, before the job handler gets executed
+ */
 export function startTransaction(name: string, namespace: string): ApmTransaction | undefined {
 	if (!active) return undefined
-	return Agent.startTransaction(name, namespace)
+	return Agent.startTransaction(name, namespace) ?? undefined
 }
 
+/**
+ * Start an Apm Span without a reference to the transaction
+ * Useful for lib code which does not have access to a JobContext
+ * Note: a startSpan is also available on the JobContext type
+ */
 export function startSpanManual(name: string): ApmSpan | undefined {
 	if (!active) return undefined
-	return Agent.startSpan(name)
+	return Agent.startSpan(name) ?? undefined
 }
