@@ -40,7 +40,8 @@
 	],
 	"dependencies": {
 		"timeline-state-resolver-types": "6.4.0-nightly-release39-20220117-145627-f32e78af4.0",
-		"tslib": "^2.3.1"
+		"tslib": "^2.3.1",
+		"type-fest": "^2.10.0"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [
