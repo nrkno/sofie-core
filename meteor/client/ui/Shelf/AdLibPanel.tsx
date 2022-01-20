@@ -487,7 +487,14 @@ type SourceLayerLookup = Record<string, ISourceLayer>
 
 type MinimalRundown = Pick<
 	Rundown,
-	'_id' | 'name' | '_rank' | 'playlistId' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'
+	| '_id'
+	| 'name'
+	| '_rank'
+	| 'playlistId'
+	| 'timing'
+	| 'showStyleBaseId'
+	| 'showStyleVariantId'
+	| 'endOfRundownIsShowBreak'
 >
 
 export interface AdLibFetchAndFilterProps {
@@ -611,8 +618,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					isLive: false,
 					isNext: false,
 					isCompatibleShowStyle: currentPartInstance?.rundownId
-						? rundowns[unprotectString(currentPartInstance.rundownId)].showStyleBaseId ===
-						  rundowns[unprotectString(segment.rundownId)].showStyleBaseId
+						? rundowns[unprotectString(currentPartInstance.rundownId)].showStyleVariantId ===
+						  rundowns[unprotectString(segment.rundownId)].showStyleVariantId
 						: true,
 				})
 
@@ -695,6 +702,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 			if (segment) {
 				segment.pieces.push({
 					...piece,
+					disabled: !segment.isCompatibleShowStyle,
 					sourceLayer: sourceLayerLookup[piece.sourceLayerId],
 					outputLayer: outputLayerLookup[piece.outputLayerId],
 				})
@@ -733,6 +741,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	adlibActions.forEach((action) => {
 		const segment = uiPartSegmentMap.get(action.partId)
 		if (segment) {
+			action.piece.disabled = !segment.isCompatibleShowStyle
 			segment.pieces.push(action.piece)
 		}
 	})
@@ -741,10 +750,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		// Sort the pieces:
 		segment.pieces = sortAdlibs(
 			segment.pieces.map((piece) => ({
-				adlib: {
-					...piece,
-					disabled: !segment.isCompatibleShowStyle,
-				},
+				adlib: piece,
 				label: piece.adlibAction?.display?.label ?? piece.name,
 				adlibRank: piece._rank,
 				adlibId: piece._id,
