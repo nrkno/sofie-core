@@ -42,7 +42,7 @@ export function isCommonContext(obj: unknown): obj is ICommonContext {
 		return false
 	}
 
-	const { getHashId, unhashId, logDebug, logInfo, logWarning, logError } = obj as any
+	const { getHashId, unhashId, logDebug, logInfo, logWarning, logError } = obj as ICommonContext
 
 	return (
 		typeof getHashId === 'function' &&
@@ -68,7 +68,7 @@ export function isUserNotesContext(obj: unknown): obj is IUserNotesContext {
 		return false
 	}
 
-	const { notifyUserError, notifyUserWarning, notifyUserInfo } = obj as any
+	const { notifyUserError, notifyUserWarning, notifyUserInfo } = obj as IUserNotesContext
 
 	return (
 		typeof notifyUserError === 'function' &&
