@@ -20,6 +20,8 @@ import {
 	StudioLight,
 } from '../../lib/collections/optimizations'
 
+export type BasicAccessContext = { organizationId: OrganizationId | null; userId: UserId | null }
+
 type OrganizationContent = { organizationId: OrganizationId }
 export namespace OrganizationReadAccess {
 	export function organization(
@@ -69,9 +71,9 @@ export namespace OrganizationContentWriteAccess {
 	export function evaluation(cred0: Credentials) {
 		return anyContent(cred0)
 	}
-	export function mediaWorkFlows(cred0: Credentials, organizationId: OrganizationId) {
+	export function mediaWorkFlows(cred0: Credentials) {
 		// "All mediaWOrkflows in all devices of an organization"
-		return anyContent(cred0, { organizationId: organizationId })
+		return anyContent(cred0)
 	}
 	export function blueprint(cred0: Credentials, existingBlueprint?: Blueprint | BlueprintId, allowMissing?: boolean) {
 		triggerWriteAccess()

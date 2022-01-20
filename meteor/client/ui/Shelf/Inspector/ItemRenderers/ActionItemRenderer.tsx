@@ -224,8 +224,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 						MeteorCall.userAction.bucketsSaveActionIntoBucket(
 							e,
 							this.props.studio._id,
-							transformedAdLibActionToAction(targetAction),
-							this.props.bucketIds[0]
+							this.props.bucketIds[0],
+							transformedAdLibActionToAction(targetAction)
 						),
 					(err, res) => {
 						if (err) return

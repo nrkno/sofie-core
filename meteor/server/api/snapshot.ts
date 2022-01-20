@@ -71,7 +71,7 @@ import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
-import { OrganizationContentWriteAccess } from '../security/organization'
+import { BasicAccessContext, OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
@@ -974,14 +974,12 @@ export async function internalStoreSystemSnapshot(
 	return storeSnaphot(s, organizationId, reason)
 }
 export async function storeRundownPlaylistSnapshot(
-	context: MethodContext,
+	access: BasicAccessContext,
 	playlistId: RundownPlaylistId,
 	reason: string
 ): Promise<SnapshotId> {
-	check(playlistId, String)
-	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
-	const s = await createRundownPlaylistSnapshot(playlistId, organizationId)
-	return storeSnaphot(s, organizationId, reason)
+	const s = await createRundownPlaylistSnapshot(playlistId, access.organizationId)
+	return storeSnaphot(s, access.organizationId, reason)
 }
 export async function storeDebugSnapshot(
 	context: MethodContext,
@@ -1132,7 +1130,9 @@ class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 		return storeSystemSnapshot(this, studioId, reason)
 	}
 	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
-		return storeRundownPlaylistSnapshot(this, playlistId, reason)
+		check(playlistId, String)
+		const access = OrganizationContentWriteAccess.snapshot(this)
+		return storeRundownPlaylistSnapshot(access, playlistId, reason)
 	}
 	async storeDebugSnapshot(studioId: StudioId, reason: string) {
 		return storeDebugSnapshot(this, studioId, reason)

@@ -40,8 +40,8 @@ export interface NewUserActionAPI extends MethodContext {
 	moveNext(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
-		horisontalDelta: number,
-		verticalDelta: number
+		partDelta: number,
+		segmentDelta: number
 	): Promise<ClientAPI.ClientResponse<PartId | null>>
 	prepareForBroadcast(
 		userEvent: string,
@@ -121,9 +121,8 @@ export interface NewUserActionAPI extends MethodContext {
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketAdlibImport(
 		_userEvent: string,
-		studioId: StudioId,
-		showStyleVariantId: ShowStyleVariantId,
 		bucketId: BucketId,
+		showStyleVariantId: ShowStyleVariantId,
 		ingestItem: IngestAdlib
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketAdlibStart(
@@ -187,9 +186,8 @@ export interface NewUserActionAPI extends MethodContext {
 	bucketsEmptyBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsCreateNewBucket(
 		userEvent: string,
-		name: string,
 		studioId: StudioId,
-		userId: string | null
+		name: string
 	): Promise<ClientAPI.ClientResponse<Bucket>>
 	bucketsRemoveBucketAdLib(userEvent: string, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsRemoveBucketAdLibAction(userEvent: string, id: AdLibActionId): Promise<ClientAPI.ClientResponse<void>>
@@ -206,8 +204,8 @@ export interface NewUserActionAPI extends MethodContext {
 	bucketsSaveActionIntoBucket(
 		userEvent: string,
 		studioId: StudioId,
-		action: AdLibActionCommon | BucketAdLibAction,
-		bucketId: BucketId
+		bucketId: BucketId,
+		action: AdLibActionCommon | BucketAdLibAction
 	): Promise<ClientAPI.ClientResponse<BucketAdLibAction>>
 	switchRouteSet(
 		userEvent: string,

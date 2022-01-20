@@ -19,7 +19,7 @@ export interface Trace {
 	/** timestamp of when trace was started */
 	start: number
 	/** Tags to differentiate data sources */
-	tags?: Record<string, string>
+	tags: Record<string, string>
 }
 export interface FinishedTrace extends Trace {
 	/** timestamp of when trace was ended */
@@ -31,7 +31,7 @@ export interface FinishedTrace extends Trace {
 export function startTrace(measurement: string, tags?: Record<string, string>): Trace {
 	return {
 		measurement,
-		tags,
+		tags: tags ?? {},
 		start: Date.now(),
 	}
 }

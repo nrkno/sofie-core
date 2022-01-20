@@ -76,7 +76,9 @@ function verifyMethod(methodName: string) {
 	try {
 		disableChecks()
 		testWriteAccess()
-		Meteor.call(methodName)
+		// Pass some fake args, to ensure that any trying to do a `arg.val` don't throw
+		const fakeArgs = [{}, {}, {}, {}, {}]
+		Meteor.call(methodName, ...fakeArgs)
 	} catch (e) {
 		const errStr = stringifyError(e)
 		if (errStr.match(/triggerWriteAccess/i)) {

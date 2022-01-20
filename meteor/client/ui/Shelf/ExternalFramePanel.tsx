@@ -225,9 +225,8 @@ export const ExternalFramePanel = withTranslation()(
 			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
-					playlist.studioId,
-					targetRundown!.showStyleVariantId,
 					targetBucket ? targetBucket._id : protectString(''),
+					targetRundown!.showStyleVariantId,
 					literal<IngestAdlib>({
 						externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
 						name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',

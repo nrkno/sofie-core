@@ -4,19 +4,22 @@ import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import * as _ from 'underscore'
-import { MethodContext } from '../../lib/api/methods'
-import { OrganizationContentWriteAccess } from '../security/organization'
 import { fetchStudioLight } from '../../lib/collections/optimizations'
 import { sendSlackMessageToWebhook } from './integration/slack'
+import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export function saveEvaluation(methodContext: MethodContext, evaluation: EvaluationBase): void {
-	const allowedCred = OrganizationContentWriteAccess.evaluation({ userId: methodContext.userId })
-
+export function saveEvaluation(
+	credentials: {
+		userId: UserId | null
+		organizationId: OrganizationId | null
+	},
+	evaluation: EvaluationBase
+): void {
 	Evaluations.insert({
 		...evaluation,
 		_id: getRandomId(),
-		organizationId: allowedCred.organizationId,
-		userId: allowedCred.userId,
+		organizationId: credentials.organizationId,
+		userId: credentials.userId,
 		timestamp: getCurrentTime(),
 	})
 	logger.info({

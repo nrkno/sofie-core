@@ -388,13 +388,12 @@ export namespace ServerPeripheralDeviceAPI {
 		return false
 	}
 	export function disableSubDevice(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		token: string | undefined,
+		access: PeripheralDeviceContentWriteAccess.ContentAccess,
 		subDeviceId: string,
 		disable: boolean
 	) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = access.device
+		const deviceId = access.deviceId
 
 		// check that the peripheralDevice has subDevices
 		if (!peripheralDevice.settings)
