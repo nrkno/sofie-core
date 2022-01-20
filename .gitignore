@@ -3,3 +3,6 @@ settings.json
 meteor/.coverage/
 node_modules
 tv-automation-server-core
+
+# Exclude JetBrains IDE specific files
+.idea
