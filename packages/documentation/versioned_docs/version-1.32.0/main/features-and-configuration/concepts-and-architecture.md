@@ -117,7 +117,7 @@ The Timeline is a collection of timeline-objects, that together form a "target s
 
 The timeline-objects can be programmed to contain relative references to each other, so programming things like _"play this thing right after this other thing"_ is as easy as `{start: { #otherThing.end }}`
 
-The [Playout Gateway](../for-developers/libraries.md#gateways) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)\) controls the play-out devices to make sure that they actually play what is intended.
+The [Playout Gateway](../for-developers/libraries#gateways) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)\) controls the play-out devices to make sure that they actually play what is intended.
 
 ![Example of 2 objects in a timeline: The #video object, destined to play at a certain time, and #gfx0, destined to start 15 seconds into the video.](/img/docs/main/features-and-configuration/timeline.png)
 
@@ -150,7 +150,7 @@ The Timeline is stored by Sofie Core in a MongoDB collection. It is generated wh
 - The [Next:ed Part](../dictionary#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](../dictionary#lookahead)\)
 - Any [AdLibs ](../dictionary#adlib-pieces)the user has manually selected to play
 
-The [**Playout Gateway**](../for-developers/libraries.md#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)-library \(TSR\).
+The [**Playout Gateway**](../for-developers/libraries#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)-library \(TSR\).
 
 The TSR then...
 
