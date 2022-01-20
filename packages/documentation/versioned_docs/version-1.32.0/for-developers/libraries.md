@@ -40,8 +40,8 @@ There are a number of libraries used in the Sofie ecosystem:
 
 There are also a few typings-only libraries that define interfaces between applications:
 
-* [**Blueprints integration**](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) Defines the interface between [**Blueprints** ](../dictionary.md#blueprints)and [**Sofie Core**](../dictionary.md#sofie-core).
-* [**Timeline State Resolver types**](https://www.npmjs.com/package/timeline-state-resolver-types) Defines the interface between [**Blueprints**](../dictionary.md#blueprints) and the timeline that will be fed into **TSR** for playout.
+* [**Blueprints integration**](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) Defines the interface between [**Blueprints** ](../dictionary#blueprints)and [**Sofie Core**](../dictionary#sofie-core).
+* [**Timeline State Resolver types**](https://www.npmjs.com/package/timeline-state-resolver-types) Defines the interface between [**Blueprints**](../dictionary#blueprints) and the timeline that will be fed into **TSR** for playout.
 
 ## Other Sofie-related Repositories
 
