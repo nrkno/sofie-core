@@ -2260,14 +2260,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onRestartPlayout = (e: React.MouseEvent<HTMLButtonElement>) => {
-			const { t } = this.props
+			const { t, studio } = this.props
 
-			if (!this.props.studio) {
+			if (!studio) {
 				return
 			}
 
 			const attachedPlayoutGateways = PeripheralDevices.find({
-				studioId: this.props.studio._id,
+				studioId: studio._id,
 				connected: true,
 				type: PeripheralDeviceType.PLAYOUT,
 			}).fetch()
@@ -2284,39 +2284,52 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				)
 				return
 			}
-			attachedPlayoutGateways.forEach((item) => {
-				PeripheralDevicesAPI.restartDevice(item, e)
-					.then(() => {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.NOTIFICATION,
-								t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }),
-								'RundownView'
+
+			e.persist()
+
+			const restartPlayoutGateway = () => {
+				attachedPlayoutGateways.forEach((item) => {
+					PeripheralDevicesAPI.restartDevice(item, e)
+						.then(() => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.NOTIFICATION,
+									t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }),
+									'RundownView'
+								)
 							)
-						)
-					})
-					.catch(() => {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.CRITICAL,
-								t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }),
-								'RundownView'
+						})
+						.catch(() => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.CRITICAL,
+									t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }),
+									'RundownView'
+								)
 							)
-						)
-					})
+						})
+				})
+			}
+
+			doModalDialog({
+				title: t('Restart Playout'),
+				message: t('Do you want to restart the Playout\xa0Gateway?'),
+				onAccept: restartPlayoutGateway,
 			})
 		}
 
-		onRestartCasparCG = (device: PeripheralDevice) => {
+		onRestartCasparCG = (e: React.MouseEvent<HTMLButtonElement>, device: PeripheralDevice) => {
 			const { t } = this.props
+
+			e.persist()
 
 			doModalDialog({
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
+				onAccept: () => {
+					callPeripheralDeviceFunction(e, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
@@ -2558,7 +2571,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												this.props.casparCGPlayoutDevices &&
 												this.props.casparCGPlayoutDevices.map((i) => (
 													<React.Fragment key={unprotectString(i._id)}>
-														<button className="btn btn-secondary" onClick={() => this.onRestartCasparCG(i)}>
+														<button className="btn btn-secondary" onClick={(e) => this.onRestartCasparCG(e, i)}>
 															{t('Restart {{device}}', { device: i.name })}
 														</button>
 														<hr />
