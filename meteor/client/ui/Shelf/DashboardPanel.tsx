@@ -133,7 +133,7 @@ export function dashboardElementStyle(el: DashboardPositionableElement): React.C
 				: getVerticalOffsetFromHeight(el),
 
 		// @ts-ignore
-		'--dashboard-panel-scale': el.scale || undefined,
+		'--dashboard-panel-scale': el.scale || 1,
 		'--dashboard-panel-scaled-font-size': (el.scale || 1) * 1.5 + 'em',
 	}
 }
