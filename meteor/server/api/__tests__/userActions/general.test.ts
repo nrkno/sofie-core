@@ -27,9 +27,8 @@ describe('User Actions - General', () => {
 		const mockExit = jest.spyOn(process, 'exit').mockImplementation()
 
 		// Use an invalid token to try and restart it
-		await expect(MeteorCall.userAction.restartCore('e', 'invalidToken')).rejects.toThrowMeteor(
-			401,
-			'Restart token is invalid'
+		await expect(MeteorCall.userAction.restartCore('e', 'invalidToken')).resolves.toMatchUserRawError(
+			/Restart token is invalid/
 		)
 
 		await expect(MeteorCall.userAction.restartCore('e', getHash(RESTART_SALT + res.result))).resolves.toMatchObject(

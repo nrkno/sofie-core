@@ -1,9 +1,7 @@
 import { Buckets, BucketId, Bucket } from '../../lib/collections/Buckets'
-import { MongoQuery } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials } from './lib/credentials'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { PieceId } from '../../lib/collections/Pieces'
-import { Settings } from '../../lib/Settings'
 import { check } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { StudioReadAccess, StudioContentWriteAccess, StudioContentAccess } from './studio'
@@ -23,18 +21,13 @@ export namespace BucketSecurity {
 	}
 
 	// Sometimes a studio ID is passed, others the peice / bucket id
-	export function allowReadAccess(
-		selector: MongoQuery<{ _id: BucketId }>,
-		token: string,
-		cred: Credentials | ResolvedCredentials
-	) {
-		check(selector, Object)
-		if (!Settings.enableUserAccounts) return true
-		if (!selector._id) throw new Meteor.Error(400, 'selector must contain bucket or piece id')
-		const bucket = Buckets.findOne(selector)
-		if (!bucket) throw new Meteor.Error(404, `Bucket "${selector._id}" not found!`)
+	export function allowReadAccess(cred: Credentials | ResolvedCredentials, bucketId: BucketId) {
+		check(bucketId, String)
 
-		return StudioReadAccess.studioContent(bucket, { ...cred, token })
+		const bucket = Buckets.findOne(bucketId)
+		if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found!`)
+
+		return StudioReadAccess.studioContent(bucket, cred)
 	}
 	export function allowWriteAccess(cred: Credentials, bucketId: BucketId): BucketContentAccess {
 		triggerWriteAccess()

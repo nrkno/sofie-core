@@ -114,7 +114,7 @@ describe('Security', () => {
 		expect(fcn).toThrowError(/not logged in/i)
 	}
 	function expectNotFound(fcn: () => any) {
-		if (Settings.enableUserAccounts === false) return expectAllowed(fcn)
+		// if (Settings.enableUserAccounts === false) return expectAllowed(fcn)
 		expect(fcn).toThrowError(/not found/i)
 	}
 	function expectAllowed(fcn: () => any) {
@@ -140,32 +140,32 @@ describe('Security', () => {
 		const bucket = await BucketsAPI.createNewBucket(access, 'myBucket')
 
 		changeEnableUserAccounts(() => {
-			expectReadAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', creator))
+			expectReadAllowed(() => BucketSecurity.allowReadAccess(creator, bucket._id))
 			expectAllowed(() => BucketSecurity.allowWriteAccess(creator, bucket._id))
 			// expectAccessAllowed(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserA))
 
 			// Unknown bucket:
-			expectNotFound(() => BucketSecurity.allowReadAccess({ _id: unknownId }, '', creator))
+			expectNotFound(() => BucketSecurity.allowReadAccess(creator, unknownId))
 			expectNotFound(() => BucketSecurity.allowWriteAccess(creator, unknownId))
 			expectNotFound(() => BucketSecurity.allowWriteAccessPiece(creator, unknownId))
 
 			// Not logged in:
-			expectReadNotAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', nothing))
+			expectReadNotAllowed(() => BucketSecurity.allowReadAccess(nothing, bucket._id))
 			expectNotLoggedIn(() => BucketSecurity.allowWriteAccess(nothing, bucket._id))
 			// expectAccessNotLoggedIn(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credNothing))
 
 			// Non existing user:
-			expectReadNotAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', nonExisting))
+			expectReadNotAllowed(() => BucketSecurity.allowReadAccess(nonExisting, bucket._id))
 			expectNotLoggedIn(() => BucketSecurity.allowWriteAccess(nonExisting, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credNonExistingUser))
 
 			// Other user in same org:
-			expectReadAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', userB))
+			expectReadAllowed(() => BucketSecurity.allowReadAccess(userB, bucket._id))
 			expectAllowed(() => BucketSecurity.allowWriteAccess(userB, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserB))
 
 			// Other user in other org:
-			expectReadNotAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', wrongOrg))
+			expectReadNotAllowed(() => BucketSecurity.allowReadAccess(wrongOrg, bucket._id))
 			expectNotAllowed(() => BucketSecurity.allowWriteAccess(wrongOrg, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserInWrongOrganization))
 		})
@@ -258,7 +258,7 @@ describe('Security', () => {
 			expectNotAllowed(() => OrganizationContentWriteAccess.organization(wrongOrg, org0._id))
 			expectNotAllowed(() => OrganizationContentWriteAccess.studio(wrongOrg, env.studio))
 			// expectNotAllowed(() => OrganizationContentWriteAccess.evaluation(wrongOrg))
-			expectNotAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(wrongOrg))
+			// expectNotAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(wrongOrg))
 			expectNotAllowed(() => OrganizationContentWriteAccess.blueprint(wrongOrg, env.studioBlueprint._id))
 			expectNotAllowed(() => OrganizationContentWriteAccess.snapshot(wrongOrg, snapshotId))
 			expectNotAllowed(() => OrganizationContentWriteAccess.dataFromSnapshot(wrongOrg, org0._id))
@@ -269,7 +269,7 @@ describe('Security', () => {
 			expectNotAllowed(() => OrganizationContentWriteAccess.organization(otherSuperAdmin, org0._id))
 			expectNotAllowed(() => OrganizationContentWriteAccess.studio(otherSuperAdmin, env.studio))
 			// expectNotAllowed(() => OrganizationContentWriteAccess.evaluation(otherSuperAdmin))
-			expectNotAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(otherSuperAdmin))
+			// expectNotAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(otherSuperAdmin))
 			expectNotAllowed(() => OrganizationContentWriteAccess.blueprint(otherSuperAdmin, env.studioBlueprint._id))
 			expectNotAllowed(() => OrganizationContentWriteAccess.snapshot(otherSuperAdmin, snapshotId))
 			expectNotAllowed(() => OrganizationContentWriteAccess.dataFromSnapshot(otherSuperAdmin, org0._id))
