@@ -503,7 +503,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 												type: ContextType.ADLIB,
 												details: {
 													adLib: adLibPiece,
-													onToggle: this.onToggleAdLib,
+													onToggle: !adLibPiece.disabled ? this.onToggleAdLib : undefined,
+													disabled: adLibPiece.disabled,
 												},
 											})
 										}
@@ -532,6 +533,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											showThumbnailsInList={filter.showThumbnailsInList}
 											toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
+											disabled={adLibPiece.disabled}
 										>
 											{adLibPiece.name}
 										</DashboardPieceButton>

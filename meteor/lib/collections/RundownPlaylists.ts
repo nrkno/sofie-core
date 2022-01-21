@@ -97,7 +97,14 @@ export class RundownPlaylistCollectionUtil {
 	): Array<{
 		rundown: Pick<
 			Rundown,
-			'_id' | 'name' | '_rank' | 'playlistId' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'
+			| '_id'
+			| 'name'
+			| '_rank'
+			| 'playlistId'
+			| 'timing'
+			| 'showStyleBaseId'
+			| 'showStyleVariantId'
+			| 'endOfRundownIsShowBreak'
 		>
 		segments: Segment[]
 	}> {
@@ -108,6 +115,7 @@ export class RundownPlaylistCollectionUtil {
 				playlistId: 1,
 				timing: 1,
 				showStyleBaseId: 1,
+				showStyleVariantId: 1,
 				endOfRundownIsShowBreak: 1,
 			},
 		})
