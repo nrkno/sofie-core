@@ -9,7 +9,8 @@ import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { JobManager } from '../../manager'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
-import { FastTrackTimelineFunc } from '../../main'
+import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
+import { addThreadNameToLogLine } from '../../logging'
 
 export class EventsWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<EventsWorkerChild>
@@ -37,14 +38,17 @@ export class EventsWorkerParent extends WorkerParentBase {
 		locksManager: LocksManager,
 		studioId: StudioId,
 		jobManager: JobManager,
+		logLine: LogLineWithSourceFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	): Promise<EventsWorkerParent> {
 		const threadId = getRandomString()
 		const emitLockEvent = (e: AnyLockEvent) => locksManager.handleLockEvent(threadId, e)
+		const logLineInner = (msg: unknown) => logLine(addThreadNameToLogLine(getEventsQueueName(studioId), msg))
+
 		const workerThread = await threadedClass<EventsWorkerChild, typeof EventsWorkerChild>(
 			'./child',
 			'EventsWorkerChild',
-			[emitLockEvent, jobManager.queueJob, fastTrackTimeline],
+			[emitLockEvent, jobManager.queueJob, logLineInner, fastTrackTimeline],
 			{
 				instanceName: `Events: ${studioId}`,
 			}

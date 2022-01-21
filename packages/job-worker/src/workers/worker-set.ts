@@ -5,7 +5,7 @@ import { IngestWorkerParent } from './ingest/parent'
 import { StudioWorkerParent } from './studio/parent'
 import { EventsWorkerParent } from './events/parent'
 import { JobManager } from '../manager'
-import { FastTrackTimelineFunc } from '../main'
+import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../main'
 import { WorkerParentBase } from './parent-base'
 import { logger } from '../logging'
 
@@ -36,6 +36,7 @@ export class StudioWorkerSet {
 		mongoClient: MongoClient,
 		studioId: StudioId,
 		jobManager: JobManager,
+		logLine: LogLineWithSourceFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	): Promise<StudioWorkerSet> {
 		const result = new StudioWorkerSet()
@@ -65,6 +66,7 @@ export class StudioWorkerSet {
 				result.#locksManager,
 				studioId,
 				jobManager,
+				logLine,
 				fastTrackTimeline
 			)
 		)
@@ -78,6 +80,7 @@ export class StudioWorkerSet {
 				result.#locksManager,
 				studioId,
 				jobManager,
+				logLine,
 				fastTrackTimeline
 			)
 		)
@@ -91,6 +94,7 @@ export class StudioWorkerSet {
 				result.#locksManager,
 				studioId,
 				jobManager,
+				logLine,
 				fastTrackTimeline
 			)
 		)

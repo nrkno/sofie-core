@@ -254,7 +254,6 @@ export abstract class WorkerParentBase {
 							await this.#jobManager.jobFinished(job.id, startTime, endTime, null, result)
 							logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
 						} catch (e: unknown) {
-							console.log('inner err2', e, typeof e, JSON.stringify(e))
 							let error: Error | UserError
 							if (e instanceof Error || UserError.isUserError(e)) {
 								error = e
@@ -267,7 +266,6 @@ export abstract class WorkerParentBase {
 							await this.#jobManager.jobFinished(job.id, startTime, Date.now(), error, null)
 						}
 
-						console.log('after work')
 						// Ensure all locks have been freed after the job
 						await this.#locksManager.releaseAllForThread(this.#threadId)
 

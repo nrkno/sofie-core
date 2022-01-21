@@ -17,11 +17,11 @@ const TimeoutAquireLock = 30000
 const TimeoutReleaseLock = 5000
 
 export class LocksManager {
-	readonly #emitLockEvent: (event: AnyLockEvent) => void
+	readonly #emitLockEvent: (event: AnyLockEvent) => Promise<void>
 	/** These are locks that we are waiting to aquire/release */
 	readonly pendingLocks: Map<string, ManualPromise<boolean>>
 
-	constructor(emitLockEvent: (event: AnyLockEvent) => void) {
+	constructor(emitLockEvent: (event: AnyLockEvent) => Promise<void>) {
 		this.#emitLockEvent = emitLockEvent
 		this.pendingLocks = new Map()
 	}
@@ -48,7 +48,7 @@ export class LocksManager {
 		this.pendingLocks.set(lockId, completedPromise)
 
 		// inform parent
-		this.#emitLockEvent({
+		await this.#emitLockEvent({
 			event: 'lock',
 			lockId,
 			resourceId,
@@ -78,7 +78,7 @@ export class LocksManager {
 		this.pendingLocks.set(lockId, completedPromise)
 
 		// inform parent
-		this.#emitLockEvent({
+		await this.#emitLockEvent({
 			event: 'unlock',
 			lockId,
 			resourceId,

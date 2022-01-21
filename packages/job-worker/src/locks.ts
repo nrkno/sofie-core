@@ -73,42 +73,45 @@ export class LocksManager {
 		}
 	}
 
-	handleLockEvent(threadId: string, e: AnyLockEvent): void {
-		try {
-			const resource = this.getResource(e.resourceId)
+	async handleLockEvent(threadId: string, e: AnyLockEvent): Promise<void> {
+		// Don't block the worker who called this
+		setImmediate(() => {
+			try {
+				const resource = this.getResource(e.resourceId)
 
-			switch (e.event) {
-				case 'lock':
-					resource.waitingWorkers.push([threadId, e.lockId])
+				switch (e.event) {
+					case 'lock':
+						resource.waitingWorkers.push([threadId, e.lockId])
 
-					// Check if we can lock it
-					this.lockNextWorker(resource)
+						// Check if we can lock it
+						this.lockNextWorker(resource)
 
-					break
-				case 'unlock':
-					if (resource.holder && resource.holder[0] === threadId && resource.holder[1] === e.lockId) {
-						resource.holder = null
+						break
+					case 'unlock':
+						if (resource.holder && resource.holder[0] === threadId && resource.holder[1] === e.lockId) {
+							resource.holder = null
 
-						logger.info(
-							`Resource: ${resource.id} releaseing from "${threadId}". ${resource.waitingWorkers.length} waiting`
-						)
+							logger.info(
+								`Resource: ${resource.id} releaseing from "${threadId}". ${resource.waitingWorkers.length} waiting`
+							)
 
-						this.#lockChanged(threadId, e.lockId, false).catch((e) => {
-							logger.error(`Failed to report lock change back to worker: ${e}`)
-						})
-					} else {
-						logger.warn(`Worker tried to unlock a lock it doesnt own`)
-					}
+							this.#lockChanged(threadId, e.lockId, false).catch((e) => {
+								logger.error(`Failed to report lock change back to worker: ${e}`)
+							})
+						} else {
+							logger.warn(`Worker tried to unlock a lock it doesnt own`)
+						}
 
-					this.lockNextWorker(resource)
-					break
-				default:
-					assertNever(e)
-					break
+						this.lockNextWorker(resource)
+						break
+					default:
+						assertNever(e)
+						break
+				}
+			} catch (e) {
+				logger.error(`Unexpected error in lock handler: ${e}`)
 			}
-		} catch (e) {
-			logger.error(`Unexpected error in lock handler: ${e}`)
-		}
+		})
 	}
 
 	/** Unsubscribe a worker from the lock channels */

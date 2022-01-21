@@ -10,6 +10,7 @@ import { Db as MongoDb, MongoClient } from 'mongodb'
 import { JobManager } from './manager'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { setupInfluxDb } from './influx'
+import { LogEntry } from 'winston'
 
 setupApmAgent()
 setupInfluxDb()
@@ -21,19 +22,32 @@ export interface JobSpec {
 }
 
 export type FastTrackTimelineFunc = (newTimeline: TimelineComplete) => Promise<void>
+export type LogLineWithSourceFunc = (msg: LogEntry) => Promise<void>
+export type LogLineFunc = (msg: unknown) => Promise<void>
+
+async function defaultThreadLogger(msg: LogEntry) {
+	logger.log(msg)
+}
 
 export abstract class JobWorkerBase {
 	readonly #workerId = getWorkerId()
 	readonly #workers = new Map<StudioId, StudioWorkerSet>()
 
+	readonly #logLine: LogLineWithSourceFunc
 	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
 
 	#client: MongoClient | undefined
 
 	#jobManager: JobManager
 
-	constructor(jobManager: JobManager, fastTrackTimeline: FastTrackTimelineFunc | null) {
+	constructor(
+		jobManager: JobManager,
+		logLine: LogLineWithSourceFunc | null,
+		fastTrackTimeline: FastTrackTimelineFunc | null
+	) {
 		this.#jobManager = jobManager
+
+		this.#logLine = logLine || defaultThreadLogger
 
 		this.#fastTrackTimeline = fastTrackTimeline
 		if (!this.#fastTrackTimeline) {
@@ -49,7 +63,7 @@ export abstract class JobWorkerBase {
 		this.#client = await createMongoConnection(mongoUri)
 
 		this.#client.on('close', () => {
-			console.log('Mongo connection closed. Forcing exit')
+			logger.debug('Mongo connection closed. Forcing exit')
 			// Note: This is terribele error handling, but it does the job.
 			// If we start handling this more gracefully, then we will need to make sure to avoid/kill jobs being processed and flush all caches upon reconnection
 			// eslint-disable-next-line no-process-exit
@@ -70,6 +84,7 @@ export abstract class JobWorkerBase {
 					this.#client,
 					studioId,
 					this.#jobManager,
+					this.#logLine,
 					this.#fastTrackTimeline
 				)
 			)

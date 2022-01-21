@@ -1,3 +1,5 @@
+import { LogEntry } from 'winston'
+import { addThreadNameToLogLine, interceptLogging } from './logging'
 import { FastTrackTimelineFunc, JobSpec, JobWorkerBase } from './main'
 import { JobManager, JobStream } from './manager'
 
@@ -33,8 +35,12 @@ export class IpcJobWorker extends JobWorkerBase {
 		jobFinished: (id: string, startedTime: number, finishedTime: number, error: any, result: any) => Promise<void>,
 		getNextJob: (queueName: string) => Promise<JobSpec>,
 		queueJob: (queueName: string, jobName: string, jobData: unknown) => Promise<void>,
+		logLine: (msg: LogEntry) => Promise<void>,
 		fastTrackTimeline: FastTrackTimelineFunc
 	) {
-		super(new IpcJobManager(jobFinished, queueJob, getNextJob), fastTrackTimeline)
+		// Intercept winston to pipe back over ipc
+		interceptLogging((...args) => logLine(addThreadNameToLogLine('worker-parent', ...args)))
+
+		super(new IpcJobManager(jobFinished, queueJob, getNextJob), logLine, fastTrackTimeline)
 	}
 }
