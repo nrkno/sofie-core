@@ -8,15 +8,10 @@ import {
 } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { startTransaction } from '../profiler'
-import { ChangeStream, ChangeStreamDocument, MongoClient } from 'mongodb'
+import { ChangeStream, MongoClient } from 'mongodb'
 import { createInvalidateWorkerDataCache, InvalidateWorkerDataCache } from './caches'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { logger } from '../logging'
-import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { LocksManager } from '../locks'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 import { JobManager, JobStream } from '../manager'
 import { UserError } from '@sofie-automation/corelib/dist/error'
@@ -33,7 +28,7 @@ export abstract class WorkerParentBase {
 	readonly #studioId: StudioId
 	readonly #threadId: string
 
-	readonly #mongoClient: MongoClient
+	// readonly #mongoClient: MongoClient
 	readonly #locksManager: LocksManager
 
 	#terminate: ManualPromise<void> | undefined
@@ -55,7 +50,7 @@ export abstract class WorkerParentBase {
 		workerId: string,
 		threadId: string,
 		studioId: StudioId,
-		mongoClient: MongoClient,
+		_mongoClient: MongoClient, // Included here for future use
 		locksManager: LocksManager,
 		queueName: string,
 		jobManager: JobManager
@@ -63,7 +58,7 @@ export abstract class WorkerParentBase {
 		// this.#workerId = workerId
 		this.#studioId = studioId
 		this.#threadId = threadId
-		this.#mongoClient = mongoClient
+		// this.#mongoClient = mongoClient
 		this.#locksManager = locksManager
 
 		this.#jobManager = jobManager
@@ -81,90 +76,10 @@ export abstract class WorkerParentBase {
 		})
 	}
 
-	/**
-	 * Subscribe to core changes in the db for cache invalidation.
-	 * Can be extended if move collections are watched for a thread type
-	 */
-	protected subscribeToCacheInvalidations(dbName: string): void {
-		const attachChangesStream = <T>(
-			stream: ChangeStream<T>,
-			name: string,
-			fcn: (invalidations: InvalidateWorkerDataCache, change: ChangeStreamDocument<T>) => void
-		): void => {
-			this.#streams.push(stream)
-			stream.on('change', (change) => {
-				// we have a change to flag
-				if (!this.#pendingInvalidations) this.#pendingInvalidations = createInvalidateWorkerDataCache()
-				fcn(this.#pendingInvalidations, change as ChangeStreamDocument<T>)
-			})
-			stream.on('end', () => {
-				logger.warn(`Changes stream for ${name} ended`)
-				if (!this.#terminate) this.#terminate = createManualPromise()
-			})
-		}
-
-		// TODO: Worker - maybe these should be shared across threads, as there will be a bunch looking for the exact same changes..
-		const database = this.#mongoClient.db(dbName)
-		attachChangesStream<DBStudio>(
-			database.collection(CollectionName.Studios).watch([{ $match: { _id: this.#studioId } }], {
-				batchSize: 1,
-			}),
-			`Studio "${this.#studioId}"`,
-			(invalidations) => {
-				invalidations.studio = true
-			}
-		)
-		attachChangesStream<Blueprint>(
-			// Detect changes to other docs, the invalidate will filter out irrelevant values
-			database.collection(CollectionName.Blueprints).watch(
-				[
-					// TODO: Worker - can/should this be scoped down at all?
-				],
-				{
-					batchSize: 1,
-				}
-			),
-			`Blueprints"`,
-			(invalidations, change) => {
-				if (change.documentKey) {
-					invalidations.blueprints.push((change.documentKey as any)._id)
-				}
-			}
-		)
-		attachChangesStream<DBShowStyleBase>(
-			// Detect changes to other docs, the invalidate will filter out irrelevant values
-			database.collection(CollectionName.ShowStyleBases).watch(
-				[
-					// TODO: Worker - can/should this be scoped down at all?
-				],
-				{
-					batchSize: 1,
-				}
-			),
-			`ShowStyleBases"`,
-			(invalidations, change) => {
-				if (change.documentKey) {
-					invalidations.showStyleBases.push((change.documentKey as any)._id)
-				}
-			}
-		)
-		attachChangesStream<DBShowStyleVariant>(
-			// Detect changes to other docs, the invalidate will filter out irrelevant values
-			database.collection(CollectionName.ShowStyleVariants).watch(
-				[
-					// TODO: Worker - can/should this be scoped down at all?
-				],
-				{
-					batchSize: 1,
-				}
-			),
-			`ShowStyleVariants"`,
-			(invalidations, change) => {
-				if (change.documentKey) {
-					invalidations.showStyleVariants.push((change.documentKey as any)._id)
-				}
-			}
-		)
+	/** Queue a cache invalidation for the thread */
+	public queueCacheInvalidation(invalidatorFcn: (invalidations: InvalidateWorkerDataCache) => void): void {
+		if (!this.#pendingInvalidations) this.#pendingInvalidations = createInvalidateWorkerDataCache()
+		invalidatorFcn(this.#pendingInvalidations)
 	}
 
 	/** Initialise the worker thread */
@@ -184,7 +99,8 @@ export abstract class WorkerParentBase {
 			try {
 				this.#pendingInvalidations = null
 
-				this.subscribeToCacheInvalidations(dbName)
+				// Future: subscribe to worker specific cache invalidations here
+				// this.subscribeToCacheInvalidations(dbName)
 
 				// Run until told to terminate
 				while (!this.#terminate) {
