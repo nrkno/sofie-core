@@ -26,12 +26,17 @@ const concurrently = require("concurrently");
 				name: "PACKAGES-TSC",
 			},
 			{
-				command: "meteor npm run watch-types -- --preserveWatchOutput",
+				command: "yarn watch-for-worker-changes",
+				cwd: "packages",
+				name: "WORKER-RESTART",
+			},
+			{
+				command: "meteor yarn watch-types -- --preserveWatchOutput",
 				cwd: "meteor",
 				name: "METEOR-TSC",
 			},
 			{
-				command: "meteor npm run debug",
+				command: "meteor yarn debug",
 				cwd: "meteor",
 				name: "METEOR",
 			},
