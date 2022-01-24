@@ -1,5 +1,5 @@
 import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { RESTART_SALT, UserActionAPIMethods } from '../../../../lib/api/userActions'
 import { getHash } from '../../../../lib/lib'
@@ -46,7 +46,7 @@ describe('User Actions - General', () => {
 	testInFiber('GUI Status', async () => {
 		await expect(MeteorCall.userAction.guiFocused('click')).resolves.toMatchObject({ success: 200 })
 		const logs0 = UserActionsLog.find({
-			method: UserActionAPIMethods.guiFocused,
+			method: 'guiFocused',
 		}).fetch()
 		expect(logs0).toHaveLength(1)
 		// expect(logs0[0]).toMatchObject({
@@ -55,7 +55,7 @@ describe('User Actions - General', () => {
 		// })
 		await expect(MeteorCall.userAction.guiBlurred('click')).resolves.toMatchObject({ success: 200 })
 		const logs1 = UserActionsLog.find({
-			method: UserActionAPIMethods.guiBlurred,
+			method: 'guiBlurred',
 		}).fetch()
 		expect(logs1).toHaveLength(1)
 		// expect(logs1[0]).toMatchObject({
