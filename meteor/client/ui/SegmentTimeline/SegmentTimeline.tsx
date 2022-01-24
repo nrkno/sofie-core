@@ -669,7 +669,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						) : null}
 					</div>
 				</div>
-				,
 			</>
 		)
 	}

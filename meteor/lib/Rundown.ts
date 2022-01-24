@@ -341,6 +341,10 @@ export function sortAdlibs<T>(
 		if (a.partRank > b.partRank) return 1
 		if (a.partRank < b.partRank) return -1
 
+		// Sort by adlib rank
+		if (a.adlibRank > b.adlibRank) return 1
+		if (a.adlibRank < b.adlibRank) return -1
+
 		// Sort by labels:
 		const r = compareLabels(a.label, b.label)
 		if (r !== 0) return r
