@@ -23,6 +23,11 @@ export enum ThreadStatus {
 	Ready = 2,
 }
 
+/** How often to check the job for reaching the max duration */
+const WATCHDOG_INTERVAL = 5 * 1000
+/** The maximum duration a job is allowed to run for before the thread is killed */
+const WATCHDOG_KILL_DURATION = 30 * 1000
+
 export abstract class WorkerParentBase {
 	// readonly #workerId: string
 	readonly #studioId: StudioId
@@ -41,6 +46,9 @@ export abstract class WorkerParentBase {
 	#pendingInvalidations: InvalidateWorkerDataCache | null = null
 
 	#threadStatus = ThreadStatus.Closed
+
+	#watchdog: NodeJS.Timeout | undefined
+	#watchdogJobStarted: number | undefined
 
 	public get threadId(): string {
 		return this.#threadId
@@ -90,11 +98,29 @@ export abstract class WorkerParentBase {
 	protected abstract runJobInWorker(name: string, data: any): Promise<any>
 	/** Terminate the worker thread */
 	protected abstract terminateWorkerThread(): Promise<void>
+	/** Restart the worker thread */
+	protected abstract restartWorkerThread(): Promise<void>
 	/** Inform the worker thread about a lock change */
 	public abstract workerLockChange(lockId: string, locked: boolean): Promise<void>
 
 	/** Start the loop feeding work to the worker */
 	protected startWorkerLoop(mongoUri: string, dbName: string): void {
+		if (!this.#watchdog) {
+			// Start a watchdog, to detect if a job has been running for longer than a max threshold. If it has, then we forcefully kill it
+			// ThreadedClass will propogate the completion error through the usual route
+			this.#watchdog = setInterval(() => {
+				if (this.#watchdogJobStarted && this.#watchdogJobStarted + WATCHDOG_KILL_DURATION < Date.now()) {
+					// A job has been running for too long.
+
+					logger.warn(`Force restarting worker thread: "${this.#threadId}"`)
+					this.#watchdogJobStarted = undefined
+					this.restartWorkerThread().catch((e) => {
+						logger.warn(`Restarting worker thread "${this.#threadId}" error: ${stringifyError(e)}`)
+					})
+				}
+			}, WATCHDOG_INTERVAL)
+		}
+
 		setImmediate(async () => {
 			try {
 				this.#pendingInvalidations = null
@@ -134,8 +160,6 @@ export abstract class WorkerParentBase {
 						await this.invalidateWorkerCaches(invalidations)
 					}
 
-					// TODO: Worker - enforce a timeout? we could kill the thread once it reaches the limit as a hard abort
-
 					// we may not get a job even when blocking, so try again
 					if (job) {
 						// Ensure the lock is still good
@@ -147,6 +171,7 @@ export abstract class WorkerParentBase {
 						}
 
 						const startTime = Date.now()
+						this.#watchdogJobStarted = startTime
 
 						try {
 							logger.debug(`Starting work ${job.id}: "${job.name}"`)
@@ -167,6 +192,7 @@ export abstract class WorkerParentBase {
 							}
 
 							const endTime = Date.now()
+							this.#watchdogJobStarted = undefined
 							await this.#jobManager.jobFinished(job.id, startTime, endTime, null, result)
 							logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
 						} catch (e: unknown) {
@@ -179,6 +205,7 @@ export abstract class WorkerParentBase {
 
 							logger.error(`Job errored ${job.id} "${job.name}": ${stringifyError(e)}`)
 
+							this.#watchdogJobStarted = undefined
 							await this.#jobManager.jobFinished(job.id, startTime, Date.now(), error, null)
 						}
 
@@ -209,6 +236,11 @@ export abstract class WorkerParentBase {
 
 	/** Terminate and cleanup the worker thread */
 	async terminate(): Promise<void> {
+		if (this.#watchdog) {
+			clearInterval(this.#watchdog)
+			this.#watchdog = undefined
+		}
+
 		await this.#locksManager.releaseAllForThread(this.#threadId)
 
 		if (!this.#terminate) {

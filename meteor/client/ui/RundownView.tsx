@@ -564,7 +564,7 @@ const RundownHeader = withTranslation()(
 				message: t(
 					'The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?',
 					{
-						// TODO: Worker this is a bit of a hack, could a better string sent from the server instead?
+						// TODO: this is a bit of a hack, could a better string sent from the server instead?
 						rundownName: err.message.args?.names ?? '',
 					}
 				),

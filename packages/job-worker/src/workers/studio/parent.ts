@@ -83,6 +83,9 @@ export class StudioWorkerParent extends WorkerParentBase {
 	protected async terminateWorkerThread(): Promise<void> {
 		return ThreadedClassManager.destroy(this.#thread)
 	}
+	protected async restartWorkerThread(): Promise<void> {
+		return ThreadedClassManager.restart(this.#thread, true)
+	}
 	public async workerLockChange(lockId: string, locked: boolean): Promise<void> {
 		return this.#thread.lockChange(lockId, locked)
 	}

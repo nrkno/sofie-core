@@ -143,8 +143,8 @@ export async function invalidateWorkerDataCache(
 		// Blueprints get cleaned up at the end
 	}
 
-	// TODO: Worker - inactivity timeout for everything/anything showstyle?
-	// TODO: Worker - this is all a bit too agressive, it would be better to have a grace period as it likely that the owning ShowStyleBase will be reloaded soon
+	// Future: inactivity timeout for everything/anything showstyle?
+	// Future: this is all a bit too agressive, it would be better to have a grace period as it likely that the owning ShowStyleBase will be reloaded soon
 
 	// Purge any ShowStyleBase (and its Variants) that has changes
 	for (const id of data.showStyleBases) {
