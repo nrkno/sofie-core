@@ -1,6 +1,8 @@
-name: Sync Fork
+name: Sync Fork release37 (currently master) to our develop
 
 on:
+  schedule:
+    - cron: '0 5 * * *' # every night
   workflow_dispatch: # on button click
 
 jobs:
@@ -9,7 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: tgymnich/fork-sync@v1.4
+      - uses: tgymnich/fork-sync@v1.6
         with:
-          base: develop
+          owner: nrkno
           head: master
+          base: develop
+          pr_title: Automerge NRK release37
+          auto_merge: false
