@@ -25,6 +25,13 @@ interface ITrackedProps {
 	doc: string | null
 }
 
+function isRunningInPWA() {
+	if (window.matchMedia('(display-mode: browser)').matches) {
+		return false
+	}
+	return true
+}
+
 /**
  * This component should be placed in the App root. It will maintain the document title
  * and will restore it to the default when it's unmounted.
@@ -39,26 +46,20 @@ export const DocumentTitleProvider = translateWithTracker((_props: IProps) => {
 		private formatDocumentTitle(docTitle: string | undefined, csName: string | undefined) {
 			const { t } = this.props
 			const appShortName = t('Sofie')
-			let compiledTitle = appShortName
-			if (docTitle && csName) {
-				compiledTitle = t('{{docTitle}} – {{appShortName}} – {{systemName}}', {
-					docTitle,
-					appShortName,
-					systemName: csName,
-				})
-			} else if (docTitle && !csName) {
-				compiledTitle = t('{{docTitle}} – {{appShortName}}', {
-					docTitle,
-					appShortName,
-				})
-			} else if (csName && !docTitle) {
-				compiledTitle = t('{{appShortName}} – {{systemName}}', {
-					appShortName,
-					systemName: csName,
-				})
+			const compiledTitle: string[] = []
+
+			if (docTitle) {
+				compiledTitle.push(docTitle)
+			}
+			if (!isRunningInPWA()) {
+				compiledTitle.push(appShortName)
+
+				if (csName) {
+					compiledTitle.push(csName)
+				}
 			}
 
-			document.title = compiledTitle
+			document.title = compiledTitle.join(' – ')
 		}
 
 		componentDidMount() {
