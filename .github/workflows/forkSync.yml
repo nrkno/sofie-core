@@ -1,0 +1,20 @@
+name: Sync Fork nrk/master to our staging
+
+on:
+  schedule:
+    - cron: '0 10 * * 0' # every night
+  workflow_dispatch: # on button click
+
+jobs:
+  sync:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: tgymnich/fork-sync@v1.6
+        with:
+          owner: nrkno
+          head: master
+          base: staging
+          pr_title: Automerge NRK master
+          auto_merge: false
