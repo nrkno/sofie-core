@@ -300,16 +300,8 @@ export async function moveRundownIntoPlaylist(
 ): Promise<void> {
 	const studio = context.studio
 
-	// TODO: Worker - this feels dangerously like it will clash with ingest/playout operations due to all the locking. Perhaps it should be done as an 'ingest' operation?
-	// No. The solution here is that Rundown.playlistId and Rundown.playlistIdIsSetInSofie or whatever are 'owned' by the playlist lock.
-	// ie, the commit function should be reloading these properties from the rundown before attempting to
-	// NOPE
-	/**
-	 * playlistIdIsSetInSofie must be set inside an ingest thread.
-	 * Once it is set, playlistId and _rank are owned by the studio thread. when not set, it is owned by the ingest thread
-	 *
-	 * perhaps using the rundownLock would solve this, but then what about deadlocks because of which gets locked first?
-	 */
+	// Future: the locking here will clash with the ingest/playout operations, and be full of race conditions.
+	// We need to rethink the ownership of the playlistId and _rank property on the rundowns, and the requirements for where/when it can be changed
 
 	const rundown = await context.directCollections.Rundowns.findOne(data.rundownId)
 	if (!rundown || rundown.studioId !== context.studioId) throw new Error(`Rundown "${data.rundownId}" not found`)
