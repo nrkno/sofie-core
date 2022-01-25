@@ -9,7 +9,8 @@ import { AnyLockEvent } from '../locks'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { JobManager } from '../../manager'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
-import { FastTrackTimelineFunc } from '../../main'
+import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
+import { addThreadNameToLogLine } from '../../logging'
 
 export class StudioWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<StudioWorkerChild>
@@ -37,14 +38,16 @@ export class StudioWorkerParent extends WorkerParentBase {
 		locksManager: LocksManager,
 		studioId: StudioId,
 		jobManager: JobManager,
+		logLine: LogLineWithSourceFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	): Promise<StudioWorkerParent> {
 		const threadId = getRandomString()
 		const emitLockEvent = (e: AnyLockEvent) => locksManager.handleLockEvent(threadId, e)
+		const logLineInner = (msg: unknown) => logLine(addThreadNameToLogLine(getStudioQueueName(studioId), msg))
 		const workerThread = await threadedClass<StudioWorkerChild, typeof StudioWorkerChild>(
 			'./child',
 			'StudioWorkerChild',
-			[emitLockEvent, jobManager.queueJob, fastTrackTimeline],
+			[emitLockEvent, jobManager.queueJob, logLineInner, fastTrackTimeline],
 			{
 				instanceName: `Studio: ${studioId}`,
 			}
@@ -79,6 +82,9 @@ export class StudioWorkerParent extends WorkerParentBase {
 	}
 	protected async terminateWorkerThread(): Promise<void> {
 		return ThreadedClassManager.destroy(this.#thread)
+	}
+	protected async restartWorkerThread(): Promise<void> {
+		return ThreadedClassManager.restart(this.#thread, true)
 	}
 	public async workerLockChange(lockId: string, locked: boolean): Promise<void> {
 		return this.#thread.lockChange(lockId, locked)

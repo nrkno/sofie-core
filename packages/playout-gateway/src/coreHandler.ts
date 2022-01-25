@@ -343,7 +343,7 @@ export class CoreHandler {
 					.catch((e) => {
 						cb(e.toString(), null)
 					})
-			} catch (e) {
+			} catch (e: any) {
 				cb(e.toString(), null)
 			}
 		}

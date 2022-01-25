@@ -7,9 +7,10 @@ import { setupApmAgent, startTransaction } from '../../profiler'
 import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
 import { JobContextImpl, QueueJobFunc } from '../context'
 import { AnyLockEvent, LocksManager } from '../locks'
-import { FastTrackTimelineFunc } from '../../main'
-import { logger } from '../../logging'
+import { FastTrackTimelineFunc, LogLineFunc } from '../../main'
+import { interceptLogging, logger } from '../../logging'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { setupInfluxDb } from '../../influx'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -20,8 +21,6 @@ interface StaticData {
 	// readonly locks: LocksManager
 }
 
-setupApmAgent()
-
 export class EventsWorkerChild {
 	#staticData: StaticData | undefined
 
@@ -30,10 +29,16 @@ export class EventsWorkerChild {
 	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
 
 	constructor(
-		emitLockEvent: (event: AnyLockEvent) => void,
+		emitLockEvent: (event: AnyLockEvent) => Promise<void>,
 		queueJob: QueueJobFunc,
+		logLine: LogLineFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	) {
+		interceptLogging(logLine)
+
+		setupApmAgent()
+		setupInfluxDb()
+
 		this.#locks = new LocksManager(emitLockEvent)
 		this.#queueJob = queueJob
 		this.#fastTrackTimeline = fastTrackTimeline
@@ -77,8 +82,6 @@ export class EventsWorkerChild {
 		}
 	}
 	async runJob(jobName: string, data: unknown): Promise<unknown> {
-		const start = Date.now()
-
 		if (!this.#staticData) throw new Error('Worker not initialised')
 
 		const transaction = startTransaction(jobName, 'worker-studio')
@@ -112,8 +115,6 @@ export class EventsWorkerChild {
 			await context.cleanupResources()
 
 			transaction?.end()
-
-			console.log(`I TOOK ${Date.now() - start}ms for ${jobName}`)
 		}
 	}
 }

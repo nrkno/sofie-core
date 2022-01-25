@@ -87,23 +87,19 @@ export const studioJobHandlers: StudioJobHandlers = {
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {
-	console.log('running updateTimelineDebug')
 	await runJobWithStudioCache(context, async (studioCache) => {
 		const activePlaylists = studioCache.getActiveRundownPlaylists()
 		if (activePlaylists.length > 1) {
 			throw new Error(`Too many active playlists`)
 		} else if (activePlaylists.length > 0) {
 			const playlist = activePlaylists[0]
-			console.log('for playlist', playlist._id)
 
 			await runJobWithPlayoutCache(context, { playlistId: playlist._id }, null, async (playoutCache) => {
 				await updateTimeline(context, playoutCache)
 			})
 		} else {
-			console.log('for studio')
 			await updateStudioTimeline(context, studioCache)
 			await studioCache.saveAllToDatabase()
 		}
 	})
-	console.log('done')
 }

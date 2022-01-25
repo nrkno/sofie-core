@@ -29,8 +29,10 @@ export interface UserActionsLogItem {
 	/** Timestamp of when the timeline was generated, used to calculate .gatewayDuration. */
 	timelineGenerated?: number
 
-	/** The time it took (within Core) to execute the action */
+	/** The time it took (within core & worker) to execute the action */
 	executionTime?: TimeDuration
+	/** The time it took within the worker to execute */
+	workerTime?: TimeDuration
 	/** The total time it took for playout-gateway(s) to receive and execute the timeline. */
 	gatewayDuration?: TimeDuration[]
 	/** The time playout-gateway(s) reported it took to resolve the timeline. */

@@ -31,6 +31,7 @@ interface IListViewItemProps {
 	studio: Studio
 	layer: ISourceLayer | undefined
 	selected: boolean
+	disabled?: boolean
 	onSelectAdLib: (aSLine: IAdLibListItem) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	playlist: RundownPlaylist
@@ -53,19 +54,21 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 							selected: this.props.selected,
 							invalid: this.props.piece.invalid,
 							floated: this.props.piece.floated,
+							disabled: this.props.disabled,
 						}),
 						//@ts-ignore React.HTMLAttributes does not list data attributes, but that's fine
 						'data-obj-id': this.props.piece._id,
 						onClick: () => this.props.onSelectAdLib(this.props.piece),
 						onContextMenu: () => this.props.onSelectAdLib(this.props.piece),
-						onDoubleClick: (e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey, e),
+						onDoubleClick: (e) => !this.props.disabled && this.props.onToggleAdLib(this.props.piece, e.shiftKey, e),
 					}}
 					collect={() =>
 						setShelfContextMenuContext({
 							type: MenuContextType.ADLIB,
 							details: {
 								adLib: this.props.piece,
-								onToggle: this.props.onToggleAdLib,
+								onToggle: !this.props.disabled ? this.props.onToggleAdLib : undefined,
+								disabled: this.props.disabled,
 							},
 						})
 					}

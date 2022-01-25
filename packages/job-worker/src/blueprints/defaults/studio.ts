@@ -33,7 +33,7 @@ export const DefaultStudioBlueprint: ReadonlyDeep<StudioBlueprintManifest> = dee
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
 	getShowStyleId(
 		_context: IStudioUserContext,
-		_showStyles: IBlueprintShowStyleBase[],
+		_showStyles: ReadonlyDeep<Array<IBlueprintShowStyleBase>>,
 		_ingestRundown: ExtendedIngestRundown
 	): string | null {
 		return null

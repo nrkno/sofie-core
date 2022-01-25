@@ -31,12 +31,13 @@
 		"unit": "lerna run --concurrency 2 --stream unit",
 		"test": "lerna run --concurrency 2 --stream test",
 		"docs:typedoc": "yarn typedoc .",
-		"docs:serve": "lerna run --scope sofie-documentation --stream start"
+		"docs:serve": "lerna run --scope sofie-documentation --stream start",
+		"watch-for-worker-changes": "nodemon --delay 2.5 --watch job-worker/dist --watch corelib/dist --watch blueprints-integration/dist --watch server-core-integration/dist ../scripts/meteor-force-restart.js"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.16.7",
 		"@babel/plugin-transform-modules-commonjs": "^7.16.8",
-		"@sofie-automation/code-standard-preset": "0.5.1",
+		"@sofie-automation/code-standard-preset": "1.0.0",
 		"@types/ejson": "^2.1.3",
 		"@types/got": "^9.6.12",
 		"@types/jest": "^26.0.24",
@@ -57,7 +58,7 @@
 		"tslint": "^6.1.3",
 		"tslint-config-standard": "^9.0.0",
 		"typedoc": "^0.22.5",
-		"typescript": "~4.2"
+		"typescript": "~4.5"
 	},
 	"name": "packages",
 	"resolutions": {

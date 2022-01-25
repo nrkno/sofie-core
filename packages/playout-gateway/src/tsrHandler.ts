@@ -174,16 +174,16 @@ export class TSRHandler {
 				cmdReply.response &&
 				cmdReply.response.code === 404
 			) {
-				this.logger.warn('TSR', e, ...args)
+				this.logger.warn(`TSR: ${e.toString()}`, args)
 			} else {
-				this.logger.error('TSR', e, ...args)
+				this.logger.error(`TSR: ${e.toString()}`, args)
 			}
 		})
 		this.tsr.on('info', (msg, ...args) => {
-			this.logger.info('TSR', msg, ...args)
+			this.logger.info(`TSR: ${msg + ''}`, args)
 		})
 		this.tsr.on('warning', (msg, ...args) => {
-			this.logger.warn('TSR', msg, ...args)
+			this.logger.warn(`TSR: ${msg + ''}`, args)
 		})
 		this.tsr.on('debug', (...args: any[]) => {
 			if (this._coreHandler.logDebug) {

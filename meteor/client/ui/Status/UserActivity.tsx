@@ -17,19 +17,23 @@ interface IUserActionsListProps {
 	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
 }
 
+function prettyPrintJsonString(str: string): string {
+	try {
+		return JSON.stringify(JSON.parse(str), undefined, 4)
+	} catch (_e) {
+		return str
+	}
+}
+
 export const UserActionsList = withTranslation()(
 	class UserActionsList extends React.Component<Translated<IUserActionsListProps>> {
 		renderMessageHead() {
 			const { t } = this.props
-			const executionTimeExplanation =
-				'formatted as "a + b, (c)" where a is the time it took for Core to execute the command, b is the time it took for the Gateway to execute the timeline and c is the duration it took in TSR to resolve the timeline'
 			return (
 				<thead>
 					<tr>
 						<th className="c3 user-action-log__timestamp">{t('Timestamp')}</th>
-						<th className="c3 user-action-log__executionTime" title={t(executionTimeExplanation)}>
-							{t('Execution time*')}
-						</th>
+						<th className="c3 user-action-log__executionTime">{t('Execution times')}</th>
 						<th className="c1 user-action-log__userId">{t('User ID')}</th>
 						<th className="c2 user-action-log__clientAddress">{t('Client IP')}</th>
 						<th className="c3 user-action-log__context">{t('Action')}</th>
@@ -43,6 +47,7 @@ export const UserActionsList = withTranslation()(
 		}
 
 		render() {
+			const { t } = this.props
 			return (
 				<table className="table user-action-log">
 					{this.renderMessageHead()}
@@ -58,10 +63,32 @@ export const UserActionsList = withTranslation()(
 										<Moment format="YYYY/MM/DD HH:mm:ss.SSS">{msg.timestamp}</Moment>
 									</td>
 									<td className="user-action-log__executionTime">
-										{msg.executionTime ? msg.executionTime : null}
-										{msg.gatewayDuration ? ` + ${msg.gatewayDuration.join(', ')}` : null}
-										{msg.timelineResolveDuration ? ` (${msg.timelineResolveDuration.join(', ')})` : null}
-										{' ms'}
+										<table>
+											{msg.executionTime ? (
+												<tr>
+													<td>{t('Core')}:</td>
+													<td>{msg.executionTime} ms</td>
+												</tr>
+											) : null}
+											{msg.workerTime ? (
+												<tr>
+													<td>{t('Worker')}:</td>
+													<td>{msg.workerTime} ms</td>
+												</tr>
+											) : null}
+											{msg.gatewayDuration ? (
+												<tr>
+													<td>{t('Gateway')}:</td>
+													<td>{msg.gatewayDuration.join(', ')} ms</td>
+												</tr>
+											) : null}
+											{msg.timelineResolveDuration ? (
+												<tr>
+													<td>{t('TSR')}:</td>
+													<td>{msg.timelineResolveDuration.join(', ')} ms</td>
+												</tr>
+											) : null}
+										</table>
 									</td>
 									<td className="user-action-log__userId">{msg.userId}</td>
 									<td className="user-action-log__clientAddress">{msg.clientAddress}</td>
@@ -70,7 +97,7 @@ export const UserActionsList = withTranslation()(
 									<td className="user-action-log__status">
 										{msg.success ? 'Success' : msg.success === false ? 'Error: ' + msg.errorMessage : null}
 									</td>
-									<td className="user-action-log__args">{msg.args}</td>
+									<td className="user-action-log__args">{prettyPrintJsonString(msg.args)}</td>
 									{this.props.renderButtons ? (
 										<td className="user-action-log__buttons">{this.props.renderButtons(msg)}</td>
 									) : null}

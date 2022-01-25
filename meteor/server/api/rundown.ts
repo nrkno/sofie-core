@@ -14,7 +14,6 @@ import { RundownPlaylistId, RundownPlaylistCollectionUtil } from '../../lib/coll
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
-import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
 import { findMissingConfigs } from './blueprints/config'
 import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
@@ -27,34 +26,31 @@ import {
 	fetchShowStyleBaseLight,
 	fetchStudioLight,
 } from '../../lib/collections/optimizations'
+import {
+	checkAccessToPlaylist,
+	checkAccessToRundown,
+	VerifiedRundownContentAccess,
+	VerifiedRundownPlaylistContentAccess,
+} from './lib'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */
-	export async function removeRundown(context: MethodContext, rundownId: RundownId): Promise<void> {
-		check(rundownId, String)
-		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
-
+	export async function removeRundown(access: VerifiedRundownContentAccess): Promise<void> {
 		await runIngestOperation(access.rundown.studioId, IngestJobs.UserRemoveRundown, {
-			rundownId: rundownId,
+			rundownId: access.rundown._id,
 			force: true,
 		})
 	}
 
-	export async function unsyncRundown(context: MethodContext, rundownId: RundownId): Promise<void> {
-		check(rundownId, String)
-		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
-
+	export async function unsyncRundown(access: VerifiedRundownContentAccess): Promise<void> {
 		await runIngestOperation(access.rundown.studioId, IngestJobs.UserUnsyncRundown, {
-			rundownId: rundownId,
+			rundownId: access.rundown._id,
 		})
 	}
 	/** Resync all rundowns in a rundownPlaylist */
 	export async function resyncRundownPlaylist(
-		context: MethodContext,
-		playlistId: RundownPlaylistId
+		access: VerifiedRundownPlaylistContentAccess
 	): Promise<ReloadRundownPlaylistResponse> {
-		check(playlistId, String)
-		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		logger.info('resyncRundownPlaylist ' + access.playlist._id)
 
 		const rundowns = await Rundowns.findFetchAsync({ playlistId: access.playlist._id })
@@ -70,14 +66,6 @@ export namespace ServerRundownAPI {
 		return {
 			rundownsResponses: responses,
 		}
-	}
-	export async function resyncRundown(
-		context: MethodContext,
-		rundownId: RundownId
-	): Promise<TriggerReloadDataResponse> {
-		check(rundownId, String)
-		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
-		return innerResyncRundown(access.rundown)
 	}
 
 	export async function innerResyncRundown(rundown: Rundown): Promise<TriggerReloadDataResponse> {
@@ -221,7 +209,10 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		throw new Error('Removed')
 	}
 	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
-		return ServerRundownAPI.resyncRundownPlaylist(this, playlistId)
+		check(playlistId, String)
+		const access = checkAccessToPlaylist(this, playlistId)
+
+		return ServerRundownAPI.resyncRundownPlaylist(access)
 	}
 	async rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
 		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId))
@@ -230,13 +221,16 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		return ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(this, playlistId)
 	}
 	async removeRundown(rundownId: RundownId) {
-		return ServerRundownAPI.removeRundown(this, rundownId)
+		const access = checkAccessToRundown(this, rundownId)
+		return ServerRundownAPI.removeRundown(access)
 	}
 	async resyncRundown(rundownId: RundownId) {
-		return ServerRundownAPI.resyncRundown(this, rundownId)
+		const access = checkAccessToRundown(this, rundownId)
+		return ServerRundownAPI.innerResyncRundown(access.rundown)
 	}
 	async unsyncRundown(rundownId: RundownId) {
-		return ServerRundownAPI.unsyncRundown(this, rundownId)
+		const access = checkAccessToRundown(this, rundownId)
+		return ServerRundownAPI.unsyncRundown(access)
 	}
 	async moveRundown(
 		_rundownId: RundownId,

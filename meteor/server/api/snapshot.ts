@@ -32,6 +32,7 @@ import {
 	ProtectedString,
 	protectStringArray,
 	assertNever,
+	stringifyError,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -70,7 +71,7 @@ import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
-import { OrganizationContentWriteAccess } from '../security/organization'
+import { BasicAccessContext, OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
@@ -467,11 +468,11 @@ async function handleResponse(response: ServerResponse, snapshotFcn: () => Promi
 		response.end(content)
 	} catch (e) {
 		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e.errorCode || 500
-		response.end('Error: ' + e.toString())
+		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		response.end('Error: ' + stringifyError(e))
 
-		if (e.errorCode !== 404) {
-			logger.error(e)
+		if (response.statusCode !== 404) {
+			logger.error(stringifyError(e))
 		}
 	}
 }
@@ -973,14 +974,12 @@ export async function internalStoreSystemSnapshot(
 	return storeSnaphot(s, organizationId, reason)
 }
 export async function storeRundownPlaylistSnapshot(
-	context: MethodContext,
+	access: BasicAccessContext,
 	playlistId: RundownPlaylistId,
 	reason: string
 ): Promise<SnapshotId> {
-	check(playlistId, String)
-	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
-	const s = await createRundownPlaylistSnapshot(playlistId, organizationId)
-	return storeSnaphot(s, organizationId, reason)
+	const s = await createRundownPlaylistSnapshot(playlistId, access.organizationId)
+	return storeSnaphot(s, access.organizationId, reason)
 }
 export async function storeDebugSnapshot(
 	context: MethodContext,
@@ -1093,11 +1092,11 @@ PickerPOST.route('/snapshot/restore', async (params, req: IncomingMessage, respo
 		response.end(content)
 	} catch (e) {
 		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e.errorCode || 500
-		response.end('Error: ' + e.toString())
+		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		response.end('Error: ' + stringifyError(e))
 
-		if (e.errorCode !== 404) {
-			logger.error(e)
+		if (response.statusCode !== 404) {
+			logger.error(stringifyError(e))
 		}
 	}
 })
@@ -1131,7 +1130,9 @@ class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 		return storeSystemSnapshot(this, studioId, reason)
 	}
 	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
-		return storeRundownPlaylistSnapshot(this, playlistId, reason)
+		check(playlistId, String)
+		const access = OrganizationContentWriteAccess.snapshot(this)
+		return storeRundownPlaylistSnapshot(access, playlistId, reason)
 	}
 	async storeDebugSnapshot(studioId: StudioId, reason: string) {
 		return storeDebugSnapshot(this, studioId, reason)

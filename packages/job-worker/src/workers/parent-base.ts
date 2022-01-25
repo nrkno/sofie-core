@@ -8,15 +8,10 @@ import {
 } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { startTransaction } from '../profiler'
-import { ChangeStream, ChangeStreamDocument, MongoClient } from 'mongodb'
+import { ChangeStream, MongoClient } from 'mongodb'
 import { createInvalidateWorkerDataCache, InvalidateWorkerDataCache } from './caches'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { logger } from '../logging'
-import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { LocksManager } from '../locks'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 import { JobManager, JobStream } from '../manager'
 import { UserError } from '@sofie-automation/corelib/dist/error'
@@ -28,12 +23,17 @@ export enum ThreadStatus {
 	Ready = 2,
 }
 
+/** How often to check the job for reaching the max duration */
+const WATCHDOG_INTERVAL = 5 * 1000
+/** The maximum duration a job is allowed to run for before the thread is killed */
+const WATCHDOG_KILL_DURATION = 30 * 1000
+
 export abstract class WorkerParentBase {
 	// readonly #workerId: string
 	readonly #studioId: StudioId
 	readonly #threadId: string
 
-	readonly #mongoClient: MongoClient
+	// readonly #mongoClient: MongoClient
 	readonly #locksManager: LocksManager
 
 	#terminate: ManualPromise<void> | undefined
@@ -47,6 +47,9 @@ export abstract class WorkerParentBase {
 
 	#threadStatus = ThreadStatus.Closed
 
+	#watchdog: NodeJS.Timeout | undefined
+	#watchdogJobStarted: number | undefined
+
 	public get threadId(): string {
 		return this.#threadId
 	}
@@ -55,7 +58,7 @@ export abstract class WorkerParentBase {
 		workerId: string,
 		threadId: string,
 		studioId: StudioId,
-		mongoClient: MongoClient,
+		_mongoClient: MongoClient, // Included here for future use
 		locksManager: LocksManager,
 		queueName: string,
 		jobManager: JobManager
@@ -63,7 +66,7 @@ export abstract class WorkerParentBase {
 		// this.#workerId = workerId
 		this.#studioId = studioId
 		this.#threadId = threadId
-		this.#mongoClient = mongoClient
+		// this.#mongoClient = mongoClient
 		this.#locksManager = locksManager
 
 		this.#jobManager = jobManager
@@ -81,90 +84,10 @@ export abstract class WorkerParentBase {
 		})
 	}
 
-	/**
-	 * Subscribe to core changes in the db for cache invalidation.
-	 * Can be extended if move collections are watched for a thread type
-	 */
-	protected subscribeToCacheInvalidations(dbName: string): void {
-		const attachChangesStream = <T>(
-			stream: ChangeStream<T>,
-			name: string,
-			fcn: (invalidations: InvalidateWorkerDataCache, change: ChangeStreamDocument<T>) => void
-		): void => {
-			this.#streams.push(stream)
-			stream.on('change', (change) => {
-				// we have a change to flag
-				if (!this.#pendingInvalidations) this.#pendingInvalidations = createInvalidateWorkerDataCache()
-				fcn(this.#pendingInvalidations, change as ChangeStreamDocument<T>)
-			})
-			stream.on('end', () => {
-				logger.warn(`Changes stream for ${name} ended`)
-				if (!this.#terminate) this.#terminate = createManualPromise()
-			})
-		}
-
-		// TODO: Worker - maybe these should be shared across threads, as there will be a bunch looking for the exact same changes..
-		const database = this.#mongoClient.db(dbName)
-		attachChangesStream<DBStudio>(
-			database.collection(CollectionName.Studios).watch([{ $match: { _id: this.#studioId } }], {
-				batchSize: 1,
-			}),
-			`Studio "${this.#studioId}"`,
-			(invalidations) => {
-				invalidations.studio = true
-			}
-		)
-		attachChangesStream<Blueprint>(
-			// Detect changes to other docs, the invalidate will filter out irrelevant values
-			database.collection(CollectionName.Blueprints).watch(
-				[
-					// TODO: Worker - can/should this be scoped down at all?
-				],
-				{
-					batchSize: 1,
-				}
-			),
-			`Blueprints"`,
-			(invalidations, change) => {
-				if (change.documentKey) {
-					invalidations.blueprints.push(change.documentKey)
-				}
-			}
-		)
-		attachChangesStream<DBShowStyleBase>(
-			// Detect changes to other docs, the invalidate will filter out irrelevant values
-			database.collection(CollectionName.ShowStyleBases).watch(
-				[
-					// TODO: Worker - can/should this be scoped down at all?
-				],
-				{
-					batchSize: 1,
-				}
-			),
-			`ShowStyleBases"`,
-			(invalidations, change) => {
-				if (change.documentKey) {
-					invalidations.showStyleBases.push(change.documentKey)
-				}
-			}
-		)
-		attachChangesStream<DBShowStyleVariant>(
-			// Detect changes to other docs, the invalidate will filter out irrelevant values
-			database.collection(CollectionName.ShowStyleVariants).watch(
-				[
-					// TODO: Worker - can/should this be scoped down at all?
-				],
-				{
-					batchSize: 1,
-				}
-			),
-			`ShowStyleVariants"`,
-			(invalidations, change) => {
-				if (change.documentKey) {
-					invalidations.showStyleVariants.push(change.documentKey)
-				}
-			}
-		)
+	/** Queue a cache invalidation for the thread */
+	public queueCacheInvalidation(invalidatorFcn: (invalidations: InvalidateWorkerDataCache) => void): void {
+		if (!this.#pendingInvalidations) this.#pendingInvalidations = createInvalidateWorkerDataCache()
+		invalidatorFcn(this.#pendingInvalidations)
 	}
 
 	/** Initialise the worker thread */
@@ -175,16 +98,35 @@ export abstract class WorkerParentBase {
 	protected abstract runJobInWorker(name: string, data: any): Promise<any>
 	/** Terminate the worker thread */
 	protected abstract terminateWorkerThread(): Promise<void>
+	/** Restart the worker thread */
+	protected abstract restartWorkerThread(): Promise<void>
 	/** Inform the worker thread about a lock change */
 	public abstract workerLockChange(lockId: string, locked: boolean): Promise<void>
 
 	/** Start the loop feeding work to the worker */
 	protected startWorkerLoop(mongoUri: string, dbName: string): void {
+		if (!this.#watchdog) {
+			// Start a watchdog, to detect if a job has been running for longer than a max threshold. If it has, then we forcefully kill it
+			// ThreadedClass will propogate the completion error through the usual route
+			this.#watchdog = setInterval(() => {
+				if (this.#watchdogJobStarted && this.#watchdogJobStarted + WATCHDOG_KILL_DURATION < Date.now()) {
+					// A job has been running for too long.
+
+					logger.warn(`Force restarting worker thread: "${this.#threadId}"`)
+					this.#watchdogJobStarted = undefined
+					this.restartWorkerThread().catch((e) => {
+						logger.warn(`Restarting worker thread "${this.#threadId}" error: ${stringifyError(e)}`)
+					})
+				}
+			}, WATCHDOG_INTERVAL)
+		}
+
 		setImmediate(async () => {
 			try {
 				this.#pendingInvalidations = null
 
-				this.subscribeToCacheInvalidations(dbName)
+				// Future: subscribe to worker specific cache invalidations here
+				// this.subscribeToCacheInvalidations(dbName)
 
 				// Run until told to terminate
 				while (!this.#terminate) {
@@ -211,13 +153,12 @@ export abstract class WorkerParentBase {
 
 					// Handle any invalidations
 					if (this.#pendingInvalidations) {
+						logger.debug(`Invalidating worker caches: ${JSON.stringify(this.#pendingInvalidations)}`)
 						const invalidations = this.#pendingInvalidations
 						this.#pendingInvalidations = null
 
 						await this.invalidateWorkerCaches(invalidations)
 					}
-
-					// TODO: Worker - enforce a timeout? we could kill the thread once it reaches the limit as a hard abort
 
 					// we may not get a job even when blocking, so try again
 					if (job) {
@@ -230,6 +171,7 @@ export abstract class WorkerParentBase {
 						}
 
 						const startTime = Date.now()
+						this.#watchdogJobStarted = startTime
 
 						try {
 							logger.debug(`Starting work ${job.id}: "${job.name}"`)
@@ -250,10 +192,10 @@ export abstract class WorkerParentBase {
 							}
 
 							const endTime = Date.now()
+							this.#watchdogJobStarted = undefined
 							await this.#jobManager.jobFinished(job.id, startTime, endTime, null, result)
 							logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
 						} catch (e: unknown) {
-							console.log('inner err2', e, typeof e, JSON.stringify(e))
 							let error: Error | UserError
 							if (e instanceof Error || UserError.isUserError(e)) {
 								error = e
@@ -263,10 +205,10 @@ export abstract class WorkerParentBase {
 
 							logger.error(`Job errored ${job.id} "${job.name}": ${stringifyError(e)}`)
 
+							this.#watchdogJobStarted = undefined
 							await this.#jobManager.jobFinished(job.id, startTime, Date.now(), error, null)
 						}
 
-						console.log('after work')
 						// Ensure all locks have been freed after the job
 						await this.#locksManager.releaseAllForThread(this.#threadId)
 
@@ -294,6 +236,11 @@ export abstract class WorkerParentBase {
 
 	/** Terminate and cleanup the worker thread */
 	async terminate(): Promise<void> {
+		if (this.#watchdog) {
+			clearInterval(this.#watchdog)
+			this.#watchdog = undefined
+		}
+
 		await this.#locksManager.releaseAllForThread(this.#threadId)
 
 		if (!this.#terminate) {

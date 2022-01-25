@@ -13,12 +13,15 @@ export interface UnLockEvent {
 	lockId: string
 }
 
+const TimeoutAquireLock = 30000
+const TimeoutReleaseLock = 5000
+
 export class LocksManager {
-	readonly #emitLockEvent: (event: AnyLockEvent) => void
+	readonly #emitLockEvent: (event: AnyLockEvent) => Promise<void>
 	/** These are locks that we are waiting to aquire/release */
 	readonly pendingLocks: Map<string, ManualPromise<boolean>>
 
-	constructor(emitLockEvent: (event: AnyLockEvent) => void) {
+	constructor(emitLockEvent: (event: AnyLockEvent) => Promise<void>) {
 		this.#emitLockEvent = emitLockEvent
 		this.pendingLocks = new Map()
 	}
@@ -39,21 +42,29 @@ export class LocksManager {
 	}
 
 	async aquire(lockId: string, resourceId: string): Promise<void> {
-		// TODO: Worker - this should handle timeouts
-
 		if (this.pendingLocks.has(lockId)) throw new Error(`Lock "${lockId}" is already pending`)
 
 		const completedPromise = createManualPromise<boolean>()
 		this.pendingLocks.set(lockId, completedPromise)
 
 		// inform parent
-		this.#emitLockEvent({
+		await this.#emitLockEvent({
 			event: 'lock',
 			lockId,
 			resourceId,
 		})
 
+		const timeout = setTimeout(() => {
+			if (!completedPromise.isResolved) {
+				// Aquire timed out!
+				this.pendingLocks.delete(lockId)
+				completedPromise.manualReject(new Error('Lock aquire timed out!'))
+			}
+		}, TimeoutAquireLock)
+
 		return completedPromise.then((locked) => {
+			clearTimeout(timeout)
+
 			this.pendingLocks.delete(lockId)
 
 			if (!locked) throw new Error(`Lock "${lockId}" wanted lock but got unlock!`)
@@ -61,21 +72,28 @@ export class LocksManager {
 	}
 
 	async release(lockId: string, resourceId: string): Promise<void> {
-		// TODO: Worker - this should handle timeouts
-
 		if (this.pendingLocks.has(lockId)) throw new Error(`Lock "${lockId}" is already pending`)
 
 		const completedPromise = createManualPromise<boolean>()
 		this.pendingLocks.set(lockId, completedPromise)
 
 		// inform parent
-		this.#emitLockEvent({
+		await this.#emitLockEvent({
 			event: 'unlock',
 			lockId,
 			resourceId,
 		})
 
+		const timeout = setTimeout(() => {
+			if (!completedPromise.isResolved) {
+				// Release timed out
+				completedPromise.manualResolve(true)
+			}
+		}, TimeoutReleaseLock)
+
 		return completedPromise.then((locked) => {
+			clearTimeout(timeout)
+
 			this.pendingLocks.delete(lockId)
 
 			if (locked) throw new Error(`Lock "${lockId}" wanted unlock but got lock!`)

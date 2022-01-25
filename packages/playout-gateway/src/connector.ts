@@ -51,7 +51,7 @@ export class Connector {
 
 			this._logger.info('Initialization done')
 			return
-		} catch (e) {
+		} catch (e: any) {
 			this._logger.error('Error during initialization:')
 			this._logger.error(e)
 			this._logger.error(e.stack)

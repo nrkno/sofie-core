@@ -9,7 +9,8 @@ import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { JobManager } from '../../manager'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
-import { FastTrackTimelineFunc } from '../../main'
+import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
+import { addThreadNameToLogLine } from '../../logging'
 
 export class IngestWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<IngestWorkerChild>
@@ -37,14 +38,17 @@ export class IngestWorkerParent extends WorkerParentBase {
 		locksManager: LocksManager,
 		studioId: StudioId,
 		jobManager: JobManager,
+		logLine: LogLineWithSourceFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	): Promise<IngestWorkerParent> {
 		const threadId = getRandomString()
 		const emitLockEvent = (e: AnyLockEvent) => locksManager.handleLockEvent(threadId, e)
+		const logLineInner = (msg: unknown) => logLine(addThreadNameToLogLine(getIngestQueueName(studioId), msg))
+
 		const workerThread = await threadedClass<IngestWorkerChild, typeof IngestWorkerChild>(
 			'./child',
 			'IngestWorkerChild',
-			[emitLockEvent, jobManager.queueJob, fastTrackTimeline],
+			[emitLockEvent, jobManager.queueJob, logLineInner, fastTrackTimeline],
 			{
 				instanceName: `Ingest: ${studioId}`,
 			}
@@ -79,6 +83,9 @@ export class IngestWorkerParent extends WorkerParentBase {
 	}
 	protected async terminateWorkerThread(): Promise<void> {
 		return ThreadedClassManager.destroy(this.#thread)
+	}
+	protected async restartWorkerThread(): Promise<void> {
+		return ThreadedClassManager.restart(this.#thread, true)
 	}
 	public async workerLockChange(lockId: string, locked: boolean): Promise<void> {
 		return this.#thread.lockChange(lockId, locked)

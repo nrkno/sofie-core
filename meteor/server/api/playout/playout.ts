@@ -1,25 +1,18 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
+import { Studios, StudioRouteBehavior } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { PackageInfo } from '../../coreSystem'
-import { MethodContext } from '../../../lib/api/methods'
-import { StudioContentWriteAccess } from '../../security/studio'
-import { check } from '../../../lib/check'
+import { StudioContentAccess } from '../../security/studio'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { Timeline } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
 
 export namespace ServerPlayoutAPI {
-	export async function shouldUpdateStudioBaseline(
-		context: MethodContext,
-		studioId: StudioId
-	): Promise<string | false> {
-		const { studio } = StudioContentWriteAccess.baseline(context, studioId)
-
-		check(studioId, String)
+	export async function shouldUpdateStudioBaseline(access: StudioContentAccess): Promise<string | false> {
+		const { studio } = access
 
 		// This is intentionally not in a lock/queue, as doing so will cause it to block playout performance, and being wrong is harmless
 
@@ -49,22 +42,10 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 
-	export function switchRouteSet(
-		context: MethodContext,
-		studioId: StudioId,
-		routeSetId: string,
-		state: boolean
-	): void {
-		check(studioId, String)
-		check(routeSetId, String)
-		check(state, Boolean)
-		logger.debug(`switchRouteSet "${studioId}" "${routeSetId}"=${state}`)
+	export function switchRouteSet(access: StudioContentAccess, routeSetId: string, state: boolean): void {
+		logger.debug(`switchRouteSet "${access.studioId}" "${routeSetId}"=${state}`)
 
-		const allowed = StudioContentWriteAccess.routeSet(context, studioId)
-		if (!allowed) throw new Meteor.Error(403, `Not allowed to edit RouteSet on studio ${studioId}`)
-
-		const studio = allowed.studio
-		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
+		const studio = access.studio
 
 		if (studio.routeSets[routeSetId] === undefined)
 			throw new Meteor.Error(404, `RouteSet "${routeSetId}" not found!`)
@@ -84,7 +65,7 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 
-		Studios.update(studioId, {
+		Studios.update(studio._id, {
 			$set: modification,
 		})
 	}

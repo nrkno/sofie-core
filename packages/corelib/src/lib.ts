@@ -255,6 +255,7 @@ export function getRank<T extends { _rank: number }>(
 }
 
 export interface ManualPromise<T> extends Promise<T> {
+	isResolved: boolean
 	manualResolve(res: T): void
 	manualReject(e: Error): void
 }
@@ -267,8 +268,15 @@ export function createManualPromise<T>(): ManualPromise<T> {
 	})
 
 	const manualPromise: ManualPromise<T> = promise as any
-	manualPromise.manualReject = reject
-	manualPromise.manualResolve = resolve
+	manualPromise.isResolved = false
+	manualPromise.manualReject = (err) => {
+		manualPromise.isResolved = true
+		return reject(err)
+	}
+	manualPromise.manualResolve = (val) => {
+		manualPromise.isResolved = true
+		return resolve(val)
+	}
 
 	return manualPromise
 }

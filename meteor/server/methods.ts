@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
 import { MethodContext, MethodContextAPI } from '../lib/api/methods'
-import { isPromise } from '../lib/lib'
+import { isPromise, stringifyError } from '../lib/lib'
 
 type MeteorMethod = (this: MethodContext, ...args: any[]) => any
 
@@ -107,7 +107,7 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 					}
 				} catch (err) {
 					if (!_suppressExtraErrorLogging) {
-						logger.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
+						logger.error(stringifyError(err))
 					}
 					delete runningMethods[methodId]
 					throw err

@@ -19,7 +19,9 @@ class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
 		return res.complete
 	}
 	async shouldUpdateStudioBaseline(studioId: StudioId) {
-		return ServerPlayoutAPI.shouldUpdateStudioBaseline(this, studioId)
+		const access = StudioContentWriteAccess.baseline(this, studioId)
+
+		return ServerPlayoutAPI.shouldUpdateStudioBaseline(access)
 	}
 }
 registerClassToMeteorMethods(PlayoutAPIMethods, ServerPlayoutAPIClass, false)

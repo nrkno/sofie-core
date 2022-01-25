@@ -1,1 +1,1 @@
-export const IS_PRODUCTION = false // TODO: Worker
+export const IS_PRODUCTION = process.env.NODE_ENV === 'production'

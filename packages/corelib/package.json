@@ -44,6 +44,7 @@
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"fast-clone": "^1.5.13",
 		"i18next": "^19.9.2",
+		"influx": "^5.9.2",
 		"mos-connection": "1.0.5-nightly-latest-20211118-081133-434af7d.0",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",

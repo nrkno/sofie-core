@@ -35,7 +35,19 @@ export namespace PeripheralDeviceReadAccess {
 		return true
 	}
 }
+export interface MediaWorkFlowContentAccess extends PeripheralDeviceContentWriteAccess.ContentAccess {
+	mediaWorkFlow: MediaWorkFlow
+}
+
 export namespace PeripheralDeviceContentWriteAccess {
+	export interface ContentAccess {
+		userId: UserId | null
+		organizationId: OrganizationId | null
+		deviceId: PeripheralDeviceId
+		device: PeripheralDevice
+		cred: ResolvedCredentials | Credentials
+	}
+
 	// These functions throws if access is not allowed.
 
 	export function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId) {
@@ -46,7 +58,10 @@ export namespace PeripheralDeviceContentWriteAccess {
 		backwardsCompatibilityfix(cred0, deviceId)
 		return anyContent(cred0, deviceId)
 	}
-	export function mediaWorkFlow(cred0: Credentials, existingWorkFlow: MediaWorkFlow | MediaWorkFlowId) {
+	export function mediaWorkFlow(
+		cred0: Credentials,
+		existingWorkFlow: MediaWorkFlow | MediaWorkFlowId
+	): MediaWorkFlowContentAccess {
 		triggerWriteAccess()
 		if (existingWorkFlow && isProtectedString(existingWorkFlow)) {
 			const workFlowId = existingWorkFlow
@@ -58,16 +73,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 		return { ...anyContent(cred0, existingWorkFlow.deviceId), mediaWorkFlow: existingWorkFlow }
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent(
-		cred0: Credentials,
-		deviceId: PeripheralDeviceId
-	): {
-		userId: UserId | null
-		organizationId: OrganizationId | null
-		deviceId: PeripheralDeviceId
-		device: PeripheralDevice | null
-		cred: ResolvedCredentials | Credentials
-	} {
+	export function anyContent(cred0: Credentials, deviceId: PeripheralDeviceId): ContentAccess {
 		const span = profiler.startSpan('PeripheralDeviceContentWriteAccess.anyContent')
 		triggerWriteAccess()
 		check(deviceId, String)
@@ -90,7 +96,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 				userId: null,
 				organizationId: null,
 				deviceId: deviceId,
-				device: device || null,
+				device: device,
 				cred: cred0,
 			}
 		} else {

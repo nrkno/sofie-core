@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { AllMeteorMethods, suppressExtraErrorLogging } from '../../methods'
 import { disableChecks, enableChecks as restoreChecks } from '../../../lib/check'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
 /** These function are used to verify that all methods defined are using security functions */
 
@@ -75,9 +76,11 @@ function verifyMethod(methodName: string) {
 	try {
 		disableChecks()
 		testWriteAccess()
-		Meteor.call(methodName)
+		// Pass some fake args, to ensure that any trying to do a `arg.val` don't throw
+		const fakeArgs = [{}, {}, {}, {}, {}]
+		Meteor.call(methodName, ...fakeArgs)
 	} catch (e) {
-		const errStr = (e.message || e) + ''
+		const errStr = stringifyError(e)
 		if (errStr.match(/triggerWriteAccess/i)) {
 			// silently ignore this one
 		} else {

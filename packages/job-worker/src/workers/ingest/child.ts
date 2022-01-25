@@ -7,9 +7,10 @@ import { setupApmAgent, startTransaction } from '../../profiler'
 import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
 import { JobContextImpl, QueueJobFunc } from '../context'
 import { AnyLockEvent, LocksManager } from '../locks'
-import { FastTrackTimelineFunc } from '../../main'
-import { logger } from '../../logging'
+import { FastTrackTimelineFunc, LogLineFunc } from '../../main'
+import { interceptLogging, logger } from '../../logging'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { setupInfluxDb } from '../../influx'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -17,8 +18,6 @@ interface StaticData {
 
 	readonly dataCache: WorkerDataCache
 }
-
-setupApmAgent()
 
 export class IngestWorkerChild {
 	#staticData: StaticData | undefined
@@ -28,10 +27,16 @@ export class IngestWorkerChild {
 	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
 
 	constructor(
-		emitLockEvent: (event: AnyLockEvent) => void,
+		emitLockEvent: (event: AnyLockEvent) => Promise<void>,
 		queueJob: QueueJobFunc,
+		logLine: LogLineFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	) {
+		interceptLogging(logLine)
+
+		setupApmAgent()
+		setupInfluxDb()
+
 		this.#locks = new LocksManager(emitLockEvent)
 		this.#queueJob = queueJob
 		this.#fastTrackTimeline = fastTrackTimeline

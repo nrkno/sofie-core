@@ -45,7 +45,7 @@ export async function selectShowStyleVariant(
 		showStyleId = protectString(
 			studioBlueprint.blueprint.getShowStyleId(
 				blueprintContext,
-				unprotectObjectArray(showStyleBases as any), // TODO: Worker - fix the types here
+				unprotectObjectArray(showStyleBases),
 				ingestRundown
 			)
 		)
@@ -77,7 +77,7 @@ export async function selectShowStyleVariant(
 		variantId = protectString(
 			showStyleBlueprint.blueprint.getShowStyleVariantId(
 				blueprintContext,
-				unprotectObjectArray(showStyleVariants as any), // TODO: Worker - fix the types here
+				unprotectObjectArray(showStyleVariants),
 				ingestRundown
 			)
 		)

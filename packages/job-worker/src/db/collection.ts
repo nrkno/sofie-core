@@ -86,15 +86,12 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 			})
 		}
 
-		const res = await this.#collection.replaceOne({ _id: doc._id }, doc)
+		const res = await this.#collection.replaceOne({ _id: doc._id }, doc, {
+			upsert: true,
+		})
 		if (span) span.end()
 		return res.matchedCount > 0
 	}
-
-	// async insertMany(docs: TDoc[]): Promise<Array<TDoc['_id']>> {
-	// 	const res = await this.#collection.insertMany(docs as any)
-	// 	return res.insertedIds
-	// }
 
 	async update(
 		selector: MongoQuery<TDoc> | TDoc['_id'],

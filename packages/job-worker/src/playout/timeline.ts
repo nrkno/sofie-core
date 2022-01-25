@@ -65,7 +65,7 @@ import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { updateBaselineExpectedPackagesOnStudio } from '../ingest/expectedPackages'
-import { endTrace, sendTrace, startTrace } from '../influx'
+import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/influxdb'
 import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	calculatePartTimings,
@@ -415,7 +415,7 @@ async function getTimelineRundown(
 		}
 	} catch (e) {
 		if (span) span.end()
-		logger.error(e)
+		logger.error(`Error in getTimelineRundown: ${stringifyError(e)}`)
 		return {
 			objs: [],
 			versions: generateTimelineVersions(context.studio, undefined, '-'),

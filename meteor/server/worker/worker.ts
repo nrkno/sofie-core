@@ -2,7 +2,7 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getStudioQueueName, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { getIngestQueueName, IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
-import { logger } from '../../lib/logging'
+import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 import { threadedClass, Promisify, ThreadedClassManager } from 'threadedclass'
@@ -23,6 +23,7 @@ import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fa
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { fetchStudioLight } from '../../lib/collections/optimizations'
 import * as path from 'path'
+import { LogEntry } from 'winston'
 
 interface JobEntry {
 	spec: JobSpec
@@ -174,6 +175,10 @@ async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
 	)
 }
 
+async function logLine(msg: LogEntry): Promise<void> {
+	logger.log(msg)
+}
+
 let worker: Promisify<IpcJobWorker> | undefined
 Meteor.startup(() => {
 	if (!process.env.MONGO_URL) throw new Error('MONGO_URL must be defined to launch Sofie')
@@ -198,7 +203,7 @@ Meteor.startup(() => {
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
 			workerEntrypoint,
 			'IpcJobWorker',
-			[jobFinished, getNextJob, queueJob, fastTrackTimeline],
+			[jobFinished, getNextJob, queueJob, logLine, fastTrackTimeline],
 			{}
 		)
 	)
@@ -390,10 +395,3 @@ function wrapResult<TRes>(jobId: string, queueTime: Time): { res: WorkerJob<TRes
 		handler,
 	}
 }
-
-Meteor.startup(() => {
-	if (Meteor.isDevelopment) {
-		// Load the watcher for changes to the thread source
-		require('./watch')
-	}
-})

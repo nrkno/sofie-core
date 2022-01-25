@@ -225,9 +225,8 @@ export const ExternalFramePanel = withTranslation()(
 			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
-					playlist.studioId,
-					targetRundown!.showStyleVariantId,
 					targetBucket ? targetBucket._id : protectString(''),
+					targetRundown!.showStyleVariantId,
 					literal<IngestAdlib>({
 						externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
 						name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
@@ -418,7 +417,7 @@ export const ExternalFramePanel = withTranslation()(
 					e.dataTransfer.files.length === 0
 				) {
 					const idx = e.dataTransfer.types.indexOf('text/plain')
-					e.dataTransfer.items.item(idx).getAsString((text: string) => {
+					e.dataTransfer.items[idx]?.getAsString((text: string) => {
 						if (text.trim().endsWith('</mos>')) {
 							this.actMOSMessage(e, e.dataTransfer!.getData('Text'))
 						}

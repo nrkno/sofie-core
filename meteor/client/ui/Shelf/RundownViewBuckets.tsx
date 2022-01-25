@@ -328,7 +328,7 @@ export const RundownViewBuckets = withTranslation()(
 				t,
 				e.context,
 				UserAction.CREATE_BUCKET,
-				(e) => MeteorCall.userAction.bucketsCreateNewBucket(e, t('New Bucket'), this.props.playlist.studioId, null),
+				(e) => MeteorCall.userAction.bucketsCreateNewBucket(e, this.props.playlist.studioId, t('New Bucket')),
 				(_err, res) => {
 					if (ClientAPI.isClientResponseSuccess(res)) {
 						this.setState({

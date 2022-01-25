@@ -136,11 +136,11 @@ export class JobContextImpl implements JobContext {
 	getStudioBlueprintConfig(): ProcessedStudioConfig {
 		if (!this.cacheData.studioBlueprintConfig) {
 			this.cacheData.studioBlueprintConfig = deepFreeze(
-				preprocessStudioConfig(this.cacheData.studio, this.cacheData.studioBlueprint.blueprint) ?? null
+				clone(preprocessStudioConfig(this.cacheData.studio, this.cacheData.studioBlueprint.blueprint) ?? null)
 			)
 		}
 
-		return clone(this.cacheData.studioBlueprintConfig)
+		return this.cacheData.studioBlueprintConfig
 	}
 
 	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>> {
@@ -317,7 +317,7 @@ export class JobContextImpl implements JobContext {
 		if (!blueprint)
 			throw new Error(`Blueprint "${showStyle.blueprintId}" must be loaded before its config can be retrieved`)
 
-		const config = deepFreeze(preprocessShowStyleConfig(showStyle, blueprint.blueprint))
+		const config = deepFreeze(clone(preprocessShowStyleConfig(showStyle, blueprint.blueprint)))
 		this.cacheData.showStyleBlueprintConfig.set(showStyle.showStyleVariantId, config)
 
 		// Return the raw object, as it was frozen before being cached

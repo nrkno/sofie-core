@@ -105,6 +105,11 @@ export class UserError {
 	static from(err: Error, key: UserErrorMessage, args?: { [k: string]: any }): UserError {
 		return new UserError(err, key, { key: UserErrorMessagesTranslations[key], args })
 	}
+	/** Create a UserError with a custom error for the log */
+	static fromUnknown(err: unknown, key: UserErrorMessage, args?: { [k: string]: any }): UserError {
+		const err2 = err instanceof Error ? err : new Error(stringifyError(err))
+		return new UserError(err2, key, { key: UserErrorMessagesTranslations[key], args })
+	}
 
 	/** Create a UserError duplicating the same error for the log */
 	static create(key: UserErrorMessage, args?: { [k: string]: any }): UserError {

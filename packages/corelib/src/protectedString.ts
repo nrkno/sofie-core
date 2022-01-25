@@ -60,7 +60,9 @@ export function unprotectObject(obj: undefined): undefined
 export function unprotectObject<T extends object>(obj: T | undefined): UnprotectedStringProperties<T> | undefined {
 	return obj as any
 }
-export function unprotectObjectArray<T extends object>(obj: T[]): UnprotectedStringProperties<T>[] {
+export function unprotectObjectArray<T extends object>(obj: T[]): UnprotectedStringProperties<T>[]
+export function unprotectObjectArray<T extends object>(obj: readonly T[]): readonly UnprotectedStringProperties<T>[]
+export function unprotectObjectArray<T extends object>(obj: T[] | readonly T[]): UnprotectedStringProperties<T>[] {
 	return obj as any
 }
 export function isStringOrProtectedString<T extends ProtectedString<any>>(val: unknown): val is string | T {

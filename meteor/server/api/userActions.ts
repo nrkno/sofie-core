@@ -1,10 +1,9 @@
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash, makePromise, stringifyError } from '../../lib/lib'
+import { getCurrentTime, getHash } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, PartId } from '../../lib/collections/Parts'
-import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
@@ -22,277 +21,35 @@ import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { MethodContextAPI } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
 import { SegmentId } from '../../lib/collections/Segments'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
-import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
+import { BucketId, Bucket } from '../../lib/collections/Buckets'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
-import { profiler } from './profiler'
 import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
-import { checkAccessAndGetPlaylist, checkAccessAndGetRundown, checkAccessToPlaylist } from './lib'
+import { VerifiedRundownPlaylistContentAccess } from './lib'
 import { PackageManagerAPI } from './packageManager'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { getShowStyleCompound } from './showStyles'
 import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
-import { SnapshotId } from '../../lib/collections/Snapshots'
-import { QueueStudioJob } from '../worker/worker'
-import { StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { runIngestOperation } from './ingest/lib'
-import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
+import { StudioContentWriteAccess } from '../security/studio'
+import { BucketSecurity } from '../security/buckets'
 
-/**
- * Run a user action via the worker. Before calling you MUST check the user is allowed to do the operation
- * @param studioId Id of the studio
- * @param name The name/id of the operation
- * @param data Data for the operation
- * @returns Wrapped 'client safe' response. Includes translatable friendly error messages
- */
-async function runUserAction<T extends keyof StudioJobFunc>(
-	studioId: StudioId,
-	name: T,
-	data: Parameters<StudioJobFunc[T]>[0]
-): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
-	try {
-		const job = await QueueStudioJob(name, studioId, data)
-
-		const span = profiler.startSpan('queued-job')
-		const res = await job.complete
-		span?.end()
-
-		// TODO: Worker - track timingss
-		// console.log(await job.getTimings)
-
-		return ClientAPI.responseSuccess(res)
-	} catch (e) {
-		let userError: UserError
-		if (UserError.isUserError(e)) {
-			userError = e
-		} else {
-			// Rewrap errors as a UserError
-			const err = e instanceof Error ? e : new Error(e)
-			userError = UserError.from(err, UserErrorMessage.InternalError)
-		}
-
-		logger.error(`UserAction "${name}" failed: ${stringifyError(userError.rawError)}`)
-
-		// Forward the error to the caller
-		return ClientAPI.responseError(userError)
-	}
-}
-
-export async function take(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	fromPartInstanceId: PartInstanceId | null
-): Promise<ClientAPI.ClientResponse<void>> {
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.TakeNextPart, {
-		playlistId: rundownPlaylistId,
-		fromPartInstanceId,
-	})
-}
-
-export async function setNext(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	nextPartId: PartId | null,
-	setManually?: boolean,
-	nextTimeOffset?: number | undefined
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	if (nextPartId) check(nextPartId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.SetNextPart, {
-		playlistId: rundownPlaylistId,
-		nextPartId,
-		setManually,
-		nextTimeOffset,
-	})
-}
-export async function setNextSegment(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	nextSegmentId: SegmentId | null
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	if (nextSegmentId) check(nextSegmentId, String)
-	else check(nextSegmentId, null)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.SetNextSegment, {
-		playlistId: rundownPlaylistId,
-		nextSegmentId,
-	})
-}
-export async function moveNext(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	horisontalDelta: number,
-	verticalDelta: number
-): Promise<ClientAPI.ClientResponse<PartId | null>> {
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.MoveNextPart, {
-		playlistId: rundownPlaylistId,
-		partDelta: horisontalDelta,
-		segmentDelta: verticalDelta,
-	})
-}
-export async function prepareForBroadcast(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.PrepareRundownForBroadcast, {
-		playlistId: rundownPlaylistId,
-	})
-}
-export async function resetRundownPlaylist(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.ResetRundownPlaylist, {
-		playlistId: rundownPlaylistId,
-	})
-}
-export async function resetAndActivate(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	rehearsal?: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.ResetRundownPlaylist, {
-		playlistId: rundownPlaylistId,
-		activate: rehearsal ? 'rehearsal' : 'active',
-	})
-}
-export async function forceResetAndActivate(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	rehearsal: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	// Reset and activates a rundown, automatically deactivates any other running rundowns
-
-	check(rehearsal, Boolean)
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.ResetRundownPlaylist, {
-		playlistId: rundownPlaylistId,
-		activate: rehearsal ? 'rehearsal' : 'active',
-		forceActivate: true,
-	})
-}
-export async function activate(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	rehearsal: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(rehearsal, Boolean)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.ActivateRundownPlaylist, {
-		playlistId: rundownPlaylistId,
-		rehearsal,
-	})
-}
-export async function deactivate(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId
-): Promise<ClientAPI.ClientResponse<void>> {
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.DeactivateRundownPlaylist, {
-		playlistId: rundownPlaylistId,
-	})
-}
-export async function unsyncRundown(
-	context: MethodContext,
-	rundownId: RundownId
-): Promise<ClientAPI.ClientResponse<void>> {
-	await ServerRundownAPI.unsyncRundown(context, rundownId)
-	return ClientAPI.responseSuccess(undefined)
-}
-export async function disableNextPiece(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	undo?: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.DisableNextPiece, {
-		playlistId: rundownPlaylistId,
-		undo: !!undo,
-	})
-}
-export async function pieceTakeNow(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	partInstanceId: PartInstanceId,
-	pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(partInstanceId, String)
-	check(pieceInstanceIdOrPieceIdToCopy, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.TakePieceAsAdlibNow, {
-		playlistId: rundownPlaylistId,
-		partInstanceId: partInstanceId,
-		pieceInstanceIdOrPieceIdToCopy: pieceInstanceIdOrPieceIdToCopy,
-	})
-}
-export async function pieceSetInOutPoints(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
+async function pieceSetInOutPoints(
+	access: VerifiedRundownPlaylistContentAccess,
 	partId: PartId,
 	pieceId: PieceId,
 	inPoint: number,
 	duration: number
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(partId, String)
-	check(pieceId, String)
-	check(inPoint, Number)
-	check(duration, Number)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
+): Promise<void> {
 	const playlist = access.playlist
 
 	const part = await Parts.findOneAsync(partId)
@@ -313,732 +70,862 @@ export async function pieceSetInOutPoints(
 	if (!piece) throw new Meteor.Error(404, `Piece "${pieceId}" not found!`)
 
 	// TODO: replace this with a general, non-MOS specific method
-	try {
-		await MOSDeviceActions.setPieceInOutPoint(
-			rundown,
-			piece,
-			partCache.data as IngestPart,
-			inPoint / 1000,
-			duration / 1000
-		) // MOS data is in seconds
-		return ClientAPI.responseSuccess(undefined)
-	} catch (error) {
-		return ClientAPI.responseError(UserError.from(error, UserErrorMessage.InternalError))
-	}
-}
-export async function executeAction(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
-	actionId: string,
-	userData: any,
-	triggerMode?: string
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(actionDocId, String)
-	check(actionId, String)
-	check(userData, Match.Any)
-	check(triggerMode, Match.Maybe(String))
 
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.ExecuteAction, {
-		playlistId: rundownPlaylistId,
-		actionDocId,
-		actionId,
-		userData,
-		triggerMode,
-	})
-}
-export async function segmentAdLibPieceStart(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	partInstanceId: PartInstanceId,
-	adlibPieceId: PieceId,
-	queue: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(partInstanceId, String)
-	check(adlibPieceId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.AdlibPieceStart, {
-		playlistId: rundownPlaylistId,
-		partInstanceId: partInstanceId,
-		adLibPieceId: adlibPieceId,
-		pieceType: 'normal',
-		queue: !!queue,
-	})
-}
-export async function sourceLayerOnPartStop(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	partInstanceId: PartInstanceId,
-	sourceLayerIds: string[]
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(partInstanceId, String)
-	check(sourceLayerIds, Array)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.StopPiecesOnSourceLayers, {
-		playlistId: rundownPlaylistId,
-		partInstanceId: partInstanceId,
-		sourceLayerIds: sourceLayerIds,
-	})
-}
-export async function rundownBaselineAdLibPieceStart(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	partInstanceId: PartInstanceId,
-	adlibPieceId: PieceId,
-	queue: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(partInstanceId, String)
-	check(adlibPieceId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.AdlibPieceStart, {
-		playlistId: rundownPlaylistId,
-		partInstanceId: partInstanceId,
-		adLibPieceId: adlibPieceId,
-		pieceType: 'baseline',
-		queue: !!queue,
-	})
-}
-export async function sourceLayerStickyPieceStart(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	sourceLayerId: string
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(sourceLayerId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.StartStickyPieceOnSourceLayer, {
-		playlistId: rundownPlaylistId,
-		sourceLayerId: sourceLayerId,
-	})
-}
-export async function activateHold(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	undo?: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	if (undo) {
-		return runUserAction(playlist.studioId, StudioJobs.DeactivateHold, {
-			playlistId: rundownPlaylistId,
-		})
-	} else {
-		return runUserAction(playlist.studioId, StudioJobs.ActivateHold, {
-			playlistId: rundownPlaylistId,
-		})
-	}
-}
-export function userSaveEvaluation(context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {
-	return ClientAPI.responseSuccess(saveEvaluation(context, evaluation))
-}
-export async function userStoreRundownSnapshot(
-	context: MethodContext,
-	playlistId: RundownPlaylistId,
-	reason: string
-): Promise<ClientAPI.ClientResponse<SnapshotId>> {
-	return ClientAPI.responseSuccess(await storeRundownPlaylistSnapshot(context, playlistId, reason))
-}
-export async function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
-	const playlist = checkAccessAndGetPlaylist(context, playlistId)
-
-	logger.info('removeRundownPlaylist ' + playlistId)
-
-	const job = await QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
-		playlistId,
-	})
-	return ClientAPI.responseSuccess(await job.complete)
-}
-export async function resyncRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
-	const playlist = checkAccessAndGetPlaylist(context, playlistId)
-
-	return ClientAPI.responseSuccess(await ServerRundownAPI.resyncRundownPlaylist(context, playlist._id))
-}
-export async function removeRundown(context: MethodContext, rundownId: RundownId) {
-	const rundown = checkAccessAndGetRundown(context, rundownId)
-
-	return ClientAPI.responseSuccess(await ServerRundownAPI.removeRundown(context, rundown._id))
-}
-export async function resyncRundown(context: MethodContext, rundownId: RundownId) {
-	const rundown = checkAccessAndGetRundown(context, rundownId)
-
-	return ClientAPI.responseSuccess(await ServerRundownAPI.resyncRundown(context, rundown._id))
-}
-export function mediaRestartWorkflow(context: MethodContext, workflowId: MediaWorkFlowId) {
-	return ClientAPI.responseSuccess(MediaManagerAPI.restartWorkflow(context, workflowId))
-}
-export function mediaAbortWorkflow(context: MethodContext, workflowId: MediaWorkFlowId) {
-	return ClientAPI.responseSuccess(MediaManagerAPI.abortWorkflow(context, workflowId))
-}
-export function mediaPrioritizeWorkflow(context: MethodContext, workflowId: MediaWorkFlowId) {
-	return ClientAPI.responseSuccess(MediaManagerAPI.prioritizeWorkflow(context, workflowId))
-}
-export function mediaRestartAllWorkflows(context: MethodContext) {
-	const access = OrganizationContentWriteAccess.anyContent(context)
-	return ClientAPI.responseSuccess(MediaManagerAPI.restartAllWorkflows(context, access.organizationId))
-}
-export function mediaAbortAllWorkflows(context: MethodContext) {
-	const access = OrganizationContentWriteAccess.anyContent(context)
-	return ClientAPI.responseSuccess(MediaManagerAPI.abortAllWorkflows(context, access.organizationId))
-}
-export async function packageManagerRestartExpectation(
-	context: MethodContext,
-	deviceId: PeripheralDeviceId,
-	workId: string
-) {
-	return ClientAPI.responseSuccess(await PackageManagerAPI.restartExpectation(context, deviceId, workId))
-}
-export async function packageManagerRestartAllExpectations(context: MethodContext, studioId: StudioId) {
-	return ClientAPI.responseSuccess(await PackageManagerAPI.restartAllExpectationsInStudio(context, studioId))
-}
-export async function packageManagerAbortExpectation(
-	context: MethodContext,
-	deviceId: PeripheralDeviceId,
-	workId: string
-) {
-	return ClientAPI.responseSuccess(await PackageManagerAPI.abortExpectation(context, deviceId, workId))
-}
-export async function packageManagerRestartPackageContainer(
-	context: MethodContext,
-	deviceId: PeripheralDeviceId,
-	containerId: string
-) {
-	return ClientAPI.responseSuccess(await PackageManagerAPI.restartPackageContainer(context, deviceId, containerId))
-}
-export async function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
-	check(id, String)
-
-	await BucketsAPI.removeBucket(context, id)
-
-	return ClientAPI.responseSuccess(undefined)
-}
-export async function bucketsModifyBucket(context: MethodContext, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
-	check(id, String)
-	check(bucket, Object)
-
-	await BucketsAPI.modifyBucket(context, id, bucket)
-
-	return ClientAPI.responseSuccess(undefined)
-}
-export async function bucketsEmptyBucket(context: MethodContext, id: BucketId) {
-	check(id, String)
-
-	await BucketsAPI.emptyBucket(context, id)
-
-	return ClientAPI.responseSuccess(undefined)
-}
-export async function bucketsCreateNewBucket(
-	context: MethodContext,
-	name: string,
-	studioId: StudioId,
-	userId: string | null
-) {
-	check(name, String)
-	check(studioId, String)
-
-	const bucket = await BucketsAPI.createNewBucket(context, name, studioId, userId)
-
-	return ClientAPI.responseSuccess(bucket)
-}
-export async function bucketsRemoveBucketAdLib(context: MethodContext, id: PieceId) {
-	check(id, String)
-
-	await BucketsAPI.removeBucketAdLib(context, id)
-
-	return ClientAPI.responseSuccess(undefined)
-}
-export async function bucketsRemoveBucketAdLibAction(context: MethodContext, id: AdLibActionId) {
-	check(id, String)
-
-	await BucketsAPI.removeBucketAdLibAction(context, id)
-
-	return ClientAPI.responseSuccess(undefined)
-}
-export async function bucketsModifyBucketAdLib(
-	context: MethodContext,
-	id: PieceId,
-	adlib: Partial<Omit<BucketAdLib, '_id'>>
-) {
-	check(id, String)
-	check(adlib, Object)
-
-	await BucketsAPI.modifyBucketAdLib(context, id, adlib)
-
-	return ClientAPI.responseSuccess(undefined)
-}
-export async function bucketsModifyBucketAdLibAction(
-	context: MethodContext,
-	id: AdLibActionId,
-	action: Partial<Omit<BucketAdLibAction, '_id'>>
-) {
-	check(id, String)
-	check(action, Object)
-
-	await BucketsAPI.modifyBucketAdLibAction(context, id, action)
-
-	return ClientAPI.responseSuccess(undefined)
-}
-export async function regenerateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
-	check(rundownPlaylistId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.RegeneratePlaylist, {
-		playlistId: playlist._id,
-		purgeExisting: false,
-	})
-}
-
-export async function bucketAdlibImport(
-	context: MethodContext,
-	studioId: StudioId,
-	showStyleVariantId: ShowStyleVariantId,
-	bucketId: BucketId,
-	ingestItem: IngestAdlib
-): Promise<ClientAPI.ClientResponse<undefined>> {
-	const o = OrganizationContentWriteAccess.studio(context, studioId)
-	const studioLight = o.studio
-
-	check(studioId, String)
-	check(showStyleVariantId, String)
-	check(bucketId, String)
-	// TODO - validate IngestAdlib
-
-	if (!studioLight) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
-	const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
-	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
-
-	if (studioLight.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
-		throw new Meteor.Error(500, `ShowStyle Variant "${showStyleVariantId}" not supported by studio "${studioId}"`)
-	}
-
-	const bucket = await Buckets.findOneAsync(bucketId)
-	if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found`)
-
-	await runIngestOperation(bucket.studioId, IngestJobs.BucketItemImport, {
-		bucketId: bucket._id,
-		showStyleVariantId: showStyleVariantId,
-		payload: ingestItem,
-	})
-
-	return ClientAPI.responseSuccess(undefined)
-}
-
-export async function bucketsSaveActionIntoBucket(
-	context: MethodContext,
-	studioId: StudioId,
-	action: AdLibActionCommon | BucketAdLibAction,
-	bucketId: BucketId
-) {
-	check(studioId, String)
-	check(bucketId, String)
-	check(action, Object)
-
-	const { studio } = OrganizationContentWriteAccess.studio(context, studioId)
-
-	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
-
-	const result = await BucketsAPI.saveAdLibActionIntoBucket(context, studioId, action, bucketId)
-	return ClientAPI.responseSuccess(result)
-}
-
-export async function bucketAdlibStart(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	partInstanceId: PartInstanceId,
-	bucketAdlibId: PieceId,
-	queue?: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownPlaylistId, String)
-	check(partInstanceId, String)
-	check(bucketAdlibId, String)
-
-	const access = checkAccessToPlaylist(context, rundownPlaylistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.AdlibPieceStart, {
-		playlistId: rundownPlaylistId,
-		partInstanceId: partInstanceId,
-		adLibPieceId: bucketAdlibId,
-		pieceType: 'bucket',
-		queue: !!queue,
-	})
+	await MOSDeviceActions.setPieceInOutPoint(
+		rundown,
+		piece,
+		partCache.data as IngestPart,
+		inPoint / 1000,
+		duration / 1000
+	) // MOS data is in seconds
 }
 
 let restartToken: string | undefined = undefined
 
-export function generateRestartToken(context: MethodContext) {
-	SystemWriteAccess.system(context)
-	restartToken = getHash('restart_' + getCurrentTime())
-	return ClientAPI.responseSuccess(restartToken)
-}
-
-export function restartCore(
-	context: MethodContext,
-	hashedRestartToken: string
-): ClientAPI.ClientResponseSuccess<string> {
-	check(hashedRestartToken, String)
-
-	SystemWriteAccess.system(context)
-
-	if (hashedRestartToken !== getHash(RESTART_SALT + restartToken)) {
-		throw new Meteor.Error(401, `Restart token is invalid`)
-	}
-
-	setTimeout(() => {
-		// eslint-disable-next-line no-process-exit
-		process.exit(0)
-	}, 3000)
-	return ClientAPI.responseSuccess(`Restarting Core in 3s.`)
-}
-
-export function noop(_context: MethodContext) {
-	triggerWriteAccessBecauseNoCheckNecessary()
-	return ClientAPI.responseSuccess(undefined)
-}
-
-export function switchRouteSet(
-	context: MethodContext,
-	studioId: StudioId,
-	routeSetId: string,
-	state: boolean
-): ClientAPI.ClientResponse<void> {
-	check(studioId, String)
-	check(routeSetId, String)
-	check(state, Boolean)
-
-	ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
-	return ClientAPI.responseSuccess(undefined)
-}
-
-export async function moveRundown(
-	context: MethodContext,
-	rundownId: RundownId,
-	intoPlaylistId: RundownPlaylistId | null,
-	rundownsIdsInPlaylistInOrder: RundownId[]
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(rundownId, String)
-	if (intoPlaylistId) check(intoPlaylistId, String)
-
-	const rundown = checkAccessAndGetRundown(context, rundownId)
-
-	return runUserAction(rundown.studioId, StudioJobs.OrderMoveRundownToPlaylist, {
-		rundownId: rundownId,
-		intoPlaylistId,
-		rundownsIdsInPlaylistInOrder: rundownsIdsInPlaylistInOrder,
-	})
-}
-export async function restoreRundownOrder(
-	context: MethodContext,
-	playlistId: RundownPlaylistId
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(playlistId, String)
-
-	const access = checkAccessToPlaylist(context, playlistId)
-	const playlist = access.playlist
-
-	return runUserAction(playlist.studioId, StudioJobs.OrderRestoreToDefault, {
-		playlistId: playlist._id,
-	})
-}
-
-export async function disablePeripheralSubDevice(
-	context: MethodContext,
-	peripheralDeviceId: PeripheralDeviceId,
-	subDeviceId: string,
-	disable: boolean
-): Promise<ClientAPI.ClientResponse<void>> {
-	check(peripheralDeviceId, String)
-	check(subDeviceId, String)
-	check(disable, Boolean)
-
-	return ClientAPI.responseSuccess(
-		ServerPeripheralDeviceAPI.disableSubDevice(context, peripheralDeviceId, undefined, subDeviceId, disable)
-	)
-}
-
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
-	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId, fromPartInstanceId: PartInstanceId | null) {
-		return take(this, rundownPlaylistId, fromPartInstanceId)
+	async take(userEvent: string, rundownPlaylistId: RundownPlaylistId, fromPartInstanceId: PartInstanceId | null) {
+		check(rundownPlaylistId, String)
+		check(fromPartInstanceId, Match.OneOf(String, null))
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.TakeNextPart,
+			{
+				playlistId: rundownPlaylistId,
+				fromPartInstanceId,
+			}
+		)
 	}
-	async setNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
-		return setNext(this, rundownPlaylistId, partId, true, timeOffset)
+	async setNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, nextPartId: PartId, timeOffset?: number) {
+		check(rundownPlaylistId, String)
+		check(nextPartId, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.SetNextPart,
+			{
+				playlistId: rundownPlaylistId,
+				nextPartId,
+				setManually: true,
+				nextTimeOffset: timeOffset,
+			}
+		)
 	}
-	async setNextSegment(_userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId) {
-		return setNextSegment(this, rundownPlaylistId, segmentId)
+	async setNextSegment(userEvent: string, rundownPlaylistId: RundownPlaylistId, nextSegmentId: SegmentId | null) {
+		check(rundownPlaylistId, String)
+		check(nextSegmentId, Match.OneOf(String, null))
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.SetNextSegment,
+			{
+				playlistId: rundownPlaylistId,
+				nextSegmentId,
+			}
+		)
 	}
-	async moveNext(
-		_userEvent: string,
-		rundownPlaylistId: RundownPlaylistId,
-		horisontalDelta: number,
-		verticalDelta: number
-	) {
-		return moveNext(this, rundownPlaylistId, horisontalDelta, verticalDelta)
+	async moveNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, partDelta: number, segmentDelta: number) {
+		check(rundownPlaylistId, String)
+		check(partDelta, Number)
+		check(segmentDelta, Number)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.MoveNextPart,
+			{
+				playlistId: rundownPlaylistId,
+				partDelta: partDelta,
+				segmentDelta: segmentDelta,
+			}
+		)
 	}
-	async prepareForBroadcast(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return prepareForBroadcast(this, rundownPlaylistId)
+	async prepareForBroadcast(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+		check(rundownPlaylistId, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.PrepareRundownForBroadcast,
+			{
+				playlistId: rundownPlaylistId,
+			}
+		)
 	}
-	async resetRundownPlaylist(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return resetRundownPlaylist(this, rundownPlaylistId)
+	async resetRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+		check(rundownPlaylistId, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.ResetRundownPlaylist,
+			{
+				playlistId: rundownPlaylistId,
+			}
+		)
 	}
-	async resetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
-		return resetAndActivate(this, rundownPlaylistId, rehearsal)
+	async resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
+		check(rundownPlaylistId, String)
+		check(rehearsal, Match.Optional(Boolean))
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.ResetRundownPlaylist,
+			{
+				playlistId: rundownPlaylistId,
+				activate: rehearsal ? 'rehearsal' : 'active',
+			}
+		)
 	}
-	async activate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
-		return activate(this, rundownPlaylistId, rehearsal)
+	async activate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
+		check(rundownPlaylistId, String)
+		check(rehearsal, Boolean)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.ActivateRundownPlaylist,
+			{
+				playlistId: rundownPlaylistId,
+				rehearsal: rehearsal,
+			}
+		)
 	}
-	async deactivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return deactivate(this, rundownPlaylistId)
+	async deactivate(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+		check(rundownPlaylistId, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.DeactivateRundownPlaylist,
+			{
+				playlistId: rundownPlaylistId,
+			}
+		)
 	}
-	async forceResetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
-		return forceResetAndActivate(this, rundownPlaylistId, rehearsal)
+	async forceResetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
+		check(rundownPlaylistId, String)
+		check(rehearsal, Boolean)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.ResetRundownPlaylist,
+			{
+				playlistId: rundownPlaylistId,
+				activate: rehearsal ? 'rehearsal' : 'active',
+				forceActivate: true,
+			}
+		)
 	}
-	async unsyncRundown(_userEvent: string, rundownId: RundownId) {
-		return unsyncRundown(this, rundownId)
-	}
-	async disableNextPiece(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-		return disableNextPiece(this, rundownPlaylistId, undo)
+	async disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+		check(rundownPlaylistId, String)
+		check(undo, Match.Optional(Boolean))
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.DisableNextPiece,
+			{
+				playlistId: rundownPlaylistId,
+				undo: !!undo,
+			}
+		)
 	}
 	async pieceTakeNow(
-		_userEvent: string,
+		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	) {
-		return pieceTakeNow(this, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
+		check(rundownPlaylistId, String)
+		check(partInstanceId, String)
+		check(pieceInstanceIdOrPieceIdToCopy, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.TakePieceAsAdlibNow,
+			{
+				playlistId: rundownPlaylistId,
+				partInstanceId: partInstanceId,
+				pieceInstanceIdOrPieceIdToCopy: pieceInstanceIdOrPieceIdToCopy,
+			}
+		)
 	}
 	async setInOutPoints(
-		_userEvent: string,
+		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partId: PartId,
 		pieceId: PieceId,
 		inPoint: number,
 		duration: number
 	) {
-		return pieceSetInOutPoints(this, rundownPlaylistId, partId, pieceId, inPoint, duration)
+		check(rundownPlaylistId, String)
+		check(partId, String)
+		check(pieceId, String)
+		check(inPoint, Number)
+		check(duration, Number)
+
+		return ServerClientAPI.runUserActionInLogForPlaylist(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			'pieceSetInOutPoints',
+			[rundownPlaylistId, partId, pieceId, inPoint, duration],
+			async (access) => {
+				return pieceSetInOutPoints(access, partId, pieceId, inPoint, duration)
+			}
+		)
 	}
 	async executeAction(
-		_userEvent: string,
+		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
 	) {
-		return executeAction(this, rundownPlaylistId, actionDocId, actionId, userData, triggerMode)
+		check(rundownPlaylistId, String)
+		check(actionDocId, String)
+		check(actionId, String)
+		check(userData, Match.Any)
+		check(triggerMode, Match.Optional(String))
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.ExecuteAction,
+			{
+				playlistId: rundownPlaylistId,
+				actionDocId,
+				actionId,
+				userData,
+				triggerMode,
+			}
+		)
 	}
 	async segmentAdLibPieceStart(
-		_userEvent: string,
+		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
 		queue: boolean
 	) {
-		return segmentAdLibPieceStart(this, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
+		check(rundownPlaylistId, String)
+		check(partInstanceId, String)
+		check(adlibPieceId, String)
+		check(queue, Boolean)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.AdlibPieceStart,
+			{
+				playlistId: rundownPlaylistId,
+				partInstanceId: partInstanceId,
+				adLibPieceId: adlibPieceId,
+				pieceType: 'normal',
+				queue: !!queue,
+			}
+		)
 	}
 	async sourceLayerOnPartStop(
-		_userEvent: string,
+		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
 	) {
-		return sourceLayerOnPartStop(this, rundownPlaylistId, partInstanceId, sourceLayerIds)
+		check(rundownPlaylistId, String)
+		check(partInstanceId, String)
+		check(sourceLayerIds, Array) // TODO - can we verify these are strings?
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.StopPiecesOnSourceLayers,
+			{
+				playlistId: rundownPlaylistId,
+				partInstanceId: partInstanceId,
+				sourceLayerIds: sourceLayerIds,
+			}
+		)
 	}
 	async baselineAdLibPieceStart(
-		_userEvent: string,
+		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
 		queue: boolean
 	) {
-		return rundownBaselineAdLibPieceStart(this, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
+		check(rundownPlaylistId, String)
+		check(partInstanceId, String)
+		check(adlibPieceId, String)
+		check(queue, Boolean)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.AdlibPieceStart,
+			{
+				playlistId: rundownPlaylistId,
+				partInstanceId: partInstanceId,
+				adLibPieceId: adlibPieceId,
+				pieceType: 'baseline',
+				queue: !!queue,
+			}
+		)
 	}
-	async sourceLayerStickyPieceStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
-		return sourceLayerStickyPieceStart(this, rundownPlaylistId, sourceLayerId)
+	async sourceLayerStickyPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
+		check(rundownPlaylistId, String)
+		check(sourceLayerId, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.StartStickyPieceOnSourceLayer,
+			{
+				playlistId: rundownPlaylistId,
+				sourceLayerId: sourceLayerId,
+			}
+		)
 	}
 	async bucketAdlibImport(
-		_userEvent: string,
-		studioId: StudioId,
-		showStyleVariantId: ShowStyleVariantId,
+		userEvent: string,
 		bucketId: BucketId,
+		showStyleVariantId: ShowStyleVariantId,
 		ingestItem: IngestAdlib
 	) {
-		return bucketAdlibImport(this, studioId, showStyleVariantId, bucketId, ingestItem)
+		check(bucketId, String)
+		check(showStyleVariantId, String)
+		check(ingestItem, Object)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'bucketAdlibImport',
+			[bucketId, showStyleVariantId, ingestItem],
+			async () => {
+				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				return BucketsAPI.importAdlibToBucket(access, showStyleVariantId, ingestItem)
+			}
+		)
 	}
 	async bucketAdlibStart(
-		_userEvent: string,
+		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
 		queue?: boolean
 	) {
-		return bucketAdlibStart(this, rundownPlaylistId, partInstanceId, bucketAdlibId, queue)
+		check(rundownPlaylistId, String)
+		check(partInstanceId, String)
+		check(bucketAdlibId, String)
+		check(queue, Match.Optional(Boolean))
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.AdlibPieceStart,
+			{
+				playlistId: rundownPlaylistId,
+				partInstanceId: partInstanceId,
+				adLibPieceId: bucketAdlibId,
+				pieceType: 'bucket',
+				queue: !!queue,
+			}
+		)
 	}
-	async activateHold(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-		return activateHold(this, rundownPlaylistId, undo)
+	async activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+		check(rundownPlaylistId, String)
+		check(undo, Match.Optional(Boolean))
+
+		if (undo) {
+			return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+				this,
+				userEvent,
+				rundownPlaylistId,
+				StudioJobs.DeactivateHold,
+				{
+					playlistId: rundownPlaylistId,
+				}
+			)
+		} else {
+			return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+				this,
+				userEvent,
+				rundownPlaylistId,
+				StudioJobs.ActivateHold,
+				{
+					playlistId: rundownPlaylistId,
+				}
+			)
+		}
 	}
-	async saveEvaluation(_userEvent: string, evaluation: EvaluationBase) {
-		return makePromise(() => userSaveEvaluation(this, evaluation))
+	async saveEvaluation(userEvent: string, evaluation: EvaluationBase) {
+		return ServerClientAPI.runUserActionInLogForPlaylist(
+			this,
+			userEvent,
+			evaluation.playlistId,
+			'saveEvaluation',
+			[evaluation],
+			async (access) => {
+				return saveEvaluation(access, evaluation)
+			}
+		)
 	}
-	async storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
-		return userStoreRundownSnapshot(this, playlistId, reason)
+	async storeRundownSnapshot(userEvent: string, playlistId: RundownPlaylistId, reason: string) {
+		return ServerClientAPI.runUserActionInLogForPlaylist(
+			this,
+			userEvent,
+			playlistId,
+			'storeRundownSnapshot',
+			[playlistId, reason],
+			async (access) => {
+				return storeRundownPlaylistSnapshot(access, playlistId, reason)
+			}
+		)
 	}
-	async removeRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
-		return removeRundownPlaylist(this, playlistId)
+	async removeRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+		check(rundownPlaylistId, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.RemovePlaylist,
+			{
+				playlistId: rundownPlaylistId,
+			}
+		)
 	}
-	async resyncRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
-		return resyncRundownPlaylist(this, playlistId)
+	async resyncRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId) {
+		check(playlistId, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylist(
+			this,
+			userEvent,
+			playlistId,
+			'resyncRundownPlaylist',
+			[playlistId],
+			async (access) => {
+				return ServerRundownAPI.resyncRundownPlaylist(access)
+			}
+		)
 	}
-	async removeRundown(_userEvent: string, rundownId: RundownId) {
-		return removeRundown(this, rundownId)
+	async unsyncRundown(userEvent: string, rundownId: RundownId) {
+		check(rundownId, String)
+
+		return ServerClientAPI.runUserActionInLogForRundown(
+			this,
+			userEvent,
+			rundownId,
+			'unsyncRundown',
+			[rundownId],
+			async (access) => {
+				return ServerRundownAPI.unsyncRundown(access)
+			}
+		)
 	}
-	async resyncRundown(_userEvent: string, rundownId: RundownId) {
-		return resyncRundown(this, rundownId)
+	async removeRundown(userEvent: string, rundownId: RundownId) {
+		check(rundownId, String)
+
+		return ServerClientAPI.runUserActionInLogForRundown(
+			this,
+			userEvent,
+			rundownId,
+			'removeRundown',
+			[rundownId],
+			async (access) => {
+				return ServerRundownAPI.removeRundown(access)
+			}
+		)
 	}
-	async mediaRestartWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
-		return makePromise(() => mediaRestartWorkflow(this, workflowId))
+	async resyncRundown(userEvent: string, rundownId: RundownId) {
+		check(rundownId, String)
+
+		return ServerClientAPI.runUserActionInLogForRundown(
+			this,
+			userEvent,
+			rundownId,
+			'resyncRundown',
+			[rundownId],
+			async (access) => {
+				return ServerRundownAPI.innerResyncRundown(access.rundown)
+			}
+		)
 	}
-	async mediaAbortWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
-		return makePromise(() => mediaAbortWorkflow(this, workflowId))
+	async mediaRestartWorkflow(userEvent: string, workflowId: MediaWorkFlowId) {
+		check(workflowId, String)
+
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaRestartWorkflow', [workflowId], async () => {
+			const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+			return MediaManagerAPI.restartWorkflow(access)
+		})
 	}
-	async mediaPrioritizeWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
-		return makePromise(() => mediaPrioritizeWorkflow(this, workflowId))
+	async mediaAbortWorkflow(userEvent: string, workflowId: MediaWorkFlowId) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaAbortWorkflow', [workflowId], async () => {
+			const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+			return MediaManagerAPI.abortWorkflow(access)
+		})
 	}
-	async mediaRestartAllWorkflows(_userEvent: string) {
-		return makePromise(() => mediaRestartAllWorkflows(this))
+	async mediaPrioritizeWorkflow(userEvent: string, workflowId: MediaWorkFlowId) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'mediaPrioritizeWorkflow',
+			[workflowId],
+			async () => {
+				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+				return MediaManagerAPI.prioritizeWorkflow(access)
+			}
+		)
 	}
-	async mediaAbortAllWorkflows(_userEvent: string) {
-		return makePromise(() => mediaAbortAllWorkflows(this))
+	async mediaRestartAllWorkflows(userEvent: string) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaRestartAllWorkflows', [], async () => {
+			const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
+			return MediaManagerAPI.restartAllWorkflows(access)
+		})
 	}
-	async packageManagerRestartExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
-		return packageManagerRestartExpectation(this, deviceId, workId)
+	async mediaAbortAllWorkflows(userEvent: string) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaAbortAllWorkflows', [], async () => {
+			const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
+			return MediaManagerAPI.abortAllWorkflows(access)
+		})
 	}
-	async packageManagerRestartAllExpectations(_userEvent: string, studioId: StudioId) {
-		return packageManagerRestartAllExpectations(this, studioId)
+	async packageManagerRestartExpectation(userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+		check(deviceId, String)
+		check(workId, String)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'packageManagerRestartExpectation',
+			[deviceId, workId],
+			async () => {
+				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
+				return PackageManagerAPI.restartExpectation(access, workId)
+			}
+		)
 	}
-	async packageManagerAbortExpectation(_userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
-		return packageManagerAbortExpectation(this, deviceId, workId)
+	async packageManagerRestartAllExpectations(userEvent: string, studioId: StudioId) {
+		check(studioId, String)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'packageManagerRestartAllExpectations',
+			[studioId],
+			async () => {
+				const access = StudioContentWriteAccess.anyContent(this, studioId)
+				return PackageManagerAPI.restartAllExpectationsInStudio(access)
+			}
+		)
 	}
-	async packageManagerRestartPackageContainer(_userEvent: string, deviceId: PeripheralDeviceId, containerId: string) {
-		return packageManagerRestartPackageContainer(this, deviceId, containerId)
+	async packageManagerAbortExpectation(userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+		check(deviceId, String)
+		check(workId, String)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'packageManagerAbortExpectation',
+			[deviceId, workId],
+			async () => {
+				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
+				return PackageManagerAPI.abortExpectation(access, workId)
+			}
+		)
 	}
-	async regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
-		return regenerateRundownPlaylist(this, playlistId)
+	async packageManagerRestartPackageContainer(userEvent: string, deviceId: PeripheralDeviceId, containerId: string) {
+		check(deviceId, String)
+		check(containerId, String)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'packageManagerRestartPackageContainer',
+			[deviceId, containerId],
+			async () => {
+				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
+				return PackageManagerAPI.restartPackageContainer(access, containerId)
+			}
+		)
 	}
-	async generateRestartToken(_userEvent: string) {
-		return makePromise(() => generateRestartToken(this))
+	async regenerateRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+		check(rundownPlaylistId, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			StudioJobs.RegeneratePlaylist,
+			{
+				playlistId: rundownPlaylistId,
+				purgeExisting: false,
+			}
+		)
 	}
-	async restartCore(_userEvent: string, token: string) {
-		return makePromise(() => restartCore(this, token))
+	async generateRestartToken(userEvent: string) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'generateRestartToken', [], async () => {
+			SystemWriteAccess.system(this)
+			restartToken = getHash('restart_' + getCurrentTime())
+			return restartToken
+		})
 	}
-	async guiFocused(_userEvent: string, _viewInfo: any[]) {
-		return noop(this)
+	async restartCore(userEvent: string, hashedRestartToken: string) {
+		check(hashedRestartToken, String)
+
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'restartCore', [hashedRestartToken], async () => {
+			SystemWriteAccess.system(this)
+
+			if (hashedRestartToken !== getHash(RESTART_SALT + restartToken)) {
+				throw new Meteor.Error(401, `Restart token is invalid`)
+			}
+
+			setTimeout(() => {
+				// eslint-disable-next-line no-process-exit
+				process.exit(0)
+			}, 3000)
+			return `Restarting Core in 3s.`
+		})
 	}
-	async guiBlurred(_userEvent: string, _viewInfo: any[]) {
-		return noop(this)
+
+	async guiFocused(userEvent: string, viewInfo: any[]) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'guiFocused', [viewInfo], async () => {
+			triggerWriteAccessBecauseNoCheckNecessary()
+		})
 	}
-	async bucketsRemoveBucket(_userEvent: string, id: BucketId) {
-		return bucketsRemoveBucket(this, id)
+	async guiBlurred(userEvent: string, viewInfo: any[]) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'guiBlurred', [viewInfo], async () => {
+			triggerWriteAccessBecauseNoCheckNecessary()
+		})
 	}
-	async bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
-		return bucketsModifyBucket(this, id, bucket)
+
+	async bucketsRemoveBucket(userEvent: string, bucketId: BucketId) {
+		check(bucketId, String)
+
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'bucketsRemoveBucket', [bucketId], async () => {
+			const access = BucketSecurity.allowWriteAccess(this, bucketId)
+			return BucketsAPI.removeBucket(access)
+		})
 	}
-	async bucketsEmptyBucket(_userEvent: string, id: BucketId) {
-		return bucketsEmptyBucket(this, id)
+	async bucketsModifyBucket(userEvent: string, bucketId: BucketId, bucketProps: Partial<Omit<Bucket, '_id'>>) {
+		check(bucketId, String)
+		check(bucketProps, Object)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'bucketsModifyBucket',
+			[bucketId, bucketProps],
+			async () => {
+				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				return BucketsAPI.modifyBucket(access, bucketProps)
+			}
+		)
 	}
-	async bucketsCreateNewBucket(_userEvent: string, name: string, studioId: StudioId, userId: string | null) {
-		return bucketsCreateNewBucket(this, name, studioId, userId)
+	async bucketsEmptyBucket(userEvent: string, bucketId: BucketId) {
+		check(bucketId, String)
+
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'bucketsEmptyBucket', [bucketId], async () => {
+			const access = BucketSecurity.allowWriteAccess(this, bucketId)
+			return BucketsAPI.emptyBucket(access)
+		})
 	}
-	async bucketsRemoveBucketAdLib(_userEvent: string, id: PieceId) {
-		return bucketsRemoveBucketAdLib(this, id)
+	async bucketsCreateNewBucket(userEvent: string, studioId: StudioId, name: string) {
+		check(studioId, String)
+		check(name, String)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'bucketsCreateNewBucket',
+			[name, studioId],
+			async () => {
+				const access = StudioContentWriteAccess.bucket(this, studioId)
+				return BucketsAPI.createNewBucket(access, name)
+			}
+		)
 	}
-	async bucketsRemoveBucketAdLibAction(_userEvent: string, id: AdLibActionId) {
-		return bucketsRemoveBucketAdLibAction(this, id)
+	async bucketsRemoveBucketAdLib(userEvent: string, adlibId: PieceId) {
+		check(adlibId, String)
+
+		return ServerClientAPI.runUserActionInLog(this, userEvent, 'bucketsRemoveBucketAdLib', [adlibId], async () => {
+			const access = BucketSecurity.allowWriteAccessPiece(this, adlibId)
+			return BucketsAPI.removeBucketAdLib(access)
+		})
 	}
-	async bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
-		return bucketsModifyBucketAdLib(this, id, bucketAdlib)
+	async bucketsRemoveBucketAdLibAction(userEvent: string, actionId: AdLibActionId) {
+		check(actionId, String)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'bucketsRemoveBucketAdLibAction',
+			[actionId],
+			async () => {
+				const access = BucketSecurity.allowWriteAccessAction(this, actionId)
+				return BucketsAPI.removeBucketAdLibAction(access)
+			}
+		)
+	}
+	async bucketsModifyBucketAdLib(userEvent: string, adlibId: PieceId, adlibProps: Partial<Omit<BucketAdLib, '_id'>>) {
+		check(adlibId, String)
+		check(adlibProps, Object)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'bucketsModifyBucketAdLib',
+			[adlibId, adlibProps],
+			async () => {
+				const access = BucketSecurity.allowWriteAccessPiece(this, adlibId)
+				return BucketsAPI.modifyBucketAdLib(access, adlibProps)
+			}
+		)
 	}
 	async bucketsModifyBucketAdLibAction(
-		_userEvent: string,
-		id: AdLibActionId,
-		bucketAdlibAction: Partial<Omit<BucketAdLibAction, '_id'>>
+		userEvent: string,
+		actionId: AdLibActionId,
+		actionProps: Partial<Omit<BucketAdLibAction, '_id'>>
 	) {
-		return bucketsModifyBucketAdLibAction(this, id, bucketAdlibAction)
+		check(actionId, String)
+		check(actionProps, Object)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'bucketsModifyBucketAdLib',
+			[actionId, actionProps],
+			async () => {
+				const access = BucketSecurity.allowWriteAccessAction(this, actionId)
+				return BucketsAPI.modifyBucketAdLibAction(access, actionProps)
+			}
+		)
 	}
 	async bucketsSaveActionIntoBucket(
-		_userEvent: string,
+		userEvent: string,
 		studioId: StudioId,
-		action: AdLibActionCommon | BucketAdLibAction,
-		bucketId: BucketId
+		bucketId: BucketId,
+		action: AdLibActionCommon | BucketAdLibAction
 	): Promise<ClientAPI.ClientResponse<BucketAdLibAction>> {
-		return bucketsSaveActionIntoBucket(this, studioId, action, bucketId)
+		check(studioId, String)
+		check(bucketId, String)
+		check(action, Object)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'bucketsSaveActionIntoBucket',
+			[studioId, bucketId, action],
+			async () => {
+				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				return BucketsAPI.saveAdLibActionIntoBucket(access, action)
+			}
+		)
 	}
 	async switchRouteSet(
-		_userEvent: string,
+		userEvent: string,
 		studioId: StudioId,
 		routeSetId: string,
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
-		return switchRouteSet(this, studioId, routeSetId, state)
+		check(studioId, String)
+		check(routeSetId, String)
+		check(state, Boolean)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'packageManagerRestartAllExpectations',
+			[studioId, routeSetId, state],
+			async () => {
+				const access = StudioContentWriteAccess.routeSet(this, studioId)
+				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)
+			}
+		)
 	}
 	async moveRundown(
-		_userEvent: string,
+		userEvent: string,
 		rundownId: RundownId,
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	): Promise<ClientAPI.ClientResponse<void>> {
-		return moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
+		check(rundownId, String)
+		check(intoPlaylistId, Match.OneOf(String, null))
+		check(rundownsIdsInPlaylistInOrder, Array)
+
+		return ServerClientAPI.runUserActionInLogForRundownOnWorker(
+			this,
+			userEvent,
+			rundownId,
+			StudioJobs.OrderMoveRundownToPlaylist,
+			{
+				rundownId: rundownId,
+				intoPlaylistId,
+				rundownsIdsInPlaylistInOrder: rundownsIdsInPlaylistInOrder,
+			}
+		)
 	}
 	async restoreRundownOrder(
-		_userEvent: string,
+		userEvent: string,
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
-		return restoreRundownOrder(this, playlistId)
+		check(playlistId, String)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			playlistId,
+			StudioJobs.OrderRestoreToDefault,
+			{
+				playlistId: playlistId,
+			}
+		)
 	}
 	async disablePeripheralSubDevice(
-		_userEvent: string,
+		userEvent: string,
 		peripheralDeviceId: PeripheralDeviceId,
 		subDeviceId: string,
 		disable: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
-		return disablePeripheralSubDevice(this, peripheralDeviceId, subDeviceId, disable)
+		check(peripheralDeviceId, String)
+		check(subDeviceId, String)
+		check(disable, Boolean)
+
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			'packageManagerRestartAllExpectations',
+			[peripheralDeviceId, subDeviceId, disable],
+			async () => {
+				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, peripheralDeviceId)
+				return ServerPeripheralDeviceAPI.disableSubDevice(access, subDeviceId, disable)
+			}
+		)
 	}
 }
-registerClassToMeteorMethods(
-	UserActionAPIMethods,
-	ServerUserActionAPI,
-	false,
-	(methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
-		const transaction = profiler.startTransaction(methodName, 'userAction')
-
-		const eventContext = args[0]
-		const res = ServerClientAPI.runInUserLog(methodContext, eventContext, methodName, args.slice(1), async () => {
-			return fcn.apply(methodContext, args)
-		})
-
-		if (transaction) transaction.end()
-		return res
-	}
-)
+registerClassToMeteorMethods(UserActionAPIMethods, ServerUserActionAPI, false)

@@ -39,6 +39,7 @@ import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle
 import { OnGenerateTimelineObj } from './timeline'
 import { IBlueprintConfig } from './common'
 import { ExpectedPackage } from './package'
+import { ReadonlyDeep } from 'type-fest'
 
 export enum BlueprintManifestType {
 	SYSTEM = 'system',
@@ -97,7 +98,7 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
 	getShowStyleId: (
 		context: IStudioUserContext,
-		showStyles: IBlueprintShowStyleBase[],
+		showStyles: ReadonlyDeep<Array<IBlueprintShowStyleBase>>,
 		ingestRundown: ExtendedIngestRundown
 	) => string | null
 
@@ -129,7 +130,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	/** Returns the id of the show style variant to use for a rundown, return null to ignore that rundown */
 	getShowStyleVariantId: (
 		context: IStudioUserContext,
-		showStyleVariants: IBlueprintShowStyleVariant[],
+		showStyleVariants: ReadonlyDeep<Array<IBlueprintShowStyleVariant>>,
 		ingestRundown: ExtendedIngestRundown
 	) => string | null
 
