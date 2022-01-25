@@ -110,9 +110,7 @@ export interface DisableNextPieceProps extends RundownPlayoutPropsBase {
 	undo: boolean
 }
 export type RemovePlaylistProps = RundownPlayoutPropsBase
-export interface RegeneratePlaylistProps extends RundownPlayoutPropsBase {
-	purgeExisting: boolean
-}
+export type RegeneratePlaylistProps = RundownPlayoutPropsBase
 
 export interface OnPiecePlaybackStartedProps extends RundownPlayoutPropsBase {
 	pieceInstanceId: PieceInstanceId

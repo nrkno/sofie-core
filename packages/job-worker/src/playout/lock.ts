@@ -66,7 +66,9 @@ export async function runWithPlaylistLock<TRes>(
 ): Promise<TRes> {
 	const playlistLock = await context.lockPlaylist(playlistId)
 	try {
-		return await fcn(playlistLock)
+		const res = await fcn(playlistLock)
+		// Explicitly await fcn, before releasing the lock
+		return res
 	} finally {
 		await playlistLock.release()
 	}

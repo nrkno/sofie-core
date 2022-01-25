@@ -684,7 +684,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			StudioJobs.RegeneratePlaylist,
 			{
 				playlistId: rundownPlaylistId,
-				purgeExisting: false,
 			}
 		)
 	}

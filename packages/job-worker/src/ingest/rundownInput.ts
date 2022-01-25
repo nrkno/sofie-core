@@ -31,7 +31,7 @@ import {
 import { LocalIngestRundown, makeNewIngestPart, makeNewIngestRundown, makeNewIngestSegment } from './ingestCache'
 import { canRundownBeUpdated, canSegmentBeUpdated, extendIngestRundownCore, getRundown, getSegmentId } from './lib'
 import { CommitIngestData, runIngestJob, runWithRundownLock, UpdateIngestRundownAction } from './lock'
-import { removeRundownsFromDb } from '../rundownPlaylists'
+import { removeRundownFromDb } from '../rundownPlaylists'
 import { rundownToSegmentRundown, StudioUserContext } from '../blueprints/context'
 import { selectShowStyleVariant } from './rundown'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
@@ -71,11 +71,11 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 	}
 
 	if (tmpRundown.restoredFromSnapshotId) {
-		return runWithRundownLock(context, data.rundownId, async (rundown) => {
+		return runWithRundownLock(context, data.rundownId, async (rundown, lock) => {
 			if (rundown) {
 				// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
 				// Note: this bypasses activation checks, but that probably doesnt matter
-				await removeRundownsFromDb(context, [rundown._id])
+				await removeRundownFromDb(context, lock)
 
 				// check if the playlist is now empty
 				const rundownCount = await context.directCollections.Rundowns.findFetch(

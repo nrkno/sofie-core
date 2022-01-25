@@ -14,6 +14,7 @@ import { JobContext } from '../jobs'
 import { IngestPropsBase } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
+import { RundownLock } from '../jobs/lock'
 
 export interface CommitIngestData {
 	/** Segment Ids which had any changes */
@@ -68,11 +69,11 @@ export async function runIngestJob(
 	}
 
 	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
-	return runWithRundownLockInner(context, rundownId, async () => {
+	return runWithRundownLockInner(context, rundownId, async (rundownLock) => {
 		const span = context.startSpan(`ingestLockFunction.${context}`)
 
 		// Load the old ingest data
-		const pIngestCache = CacheForIngest.create(context, data.rundownExternalId)
+		const pIngestCache = CacheForIngest.create(context, rundownLock, data.rundownExternalId)
 		const ingestObjCache = await RundownIngestDataCache.create(context, rundownId)
 
 		// Recalculate the ingest data
@@ -131,7 +132,7 @@ export async function runIngestJob(
 export async function runWithRundownLock<TRes>(
 	context: JobContext,
 	rundownId: RundownId,
-	fcn: (rundown: DBRundown | undefined, lock: unknown) => Promise<TRes>
+	fcn: (rundown: DBRundown | undefined, lock: RundownLock) => Promise<TRes>
 ): Promise<TRes> {
 	if (!rundownId) {
 		throw new Error(`Job is missing rundownId`)
@@ -151,12 +152,18 @@ export async function runWithRundownLock<TRes>(
  * Lock the rundown for a quick task without the cache
  */
 async function runWithRundownLockInner<TRes>(
-	_context: JobContext,
-	_rundownId: RundownId,
-	fcn: (lock: unknown) => Promise<TRes>
+	context: JobContext,
+	rundownId: RundownId,
+	fcn: (lock: RundownLock) => Promise<TRes>
 ): Promise<TRes> {
-	// Future: We will want to lock the Rundown, once we have multiple ingest threads
-	return fcn(null)
+	const rundownLock = await context.lockRundown(rundownId)
+	try {
+		const res = await fcn(rundownLock)
+		// Explicitly await fcn, before releasing the lock
+		return res
+	} finally {
+		await rundownLock.release()
+	}
 }
 
 function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {

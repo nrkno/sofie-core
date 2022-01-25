@@ -3,6 +3,7 @@ import {
 	RundownPlaylistId,
 	ShowStyleBaseId,
 	ShowStyleVariantId,
+	RundownId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -18,7 +19,7 @@ import {
 	preprocessShowStyleConfig,
 } from '../blueprints/config'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
-import { PlaylistLock } from '../jobs/lock'
+import { PlaylistLock, RundownLock } from '../jobs/lock'
 import { ReadonlyDeep } from 'type-fest'
 import { ApmSpan, JobContext } from '../jobs'
 import { createShowStyleCompound } from '../showStyles'
@@ -100,6 +101,9 @@ export class MockJobContext implements JobContext {
 	}
 	async lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock> {
 		return new MockPlaylistLock(playlistId)
+	}
+	async lockRundown(rundownId: RundownId): Promise<RundownLock> {
+		return new MockRundownLock(rundownId)
 	}
 
 	startSpan(_name: string): ApmSpan | null {
@@ -328,5 +332,29 @@ class MockPlaylistLock extends PlaylistLock {
 	async release(): Promise<void> {
 		if (!this.#locked) throw new Error('Already unlocked!')
 		this.#locked = false
+
+		for (const fcn of this.deferedFunctions) {
+			await fcn()
+		}
+	}
+}
+
+class MockRundownLock extends RundownLock {
+	#locked = true
+
+	constructor(rundownId: RundownId) {
+		super(rundownId)
+	}
+
+	get isLocked(): boolean {
+		return this.#locked
+	}
+	async release(): Promise<void> {
+		if (!this.#locked) throw new Error('Already unlocked!')
+		this.#locked = false
+
+		for (const fcn of this.deferedFunctions) {
+			await fcn()
+		}
 	}
 }

@@ -16,12 +16,15 @@ import { LazyInitialise } from '../lib/lazy'
 import { CacheBase } from '../cache/CacheBase'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { DbCacheWriteOptionalObject } from '../cache/CacheObject'
-import { removeRundownsFromDb } from '../rundownPlaylists'
+import { removeRundownFromDb } from '../rundownPlaylists'
 import { getRundownId } from './lib'
+import { RundownLock } from '../jobs/lock'
 
 export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly isIngest = true
 	private toBeRemoved = false
+
+	public readonly RundownLock: RundownLock
 
 	public readonly Rundown: DbCacheWriteOptionalObject<DBRundown>
 	public readonly RundownExternalId: string
@@ -51,6 +54,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 	private constructor(
 		context: JobContext,
+		rundownLock: RundownLock,
 		rundownExternalId: string,
 		rundown: DbCacheWriteOptionalObject<DBRundown>,
 		segments: DbCacheWriteCollection<DBSegment>,
@@ -63,6 +67,8 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 		expectedPackages: DbCacheWriteCollection<ExpectedPackageDB>
 	) {
 		super(context)
+
+		this.RundownLock = rundownLock
 
 		this.Rundown = rundown
 		this.RundownExternalId = rundownExternalId
@@ -103,8 +109,19 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 		)
 	}
 
-	static async create(context: JobContext, rundownExternalId: string): Promise<CacheForIngest> {
+	static async create(
+		context: JobContext,
+		rundownLock: RundownLock,
+		rundownExternalId: string
+	): Promise<CacheForIngest> {
 		const rundownId = getRundownId(context.studioId, rundownExternalId)
+		if (rundownId !== rundownLock.rundownId)
+			throw new Error(
+				`CacheForIngest.create: RundownLock "${rundownLock.rundownId}" is for the wrong Rundown. Expected ${rundownId}`
+			)
+		if (!rundownLock.isLocked) {
+			throw new Error('Cannot create cache with released RundownLock')
+		}
 
 		const rundownObj = await DbCacheWriteOptionalObject.createOptionalFromDatabase(
 			context,
@@ -114,13 +131,24 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 		const collections = await CacheForIngest.loadCollections(context, rundownId)
 
-		const res = new CacheForIngest(context, rundownExternalId, rundownObj, ...collections)
+		const res = new CacheForIngest(context, rundownLock, rundownExternalId, rundownObj, ...collections)
 
 		return res
 	}
 
-	static async createFromRundown(context: JobContext, rundown: DBRundown): Promise<CacheForIngest> {
+	static async createFromRundown(
+		context: JobContext,
+		rundownLock: RundownLock,
+		rundown: DBRundown
+	): Promise<CacheForIngest> {
 		const collections = await CacheForIngest.loadCollections(context, rundown._id)
+		if (rundown._id !== rundownLock.rundownId)
+			throw new Error(
+				`CacheForIngest.create: RundownLock "${rundownLock.rundownId}" is for the wrong Rundown. Expected ${rundown._id}`
+			)
+		if (!rundownLock.isLocked) {
+			throw new Error('Cannot create cache with released RundownLock')
+		}
 
 		const rundownObj = DbCacheWriteOptionalObject.createOptionalFromDoc(
 			context,
@@ -128,7 +156,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 			rundown
 		)
 
-		const res = new CacheForIngest(context, rundown.externalId, rundownObj, ...collections)
+		const res = new CacheForIngest(context, rundownLock, rundown.externalId, rundownObj, ...collections)
 
 		return res
 	}
@@ -209,6 +237,10 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 	}
 
 	async saveAllToDatabase(): Promise<void> {
+		if (!this.RundownLock.isLocked) {
+			throw new Error('Cannot save changes with released RundownLock')
+		}
+
 		if (this.toBeRemoved) {
 			const span = this.context.startSpan('CacheForIngest.saveAllToDatabase')
 
@@ -216,7 +248,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 			super.discardChanges()
 
 			if (this.Rundown.doc) {
-				await removeRundownsFromDb(this.context, [this.Rundown.doc._id])
+				await removeRundownFromDb(this.context, this.RundownLock)
 			}
 
 			super.assertNoChanges()

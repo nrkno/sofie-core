@@ -4,6 +4,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { WorkerDataCache } from './caches'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
+	RundownId,
 	RundownPlaylistId,
 	ShowStyleBaseId,
 	ShowStyleVariantId,
@@ -25,7 +26,7 @@ import {
 	ProcessedStudioConfig,
 } from '../blueprints/config'
 import { getStudioQueueName, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { LockBase, PlaylistLock } from '../jobs/lock'
+import { LockBase, PlaylistLock, RundownLock } from '../jobs/lock'
 import { logger } from '../logging'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { IS_PRODUCTION } from '../environment'
@@ -90,6 +91,34 @@ export class JobContextImpl implements JobContext {
 		this.locks.push(lock)
 
 		logger.info(`PlaylistLock: Locked "${playlistId}"`)
+
+		if (span) span.end()
+
+		return lock
+	}
+
+	async lockRundown(rundownId: RundownId): Promise<RundownLock> {
+		const span = this.startSpan('lockRundown')
+		if (span) span.setLabel('rundownId', unprotectString(rundownId))
+
+		const lockId = getRandomString()
+		logger.info(`RundownLock: Locking "${rundownId}"`)
+
+		const resourceId = `rundown:${rundownId}`
+		await this.locksManager.aquire(lockId, resourceId)
+
+		const doRelease = async () => {
+			const span = this.startSpan('unlockRundown')
+			if (span) span.setLabel('rundownId', unprotectString(rundownId))
+
+			await this.locksManager.release(lockId, resourceId)
+
+			if (span) span.end()
+		}
+		const lock = new RundownLockImpl(rundownId, doRelease)
+		this.locks.push(lock)
+
+		logger.info(`RundownLock: Locked "${rundownId}"`)
 
 		if (span) span.end()
 
@@ -382,6 +411,44 @@ class PlaylistLockImpl extends PlaylistLock {
 			await this.doRelease()
 
 			logger.info(`PlaylistLock: Released "${this.playlistId}"`)
+
+			if (this.deferedFunctions.length > 0) {
+				for (const fcn of this.deferedFunctions) {
+					await fcn()
+				}
+			}
+		}
+	}
+}
+
+class RundownLockImpl extends RundownLock {
+	#isLocked = true
+
+	public constructor(rundownId: RundownId, private readonly doRelease: () => Promise<void>) {
+		super(rundownId)
+	}
+
+	get isLocked(): boolean {
+		return this.#isLocked
+	}
+
+	async release(): Promise<void> {
+		if (!this.#isLocked) {
+			logger.warn(`RundownLock: Already released "${this.rundownId}"`)
+		} else {
+			logger.info(`RundownLock: Releasing "${this.rundownId}"`)
+
+			this.#isLocked = false
+
+			await this.doRelease()
+
+			logger.info(`RundownLock: Released "${this.rundownId}"`)
+
+			if (this.deferedFunctions.length > 0) {
+				for (const fcn of this.deferedFunctions) {
+					await fcn()
+				}
+			}
 		}
 	}
 }

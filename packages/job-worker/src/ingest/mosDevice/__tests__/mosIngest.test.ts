@@ -31,7 +31,7 @@ import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/Ingest
 import { getPartId } from '../../lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { activateRundownPlaylist, deactivateRundownPlaylist, setNextPart, takeNextPart } from '../../../playout/playout'
-import { removeRundownPlaylistFromDb } from '../../../rundownPlaylists'
+import { removeRundownPlaylistFromDb } from '../../__tests__/lib'
 
 jest.mock('../../updateNext')
 import { ensureNextPartIsValid } from '../../updateNext'
@@ -1346,7 +1346,10 @@ describe('Test recieved mos ingest payloads', () => {
 		// Cleanup any existing playlists
 		await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		await context.directCollections.RundownPlaylists.findFetch().then((playlists) =>
-			Promise.all(playlists.map(async (p) => removeRundownPlaylistFromDb(context, p)))
+			removeRundownPlaylistFromDb(
+				context,
+				playlists.map((p) => p._id)
+			)
 		)
 		expect(await context.directCollections.RundownPlaylists.findFetch()).toHaveLength(0)
 		expect(await context.directCollections.Rundowns.findFetch()).toHaveLength(0)
