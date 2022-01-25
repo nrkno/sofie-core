@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
+import ClassNames from 'classnames'
 import {
 	RundownLayoutExternalFrame,
 	RundownLayoutBase,
@@ -17,18 +18,15 @@ import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
 	UIMetricMode as MOSUIMetricMode,
-	createMosItemRequest,
 	Events as MOSEvents,
 } from '../../lib/data/mos/plugin-support'
-import { MODULE_BROWSER_ORIGIN } from './Inspector/ItemRenderers/NoraItemEditor'
 import { IMOSItem } from 'mos-connection'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Buckets, Bucket, BucketId } from '../../../lib/collections/Buckets'
+import { Buckets, BucketId } from '../../../lib/collections/Buckets'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { check } from '../../../lib/check'
 
@@ -59,10 +57,10 @@ interface SofieExternalMessage {
 	payload?: any
 }
 
-interface HelloSofieExternalMessage extends SofieExternalMessage {
-	type: SofieExternalMessageType.HELLO
-	payload: never
-}
+// interface HelloSofieExternalMessage extends SofieExternalMessage {
+// 	type: SofieExternalMessageType.HELLO
+// 	payload: never
+// }
 
 interface WelcomeSofieExternalMessage extends SofieExternalMessage {
 	type: SofieExternalMessageType.WELCOME
@@ -73,16 +71,16 @@ interface WelcomeSofieExternalMessage extends SofieExternalMessage {
 	}
 }
 
-interface KeyboardEventSofieExternalMessage extends SofieExternalMessage {
-	type: SofieExternalMessageType.KEYBOARD_EVENT
-	payload: KeyboardEvent & {
-		currentTarget: null
-		path: null
-		scrElement: null
-		target: null
-		view: null
-	}
-}
+// interface KeyboardEventSofieExternalMessage extends SofieExternalMessage {
+// 	type: SofieExternalMessageType.KEYBOARD_EVENT
+// 	payload: KeyboardEvent & {
+// 		currentTarget: null
+// 		path: null
+// 		scrElement: null
+// 		target: null
+// 		view: null
+// 	}
+// }
 
 interface CurrentNextPartChangedSofieExternalMessage extends SofieExternalMessage {
 	type: SofieExternalMessageType.CURRENT_PART_CHANGED | SofieExternalMessageType.NEXT_PART_CHANGED
@@ -125,7 +123,7 @@ export const ExternalFramePanel = withTranslation()(
 					// Send the event sanitized to prevent sending huge objects
 					payload: _.omit(
 						_.omit(e, ['currentTarget', 'path', 'srcElement', 'target', 'view', 'sourceCapabilities']),
-						(value, key) => typeof value === 'function'
+						(value) => typeof value === 'function'
 					),
 				})
 			)
@@ -281,9 +279,9 @@ export const ExternalFramePanel = withTranslation()(
 								this.sendSofieCurrentState()
 							}
 						})
-						.catch((e) => console.warn)
+						.catch((e) => console.warn(e))
 					break
-				case SofieExternalMessageType.FOCUS_IN:
+				case SofieExternalMessageType.FOCUS_IN: {
 					this.sendSofieMessage(
 						literal<SofieExternalMessage>({
 							id: Random.id(),
@@ -294,6 +292,7 @@ export const ExternalFramePanel = withTranslation()(
 					const randomEl = document.querySelector('button')
 					if (randomEl) randomEl.focus()
 					break
+				}
 			}
 		}
 
@@ -352,12 +351,7 @@ export const ExternalFramePanel = withTranslation()(
 
 			let dragAllowed = false
 			if (e.dataTransfer) {
-				if (
-					e.dataTransfer
-						.getData('Text')
-						.trim()
-						.endsWith('</mos>')
-				) {
+				if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
 					// this is quite probably a MOS object
 					dragAllowed = true
 				} else if (
@@ -401,7 +395,7 @@ export const ExternalFramePanel = withTranslation()(
 			e.preventDefault()
 		}
 
-		onDragLeave = (e: DragEvent) => {
+		onDragLeave = (_e: Event) => {
 			this.failedDragTimeout = undefined
 			const event = new CustomEvent<{}>(MOSEvents.dragleave, {
 				cancelable: false,
@@ -411,12 +405,7 @@ export const ExternalFramePanel = withTranslation()(
 
 		onDrop = (e: DragEvent) => {
 			if (e.dataTransfer) {
-				if (
-					e.dataTransfer
-						.getData('Text')
-						.trim()
-						.endsWith('</mos>')
-				) {
+				if (e.dataTransfer.getData('Text').trim().endsWith('</mos>')) {
 					// this is quite probably a MOS object, let's try and ingest it
 					this.actMOSMessage(e, e.dataTransfer.getData('Text'))
 				} else if (
@@ -510,7 +499,8 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		render() {
-			const scale = this.props.panel.scale || 1
+			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+			const scale = isDashboardLayout ? (this.props.panel as DashboardLayoutExternalFrame).scale || 1 : 1
 			const frameStyle = {
 				transform: `scale(${scale})`,
 				width: `calc(100% / ${scale})`,
@@ -518,7 +508,12 @@ export const ExternalFramePanel = withTranslation()(
 			}
 			return (
 				<div
-					className="external-frame-panel"
+					className={ClassNames(
+						'external-frame-panel',
+						RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+							? (this.props.panel as DashboardLayoutExternalFrame).customClasses
+							: undefined
+					)}
 					style={_.extend(
 						RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 							? dashboardElementPosition(this.props.panel as DashboardLayoutExternalFrame)
@@ -526,13 +521,15 @@ export const ExternalFramePanel = withTranslation()(
 						{
 							visibility: this.props.visible ? 'visible' : 'hidden',
 						}
-					)}>
+					)}
+				>
 					<iframe
 						ref={this.setElement}
 						className="external-frame-panel__iframe"
 						src={this.props.panel.url}
 						sandbox="allow-forms allow-popups allow-scripts allow-same-origin"
-						style={frameStyle}></iframe>
+						style={frameStyle}
+					></iframe>
 					{this.props.panel.disableFocus && <div className="external-frame-panel__overlay" style={frameStyle}></div>}
 				</div>
 			)

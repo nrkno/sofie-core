@@ -3,7 +3,6 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import { Tracker } from 'meteor/tracker'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
-import { getHash } from '../../../lib/lib'
 
 export namespace ReactiveDataHelper {
 	const rVarCache: _.Dictionary<ReactiveVar<any>> = {}
@@ -35,7 +34,7 @@ export namespace ReactiveDataHelper {
 		computation: (...params) => ReactiveVar<T>,
 		...labels
 	): (...params) => ReactiveVar<T> {
-		return function(...params): ReactiveVar<T> {
+		return function (...params): ReactiveVar<T> {
 			const cId = cacheId(computation.name, ...labels, ...params)
 			if (rVarCache[cId]) {
 				return rVarCache[cId]
@@ -55,6 +54,23 @@ const isolatedAutorunsMem: {
 	}
 } = {}
 
+/**
+ * Create a reactive computation that will be run independently of the outer one. If the same function (using the same
+ * name and parameters) will be used again, this computation will only be computed once on invalidation and it's
+ * result will be memoized and reused on every other call.
+ *
+ * The function will be considered "same", if `functionName` and `params` match.
+ *
+ * If the `fnc` computation is invalidated, the outer computations will only be invalidated if the value returned from
+ * `fnc` fails a deep equality check (_.isEqual).
+ *
+ * @export
+ * @template T
+ * @param {T} fnc The computation function to be memoized and calculated separately from the outer one.
+ * @param {string} functionName The name of this computation function
+ * @param {...Parameters<T>} params Params `fnc` depends on from the outer scope. All parameters will be passed through to the function.
+ * @return {*}  {ReturnType<T>}
+ */
 export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 	fnc: T,
 	functionName: string,
@@ -66,7 +82,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 
 	let result: ReturnType<T>
 	const fId = hashFncAndParams(functionName, params)
-	const parentComputation = Tracker.currentComputation
+	const _parentComputation = Tracker.currentComputation
 	if (isolatedAutorunsMem[fId] === undefined) {
 		const dep = new Tracker.Dependency()
 		dep.depend()
@@ -92,7 +108,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 			})
 			return computation
 		})
-		let gc = Meteor.setInterval(() => {
+		const gc = Meteor.setInterval(() => {
 			if (!dep.hasDependents()) {
 				Meteor.clearInterval(gc)
 				computation.stop()
@@ -106,14 +122,22 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 	return result
 }
 
-export function slowDownReactivity<T extends (...args: any) => any>(
-	fnc: T,
-	delay: number,
-	...params: Parameters<T>
-): ReturnType<T> {
+/**
+ * Slow down the reactivity of the inner function `fnc` to the outer computation.
+ *
+ * This is essentially a `throttle` for reactivity. If the inner `fnc` computation is invalidated, it will wait `delay`
+ * time to invalidate the outer computation.
+ *
+ * @export
+ * @template T
+ * @param {T} fnc The wrapped computation
+ * @param {number} delay The amount of time to wait before invalidating the outer function
+ * @return {*}  {ReturnType<T>}
+ */
+export function slowDownReactivity<T extends (...args: any) => any>(fnc: T, delay: number): ReturnType<T> {
 	// if the delay is <= 0, call straight away and register a direct dependency
 	if (delay <= 0) {
-		return fnc(...(params as any))
+		return fnc()
 	}
 
 	// if the delay is > 0, slow down the reactivity
@@ -126,7 +150,7 @@ export function slowDownReactivity<T extends (...args: any) => any>(
 	const parentComputation = Tracker.currentComputation
 	const computation = Tracker.nonreactive(() => {
 		const computation = Tracker.autorun(() => {
-			result = fnc(...(params as any))
+			result = fnc()
 		})
 		computation.onInvalidate(() => {
 			// if the parent hasn't been invalidated and there is no scheduled invalidation
@@ -162,6 +186,10 @@ export abstract class WithManagedTracker {
 		}, 2000) // wait for a couple of seconds, before unsubscribing
 	}
 
+	subscriptionsReady(): boolean {
+		return this._subs.every((e) => e.ready())
+	}
+
 	protected subscribe(sub: PubSub, ...args: any[]) {
 		this._subs.push(Meteor.subscribe(sub, ...args))
 	}
@@ -170,11 +198,11 @@ export abstract class WithManagedTracker {
 		func: (comp: Tracker.Computation) => void,
 		options?: { onError: Function | undefined } | undefined
 	): Tracker.Computation {
-		return (Tracker.nonreactive(() => {
+		return Tracker.nonreactive(() => {
 			const comp = Tracker.autorun(func, options)
 			this._autoruns.push(comp)
 			return comp
-		}) as any) as Tracker.Computation
+		}) as any as Tracker.Computation
 	}
 }
 

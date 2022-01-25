@@ -17,7 +17,7 @@ describe('watchDog', () => {
 		// Core replies with message
 		// we receive the message and send that back into watchDog:
 
-		return new Promise((resolver, reject) => {
+		return new Promise<void>((resolver, reject) => {
 			if (coreIsHappy) resolver()
 			else if (coreReplies) reject()
 		})

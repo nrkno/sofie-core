@@ -5,7 +5,6 @@ import { ControllerAbstract } from './lib'
 import { JoyConController } from './joycon-device'
 import { KeyboardController } from './keyboard-device'
 import { ShuttleKeyboardController } from './shuttle-keyboard-device'
-import * as _ from 'underscore'
 
 export class PrompterControlManager {
 	private _view: PrompterViewInner

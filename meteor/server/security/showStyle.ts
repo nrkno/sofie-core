@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { ShowStyleBases, ShowStyleBaseId, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { rejectFields, logNotAllowed } from './lib/lib'
+import { logNotAllowed } from './lib/lib'
 import { ShowStyleVariants, ShowStyleVariantId, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { RundownLayouts, RundownLayout, RundownLayoutId, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { RundownLayouts, RundownLayoutId, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToShowStyleBase, allowAccessToShowStyleVariant } from './lib/security'
@@ -11,6 +11,8 @@ import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../../lib/Settings'
 import { isProtectedString } from '../../lib/lib'
+import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { SystemWriteAccess } from './system'
 
 type ShowStyleContent = { showStyleBaseId: ShowStyleBaseId }
 export namespace ShowStyleReadAccess {
@@ -70,6 +72,26 @@ export namespace ShowStyleContentWriteAccess {
 			existingLayout = m
 		}
 		return { ...anyContent(cred0, existingLayout.showStyleBaseId), rundownLayout: existingLayout }
+	}
+	export function triggeredActions(
+		cred0: Credentials,
+		existingTriggeredAction: TriggeredActionsObj | TriggeredActionId
+	) {
+		triggerWriteAccess()
+		if (existingTriggeredAction && isProtectedString(existingTriggeredAction)) {
+			const layoutId = existingTriggeredAction
+			const m = TriggeredActions.findOne(layoutId)
+			if (!m) throw new Meteor.Error(404, `RundownLayout "${layoutId}" not found!`)
+			existingTriggeredAction = m
+		}
+		if (existingTriggeredAction.showStyleBaseId) {
+			return {
+				...anyContent(cred0, existingTriggeredAction.showStyleBaseId),
+				triggeredActions: existingTriggeredAction,
+			}
+		} else {
+			return SystemWriteAccess.coreSystem(cred0)
+		}
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
 	export function anyContent(

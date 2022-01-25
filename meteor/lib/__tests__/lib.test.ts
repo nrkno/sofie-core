@@ -1,16 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { testInFiber, testInFiberOnly } from '../../__mocks__/helpers/jest'
-import { setLoggerLevel } from '../../server/api/logger'
+import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
+import { setLogLevel } from '../../server/logging'
 import {
 	getHash,
 	MeteorPromiseCall,
 	waitForPromise,
 	getCurrentTime,
 	systemTime,
-	saveIntoDb,
-	sumChanges,
-	anythingChanged,
 	literal,
 	applyClassToDocument,
 	formatDateAsTimecode,
@@ -27,17 +24,21 @@ import {
 	protectString,
 	mongoFindOptions,
 	ProtectedString,
-	SaveIntoDbOptions,
 	equalSets,
 	equivalentArrays,
+	LogLevel,
 } from '../lib'
-import { Timeline, TimelineObjType, TimelineObjGeneric, TimelineComplete } from '../collections/Timeline'
+import { TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { FindOptions } from '../typings/meteor'
+import { MeteorMock } from '../../__mocks__/meteor'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
 describe('lib/lib', () => {
+	afterEachInFiber(() => {
+		MeteorMock.mockSetServerEnvironment()
+	})
 	testInFiber('getHash', () => {
 		const h0 = getHash('abc')
 		const h1 = getHash('abcd')
@@ -70,183 +71,10 @@ describe('lib/lib', () => {
 	})
 	testInFiber('getCurrentTime', () => {
 		systemTime.diff = 5439
+		MeteorMock.mockSetClientEnvironment()
 		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1)
-	})
-	testInFiber('saveIntoDb', () => {
-		const mystudioObjs: Array<TimelineObjGeneric> = [
-			{
-				id: 'abc',
-				enable: {
-					start: 0,
-				},
-				layer: 'L1',
-				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.RUNDOWN,
-				classes: ['abc'], // to be removed
-			},
-			{
-				id: 'abc2',
-				enable: {
-					start: 0,
-				},
-				layer: 'L1',
-				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.RUNDOWN,
-			},
-		]
-		Timeline.insert({
-			_id: protectString('myStudio'),
-			timelineHash: protectString('abc'),
-			generated: 1234,
-			timeline: mystudioObjs,
-		})
-
-		const mystudio2Objs: Array<TimelineObjGeneric> = [
-			{
-				id: 'abc10',
-				enable: {
-					start: 0,
-				},
-				layer: 'L1',
-				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.RUNDOWN,
-			},
-		]
-		Timeline.insert({
-			_id: protectString('myStudio2'),
-			timelineHash: protectString('abc'),
-			generated: 1234,
-			timeline: mystudio2Objs,
-		})
-
-		const options: SaveIntoDbOptions<any, any> = {
-			beforeInsert: jest.fn((o) => o),
-			beforeUpdate: jest.fn((o, pre) => o),
-			beforeRemove: jest.fn((o) => o),
-			beforeDiff: jest.fn((o, oldObj) => o),
-			// insert: jest.fn((o) => o),
-			// update: jest.fn((id, o,) => { return undefined }),
-			// remove: jest.fn((o) => { return undefined }),
-			// afterInsert: jest.fn((o) => {
-			// 	return undefined
-			// }),
-			// afterUpdate: jest.fn((o) => {
-			// 	return undefined
-			// }),
-			// afterRemove: jest.fn((o) => {
-			// 	return undefined
-			// }),
-		}
-
-		const changes = saveIntoDb(
-			Timeline,
-			{
-				_id: protectString('myStudio'),
-			},
-			[
-				{
-					_id: protectString('myStudio'),
-					timeline: [
-						{
-							id: 'abc',
-							enable: {
-								start: 0,
-							},
-							layer: 'L2', // changed property
-							content: { deviceType: TSR.DeviceType.ABSTRACT },
-							studioId: protectString('myStudio'),
-						},
-						{
-							// insert object
-							id: 'abc3',
-							enable: {
-								start: 0,
-							},
-							layer: 'L1',
-							content: { deviceType: TSR.DeviceType.ABSTRACT },
-							objectType: TimelineObjType.RUNDOWN,
-						}, // remove abc2
-					],
-				},
-			],
-			options
-		)
-
-		expect(
-			Timeline.find({
-				_id: protectString('myStudio'),
-			}).count()
-		).toEqual(1)
-		const abc = Timeline.findOne(protectString('myStudio')) as TimelineComplete
-		expect(abc).toBeTruthy()
-		expect(abc.timeline).toHaveLength(2)
-		expect(abc.timeline[0].classes).toEqual(undefined)
-		expect(abc.timeline[0].layer).toEqual('L2')
-
-		expect(
-			Timeline.find({
-				_id: protectString('myStudio2'),
-			}).count()
-		).toEqual(1)
-
-		// expect(options.beforeInsert).toHaveBeenCalledTimes(1) - overwrites with single timeline object
-		expect(options.beforeUpdate).toHaveBeenCalledTimes(1)
-		// expect(options.beforeRemove).toHaveBeenCalledTimes(1) - overwrites with single timeline object
-		expect(options.beforeDiff).toHaveBeenCalledTimes(1)
-		// expect(options.insert).toHaveBeenCalledTimes(1)
-		// expect(options.update).toHaveBeenCalledTimes(1)
-		// expect(options.remove).toHaveBeenCalledTimes(1)
-		// expect(options.afterInsert).toHaveBeenCalledTimes(1)
-		// expect(options.afterUpdate).toHaveBeenCalledTimes(1)
-		// expect(options.afterRemove).toHaveBeenCalledTimes(1)
-
-		expect(changes).toMatchObject({
-			updated: 1,
-		})
-		expect(
-			sumChanges(
-				{
-					added: 1,
-					updated: 2,
-					removed: 3,
-				},
-				changes
-			)
-		).toMatchObject({
-			added: 1,
-			updated: 3,
-			removed: 3,
-		})
-	})
-	testInFiber('anythingChanged', () => {
-		expect(
-			anythingChanged({
-				added: 0,
-				updated: 0,
-				removed: 0,
-			})
-		).toBeFalsy()
-		expect(
-			anythingChanged({
-				added: 1,
-				updated: 0,
-				removed: 0,
-			})
-		).toBeTruthy()
-		expect(
-			anythingChanged({
-				added: 0,
-				updated: 9,
-				removed: 0,
-			})
-		).toBeTruthy()
-		expect(
-			anythingChanged({
-				added: 0,
-				updated: 0,
-				removed: 547,
-			})
-		).toBeTruthy()
+		MeteorMock.mockSetServerEnvironment()
+		expect(getCurrentTime() / 1000).toBeCloseTo(Date.now() / 1000, 1)
 	})
 	testInFiber('literal', () => {
 		const obj = literal<TimelineObjGeneric>({
@@ -371,7 +199,7 @@ describe('lib/lib', () => {
 		expect(stringifyObjects(o)).toEqual(stringifyObjects(o))
 	})
 	testInFiber('mongowhere', () => {
-		setLoggerLevel('debug')
+		setLogLevel(LogLevel.DEBUG)
 
 		// mongoWhere is used my Collection mock
 		const MyCollection = new Mongo.Collection<any>('mycollection')
@@ -608,7 +436,7 @@ describe('lib/lib', () => {
 			// ])
 		})
 
-		test('fields', () => {
+		test('fields2', () => {
 			expect(mongoFindOptions(rawDocs2, { sort: { val: 1 } } as FindOptions<SomeDoc>)).toEqual([
 				{
 					_id: '1',

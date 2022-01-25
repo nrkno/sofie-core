@@ -1,6 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import * as React from 'react'
-import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
+import {
+	TimingDataResolution,
+	TimingTickResolution,
+	withTiming,
+	WithTiming,
+} from './RundownView/RundownTiming/withTiming'
 import { withTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Meteor } from 'meteor/meteor'
@@ -34,7 +40,7 @@ class SimpleComponent extends React.Component<SimpleComponentProps, SimpleCompon
 	}
 }
 function testSimpleComponent() {
-	let a = new SimpleComponent({
+	const a = new SimpleComponent({
 		myProp0: '',
 		// asdf: 123, // invalid argument
 	})
@@ -58,7 +64,7 @@ const TranslatedSimpleComponent = withTranslation()(
 			}
 		}
 		render() {
-			let t = this.props.t
+			const t = this.props.t
 			return (
 				<div>
 					{t('Test test')}
@@ -119,7 +125,7 @@ const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentS
 	}
 )
 function testReactiveComponent() {
-	let a = new ReactiveComponent({
+	const a = new ReactiveComponent({
 		myProp0: '',
 		// myReactiveProp0: '', // invalid argument
 		// asdf: 123, // invalid argument
@@ -156,7 +162,7 @@ const TranslatedReactiveComponent = translateWithTracker<
 			}
 		}
 		render() {
-			let t = this.props.t
+			const t = this.props.t
 			return (
 				<div>
 					{t('Test test')}
@@ -185,7 +191,8 @@ interface WithTimingComponentState {
 	myState0: string
 }
 const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingComponentState>({
-	isHighResolution: false,
+	dataResolution: TimingDataResolution.Synced,
+	tickResolution: TimingTickResolution.Synced,
 })(
 	class WithTimingComponent extends React.Component<WithTiming<WithTimingComponentProps>, WithTimingComponentState> {
 		_refreshTimer: number | undefined
@@ -193,7 +200,7 @@ const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingCompo
 		constructor(props: WithTiming<WithTimingComponentProps>) {
 			super(props)
 
-			let a = this.props.myProp0
+			const a = this.props.myProp0
 
 			this.state = {
 				myState0: a,
@@ -214,7 +221,7 @@ const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingCompo
 	}
 )
 function testWithTimingComponent() {
-	let a = new WithTimingComponent(
+	const a = new WithTimingComponent(
 		{
 			myProp0: '',
 			// asdf: 123, // invalid argument

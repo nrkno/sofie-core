@@ -1,8 +1,8 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { registerIndex } from '../database'
+import { PackageInfo } from '@sofie-automation/blueprints-integration'
 
 /** A string, identifying a MediaObj */
 export type MediaObjId = ProtectedString<'MediaObjId'>
@@ -88,31 +88,18 @@ export interface MediaFormat {
 	max_bit_rate?: number
 }
 
-export enum FieldOrder {
-	Unknown = 'unknown',
-	Progressive = 'progressive',
-	TFF = 'tff',
-	BFF = 'bff',
-}
-
 export interface Metadata {
 	scenes?: Array<number>
-	blacks?: Array<Anomaly>
-	freezes?: Array<Anomaly>
+	blacks?: Array<PackageInfo.Anomaly>
+	freezes?: Array<PackageInfo.Anomaly>
 }
 
 export interface MediaInfo extends Metadata {
 	name: string
-	field_order?: FieldOrder
+	field_order?: PackageInfo.FieldOrder
 	streams?: MediaStream[]
 	format?: MediaFormat
 	timebase?: number
-}
-
-export interface Anomaly {
-	start: number
-	duration: number
-	end: number
 }
 
 export interface MediaAttachment {
@@ -135,9 +122,7 @@ export interface MediaStreamCodec {
 	is_avc?: string
 }
 
-export const MediaObjects: TransformedCollection<MediaObject, MediaObject> = createMongoCollection<MediaObject>(
-	'mediaObjects'
-)
+export const MediaObjects = createMongoCollection<MediaObject, MediaObject>('mediaObjects')
 registerCollection('MediaObjects', MediaObjects)
 registerIndex(MediaObjects, {
 	studioId: 1,

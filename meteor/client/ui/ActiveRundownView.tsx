@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 import { Route, Switch } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { Studios, Studio, StudioId } from '../../lib/collections/Studios'
 
 import { Spinner } from '../lib/Spinner'
@@ -30,13 +29,13 @@ interface IState {
 	subsReady: boolean
 }
 export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-	let studioId = objectPathGet(props, 'match.params.studioId')
+	const studioId = objectPathGet(props, 'match.params.studioId')
 	let studio
 	if (studioId) {
 		studio = Studios.findOne(studioId)
 	}
 	const playlist = RundownPlaylists.findOne({
-		active: true,
+		activationId: { $exists: true },
 		studioId: studioId,
 	})
 
@@ -59,7 +58,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 				PubSub.rundownPlaylists,
 				_.extend(
 					{
-						active: true,
+						activationId: { $exists: true },
 					},
 					this.props.studioId
 						? {
@@ -82,7 +81,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 					})
 				}
 
-				let subsReady = this.subscriptionsReady()
+				const subsReady = this.subscriptionsReady()
 				if (subsReady !== this.state.subsReady) {
 					this.setState({
 						subsReady: subsReady,
@@ -116,7 +115,8 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 										className="btn btn-primary"
 										onClick={() => {
 											history.push('/rundowns')
-										}}>
+										}}
+									>
 										{t('Return to list')}
 									</button>
 								)}

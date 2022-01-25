@@ -36,7 +36,7 @@ function genericMeteorCustomPublish(
 	customCollectionName: string,
 	cb: (publication: CustomPublish, ...args: any[]) => void
 ) {
-	Meteor.publish(publicationName, function(...args: any[]) {
+	Meteor.publish(publicationName, function (...args: any[]) {
 		cb(new CustomPublish(this, customCollectionName), ...args)
 	})
 }

@@ -1,4 +1,5 @@
-import { MethodContext } from './methods'
+import { TranslationsBundle, TranslationsBundleId } from '../collections/TranslationsBundles'
+import { ClientAPI } from './client'
 
 export interface CollectionCleanupResult {
 	collectionName: string
@@ -23,6 +24,8 @@ export interface SystemAPI {
 	cleanupOldData(actuallyRemoveOldData: boolean): Promise<CollectionCleanupResult[] | string>
 
 	doSystemBenchmark(): Promise<SystemBenchmarkResults>
+
+	getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>>
 }
 
 export enum SystemAPIMethods {
@@ -30,4 +33,5 @@ export enum SystemAPIMethods {
 	'cleanupOldData' = 'system.cleanupOldData',
 	'runCronjob' = 'system.runCronjob',
 	'doSystemBenchmark' = 'system.doSystemBenchmark',
+	'getTranslationBundle' = 'system.getTranslationBundle',
 }

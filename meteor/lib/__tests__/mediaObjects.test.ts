@@ -1,7 +1,5 @@
-import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import { Mongo } from 'meteor/mongo'
 import { testInFiber } from '../../__mocks__/helpers/jest'
+import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
 	buildFormatString,
 	acceptFormat,
@@ -9,31 +7,27 @@ import {
 	getMediaObjectMediaId,
 	checkPieceContentStatus,
 } from '../mediaObjects'
-import {
-	MediaObjects,
-	MediaInfo,
-	MediaObject,
-	FieldOrder,
-	MediaStream,
-	Anomaly,
-	MediaStreamType,
-} from './../collections/MediaObjects'
+import { MediaObjects, MediaInfo, MediaObject, MediaStream, MediaStreamType } from './../collections/MediaObjects'
 import { literal, protectString } from '../lib'
 import {
 	ISourceLayer,
 	SourceLayerType,
 	IBlueprintPieceGeneric,
 	PieceLifespan,
+	VTContent,
+	WithTimeline,
 } from '@sofie-automation/blueprints-integration'
-import { IStudioSettings } from '../collections/Studios'
+import { IStudioSettings, Studio } from '../collections/Studios'
 import { RundownAPI } from '../api/rundown'
+import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
+import { PieceGeneric } from '../collections/Pieces'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {
 		const format1 = buildFormatString(
 			literal<MediaInfo>({
 				name: '',
-				field_order: FieldOrder.TFF,
+				field_order: PackageInfo.FieldOrder.TFF,
 			}),
 			literal<MediaStream>({
 				width: 1920,
@@ -48,7 +42,7 @@ describe('lib/mediaObjects', () => {
 		const format2 = buildFormatString(
 			literal<MediaInfo>({
 				name: '',
-				field_order: FieldOrder.Progressive,
+				field_order: PackageInfo.FieldOrder.Progressive,
 			}),
 			literal<MediaStream>({
 				width: 1280,
@@ -63,7 +57,7 @@ describe('lib/mediaObjects', () => {
 		const format3 = buildFormatString(
 			literal<MediaInfo>({
 				name: '',
-				field_order: FieldOrder.BFF,
+				field_order: PackageInfo.FieldOrder.BFF,
 			}),
 			literal<MediaStream>({
 				width: 720,
@@ -105,9 +99,11 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {
+				content: literal<WithTimeline<VTContent>>({
 					fileName: 'test',
-				},
+					path: '',
+					timelineObjects: [],
+				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -125,9 +121,11 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {
+				content: literal<WithTimeline<VTContent>>({
 					fileName: 'TEST',
-				},
+					path: '',
+					timelineObjects: [],
+				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -145,7 +143,9 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {},
+				content: {
+					timelineObjects: [],
+				},
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -165,6 +165,10 @@ describe('lib/mediaObjects', () => {
 			supportedAudioStreams: '4',
 			sofieUrl: '',
 		}
+		const mockStudio: Studio = {
+			...defaultStudio(protectString('studio0')),
+			settings: mockStudioSettings,
+		}
 
 		MediaObjects.insert(
 			literal<MediaObject>({
@@ -179,7 +183,7 @@ describe('lib/mediaObjects', () => {
 				mediaTime: 0,
 				mediainfo: literal<MediaInfo>({
 					name: 'test_file',
-					field_order: FieldOrder.TFF,
+					field_order: PackageInfo.FieldOrder.TFF,
 					streams: [
 						literal<MediaStream>({
 							width: 1920,
@@ -230,7 +234,9 @@ describe('lib/mediaObjects', () => {
 			})
 		)
 
-		const piece1 = literal<IBlueprintPieceGeneric>({
+		const piece1 = literal<PieceGeneric>({
+			_id: protectString('piece1'),
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			name: 'Test_file',
 			adlibPreroll: 0,
 			externalId: '',
@@ -238,9 +244,11 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: {
+			content: literal<WithTimeline<VTContent>>({
 				fileName: 'test_file',
-			},
+				path: '',
+				timelineObjects: [],
+			}),
 		})
 
 		const sourcelayer1 = literal<ISourceLayer>({
@@ -263,7 +271,7 @@ describe('lib/mediaObjects', () => {
 				mediaTime: 0,
 				mediainfo: literal<MediaInfo>({
 					name: 'test_file_2',
-					field_order: FieldOrder.Progressive,
+					field_order: PackageInfo.FieldOrder.Progressive,
 					streams: [
 						literal<MediaStream>({
 							width: 1920,
@@ -314,7 +322,9 @@ describe('lib/mediaObjects', () => {
 			})
 		)
 
-		const piece2 = literal<IBlueprintPieceGeneric>({
+		const piece2 = literal<PieceGeneric>({
+			_id: protectString('piece2'),
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			name: 'Test_file_2',
 			adlibPreroll: 0,
 			externalId: '',
@@ -322,12 +332,16 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: {
+			content: literal<WithTimeline<VTContent>>({
 				fileName: 'test_file_2',
-			},
+				path: '',
+				timelineObjects: [],
+			}),
 		})
 
-		const piece3 = literal<IBlueprintPieceGeneric>({
+		const piece3 = literal<PieceGeneric>({
+			_id: protectString('piece3'),
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 			name: 'Test_file_3',
 			adlibPreroll: 0,
 			externalId: '',
@@ -335,21 +349,23 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: {
+			content: literal<WithTimeline<VTContent>>({
 				fileName: 'test_file_3',
-			},
+				path: '',
+				timelineObjects: [],
+			}),
 		})
 
-		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudioSettings)
+		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudio)
 		expect(status1.status).toEqual(RundownAPI.PieceStatusCode.OK)
 		expect(status1.message).toBeFalsy()
 
-		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudioSettings)
+		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudio)
 		expect(status2.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_BROKEN)
-		expect(status2.message).toContain('is not in one of the accepted formats')
+		expect(status2.message).toContain('has the wrong format:')
 
-		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudioSettings)
+		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudio)
 		expect(status3.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_MISSING)
-		expect(status3.message).toContain("it isn't present on the playout")
+		expect(status3.message).toContain('is not yet ready on the playout system')
 	})
 })

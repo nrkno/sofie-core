@@ -3,10 +3,8 @@ import { useTranslation } from 'react-i18next'
 import ClassNames from 'classnames'
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { RundownUtils } from '../../../lib/rundown'
-import { mousetrapHelper } from '../../../lib/mousetrapHelper'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { NoraContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
@@ -14,8 +12,7 @@ import { assertNever, protectString } from '../../../../lib/lib'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
 import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
 import { AdLibPieceUi } from '../../../lib/shelf'
-
-const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
+import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
 
 export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -49,6 +46,9 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				break
 			case PieceLifespan.OutOnRundownEnd:
 				sourceDuration = t('Until end of rundown') as string
+				break
+			case PieceLifespan.OutOnShowStyleEnd:
+				sourceDuration = t('Until end of showstyle') as string
 				break
 			default:
 				assertNever(props.adLibListItem.lifespan)
@@ -120,6 +120,18 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 		[props.adLibListItem]
 	)
 
+	const type = props.adLibListItem.isAction
+		? props.adLibListItem.isGlobal
+			? 'rundownBaselineAdLibAction'
+			: 'adLibAction'
+		: props.adLibListItem.isClearSourceLayer
+		? 'clearSourceLayer'
+		: props.adLibListItem.isSticky
+		? 'sticky'
+		: props.adLibListItem.isGlobal
+		? 'rundownBaselineAdLibItem'
+		: 'adLibPiece'
+
 	return (
 		<>
 			<td
@@ -135,11 +147,12 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				ref={itemIcon}
 				onMouseOver={handleOnMouseOver}
 				onMouseMove={handleOnMouseMove}
-				onMouseLeave={handleOnMouseLeave}>
+				onMouseLeave={handleOnMouseLeave}
+			>
 				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--shortcut">
-				{(props.adLibListItem.hotkey && mousetrapHelper.shortcutLabel(props.adLibListItem.hotkey, _isMacLike)) || null}
+				<ActionAdLibHotkeyPreview targetId={props.adLibListItem._id as any} type={type} />
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--output">
 				{(props.outputLayer && props.outputLayer.name) || null}

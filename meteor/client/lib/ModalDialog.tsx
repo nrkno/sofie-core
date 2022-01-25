@@ -3,12 +3,13 @@ import CoreIcons from '@nrk/core-icons/jsx'
 import Escape from 'react-escape'
 import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
-import { mousetrapHelper } from './mousetrapHelper'
 import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
+import type { Sorensen } from '@sofie-automation/sorensen'
 import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
 import { EditAttribute, EditAttributeType, EditAttributeBase } from './EditAttribute'
+import { SorensenContext } from './SorensenContext'
 
 interface IModalDialogAttributes {
 	show?: boolean
@@ -39,7 +40,7 @@ type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
 export type ModalInputResult = { [attribute: string]: any }
 export type SomeEvent = Event | React.SyntheticEvent<object>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
-	boundKeys: Array<string> = []
+	sorensen: Sorensen
 
 	private inputResult: ModalInputResult = {}
 
@@ -48,6 +49,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	}
 
 	componentDidMount() {
+		this.sorensen = this.context
 		this.bindKeys()
 	}
 
@@ -55,33 +57,38 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		this.unbindKeys()
 	}
 
-	componentDidUpdate() {
-		this.bindKeys()
+	componentDidUpdate(prevProps: IModalDialogAttributes) {
+		if (prevProps.show !== this.props.show) this.bindKeys()
 	}
 
 	bindKeys = () => {
 		if (this.props.show) {
-			if (this.boundKeys.indexOf('enter') < 0) {
-				mousetrapHelper.bind('enter', this.preventDefault, 'keydown', undefined, true)
-				mousetrapHelper.bind('enter', this.handleKey, 'keyup', undefined, true)
-				this.boundKeys.push('enter')
-			}
-			if (this.boundKeys.indexOf('esc') < 0) {
-				mousetrapHelper.bind('esc', this.preventDefault, 'keydown', undefined, true)
-				mousetrapHelper.bind('esc', this.handleKey, 'keyup', undefined, true)
-				this.boundKeys.push('esc')
-			}
+			this.sorensen.bind('Enter', this.preventDefault, {
+				up: false,
+				prepend: true,
+			})
+			this.sorensen.bind('Enter', this.handleKey, {
+				up: true,
+				prepend: true,
+			})
+			this.sorensen.bind('Escape', this.preventDefault, {
+				up: false,
+				prepend: true,
+			})
+			this.sorensen.bind('Escape', this.handleKey, {
+				up: true,
+				prepend: true,
+			})
 		} else {
 			this.unbindKeys()
 		}
 	}
 
 	unbindKeys = () => {
-		this.boundKeys.forEach((key) => {
-			mousetrapHelper.unbind(key, this.preventDefault, 'keydown')
-			mousetrapHelper.unbind(key, this.handleKey, 'keyup')
-		})
-		this.boundKeys.length = 0
+		this.sorensen.unbind('Enter', this.preventDefault)
+		this.sorensen.unbind('Enter', this.handleKey)
+		this.sorensen.unbind('Escape', this.preventDefault)
+		this.sorensen.unbind('Escape', this.handleKey)
 	}
 
 	handleKey = (e: KeyboardEvent) => {
@@ -95,6 +102,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 					this.handleDiscard(e)
 				}
 			}
+			e.preventDefault()
+			e.stopImmediatePropagation()
 		}
 	}
 
@@ -130,7 +139,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 			<Escape to="viewport">
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
-					runOnMount={true}>
+					runOnMount={true}
+				>
 					<div className="glass-pane">
 						<div className="glass-pane-content">
 							<VelocityReact.VelocityTransitionGroup
@@ -142,12 +152,12 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 									easing: 'spring',
 									duration: 250,
 								}}
-								runOnMount={true}>
+								runOnMount={true}
+							>
 								<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''}>
 									<div
-										className={
-											'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'
-										}>
+										className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}
+									>
 										<div className="flex-col c12">
 											<h2>{this.props.title}</h2>
 										</div>
@@ -184,7 +194,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 									<div
 										className={ClassNames('mod', {
 											alright: !this.props.secondaryText,
-										})}>
+										})}
+									>
 										{this.props.secondaryText && (
 											<button className="btn btn-secondary" onClick={this.handleSecondary}>
 												{this.props.secondaryText}
@@ -203,7 +214,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 																},
 																action.classNames
 															)}
-															onClick={(e) => this.handleAction(e, action.on)}>
+															onClick={(e) => this.handleAction(e, action.on)}
+														>
 															{action.label}
 														</button>
 													)
@@ -216,7 +228,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 												right: this.props.secondaryText !== undefined,
 												'btn-warn': this.props.warning,
 											})}
-											onClick={this.handleAccept}>
+											onClick={this.handleAccept}
+										>
 											{this.props.acceptText}
 										</button>
 									</div>
@@ -232,8 +245,11 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	private preventDefault = (e: KeyboardEvent) => {
 		e.preventDefault()
 		e.stopPropagation()
+		e.stopImmediatePropagation()
 	}
 }
+
+ModalDialog.contextType = SorensenContext
 
 export interface ModalDialogQueueItem {
 	/** The title of the dialog box  */
@@ -278,7 +294,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		}
 	}
 	public addQueue(q: ModalDialogQueueItem) {
-		let queue = this.state.queue
+		const queue = this.state.queue
 		queue.push(q)
 		this.setState({
 			queue,
@@ -288,16 +304,16 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		return this.state.queue.length > 0
 	}
 	onAccept = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			onQueue.onAccept(e, inputResult)
 		}
 	}
 	onDiscard = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			if (onQueue.onDiscard) {
@@ -306,8 +322,8 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		}
 	}
 	onSecondary = (e: SomeEvent, inputResult: ModalInputResult) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			if (onQueue.onSecondary) {
@@ -316,26 +332,26 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		}
 	}
 	onAction = (e: SomeEvent, inputResult: ModalInputResult, on: OnAction) => {
-		let queue = this.state.queue
-		let onQueue = queue.pop()
+		const queue = this.state.queue
+		const onQueue = queue.pop()
 		if (onQueue) {
 			this.setState({ queue })
 			on(e, inputResult)
 		}
 	}
 	renderString = (str: string) => {
-		let lines = (str || '').split('\n')
+		const lines = (str || '').split('\n')
 
-		return _.map(lines, (str: string, i) => {
-			return <p key={i}>{str.trim()}</p>
+		return _.map(lines, (line: string, i) => {
+			return <p key={i}>{line.trim()}</p>
 		})
 	}
 	render() {
 		const { t } = this.props
-		let onQueue = _.first(this.state.queue)
+		const onQueue = _.first(this.state.queue)
 
 		if (onQueue) {
-			let actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
+			const actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
 				return {
 					...action,
 					on: (e, inputResult) => this.onAction(e, inputResult, action.on),
@@ -353,7 +369,8 @@ class ModalDialogGlobalContainer0 extends React.Component<
 					inputs={onQueue.inputs}
 					actions={actions}
 					show={true}
-					warning={onQueue.warning}>
+					warning={onQueue.warning}
+				>
 					{_.isString(onQueue.message) ? this.renderString(onQueue.message) : onQueue.message}
 				</ModalDialog>
 			)

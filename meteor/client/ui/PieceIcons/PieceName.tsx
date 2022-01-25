@@ -1,8 +1,6 @@
-import * as React from 'react'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SourceLayerType, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import * as _ from 'underscore'
 
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'

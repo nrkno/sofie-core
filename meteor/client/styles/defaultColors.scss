@@ -21,6 +21,7 @@
 
 	--general-late-color: #ff0000;
 	--general-fast-color: #ff0000;
+	--general-countdown-to-next-color: #ffff00;
 	--general-fast-color--shadow: #{transparentize(#ff0000, 0.2)};
 
 	--general-clock: #49c0fb;
@@ -41,6 +42,7 @@
 	--segment-timeline-background-color: #{$segment-timeline-background-color};
 
 	--segment-layer-background-unknown: #{$segment-layer-background-unknown};
+	--segment-layer-background-unknown--second: #{$segment-layer-background-unknown};
 	--segment-layer-background-camera: #{$segment-layer-background-camera};
 	--segment-layer-background-camera--second: #{$segment-layer-background-camera--second};
 	--segment-layer-background-lower-third: #{$segment-layer-background-lower-third};

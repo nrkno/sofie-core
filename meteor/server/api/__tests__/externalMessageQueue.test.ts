@@ -5,37 +5,36 @@ import { ExternalMessageQueueAPIMethods } from '../../../lib/api/ExternalMessage
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import {
-	ExternalMessageQueueObjSOAP,
 	IBlueprintExternalMessageQueueType,
-	ExternalMessageQueueObjRabbitMQ,
 	ExternalMessageQueueObjSlack,
+	PlaylistTimingType,
 } from '@sofie-automation/blueprints-integration'
-import { testInFiber, runAllTimers, testInFiberOnly, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { testInFiber, runAllTimers, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
+import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { getCurrentTime, protectString } from '../../../lib/lib'
-import { sendSOAPMessage } from '../integration/soap'
 import { sendSlackMessageToWebhook } from '../integration/slack'
-import { sendRabbitMQMessage } from '../integration/rabbitMQ'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-// import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue static methods', () => {
-	let studioEnv = setupDefaultStudioEnvironment()
+	let studioEnv: DefaultEnvironment
 	let rundown: Rundown
-	beforeAllInFiber(() => {
-		let now = getCurrentTime()
+	beforeAll(async () => {
+		studioEnv = await setupDefaultStudioEnvironment()
+		const now = getCurrentTime()
 		RundownPlaylists.insert({
 			_id: protectString('playlist_1'),
 			externalId: 'mock_rpl',
 			name: 'Mock',
 			studioId: protectString(''),
-			peripheralDeviceId: protectString(''),
 			created: 0,
 			modified: 0,
 			currentPartInstanceId: protectString('part_now'),
 			nextPartInstanceId: protectString('partNext'),
 			previousPartInstanceId: null,
-			active: true,
+			activationId: protectString('active'),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		Rundowns.insert({
 			_id: protectString('rundown_1'),
@@ -57,15 +56,17 @@ describe('Test external message queue static methods', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
-			dataSource: 'frank',
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		rundown = Rundowns.findOne() as Rundown
 	})
 
 	testInFiber('add a slack-type message', () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
@@ -75,11 +76,10 @@ describe('Test external message queue static methods', () => {
 			message: 'whats up doc?',
 		}
 		expect(rundown).toBeTruthy()
-		const sendTime = getCurrentTime()
 		queueExternalMessages(rundown, [slackMessage])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message).toMatchObject({
 			type: 'slack',
@@ -108,12 +108,9 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('toggleHold unknown id', () => {
-		try {
-			Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, 'cake')
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe('[404] ExternalMessage "cake" not found!')
-		}
+		expect(() => Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, 'cake')).toThrow(
+			'[404] ExternalMessage "cake" not found'
+		)
 	})
 
 	testInFiber('retry', () => {
@@ -132,12 +129,9 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('retry unknown id', () => {
-		try {
-			Meteor.call(ExternalMessageQueueAPIMethods.retry, 'is_a_lie')
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe('[404] ExternalMessage "is_a_lie" not found!')
-		}
+		expect(() => Meteor.call(ExternalMessageQueueAPIMethods.retry, 'is_a_lie')).toThrow(
+			'[404] ExternalMessage "is_a_lie" not found'
+		)
 	})
 
 	testInFiber('setRunMessageQueue', () => {
@@ -151,7 +145,7 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('remove', () => {
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 
 		Meteor.call(ExternalMessageQueueAPIMethods.remove, message._id)
@@ -163,27 +157,30 @@ describe('Test external message queue static methods', () => {
 describe('Test sending messages to mocked endpoints', () => {
 	jest.useFakeTimers()
 
-	let studioEnv = setupDefaultStudioEnvironment()
+	let studioEnv: DefaultEnvironment
 	let rundown: Rundown
-	beforeAllInFiber(() => {
+	beforeAllInFiber(async () => {
+		studioEnv = await setupDefaultStudioEnvironment()
 		MeteorMock.mockRunMeteorStartup()
 
 		RundownPlaylists.remove(protectString('playlist_1'))
 		Rundowns.remove(protectString('rundown_1'))
 
-		let now = getCurrentTime()
+		const now = getCurrentTime()
 		RundownPlaylists.insert({
 			_id: protectString('playlist_1'),
 			externalId: 'mock_rpl',
 			name: 'Mock',
 			studioId: protectString(''),
-			peripheralDeviceId: protectString(''),
 			created: 0,
 			modified: 0,
 			currentPartInstanceId: protectString('part_now'),
 			nextPartInstanceId: protectString('partNext'),
 			previousPartInstanceId: null,
-			active: true,
+			activationId: protectString('active'),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		Rundowns.insert({
 			_id: protectString('rundown_1'),
@@ -205,9 +202,11 @@ describe('Test sending messages to mocked endpoints', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
-			dataSource: 'frank',
 			externalNRCSName: 'mockNRCS',
 			organizationId: protectString(''),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
 		})
 		rundown = Rundowns.findOne() as Rundown
 
@@ -215,7 +214,7 @@ describe('Test sending messages to mocked endpoints', () => {
 	})
 
 	testInFiber('send a slack-type message', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 		const slackMessage: ExternalMessageQueueObjSlack = {
@@ -231,7 +230,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		await runAllTimers()
 		expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(1)
 		await (sendSlackMessageToWebhook as jest.Mock).mock.results[0].value
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.sent).toBeGreaterThanOrEqual(sendTime)
 		expect(message.lastTry).toBeGreaterThanOrEqual(sendTime)
@@ -241,6 +240,7 @@ describe('Test sending messages to mocked endpoints', () => {
 
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
+	/* eslint-disable jest/no-commented-out-tests */
 	/*
 	describe('failing to send a message and retrying', () => {
 		let message: ExternalMessageQueueObj
@@ -252,7 +252,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		})
 
 		testInFiber('fail to send a slack-type message', async () => {
-			// setLoggerLevel('debug')
+			// setLogLevel(LogLevel.DEBUG)
 			expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 			const slackMessage: ExternalMessageQueueObjSlack = {
@@ -286,14 +286,14 @@ describe('Test sending messages to mocked endpoints', () => {
 		})
 
 		testInFiber('does not try to send again immediately', async () => {
-			// setLoggerLevel('debug')
+			// setLogLevel(LogLevel.DEBUG)
 			await runAllTimers()
 			// Does not try to send again yet ... too close to lastTry
 			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(2)
 		})
 
 		testInFiber('after a minute, tries to resend', async () => {
-			// setLoggerLevel('debug')
+			// setLogLevel(LogLevel.DEBUG)
 			// Reset the last try clock
 			const sendTime = getCurrentTime()
 			ExternalMessageQueue.update(message._id, {
@@ -314,7 +314,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		})
 
 		testInFiber('does not retry to send if on hold', async () => {
-			// setLoggerLevel('debug')
+			// setLogLevel(LogLevel.DEBUG)
 
 			Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, message._id)
 			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
@@ -336,7 +336,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		})
 
 		testInFiber('does not retry after retryUntil time', async () => {
-			// setLoggerLevel('debug')
+			// setLogLevel(LogLevel.DEBUG)
 
 			ExternalMessageQueue.update(message._id, {
 				$set: {
@@ -349,7 +349,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		})
 
 		testInFiber('can be forced to retry manually once', async () => {
-			// setLoggerLevel('debug')
+			// setLogLevel(LogLevel.DEBUG)
 
 			Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, message._id)
 			message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
@@ -374,7 +374,7 @@ describe('Test sending messages to mocked endpoints', () => {
 	})
 
 	testInFiber('send a soap-type message', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		expect(
 			ExternalMessageQueue.findOne({
 				type: IBlueprintExternalMessageQueueType.SOAP,
@@ -418,7 +418,7 @@ describe('Test sending messages to mocked endpoints', () => {
 	})
 
 	testInFiber('fail to send a soap message', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 		const soapMessage: ExternalMessageQueueObjSOAP = {
@@ -460,7 +460,7 @@ describe('Test sending messages to mocked endpoints', () => {
 	})
 
 	testInFiber('fatal error when sending a soap-type message', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 		const soapMessage: ExternalMessageQueueObjSOAP = {
@@ -511,7 +511,7 @@ describe('Test sending messages to mocked endpoints', () => {
 	})
 
 	testInFiber('send a rabbit MQ-type message', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 		const rabbitMessage: ExternalMessageQueueObjRabbitMQ = {
@@ -548,7 +548,7 @@ describe('Test sending messages to mocked endpoints', () => {
 	})
 
 	testInFiber('fail to send a rabbitMQ-type message', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 		const rabbitMessage: ExternalMessageQueueObjRabbitMQ = {
@@ -593,7 +593,7 @@ describe('Test sending messages to mocked endpoints', () => {
 	})
 
 	testInFiber('does not send expired messages', async () => {
-		// setLoggerLevel('debug')
+		// setLogLevel(LogLevel.DEBUG)
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 
 		const slackMessage: ExternalMessageQueueObjSlack = {
@@ -626,4 +626,5 @@ describe('Test sending messages to mocked endpoints', () => {
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 	*/
+	/* eslint-enable jest/no-commented-out-tests */
 })

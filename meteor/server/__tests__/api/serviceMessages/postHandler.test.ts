@@ -1,9 +1,8 @@
 import { postHandler, BodyParsingIncomingMessage } from '../../../api/serviceMessages/postHandler'
-import { Criticality, ServiceMessage, ExternalServiceMessage } from '../../../../lib/collections/CoreSystem'
+import { Criticality, ExternalServiceMessage } from '../../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
 import { Socket } from 'net'
 import * as serviceMessagesApi from '../../../api/serviceMessages/serviceMessagesApi'
-import { isNumber } from 'util'
 
 jest.mock('../../../api/serviceMessages/serviceMessagesApi', () => {
 	return {
@@ -72,6 +71,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			// id: string
 			it('should reject when value is missing', () => {
 				const invalidInput = { ...validInput }
+				// @ts-expect-error
 				delete invalidInput.id
 				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
@@ -108,6 +108,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			// criticality: Criticality
 			it('should reject when value is missing', () => {
 				const invalidInput = { ...validInput }
+				// @ts-expect-error
 				delete invalidInput.criticality
 				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
@@ -182,6 +183,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			// message: string
 			it('should reject when value is missing', () => {
 				const invalidInput = { ...validInput }
+				// @ts-expect-error
 				delete invalidInput.message
 				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
@@ -243,6 +245,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			// timestamp: Date
 			it('should reject when value is missing', () => {
 				const invalidInput = { ...validInput }
+				// @ts-expect-error
 				delete invalidInput.timestamp
 				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 

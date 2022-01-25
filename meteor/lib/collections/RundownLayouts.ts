@@ -1,4 +1,3 @@
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
@@ -6,6 +5,7 @@ import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
 import { UserId } from './Users'
 import { registerIndex } from '../database'
+import { DashboardPanel } from '../../client/ui/Shelf/DashboardPanel'
 
 /**
  * The view targeted by this layout:
@@ -22,6 +22,15 @@ export enum RundownLayoutType {
 	DASHBOARD_LAYOUT = 'dashboard_layout',
 	RUNDOWN_HEADER_LAYOUT = 'rundown_header_layout',
 	MINI_SHELF_LAYOUT = 'mini_shelf_layout',
+	CLOCK_PRESENTER_VIEW_LAYOUT = 'clock_presenter_view_layout',
+}
+
+export enum CustomizableRegions {
+	RundownView = 'rundown_view_layouts',
+	Shelf = 'shelf_layouts',
+	MiniShelf = 'mini_shelf_layouts',
+	RundownHeader = 'rundown_header_layouts',
+	PresenterView = 'presenter_view_layouts',
 }
 
 /**
@@ -42,6 +51,21 @@ export enum RundownLayoutElementType {
 	KEYBOARD_PREVIEW = 'keyboard_preview',
 	PIECE_COUNTDOWN = 'piece_countdown',
 	NEXT_INFO = 'next_info',
+	PLAYLIST_START_TIMER = 'playlist_start_timer',
+	PLAYLIST_END_TIMER = 'playlist_end_timer',
+	NEXT_BREAK_TIMING = 'next_break_timing',
+	END_WORDS = 'end_words',
+	SEGMENT_TIMING = 'segment_timing',
+	PART_TIMING = 'part_timing',
+	TEXT_LABEL = 'text_label',
+	PLAYLIST_NAME = 'playlist_name',
+	STUDIO_NAME = 'studio_name',
+	TIME_OF_DAY = 'time_of_day',
+	SYSTEM_STATUS = 'system_status',
+	SHOWSTYLE_DISPLAY = 'showstyle_display',
+	SEGMENT_NAME = 'segment_name',
+	PART_NAME = 'part_name',
+	COLORED_BOX = 'colored_box',
 }
 
 export interface RundownLayoutElementBase {
@@ -49,6 +73,23 @@ export interface RundownLayoutElementBase {
 	name: string
 	rank: number
 	type?: RundownLayoutElementType // if not set, the value is RundownLayoutElementType.FILTER
+}
+
+/**
+ * An interface for filters that check for a piece to be present on a source layer to change their behaviour (or in order to perform any action at all).
+ * If `requiredLayerIds` is empty / undefined, the filter should be treated as "always active".
+ * @param requiredLayerIds Layers that the filter will check for some active ('live') piece. (Match any layer in array).
+ * @param additionalLayers Layers that must be active in addition to the active layers, i.e. "any of `requiredLayerIds`, with at least one of `additionalLayers`".
+ * @param requireAllAdditionalSourcelayers Require all layers in `additionalLayers` to contain an active piece.
+ */
+export interface RequiresActiveLayers {
+	requiredLayerIds?: string[]
+	additionalLayers?: string[]
+	/**
+	 * Require that all additional sourcelayers be active.
+	 * This allows behaviour to be tied to a combination of e.g. script + VT.
+	 */
+	requireAllAdditionalSourcelayers: boolean
 }
 
 export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
@@ -93,6 +134,89 @@ export interface RundownLayoutNextInfo extends RundownLayoutElementBase {
 	hideForDynamicallyInsertedParts: boolean
 }
 
+export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PLAYLIST_START_TIMER
+	plannedStartText: string
+	hideDiff: boolean
+	hidePlannedStart: boolean
+}
+
+export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PLAYLIST_END_TIMER
+	headerHeight: string
+	plannedEndText: string
+	hidePlannedEndLabel: boolean
+	hideDiffLabel: boolean
+	hideCountdown: boolean
+	hideDiff: boolean
+	hidePlannedEnd: boolean
+}
+
+export interface RundownLayoutNextBreakTiming extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.NEXT_BREAK_TIMING
+}
+
+export interface RundownLayoutEndWords extends RundownLayoutElementBase, RequiresActiveLayers {
+	type: RundownLayoutElementType.PLAYLIST_END_TIMER
+	hideLabel: boolean
+}
+
+export interface RundownLayoutSegmentTiming extends RundownLayoutElementBase, RequiresActiveLayers {
+	type: RundownLayoutElementType.SEGMENT_TIMING
+	timingType: 'count_down' | 'count_up'
+	hideLabel: boolean
+}
+
+export interface RundownLayoutPartTiming extends RundownLayoutElementBase, RequiresActiveLayers {
+	type: RundownLayoutElementType.PART_TIMING
+	timingType: 'count_down' | 'count_up'
+	speakCountDown: boolean
+	hideLabel: boolean
+}
+
+export interface RundownLayoutTextLabel extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.TEXT_LABEL
+	text: string
+}
+
+export interface RundownLayoutPlaylistName extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PLAYLIST_NAME
+	showCurrentRundownName: boolean
+}
+
+export interface RundownLayoutStudioName extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.STUDIO_NAME
+}
+
+export interface RundownLayoutTimeOfDay extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.TIME_OF_DAY
+	hideLabel: boolean
+}
+
+export interface RundownLayoutSytemStatus extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.SYSTEM_STATUS
+}
+
+export interface RundownLayoutShowStyleDisplay extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.SHOWSTYLE_DISPLAY
+}
+
+export interface RundownLayoutSegmentName extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.SEGMENT_NAME
+	segment: 'current' | 'next'
+}
+
+export interface RundownLayoutPartName extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PART_NAME
+	part: 'current' | 'next'
+	showPieceIconColor: boolean
+}
+
+export interface RundownLayoutColoredBox extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.COLORED_BOX
+	iconColor: string
+}
+
 /**
  * A filter to be applied against the AdLib Pieces. If a member is undefined, the pool is not tested
  * against that filter. A member must match all of the sub-filters to be included in a filter view
@@ -129,57 +253,70 @@ export interface RundownLayoutKeyboardPreview extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.KEYBOARD_PREVIEW
 }
 
-export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame {
+export enum DashboardPanelUnit {
+	EM = 'em',
+	PERCENT = '%',
+}
+
+export interface DashboardPanelBase {
 	x: number
 	y: number
 	width: number
 	height: number
+	scale?: number
+	customClasses?: string[]
 }
 
-export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
-	x: number
-	y: number
-	width: number
-	height: number
+export interface DashboardPanelUnits {
+	xUnit?: DashboardPanelUnit
+	yUnit?: DashboardPanelUnit
+	widthUnit?: DashboardPanelUnit
+	heightUnit?: DashboardPanelUnit
 }
 
-export interface DashboardLayoutPieceCountdown extends RundownLayoutPieceCountdown {
-	x: number
-	y: number
-	width: number
-	scale: number
-}
+type DashboardPanel<T> = T & DashboardPanelBase & DashboardPanelUnits
 
-export interface DashboardLayoutNextInfo extends RundownLayoutNextInfo {
-	x: number
-	y: number
-	width: number
-	scale: number
-}
+export type DashboardLayoutExternalFrame = DashboardPanel<RundownLayoutExternalFrame>
+export type DashboardLayoutAdLibRegion = DashboardPanel<RundownLayoutAdLibRegion>
+export type DashboardLayoutPieceCountdown = DashboardPanel<RundownLayoutPieceCountdown>
+export type DashboardLayoutNextInfo = DashboardPanel<RundownLayoutNextInfo>
+export type DashboardLayoutPlaylistStartTimer = DashboardPanel<RundownLayoutPlaylistStartTimer>
+export type DashboardLayoutNextBreakTiming = DashboardPanel<RundownLayoutNextBreakTiming>
+export type DashboardLayoutPlaylistEndTimer = DashboardPanel<RundownLayoutPlaylistEndTimer>
+export type DashboardLayoutEndsWords = DashboardPanel<RundownLayoutEndWords>
+export type DashboardLayoutSegmentCountDown = DashboardPanel<RundownLayoutSegmentTiming>
+export type DashboardLayoutPartCountDown = DashboardPanel<RundownLayoutPartTiming>
+export type DashboardLayoutTextLabel = DashboardPanel<RundownLayoutTextLabel>
+export type DashboardLayoutPlaylistName = DashboardPanel<RundownLayoutPlaylistName>
+export type DashboardLayoutStudioName = DashboardPanel<RundownLayoutStudioName>
+export type DashboardLayoutTimeOfDay = DashboardPanel<RundownLayoutTimeOfDay>
+export type DashboardLayoutSystemStatus = DashboardPanel<RundownLayoutSytemStatus>
+export type DashboardLayoutShowStyleDisplay = DashboardPanel<RundownLayoutShowStyleDisplay>
+export type DashboardLayoutSegmentName = DashboardPanel<RundownLayoutSegmentName>
+export type DashboardLayoutPartName = DashboardPanel<RundownLayoutPartName>
+export type DashboardLayoutColoredBox = DashboardPanel<RundownLayoutColoredBox>
+export type DashboardLayoutKeyboardPreview = DashboardPanel<RundownLayoutKeyboardPreview>
+export type DashboardLayoutFilter = DashboardPanel<
+	RundownLayoutFilterBase & {
+		enableSearch: boolean
 
-export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
-	x: number
-	y: number
-	width: number
-	height: number
-	enableSearch: boolean
+		buttonWidthScale: number
+		buttonHeightScale: number
 
-	buttonWidthScale: number
-	buttonHeightScale: number
-
-	includeClearInRundownBaseline: boolean
-	assignHotKeys: boolean
-	overflowHorizontally?: boolean
-	showAsTimeline?: boolean
-	hide?: boolean
-	displayTakeButtons?: boolean
-	queueAllAdlibs?: boolean
-	/**
-	 * character or sequence that will be replaced with line break in buttons
-	 */
-	lineBreak?: string
-}
-
+		includeClearInRundownBaseline: boolean
+		assignHotKeys: boolean
+		overflowHorizontally?: boolean
+		showAsTimeline?: boolean
+		hide?: boolean
+		displayTakeButtons?: boolean
+		queueAllAdlibs?: boolean
+		toggleOnSingleClick?: boolean
+		/**
+		 * character or sequence that will be replaced with line break in buttons
+		 */
+		lineBreak?: string
+	}
+>
 export interface MiniShelfLayoutFilter extends RundownLayoutFilterBase {
 	buttonWidthScale: number
 	buttonHeightScale: number
@@ -190,13 +327,6 @@ export interface MiniShelfLayoutFilter extends RundownLayoutFilterBase {
 /** A string, identifying a RundownLayout */
 export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
 
-export interface DashboardLayoutKeyboardPreview extends RundownLayoutKeyboardPreview {
-	x: number
-	y: number
-	width: number
-	height: number
-}
-
 export interface RundownLayoutBase {
 	_id: RundownLayoutId
 	showStyleBaseId: ShowStyleBaseId
@@ -204,27 +334,46 @@ export interface RundownLayoutBase {
 	userId?: UserId
 	name: string
 	type: RundownLayoutType
-	filters: RundownLayoutElementBase[]
 	icon: string
 	iconColor: string
+	/* Customizable region that the layout modifies. */
+	regionId: CustomizableRegions
+}
+
+export interface RundownLayoutWithFilters extends RundownLayoutBase {
+	filters: RundownLayoutElementBase[]
+}
+
+export interface RundownViewLayout extends RundownLayoutBase {
+	type: RundownLayoutType.RUNDOWN_VIEW_LAYOUT
+	/** Expose as a layout that can be selected by the user in the lobby view */
+	exposeAsSelectableLayout: boolean
+	shelfLayout: RundownLayoutId
+	miniShelfLayout: RundownLayoutId
+	rundownHeaderLayout: RundownLayoutId
+	liveLineProps?: RequiresActiveLayers
+	/** Hide the rundown divider header in playlists */
+	hideRundownDivider: boolean
+	/** Show breaks in segment timeline list */
+	showBreaksAsSegments: boolean
+	/** Only count down to the segment if it contains pieces on these layers */
+	countdownToSegmentRequireLayers: string[]
+	/** Always show planned segment duration instead of counting up/down when the segment is live */
+	fixedSegmentDuration: boolean
+	/** SourceLayer ids for which a piece duration label should be shown */
+	showDurationSourceLayers: string[]
+	visibleSourceLayers?: string[]
+	visibleOutputLayers?: string[]
+}
+
+export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
+	exposeAsStandalone: boolean
 	openByDefault: boolean
 	startingHeight?: number
 	showBuckets: boolean
 	disableContextMenu: boolean
 	/* Customizable region that the layout modifies. */
-	regionId: string
-}
-
-export interface RundownViewLayout extends RundownLayoutBase {
-	type: RundownLayoutType.RUNDOWN_VIEW_LAYOUT
-	expectedEndText: string
-}
-
-export interface RundownLayoutShelfBase extends RundownLayoutBase {
-	exposeAsStandalone: boolean
-	exposeAsShelf: boolean
-	openByDefault: boolean
-	startingHeight?: number
+	regionId: CustomizableRegions
 }
 
 export interface RundownLayout extends RundownLayoutShelfBase {
@@ -233,8 +382,18 @@ export interface RundownLayout extends RundownLayoutShelfBase {
 
 export interface RundownLayoutRundownHeader extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_HEADER_LAYOUT
-	expectedEndText: string
+	plannedEndText: string
 	nextBreakText: string
+	/** When true, hide the Planned End timer when there is a rundown marked as a break in the future */
+	hideExpectedEndBeforeBreak: boolean
+	/** When a rundown is marked as a break, show the Next Break timing */
+	showNextBreakTiming: boolean
+	/** If true, don't treat the last rundown as a break even if it's marked as one */
+	lastRundownIsNotBreak: boolean
+}
+
+export interface RundownLayoutPresenterView extends RundownLayoutBase {
+	type: RundownLayoutType.CLOCK_PRESENTER_VIEW_LAYOUT
 }
 
 export enum ActionButtonType {
@@ -251,28 +410,22 @@ export enum ActionButtonType {
 	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
 	// and then click on whatever adlib you would like
 	KLAR_ON_AIR = 'klar_on_air',
+	STORE_SNAPSHOT = 'store_snapshot',
 }
 
-export interface DashboardLayoutActionButton {
+export interface DashboardLayoutActionButton extends DashboardPanelBase {
 	_id: string
 	type: ActionButtonType
-	x: number
-	y: number
-	width: number
-	height: number
 	label: string
 	labelToggled: string // different label for when the button is toggled on
 }
 
 export interface DashboardLayout extends RundownLayoutShelfBase {
 	type: RundownLayoutType.DASHBOARD_LAYOUT
-	filters: RundownLayoutElementBase[]
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase> = createMongoCollection<
-	RundownLayoutBase
->('rundownLayouts')
+export const RundownLayouts = createMongoCollection<RundownLayoutBase, RundownLayoutBase>('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
 
 // addIndex(RundownLayouts, {

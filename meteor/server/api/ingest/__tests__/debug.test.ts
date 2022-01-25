@@ -14,9 +14,9 @@ require('../debug.ts') // include in order to create the Meteor methods needed
 
 describe('Test ingest actions for rundowns and segments', () => {
 	let device: PeripheralDevice
-	let externalId = 'abcde'
-	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
+	const externalId = 'abcde'
+	beforeAll(async () => {
+		device = (await setupDefaultStudioEnvironment()).ingestDevice
 	})
 
 	testInFiber('dataRundownCreate', () => {
@@ -54,14 +54,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toMatchObject({
 			externalId: rundown._id,
+			_id: rundown.playlistId,
 		})
-
-		// // Set to unsynced to ensure that flag gets ignored by the debug method
-		// Rundowns.update(rundown._id, {
-		// 	$set: {
-		// 		unsynced: true
-		// 	}
-		// })
 
 		// Remove the parts to make it explicit that the blueprints rerun properly
 		Segments.remove({ rundownId: rundown._id })

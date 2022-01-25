@@ -1,7 +1,6 @@
 import { check } from '../../lib/check'
-import * as _ from 'underscore'
 
-import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId, makePromise, waitForPromise, Awaited } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
@@ -22,6 +21,7 @@ export namespace ServerClientAPI {
 		methodContext: MethodContext,
 		timestamp: Time,
 		errorObject: any,
+		errorString: string,
 		location: string
 	): void {
 		check(timestamp, Number)
@@ -29,7 +29,7 @@ export namespace ServerClientAPI {
 		logger.error(
 			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
 				methodContext.connection ? methodContext.connection.clientAddress : 'N/A'
-			}"\n  at ${new Date(timestamp).toISOString()}:\n${JSON.stringify(errorObject)}`
+			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
 		)
 	}
 
@@ -39,8 +39,8 @@ export namespace ServerClientAPI {
 		methodName: string,
 		args: any[],
 		fcn: () => Result | Promise<Result>
-	): Result {
-		let startTime = Date.now()
+	): Awaited<Result> {
+		const startTime = Date.now()
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
 
@@ -50,7 +50,7 @@ export namespace ServerClientAPI {
 			return waitForPromise(Promise.resolve(fcn()))
 		}
 
-		let actionId: UserActionsLogItemId = getRandomId()
+		const actionId: UserActionsLogItemId = getRandomId()
 
 		const { userId, organizationId } = getLoggedInCredentials(methodContext)
 
@@ -67,11 +67,7 @@ export namespace ServerClientAPI {
 			})
 		)
 		try {
-			let result = fcn()
-
-			if (isPromise(result)) {
-				result = waitForPromise(result) as Result
-			}
+			const result = waitForPromise(fcn())
 
 			// check the nature of the result
 			if (ClientAPI.isClientResponseError(result)) {
@@ -97,7 +93,7 @@ export namespace ServerClientAPI {
 		} catch (e) {
 			// allow the exception to be handled by the Client code
 			logger.error(`Error in ${methodName}`)
-			let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+			const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 			logger.error(errMsg + '\n' + (e.stack || ''))
 			UserActionsLog.update(actionId, {
 				$set: {
@@ -111,7 +107,7 @@ export namespace ServerClientAPI {
 		}
 	}
 
-	export function callPeripheralDeviceFunction(
+	export async function callPeripheralDeviceFunction(
 		methodContext: MethodContext,
 		context: string,
 		deviceId: PeripheralDeviceId,
@@ -123,8 +119,8 @@ export namespace ServerClientAPI {
 		check(functionName, String)
 		check(context, String)
 
-		let actionId: UserActionsLogItemId = getRandomId()
-		let startTime = Date.now()
+		const actionId: UserActionsLogItemId = getRandomId()
+		const startTime = Date.now()
 
 		return new Promise((resolve, reject) => {
 			if (!methodContext.connection) {
@@ -144,7 +140,7 @@ export namespace ServerClientAPI {
 					)
 				} catch (e) {
 					// allow the exception to be handled by the Client code
-					let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+					const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 					logger.error(errMsg)
 					reject(e)
 				}
@@ -170,7 +166,7 @@ export namespace ServerClientAPI {
 					deviceId,
 					(err, result) => {
 						if (err) {
-							let errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+							const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
 							logger.error(errMsg)
 							UserActionsLog.update(actionId, {
 								$set: {
@@ -202,7 +198,7 @@ export namespace ServerClientAPI {
 				)
 			} catch (e) {
 				// allow the exception to be handled by the Client code
-				let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 				logger.error(errMsg)
 				UserActionsLog.update(actionId, {
 					$set: {
@@ -217,9 +213,7 @@ export namespace ServerClientAPI {
 			}
 		})
 	}
-	function getLoggedInCredentials(
-		methodContext: MethodContext
-	): {
+	function getLoggedInCredentials(methodContext: MethodContext): {
 		userId: UserId | null
 		organizationId: OrganizationId | null
 	} {
@@ -235,18 +229,18 @@ export namespace ServerClientAPI {
 }
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
-	clientErrorReport(timestamp: Time, errorObject: any, location: string) {
-		return makePromise(() => ServerClientAPI.clientErrorReport(this, timestamp, errorObject, location))
+	async clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string) {
+		return makePromise(() => ServerClientAPI.clientErrorReport(this, timestamp, errorObject, errorString, location))
 	}
-	callPeripheralDeviceFunction(
+	async callPeripheralDeviceFunction(
 		context: string,
 		deviceId: PeripheralDeviceId,
 		timeoutTime: number | undefined,
 		functionName: string,
 		...args: any[]
 	) {
-		return makePromise(() => {
-			const methodContext: MethodContext = this
+		return makePromise(async () => {
+			const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
 			if (!Settings.enableUserAccounts) {
 				// Note: This is a temporary hack to keep backwards compatibility.
 				// in the case of not enableUserAccounts, a token is needed, but not provided when called from client

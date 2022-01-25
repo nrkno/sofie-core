@@ -1,19 +1,21 @@
 import * as React from 'react'
-import { translateWithTracker, Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { StudioId, Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../../lib/lib'
 import { invalidateAfter } from '../../lib/invalidatingTime'
-import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import classNames from 'classnames'
 import { Clock } from './Clock'
 import { Countdown } from './Countdown'
+import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
 
 interface IProps {
 	// the studio to be displayed in the screen saver
 	studioId: StudioId
+
+	ownBackground?: boolean
 }
 
 interface ITrackedProps {
@@ -35,11 +37,7 @@ interface IState {
 	subsReady: boolean
 }
 
-/**
- * This component renders a **nice**, animated screen saver with information about upcoming
- * shows planned in the studio and the time remaining to the expectedStart time of said show.
- */
-export const StudioScreenSaver = translateWithTracker((props: IProps) => {
+export const findNextPlaylist = (props: IProps) => {
 	invalidateAfter(5000)
 	const now = getCurrentTime()
 
@@ -54,27 +52,26 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				studioId: props.studioId,
 			},
 			{
-				sort: {
-					expectedStart: 1,
-				},
 				fields: {
 					name: 1,
-					expectedStart: 1,
-					expectedDuration: 1,
+					timing: 1,
 					studioId: 1,
 				},
 			}
 		)
 			.fetch()
+			.sort(PlaylistTiming.sortTiminings)
 			.find((rundownPlaylist) => {
-				if (rundownPlaylist.expectedStart && rundownPlaylist.expectedStart > now) {
+				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
+				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
+				if (expectedStart && expectedStart > now) {
 					// is expected to start next
 					return true
 				} else if (
-					rundownPlaylist.expectedStart &&
-					rundownPlaylist.expectedDuration &&
-					rundownPlaylist.expectedStart <= now &&
-					rundownPlaylist.expectedStart + rundownPlaylist.expectedDuration > now
+					expectedStart &&
+					expectedDuration &&
+					expectedStart <= now &&
+					expectedStart + expectedDuration > now
 				) {
 					// should be live right now
 					return true
@@ -82,7 +79,13 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				return false
 			}),
 	}
-})(
+}
+
+/**
+ * This component renders a **nice**, animated screen saver with information about upcoming
+ * shows planned in the studio and the time remaining to the expectedStart time of said show.
+ */
+export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 	class StudioScreenSaver extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		private _nextAnimationFrameRequest: number | undefined
 		private readonly SPEED = 0.5 // non-unit value
@@ -120,6 +123,10 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				studioId: this.props.studioId,
 			})
 
+			if (this.props.ownBackground) {
+				document.body.classList.add('dark', 'xdark')
+			}
+
 			window.addEventListener('resize', this.measureElement)
 
 			this.autorun(() => {
@@ -144,6 +151,11 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 
 		componentWillUnmount() {
 			super.componentWillUnmount()
+
+			if (this.props.ownBackground) {
+				document.body.classList.remove('dark', 'xdark')
+			}
+
 			this._nextAnimationFrameRequest && window.cancelAnimationFrame(this._nextAnimationFrameRequest)
 			window.removeEventListener('resize', this.measureElement)
 		}
@@ -201,8 +213,8 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 			const frameTime = timestamp - this.lastFrameTime
 			const { infoElement, infoElementSize } = this.state
 			let { targetSpeedVector } = this.state
-			let { x, y } = this.position
-			let speedVector = this.speedVector
+			const { x, y } = this.position
+			const speedVector = this.speedVector
 			const windowWidth = window.innerWidth
 			const windowHeight = window.innerHeight
 			if (infoElement && infoElementSize.width && infoElementSize.height) {
@@ -308,30 +320,31 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 
 		render() {
 			const { t, rundownPlaylist } = this.props
-			const hasRundown = rundownPlaylist && rundownPlaylist.expectedStart
+			const expectedStart = rundownPlaylist && PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
+			const hasRundown = !!expectedStart
 			return (
 				<div
 					className={classNames('studio-screen-saver', {
 						loading: !this.state.subsReady,
-					})}>
+					})}
+				>
 					<object
 						className="studio-screen-saver__bkg"
 						data="/images/screen-saver-bkg.svg"
-						type="image/svg+xml"></object>
+						type="image/svg+xml"
+					></object>
 					<div
 						className={classNames('studio-screen-saver__info', {
 							'studio-screen-saver__info--no-rundown': !hasRundown,
 						})}
-						ref={this.setInfoElement}>
+						ref={this.setInfoElement}
+					>
 						<Clock className="studio-screen-saver__clock" />
-						{hasRundown && rundownPlaylist && rundownPlaylist.expectedStart ? (
+						{hasRundown && rundownPlaylist && expectedStart ? (
 							<>
 								<div className="studio-screen-saver__info__label">{t('Next scheduled show')}</div>
 								<div className="studio-screen-saver__info__rundown">{rundownPlaylist.name}</div>
-								<Countdown
-									className="studio-screen-saver__info__countdown"
-									expectedStart={rundownPlaylist.expectedStart}
-								/>
+								<Countdown className="studio-screen-saver__info__countdown" expectedStart={expectedStart} />
 							</>
 						) : (
 							this.props.studio?.name && (

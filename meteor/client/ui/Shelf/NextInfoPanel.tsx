@@ -36,8 +36,7 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const showAny =
-			!this.props.panel.hideForDynamicallyInsertedParts ||
-			!this.props.nextPartInstance?.part.dynamicallyInsertedAfterPartId
+			!this.props.panel.hideForDynamicallyInsertedParts || this.props.nextPartInstance?.orphaned !== 'adlib-part'
 		const segmentName = showAny && this.props.panel.showSegmentName && this.props.nextSegment?.name
 		const partTitle = showAny && this.props.panel.showPartTitle && this.props.nextPartInstance?.part.title
 		const style = {
@@ -45,7 +44,10 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 		}
 		return (
 			<div
-				className="next-info-panel"
+				className={ClassNames(
+					'next-info-panel',
+					isDashboardLayout ? (this.props.panel as DashboardLayoutNextInfo).customClasses : undefined
+				)}
 				style={_.extend(
 					isDashboardLayout
 						? dashboardElementPosition({ ...(this.props.panel as DashboardLayoutNextInfo), height: 1 })
@@ -53,7 +55,8 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 					{
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
-				)}>
+				)}
+			>
 				<span className="next-info-panel__name" style={style}>
 					{showAny && this.props.panel.name}{' '}
 				</span>

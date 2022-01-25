@@ -1,5 +1,3 @@
-import * as _ from 'underscore'
-
 const speechSynthesis = window.speechSynthesis
 
 const VOICE_PREFERENCE = [
@@ -60,14 +58,14 @@ class SpeechSynthesisClass {
 			} else {
 				if (this._queue.length && textCommand.category) {
 					// filter out queued ones of the same category:
-					this._queue = this._queue.filter((c) => !(c.category === textCommand.category))
+					this._queue = this._queue.filter((c) => c.category !== textCommand.category)
 				}
 				this._queue.push(textCommand)
 			}
 			return
 		}
 
-		let utterThis = new SpeechSynthesisUtterance(textCommand.text)
+		const utterThis = new SpeechSynthesisUtterance(textCommand.text)
 		utterThis.onend = () => {
 			this._checkQueue()
 		}
@@ -81,7 +79,7 @@ class SpeechSynthesisClass {
 		speechSynthesis.speak(utterThis)
 	}
 	private _checkQueue() {
-		let textCommand = this._queue.shift()
+		const textCommand = this._queue.shift()
 		if (textCommand) {
 			this._speak(textCommand)
 		}

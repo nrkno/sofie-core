@@ -1,8 +1,6 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { StatusCode } from '../../server/systemStatus/systemStatus'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
@@ -11,25 +9,21 @@ import {
 	SourceLayerType,
 	StudioBlueprintManifest,
 	BlueprintManifestType,
-	IStudioContext,
-	IStudioConfigContext,
-	IBlueprintShowStyleBase,
 	IngestRundown,
 	BlueprintManifestBase,
 	ShowStyleBlueprintManifest,
-	IBlueprintShowStyleVariant,
-	ShowStyleContext,
+	IShowStyleContext,
 	BlueprintResultRundown,
 	BlueprintResultSegment,
 	IngestSegment,
-	SegmentContext,
 	IBlueprintAdLibPiece,
 	IBlueprintRundown,
 	IBlueprintSegment,
 	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
-	TSR,
+	TriggerType,
+	PlayoutActions,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -38,9 +32,8 @@ import {
 	ShowStyleVariants,
 	ShowStyleVariantId,
 } from '../../lib/collections/ShowStyleVariants'
-import { CURRENT_SYSTEM_VERSION } from '../../server/migration/currentSystemVersion'
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
@@ -48,12 +41,7 @@ import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { RundownAPI } from '../../lib/api/rundown'
-import {
-	DBRundownPlaylist,
-	RundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistId,
-} from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { restartRandomId } from '../random'
@@ -65,7 +53,12 @@ import {
 	defaultPart,
 	defaultPiece,
 	defaultAdLibPiece,
+	defaultStudio,
 } from '../defaultCollectionObjects'
+import { OrganizationId } from '../../lib/collections/Organization'
+import { StatusCode } from '../../lib/api/systemStatus'
+import { PackageInfo } from '../../server/coreSystem'
+import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -74,15 +67,16 @@ export enum LAYER_IDS {
 }
 
 function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VERSION: string } {
-	const INTEGRATION_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/package.json')
-		.version
+	const INTEGRATION_VERSION =
+		require('../../node_modules/@sofie-automation/blueprints-integration/package.json').version
 
 	let TSR_VERSION = ''
 	try {
+		// eslint-disable-next-line node/no-missing-require
 		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
 	} catch (e) {
-		TSR_VERSION = require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
-			.version
+		TSR_VERSION =
+			require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json').version
 	}
 
 	return {
@@ -123,6 +117,9 @@ export function setupMockPeripheralDevice(
 		configManifest: {
 			deviceConfig: [],
 		},
+		versions: {
+			'@sofie-automation/server-core-integration': stripVersion(PackageInfo.version),
+		},
 	}
 	const device = _.extend(defaultDevice, doc) as PeripheralDevice
 	PeripheralDevices.insert(device)
@@ -150,27 +147,58 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 	CoreSystem.insert(coreSystem)
 	return coreSystem
 }
+export function setupMockTriggeredActions(
+	showStyleBaseId: ShowStyleBaseId | null = null,
+	num: number = 3,
+	doc?: Partial<DBTriggeredActions>
+): DBTriggeredActions[] {
+	doc = doc || {}
+	const mocks: DBTriggeredActions[] = []
+	for (let i = 0; i < num; i++) {
+		const mock: DBTriggeredActions = {
+			_id: protectString(`mockTriggeredAction_${showStyleBaseId ?? 'core'}` + i),
+			_rank: i * 1000,
+			_rundownVersionHash: 'asdf',
+			showStyleBaseId,
+			actions: [
+				{
+					action: PlayoutActions.adlib,
+					filterChain: [
+						{
+							object: 'adLib',
+							field: 'global',
+							value: true,
+						},
+						{
+							object: 'adLib',
+							field: 'pick',
+							value: i,
+						},
+					],
+				},
+			],
+			triggers: [
+				{
+					type: TriggerType.hotkey,
+					keys: `Key${String.fromCharCode(65 + i)}`, // KeyA and so on
+				},
+			],
+			...doc,
+		}
+		mocks.push(mock)
+		TriggeredActions.insert(mock)
+	}
+	return mocks
+}
 export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 	doc = doc || {}
 
-	const defaultStudio: DBStudio = {
-		_id: protectString('mockStudio' + dbI++),
+	const studio: DBStudio = {
+		...defaultStudio(protectString('mockStudio' + dbI++)),
 		name: 'mockStudio',
-		organizationId: null,
-		// blueprintId?: BlueprintId
-		mappings: {},
-		supportedShowStyleBase: [],
-		blueprintConfig: {},
-		// testToolsConfig?: ITestToolsConfig
-		settings: {
-			mediaPreviewsUrl: '',
-			sofieUrl: '',
-		},
 		_rundownVersionHash: 'asdf',
-		routeSets: {},
-		routeSetExclusivityGroups: {},
+		...doc,
 	}
-	const studio = _.extend(defaultStudio, doc)
 	Studios.insert(studio)
 	return studio
 }
@@ -250,7 +278,10 @@ export function packageBlueprint<T extends BlueprintManifestBase>(
 	})
 	return `({default: (${code})()})`
 }
-export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blueprint {
+export async function setupMockStudioBlueprint(
+	showStyleBaseId: ShowStyleBaseId,
+	organizationId: OrganizationId | null = null
+): Promise<Blueprint> {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
@@ -264,7 +295,7 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 			TSR_VERSION,
 			SHOW_STYLE_ID,
 		},
-		function(): StudioBlueprintManifest {
+		function (): StudioBlueprintManifest {
 			return {
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.0.0',
@@ -273,14 +304,12 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 
 				studioConfigManifest: [],
 				studioMigrations: [],
-				getBaseline: (context: IStudioContext): TSR.TSRTimelineObjBase[] => {
-					return []
+				getBaseline: () => {
+					return {
+						timelineObjects: [],
+					}
 				},
-				getShowStyleId: (
-					context: IStudioConfigContext,
-					showStyles: Array<IBlueprintShowStyleBase>,
-					ingestRundown: IngestRundown
-				): string | null => {
+				getShowStyleId: (): string | null => {
 					return SHOW_STYLE_ID
 				},
 			}
@@ -290,9 +319,12 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return internalUploadBlueprint(blueprintId, code, blueprintName, true)
+	return internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId)
 }
-export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariantId): Blueprint {
+export async function setupMockShowStyleBlueprint(
+	showStyleVariantId: ShowStyleVariantId,
+	organizationId?: OrganizationId | null
+): Promise<Blueprint> {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
@@ -306,7 +338,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 			TSR_VERSION,
 			SHOW_STYLE_VARIANT_ID,
 		},
-		function(): ShowStyleBlueprintManifest {
+		function (): ShowStyleBlueprintManifest {
 			return {
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.0.0',
@@ -315,28 +347,32 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],
-				getShowStyleVariantId: (
-					context: IStudioConfigContext,
-					showStyleVariants: Array<IBlueprintShowStyleVariant>,
-					ingestRundown: IngestRundown
-				): string | null => {
+				getShowStyleVariantId: (): string | null => {
 					return SHOW_STYLE_VARIANT_ID
 				},
-				getRundown: (context: ShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
+				getRundown: (context: IShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
 					const rundown: IBlueprintRundown = {
 						externalId: ingestRundown.externalId,
 						name: ingestRundown.name,
 						// expectedStart?:
 						// expectedDuration?: number;
 						metaData: ingestRundown.payload,
+						timing: {
+							type: 'none' as any,
+						},
 					}
+
+					// Allow the rundown to specify a playlistExternalId that should be used
+					const playlistId = ingestRundown.payload?.ForcePlaylistExternalId
+					if (playlistId) rundown.playlistExternalId = playlistId
+
 					return {
 						rundown,
 						globalAdLibPieces: [],
-						baseline: [],
+						baseline: { timelineObjects: [] },
 					}
 				},
-				getSegment: (context: SegmentContext, ingestSegment: IngestSegment): BlueprintResultSegment => {
+				getSegment: (context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
 					const segment: IBlueprintSegment = {
 						name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
 						metaData: ingestSegment.payload,
@@ -364,7 +400,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 							// displayDuration?: number;
 							// invalid?: boolean
 						}
-						const pieces: IBlueprintPiece[] = []
+						const pieces: IBlueprintPiece[] = ingestPart.payload?.pieces ?? []
 						const adLibPieces: IBlueprintAdLibPiece[] = []
 						parts.push({
 							part,
@@ -391,7 +427,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return internalUploadBlueprint(blueprintId, code, blueprintName, true)
+	return internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId)
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: ShowStyleBaseId
@@ -399,33 +435,44 @@ export interface DefaultEnvironment {
 	studioBlueprint: Blueprint
 	showStyleBlueprint: Blueprint
 	showStyleBase: ShowStyleBase
+	triggeredActions: DBTriggeredActions[]
 	showStyleVariant: ShowStyleVariant
 	studio: Studio
 	core: ICoreSystem
+	systemTriggeredActions: DBTriggeredActions[]
 
 	ingestDevice: PeripheralDevice
 }
-export function setupDefaultStudioEnvironment(): DefaultEnvironment {
+export async function setupDefaultStudioEnvironment(
+	organizationId: OrganizationId | null = null
+): Promise<DefaultEnvironment> {
 	const core = setupMockCore({})
+	const systemTriggeredActions = setupMockTriggeredActions()
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
 	const showStyleVariantId: ShowStyleVariantId = getRandomId()
 
-	const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId)
-	const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId)
+	const studioBlueprint = await setupMockStudioBlueprint(showStyleBaseId, organizationId)
+	const showStyleBlueprint = await setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
 
-	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, { _id: showStyleBaseId })
+	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, {
+		_id: showStyleBaseId,
+		organizationId: organizationId,
+	})
+	const triggeredActions = setupMockTriggeredActions(showStyleBase._id)
 	const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
 
 	const studio = setupMockStudio({
 		blueprintId: studioBlueprint._id,
 		supportedShowStyleBase: [showStyleBaseId],
+		organizationId: organizationId,
 	})
 	const ingestDevice = setupMockPeripheralDevice(
 		PeripheralDeviceAPI.DeviceCategory.INGEST,
 		PeripheralDeviceAPI.DeviceType.MOS,
 		PeripheralDeviceAPI.SUBTYPE_PROCESS,
-		studio
+		studio,
+		{ organizationId: organizationId }
 	)
 
 	return {
@@ -434,9 +481,11 @@ export function setupDefaultStudioEnvironment(): DefaultEnvironment {
 		studioBlueprint,
 		showStyleBlueprint,
 		showStyleBase,
+		triggeredActions,
 		showStyleVariant,
 		studio,
 		core,
+		systemTriggeredActions: systemTriggeredActions,
 		ingestDevice,
 	}
 }
@@ -447,11 +496,7 @@ export function setupDefaultRundownPlaylist(
 ): { rundownId: RundownId; playlistId: RundownPlaylistId } {
 	const rundownId: RundownId = rundownId0 || getRandomId()
 
-	const playlist: DBRundownPlaylist = defaultRundownPlaylist(
-		protectString('playlist_' + rundownId),
-		env.studio._id,
-		env.ingestDevice._id
-	)
+	const playlist: DBRundownPlaylist = defaultRundownPlaylist(protectString('playlist_' + rundownId), env.studio._id)
 
 	const playlistId = RundownPlaylists.insert(playlist)
 
@@ -478,12 +523,15 @@ export function setupDefaultRundown(
 		studioId: env.studio._id,
 		showStyleBaseId: env.showStyleBase._id,
 		showStyleVariantId: env.showStyleVariant._id,
+		timing: {
+			type: 'none' as any,
+		},
 
 		playlistId: playlistId,
 		_rank: 0,
 
 		_id: rundownId,
-		externalId: 'MOCK_RUNDOWN',
+		externalId: 'MOCK_RUNDOWN_' + rundownId,
 		name: 'Default Rundown',
 
 		created: getCurrentTime(),
@@ -496,7 +544,6 @@ export function setupDefaultRundown(
 			core: '',
 		},
 
-		dataSource: 'mock',
 		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
@@ -537,6 +584,9 @@ export function setupDefaultRundown(
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
 	}
 	Pieces.insert(piece000)
 
@@ -555,6 +605,9 @@ export function setupDefaultRundown(
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
 	}
 	Pieces.insert(piece001)
 
@@ -570,6 +623,9 @@ export function setupDefaultRundown(
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	AdLibPieces.insert(adLibPiece000)
@@ -599,6 +655,9 @@ export function setupDefaultRundown(
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
+		content: {
+			timelineObjects: [],
+		},
 	}
 	Pieces.insert(piece010)
 
@@ -662,6 +721,9 @@ export function setupDefaultRundown(
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -674,6 +736,9 @@ export function setupDefaultRundown(
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)
@@ -687,13 +752,14 @@ export function setupRundownWithAutoplayPart0(
 	rundownId: RundownId
 ): RundownId {
 	const rundown: DBRundown = defaultRundown(
-		rundownId,
+		unprotectString(rundownId),
 		env.studio._id,
 		env.ingestDevice._id,
 		playlistId,
 		env.showStyleBase._id,
 		env.showStyleVariant._id
 	)
+	rundown._id = rundownId
 	Rundowns.insert(rundown)
 
 	const segment0: DBSegment = {
@@ -812,6 +878,9 @@ export function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -824,6 +893,9 @@ export function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		content: {
+			timelineObjects: [],
+		},
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)

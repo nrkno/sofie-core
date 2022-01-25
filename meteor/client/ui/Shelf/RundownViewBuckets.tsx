@@ -256,7 +256,7 @@ export const RundownViewBuckets = withTranslation()(
 			this.resize(e.touches[0].clientX, e.touches[0].clientY)
 		}
 
-		touchOffHandle = (e: TouchEvent) => {
+		touchOffHandle = (_e: TouchEvent) => {
 			document.removeEventListener('touchmove', this.touchMoveHandle)
 			document.removeEventListener('touchcancel', this.touchOffHandle)
 			document.removeEventListener('touchend', this.touchOffHandle)
@@ -292,7 +292,7 @@ export const RundownViewBuckets = withTranslation()(
 			this.resize(e.clientX, e.clientY)
 		}
 
-		dropHandle = (e: MouseEvent) => {
+		dropHandle = (_e: MouseEvent) => {
 			document.removeEventListener('mouseup', this.dropHandle)
 			document.removeEventListener('mouseleave', this.dropHandle)
 			document.removeEventListener('mousemove', this.dragHandle)
@@ -494,7 +494,7 @@ export const RundownViewBuckets = withTranslation()(
 				const draggedB = this.props.buckets.find((b) => b._id === draggedId)
 
 				if (draggedB) {
-					var newRank = draggedB._rank
+					let newRank = draggedB._rank
 
 					// Dragged over into first place
 					if (newIndex === 0) {
@@ -543,7 +543,7 @@ export const RundownViewBuckets = withTranslation()(
 		}
 
 		render() {
-			const { playlist, showStyleBase, shouldQueue, t } = this.props
+			const { playlist, showStyleBase, shouldQueue } = this.props
 			const { localBuckets: buckets } = this.state
 			return (
 				<>
@@ -553,12 +553,14 @@ export const RundownViewBuckets = withTranslation()(
 								<div
 									className="rundown-view__shelf__contents__pane"
 									key={unprotectString(bucket._id)}
-									style={this.bucketPanelStyle(index)}>
+									style={this.bucketPanelStyle(index)}
+								>
 									{!this.props.fullViewport || index > 0 ? (
 										<div
 											className="rundown-view__shelf__contents__pane__divider"
 											onMouseDown={(e) => this.grabHandle(e, bucket)}
-											onTouchStart={(e) => this.touchOnHandle(e, bucket)}>
+											onTouchStart={(e) => this.touchOnHandle(e, bucket)}
+										>
 											<div className="rundown-view__shelf__contents__pane__handle">
 												<FontAwesomeIcon icon={faBars} />
 											</div>
@@ -570,7 +572,7 @@ export const RundownViewBuckets = withTranslation()(
 											className: 'buckets',
 										}}
 										collect={() =>
-											new Promise((resolve) => {
+											new Promise<void>((resolve) => {
 												setShelfContextMenuContext({
 													type: MenuContextType.BUCKET,
 													details: {
@@ -580,7 +582,8 @@ export const RundownViewBuckets = withTranslation()(
 												resolve()
 											})
 										}
-										holdToDisplay={contextMenuHoldToDisplayTime()}>
+										holdToDisplay={contextMenuHoldToDisplayTime()}
+									>
 										{this.state.panelWidths[index] > 0 && (
 											<BucketPanel
 												playlist={playlist}
@@ -599,6 +602,7 @@ export const RundownViewBuckets = withTranslation()(
 												findBucket={this.findBucket}
 												onBucketReorder={this.onBucketReorder}
 												onAdLibContext={this.onAdLibContext}
+												onSelectAdlib={this.props.onSelectPiece}
 												selectedPiece={this.props.selectedPiece}
 												hotkeyGroup={bucket.name.replace(/\W/, '_') + 'BucketPanel'}
 											/>

@@ -1,12 +1,11 @@
 import * as _ from 'underscore'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal, unprotectString } from '../../../../lib/lib'
+import { literal } from '../../../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
 
 import * as api from '../api'
-import { BlueprintId } from '../../../../lib/collections/Blueprints'
 jest.mock('../api.ts')
 
 const DEFAULT_CONTEXT = { userId: '' }
@@ -45,7 +44,7 @@ describe('Test blueprint http api', () => {
 		}
 
 		function resetUploadMock() {
-			const uploadBlueprint = (api.uploadBlueprint as any) as jest.MockInstance<any, any>
+			const uploadBlueprint = api.uploadBlueprint as any as jest.MockInstance<any, any>
 			uploadBlueprint.mockClear()
 			return uploadBlueprint
 		}
@@ -164,7 +163,7 @@ describe('Test blueprint http api', () => {
 		}
 
 		function resetUploadMock() {
-			const uploadBlueprint = (api.uploadBlueprint as any) as jest.MockInstance<any, any>
+			const uploadBlueprint = api.uploadBlueprint as any as jest.MockInstance<any, any>
 			uploadBlueprint.mockClear()
 			return uploadBlueprint
 		}
@@ -206,7 +205,6 @@ describe('Test blueprint http api', () => {
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
 		testInFiber('non-json body', () => {
-			const id = 'id1'
 			const body = '0123456789012'
 
 			const res = callRoute(body)
@@ -219,8 +217,10 @@ describe('Test blueprint http api', () => {
 			const id = 'id1'
 			const body = 'bodyStr1'
 
-			const payload: any = {}
-			payload[id] = body
+			const payload: any = {
+				blueprints: {},
+			}
+			payload.blueprints[id] = body
 
 			const res = callRoute(JSON.stringify(payload))
 			expect(res.statusCode).toEqual(200)
@@ -233,8 +233,10 @@ describe('Test blueprint http api', () => {
 			const id = 'id1'
 			const body = 'bodyStr1'
 
-			const payload: any = {}
-			payload[id] = body
+			const payload: any = {
+				blueprints: {},
+			}
+			payload.blueprints[id] = body
 
 			const res = callRoute(payload)
 			expect(res.statusCode).toEqual(200)
@@ -246,9 +248,11 @@ describe('Test blueprint http api', () => {
 		testInFiber('with json body - multiple', () => {
 			const count = 10
 
-			const payload: any = {}
+			const payload: any = {
+				blueprints: {},
+			}
 			for (let i = 0; i < count; i++) {
-				payload[`id${i}`] = `body${i}`
+				payload.blueprints[`id${i}`] = `body${i}`
 			}
 
 			const res = callRoute(JSON.stringify(payload))
@@ -263,9 +267,11 @@ describe('Test blueprint http api', () => {
 		testInFiber('with errors', () => {
 			const count = 10
 
-			const payload: any = {}
+			const payload: any = {
+				blueprints: {},
+			}
 			for (let i = 0; i < count; i++) {
-				payload[`id${i}`] = `body${i}`
+				payload.blueprints[`id${i}`] = `body${i}`
 			}
 
 			const uploadBlueprint = resetUploadMock()

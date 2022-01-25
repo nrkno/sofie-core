@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react'
 import ClassNames from 'classnames'
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { RundownUtils } from '../../../lib/rundown'
-import { mousetrapHelper } from '../../../lib/mousetrapHelper'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
@@ -10,8 +9,7 @@ import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notific
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
-
-const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
+import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
 
 export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -84,6 +82,18 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 		}
 	}
 
+	const type = props.adLibListItem.isAction
+		? props.adLibListItem.isGlobal
+			? 'rundownBaselineAdLibAction'
+			: 'adLibAction'
+		: props.adLibListItem.isClearSourceLayer
+		? 'clearSourceLayer'
+		: props.adLibListItem.isSticky
+		? 'sticky'
+		: props.adLibListItem.isGlobal
+		? 'rundownBaselineAdLibItem'
+		: 'adLibPiece'
+
 	return (
 		<>
 			<td
@@ -99,11 +109,12 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 				ref={itemIcon}
 				onMouseOver={handleOnMouseOver}
 				onMouseLeave={handleOnMouseLeave}
-				onMouseMove={handleOnMouseMove}>
+				onMouseMove={handleOnMouseMove}
+			>
 				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--shortcut">
-				{(props.adLibListItem.hotkey && mousetrapHelper.shortcutLabel(props.adLibListItem.hotkey, _isMacLike)) || null}
+				<ActionAdLibHotkeyPreview targetId={props.adLibListItem._id as any} type={type} />
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--output">
 				{(props.outputLayer && props.outputLayer.name) || null}
@@ -111,6 +122,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 			<td className="adlib-panel__list-view__list__table__cell--name">
 				{props.adLibListItem.name}
 				<VTFloatingInspector
+					status={props.status || RundownAPI.PieceStatusCode.UNKNOWN}
 					showMiniInspector={showMiniInspector}
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}
@@ -127,6 +139,10 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 						props.status !== null && props.status !== undefined ? getNoticeLevelForPieceStatus(props.status) : null
 					}
 					mediaPreviewUrl={props.mediaPreviewUrl}
+					contentPackageInfos={props.packageInfos}
+					pieceId={props.adLibListItem._id}
+					expectedPackages={props.adLibListItem.expectedPackages}
+					studio={props.studio}
 				/>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--duration">

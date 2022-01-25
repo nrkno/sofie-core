@@ -1,13 +1,11 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { Redirect } from 'react-router'
-import { withTracker } from './ReactMeteorData/ReactMeteorData'
+import { Translated, withTracker } from './ReactMeteorData/ReactMeteorData'
 import { Mongo } from 'meteor/mongo'
 import { withTranslation } from 'react-i18next'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
 import { MeteorCall } from '../../lib/api/methods'
+import { assertNever } from '../../lib/lib'
 
 interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 	type: SettingsNavigationType
@@ -21,6 +19,8 @@ export class SettingsNavigation extends React.Component<ISettingsNavigation> {
 			return <ShowStyle {...this.props} />
 		} else if (this.props.type === 'newshowstyle') {
 			return <NewShowStyle {...this.props} />
+		} else {
+			assertNever(this.props.type)
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>
@@ -37,11 +37,11 @@ interface ISettingsNavigationBaseState {
 	redirect: boolean
 	redirectRoute: string
 }
-export class SettingsNavigationBase extends React.Component<
-	ISettingsNavigationBaseProps,
+export class SettingsNavigationBase<TProps extends ISettingsNavigationBaseProps> extends React.Component<
+	TProps,
 	ISettingsNavigationBaseState
 > {
-	constructor(props) {
+	constructor(props: TProps) {
 		super(props)
 
 		this.state = {
@@ -71,20 +71,25 @@ export class SettingsNavigationBase extends React.Component<
 		return this.renderButton()
 	}
 }
-function wrapSettingsNavigation(newClass) {
-	return withTracker((props: ISettingsNavigationBaseProps) => {
+
+interface ISettingsNavigationWrappedProps extends ISettingsNavigationBaseProps {
+	myObject: unknown
+}
+
+function wrapSettingsNavigation(newClass: React.ComponentType<ISettingsNavigationWrappedProps>) {
+	return withTracker<ISettingsNavigationBaseProps, {}, { myObject: unknown }>((props: ISettingsNavigationBaseProps) => {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
 		return {
 			myObject: props.collection ? props.collection.findOne(props.obj._id) : props.obj || {},
 		}
-	})(newClass)
+	})(newClass as React.ComponentClass<ISettingsNavigationWrappedProps>)
 }
 
 const Blueprint = wrapSettingsNavigation(
 	withTranslation()(
-		class Blueprint extends SettingsNavigationBase {
-			constructor(props) {
+		class Blueprint0 extends SettingsNavigationBase<Translated<ISettingsNavigationWrappedProps>> {
+			constructor(props: Translated<ISettingsNavigationWrappedProps>) {
 				super(props)
 			}
 
@@ -94,7 +99,7 @@ const Blueprint = wrapSettingsNavigation(
 					.then((blueprintId) => {
 						this.props.obj['blueprintId'] = blueprintId
 						if (this.props.obj) {
-							let m = {}
+							const m = {}
 							m['blueprintId'] = blueprintId
 							Studios.update(this.props.obj['_id'], { $set: m })
 						}
@@ -113,7 +118,8 @@ const Blueprint = wrapSettingsNavigation(
 									this.redirectUser(
 										'/settings/blueprint/' + (this.props.attribute ? this.props.obj[this.props.attribute] : '')
 									)
-								}}>
+								}}
+							>
 								Edit Blueprint
 							</button>
 						)
@@ -125,7 +131,8 @@ const Blueprint = wrapSettingsNavigation(
 						className="btn btn-primary btn-add-new"
 						onClick={() => {
 							this.onBlueprintAdd()
-						}}>
+						}}
+					>
 						New Blueprint
 					</button>
 				)
@@ -136,8 +143,8 @@ const Blueprint = wrapSettingsNavigation(
 
 const ShowStyle = wrapSettingsNavigation(
 	withTranslation()(
-		class ShowStyle extends SettingsNavigationBase {
-			constructor(props) {
+		class ShowStyle extends SettingsNavigationBase<Translated<ISettingsNavigationWrappedProps>> {
+			constructor(props: Translated<ISettingsNavigationWrappedProps>) {
 				super(props)
 			}
 
@@ -149,7 +156,8 @@ const ShowStyle = wrapSettingsNavigation(
 							className="btn btn-primary btn-add-new"
 							onClick={() => {
 								this.redirectUser('/settings/showStyleBase/' + (this.props.attribute ? this.props.obj['_id'] : ''))
-							}}>
+							}}
+						>
 							Edit {this.props.obj[this.props.attribute]}
 						</button>
 					)
@@ -162,8 +170,8 @@ const ShowStyle = wrapSettingsNavigation(
 
 const NewShowStyle = wrapSettingsNavigation(
 	withTranslation()(
-		class NewShowStyle extends SettingsNavigationBase {
-			constructor(props) {
+		class NewShowStyle extends SettingsNavigationBase<Translated<ISettingsNavigationWrappedProps>> {
+			constructor(props: Translated<ISettingsNavigationWrappedProps>) {
 				super(props)
 			}
 
@@ -182,7 +190,8 @@ const NewShowStyle = wrapSettingsNavigation(
 						className="btn btn-primary btn-add-new"
 						onClick={() => {
 							this.onShowStyleAdd()
-						}}>
+						}}
+					>
 						New Show Style
 					</button>
 				)

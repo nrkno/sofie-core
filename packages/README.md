@@ -1,7 +1,11 @@
-# Sofie: Helper Libraries
+# Sofie: Additional Packages
 
-This folder houses a yarn workspace with various helper libraries that follow the same versioning and release cycle as Sofie core.
+A Sofie system is made up of multiple components.
 
-These libraries are referenced by core directly, so should behave the same as if `npm link` was used.
+This folder houses a yarn workspace with various integration libraries, and gateways that are part of the functionality that sofie offers.
+
+The libraries are referenced by core directly, so should behave the same as if `npm link` was used.
 
 There are a few commands defined at this level to do operations on the libraries in parallel.
+
+Each package has its own README explaining its purpose and usage.

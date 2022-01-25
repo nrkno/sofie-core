@@ -25,6 +25,7 @@ test('Integration: Test connection and basic Core functionality', async () => {
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -144,6 +145,7 @@ test('Integration: Connection timeout', async () => {
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -184,6 +186,7 @@ test('Integration: Connection recover from close', async () => {
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -208,7 +211,7 @@ test('Integration: Connection recover from close', async () => {
 	expect(core.connected).toEqual(true)
 
 	// Force-close the socket:
-	core.ddp.ddpClient.socket.close()
+	core.ddp.ddpClient!.socket.close()
 
 	await wait(10)
 	expect(core.connected).toEqual(false)
@@ -228,6 +231,7 @@ test('Integration: autoSubscription', async () => {
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -271,7 +275,7 @@ test('Integration: autoSubscription', async () => {
 	expect(observerChanged).toHaveBeenCalledTimes(1)
 
 	// Force-close the socket:
-	core.ddp.ddpClient.socket.close()
+	core.ddp.ddpClient!.socket.close()
 
 	await wait(10)
 	expect(core.connected).toEqual(false)
@@ -298,6 +302,7 @@ test('Integration: Connection recover from a close that lasts some time', async 
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 
@@ -324,9 +329,9 @@ test('Integration: Connection recover from a close that lasts some time', async 
 	expect(core.connected).toEqual(true)
 
 	// temporary scramble the ddp host:
-	core.ddp.ddpClient.host = '127.0.0.9'
+	;(core.ddp.ddpClient as any).host = '127.0.0.9'
 	// Force-close the socket:
-	core.ddp.ddpClient.socket.close()
+	core.ddp.ddpClient!.socket.close()
 
 	await wait(10)
 	expect(core.connected).toEqual(false)
@@ -334,7 +339,7 @@ test('Integration: Connection recover from a close that lasts some time', async 
 	await wait(1000) // allow for some reconnections
 
 	// restore ddp host:
-	core.ddp.ddpClient.host = '127.0.0.1'
+	;(core.ddp.ddpClient as any).host = '127.0.0.1'
 	await wait(1000)
 	// should have reconnected by now
 
@@ -349,6 +354,7 @@ test('Integration: Parent connections', async () => {
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 	let onError = jest.fn()
@@ -368,6 +374,7 @@ test('Integration: Parent connections', async () => {
 		deviceId: 'JestTestChild',
 		deviceToken: 'abcd2',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework child'
 	})
 
@@ -435,6 +442,7 @@ test('Integration: Parent destroy', async () => {
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 	let onParentError = jest.fn()
@@ -449,6 +457,7 @@ test('Integration: Parent destroy', async () => {
 		deviceId: 'JestTestChild',
 		deviceToken: 'abcd2',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework child'
 	})
 	let onChildConnectionChanged = jest.fn()
@@ -510,6 +519,7 @@ test('Integration: Child destroy', async () => {
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 	let onParentError = jest.fn()
@@ -523,6 +533,7 @@ test('Integration: Child destroy', async () => {
 		deviceId: 'JestTestChild',
 		deviceToken: 'abcd2',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework child'
 	})
 	let onChildConnectionChanged = jest.fn()
@@ -561,6 +572,7 @@ test('Integration: Test callMethodLowPrio', async () => {
 		deviceId: 'JestTest',
 		deviceToken: 'abcd',
 		deviceType: P.DeviceType.PLAYOUT,
+		deviceCategory: P.DeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework'
 	})
 

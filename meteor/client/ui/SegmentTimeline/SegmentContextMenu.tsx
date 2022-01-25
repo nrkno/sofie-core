@@ -8,13 +8,11 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
-import { SegmentId, Segment } from '../../../lib/collections/Segments'
-import { Settings } from '../../../lib/Settings'
+import { SegmentId } from '../../../lib/collections/Segments'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
 	onSetNextSegment: (segmentId: SegmentId | null, e: any) => void
-	onResyncSegment: (segment: SegmentUi, e: any) => void
 	playlist?: RundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
@@ -31,7 +29,6 @@ export const SegmentContextMenu = withTranslation()(
 		render() {
 			const { t } = this.props
 
-			const segment = this.getSegmentFromContext()
 			const part = this.getPartFromContext()
 			const timecode = this.getTimePosition()
 			const startsAt = this.getPartStartsAt()
@@ -39,17 +36,18 @@ export const SegmentContextMenu = withTranslation()(
 			const isCurrentPart =
 				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
 
-			return this.props.studioMode && this.props.playlist && this.props.playlist.active ? (
+			return this.props.studioMode && this.props.playlist && this.props.playlist.activationId ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
-						{this.props.playlist.active ? (
+						{this.props.playlist.activationId && (
 							<>
 								{part && !part.instance.part.invalid && timecode !== null && (
 									<>
 										{startsAt !== null && (
 											<MenuItem
 												onClick={(e) => this.props.onSetNext(part.instance.part, e)}
-												disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
+												disabled={isCurrentPart || !!part.instance.orphaned}
+											>
 												<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span>{' '}
 												({RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
 											</MenuItem>
@@ -58,13 +56,15 @@ export const SegmentContextMenu = withTranslation()(
 											<>
 												<MenuItem
 													onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)}
-													disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
+													disabled={isCurrentPart || !!part.instance.orphaned}
+												>
 													<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> (
 													{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 												</MenuItem>
 												<MenuItem
 													onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
-													disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
+													disabled={isCurrentPart || !!part.instance.orphaned}
+												>
 													<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> (
 													{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 												</MenuItem>
@@ -88,27 +88,11 @@ export const SegmentContextMenu = withTranslation()(
 										)}
 									</>
 								)}
-								{Settings.allowUnsyncedSegments && this.menuItemResyncSegment(t, segment)}
 							</>
-						) : (
-							Settings.allowUnsyncedSegments && this.menuItemResyncSegment(t, segment)
 						)}
 					</ContextMenu>
 				</Escape>
 			) : null
-		}
-
-		menuItemResyncSegment = (
-			t: (key: string | string[], options?: unknown | undefined) => any,
-			segment: SegmentUi | null
-		) => {
-			if (segment && segment.unsynced) {
-				return (
-					<MenuItem onClick={(e) => this.props.onResyncSegment(segment, e)}>
-						<span>{t('Resync Segment')}</span>
-					</MenuItem>
-				)
-			}
 		}
 
 		getSegmentFromContext = (): SegmentUi | null => {
@@ -128,12 +112,12 @@ export const SegmentContextMenu = withTranslation()(
 		}
 
 		onSetAsNextFromHere = (part: Part, e) => {
-			let offset = this.getTimePosition()
+			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0)
 		}
 
 		onPlayFromHere = (part: Part, e) => {
-			let offset = this.getTimePosition()
+			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0, true)
 		}
 

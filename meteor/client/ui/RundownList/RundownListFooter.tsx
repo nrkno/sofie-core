@@ -33,7 +33,8 @@ export const RundownListFooter = withTranslation()(
 									<Tooltip
 										overlay={t('System has issues which need to be resolved')}
 										visible={systemStatus.status === 'FAIL' && getHelpMode()}
-										placement="top">
+										placement="top"
+									>
 										<span>{systemStatus.status}</span>
 									</Tooltip>
 									&nbsp;/&nbsp;{systemStatus._internal.statusCodeString}

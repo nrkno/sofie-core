@@ -33,11 +33,11 @@ export namespace MediaManagerAPI {
 		}, [] as PeripheralDeviceId[])
 		waitForPromise(
 			Promise.all(
-				deviceIds.map((deviceId) => {
-					return new Promise((resolve, reject) => {
+				deviceIds.map(async (deviceId) => {
+					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,
-							(err, res) => {
+							(err, _res) => {
 								if (err) reject(err)
 								else resolve()
 							},
@@ -69,11 +69,11 @@ export namespace MediaManagerAPI {
 		}, [] as PeripheralDeviceId[])
 		waitForPromise(
 			Promise.all(
-				deviceIds.map((deviceId) => {
-					return new Promise((resolve, reject) => {
+				deviceIds.map(async (deviceId) => {
+					return new Promise<void>((resolve, reject) => {
 						PeripheralDeviceAPI.executeFunction(
 							deviceId,
-							(err, res) => {
+							(err, _res) => {
 								if (err) reject(err)
 								else resolve()
 							},
@@ -93,10 +93,10 @@ export namespace MediaManagerAPI {
 		if (!workflow) throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`)
 
 		waitForPromise(
-			new Promise((resolve, reject) => {
+			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
-					(err, res) => {
+					(err, _res) => {
 						if (err) reject(err)
 						else resolve()
 					},
@@ -114,10 +114,10 @@ export namespace MediaManagerAPI {
 		if (!workflow) throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`)
 
 		waitForPromise(
-			new Promise((resolve, reject) => {
+			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
-					(err, res) => {
+					(err, _res) => {
 						if (err) reject(err)
 						else resolve()
 					},
@@ -135,10 +135,10 @@ export namespace MediaManagerAPI {
 		if (!workflow) throw new Meteor.Error(404, `MediaWorkFlow "${workflowId}" not found`)
 
 		waitForPromise(
-			new Promise((resolve, reject) => {
+			new Promise<void>((resolve, reject) => {
 				PeripheralDeviceAPI.executeFunction(
 					workflow.deviceId,
-					(err, res) => {
+					(err, _res) => {
 						if (err) reject(err)
 						else resolve()
 					},

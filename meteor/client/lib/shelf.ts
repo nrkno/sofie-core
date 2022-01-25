@@ -1,15 +1,17 @@
-import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import _ from 'underscore'
 import { AdLibAction } from '../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
-import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { PartInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
-import { SegmentId } from '../../lib/collections/Segments'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { getCurrentTime } from '../../lib/lib'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBSegment, SegmentId } from '../../lib/collections/Segments'
+import { DBShowStyleBase, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ScanInfoForPackages } from '../../lib/mediaObjects'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
-import { invalidateAt } from './invalidatingTime'
+import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 
 export interface AdLibPieceUi extends AdLibPiece {
 	hotkey?: string
@@ -22,39 +24,25 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isClearSourceLayer?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	message?: string | null
-	uniquenessId?: string
 	segmentId?: SegmentId
 }
 
-export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
-	if (
-		unfinishedAdLibIds.includes(adLib._id) ||
-		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
+export interface AdlibSegmentUi extends DBSegment {
+	/** Pieces belonging to this part */
+	parts: Array<PartInstance>
+	pieces: Array<AdLibPieceUi>
+	isLive: boolean
+	isNext: boolean
 }
 
-export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi) {
-	if (
-		nextAdLibIds.includes(adLib._id) ||
-		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
-	) {
-		return true
-	}
-	return false
-}
-
-export function getNextPiecesReactive(
-	showStyleBase: ShowStyleBase,
-	nextPartInstanceId: PartInstanceId | null
-): PieceInstance[] {
+export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase: ShowStyleBase): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
-	if (nextPartInstanceId) {
+	if (playlist.activationId && playlist.nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
-			partInstanceId: nextPartInstanceId,
+			playlistActivationId: playlist.activationId,
+			partInstanceId: playlist.nextPartInstanceId,
 			$and: [
 				{
 					piece: {
@@ -77,18 +65,41 @@ export function getNextPiecesReactive(
 				},
 			],
 		}).fetch()
-
-		prospectivePieceInstances = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieceInstances, 0)
 	}
+
+	prospectivePieceInstances = processAndPrunePieceInstanceTimings(showsStyleBase, prospectivePieceInstances, 0)
 
 	return prospectivePieceInstances
 }
 
+export function getUnfinishedPieceInstancesGrouped(
+	playlist: RundownPlaylist,
+	showStyleBase: DBShowStyleBase
+): { unfinishedPieceInstances: PieceInstance[]; unfinishedAdLibIds: PieceId[]; unfinishedTags: string[] } {
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
+
+	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
+		.filter((piece) => !!piece.adLibSourceId)
+		.map((piece) => piece.adLibSourceId!)
+	const unfinishedTags: string[] = _.uniq(
+		unfinishedPieceInstances
+			.filter((piece) => !!piece.piece.tags)
+			.map((piece) => piece.piece.tags!)
+			.reduce((a, b) => a.concat(b), [])
+	)
+
+	return {
+		unfinishedPieceInstances,
+		unfinishedAdLibIds,
+		unfinishedTags,
+	}
+}
+
 export function getNextPieceInstancesGrouped(
-	showStyleBase: ShowStyleBase,
-	nextPartInstanceId: PartInstanceId | null
+	playlist: RundownPlaylist,
+	showsStyleBase: DBShowStyleBase
 ): { nextAdLibIds: PieceId[]; nextTags: string[]; nextPieceInstances: PieceInstance[] } {
-	const nextPieceInstances = getNextPiecesReactive(showStyleBase, nextPartInstanceId)
+	const nextPieceInstances = getNextPiecesReactive(playlist, showsStyleBase)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
@@ -101,110 +112,31 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function getUnfinishedPieceInstancesGrouped(
-	currentPartInstanceId: PartInstanceId | null
-): {
-	unfinishedAdLibIds: PieceId[]
-	unfinishedTags: string[]
-	unfinishedPieceInstances: PieceInstance[]
-} {
-	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
-
-	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.adLibSourceId)
-		.map((piece) => piece.adLibSourceId!)
-	const unfinishedTags: string[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.tags)
-		.map((piece) => piece.piece.tags!)
-		.reduce((a, b) => a.concat(b), [])
-
-	return {
-		unfinishedAdLibIds,
-		unfinishedTags,
-		unfinishedPieceInstances,
+export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+	if (
+		unfinishedAdLibIds.includes(adLib._id) ||
+		(adLib.currentPieceTags &&
+			adLib.currentPieceTags.length > 0 &&
+			adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
+	) {
+		return true
 	}
+	return false
 }
 
-export function getUnfinishedPieceInstancesReactive(
-	currentPartInstanceId: PartInstanceId | null,
-	adlib: boolean = true
-) {
-	let prospectivePieces: PieceInstance[] = []
-	const now = getCurrentTime()
-	if (currentPartInstanceId) {
-		prospectivePieces = PieceInstances.find({
-			startedPlayback: {
-				$exists: true,
-			},
-			$and: [
-				{
-					$or: [
-						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
-						},
-						{
-							stoppedPlayback: {
-								$exists: false,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							adLibSourceId: {
-								$exists: true,
-							},
-						},
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
-				},
-				{
-					$or: [
-						{
-							userDuration: {
-								$exists: false,
-							},
-						},
-						{
-							'userDuration.end': {
-								$exists: false,
-							},
-						},
-					],
-				},
-			],
-		}).fetch()
-
-		let nearestEnd = Number.POSITIVE_INFINITY
-		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
-			const piece = pieceInstance.piece
-			let end: number | undefined =
-				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
-					? pieceInstance.userDuration.end
-					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + pieceInstance.startedPlayback!
-					: undefined
-
-			if (end !== undefined) {
-				if (end > now) {
-					nearestEnd = nearestEnd > end ? end : nearestEnd
-					return true
-				} else {
-					return false
-				}
-			}
-			return true
-		})
-
-		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
+export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi) {
+	if (
+		nextAdLibIds.includes(adLib._id) ||
+		(adLib.nextPieceTags &&
+			adLib.nextPieceTags.length > 0 &&
+			adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
+	) {
+		return true
 	}
+	return false
+}
 
-	return prospectivePieces
+export function isAdLibDisplayedAsOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+	const isOnAir = isAdLibOnAir(unfinishedAdLibIds, unfinishedTags, adLib)
+	return adLib.invertOnAirState ? !isOnAir : isOnAir
 }

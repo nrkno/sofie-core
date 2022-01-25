@@ -13,7 +13,8 @@ export const Timediff = class Timediff extends React.Component<{ time: number }>
 				className={ClassNames({
 					'clocks-segment-countdown-red': isNegative,
 					'clocks-counter-heavy': time / 1000 > -30,
-				})}>
+				})}
+			>
 				{timeString}
 			</span>
 		)

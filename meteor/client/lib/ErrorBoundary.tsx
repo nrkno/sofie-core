@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 
 interface IState {
 	hasError: boolean
@@ -140,15 +139,15 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 		})
 	}
 
-	toggleComponentStack = (e) => {
+	toggleComponentStack = () => {
 		this.setState({ expandedComponentStack: !this.state.expandedComponentStack })
 	}
 
-	toggleStack = (e) => {
+	toggleStack = () => {
 		this.setState({ expandedStack: !this.state.expandedStack })
 	}
 
-	resetComponent = (e) => {
+	resetComponent = () => {
 		this.setState({ hasError: false })
 	}
 
@@ -165,7 +164,8 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 										...ErrorBoundary.style.componentStack,
 										...(this.state.expandedComponentStack ? ErrorBoundary.style.expandedStack : {}),
 									}}
-									onClick={this.toggleComponentStack}>
+									onClick={this.toggleComponentStack}
+								>
 									{this.state.info.componentStack}
 								</p>
 							)}
@@ -176,7 +176,8 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 										...ErrorBoundary.style.stack,
 										...(this.state.expandedStack ? ErrorBoundary.style.expandedStack : {}),
 									}}
-									onClick={this.toggleStack}>
+									onClick={this.toggleStack}
+								>
 									{this.state.error.stack}
 								</p>
 							)}

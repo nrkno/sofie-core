@@ -20,7 +20,8 @@ export function StyledTimecode({ time: time }: IProps) {
 			<span
 				className={ClassNames('styled-timecode__hours', {
 					'zero-hours': hours === '00:',
-				})}>
+				})}
+			>
 				{hours}
 			</span>
 			{minutesSeconds}

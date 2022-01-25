@@ -1,19 +1,18 @@
-import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
-import { testInFiber, runAllTimers, testInFiberOnly, beforeAllInFiber } from '../../__mocks__/helpers/jest'
-import { MeteorMock, useControllableDefer } from '../../__mocks__/meteor'
+import { testInFiber, runAllTimers, beforeAllInFiber } from '../../__mocks__/helpers/jest'
+import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
 import { Random } from 'meteor/random'
-import { protectString } from '../../lib/lib'
+import { getRandomId, protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { AsRunLog, AsRunLogEventId } from '../../lib/collections/AsRunLog'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
-import { IBlueprintAsRunLogEventContent, PieceLifespan, TSR } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
 
 // Set up mocks for tests in this suite
@@ -28,6 +27,27 @@ import { PartInstance, PartInstances } from '../../lib/collections/PartInstances
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 
 describe('cronjobs', () => {
+	beforeEach(() => {
+		// cannot use setupDefaultStudioEnvironment or setupMockCore because MeteorMock.mockRunMeteorStartup
+		// causes updateServerTime to pollute the log
+		const defaultCore: ICoreSystem = {
+			_id: SYSTEM_ID,
+			name: 'mock Core',
+			created: 0,
+			modified: 0,
+			version: '0.0.0',
+			previousVersion: '0.0.0',
+			storePath: '',
+			serviceMessages: {},
+			cron: {
+				casparCGRestart: {
+					enabled: true,
+				},
+			},
+		}
+		CoreSystem.remove(SYSTEM_ID)
+		CoreSystem.insert(defaultCore)
+	})
 	beforeAllInFiber(() => {
 		jest.useFakeTimers()
 		// set time to 2020/07/19 00:00 Local Time
@@ -42,6 +62,7 @@ describe('cronjobs', () => {
 	afterAll(() => {
 		//@ts-ignore Return getCurrentTime to orig
 		lib.getCurrentTime = origGetCurrentTime
+		CoreSystem.remove(SYSTEM_ID)
 	})
 	describe('Runs at the appropriate time', () => {
 		testInFiber("Doesn't run during the day", () => {
@@ -101,7 +122,6 @@ describe('cronjobs', () => {
 				_rank: 0,
 				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
 				organizationId: null,
-				dataSource: '',
 				externalId: '',
 				importVersions: {
 					blueprint: '',
@@ -118,6 +138,9 @@ describe('cronjobs', () => {
 				showStyleVariantId: protectString(''),
 				studioId: protectString(''),
 				externalNRCSName: 'mock',
+				timing: {
+					type: PlaylistTimingType.None,
+				},
 			})
 			// Detached IngestDataCache object 0
 			const dataCache0Id = protectString<IngestDataCacheObjId>(Random.id())
@@ -131,7 +154,7 @@ describe('cronjobs', () => {
 				},
 				modified: new Date(2000, 0, 1, 0, 0, 0).getTime(),
 				// this one is attached to rundown0
-				rundownId: protectString(Random.id()),
+				rundownId: getRandomId(),
 				type: IngestCacheType.RUNDOWN,
 			})
 			// Attached IngestDataCache object 1
@@ -189,6 +212,8 @@ describe('cronjobs', () => {
 				timings: {
 					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
+				playlistActivationId: protectString(''),
+				segmentPlayoutId: protectString(''),
 			}
 			const partInstance1: PartInstance = {
 				_id: protectString(`${part0._id}_${Random.id()}`),
@@ -198,6 +223,8 @@ describe('cronjobs', () => {
 				rehearsal: false,
 				isTemporary: false,
 				part: new Part(part0),
+				playlistActivationId: protectString(''),
+				segmentPlayoutId: protectString(''),
 			}
 			const partInstance2: PartInstance = {
 				_id: protectString(`${part0._id}_${Random.id()}`),
@@ -211,6 +238,8 @@ describe('cronjobs', () => {
 				timings: {
 					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
+				playlistActivationId: protectString(''),
+				segmentPlayoutId: protectString(''),
 			}
 			PartInstances.insert(partInstance0)
 			PartInstances.insert(partInstance1)
@@ -222,7 +251,9 @@ describe('cronjobs', () => {
 				piece: {
 					_id: protectString(`${partInstance0._id}_piece_inner1`),
 					startPartId: partInstance2.part._id,
-					content: {},
+					content: {
+						timelineObjects: [],
+					},
 					externalId: '',
 					name: 'abc',
 					sourceLayerId: '',
@@ -232,6 +263,7 @@ describe('cronjobs', () => {
 					lifespan: PieceLifespan.OutOnSegmentChange,
 					invalid: false,
 				},
+				playlistActivationId: protectString(''),
 			}
 			const pieceInstance1: PieceInstance = {
 				_id: protectString(`${partInstance2._id}_piece0`),
@@ -240,7 +272,9 @@ describe('cronjobs', () => {
 				piece: {
 					_id: protectString(`${partInstance2._id}_piece_inner1`),
 					startPartId: partInstance2.part._id,
-					content: {},
+					content: {
+						timelineObjects: [],
+					},
 					externalId: '',
 					name: 'abc',
 					sourceLayerId: '',
@@ -250,6 +284,7 @@ describe('cronjobs', () => {
 					lifespan: PieceLifespan.OutOnSegmentChange,
 					invalid: false,
 				},
+				playlistActivationId: protectString(''),
 			}
 			PieceInstances.insert(pieceInstance0)
 			PieceInstances.insert(pieceInstance1)
@@ -259,37 +294,6 @@ describe('cronjobs', () => {
 			expect(PartInstances.findOne(partInstance2._id)).toBeUndefined()
 			expect(PieceInstances.findOne(pieceInstance0._id)).toBeDefined()
 			expect(PieceInstances.findOne(pieceInstance1._id)).toBeUndefined()
-		})
-		testInFiber('Removes old entries in AsRunLong', async () => {
-			// reasonably fresh entry
-			const asRunLog0 = protectString<AsRunLogEventId>(Random.id())
-			AsRunLog.insert({
-				_id: asRunLog0,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				rehersal: false,
-				rundownId: protectString(''),
-				studioId: protectString(''),
-				// 3 days old
-				timestamp: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
-			})
-			// stale entry
-			const asRunLog1 = protectString<AsRunLogEventId>(Random.id())
-			AsRunLog.insert({
-				_id: asRunLog1,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-				rehersal: false,
-				rundownId: protectString(''),
-				studioId: protectString(''),
-				// 50 + 1 minute days old
-				timestamp: lib.getCurrentTime() - (1000 * 3600 * 24 * 50 + 1000 * 60),
-			})
-
-			await runCronjobs()
-
-			expect(AsRunLog.findOne(asRunLog0)).toMatchObject({
-				_id: asRunLog0,
-			})
-			expect(AsRunLog.findOne(asRunLog1)).toBeUndefined()
 		})
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry
@@ -361,7 +365,7 @@ describe('cronjobs', () => {
 			})
 			expect(Snapshots.findOne(snapshot1)).toBeUndefined()
 		})
-		testInFiber('Attempts to restart CasparCG', async () => {
+		testInFiber('Attempts to restart CasparCG when job is enabled', async () => {
 			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
@@ -441,6 +445,95 @@ describe('cronjobs', () => {
 				deviceId: mockCasparCg,
 				functionName: 'restartCasparCG',
 			})
+
+			await runAllTimers()
+			// make sure that the cronjob ends
+			expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
+		})
+		testInFiber('Does not attempt to restart CasparCG when job is disabled', async () => {
+			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
+			PeripheralDevices.insert({
+				_id: mockPlayoutGw,
+				organizationId: null,
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				configManifest: {
+					deviceConfig: [],
+				},
+				connected: true,
+				connectionId: '',
+				created: 0,
+				lastConnected: 0,
+				lastSeen: 0,
+				name: 'Playout gateway',
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+				},
+				subType: TSR.DeviceType.ABSTRACT,
+				token: '',
+			})
+			const mockCasparCg = protectString<PeripheralDeviceId>(Random.id())
+			PeripheralDevices.insert({
+				_id: mockCasparCg,
+				organizationId: null,
+				parentDeviceId: mockPlayoutGw,
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				subType: TSR.DeviceType.CASPARCG,
+				configManifest: {
+					deviceConfig: [],
+				},
+				connected: true,
+				connectionId: '',
+				created: 0,
+				lastConnected: 0,
+				lastSeen: 0,
+				name: 'CasparCG',
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+				},
+				token: '',
+			})
+			const mockATEM = protectString<PeripheralDeviceId>(Random.id())
+			PeripheralDevices.insert({
+				_id: mockATEM,
+				organizationId: null,
+				parentDeviceId: mockPlayoutGw,
+				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				subType: TSR.DeviceType.ATEM,
+				configManifest: {
+					deviceConfig: [],
+				},
+				connected: true,
+				connectionId: '',
+				created: 0,
+				lastConnected: 0,
+				lastSeen: 0,
+				name: 'ATEM',
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+				},
+				token: '',
+			})
+			CoreSystem.update(
+				{},
+				{
+					$set: {
+						'cron.casparCGRestart.enabled': false,
+					},
+				}
+			)
+			;(logger.info as jest.Mock).mockClear()
+			// set time to 2020/07/{date} 04:05 Local Time, should be more than 24 hours after 2020/07/19 00:00 UTC
+			mockCurrentTime = new Date(2020, 6, date++, 4, 5, 0).getTime()
+			// cronjob is checked every 5 minutes, so advance 6 minutes
+			jest.advanceTimersByTime(6 * 60 * 1000)
+			jest.runOnlyPendingTimers()
+
+			// check if the no PeripheralDevice command have been issued
+			const pendingCommands = PeripheralDeviceCommands.find({}).fetch()
+			expect(pendingCommands).toHaveLength(0)
 
 			await runAllTimers()
 			// make sure that the cronjob ends

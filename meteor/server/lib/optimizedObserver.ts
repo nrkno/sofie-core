@@ -16,6 +16,7 @@ type Context0 = { [key: string]: any }
  * @param initializeContext Initialize the Context which is sent into manipulateData. This is run N times for N listeners, on initialization.
  * @param manipulateData Manipulate the data. This is run 1 times for N listeners, per data update. (and on initialization).
  * @param receiveData Receive the manipulated data. This is run N times for N listeners, per data update (and on initialization).
+ * @param lazynessDuration (Optional) How long to wait after a change before issueing an update. Default to 3 ms
 
  */
 export function setUpOptimizedObserver<Data extends any[], Context extends Context0>(
@@ -23,7 +24,8 @@ export function setUpOptimizedObserver<Data extends any[], Context extends Conte
 	setupObservers: (triggerUpdate: TriggerUpdate<Context>) => Meteor.LiveQueryHandle[],
 	initializeContext: () => Context,
 	manipulateData: (context: Context) => Data,
-	receiveData: (data: Data) => void
+	receiveData: (data: Data) => void,
+	lazynessDuration: number = 3 // ms
 ) {
 	if (!optimizedObservers[identifier]) {
 		const triggerUpdate: TriggerUpdate<Context> = (newContext) => {
@@ -44,7 +46,7 @@ export function setUpOptimizedObserver<Data extends any[], Context extends Conte
 						}
 					}
 				},
-				3 // ms
+				lazynessDuration // ms
 			)
 		}
 		const context: any = {}
@@ -88,7 +90,7 @@ export function setUpOptimizedObserver<Data extends any[], Context extends Conte
 const optimizedObservers: {
 	[studioId: string]: {
 		context: Context0
-		triggerUpdate: (context: { [key: string]: any }, ...args: any[]) => void
+		triggerUpdate: TriggerUpdate<unknown>
 		stop: () => void
 		dataReceivers: Function[]
 	}

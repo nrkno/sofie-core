@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
-import { Omit, ProtectedString } from '../lib'
+import { ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { Collection as RawCollection } from 'mongodb'
 
@@ -34,15 +35,16 @@ export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpec
 export type IndexSpecifier<T> = {
 	[P in keyof T]?: -1 | 1 | string
 }
-export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
 
-export interface FindOptions<DBInterface> {
+export interface FindOneOptions<DBInterface> {
 	sort?: SortSpecifier<DBInterface>
 	skip?: number
-	limit?: number
 	fields?: MongoFieldSpecifier<DBInterface>
 	reactive?: boolean
 	transform?: Function
+}
+export interface FindOptions<DBInterface> extends FindOneOptions<DBInterface> {
+	limit?: number
 }
 export interface UpdateOptions {
 	multi?: boolean
@@ -107,21 +109,21 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 		selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
 		options?: Omit<FindOptions<DBInterface>, 'limit'>
 	): Class | undefined
-	insert(doc: DBInterface, callback?: Function): DBInterface['_id']
+	insert(doc: DBInterface /*, callback?: Function*/): DBInterface['_id']
 	rawCollection(): RawCollection<DBInterface>
 	rawDatabase(): any
-	remove(selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], callback?: Function): number
+	remove(selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'] /*, callback?: Function*/): number
 	update(
 		selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
 		modifier: MongoModifier<DBInterface>,
-		options?: UpdateOptions,
-		callback?: Function
+		options?: UpdateOptions
+		/*callback?: Function*/
 	): number
 	upsert(
 		selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
 		modifier: MongoModifier<DBInterface>,
-		options?: UpsertOptions,
-		callback?: Function
+		options?: UpsertOptions
+		/*callback?: Function*/
 	): {
 		numberAffected?: number
 		insertedId?: DBInterface['_id']

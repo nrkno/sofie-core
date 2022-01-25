@@ -1,12 +1,8 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
 
-import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceButton'
-import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { rundownBaselineAdLibPieceStart } from '../../../server/api/userActions'
+import { ActionButtonType, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { CriticalIcon, WarningIcon } from '../../lib/ui/icons/notifications'
 
 export interface IDashboardButtonProps {
 	button: DashboardLayoutActionButton
@@ -30,7 +26,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 			case ActionButtonType.KLAR_ON_AIR:
 				return {
 					rehearsal: this.props.playlist.rehearsal,
-					active: this.props.playlist.active,
+					active: !!this.props.playlist.activationId,
 				}
 			default:
 				return {}
@@ -41,7 +37,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 		const { button } = this.props
 		switch (button.type) {
 			case ActionButtonType.KLAR_ON_AIR:
-				return !!this.props.playlist.rehearsal || !!this.props.playlist.active
+				return !!this.props.playlist.rehearsal || !!this.props.playlist.activationId
 			default:
 				return false
 		}
@@ -93,7 +89,8 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 							: button.height < 0
 							? `calc(${-1 * button.height - 1} * var(--dashboard-button-grid-height))`
 							: undefined,
-				}}>
+				}}
+			>
 				<div className="dashboard-panel__panel">
 					<div
 						className={ClassNames(
@@ -105,7 +102,8 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 						)}
 						onMouseDown={(e) => this.props.onButtonDown(button, e)}
 						onMouseUp={(e) => this.props.onButtonUp(button, e)}
-						data-obj-id={button.type}>
+						data-obj-id={button.type}
+					>
 						<div className="dashboard-panel__panel__button__content">
 							<div className="dashboard-panel__panel__button__label-container">
 								<span className="dashboard-panel__panel__button__label">{this.getLabel()}</span>

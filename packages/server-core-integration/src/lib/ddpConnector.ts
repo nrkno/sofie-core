@@ -74,7 +74,7 @@ export class DDPConnector extends EventEmitter {
 			Promise.resolve()
 		).then(() => {
 
-			return new Promise((resolve, reject) => {
+			return new Promise<void>((resolve, reject) => {
 
 				if (this.ddpClient && !this._connecting) {
 

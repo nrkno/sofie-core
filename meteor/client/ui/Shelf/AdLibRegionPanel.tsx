@@ -7,7 +7,7 @@ import {
 	RundownLayoutAdLibRegionRole,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, IDashboardPanelTrackedProps, isAdLibDisplayedAsOnAir } from './DashboardPanel'
+import { dashboardElementPosition, IDashboardPanelTrackedProps } from './DashboardPanel'
 import ClassNames from 'classnames'
 import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -15,19 +15,19 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ensureHasTrailingSlash } from '../../lib/lib'
 import {
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
 	AdLibPieceUi,
+	getNextPieceInstancesGrouped,
+	getUnfinishedPieceInstancesGrouped,
+	isAdLibDisplayedAsOnAir,
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 
 interface IState {
 	objId?: string
@@ -69,7 +69,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
@@ -101,7 +101,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 			if (piece.isAction && piece.adlibAction) {
 				const action = piece.adlibAction
 				doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-					MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+					MeteorCall.userAction.executeAction(e, this.props.playlist._id, action._id, action.actionId, action.userData)
 				)
 			} else if (!piece.isGlobal && !piece.isAction) {
 				doUserAction(t, e, UserAction.START_ADLIB, (e) =>
@@ -192,20 +192,23 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 					{
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
-				)}>
+				)}
+			>
 				<div
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibDisplayedAsOnAir(piece),
 						blackout: !!this.props.piece || (this.props.panel.showBlackIfNoThumbnailPiece && !this.getThumbnailUrl()),
-					})}>
+					})}
+				>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
 						{this.renderPreview()}
 						{
 							<span
 								className={ClassNames('adlib-region-panel__label', {
 									'adlib-region-panel__label--large': this.props.panel.labelBelowPanel,
-								})}>
+								})}
+							>
 								{this.props.panel.name}
 							</span>
 						}
@@ -229,11 +232,12 @@ export const AdLibRegionPanel = translateWithTracker<
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()
 		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
-			props.playlist.currentPartInstanceId
+			props.playlist,
+			props.showStyleBase
 		)
 		const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
-			props.showStyleBase,
-			props.playlist.nextPartInstanceId
+			props.playlist,
+			props.showStyleBase
 		)
 
 		// Pick thumbnails to display
@@ -249,7 +253,7 @@ export const AdLibRegionPanel = translateWithTracker<
 
 		const pieceUi: PieceUi | undefined = thumbnailPiece
 			? {
-					instance: thumbnailPiece,
+					instance: { ...thumbnailPiece, priority: 1 },
 					renderedInPoint: null,
 					renderedDuration: null,
 			  }

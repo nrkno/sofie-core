@@ -1,17 +1,15 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import ClassNames from 'classnames'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { normalizeArray, unprotectString } from '../../../lib/lib'
-import { AdlibSegmentUi } from '../Shelf/AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
 import { IBlueprintActionTriggerMode, IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
@@ -20,16 +18,13 @@ import { PieceId } from '../../../lib/collections/Pieces'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import {
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
 	AdLibPieceUi,
-	isAdLibOnAir,
+	AdlibSegmentUi,
+	getNextPieceInstancesGrouped,
+	getUnfinishedPieceInstancesGrouped,
 	isAdLibNext,
+	isAdLibOnAir,
 } from '../../lib/shelf'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import mousetrap from 'mousetrap'
-import { HotkeyAssignmentType, RegisteredHotkeys, registerHotkey } from '../../lib/hotkeyRegistry'
-import { RundownViewKbdShortcuts } from '../RundownViewKbdShortcuts'
 
 interface IRundownViewShelfProps {
 	studio: Studio
@@ -43,10 +38,10 @@ interface IRundownViewShelfProps {
 }
 
 interface IRundownViewShelfTrackedProps {
-	outputLayerLookup: {
+	outputLayers: {
 		[key: string]: IOutputLayer
 	}
-	sourceLayerLookup: {
+	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
 	unfinishedAdLibIds: PieceId[]
@@ -55,16 +50,37 @@ interface IRundownViewShelfTrackedProps {
 	nextTags: string[]
 }
 
-interface IRundownViewShelfState {}
+interface IRundownViewShelfState {
+	singleClickMode: boolean
+}
 
 class RundownViewShelfInner extends MeteorReactComponent<
 	Translated<IRundownViewShelfProps & IRundownViewShelfTrackedProps>,
 	IRundownViewShelfState
 > {
 	usedHotkeys: Array<string> = []
+
 	constructor(props) {
 		super(props)
-		this.state = {}
+		this.state = {
+			singleClickMode: false,
+		}
+	}
+
+	protected setRef = (ref: HTMLDivElement) => {
+		const _panel = ref
+		if (_panel) {
+			const style = window.getComputedStyle(_panel)
+			// check if a special variable is set through CSS to indicate that we shouldn't expect
+			// double clicks to trigger AdLibs
+			const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+			const shouldBeSingleClick = !!value.match(UserAgentPointer.NO_POINTER)
+			if (this.state.singleClickMode !== shouldBeSingleClick) {
+				this.setState({
+					singleClickMode: shouldBeSingleClick,
+				})
+			}
+		}
 	}
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
@@ -92,7 +108,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
@@ -126,7 +142,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 			return
 		}
 
-		let sourceLayer = this.props.sourceLayerLookup[adlibPiece.sourceLayerId]
+		const sourceLayer = this.props.sourceLayers[adlibPiece.sourceLayerId]
 
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
@@ -134,13 +150,14 @@ class RundownViewShelfInner extends MeteorReactComponent<
 		}
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.isClearable)) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
 					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
 						MeteorCall.userAction.executeAction(
 							e,
 							this.props.playlist._id,
+							action._id,
 							action.actionId,
 							action.userData,
 							mode?.data
@@ -170,99 +187,10 @@ class RundownViewShelfInner extends MeteorReactComponent<
 					this.onToggleSticky(adlibPiece.sourceLayerId, e)
 				}
 			} else {
-				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+				if (sourceLayer && sourceLayer.isClearable) {
 					this.onClearAllSourceLayers([sourceLayer], e)
 				}
 			}
-		}
-	}
-
-	componentDidMount() {
-		this.refreshKeyboardHotkeys()
-	}
-
-	componentDidUpdate(prevProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-		this.usedHotkeys.length = 0
-
-		// Unregister hotkeys if group name has changed
-		if (prevProps.hotkeyGroup !== this.props.hotkeyGroup) {
-			RegisteredHotkeys.remove({
-				tag: prevProps.hotkeyGroup,
-			})
-		}
-
-		this.refreshKeyboardHotkeys()
-	}
-
-	componentWillUnmount() {
-		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
-
-		RegisteredHotkeys.remove({
-			tag: this.props.hotkeyGroup,
-		})
-
-		this.usedHotkeys.length = 0
-	}
-
-	refreshKeyboardHotkeys() {
-		if (!this.props.studioMode) return
-		if (!this.props.registerHotkeys) return
-
-		RegisteredHotkeys.remove({
-			tag: this.props.hotkeyGroup,
-		})
-
-		let preventDefault = (e) => {
-			e.preventDefault()
-		}
-
-		if (this.props.adLibSegmentUi.isLive) {
-			this.props.adLibSegmentUi.pieces.forEach((item) => {
-				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-					mousetrapHelper.bind(
-						item.hotkey,
-						(e: mousetrap.ExtendedKeyboardEvent) => {
-							preventDefault(e)
-							this.onToggleAdLib(item, false, e)
-						},
-						'keyup',
-						this.props.hotkeyGroup
-					)
-					this.usedHotkeys.push(item.hotkey)
-
-					registerHotkey(
-						item.hotkey,
-						item.name,
-						HotkeyAssignmentType.ADLIB,
-						this.props.sourceLayerLookup[item.sourceLayerId],
-						item.toBeQueued || false,
-						this.onToggleAdLib,
-						[item, false],
-						this.props.hotkeyGroup
-					)
-
-					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
-					if (sourceLayer && sourceLayer.isQueueable) {
-						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
-						mousetrapHelper.bind(
-							queueHotkey,
-							(e: mousetrap.ExtendedKeyboardEvent) => {
-								preventDefault(e)
-								this.onToggleAdLib(item, true, e)
-							},
-							'keyup',
-							this.props.hotkeyGroup
-						)
-						this.usedHotkeys.push(queueHotkey)
-					}
-				}
-			})
 		}
 	}
 
@@ -270,7 +198,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 		const { pieces } = this.props.adLibSegmentUi
 		if (!pieces.length) return null
 		return (
-			<div className="rundown-view-shelf dashboard-panel">
+			<div className="rundown-view-shelf dashboard-panel" ref={this.setRef}>
 				<div className="rundown-view-shelf__identifier">{this.props.segment.identifier}</div>
 				<div className="dashboard-panel__panel">
 					{pieces.map((adLibPiece) => {
@@ -280,9 +208,12 @@ class RundownViewShelfInner extends MeteorReactComponent<
 								key={unprotectString(adLibPiece._id)}
 								piece={adLibPiece}
 								studio={this.props.studio}
-								layer={this.props.sourceLayerLookup[adLibPiece.sourceLayerId]}
-								outputLayer={this.props.outputLayerLookup[adLibPiece.outputLayerId]}
+								layer={this.props.sourceLayers[adLibPiece.sourceLayerId]}
+								outputLayer={this.props.outputLayers[adLibPiece.outputLayerId]}
 								onToggleAdLib={this.onToggleAdLib}
+								onSelectAdLib={() => {
+									/* no-op */
+								}}
 								playlist={this.props.playlist}
 								isOnAir={this.isAdLibOnAir(adLibPiece)}
 								isNext={this.isAdLibNext(adLibPiece)}
@@ -292,9 +223,10 @@ class RundownViewShelfInner extends MeteorReactComponent<
 										: ''
 								}
 								displayStyle={PieceDisplayStyle.BUTTONS}
-								canOverflowHorizontally={true}
 								widthScale={3.27} // @todo: css
-								isSelected={false}>
+								isSelected={false}
+								toggleOnSingleClick={this.state.singleClickMode}
+							>
 								{adLibPiece.name}
 							</DashboardPieceButton>
 						)
@@ -310,18 +242,17 @@ export const RundownViewShelf = translateWithTracker<
 	IRundownViewShelfState,
 	IRundownViewShelfTrackedProps
 >(
-	(props: IRundownViewShelfProps & IRundownViewShelfTrackedProps) => {
+	(props: IRundownViewShelfProps) => {
 		const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id') // @todo: optimize
 		const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
-			(
-				currentPartInstanceId: PartInstanceId | null,
-				nextPartInstanceId: PartInstanceId | null,
-				showStyleBase: ShowStyleBase
-			) => {
-				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(currentPartInstanceId)
-				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(showStyleBase, nextPartInstanceId)
+			(_currentPartInstanceId: PartInstanceId | null, _nextPartInstanceId: PartInstanceId | null) => {
+				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+					props.playlist,
+					props.showStyleBase
+				)
+				const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 				return {
 					unfinishedAdLibIds,
 					unfinishedTags,
@@ -331,13 +262,12 @@ export const RundownViewShelf = translateWithTracker<
 			},
 			'unfinishedAndNextAdLibsAndTags',
 			props.playlist.currentPartInstanceId,
-			props.playlist.nextPartInstanceId,
-			props.showStyleBase
+			props.playlist.nextPartInstanceId
 		)
 
 		return {
-			sourceLayerLookup,
-			outputLayerLookup,
+			sourceLayers: sourceLayerLookup,
+			outputLayers: outputLayerLookup,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,

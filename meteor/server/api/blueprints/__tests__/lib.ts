@@ -13,7 +13,11 @@ export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, 
   TSRVersion: '0.0.0',
   studioConfigManifest: [],
   studioMigrations: [],
-  getBaseline: () => [],
+  getBaseline: () => {
+	return {
+      timelineObjects: [],
+    }
+  },
   getShowStyleId: () => null
 })`
 
@@ -34,6 +38,7 @@ export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, 
 		databaseVersion: {
 			showStyle: {},
 			studio: {},
+			system: undefined,
 		},
 
 		blueprintVersion: '',

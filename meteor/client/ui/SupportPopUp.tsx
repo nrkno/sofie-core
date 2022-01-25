@@ -20,7 +20,7 @@ interface ITrackedProps {
 	}
 }
 
-export const SupportPopUp = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
+export const SupportPopUp = translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) => {
 	const core = CoreSystem.findOne()
 	return {
 		support: core && core.support ? core.support : { message: '' },
@@ -78,7 +78,8 @@ export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
 					})}
 					role="button"
 					onClick={this.props.onClick}
-					tabIndex={0}>
+					tabIndex={0}
+				>
 					<FontAwesomeIcon icon={faQuestion} />
 				</button>
 			</React.Fragment>

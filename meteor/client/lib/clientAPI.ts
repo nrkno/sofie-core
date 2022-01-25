@@ -1,13 +1,9 @@
-import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import * as mousetrap from 'mousetrap'
-import { ClientAPI } from '../../lib/api/client'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'
-import { ExtendedKeyboardEvent } from 'mousetrap'
 
-export function callPeripheralDeviceFunction(
+export async function callPeripheralDeviceFunction(
 	e: any,
 	deviceId: PeripheralDeviceId,
 	timeoutTime: number | undefined,
@@ -24,11 +20,17 @@ export function callPeripheralDeviceFunction(
 }
 
 export namespace PeripheralDevicesAPI {
-	export function restartDevice(
+	export async function restartDevice(
 		dev: Pick<PeripheralDevice, '_id'>,
 		e: Event | React.SyntheticEvent<object>
 	): Promise<any> {
 		return callPeripheralDeviceFunction(e, dev._id, undefined, 'killProcess', 1)
+	}
+	export async function troubleshootDevice(
+		dev: Pick<PeripheralDevice, '_id'>,
+		e: Event | React.SyntheticEvent<object>
+	): Promise<any> {
+		return callPeripheralDeviceFunction(e, dev._id, undefined, 'troubleshoot', 1)
 	}
 }
 
@@ -45,7 +47,7 @@ export function eventContextForLog(e: any): string {
 		str =
 			e.type + ': ' + e.currentTarget.localName + (e.currentTarget.id ? '#' + e.currentTarget.id : '') + contents
 	} else if (e.key && e.code) {
-		str = e.type + ': ' + keyboardEventToShortcut(e as mousetrap.ExtendedKeyboardEvent)
+		str = e.type + ': ' + keyboardEventToShortcut(e as KeyboardEvent)
 	} else {
 		str = e.type
 	}
@@ -58,7 +60,7 @@ export function eventContextForLog(e: any): string {
 	return str
 }
 
-function keyboardEventToShortcut(e: mousetrap.ExtendedKeyboardEvent): string {
+function keyboardEventToShortcut(e: KeyboardEvent): string {
 	const combo = _.compact([
 		e.ctrlKey ? 'ctrl' : undefined,
 		e.shiftKey ? 'shift' : undefined,

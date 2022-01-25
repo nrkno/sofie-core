@@ -1,10 +1,9 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
-import { protectString, getCurrentTime } from '../../../../lib/lib'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { getCurrentTime, getRandomId } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { ClientAPI } from '../../../../lib/api/client'
-import { MediaWorkFlows } from '../../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowId, MediaWorkFlows } from '../../../../lib/collections/MediaWorkFlows'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 
@@ -25,7 +24,7 @@ namespace UserActionAPI {
 describe('User Actions - Media Manager', () => {
 	let env: DefaultEnvironment
 	function setupMockWorkFlow(env: DefaultEnvironment) {
-		const workFlowId = protectString(Random.id())
+		const workFlowId: MediaWorkFlowId = getRandomId()
 		const workFlow = {
 			_id: workFlowId,
 			_rev: '',
@@ -41,7 +40,7 @@ describe('User Actions - Media Manager', () => {
 
 		return { workFlow, workFlowId }
 	}
-	beforeEach(() => {
+	beforeEach(async () => {
 		// clean up old peripheral devices and MediaWorkFlows
 		PeripheralDevices.remove({
 			_id: {
@@ -53,7 +52,7 @@ describe('User Actions - Media Manager', () => {
 				$exists: true,
 			},
 		})
-		env = setupDefaultStudioEnvironment()
+		env = await setupDefaultStudioEnvironment()
 		jest.resetAllMocks()
 	})
 	testInFiber('Restart workflow', async () => {
@@ -100,9 +99,11 @@ describe('User Actions - Media Manager', () => {
 		{
 			// should fail if the workflow doesn't exist
 			expect(() => {
-				Meteor.call(UserActionAPI.methods.mediaAbortWorkflow, '', 'FAKE_ID') as ClientAPI.ClientResponseSuccess<
-					void
-				>
+				Meteor.call(
+					UserActionAPI.methods.mediaAbortWorkflow,
+					'',
+					'FAKE_ID'
+				) as ClientAPI.ClientResponseSuccess<void>
 			}).toThrowError(/not found/gi)
 		}
 
@@ -172,7 +173,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Restart all workflows', async () => {
-		const { workFlowId } = setupMockWorkFlow(env)
+		setupMockWorkFlow(env)
 
 		{
 			// should execute function on all the target devices
@@ -193,7 +194,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Abort all workflows', async () => {
-		const { workFlowId } = setupMockWorkFlow(env)
+		setupMockWorkFlow(env)
 
 		{
 			// should execute function on all the target devices

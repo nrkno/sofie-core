@@ -1,8 +1,22 @@
 import * as Winston from 'winston'
 import * as fs from 'fs'
 import { getAbsolutePath } from './lib'
+import { LogLevel } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+
+export function setLogLevel(level: LogLevel) {
+	if (logger.level !== level) {
+		logger.level = level
+		if (transports.console) {
+			transports.console.level = level
+		}
+		if (transports.file) {
+			transports.file.level = level
+		}
+		if (!Meteor.isTest) console.log(`Setting logger level to "${level}"`)
+	}
+}
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
@@ -32,7 +46,7 @@ interface LeveledLogMethodFixed {
 	(msg: any, meta: LogMeta, callback: Winston.LogCallback): LoggerInstanceFixed
 	(msg: any, ...meta: LogMeta[]): LoggerInstanceFixed
 }
-let leadingZeros = (num: number | string, length: number) => {
+const leadingZeros = (num: number | string, length: number) => {
 	num = num + ''
 	if (num.length < length) {
 		return '00000000000000000000000000000000000000000'.slice(0, length - num.length) + num
@@ -46,7 +60,10 @@ if (process.env.LOG_TO_FILE) logToFile = true
 let logPath = process.env.LOG_FILE || ''
 
 let logger: LoggerInstanceFixed
-let transports
+let transports: {
+	console?: Winston.transports.ConsoleTransportInstance
+	file?: Winston.transports.FileTransportInstance
+}
 
 function safeStringify(o: any): string {
 	try {
@@ -57,8 +74,8 @@ function safeStringify(o: any): string {
 }
 if (logToFile || logPath !== '') {
 	if (logPath === '') {
-		let time = new Date()
-		let startDate =
+		const time = new Date()
+		const startDate =
 			time.getFullYear() +
 			'-' +
 			leadingZeros(time.getMonth(), 2) +
@@ -70,7 +87,7 @@ if (logToFile || logPath !== '') {
 			leadingZeros(time.getMinutes(), 2) +
 			'_' +
 			leadingZeros(time.getSeconds(), 2)
-		let logDirectory = getAbsolutePath() + '/.meteor/local/log'
+		const logDirectory = getAbsolutePath() + '/.meteor/local/log'
 		logPath = logDirectory + '/log_' + startDate + '.log'
 		// let logPath = './log/'
 
@@ -78,33 +95,37 @@ if (logToFile || logPath !== '') {
 			fs.mkdirSync(logDirectory)
 		}
 	}
+	const transportConsole = new Winston.transports.Console({
+		level: 'verbose',
+		handleExceptions: true,
+	})
+	const transportFile = new Winston.transports.File({
+		level: 'silly',
+		handleExceptions: true,
+		filename: logPath,
+	})
+
 	transports = {
-		console: new Winston.transports.Console({
-			level: 'verbose',
-			handleExceptions: true,
-		}),
-		file: new Winston.transports.File({
-			level: 'silly',
-			handleExceptions: true,
-			filename: logPath,
-		}),
+		console: transportConsole,
+		file: transportFile,
 	}
 	logger = Winston.createLogger({
 		format: Winston.format.json(),
-		transports: [transports.console, transports.file],
+		transports: [transportConsole, transportFile],
 	})
 	console.log('Logging to ' + logPath)
 } else {
+	const transportConsole = new Winston.transports.Console({
+		level: 'silly',
+		handleExceptions: true,
+	})
 	transports = {
-		console: new Winston.transports.Console({
-			level: 'silly',
-			handleExceptions: true,
-		}),
+		console: transportConsole,
 	}
 	if (Meteor.isProduction) {
 		logger = Winston.createLogger({
 			format: Winston.format.json(),
-			transports: [transports.console],
+			transports: [transportConsole],
 		})
 	} else {
 		const customFormat = Winston.format.printf((o) => {
@@ -114,9 +135,9 @@ if (logToFile || logPath !== '') {
 
 		logger = Winston.createLogger({
 			format: Winston.format.combine(Winston.format.timestamp(), customFormat),
-			transports: [transports.console],
+			transports: [transportConsole],
 		})
 	}
 }
 
-export { logger, transports }
+export { logger, transports, LogLevel }

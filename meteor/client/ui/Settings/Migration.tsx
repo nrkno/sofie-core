@@ -5,7 +5,6 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import ClassNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
-import { Meteor } from 'meteor/meteor'
 import { logger } from '../../../lib/logging'
 import { GetMigrationStatusResult, RunMigrationResult, MigrationChunk } from '../../../lib/api/migration'
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
@@ -45,7 +44,7 @@ interface IState {
 	}
 }
 interface ITrackedProps {}
-export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>((_props: IProps) => {
 	return {}
 })(
 	class MigrationView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -97,14 +96,14 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				.then((r: GetMigrationStatusResult) => {
 					if (this.cancelRequests) return
 
-					let inputValues = this.state.inputValues
+					const inputValues = this.state.inputValues
 					_.each(r.migration.manualInputs, (manualInput: MigrationStepInput) => {
 						if (manualInput.stepId && manualInput.inputType && manualInput.attribute) {
-							let stepId = manualInput.stepId
+							const stepId = manualInput.stepId
 
 							if (!inputValues[stepId]) inputValues[stepId] = {}
 
-							let value = inputValues[stepId][manualInput.attribute]
+							const value = inputValues[stepId][manualInput.attribute]
 							if (_.isUndefined(value)) {
 								inputValues[stepId][manualInput.attribute] = manualInput.defaultValue
 							}
@@ -126,7 +125,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				})
 		}
 		runMigration() {
-			let inputResults: Array<MigrationStepInputResult> = []
+			const inputResults: Array<MigrationStepInputResult> = []
 
 			// _.each(this.state.inputValues, (iv, stepId: string) => {
 			// 	_.each(iv, (value: any, attribute: string) => {
@@ -141,7 +140,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				_.each(this.state.migration.manualInputs, (manualInput) => {
 					if (manualInput.stepId && manualInput.attribute) {
 						let value: any
-						let step = this.state.inputValues[manualInput.stepId]
+						const step = this.state.inputValues[manualInput.stepId]
 						if (step) {
 							value = step[manualInput.attribute]
 						}
@@ -221,7 +220,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				let rank = 0
 				return _.map(this.state.migration.manualInputs, (manualInput: MigrationStepInput) => {
 					if (manualInput.stepId) {
-						let stepId = manualInput.stepId
+						const stepId = manualInput.stepId
 						let value
 						if (manualInput.attribute) {
 							value = (this.state.inputValues[stepId] || {})[manualInput.attribute]
@@ -239,7 +238,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 											overrideDisplayValue={value}
 											updateFunction={(edit: EditAttributeBase, newValue: any) => {
 												if (manualInput.attribute) {
-													let inputValues = this.state.inputValues
+													const inputValues = this.state.inputValues
 													if (!inputValues[stepId]) inputValues[stepId] = {}
 													inputValues[stepId][manualInput.attribute] = newValue
 
@@ -269,7 +268,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							<div>
 								{this.state.migration
 									? _.map(this.state.migration.chunks, (chunk, i) => {
-											let str = t('Version for {{name}}: From {{fromVersion}} to {{toVersion}}', {
+											const str = t('Version for {{name}}: From {{fromVersion}} to {{toVersion}}', {
 												name: chunk.sourceName,
 												fromVersion: chunk._dbVersion,
 												toVersion: chunk._targetVersion,
@@ -284,7 +283,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 									className="btn mrm"
 									onClick={() => {
 										this.clickRefresh()
-									}}>
+									}}
+								>
 									<FontAwesomeIcon icon={faClipboardCheck} />
 									<span>{t('Re-check')}</span>
 								</button>
@@ -309,7 +309,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										className="btn mrm"
 										onClick={() => {
 											this.resetDatabaseVersions()
-										}}>
+										}}
+									>
 										<FontAwesomeIcon icon={faDatabase} />
 										<span>{t('Reset All Versions')}</span>
 									</button>
@@ -331,12 +332,14 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 										<tr
 											className={ClassNames({
 												hl: this.state.showAllSteps,
-											})}>
+											})}
+										>
 											<th className="c3">{t('All steps')}</th>
 											<td className="table-item-actions c3">
 												<button
 													className="action-btn"
-													onClick={(e) => this.setState({ showAllSteps: !this.state.showAllSteps })}>
+													onClick={() => this.setState({ showAllSteps: !this.state.showAllSteps })}
+												>
 													<FontAwesomeIcon icon={this.state.showAllSteps ? faEyeSlash : faEye} />
 												</button>
 											</td>
@@ -374,7 +377,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 											className="btn btn-primary"
 											onClick={() => {
 												this.runMigration()
-											}}>
+											}}
+										>
 											<FontAwesomeIcon icon={faDatabase} />
 											<span>{t('Run automatic migration procedure')}</span>
 										</button>
@@ -395,7 +399,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 														this.runMigration()
 													},
 												})
-											}}>
+											}}
+										>
 											<FontAwesomeIcon icon={faClipboardCheck} />
 											<span>{t('Run Migration Procedure')}</span>
 										</button>
@@ -433,7 +438,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 															this.forceMigration()
 														},
 													})
-												}}>
+												}}
+											>
 												<FontAwesomeIcon icon={faDatabase} />
 												<span>{t('Force Migration (unsafe)')}</span>
 											</button>

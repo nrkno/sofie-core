@@ -1,25 +1,22 @@
 import * as React from 'react'
-import ClassNames from 'classnames'
-import { RundownAPI } from '../../../lib/api/rundown'
 
-import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceButton'
 import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
 import { DashboardActionButton } from './DashboardActionButton'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { UserActionAPIMethods } from '../../../lib/api/userActions'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]
 	studioMode: boolean
 	playlist: RundownPlaylist
 
-	onChangeQueueAdLib: (isQueue: boolean, e: any) => void
+	onChangeQueueAdLib?: (isQueue: boolean, e: any) => void
 }
 
 export const DashboardActionButtonGroup = withTranslation()(
@@ -42,7 +39,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 
 		hold = (e: any) => {
 			const { t } = this.props
-			if (this.props.studioMode && this.props.playlist.active) {
+			if (this.props.studioMode && this.props.playlist.activationId) {
 				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
 					MeteorCall.userAction.activateHold(
 						e,
@@ -64,7 +61,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 		klarOnAir = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
-				if (this.props.playlist.active) {
+				if (this.props.playlist.activationId) {
 					doModalDialog({
 						title: this.props.playlist.name,
 						message: t('Are you sure you want to deactivate this Rundown\n(This will clear the outputs)'),
@@ -82,6 +79,26 @@ export const DashboardActionButtonGroup = withTranslation()(
 					doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
 				}
 			}
+		}
+
+		storeSnapshot = (e: React.SyntheticEvent<HTMLElement>) => {
+			const { t } = this.props
+			const playlistId: RundownPlaylistId = this.props.playlist._id
+			const reason: string = 'Taken by user'
+			doUserAction(
+				t,
+				e,
+				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
+				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, reason),
+				(err, snapshotId) => {
+					if (!err && snapshotId) {
+						const noticeLevel: NoticeLevel = NoticeLevel.NOTIFICATION
+						const message: string = t('Successfully stored snapshot')
+						const notification: Notification = new Notification(undefined, noticeLevel, message, 'StoreSnapshot')
+						NotificationCenter.push(notification)
+					}
+				}
+			)
 		}
 
 		private onButtonUp = (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => {
@@ -110,11 +127,14 @@ export const DashboardActionButtonGroup = withTranslation()(
 				case ActionButtonType.KLAR_ON_AIR:
 					this.klarOnAir(e)
 					break
+				case ActionButtonType.STORE_SNAPSHOT:
+					this.storeSnapshot(e)
+					break
 			}
 		}
 
 		render() {
-			return this.props.buttons.map((button: DashboardLayoutActionButton, index) => (
+			return this.props.buttons.map((button: DashboardLayoutActionButton) => (
 				<DashboardActionButton
 					key={button._id}
 					playlist={this.props.playlist}

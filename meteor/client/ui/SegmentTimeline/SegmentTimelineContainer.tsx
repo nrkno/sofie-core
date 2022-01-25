@@ -7,7 +7,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
-import { RundownTiming, computeSegmentDuration, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
+import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import {
@@ -17,17 +17,17 @@ import {
 	PartExtended,
 	SegmentExtended,
 } from '../../../lib/Rundown'
-import { IContextMenuContext } from '../RundownView'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { IContextMenuContext, MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
+import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { NoteType, SegmentNote } from '../../../lib/api/notes'
+import { NoteType, PartNote, SegmentNote, TrackedNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets, equivalentArrays, equalArrays } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays, normalizeArray } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
-import { RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { Parts, PartId, Part } from '../../../lib/collections/Parts'
@@ -39,13 +39,34 @@ import RundownViewEventBus, {
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
+import { checkPieceContentStatus, getNoteTypeForPieceStatus, ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
+import { computeSegmentDuration, PlaylistTiming, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { AdlibSegmentUi } from '../../lib/shelf'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
-import { AdlibSegmentUi } from '../Shelf/AdLibPanel'
-import { MiniShelfLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
+import { getIsFilterActive } from '../../lib/rundownLayouts'
+import { getIgnorePieceContentStatus } from '../../lib/localStorage'
+import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
-export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
-const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
+export const SIMULATED_PLAYBACK_HARD_MARGIN = 3500
+
+export const LIVE_LINE_TIME_PADDING = 150
+export const LIVELINE_HISTORY_SIZE = 100
+export const TIMELINE_RIGHT_PADDING =
+	// TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
+	parseInt(localStorage.getItem('EXP_timeline_right_padding')!) || LIVELINE_HISTORY_SIZE + LIVE_LINE_TIME_PADDING
+const FALLBACK_ZOOM_FACTOR = MAGIC_TIME_SCALE_FACTOR
+export let MINIMUM_ZOOM_FACTOR = FALLBACK_ZOOM_FACTOR
+
+Meteor.startup(() => {
+	MINIMUM_ZOOM_FACTOR = // TODO: This is only temporary, for hands-on tweaking -- Jan Starzak, 2021-06-01
+		parseInt(localStorage.getItem('EXP_timeline_min_time_scale')!) ||
+		MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale
+})
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -57,17 +78,18 @@ export interface SegmentUi extends SegmentExtended {
 		[key: string]: ISourceLayerUi
 	}
 }
-export interface PartUi extends PartExtended {}
+export type PartUi = PartExtended
 export interface IOutputLayerUi extends IOutputLayerExtended {
 	/** Is output layer group collapsed */
 	collapsed?: boolean
 }
-export interface ISourceLayerUi extends ISourceLayerExtended {}
+export type ISourceLayerUi = ISourceLayerExtended
 export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
 	/** Metadata object */
 	contentMetaData?: any
+	contentPackageInfos?: ScanInfoForPackages
 	message?: string | null
 }
 interface IProps {
@@ -75,14 +97,16 @@ interface IProps {
 	rundownId: RundownId
 	segmentId: SegmentId
 	segmentsIdsBefore: Set<SegmentId>
+	rundownIdsBefore: RundownId[]
+	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio: Studio
 	showStyleBase: ShowStyleBase
+	rundownViewLayout?: RundownViewLayout
 	playlist: RundownPlaylist
+	rundown: Rundown
 	timeScale: number
-	liveLineHistorySize: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
@@ -92,19 +116,21 @@ interface IProps {
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
 	adLibSegmentUi?: AdlibSegmentUi
+	minishelfRegisterHotkeys?: boolean
 	studioMode: boolean
-	miniShelfFilter?: RundownLayoutFilterBase
+	countdownToSegmentRequireLayers: string[] | undefined
+	fixedSegmentDuration: boolean | undefined
+	showDurationSourceLayers?: Set<string>
+	isFollowingOnAirSegment: boolean
 }
 interface IState {
 	scrollLeft: number
 	collapsedOutputs: {
 		[key: string]: boolean
 	}
-	collapsed: boolean
 	followLiveLine: boolean
 	livePosition: number
 	displayTimecode: number
-	autoExpandCurrentNextSegment: boolean
 	isLiveSegment: boolean
 	isNextSegment: boolean
 	currentLivePart: PartUi | undefined
@@ -112,6 +138,9 @@ interface IState {
 	autoNextPart: boolean
 	budgetDuration: number | undefined
 	budgetGap: number
+	timeScale: number
+	maxTimeScale: number
+	showingAllSegment: boolean
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined
@@ -121,6 +150,8 @@ interface ITrackedProps {
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
 	lastValidPartIndex: number | undefined
+	displayLiveLineCounter: boolean
+	showCountdownToSegment: boolean
 }
 export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITrackedProps>(
 	(props: IProps) => {
@@ -136,19 +167,23 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				hasGuestItems: false,
 				hasAlreadyPlayed: false,
 				lastValidPartIndex: undefined,
+				displayLiveLineCounter: true,
+				showCountdownToSegment: true,
 			}
 		}
 
+		const rundownNrcsName = Rundowns.findOne(segment.rundownId, { fields: { externalNRCSName: 1 } })?.externalNRCSName
+
 		// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
 		// re-evaluated when a piece like that appears.
-		const infinitesEndingPieces = PieceInstances.find({
+		PieceInstances.find({
 			rundownId: segment.rundownId,
 			dynamicallyInserted: {
 				$exists: true,
 			},
 			'infinite.fromPreviousPart': false,
 			'piece.lifespan': {
-				$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange],
+				$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnShowStyleEnd],
 			},
 			reset: {
 				$ne: true,
@@ -160,12 +195,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				[
 					memoizedIsolatedAutorun(
 						(_playlistId: RundownPlaylistId) =>
-							(props.playlist.getAllOrderedParts(undefined, {
-								fields: {
-									segmentId: 1,
-									_rank: 1,
-								},
-							}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]).map((part) => part._id),
+							(
+								props.playlist.getAllOrderedParts(undefined, {
+									fields: {
+										segmentId: 1,
+										_rank: 1,
+									},
+								}) as Pick<Part, '_id' | 'segmentId' | '_rank'>[]
+							).map((part) => part._id),
 						'playlist.getAllOrderedParts',
 						props.playlist._id
 					),
@@ -181,30 +218,69 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			// if the rundown isn't active, run the changes ASAP, we don't care if there's going to be jank
 			// if this is the current or next segment (will have those two properties defined), run the changes ASAP,
 			// otherwise, trigger the updates in a window of 500-2500 ms from change
-			!props.playlist.active || props.ownCurrentPartInstance || props.ownNextPartInstance
+			props.playlist.activationId === undefined || props.ownCurrentPartInstance || props.ownNextPartInstance
 				? 0
+				: props.isFollowingOnAirSegment
+				? 150
 				: Math.random() * 2000 + 500
 		)
 
-		let o = RundownUtils.getResolvedSegment(
+		const rundownOrder = props.playlist.getRundownIDs()
+		const rundownIndex = rundownOrder.indexOf(segment.rundownId)
+
+		const o = RundownUtils.getResolvedSegment(
 			props.showStyleBase,
 			props.playlist,
+			props.rundown,
 			segment,
 			props.segmentsIdsBefore,
+			rundownOrder.slice(0, rundownIndex),
+			props.rundownsToShowstyles,
 			orderedAllPartIds,
 			currentPartInstance,
 			nextPartInstance,
 			true,
 			true
 		)
-		let notes: Array<SegmentNote> = []
+
+		if (props.rundownViewLayout && o.segmentExtended) {
+			if (props.rundownViewLayout.visibleSourceLayers) {
+				const visibleSourceLayers = props.rundownViewLayout.visibleSourceLayers
+				Object.entries(o.segmentExtended.sourceLayers).forEach(([id, sourceLayer]) => {
+					sourceLayer.isHidden = !visibleSourceLayers.includes(id)
+				})
+			}
+			if (props.rundownViewLayout.visibleOutputLayers) {
+				const visibleOutputLayers = props.rundownViewLayout.visibleOutputLayers
+				Object.entries(o.segmentExtended.outputLayers).forEach(([id, outputLayer]) => {
+					outputLayer.used = visibleOutputLayers.includes(id)
+				})
+			}
+		}
+
+		const notes: TrackedNote[] = getBasicNotesForSegment(
+			segment,
+			rundownNrcsName ?? 'NRCS',
+			o.parts.map((p) => p.instance.part),
+			o.parts.map((p) => p.instance)
+		)
 		o.parts.forEach((part) => {
-			notes = notes.concat(
-				part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase),
-				part.instance.part.getInvalidReasonNotes()
+			notes.push(
+				...getMinimumReactivePieceNotesForPart(props.studio, props.showStyleBase, part.instance.part).map(
+					(note): TrackedNote => ({
+						...note,
+						rank: segment._rank,
+						origin: {
+							...note.origin,
+							partId: part.partId,
+							rundownId: segment.rundownId,
+							segmentId: segment._id,
+							segmentName: segment.name,
+						},
+					})
+				)
 			)
 		})
-		notes = notes.concat(segment.notes || [])
 
 		let lastValidPartIndex = o.parts.length - 1
 
@@ -216,6 +292,21 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		let displayLiveLineCounter: boolean = true
+		if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.requiredLayerIds) {
+			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.rundownViewLayout.liveLineProps)
+			displayLiveLineCounter = active
+		}
+
+		let showCountdownToSegment = true
+		if (props.countdownToSegmentRequireLayers?.length) {
+			const sourcelayersInSegment = o.parts
+				.map((pa) => pa.pieces.map((pi) => pi.sourceLayer?._id))
+				.flat()
+				.filter((s) => !!s) as string[]
+			showCountdownToSegment = props.countdownToSegmentRequireLayers.some((s) => sourcelayersInSegment.includes(s))
+		}
+
 		return {
 			segmentui: o.segmentExtended,
 			parts: o.parts,
@@ -224,6 +315,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			hasRemoteItems: o.hasRemoteItems,
 			hasGuestItems: o.hasGuestItems,
 			lastValidPartIndex,
+			displayLiveLineCounter,
+			showCountdownToSegment,
 		}
 	},
 	(data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
@@ -231,21 +324,21 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		// Check obvious primitive changes
 		if (
 			props.followLiveSegments !== nextProps.followLiveSegments ||
-			props.liveLineHistorySize !== nextProps.liveLineHistorySize ||
 			props.onContextMenu !== nextProps.onContextMenu ||
 			props.onSegmentScroll !== nextProps.onSegmentScroll ||
-			props.onTimeScaleChange !== nextProps.onTimeScaleChange ||
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
 			props.timeScale !== nextProps.timeScale ||
-			props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
-			props.ownNextPartInstance !== nextProps.ownNextPartInstance ||
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
-			props.miniShelfFilter !== nextProps.miniShelfFilter
+			!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers) ||
+			props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys ||
+			!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces) ||
+			props.isFollowingOnAirSegment !== nextProps.isFollowingOnAirSegment ||
+			props.rundownViewLayout !== nextProps.rundownViewLayout
 		) {
 			return true
 		}
-		const findNextOrCurrentPart = (parts: PartUi[]) => {
+		const findNextOrCurentPart = (parts: PartUi[]) => {
 			return (
 				parts.find(
 					(i) =>
@@ -266,9 +359,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				(props.playlist.nextSegmentId === props.segmentId || nextProps.playlist.nextSegmentId === props.segmentId)) ||
 			((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
 				props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
-				((data.parts && findNextOrCurrentPart(data.parts)) || data.segmentui?.showShelf)) ||
+				((data.parts && findNextOrCurentPart(data.parts)) || data.segmentui?.showShelf)) ||
 			props.playlist.holdState !== nextProps.playlist.holdState ||
-			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset
+			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
+			props.playlist.activationId !== nextProps.playlist.activationId ||
+			PlaylistTiming.getExpectedStart(props.playlist.timing) !==
+				PlaylistTiming.getExpectedStart(nextProps.playlist.timing) ||
+			props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
+			props.ownNextPartInstance !== nextProps.ownNextPartInstance
 		) {
 			return true
 		}
@@ -290,16 +388,15 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 	class SegmentTimelineContainer extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
 		static contextTypes = {
 			durations: PropTypes.object.isRequired,
+			lowResDurations: PropTypes.object.isRequired,
 		}
 
-		isLiveSegment: boolean
 		isVisible: boolean
 		rundownCurrentPartInstanceId: PartInstanceId | null
 		timelineDiv: HTMLDivElement
 		intersectionObserver: IntersectionObserver | undefined
 		mountedTime: number
-		playbackSimulationPercentage: number = 0
-		nextPartDisplayStartsAt: number
+		nextPartOffset: number
 
 		private pastInfinitesComp: Tracker.Computation | undefined
 
@@ -312,16 +409,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					`segment.${props.segmentId}.outputs`,
 					{}
 				),
-				collapsed: UIStateStorage.getItemBoolean(
-					`rundownView.${this.props.playlist._id}`,
-					`segment.${props.segmentId}`,
-					!!Settings.defaultToCollapsedSegments
-				),
 				scrollLeft: 0,
 				followLiveLine: false,
 				livePosition: 0,
 				displayTimecode: 0,
-				autoExpandCurrentNextSegment: !!Settings.autoExpandCurrentNextSegment,
 				isLiveSegment: false,
 				isNextSegment: false,
 				autoNextPart: false,
@@ -329,9 +420,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				currentNextPart: undefined,
 				budgetDuration: undefined,
 				budgetGap: 0,
+				timeScale: props.timeScale,
+				maxTimeScale: props.timeScale,
+				showingAllSegment: true,
 			}
 
-			this.isLiveSegment = false
 			this.isVisible = false
 		}
 
@@ -386,39 +479,54 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				})
 				segment &&
 					this.subscribe(PubSub.pieces, {
-						startRundownId: segment.rundownId,
-						startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
 						invalid: {
 							$ne: true,
 						},
-						// same rundown, and previous segment
-						lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
+						$or: [
+							// same rundown, and previous segment
+							{
+								startRundownId: this.props.rundownId,
+								startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
+								lifespan: {
+									$in: [
+										PieceLifespan.OutOnRundownEnd,
+										PieceLifespan.OutOnRundownChange,
+										PieceLifespan.OutOnShowStyleEnd,
+									],
+								},
+							},
+							// Previous rundown
+							{
+								startRundownId: { $in: Array.from(this.props.rundownIdsBefore.values()) },
+								lifespan: {
+									$in: [PieceLifespan.OutOnShowStyleEnd],
+								},
+							},
+						],
 					})
 			})
 			SpeechSynthesiser.init()
 
 			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
-			if (this.isLiveSegment === true) {
-				this.onFollowLiveLine(true, {})
+			if (this.state.isLiveSegment === true) {
+				this.onFollowLiveLine(true)
 				this.startLive()
-
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: false,
-					})
-				}
 			}
 			RundownViewEventBus.on(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART, this.onGoToPart)
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
 			window.requestAnimationFrame(() => {
 				this.mountedTime = Date.now()
-				if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
+				if (this.state.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
 					scrollToSegment(this.props.segmentId, true).catch((error) => {
-						if (!error.toString().match(/another scroll/)) console.error(error)
+						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
 				}
 			})
+			window.addEventListener('resize', this.onWindowResize)
+			this.updateMaxTimeScale()
+				.then(() => this.showEntireSegment())
+				.catch(console.error)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -452,96 +560,79 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}
 			}
 
-			if (this.rundownCurrentPartInstanceId !== this.props.playlist.currentPartInstanceId) {
-				this.playbackSimulationPercentage = 0
-			}
-
 			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 			// segment is becoming live
-			if (this.isLiveSegment === false && isLiveSegment === true) {
-				this.isLiveSegment = true
-				this.onFollowLiveLine(true, {})
+			if (this.state.isLiveSegment === false && isLiveSegment === true) {
+				this.setState({ isLiveSegment: true })
+				this.onFollowLiveLine(true)
 				this.startLive()
-
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: false,
-					})
-				}
 			}
 			// segment is stopping from being live
-			if (this.isLiveSegment === true && isLiveSegment === false) {
-				this.isLiveSegment = false
+			if (this.state.isLiveSegment === true && isLiveSegment === false) {
+				this.setState({ isLiveSegment: false }, () => {
+					if (Settings.autoRewindLeavingSegment) {
+						this.onRewindSegment()
+						this.onShowEntireSegment()
+					}
+				})
 				this.stopLive()
-				if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
-
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: UIStateStorage.getItemBoolean(
-							`rundownView.${this.props.playlist._id}`,
-							`segment.${this.props.segmentId}`,
-							!!Settings.defaultToCollapsedSegments
-						),
-					})
+				if (Settings.autoRewindLeavingSegment) {
+					this.onRewindSegment()
+					this.onShowEntireSegment()
 				}
 			}
-			if (
-				// the segment isn't live, is next, and the nextPartId has changed
-				!isLiveSegment &&
-				isNextSegment &&
+
+			// Setting the correct scroll position on parts when setting is next
+			const nextPartDisplayStartsAt =
+				currentNextPart &&
+				this.context.durations?.partDisplayStartsAt &&
+				this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
+			const partOffset =
+				nextPartDisplayStartsAt -
+				(this.props.parts.length > 0
+					? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)]
+					: 0)
+			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
 				this.props.playlist.nextPartInstanceId &&
 				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
-					this.nextPartDisplayStartsAt !==
-						(this.context.durations?.partDisplayStartsAt &&
-							this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]))
+					this.nextPartOffset !== partOffset)
+			const isBecomingNextSegment = this.state.isNextSegment === false && isNextSegment
+			if (
+				!isLiveSegment &&
+				isNextSegment &&
+				currentNextPart &&
+				(nextPartIdOrOffsetHasChanged || isBecomingNextSegment)
 			) {
-				const nextPartDisplayStartsAt =
-					this.context.durations?.partDisplayStartsAt &&
-					this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
-				const partOffset =
-					nextPartDisplayStartsAt -
-						this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
-
-				if (this.state.scrollLeft > partOffset) {
+				const timelineWidth = getElementWidth(this.timelineDiv)
+				// If part is not within viewport scroll to its start
+				if (
+					this.state.scrollLeft > partOffset ||
+					this.state.scrollLeft * this.state.timeScale + timelineWidth < partOffset * this.state.timeScale
+				) {
 					this.setState({
 						scrollLeft: partOffset,
 					})
 				}
-				this.nextPartDisplayStartsAt = nextPartDisplayStartsAt
-			}
-			// segment is becoming next
-			if (this.state.isNextSegment === false && isNextSegment === true) {
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: false,
-					})
-				}
-			}
-			// segment is stopping from becoming and it's not live either
-			if (this.state.isNextSegment === true && isNextSegment === false && isLiveSegment === false) {
-				if (this.state.autoExpandCurrentNextSegment) {
-					this.setState({
-						collapsed: UIStateStorage.getItemBoolean(
-							`rundownView.${this.props.playlist._id}`,
-							`segment.${this.props.segmentId}`,
-							!!Settings.defaultToCollapsedSegments
-						),
-					})
-				}
+				this.nextPartOffset = partOffset
 			}
 
 			// rewind all scrollLeft's to 0 on rundown activate
-			if (this.props.playlist && this.props.playlist.active && prevProps.playlist && !prevProps.playlist.active) {
+			if (
+				this.props.playlist &&
+				this.props.playlist.activationId &&
+				prevProps.playlist &&
+				!prevProps.playlist.activationId
+			) {
 				this.setState({
 					scrollLeft: 0,
 				})
 			} else if (
 				this.props.playlist &&
-				!this.props.playlist.active &&
+				!this.props.playlist.activationId &&
 				prevProps.playlist &&
-				prevProps.playlist.active
+				prevProps.playlist.activationId
 			) {
 				this.setState({
 					livePosition: 0,
@@ -549,14 +640,26 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 
 			if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
-				this.onFollowLiveLine(true, {})
+				this.onFollowLiveLine(true)
 			}
 
-			if (this.pastInfinitesComp && !equalSets(this.props.segmentsIdsBefore, prevProps.segmentsIdsBefore)) {
+			if (
+				this.pastInfinitesComp &&
+				(!equalSets(this.props.segmentsIdsBefore, prevProps.segmentsIdsBefore) ||
+					!_.isEqual(this.props.rundownIdsBefore, prevProps.rundownIdsBefore))
+			) {
 				this.pastInfinitesComp.invalidate()
 			}
 
 			const budgetDuration = this.getSegmentBudgetDuration()
+
+			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
+				this.updateMaxTimeScale().catch(console.error)
+			}
+
+			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
+				this.showEntireSegment()
+			}
 
 			this.setState({
 				isLiveSegment,
@@ -565,7 +668,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				currentNextPart,
 				autoNextPart,
 				budgetDuration,
-				budgetGap: budgetDuration ? budgetDuration - this.getSegmentDuration() : 0,
 			})
 		}
 
@@ -584,30 +686,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			RundownViewEventBus.off(RundownViewEvents.REWIND_SEGMENTS, this.onRewindSegment)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART, this.onGoToPart)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_PART_INSTANCE, this.onGoToPartInstance)
-		}
-
-		private getSegmentDuration(): number {
-			let total = 0
-			if (this.context && this.context.durations) {
-				const durations = this.context.durations as RundownTiming.RundownTimingContext
-				this.props.parts.forEach((item) => {
-					const duration = Math.max(
-						(durations.partLiveDisplayDurations &&
-							durations.partLiveDisplayDurations[unprotectString(item.instance.part._id)]) ||
-							0,
-						item.instance.timings?.duration ||
-							(durations.partDisplayDurations &&
-								durations.partDisplayDurations[unprotectString(item.instance.part._id)]) ||
-							item.renderedDuration ||
-							Settings.defaultDisplayDuration ||
-							0
-					)
-					total += duration
-				})
-			} else {
-				total = RundownUtils.getSegmentDuration(this.props.parts, true)
-			}
-			return total
+			window.removeEventListener('resize', this.onWindowResize)
 		}
 
 		private getSegmentBudgetDuration(): number | undefined {
@@ -654,7 +733,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.partInstanceSubPartInstanceIds = partInstanceIds
 			})
 		}
-		private partInstanceSubDebounce: NodeJS.Timeout | undefined
+		private partInstanceSubDebounce: number | undefined
 		private subscribeToPieceInstances(partInstanceIds: PartInstanceId[]) {
 			// run the first subscribe immediately, to avoid unneccessary wait time during bootup
 			if (this.partInstanceSub === undefined) {
@@ -667,8 +746,25 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		onWindowResize = _.throttle(() => {
+			if (this.state.showingAllSegment) {
+				this.updateMaxTimeScale()
+					.then(() => this.showEntireSegment())
+					.catch(console.error)
+			}
+		}, 250)
+
+		onTimeScaleChange = (timeScaleVal: number) => {
+			if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
+				this.setState((state) => ({
+					timeScale: timeScaleVal,
+					showingAllSegment: timeScaleVal === state.maxTimeScale,
+				}))
+			}
+		}
+
 		onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
-			let collapsedOutputs = { ...this.state.collapsedOutputs }
+			const collapsedOutputs = { ...this.state.collapsedOutputs }
 			collapsedOutputs[outputLayer._id] =
 				outputLayer.isDefaultCollapsed && collapsedOutputs[outputLayer._id] === undefined
 					? false
@@ -680,110 +776,129 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			)
 			this.setState({ collapsedOutputs })
 		}
-		onCollapseSegmentToggle = () => {
-			UIStateStorage.setItem(
-				`rundownView.${this.props.playlist._id}`,
-				`segment.${this.props.segmentId}`,
-				!this.state.collapsed
-			)
-			this.setState({ collapsed: !this.state.collapsed })
-		}
 		/** The user has scrolled scrollLeft seconds to the left in a child component */
-		onScroll = (scrollLeft: number, event: any) => {
+		onScroll = (scrollLeft: number) => {
 			this.setState({
-				scrollLeft: scrollLeft,
+				scrollLeft: Math.max(
+					0,
+					Math.min(
+						scrollLeft,
+						(computeSegmentDuration(
+							this.context.durations,
+							this.props.parts.map((i) => i.instance.part._id),
+							true
+						) || 1) -
+							LIVELINE_HISTORY_SIZE / this.state.timeScale
+					)
+				),
 				followLiveLine: false,
 			})
 			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 		}
 
 		onRewindSegment = () => {
-			if (!this.isLiveSegment) {
-				this.setState({
-					scrollLeft: 0,
-					livePosition: 0,
-				})
+			if (!this.state.isLiveSegment) {
+				this.updateMaxTimeScale()
+					.then(() => {
+						this.showEntireSegment()
+						this.setState({
+							scrollLeft: 0,
+							livePosition: 0,
+						})
+					})
+					.catch(console.error)
 			}
+		}
+
+		onGoToPartInner = (part: PartUi, timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
+			this.setState((state) => {
+				let newScale: number | undefined
+
+				let scrollLeft = state.scrollLeft
+
+				if (zoomInToFit) {
+					const timelineWidth = getElementWidth(this.timelineDiv)
+					newScale =
+						(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
+						(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
+
+					scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
+				}
+
+				return {
+					scrollLeft,
+					timeScale: newScale ?? this.state.timeScale,
+					showingAllSegment: newScale !== undefined ? false : this.state.showingAllSegment,
+				}
+			})
 		}
 
 		onGoToPart = (e: GoToPartEvent) => {
 			if (this.props.segmentId === e.segmentId) {
+				const timingDurations = this.context?.durations as RundownTimingContext
+
 				const part = this.props.parts.find((part) => part.partId === e.partId)
 				if (part) {
-					this.setState({
-						scrollLeft: part.startsAt,
-					})
+					this.onGoToPartInner(part, timingDurations, e.zoomInToFit)
 				}
 			}
 		}
 
 		onGoToPartInstance = (e: GoToPartInstanceEvent) => {
 			if (this.props.segmentId === e.segmentId) {
-				for (const part of this.props.parts) {
-					if (part.instance._id === e.partInstanceId) {
-						this.setState({
-							scrollLeft: part.startsAt,
-						})
-					}
+				const timingDurations = this.context?.durations as RundownTimingContext
+
+				const part = this.props.parts.find((part) => part.instance._id === e.partInstanceId)
+
+				if (part) {
+					this.onGoToPartInner(part, timingDurations, e.zoomInToFit)
 				}
 			}
 		}
 
 		onAirLineRefresh = (e: TimingEvent) => {
-			if (this.state.isLiveSegment && this.state.currentLivePart) {
-				const currentLivePartInstance = this.state.currentLivePart.instance
-				const currentLivePart = currentLivePartInstance.part
+			this.setState((state) => {
+				if (state.isLiveSegment && state.currentLivePart) {
+					const currentLivePartInstance = state.currentLivePart.instance
+					const currentLivePart = currentLivePartInstance.part
 
-				let simulationPercentage = this.playbackSimulationPercentage
-				const partOffset =
-					(this.context.durations &&
-						this.context.durations.partDisplayStartsAt &&
-						this.context.durations.partDisplayStartsAt[unprotectString(currentLivePart._id)] -
-							this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)]) ||
-					0
+					const partOffset =
+						(this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] || 0) -
+						(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] ||
+							0)
 
-				let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
-				const lastTake = currentLivePartInstance.timings?.take
-				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
-				const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
-				let virtualStartedPlayback =
-					(lastTake || 0) > (lastStartedPlayback || -1)
-						? lastTake
-						: lastStartedPlayback
-						? lastStartedPlayback - lastTakeOffset
-						: undefined
-				if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
-					isExpectedToPlay = true
+					let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
+					const lastTake = currentLivePartInstance.timings?.take
+					const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
+					const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
+					const virtualStartedPlayback =
+						(lastTake || 0) > (lastStartedPlayback || -1)
+							? lastTake
+							: lastStartedPlayback !== undefined
+							? lastStartedPlayback - lastTakeOffset
+							: undefined
 
-					// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
-					if (lastStartedPlayback && lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime) {
-						if (lastTake < lastStartedPlayback && simulationPercentage < 1) {
-							virtualStartedPlayback =
-								simulationPercentage * lastStartedPlayback + (1 - simulationPercentage) * lastTake
-						}
+					if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
+						isExpectedToPlay = true
+					}
+
+					const newLivePosition =
+						isExpectedToPlay && virtualStartedPlayback
+							? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
+							: partOffset + lastTakeOffset
+
+					const budgetDuration = this.getSegmentBudgetDuration()
+
+					return {
+						livePosition: newLivePosition,
+						scrollLeft: state.followLiveLine
+							? Math.max(newLivePosition - LIVELINE_HISTORY_SIZE / state.timeScale, 0)
+							: state.scrollLeft,
+						budgetDuration,
 					}
 				}
-
-				let newLivePosition =
-					isExpectedToPlay && virtualStartedPlayback
-						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
-						: partOffset + lastTakeOffset
-
-				if (lastStartedPlayback && simulationPercentage < 1) {
-					this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
-				}
-
-				const budgetDuration = this.getSegmentBudgetDuration()
-
-				this.setState({
-					livePosition: newLivePosition,
-					scrollLeft: this.state.followLiveLine
-						? Math.max(newLivePosition - this.props.liveLineHistorySize / this.props.timeScale, 0)
-						: this.state.scrollLeft,
-					budgetDuration,
-					budgetGap: budgetDuration ? budgetDuration - this.getSegmentDuration() : 0,
-				})
-			}
+				return null
+			})
 		}
 
 		visibleChanged = (entries: IntersectionObserverEntry[]) => {
@@ -796,7 +911,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		startLive = () => {
-			window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+			window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onAirLineRefresh)
 			// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
 			// is viewport. This seems like an implementation bug and IntersectionObserver is
 			// an Experimental Feature in Chrome, so this might change in the future.
@@ -810,54 +925,80 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		stopLive = () => {
-			window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
+			window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onAirLineRefresh)
 			if (this.intersectionObserver) {
 				this.intersectionObserver.disconnect()
 				this.intersectionObserver = undefined
 			}
 		}
 
-		onFollowLiveLine = (state: boolean, event: any) => {
+		onFollowLiveLine = (state: boolean) => {
 			this.setState({
 				followLiveLine: state,
-				scrollLeft: Math.max(this.state.livePosition - this.props.liveLineHistorySize / this.props.timeScale, 0),
+				scrollLeft: Math.max(this.state.livePosition - LIVELINE_HISTORY_SIZE / this.state.timeScale, 0),
 			})
-
-			/* if (this.state.followLiveLine) {
-			this.debugDemoLiveLine()
-		} */
 		}
 
-		segmentRef = (el: SegmentTimelineClass, segmentId: SegmentId) => {
+		segmentRef = (el: SegmentTimelineClass, _segmentId: SegmentId) => {
 			this.timelineDiv = el.timeline
+		}
+
+		getShowAllTimeScale = () => {
+			if (!this.timelineDiv || isLiveSegmentButLivePositionNotSet(this.state.isLiveSegment, this.state.livePosition)) {
+				return this.state.maxTimeScale
+			}
+
+			const elementWidth: number = getElementWidth(this.timelineDiv)
+			const elementWidthOr1: number = elementWidth - TIMELINE_RIGHT_PADDING || 1
+			const segmentDisplayDurationOr1: number =
+				computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1
+			const livePositionOr0: number = this.state.isLiveSegment ? this.state.livePosition : 0
+			let newScale = elementWidthOr1 / (segmentDisplayDurationOr1 - livePositionOr0)
+			newScale = Math.min(MINIMUM_ZOOM_FACTOR, newScale)
+			if (!Number.isFinite(newScale) || newScale === 0) {
+				newScale = FALLBACK_ZOOM_FACTOR
+			}
+			return newScale
+		}
+
+		updateMaxTimeScale = () => {
+			return new Promise<number>((resolve) =>
+				this.setState(
+					() => {
+						const maxTimeScale = this.getShowAllTimeScale()
+						return {
+							maxTimeScale,
+						}
+					},
+					() => resolve(this.state.maxTimeScale)
+				)
+			)
+		}
+
+		showEntireSegment = () => {
+			this.updateMaxTimeScale()
+				.then(() => {
+					this.onTimeScaleChange(this.getShowAllTimeScale())
+				})
+				.catch(console.error)
 		}
 
 		onShowEntireSegment = () => {
 			this.setState({
 				scrollLeft: 0,
-				followLiveLine: this.state.isLiveSegment ? false : this.state.followLiveLine,
+				followLiveLine: this.state.isLiveSegment ? true : this.state.followLiveLine,
 			})
-			if (typeof this.props.onTimeScaleChange === 'function') {
-				this.props.onTimeScaleChange(
-					(getElementWidth(this.timelineDiv) || 1) /
-						(computeSegmentDuration(
-							this.context.durations,
-							this.props.parts.map((i) => i.instance.part._id),
-							true
-						) || 1)
-				)
-			}
-			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+			this.showEntireSegment()
 		}
 
-		onZoomChange = (newScale: number, e: any) => {
-			this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
+		onZoomChange = (newScale: number) => {
+			this.onTimeScaleChange(newScale)
 		}
 
 		render() {
 			return (
 				(this.props.segmentui && (
-					<>
+					<React.Fragment key={unprotectString(this.props.segmentui._id)}>
 						{!this.props.segmentui.isHidden && (
 							<SegmentTimeline
 								id={this.props.id}
@@ -867,13 +1008,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								studio={this.props.studio}
 								parts={this.props.parts}
 								segmentNotes={this.props.segmentNotes}
-								timeScale={this.props.timeScale}
+								timeScale={this.state.timeScale}
+								maxTimeScale={this.state.maxTimeScale}
+								onRecalculateMaxTimeScale={this.updateMaxTimeScale}
+								showingAllSegment={this.state.showingAllSegment}
 								onItemClick={this.props.onPieceClick}
 								onItemDoubleClick={this.props.onPieceDoubleClick}
 								onCollapseOutputToggle={this.onCollapseOutputToggle}
 								collapsedOutputs={this.state.collapsedOutputs}
-								onCollapseSegmentToggle={this.onCollapseSegmentToggle}
-								isCollapsed={this.state.collapsed}
 								scrollLeft={this.state.scrollLeft}
 								playlist={this.props.playlist}
 								followLiveSegments={this.props.followLiveSegments}
@@ -885,7 +1027,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								autoNextPart={this.state.autoNextPart}
 								hasAlreadyPlayed={this.props.hasAlreadyPlayed}
 								followLiveLine={this.state.followLiveLine}
-								liveLineHistorySize={this.props.liveLineHistorySize}
+								liveLineHistorySize={LIVELINE_HISTORY_SIZE}
 								livePosition={this.state.livePosition}
 								onContextMenu={this.props.onContextMenu}
 								onFollowLiveLine={this.onFollowLiveLine}
@@ -896,25 +1038,83 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 								lastValidPartIndex={this.props.lastValidPartIndex}
 								onHeaderNoteClick={this.props.onHeaderNoteClick}
 								budgetDuration={this.state.budgetDuration}
-								budgetGap={this.state.budgetGap}
+								showCountdownToSegment={this.props.showCountdownToSegment}
+								fixedSegmentDuration={this.props.fixedSegmentDuration}
+								displayLiveLineCounter={this.props.displayLiveLineCounter}
+								showDurationSourceLayers={this.props.showDurationSourceLayers}
 							/>
 						)}
 						{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (
 							<RundownViewShelf
 								studio={this.props.studio}
 								segment={this.props.segmentui}
-								adLibSegmentUi={this.props.adLibSegmentUi}
 								playlist={this.props.playlist}
 								showStyleBase={this.props.showStyleBase}
+								adLibSegmentUi={this.props.adLibSegmentUi}
 								hotkeyGroup={unprotectString(this.props.segmentui._id) + '_RundownViewShelf'}
 								studioMode={this.props.studioMode}
-								registerHotkeys={(this.props.miniShelfFilter as MiniShelfLayoutFilter | undefined)?.assignHotKeys}
+								registerHotkeys={this.props.minishelfRegisterHotkeys}
 							/>
 						)}
-					</>
+					</React.Fragment>
 				)) ||
 				null
 			)
 		}
 	}
 )
+
+function isLiveSegmentButLivePositionNotSet(isLiveSegment: boolean, livePosition: number): boolean {
+	return isLiveSegment && livePosition === 0
+}
+
+function getMinimumReactivePieceNotesForPart(
+	studio: Studio,
+	showStyleBase: ShowStyleBase,
+	part: Part
+): Array<PartNote> {
+	const notes: Array<PartNote> = []
+
+	const pieces = Pieces.find(
+		{
+			startRundownId: part.rundownId,
+			startPartId: part._id,
+		},
+		{
+			fields: {
+				_id: 1,
+				name: 1,
+				sourceLayerId: 1,
+				content: 1,
+				expectedPackages: 1,
+			},
+		}
+	).fetch() as Array<Pick<Piece, '_id' | 'name' | 'sourceLayerId' | 'content' | 'expectedPackages'>>
+
+	const sourceLayerMap = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
+	for (const piece of pieces) {
+		// TODO: check statuses (like media availability) here
+
+		if (sourceLayerMap && piece.sourceLayerId && sourceLayerMap[piece.sourceLayerId]) {
+			const sourceLayer = sourceLayerMap[piece.sourceLayerId]
+			const st = checkPieceContentStatus(piece, sourceLayer, studio)
+			if (
+				st.status !== RundownAPI.PieceStatusCode.OK &&
+				st.status !== RundownAPI.PieceStatusCode.UNKNOWN &&
+				!getIgnorePieceContentStatus()
+			) {
+				notes.push({
+					type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,
+					origin: {
+						name: 'Media Check',
+						pieceId: piece._id,
+					},
+					message: {
+						key: st.message || '',
+					},
+				})
+			}
+		}
+	}
+	return notes
+}

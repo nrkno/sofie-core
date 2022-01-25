@@ -1,14 +1,14 @@
 import * as React from 'react'
 
+import ClassNames from 'classnames'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
-import ClassNames from 'classnames'
 
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
-interface IProps extends ICustomLayerItemProps {}
+type IProps = ICustomLayerItemProps
 interface IState {}
 
 export const MicSourceRenderer = withTranslation()(
@@ -18,8 +18,8 @@ export const MicSourceRenderer = withTranslation()(
 		itemElement: HTMLElement | null
 		lineItem: HTMLElement
 		linePosition: number
-		leftLabel: HTMLSpanElement
-		rightLabel: HTMLSpanElement
+		leftLabel: HTMLSpanElement | null
+		rightLabel: HTMLSpanElement | null
 
 		readTime: number
 		lastPartDuration: number
@@ -47,10 +47,10 @@ export const MicSourceRenderer = withTranslation()(
 				this.itemPosition = this.itemElement.offsetLeft
 				const content = this.props.piece.instance.piece.content as ScriptContent | undefined
 				if (content && content.sourceDuration) {
-					const scriptReadTime = content.sourceDuration * this.props.timeScale
+					const scriptReadTime = Math.round(content.sourceDuration * this.props.timeScale)
 					this.readTime = content.sourceDuration
 					const positionByReadTime = this.itemPosition + scriptReadTime
-					const positionByPartEnd = this.props.partDuration * this.props.timeScale
+					const positionByPartEnd = Math.round(this.props.partDuration * this.props.timeScale)
 
 					if (
 						positionByReadTime !== this.linePosition ||
@@ -94,16 +94,14 @@ export const MicSourceRenderer = withTranslation()(
 			this.updateAnchoredElsWidths()
 			if (this.props.itemElement) {
 				this.itemElement = this.props.itemElement
-				this.itemElement.parentNode &&
-					this.itemElement.parentNode.parentNode &&
-					this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
+				this.itemElement.parentElement?.parentElement?.parentElement?.appendChild(this.lineItem)
 				this.refreshLine()
 			}
 		}
 
 		updateAnchoredElsWidths = () => {
-			const leftLabelWidth = getElementWidth(this.leftLabel)
-			const rightLabelWidth = getElementWidth(this.rightLabel)
+			const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
+			const rightLabelWidth = this.rightLabel ? getElementWidth(this.rightLabel) : 0
 
 			this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 		}
@@ -138,13 +136,15 @@ export const MicSourceRenderer = withTranslation()(
 			// Move the line element
 			if (this.itemElement !== this.props.itemElement) {
 				if (this.itemElement) {
-					this.lineItem.remove()
+					try {
+						this.lineItem.remove()
+					} catch (err) {
+						console.error('Error in MicSourceRenderer.componentDidUpdate', err)
+					}
 				}
 				this.itemElement = this.props.itemElement
 				if (this.itemElement) {
-					this.itemElement.parentNode &&
-						this.itemElement.parentNode.parentNode &&
-						this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
+					this.itemElement.parentElement?.parentElement?.parentElement?.appendChild(this.lineItem)
 					_forceSizingRecheck = true
 				}
 			}
@@ -164,15 +164,18 @@ export const MicSourceRenderer = withTranslation()(
 		}
 
 		componentWillUnmount() {
-			// Remove the line element
-			this.lineItem.remove()
+			try {
+				// Remove the line element
+				this.lineItem?.remove()
+			} catch (err) {
+				console.error('Error in MicSourceRenderer.componentWillUnmount', err)
+			}
 		}
 
 		render() {
-			const { t } = this.props
-			let labelItems = (this.props.piece.instance.piece.name || '').split('||')
-			let begin = labelItems[0] || ''
-			let end = labelItems[1] || ''
+			const labelItems = (this.props.piece.instance.piece.name || '').split('||')
+			const begin = labelItems[0] || ''
+			const end = labelItems[1] || ''
 
 			// function shorten (str: string, maxLen: number, separator: string = ' ') {
 			// 	if (str.length <= maxLen) return str
@@ -182,23 +185,31 @@ export const MicSourceRenderer = withTranslation()(
 			const content = this.props.piece.instance.piece.content as ScriptContent | undefined
 
 			return (
-				<React.Fragment>
-					<span
-						className={ClassNames('segment-timeline__piece__label first-words', {
-							'overflow-label': end !== '',
-						})}
-						ref={this.setLeftLabelRef}
-						style={this.getItemLabelOffsetLeft()}>
-						{begin}
-					</span>
-					<span
-						className="segment-timeline__piece__label right-side"
-						ref={this.setRightLabelRef}
-						style={this.getItemLabelOffsetRight()}>
-						<span className="segment-timeline__piece__label last-words">{end}</span>
-						{this.renderInfiniteIcon()}
-						{this.renderOverflowTimeLabel()}
-					</span>
+				<>
+					{!this.props.isTooSmallForText && (
+						<>
+							{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
+								<span
+									className={ClassNames('segment-timeline__piece__label', 'first-words', {
+										'overflow-label': end !== '',
+									})}
+									ref={this.setLeftLabelRef}
+									style={this.getItemLabelOffsetLeft()}
+								>
+									{begin}
+								</span>
+							) : null}
+							<span
+								className="segment-timeline__piece__label right-side"
+								ref={this.setRightLabelRef}
+								style={this.getItemLabelOffsetRight()}
+							>
+								<span className="segment-timeline__piece__label last-words">{end}</span>
+								{this.renderInfiniteIcon()}
+								{/* this.renderOverflowTimeLabel() */}
+							</span>
+						</>
+					)}
 					{content && (
 						<MicFloatingInspector
 							content={content}
@@ -208,7 +219,7 @@ export const MicSourceRenderer = withTranslation()(
 							typeClass={this.props.typeClass}
 						/>
 					)}
-				</React.Fragment>
+				</>
 			)
 		}
 	}

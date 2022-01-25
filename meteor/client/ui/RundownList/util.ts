@@ -8,6 +8,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TFunction } from 'i18next'
+import { handleRundownReloadResponse } from '../RundownView'
 
 export function getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId): string {
 	// double encoding so that "/" are handled correctly
@@ -46,7 +47,7 @@ export function getRundownWithShelfLayoutLink(
 	const encodedRundownId = encodeURIComponent(encodeURIComponent(unprotectString(rundownId)))
 	const encodedLayoutId = encodeURIComponent(encodeURIComponent(unprotectString(layoutId)))
 
-	return `/rundown/${encodedRundownId}?shelfLayout=${encodedLayoutId}`
+	return `/rundown/${encodedRundownId}?rundownViewLayout=${encodedLayoutId}`
 }
 
 export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {
@@ -55,7 +56,9 @@ export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {
 		yes: t('Delete'),
 		no: t('Cancel'),
 		onAccept: (e) => {
-			doUserAction(t, e, UserAction.REMOVE_RUNDOWN, (e) => MeteorCall.userAction.removeRundown(e, rundown._id))
+			doUserAction(t, e, UserAction.REMOVE_RUNDOWN, async (e) =>
+				MeteorCall.userAction.removeRundown(e, rundown._id)
+			)
 		},
 		message:
 			t('Are you sure you want to delete the "{{name}}" rundown?', { name: rundown.name }) +
@@ -70,7 +73,17 @@ export function confirmReSyncRundown(rundown: Rundown, t: TFunction): void {
 		yes: t('Re-Sync'),
 		no: t('Cancel'),
 		onAccept: (e) => {
-			doUserAction(t, e, UserAction.RESYNC_RUNDOWN, (e) => MeteorCall.userAction.resyncRundown(e, rundown._id))
+			doUserAction(
+				t,
+				e,
+				UserAction.RESYNC_RUNDOWN,
+				async (e) => MeteorCall.userAction.resyncRundown(e, rundown._id),
+				(err, res) => {
+					if (!err && res) {
+						return handleRundownReloadResponse(t, rundown._id, res)
+					}
+				}
+			)
 		},
 		message: t('Are you sure you want to re-sync the "{{name}}" rundown?', {
 			name: rundown.name,

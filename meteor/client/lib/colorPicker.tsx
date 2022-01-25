@@ -103,7 +103,8 @@ export class ColorPicker extends React.Component<IProps, IState> {
 						'expco-expanded': this.state.expanded,
 					},
 					this.props.className
-				)}>
+				)}
+			>
 				<div className={ClassNames('expco-title focusable-main')} onClick={this.toggleExpco}>
 					<div className="color-preview" style={{ backgroundColor: this.state.selectedValue }}></div>
 				</div>

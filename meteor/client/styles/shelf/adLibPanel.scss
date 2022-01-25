@@ -121,6 +121,10 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 					opacity: 0.7;
 				}
 			}
+
+			> .adlib-panel__list-view__toolbar__filter__input:focus + .adlib-panel__list-view__toolbar__filter__clear {
+				color: #000;
+			}
 		}
 
 		> .adlib-panel__list-view__toolbar__buttons {
@@ -190,6 +194,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 				max-width: 4.5em;
 				text-align: center;
 				padding: 0 !important;
+				position: relative;
 
 				@include item-type-colors();
 				@include missing-overlay();
@@ -222,6 +227,15 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 				word-break: break-all;
 				line-height: 1.5em !important;
 				vertical-align: inherit;
+
+				> .hotkeys {
+					> span::after {
+						content: ', ';
+					}
+					> span:last-child::after {
+						content: none;
+					}
+				}
 			}
 			.adlib-panel__list-view__list__table__cell--output {
 				width: 3.89em;
@@ -336,6 +350,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 							bottom: 0;
 							right: 0;
 							border: 1px solid $adlib-item-selected-color;
+							pointer-events: none;
 						}
 					}
 

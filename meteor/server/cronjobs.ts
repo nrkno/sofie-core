@@ -7,21 +7,20 @@ import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { AsRunLog } from '../lib/collections/AsRunLog'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { RundownPlaylists } from '../lib/collections/RundownPlaylists'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
-import { PartInstances } from '../lib/collections/PartInstances'
 import { Parts } from '../lib/collections/Parts'
+import { PartInstances } from '../lib/collections/PartInstances'
 import { PieceInstances } from '../lib/collections/PieceInstances'
 
-let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
+const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
 	Meteor.setTimeout(() => {
-		fcn(...args)
+		fcn()
 	}, Math.random() * 10 * 1000)
 }
 
@@ -29,7 +28,7 @@ let lastNightlyCronjob = 0
 let failedRetries = 0
 
 export function nightlyCronjobInner() {
-	let previousLastNightlyCronjob = lastNightlyCronjob
+	const previousLastNightlyCronjob = lastNightlyCronjob
 	lastNightlyCronjob = getCurrentTime()
 	logger.info('Nightly cronjob: starting...')
 	const system = getCoreSystem()
@@ -37,29 +36,18 @@ export function nightlyCronjobInner() {
 	// Clean up Rundown data cache:
 	// Remove caches not related to rundowns:
 	let rundownCacheCount = 0
-	let rundownIds = _.map(Rundowns.find().fetch(), (rundown) => rundown._id)
+	const rundownIds = _.map(Rundowns.find().fetch(), (rundown) => rundown._id)
 	IngestDataCache.find({
 		rundownId: { $nin: rundownIds },
 	}).forEach((roc) => {
-		lowPrioFcn(IngestDataCache.remove, roc._id)
+		lowPrioFcn(() => {
+			IngestDataCache.remove(roc._id)
+		})
 		rundownCacheCount++
 	})
 	if (rundownCacheCount) logger.info('Cronjob: Will remove cached data from ' + rundownCacheCount + ' rundowns')
 
 	const cleanLimitTime = getCurrentTime() - 1000 * 3600 * 24 * 50 // 50 days ago
-
-	// Remove old entries in AsRunLog:
-	const oldAsRunLogCount: number = AsRunLog.find({
-		timestamp: { $lt: cleanLimitTime },
-	}).count()
-	if (oldAsRunLogCount > 0) {
-		logger.info(`Cronjob: Will remove ${oldAsRunLogCount} entries from AsRunLog`)
-		lowPrioFcn(() => {
-			AsRunLog.remove({
-				timestamp: { $lt: cleanLimitTime },
-			})
-		})
-	}
 
 	// Remove old PartInstances and PieceInstances:
 	const getPartInstanceIdsToRemove = () => {
@@ -120,22 +108,9 @@ export function nightlyCronjobInner() {
 		})
 	}
 
-	if (system?.cron?.storeRundownSnapshots?.enabled) {
-		let filter = system.cron.storeRundownSnapshots.rundownNames?.length
-			? { name: { $in: system.cron.storeRundownSnapshots.rundownNames } }
-			: {}
-
-		RundownPlaylists.find(filter).forEach((playlist) => {
-			lowPrioFcn(() => {
-				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				internalStoreRundownPlaylistSnapshot(null, playlist._id, 'Automatic, taken by cron job')
-			})
-		})
-	}
-
-	let ps: Array<Promise<any>> = []
+	const ps: Array<Promise<any>> = []
 	// restart casparcg
-	if (!system?.cron?.casparCG?.disabled) {
+	if (system?.cron?.casparCGRestart?.enabled) {
 		PeripheralDevices.find({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 		}).forEach((device) => {
@@ -149,7 +124,7 @@ export function nightlyCronjobInner() {
 					logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 					ps.push(
-						new Promise((resolve, reject) => {
+						new Promise<void>((resolve, reject) => {
 							PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 								subDevice._id,
 								(err) => {
@@ -179,6 +154,18 @@ export function nightlyCronjobInner() {
 			})
 		})
 	}
+	if (system?.cron?.storeRundownSnapshots?.enabled) {
+		const filter = system.cron.storeRundownSnapshots.rundownNames?.length
+			? { name: { $in: system.cron.storeRundownSnapshots.rundownNames } }
+			: {}
+
+		RundownPlaylists.find(filter).forEach((playlist) => {
+			lowPrioFcn(() => {
+				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
+				ps.push(internalStoreRundownPlaylistSnapshot(null, playlist._id, 'Automatic, taken by cron job'))
+			})
+		})
+	}
 	Promise.all(ps)
 		.then(() => {
 			failedRetries = 0
@@ -193,8 +180,8 @@ export function nightlyCronjobInner() {
 
 Meteor.startup(() => {
 	function nightlyCronjob() {
-		let d = new Date(getCurrentTime())
-		let timeSinceLast = getCurrentTime() - lastNightlyCronjob
+		const d = new Date(getCurrentTime())
+		const timeSinceLast = getCurrentTime() - lastNightlyCronjob
 		if (
 			d.getHours() >= 4 &&
 			d.getHours() < 5 && // It is nighttime
@@ -203,6 +190,7 @@ Meteor.startup(() => {
 			nightlyCronjobInner()
 		}
 	}
+
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
 })

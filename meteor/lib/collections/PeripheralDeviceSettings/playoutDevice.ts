@@ -8,4 +8,7 @@ export interface PlayoutDeviceSettings {
 	devices: {
 		[deviceId: string]: TSR.DeviceOptionsAny
 	}
+	locations: {
+		[deviceId: string]: any // todo
+	}
 }

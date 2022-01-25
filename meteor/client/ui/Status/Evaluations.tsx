@@ -20,7 +20,7 @@ interface IEvaluationTrackedProps {
 }
 
 const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, IEvaluationTrackedProps>(
-	(props: IEvaluationProps) => {
+	(_props: IEvaluationProps) => {
 		return {
 			evaluations: Evaluations.find(
 				{},
@@ -43,13 +43,8 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 			super(props)
 
 			this.state = {
-				dateFrom: moment()
-					.startOf('day')
-					.valueOf(),
-				dateTo: moment()
-					.add(1, 'days')
-					.startOf('day')
-					.valueOf(),
+				dateFrom: moment().startOf('day').valueOf(),
+				dateTo: moment().add(1, 'days').startOf('day').valueOf(),
 			}
 		}
 		componentDidMount() {
@@ -60,7 +55,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 			this.updateSubscription()
 		}
 		updateSubscription() {
-			let h = this.state.dateFrom + '_' + this.state.dateTo
+			const h = this.state.dateFrom + '_' + this.state.dateTo
 			if (h !== this._currentsub) {
 				this._currentsub = h
 				if (this._sub) {

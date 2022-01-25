@@ -1,7 +1,6 @@
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { withTranslation } from 'react-i18next'
 import * as React from 'react'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { KeyboardPreview } from './KeyboardPreview'
 import { Settings } from '../../../lib/Settings'
@@ -14,6 +13,8 @@ import {
 	RundownLayoutKeyboardPreview,
 	DashboardLayoutKeyboardPreview,
 } from '../../../lib/collections/RundownLayouts'
+import { Sorensen } from '@sofie-automation/sorensen'
+import { SorensenContext } from '../../lib/SorensenContext'
 
 interface IProps {
 	visible?: boolean
@@ -26,8 +27,15 @@ const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : 
 
 export const KeyboardPreviewPanel = withTranslation()(
 	class KeyboardPreviewPanel extends React.Component<Translated<IProps>> {
+		static contextType = SorensenContext
+		sorensen: Sorensen | undefined
+
 		constructor(props: Translated<IProps>) {
 			super(props)
+		}
+
+		componentDidMount() {
+			this.sorensen = this.context
 		}
 
 		render() {
@@ -42,10 +50,12 @@ export const KeyboardPreviewPanel = withTranslation()(
 							{
 								visibility: this.props.visible ? 'visible' : 'hidden',
 							}
-						)}>
+						)}
+					>
 						<KeyboardPreview
 							physicalLayout={KeyboardLayouts.nameToPhysicalLayout(Settings.keyboardMapLayout)}
 							showStyleBase={this.props.showStyleBase}
+							sorensen={this.sorensen}
 						/>
 					</div>
 				)

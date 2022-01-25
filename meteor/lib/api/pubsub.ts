@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 
 export enum PubSub {
-	asRunLog = 'asRunLog',
 	blueprints = 'blueprints',
 	coreSystem = 'coreSystem',
 	evaluations = 'evaluations',
@@ -25,15 +24,20 @@ export enum PubSub {
 	pieceInstancesSimple = 'pieceInstancesSimple',
 	parts = 'parts',
 	partInstances = 'partInstances',
+	partInstancesSimple = 'partInstancesSimple',
+	partInstancesForSegmentPlayout = 'partInstancesForSegmentPlayout',
 	segments = 'segments',
 	showStyleBases = 'showStyleBases',
 	showStyleVariants = 'showStyleVariants',
+	triggeredActions = 'triggeredActions',
 	snapshots = 'snapshots',
 	studios = 'studios',
 	studioOfDevice = 'studioOfDevice',
 	timeline = 'timeline',
 	userActionsLog = 'userActionsLog',
+	/** @deprecated */
 	mediaWorkFlows = 'mediaWorkFlows',
+	/** @deprecated */
 	mediaWorkFlowSteps = 'mediaWorkFlowSteps',
 	rundownLayouts = 'rundownLayouts',
 	loggedInUser = 'loggedInUser',
@@ -41,10 +45,17 @@ export enum PubSub {
 	organization = 'organization',
 	buckets = 'buckets',
 	bucketAdLibPieces = 'bucketAdLibPieces',
+	translationsBundles = 'translationsBundles',
 	bucketAdLibActions = 'bucketAdLibActions',
+	expectedPackages = 'expectedPackages',
+	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
+	packageContainerPackageStatuses = 'packageContainerPackageStatuses',
+	packageContainerStatuses = 'packageContainerStatuses',
+	packageInfos = 'packageInfos',
 	// custom publications:
 	mappingsForDevice = 'mappingsForDevice',
 	timelineForDevice = 'timelineForDevice',
+	expectedPackagesForDevice = 'expectedPackagesForDevice',
 }
 
 export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {

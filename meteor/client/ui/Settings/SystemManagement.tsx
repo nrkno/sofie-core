@@ -8,6 +8,8 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorCall } from '../../../lib/api/methods'
 import * as _ from 'underscore'
 import { languageAnd } from '../../lib/language'
+import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
+import { LogLevel } from '../../../lib/lib'
 
 interface IProps {}
 
@@ -15,7 +17,7 @@ interface ITrackedProps {
 	coreSystem: ICoreSystem | undefined
 }
 
-export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
+export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) => {
 	return {
 		coreSystem: CoreSystem.findOne(),
 	}
@@ -24,7 +26,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		componentDidMount() {
 			meteorSubscribe(PubSub.coreSystem, null)
 		}
-		cleanUpOldDatabaseIndexes(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+		cleanUpOldDatabaseIndexes(): void {
 			const { t } = this.props
 			MeteorCall.system
 				.cleanupIndexes(false)
@@ -58,7 +60,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 				})
 				.catch(console.error)
 		}
-		cleanUpOldData(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+		cleanUpOldData(): void {
 			const { t } = this.props
 			MeteorCall.system
 				.cleanupOldData(false)
@@ -75,7 +77,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 						})
 					} else {
 						let count = 0
-						let affectedCollections: string[] = []
+						const affectedCollections: string[] = []
 						_.each(results, (result) => {
 							count += result.docsToRemove
 							if (result.docsToRemove > 0) {
@@ -148,6 +150,23 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							</div>
 						</label>
 
+						<h2 className="mhn mtn">{t('Logging level')}</h2>
+						<label className="field">
+							{t('This affects how much is logged to the console on the server')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="logLevel"
+									obj={this.props.coreSystem}
+									type="dropdown"
+									options={LogLevel}
+									collection={CoreSystem}
+									className="mdinput"
+								/>
+								<span className="mdfx"></span>
+							</div>
+						</label>
+
 						<h2 className="mhn mtn">{t('System-wide Notification Message')}</h2>
 						<label className="field">
 							{t('Message')}
@@ -170,7 +189,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									attribute="systemInfo.enabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
-									collection={CoreSystem}></EditAttribute>
+									collection={CoreSystem}
+								></EditAttribute>
 							</div>
 						</div>
 
@@ -190,6 +210,12 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							</div>
 						</label>
 
+						<div className="row">
+							<div className="col c12 r1-c12">
+								<TriggeredActionsEditor showStyleBaseId={null} />
+							</div>
+						</div>
+
 						<h2 className="mhn">{t('Application Performance Monitoring')}</h2>
 						<div className="field">
 							{t('APM Enabled')}
@@ -198,7 +224,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									attribute="apm.enabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
-									collection={CoreSystem}></EditAttribute>
+									collection={CoreSystem}
+								></EditAttribute>
 							</div>
 						</div>
 						<label className="field">
@@ -250,14 +277,27 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 						<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 
+						<h2 className="mhn">{t('Cron jobs')}</h2>
+						<div className="field">
+							{t('Enable CasparCG restart job')}
+							<div className="mdi">
+								<EditAttribute
+									attribute="cron.casparCGRestart.enabled"
+									obj={this.props.coreSystem}
+									type="checkbox"
+									collection={CoreSystem}
+								></EditAttribute>
+							</div>
+						</div>
+
 						<h2 className="mhn">{t('Cleanup')}</h2>
 						<div>
-							<button className="btn btn-default" onClick={(e) => this.cleanUpOldDatabaseIndexes(e)}>
+							<button className="btn btn-default" onClick={() => this.cleanUpOldDatabaseIndexes()}>
 								{t('Cleanup old database indexes')}
 							</button>
 						</div>
 						<div>
-							<button className="btn btn-default" onClick={(e) => this.cleanUpOldData(e)}>
+							<button className="btn btn-default" onClick={() => this.cleanUpOldData()}>
 								{t('Cleanup old data')}
 							</button>
 						</div>
@@ -270,7 +310,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									attribute="cron.casparCG.disabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
-									collection={CoreSystem}></EditAttribute>
+									collection={CoreSystem}
+								></EditAttribute>
 							</div>
 						</div>
 						<div className="field">
@@ -280,7 +321,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									attribute="cron.storeRundownSnapshots.enabled"
 									obj={this.props.coreSystem}
 									type="checkbox"
-									collection={CoreSystem}></EditAttribute>
+									collection={CoreSystem}
+								></EditAttribute>
 							</div>
 							<div className="mdi">
 								<EditAttribute

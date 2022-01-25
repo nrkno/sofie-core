@@ -141,9 +141,14 @@ $dashboard-button-height: 5.625em;
 				padding: 0 1em;
 				color: #fff;
 
-				&:hover,
-				&:focus {
+				&:hover {
 					background: #3b3b3b;
+					transition: 0.2s background-color;
+				}
+
+				&:focus {
+					background: #fff;
+					color: #000;
 					transition: 0.2s background-color;
 				}
 			}
@@ -158,6 +163,10 @@ $dashboard-button-height: 5.625em;
 				&:hover {
 					opacity: 0.7;
 				}
+			}
+
+			> .adlib-panel__list-view__toolbar__filter__input:focus + .adlib-panel__list-view__toolbar__filter__clear {
+				color: #000;
 			}
 		}
 
@@ -266,15 +275,27 @@ $dashboard-button-height: 5.625em;
 		word-break: break-all;
 		width: $dashboard-button-width;
 		height: $dashboard-button-height;
-		border: none;
 		margin: 4px;
 		vertical-align: top;
-		cursor: pointer;
+		cursor: default;
 
 		@include item-type-colors();
 		@include invalid-overlay();
 		@include floated-overlay();
 		@include missing-overlay();
+
+		$dashboard-panel__button__border-width: 2px;
+
+		&.selected {
+			box-shadow: $dashboard-panel__button__border-width $dashboard-panel__button__border-width 0
+					var(--adlib-item-selected-color),
+				($dashboard-panel__button__border-width * -1) ($dashboard-panel__button__border-width * -1) 0
+					var(--adlib-item-selected-color),
+				($dashboard-panel__button__border-width * -1) $dashboard-panel__button__border-width 0
+					var(--adlib-item-selected-color),
+				$dashboard-panel__button__border-width ($dashboard-panel__button__border-width * -1) 0
+					var(--adlib-item-selected-color);
+		}
 
 		&.live {
 			@keyframes button-flash {
@@ -304,6 +325,12 @@ $dashboard-button-height: 5.625em;
 				z-index: 10;
 				// animation: 2s button-flash normal infinite;
 			}
+
+			box-shadow: $dashboard-panel__button__border-width $dashboard-panel__button__border-width 0 $general-live-color,
+				($dashboard-panel__button__border-width * -1) ($dashboard-panel__button__border-width * -1) 0
+					$general-live-color,
+				($dashboard-panel__button__border-width * -1) $dashboard-panel__button__border-width 0 $general-live-color,
+				$dashboard-panel__button__border-width ($dashboard-panel__button__border-width * -1) 0 $general-live-color;
 		}
 
 		&.disabled {
@@ -321,17 +348,13 @@ $dashboard-button-height: 5.625em;
 			}
 		}
 
-		&.selected {
-			box-shadow: 2px 2px 0 var(--adlib-item-selected-color), -2px -2px 0 var(--adlib-item-selected-color),
-				-2px 2px 0 var(--adlib-item-selected-color), 2px -2px 0 var(--adlib-item-selected-color);
-		}
-
 		&:focus {
 			outline: none;
 			box-shadow: none;
 		}
 
-		&:active {
+		&:active,
+		&.active {
 			&::before {
 				content: ' ';
 				display: block;
@@ -362,7 +385,7 @@ $dashboard-button-height: 5.625em;
 				padding: 3px 4px;
 				z-index: 2;
 
-				> .dashboard-panel__panel__button__label {
+				.dashboard-panel__panel__button__label {
 					text-align: left;
 					hyphens: auto;
 
@@ -416,6 +439,10 @@ $dashboard-button-height: 5.625em;
 			> .dashboard-panel__panel__button__hotkey {
 				display: none;
 			}
+		}
+
+		.dashboard-panel__panel__button__hotkey {
+			display: none;
 		}
 
 		&.list {

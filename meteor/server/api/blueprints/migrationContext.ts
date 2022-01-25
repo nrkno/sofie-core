@@ -8,14 +8,21 @@ import {
 	unprotectString,
 	objectPathGet,
 	objectPathSet,
+	omit,
 } from '../../../lib/lib'
 import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import {
+	ShowStyleBase,
+	ShowStyleBases,
+	DBShowStyleBase,
+	ShowStyleBaseId,
+} from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
 	ConfigItemValue,
 	MigrationContextStudio as IMigrationContextStudio,
 	MigrationContextShowStyle as IMigrationContextShowStyle,
+	MigrationContextSystem as IMigrationContextSystem,
 	BlueprintMapping,
 	IOutputLayer,
 	ISourceLayer,
@@ -23,6 +30,7 @@ import {
 	IBlueprintShowStyleVariant,
 	TSR,
 	OmitId,
+	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
 
 import {
@@ -31,11 +39,98 @@ import {
 	ShowStyleVariantId,
 	DBShowStyleVariant,
 } from '../../../lib/collections/ShowStyleVariants'
-import { check } from '../../../lib/check'
+import { check, Match } from '../../../lib/check'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { Mongo } from 'meteor/mongo'
+import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+
+class AbstractMigrationContextWithTriggeredActions {
+	protected showStyleBaseId: ShowStyleBaseId | null = null
+	getTriggeredActionsId(triggeredActionId: string): string {
+		return getHash((this.showStyleBaseId ?? 'core') + '_' + triggeredActionId)
+	}
+	private getProtectedTriggeredActionsId(triggeredActionId: string): TriggeredActionId {
+		return protectString<TriggeredActionId>(this.getTriggeredActionsId(triggeredActionId))
+	}
+	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
+		return TriggeredActions.find({
+			showStyleBaseId: this.showStyleBaseId,
+		}).map((triggeredActions) => unprotectObject(triggeredActions))
+	}
+	private getTriggeredActionFromDb(triggeredActionsId: string): TriggeredActionsObj | undefined {
+		const triggeredAction = TriggeredActions.findOne({
+			showStyleBaseId: this.showStyleBaseId,
+			_id: this.getProtectedTriggeredActionsId(triggeredActionsId),
+		})
+		if (triggeredAction) return triggeredAction
+
+		// Assume we were given the full id
+		return TriggeredActions.findOne({
+			showStyleBaseId: this.showStyleBaseId,
+			_id: protectString(triggeredActionsId),
+		})
+	}
+	getTriggeredAction(triggeredActionsId: string): IBlueprintTriggeredActions | undefined {
+		check(triggeredActionsId, String)
+		if (!triggeredActionsId) {
+			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
+		}
+
+		return unprotectObject(this.getTriggeredActionFromDb(triggeredActionsId))
+	}
+	setTriggeredAction(triggeredActions: IBlueprintTriggeredActions) {
+		check(triggeredActions, Object)
+		check(triggeredActions._id, String)
+		check(triggeredActions._rank, Number)
+		check(triggeredActions.actions, Array)
+		check(triggeredActions.triggers, Array)
+		check(triggeredActions.name, Match.OneOf(Match.Optional(Object), Match.Optional(String)))
+		if (!triggeredActions) {
+			throw new Meteor.Error(500, `Triggered Actions object is invalid`)
+		}
+
+		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActions._id)
+		if (!currentTriggeredAction) {
+			TriggeredActions.insert({
+				...triggeredActions,
+				_rundownVersionHash: '',
+				showStyleBaseId: this.showStyleBaseId,
+				_id: this.getProtectedTriggeredActionsId(triggeredActions._id),
+			})
+		} else {
+			TriggeredActions.update(
+				{
+					_id: currentTriggeredAction._id,
+				},
+				{
+					$set: {
+						...omit(triggeredActions, '_id'),
+					},
+				}
+			)
+		}
+	}
+	removeTriggeredAction(triggeredActionsId: string) {
+		check(triggeredActionsId, String)
+		if (!triggeredActionsId) {
+			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
+		}
+
+		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActionsId)
+		if (currentTriggeredAction) {
+			TriggeredActions.remove({
+				_id: currentTriggeredAction._id,
+				showStyleBaseId: null,
+			})
+		}
+	}
+}
+
+export class MigrationContextSystem
+	extends AbstractMigrationContextWithTriggeredActions
+	implements IMigrationContextSystem {}
 
 export class MigrationContextStudio implements IMigrationContextStudio {
 	private studio: Studio
@@ -46,8 +141,8 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 	getMapping(mappingId: string): BlueprintMapping | undefined {
 		check(mappingId, String)
-		let mapping = this.studio.mappings[mappingId]
-		if (mapping) return _.clone(mapping)
+		const mapping = this.studio.mappings[mappingId]
+		if (mapping) return unprotectObject(_.clone(mapping))
 	}
 	insertMapping(mappingId: string, mapping: OmitId<BlueprintMapping>): string {
 		check(mappingId, String)
@@ -58,7 +153,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Mapping id "${mappingId}" is invalid`)
 		}
 
-		let m: any = {}
+		const m: any = {}
 		m['mappings.' + mappingId] = mapping
 		Studios.update(this.studio._id, { $set: m })
 		this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
@@ -71,7 +166,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}
 
 		if (mappingId) {
-			let m: any = {}
+			const m: any = {}
 			m['mappings.' + mappingId] = _.extend(this.studio.mappings[mappingId], mapping)
 			Studios.update(this.studio._id, { $set: m })
 			this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
@@ -80,7 +175,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	removeMapping(mappingId: string): void {
 		check(mappingId, String)
 		if (mappingId) {
-			let m: any = {}
+			const m: any = {}
 			m['mappings.' + mappingId] = 1
 			Studios.update(this.studio._id, { $unset: m })
 			delete this.studio.mappings[mappingId] // Update local
@@ -90,7 +185,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getConfig(configId: string): ConfigItemValue | undefined {
 		check(configId, String)
 		if (configId === '') return undefined
-		let configItem = objectPathGet(this.studio.blueprintConfig, configId)
+		const configItem = objectPathGet(this.studio.blueprintConfig, configId)
 		return trimIfString(configItem)
 	}
 	setConfig(configId: string, value: ConfigItemValue): void {
@@ -188,7 +283,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be inserted as it already exists`)
 		}
 
-		let m: any = {}
+		const m: any = {}
 		m[`settings.devices.${deviceId}`] = device
 
 		PeripheralDevices.update(parentDevice._id, {
@@ -219,7 +314,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be updated as it does not exist`)
 		}
 
-		let m: any = {}
+		const m: any = {}
 		m[`settings.devices.${deviceId}`] = _.extend(
 			(parentDevice.settings as PlayoutDeviceSettings).devices[deviceId],
 			device
@@ -235,7 +330,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Device id "${deviceId}" is invalid`)
 		}
 
-		let m: any = {}
+		const m: any = {}
 		m[`settings.devices.${deviceId}`] = 1
 		PeripheralDevices.update(
 			{
@@ -249,10 +344,14 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	}
 }
 
-export class MigrationContextShowStyle implements IMigrationContextShowStyle {
+export class MigrationContextShowStyle
+	extends AbstractMigrationContextWithTriggeredActions
+	implements IMigrationContextShowStyle
+{
 	private showStyleBase: ShowStyleBase
-
 	constructor(showStyleBase: ShowStyleBase) {
+		super()
+		this.showStyleBaseId = showStyleBase._id
 		this.showStyleBase = showStyleBase
 	}
 
@@ -267,18 +366,26 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	private getProtectedVariantId(variantId: string): ShowStyleVariantId {
 		return protectString<ShowStyleVariantId>(this.getVariantId(variantId))
 	}
+	private getVariantFromDb(variantId: string): ShowStyleVariant | undefined {
+		const variant = ShowStyleVariants.findOne({
+			showStyleBaseId: this.showStyleBase._id,
+			_id: this.getProtectedVariantId(variantId),
+		})
+		if (variant) return variant
+
+		// Assume we were given the full id
+		return ShowStyleVariants.findOne({
+			showStyleBaseId: this.showStyleBase._id,
+			_id: protectString(variantId),
+		})
+	}
 	getVariant(variantId: string): IBlueprintShowStyleVariant | undefined {
 		check(variantId, String)
 		if (!variantId) {
 			throw new Meteor.Error(500, `Variant id "${variantId}" is invalid`)
 		}
 
-		return unprotectObject(
-			ShowStyleVariants.findOne({
-				showStyleBaseId: this.showStyleBase._id,
-				_id: this.getProtectedVariantId(variantId),
-			})
-		) as any
+		return unprotectObject(this.getVariantFromDb(variantId)) as any
 	}
 	insertVariant(variantId: string, variant: OmitId<ShowStyleVariantPart>): string {
 		check(variantId, String)
@@ -301,10 +408,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		if (!variantId) {
 			throw new Meteor.Error(500, `Variant id "${variantId}" is invalid`)
 		}
-		const variant = ShowStyleVariants.findOne({
-			_id: this.getProtectedVariantId(variantId),
-			showStyleBaseId: this.showStyleBase._id,
-		})
+		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `Variant "${variantId}" not found`)
 
 		ShowStyleVariants.update(variant._id, { $set: newVariant })
@@ -495,7 +599,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	getBaseConfig(configId: string): ConfigItemValue | undefined {
 		check(configId, String)
 		if (configId === '') return undefined
-		let configItem = objectPathGet(this.showStyleBase.blueprintConfig, configId)
+		const configItem = objectPathGet(this.showStyleBase.blueprintConfig, configId)
 		return trimIfString(configItem)
 	}
 	setBaseConfig(configId: string, value: ConfigItemValue): void {
@@ -508,7 +612,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 
 		value = trimIfString(value)
 
-		let modifier: Mongo.Modifier<DBShowStyleBase> = {
+		const modifier: Mongo.Modifier<DBShowStyleBase> = {
 			$set: {
 				[`blueprintConfig.${configId}`]: value,
 			},
@@ -543,13 +647,10 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(configId, String)
 		if (configId === '') return undefined
 
-		const variant = ShowStyleVariants.findOne({
-			_id: this.getProtectedVariantId(variantId),
-			showStyleBaseId: this.showStyleBase._id,
-		})
+		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
-		let configItem = objectPathGet(variant.blueprintConfig, configId)
+		const configItem = objectPathGet(variant.blueprintConfig, configId)
 		return trimIfString(configItem)
 	}
 	setVariantConfig(variantId: string, configId: string, value: ConfigItemValue): void {
@@ -564,13 +665,10 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		if (_.isUndefined(value))
 			throw new Meteor.Error(400, `setVariantConfig "${variantId}", "${configId}": value is undefined`)
 
-		const variant = ShowStyleVariants.findOne({
-			_id: this.getProtectedVariantId(variantId),
-			showStyleBaseId: this.showStyleBase._id,
-		})
+		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
-		let modifier: Mongo.Modifier<DBShowStyleVariant> = {
+		const modifier: Mongo.Modifier<DBShowStyleVariant> = {
 			$set: {
 				[`blueprintConfig.${configId}`]: value,
 			},
@@ -588,10 +686,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(configId, String)
 
 		if (configId) {
-			const variant = ShowStyleVariants.findOne({
-				_id: this.getProtectedVariantId(variantId),
-				showStyleBaseId: this.showStyleBase._id,
-			})
+			const variant = this.getVariantFromDb(variantId)
 			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
 			ShowStyleVariants.update(

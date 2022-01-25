@@ -8,6 +8,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PieceLifespan, VTContent } from '@sofie-automation/blueprints-integration'
 import { OffsetPosition } from '../../../utils/positions'
 
+export type SourceDurationLabelAlignment = 'left' | 'right'
+
 export interface ICustomLayerItemProps {
 	mediaPreviewUrl?: string
 	typeClass?: string
@@ -15,7 +17,10 @@ export interface ICustomLayerItemProps {
 	outputLayer: IOutputLayerUi
 	outputGroupCollapsed: boolean
 	part: PartUi
+	isLiveLine: boolean
+	partStartsAt: number
 	partDuration: number // 0 if unknown
+	partExpectedDuration: number
 	piece: PieceUi
 	timeScale: number
 	onFollowLiveLine?: (state: boolean, event: any) => void
@@ -29,10 +34,14 @@ export interface ICustomLayerItemProps {
 	cursorPosition: OffsetPosition
 	cursorTimePosition: number
 	layerIndex: number
+	isTooSmallForText: boolean
+	isPreview: boolean
 	getItemLabelOffsetLeft?: () => React.CSSProperties
 	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: (returnInfinite?: boolean) => number
 	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
+	getSourceDurationLabelAlignment?: () => SourceDurationLabelAlignment
+	showDurationSourceLayers?: Set<string>
 }
 export interface ISourceLayerItemState {}
 
@@ -40,6 +49,15 @@ export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
 > extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
+	getSourceDurationLabelAlignment(): SourceDurationLabelAlignment {
+		return (
+			(this.props.getSourceDurationLabelAlignment &&
+				typeof this.props.getSourceDurationLabelAlignment === 'function' &&
+				this.props.getSourceDurationLabelAlignment()) ||
+			'right'
+		)
+	}
+
 	getItemLabelOffsetLeft(): React.CSSProperties {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
@@ -124,9 +142,11 @@ export class CustomLayerItemRenderer<
 
 		const vtContent = innerPiece.content as VTContent | undefined
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
+		const postrollDuration = vtContent && vtContent.postrollDuration ? vtContent.postrollDuration : 0
 		if (
 			vtContent &&
 			vtContent.sourceDuration !== undefined &&
+			vtContent.sourceDuration !== 0 &&
 			(this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration - seek) < (this.props.partDuration || 0)
 		) {
 			return (
@@ -134,9 +154,14 @@ export class CustomLayerItemRenderer<
 					className="segment-timeline__piece__source-finished"
 					style={{
 						left: this.props.relative
-							? (((vtContent.sourceDuration - seek) / (this.getItemDuration() || 1)) * 100).toString() + '%'
-							: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
-					}}></div>
+							? (
+									((vtContent.sourceDuration + postrollDuration - seek) / (this.getItemDuration() || 1)) *
+									100
+							  ).toString() + '%'
+							: Math.round((vtContent.sourceDuration + postrollDuration - seek) * this.props.timeScale).toString() +
+							  'px',
+					}}
+				></div>
 			)
 		}
 		return null
@@ -146,7 +171,8 @@ export class CustomLayerItemRenderer<
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
-		return innerPiece.lifespan === PieceLifespan.OutOnRundownEnd &&
+		return (innerPiece.lifespan === PieceLifespan.OutOnRundownEnd ||
+			innerPiece.lifespan === PieceLifespan.OutOnShowStyleEnd) &&
 			!uiPiece.instance.userDuration &&
 			uiPiece.renderedDuration === null ? (
 			<div className="segment-timeline__piece__label label-icon label-infinite-icon">
@@ -163,7 +189,6 @@ export class CustomLayerItemRenderer<
 	renderContentTrimmed() {
 		const innerPiece = this.props.piece.instance.piece
 		const vtContent = innerPiece.content as VTContent | undefined
-		const duration = this.props.partDuration
 
 		return vtContent &&
 			vtContent.editable &&
@@ -173,6 +198,23 @@ export class CustomLayerItemRenderer<
 				<FontAwesomeIcon icon={faCut} />
 			</div>
 		) : null
+	}
+
+	renderDuration() {
+		const uiPiece = this.props.piece
+		const innerPiece = uiPiece.instance.piece
+		const content = innerPiece.content
+		const duration = content && content.sourceDuration
+		if (duration && this.props.showDurationSourceLayers?.has(innerPiece.sourceLayerId)) {
+			return (
+				<span className="segment-timeline__piece__label__duration">{`(${RundownUtils.formatDiffToTimecode(
+					duration,
+					false,
+					false,
+					true
+				)})`}</span>
+			)
+		}
 	}
 
 	render() {

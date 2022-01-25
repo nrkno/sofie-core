@@ -42,6 +42,11 @@
 		background: #fff;
 		margin: 0 !important;
 		transition: none;
+		z-index: 1000;
+	}
+
+	&.expco-popper.expco-popper-rounded {
+		border-radius: 4px;
 	}
 }
 
@@ -73,6 +78,7 @@
 
 		&.expco-expanded {
 			display: block;
+			z-index: 1000;
 		}
 	}
 

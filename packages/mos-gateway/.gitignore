@@ -1,0 +1,12 @@
+node_modules
+dist
+test
+src/**.js
+
+coverage
+.nyc_output
+*.log
+
+wallaby.conf.js
+
+.DS_Store

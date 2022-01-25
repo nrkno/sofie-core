@@ -5,6 +5,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 export interface IPlaylistRankMethodToggleProps {
 	manualSortingActive: boolean
+	nrcsName: string
 	toggleCallbackHandler: () => void
 }
 
@@ -14,7 +15,10 @@ export default withTranslation()(function PlaylistRankMethodToggle(props: Transl
 	const ncsSortingLabelClassnames = classNames('rundown-playlist__sorting-origin-toggle--label', {
 		active: props.manualSortingActive !== true,
 	})
-	const ncsSortingLabelText = props.manualSortingActive === true ? t('Use ENPS order') : t('Using ENPS order')
+	const ncsSortingLabelText = t(
+		props.manualSortingActive === true ? 'Use {{nrcsName}} order' : 'Using {{nrcsName}} order',
+		{ nrcsName: props.nrcsName }
+	)
 
 	const switchButtonClassname = classNames('switch-button', 'sb-nocolor', {
 		'sb-on': props.manualSortingActive,

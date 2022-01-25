@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
@@ -8,8 +7,9 @@ import { ShowStyleReadAccess } from '../security/showStyle'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
+import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 
-meteorPublish(PubSub.showStyleBases, function(selector0, token) {
+meteorPublish(PubSub.showStyleBases, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
 	const modifier: FindOptions<ShowStyleBase> = {
 		fields: {},
@@ -23,7 +23,7 @@ meteorPublish(PubSub.showStyleBases, function(selector0, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.showStyleVariants, function(selector0, token) {
+meteorPublish(PubSub.showStyleVariants, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 	const modifier: FindOptions<ShowStyleVariant> = {
 		fields: {},
@@ -38,13 +38,27 @@ meteorPublish(PubSub.showStyleVariants, function(selector0, token) {
 	return null
 })
 
-meteorPublish(PubSub.rundownLayouts, function(selector0, token) {
+meteorPublish(PubSub.rundownLayouts, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 	const modifier: FindOptions<RundownLayoutBase> = {
 		fields: {},
 	}
 	if (ShowStyleReadAccess.showStyleBaseContent(selector, cred)) {
 		return RundownLayouts.find(selector, modifier)
+	}
+	return null
+})
+
+meteorPublish(PubSub.triggeredActions, function (selector0, token) {
+	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+	const modifier: FindOptions<RundownLayoutBase> = {
+		fields: {},
+	}
+	if (
+		NoSecurityReadAccess.any() ||
+		(selector.showStyleBaseId && ShowStyleReadAccess.showStyleBaseContent(selector, cred))
+	) {
+		return TriggeredActions.find(selector, modifier)
 	}
 	return null
 })

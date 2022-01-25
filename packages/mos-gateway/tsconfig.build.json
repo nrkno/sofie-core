@@ -1,0 +1,10 @@
+{
+	"extends": "./config/tsconfig.base",
+	"exclude": [
+		"node_modules/**",
+		"src/**/*spec.ts",
+		"src/**/integrationTests/*",
+		"src/**/__tests__/*",
+		"src/**/__mocks__/*"
+	]
+}

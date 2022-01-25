@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import {
 	PeripheralDevice,
@@ -15,10 +14,11 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { PeripheralDeviceStatus } from '../Status/SystemStatus'
+import { StatusCodePill } from '../Status/StatusCodePill'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
+import { DevicePackageManagerSettings } from './DevicePackageManagerSettings'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -74,7 +74,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 				no: t('Cancel'),
 				onAccept: (e: any) => {
 					PeripheralDevicesAPI.restartDevice(device, e)
-						.then((res) => {
+						.then(() => {
 							NotificationCenter.push(
 								new Notification(
 									undefined,
@@ -85,7 +85,6 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							)
 						})
 						.catch((err) => {
-							// console.error(err)
 							NotificationCenter.push(
 								new Notification(
 									undefined,
@@ -100,6 +99,37 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 						})
 				},
 			})
+		}
+		troubleshootDevice(device: PeripheralDevice, e: Event | React.SyntheticEvent<object>) {
+			const { t } = this.props
+			PeripheralDevicesAPI.troubleshootDevice(device, e)
+				.then((result) => {
+					console.log(`Troubleshooting data for device ${device.name}`)
+					console.log(result)
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.NOTIFICATION,
+							t('Check the console for troubleshooting data from device "{{deviceName}}"!', {
+								deviceName: device.name,
+							}),
+							'DeviceSettings'
+						)
+					)
+				})
+				.catch((err) => {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t('There was an error when troubleshooting the device: "{{deviceName}}": {{errorMessage}}', {
+								deviceName: device.name,
+								errorMessage: err + '',
+							}),
+							'DeviceSettings'
+						)
+					)
+				})
 		}
 
 		renderEditForm(device: PeripheralDevice) {
@@ -126,20 +156,35 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 										obj={this.props.device}
 										type="text"
 										collection={PeripheralDevices}
-										className="mdinput"></EditAttribute>
+										className="mdinput"
+									></EditAttribute>
 									<span className="mdfx"></span>
 								</div>
 							</label>
 						</div>
 						<div className="col c12 rl-c6 alright">
 							<div className="mbs">
-								<button className="btn btn-secondary btn-tight" onClick={(e) => device && this.restartDevice(device)}>
+								<button className="btn btn-secondary btn-tight" onClick={() => device && this.restartDevice(device)}>
 									{t('Restart Device')}
 								</button>
 							</div>
 							<div className="mbs">
-								<PeripheralDeviceStatus device={device} />
+								<StatusCodePill
+									connected={device.connected}
+									statusCode={device.status?.statusCode}
+									messages={device.status?.messages}
+								/>
 							</div>
+							{device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER ? (
+								<div className="mbs">
+									<button
+										className="btn btn-secondary btn-tight"
+										onClick={(e) => device && this.troubleshootDevice(device, e)}
+									>
+										{t('Troubleshoot')}
+									</button>
+								</div>
+							) : null}
 							<div className="mbs">
 								{latencies.average > 0 ? (
 									<React.Fragment>
@@ -157,10 +202,34 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							</div>
 						</div>
 					</div>
+					<div className="mod mhv mhs">
+						<label className="field">
+							{t('Disable version check')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute="disableVersionChecks"
+								obj={this.props.device}
+								type="checkbox"
+								collection={PeripheralDevices}
+								className="input"
+							/>
+						</label>
+					</div>
 
 					{this.renderSpecifics()}
+
+					{this.props.device &&
+					this.props.device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER &&
+					this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+						? this.renderPackageManagerSpecial()
+						: null}
 				</div>
 			)
+		}
+		renderPackageManagerSpecial() {
+			if (this.props.device) {
+				return <DevicePackageManagerSettings deviceId={this.props.device._id} />
+			}
 		}
 
 		render() {

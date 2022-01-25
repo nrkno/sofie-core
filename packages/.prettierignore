@@ -1,0 +1,15 @@
+package.json
+CHANGELOG.md
+docs
+
+*/package.json
+*/CHANGELOG.md
+*/CHANGELOG*.md
+*/dist
+*/coverage
+
+blueprints-integration/src/copy
+
+# Temporary until they have been updated
+server-core-integration
+mos-gateway

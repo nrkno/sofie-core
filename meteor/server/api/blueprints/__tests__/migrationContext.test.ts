@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
-import { literal, getRandomId, protectString } from '../../../../lib/lib'
+import { literal, getRandomId, protectString, unprotectString } from '../../../../lib/lib'
 import {
 	LookaheadMode,
 	BlueprintMapping,
@@ -12,17 +12,22 @@ import {
 	TSR,
 	IBlueprintShowStyleVariant,
 	IBlueprintConfig,
+	TriggerType,
+	ClientActions,
+	PlayoutActions,
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
-import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
+import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import { CoreSystem } from '../../../../lib/collections/CoreSystem'
+import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
 
 describe('Test blueprint migrationContext', () => {
-	beforeAll(() => {
-		setupDefaultStudioEnvironment()
+	beforeAll(async () => {
+		await setupDefaultStudioEnvironment()
 	})
 
 	describe('MigrationContextStudio', () => {
@@ -58,7 +63,7 @@ describe('Test blueprint migrationContext', () => {
 				const studio = getStudio(ctx)
 				const rawMapping = {
 					device: TSR.DeviceType.ABSTRACT,
-					deviceId: 'dev1',
+					deviceId: protectString('dev1'),
 					lookahead: LookaheadMode.NONE,
 				}
 				studio.mappings['mapping1'] = rawMapping
@@ -100,12 +105,7 @@ describe('Test blueprint migrationContext', () => {
 					lookahead: LookaheadMode.NONE,
 				}
 
-				try {
-					ctx.insertMapping('', rawMapping)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Mapping id "" is invalid`)
-				}
+				expect(() => ctx.insertMapping('', rawMapping)).toThrow(`[500] Mapping id "" is invalid`)
 
 				// get should return the same
 				const mapping = ctx.getMapping('')
@@ -127,12 +127,9 @@ describe('Test blueprint migrationContext', () => {
 				}
 				expect(rawMapping).not.toEqual(existingMapping)
 
-				try {
-					ctx.insertMapping('mapping2', rawMapping)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] Mapping "mapping2" cannot be inserted as it already exists`)
-				}
+				expect(() => ctx.insertMapping('mapping2', rawMapping)).toThrow(
+					`[404] Mapping "mapping2" cannot be inserted as it already exists`
+				)
 
 				// get should return the same
 				const mapping = ctx.getMapping('mapping2')
@@ -180,12 +177,9 @@ describe('Test blueprint migrationContext', () => {
 				const existingMapping = ctx.getMapping('') as BlueprintMapping
 				expect(existingMapping).toBeFalsy()
 
-				try {
-					ctx.updateMapping('', { device: TSR.DeviceType.HYPERDECK })
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] Mapping "" cannot be updated as it does not exist`)
-				}
+				expect(() => ctx.updateMapping('', { device: TSR.DeviceType.HYPERDECK })).toThrow(
+					`[404] Mapping "" cannot be updated as it does not exist`
+				)
 			})
 			testInFiber('updateMapping: missing', () => {
 				const ctx = getContext()
@@ -196,12 +190,9 @@ describe('Test blueprint migrationContext', () => {
 					deviceId: 'hyper0',
 				}
 
-				try {
-					ctx.updateMapping('mapping1', rawMapping)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] Mapping "mapping1" cannot be updated as it does not exist`)
-				}
+				expect(() => ctx.updateMapping('mapping1', rawMapping)).toThrow(
+					`[404] Mapping "mapping1" cannot be updated as it does not exist`
+				)
 
 				// get should return the same
 				const mapping = ctx.getMapping('mapping1')
@@ -275,12 +266,7 @@ describe('Test blueprint migrationContext', () => {
 				const studio = getStudio(ctx)
 				const initialConfig = _.clone(studio.blueprintConfig)
 
-				try {
-					ctx.setConfig('', 34)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Config id "" is invalid`)
-				}
+				expect(() => ctx.setConfig('', 34)).toThrow(`[500] Config id "" is invalid`)
 
 				// Config should not have changed
 				expect(studio.blueprintConfig).toEqual(initialConfig)
@@ -434,6 +420,7 @@ describe('Test blueprint migrationContext', () => {
 								options: {},
 							},
 						},
+						locations: {},
 					}),
 					configManifest: {
 						deviceConfig: [], // can be empty as it's only useful for UI.
@@ -489,12 +476,9 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('')).toBeFalsy()
 
-				try {
-					ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT } as any)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Device id "" is invalid`)
-				}
+				expect(() => ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT } as any)).toThrow(
+					`[500] Device id "" is invalid`
+				)
 
 				expect(ctx.getDevice('')).toBeFalsy()
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
@@ -520,12 +504,9 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
-				try {
-					ctx.insertDevice('device01', { type: TSR.DeviceType.CASPARCG } as any)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] Device "device01" cannot be inserted as it already exists`)
-				}
+				expect(() => ctx.insertDevice('device01', { type: TSR.DeviceType.CASPARCG } as any)).toThrow(
+					`[404] Device "device01" cannot be inserted as it already exists`
+				)
 
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
 			})
@@ -553,12 +534,9 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('')).toBeFalsy()
 
-				try {
-					ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Device id "" is invalid`)
-				}
+				expect(() => ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })).toThrow(
+					`[500] Device id "" is invalid`
+				)
 
 				expect(ctx.getDevice('')).toBeFalsy()
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
@@ -584,12 +562,9 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('device22')).toBeFalsy()
 
-				try {
-					ctx.updateDevice('device22', { type: TSR.DeviceType.ATEM })
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] Device "device22" cannot be updated as it does not exist`)
-				}
+				expect(() => ctx.updateDevice('device22', { type: TSR.DeviceType.ATEM })).toThrow(
+					`[404] Device "device22" cannot be updated as it does not exist`
+				)
 
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
 			})
@@ -621,12 +596,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('')).toBeFalsy()
 
-				try {
-					ctx.removeDevice('')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Device id "" is invalid`)
-				}
+				expect(() => ctx.removeDevice('')).toThrow(`[500] Device id "" is invalid`)
 
 				expect(ctx.getDevice('')).toBeFalsy()
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
@@ -741,12 +711,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('getVariant: no id', () => {
 				const ctx = getContext()
 
-				try {
-					ctx.getVariant('')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Variant id "" is invalid`)
-				}
+				expect(() => ctx.getVariant('')).toThrow(`[500] Variant id "" is invalid`)
 			})
 			testInFiber('getVariant: missing', () => {
 				const ctx = getContext()
@@ -759,14 +724,11 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const initialVariants = _.clone(ctx.getAllVariants())
 
-				try {
+				expect(() =>
 					ctx.insertVariant('', {
 						name: 'test2',
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Variant id "" is invalid`)
-				}
+				).toThrow(`[500] Variant id "" is invalid`)
 
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})
@@ -775,15 +737,11 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariants = _.clone(ctx.getAllVariants())
 				expect(ctx.getVariant('variant1')).toBeTruthy()
 
-				try {
+				expect(() =>
 					ctx.insertVariant('variant1', {
 						name: 'test2',
 					})
-					fail('expected to throw')
-				} catch (e) {
-					// TODO - tidy up the error type
-					// expect(e.message).toBe(`[500] Variant id "variant1" already exists`)
-				}
+				).toThrow(/*`[500] Variant id "variant1" already exists`*/)
 
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})
@@ -799,13 +757,13 @@ describe('Test blueprint migrationContext', () => {
 				expect(variantId).toEqual(ctx.getVariantId('variant2'))
 
 				initialVariants.push(
-					(literal<ShowStyleVariant>({
+					literal<ShowStyleVariant>({
 						_id: protectString(variantId),
 						showStyleBaseId: getShowStyle(ctx)._id,
 						name: 'test2',
 						blueprintConfig: {},
 						_rundownVersionHash: '',
-					}) as any) as IBlueprintShowStyleVariant
+					}) as any as IBlueprintShowStyleVariant
 				)
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})
@@ -814,14 +772,11 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const initialVariants = _.clone(ctx.getAllVariants())
 
-				try {
+				expect(() =>
 					ctx.updateVariant('', {
 						name: 'test12',
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Variant id "" is invalid`)
-				}
+				).toThrow(`[500] Variant id "" is invalid`)
 
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})
@@ -830,15 +785,12 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariants = _.clone(ctx.getAllVariants())
 				expect(ctx.getVariant('variant11')).toBeFalsy()
 
-				try {
+				expect(() =>
 					ctx.updateVariant('variant11', {
 						name: 'test2',
 					})
-					fail('expected to throw')
-				} catch (e) {
-					// TODO - tidy up the error type
-					// expect(e.message).toBe(`[404] Variant id "variant1" does not exist`)
-				}
+				).toThrow(/*`[404] Variant id "variant1" does not exist`*/)
+				// TODO - tidy up the error type
 
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})
@@ -863,12 +815,7 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const initialVariants = _.clone(ctx.getAllVariants())
 
-				try {
-					ctx.removeVariant('')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Variant id "" is invalid`)
-				}
+				expect(() => ctx.removeVariant('')).toThrow(`[500] Variant id "" is invalid`)
 
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})
@@ -908,12 +855,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('getSourceLayer: no id', () => {
 				const ctx = getContext()
 
-				try {
-					ctx.getSourceLayer('')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`)
-				}
+				expect(() => ctx.getSourceLayer('')).toThrow(`[500] SourceLayer id "" is invalid`)
 			})
 			testInFiber('getSourceLayer: missing', () => {
 				const ctx = getContext()
@@ -938,16 +880,13 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialSourceLayers = _.clone(showStyle.sourceLayers)
 
-				try {
+				expect(() =>
 					ctx.insertSourceLayer('', {
 						name: 'test',
 						_rank: 10,
 						type: SourceLayerType.UNKNOWN,
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`)
-				}
+				).toThrow(`[500] SourceLayer id "" is invalid`)
 
 				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
@@ -957,16 +896,13 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialSourceLayers = _.clone(showStyle.sourceLayers)
 
-				try {
+				expect(() =>
 					ctx.insertSourceLayer('vt0', {
 						name: 'test',
 						_rank: 10,
 						type: SourceLayerType.UNKNOWN,
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] SourceLayer "vt0" already exists`)
-				}
+				).toThrow(`[500] SourceLayer "vt0" already exists`)
 
 				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
@@ -997,16 +933,13 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialSourceLayers = _.clone(showStyle.sourceLayers)
 
-				try {
+				expect(() =>
 					ctx.updateSourceLayer('', {
 						name: 'test',
 						_rank: 10,
 						type: SourceLayerType.UNKNOWN,
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`)
-				}
+				).toThrow(`[500] SourceLayer id "" is invalid`)
 
 				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
@@ -1016,16 +949,13 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialSourceLayers = _.clone(showStyle.sourceLayers)
 
-				try {
+				expect(() =>
 					ctx.updateSourceLayer('fake99', {
 						name: 'test',
 						_rank: 10,
 						type: SourceLayerType.UNKNOWN,
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] SourceLayer "fake99" cannot be updated as it does not exist`)
-				}
+				).toThrow(`[404] SourceLayer "fake99" cannot be updated as it does not exist`)
 
 				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
@@ -1060,12 +990,7 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialSourceLayers = _.clone(showStyle.sourceLayers)
 
-				try {
-					ctx.removeSourceLayer('')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`)
-				}
+				expect(() => ctx.removeSourceLayer('')).toThrow(`[500] SourceLayer id "" is invalid`)
 
 				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
@@ -1107,12 +1032,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('getOutputLayer: no id', () => {
 				const ctx = getContext()
 
-				try {
-					ctx.getOutputLayer('')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`)
-				}
+				expect(() => ctx.getOutputLayer('')).toThrow(`[500] OutputLayer id "" is invalid`)
 			})
 			testInFiber('getOutputLayer: missing', () => {
 				const ctx = getContext()
@@ -1133,16 +1053,13 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialOutputLayers = _.clone(showStyle.outputLayers)
 
-				try {
+				expect(() =>
 					ctx.insertOutputLayer('', {
 						name: 'test',
 						_rank: 10,
 						isPGM: true,
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`)
-				}
+				).toThrow(`[500] OutputLayer id "" is invalid`)
 
 				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
@@ -1152,16 +1069,13 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialOutputLayers = _.clone(showStyle.outputLayers)
 
-				try {
+				expect(() =>
 					ctx.insertOutputLayer('pgm', {
 						name: 'test',
 						_rank: 10,
 						isPGM: true,
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] OutputLayer "pgm" already exists`)
-				}
+				).toThrow(`[500] OutputLayer "pgm" already exists`)
 
 				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
@@ -1192,16 +1106,13 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialOutputLayers = _.clone(showStyle.outputLayers)
 
-				try {
+				expect(() =>
 					ctx.updateOutputLayer('', {
 						name: 'test',
 						_rank: 10,
 						isPGM: true,
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`)
-				}
+				).toThrow(`[500] OutputLayer id "" is invalid`)
 
 				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
@@ -1211,16 +1122,13 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialOutputLayers = _.clone(showStyle.outputLayers)
 
-				try {
+				expect(() =>
 					ctx.updateOutputLayer('fake99', {
 						name: 'test',
 						_rank: 10,
 						isPGM: true,
 					})
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] OutputLayer "fake99" cannot be updated as it does not exist`)
-				}
+				).toThrow(`[404] OutputLayer "fake99" cannot be updated as it does not exist`)
 
 				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
@@ -1254,12 +1162,7 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialOutputLayers = _.clone(showStyle.outputLayers)
 
-				try {
-					ctx.removeOutputLayer('')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`)
-				}
+				expect(() => ctx.removeOutputLayer('')).toThrow(`[500] OutputLayer id "" is invalid`)
 
 				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
@@ -1324,12 +1227,7 @@ describe('Test blueprint migrationContext', () => {
 				const showStyle = getShowStyle(ctx)
 				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
 
-				try {
-					ctx.setBaseConfig('', 34)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Config id "" is invalid`)
-				}
+				expect(() => ctx.setBaseConfig('', 34)).toThrow(`[500] Config id "" is invalid`)
 
 				// BaseConfig should not have changed
 				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
@@ -1360,12 +1258,9 @@ describe('Test blueprint migrationContext', () => {
 				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
 				expect(ctx.getBaseConfig('confUndef')).toBeFalsy()
 
-				try {
-					ctx.setBaseConfig('confUndef', undefined as any)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[400] setBaseConfig \"confUndef\": value is undefined`)
-				}
+				expect(() => ctx.setBaseConfig('confUndef', undefined as any)).toThrow(
+					`[400] setBaseConfig \"confUndef\": value is undefined`
+				)
 
 				// BaseConfig should not have changed
 				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
@@ -1397,12 +1292,9 @@ describe('Test blueprint migrationContext', () => {
 				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
-				try {
-					ctx.setBaseConfig('conf1', undefined as any)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[400] setBaseConfig \"conf1\": value is undefined`)
-				}
+				expect(() => ctx.setBaseConfig('conf1', undefined as any)).toThrow(
+					`[400] setBaseConfig \"conf1\": value is undefined`
+				)
 
 				// BaseConfig should not have changed
 				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
@@ -1464,22 +1356,14 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('getVariantConfig: no variant id', () => {
 				const ctx = getContext()
 
-				try {
-					ctx.getVariantConfig('', 'conf1')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] ShowStyleVariant \"\" not found`)
-				}
+				expect(() => ctx.getVariantConfig('', 'conf1')).toThrow(`[404] ShowStyleVariant \"\" not found`)
 			})
 			testInFiber('getVariantConfig: missing variant', () => {
 				const ctx = getContext()
 
-				try {
-					ctx.getVariantConfig('fake_variant', 'conf1')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] ShowStyleVariant \"fake_variant\" not found`)
-				}
+				expect(() => ctx.getVariantConfig('fake_variant', 'conf1')).toThrow(
+					`[404] ShowStyleVariant \"fake_variant\" not found`
+				)
 			})
 			testInFiber('getVariantConfig: missing', () => {
 				const ctx = getContext()
@@ -1498,34 +1382,21 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('setVariantConfig: no variant id', () => {
 				const ctx = getContext()
 
-				try {
-					ctx.setVariantConfig('', 'conf1', 5)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] ShowStyleVariant \"\" not found`)
-				}
+				expect(() => ctx.setVariantConfig('', 'conf1', 5)).toThrow(`[404] ShowStyleVariant \"\" not found`)
 			})
 			testInFiber('setVariantConfig: missing variant', () => {
 				const ctx = getContext()
 
-				try {
-					ctx.setVariantConfig('fake_variant', 'conf1', 5)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] ShowStyleVariant \"fake_variant\" not found`)
-				}
+				expect(() => ctx.setVariantConfig('fake_variant', 'conf1', 5)).toThrow(
+					`[404] ShowStyleVariant \"fake_variant\" not found`
+				)
 			})
 			testInFiber('setVariantConfig: no id', () => {
 				const ctx = getContext()
 				const initialVariantConfig = _.clone(getAllVariantConfigFromDb(ctx, 'configVariant'))
 				expect(ctx.getVariant('configVariant')).toBeTruthy()
 
-				try {
-					ctx.setVariantConfig('configVariant', '', 34)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[500] Config id "" is invalid`)
-				}
+				expect(() => ctx.setVariantConfig('configVariant', '', 34)).toThrow(`[500] Config id "" is invalid`)
 
 				// VariantConfig should not have changed
 				expect(getAllVariantConfigFromDb(ctx, 'configVariant')).toEqual(initialVariantConfig)
@@ -1552,14 +1423,9 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariantConfig = _.clone(getAllVariantConfigFromDb(ctx, 'configVariant'))
 				expect(ctx.getVariantConfig('configVariant', 'confUndef')).toBeFalsy()
 
-				try {
-					ctx.setVariantConfig('configVariant', 'confUndef', undefined as any)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(
-						`[400] setVariantConfig \"configVariant\", \"confUndef\": value is undefined`
-					)
-				}
+				expect(() => ctx.setVariantConfig('configVariant', 'confUndef', undefined as any)).toThrow(
+					`[400] setVariantConfig \"configVariant\", \"confUndef\": value is undefined`
+				)
 
 				// VariantConfig should not have changed
 				expect(getAllVariantConfigFromDb(ctx, 'configVariant')).toEqual(initialVariantConfig)
@@ -1587,12 +1453,9 @@ describe('Test blueprint migrationContext', () => {
 				const initialVariantConfig = _.clone(getAllVariantConfigFromDb(ctx, 'configVariant'))
 				expect(ctx.getVariantConfig('configVariant', 'conf1')).toBeTruthy()
 
-				try {
-					ctx.setVariantConfig('configVariant', 'conf1', undefined as any)
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[400] setVariantConfig \"configVariant\", \"conf1\": value is undefined`)
-				}
+				expect(() => ctx.setVariantConfig('configVariant', 'conf1', undefined as any)).toThrow(
+					`[400] setVariantConfig \"configVariant\", \"conf1\": value is undefined`
+				)
 
 				// VariantConfig should not have changed
 				expect(getAllVariantConfigFromDb(ctx, 'configVariant')).toEqual(initialVariantConfig)
@@ -1601,22 +1464,14 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('removeVariantConfig: no variant id', () => {
 				const ctx = getContext()
 
-				try {
-					ctx.removeVariantConfig('', 'conf1')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] ShowStyleVariant \"\" not found`)
-				}
+				expect(() => ctx.removeVariantConfig('', 'conf1')).toThrow(`[404] ShowStyleVariant \"\" not found`)
 			})
 			testInFiber('removeVariantConfig: missing variant', () => {
 				const ctx = getContext()
 
-				try {
-					ctx.removeVariantConfig('fake_variant', 'conf1')
-					fail('expected to throw')
-				} catch (e) {
-					expect(e.message).toBe(`[404] ShowStyleVariant \"fake_variant\" not found`)
-				}
+				expect(() => ctx.removeVariantConfig('fake_variant', 'conf1')).toThrow(
+					`[404] ShowStyleVariant \"fake_variant\" not found`
+				)
 			})
 			testInFiber('removeVariantConfig: no id', () => {
 				const ctx = getContext()
@@ -1653,6 +1508,167 @@ describe('Test blueprint migrationContext', () => {
 				// VariantConfig should have changed
 				delete initialVariantConfig['conf1']
 				expect(getAllVariantConfigFromDb(ctx, 'configVariant')).toEqual(initialVariantConfig)
+			})
+		})
+	})
+
+	describe('MigrationContextSystem', () => {
+		function getContext() {
+			const coreSystem = CoreSystem.findOne()
+			expect(coreSystem).toBeTruthy()
+			return new MigrationContextSystem()
+		}
+		function getSystemTriggeredActions() {
+			const systemTriggeredActions = TriggeredActions.find({
+				showStyleBaseId: null,
+			}).fetch()
+			expect(systemTriggeredActions).toHaveLength(3)
+			return systemTriggeredActions
+		}
+		describe('triggeredActions', () => {
+			testInFiber('getAllTriggeredActions: return all triggeredActions', () => {
+				const ctx = getContext()
+
+				// default studio environment should have 3 core-level actions
+				expect(ctx.getAllTriggeredActions()).toHaveLength(3)
+			})
+			testInFiber('getTriggeredAction: no id', () => {
+				const ctx = getContext()
+
+				expect(() => ctx.getTriggeredAction('')).toThrow('[500] Triggered actions Id "" is invalid')
+			})
+			testInFiber('getTriggeredAction: missing id', () => {
+				const ctx = getContext()
+
+				expect(ctx.getTriggeredAction('abc')).toBeFalsy()
+			})
+			testInFiber('getTriggeredAction: existing id', () => {
+				const ctx = getContext()
+
+				const existingTriggeredActions = getSystemTriggeredActions()[0]
+				expect(existingTriggeredActions).toBeTruthy()
+				expect(ctx.getTriggeredAction(unprotectString(existingTriggeredActions._id))).toMatchObject(
+					existingTriggeredActions
+				)
+			})
+			testInFiber('setTriggeredAction: set undefined', () => {
+				const ctx = getContext()
+
+				expect(() => ctx.setTriggeredAction(undefined as any)).toThrow(/Match error/)
+			})
+			testInFiber('setTriggeredAction: set without id', () => {
+				const ctx = getContext()
+
+				expect(() =>
+					ctx.setTriggeredAction({
+						_rank: 0,
+						actions: [],
+						triggers: [],
+					} as any)
+				).toThrow(/Match error/)
+			})
+			testInFiber('setTriggeredAction: set without actions', () => {
+				const ctx = getContext()
+
+				expect(() =>
+					ctx.setTriggeredAction({
+						_id: 'test1',
+						_rank: 0,
+						triggers: [],
+					} as any)
+				).toThrow(/Match error/)
+			})
+			testInFiber('setTriggeredAction: set with null as name', () => {
+				const ctx = getContext()
+
+				expect(() =>
+					ctx.setTriggeredAction({
+						_id: 'test1',
+						_rank: 0,
+						actions: [],
+						triggers: [],
+						name: null,
+					} as any)
+				).toThrow(/Match error/)
+			})
+			testInFiber('setTriggeredAction: set non-existing id', () => {
+				const ctx = getContext()
+
+				const blueprintLocalId = 'test0'
+
+				ctx.setTriggeredAction({
+					_id: blueprintLocalId,
+					_rank: 1001,
+					actions: [
+						{
+							action: ClientActions.shelf,
+							filterChain: [
+								{
+									object: 'view',
+								},
+							],
+							state: 'toggle',
+						},
+					],
+					triggers: [
+						{
+							type: TriggerType.hotkey,
+							keys: 'Digit1',
+						},
+					],
+				})
+				const insertedTriggeredAction = ctx.getTriggeredAction(blueprintLocalId)
+				expect(insertedTriggeredAction).toBeTruthy()
+				// the actual id in the database should not be the same as the one provided
+				// in the setTriggeredAction method
+				expect(insertedTriggeredAction?._id !== blueprintLocalId).toBe(true)
+			})
+			testInFiber('setTriggeredAction: set existing id', () => {
+				const ctx = getContext()
+
+				const oldCoreAction = ctx.getTriggeredAction('mockTriggeredAction_core0')
+				expect(oldCoreAction).toBeTruthy()
+				expect(oldCoreAction?.actions[0].action).toBe(PlayoutActions.adlib)
+
+				ctx.setTriggeredAction({
+					_id: 'mockTriggeredAction_core0',
+					_rank: 0,
+					actions: [
+						{
+							action: PlayoutActions.activateRundownPlaylist,
+							rehearsal: false,
+							filterChain: [
+								{
+									object: 'view',
+								},
+							],
+						},
+					],
+					triggers: [
+						{
+							type: TriggerType.hotkey,
+							keys: 'Control+Shift+Enter',
+						},
+					],
+				})
+
+				const newCoreAction = ctx.getTriggeredAction('mockTriggeredAction_core0')
+				expect(newCoreAction).toBeTruthy()
+				expect(newCoreAction?.actions[0].action).toBe(PlayoutActions.activateRundownPlaylist)
+			})
+			testInFiber('removeTriggeredAction: remove empty id', () => {
+				const ctx = getContext()
+
+				expect(() => ctx.removeTriggeredAction('')).toThrow('[500] Triggered actions Id "" is invalid')
+			})
+			testInFiber('removeTriggeredAction: remove existing id', () => {
+				const ctx = getContext()
+
+				const oldCoreAction = ctx.getTriggeredAction('mockTriggeredAction_core0')
+				expect(oldCoreAction).toBeTruthy()
+
+				ctx.removeTriggeredAction('mockTriggeredAction_core0')
+				expect(ctx.getTriggeredAction('mockTriggeredAction_core0')).toBeFalsy()
 			})
 		})
 	})

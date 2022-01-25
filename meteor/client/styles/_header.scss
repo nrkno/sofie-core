@@ -12,7 +12,9 @@
 	.badge {
 		color: #fff;
 		text-decoration: none;
-		&:visited {
+		&:link,
+		&:visited,
+		&:active {
 			color: #fff;
 		}
 		.sofie-logo {
@@ -22,6 +24,11 @@
 			height: 2em;
 			margin-top: -0.5em;
 		}
+	}
+
+	.dashboard {
+		flex: 1 1;
+		position: unset;
 	}
 }
 

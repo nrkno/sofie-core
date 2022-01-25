@@ -1,7 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import * as _ from 'underscore'
-import { ensureCollectionProperty } from './lib'
 
 /*
  * **************************************************************************************
@@ -14,5 +12,5 @@ import { ensureCollectionProperty } from './lib'
  */
 // Release X
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
-	ensureCollectionProperty('RundownLayouts', { regionId: { $exists: false } }, 'regionId', 'shelf_layouts'),
+	// Add some migrations!
 ])

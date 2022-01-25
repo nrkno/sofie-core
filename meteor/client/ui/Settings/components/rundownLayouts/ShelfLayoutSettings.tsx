@@ -20,32 +20,6 @@ export default withTranslation()(
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Show Buckets')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'showBuckets'}
-								obj={this.props.item}
-								options={RundownLayoutType}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Disable Context Menu')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'disableContextMenu'}
-								obj={this.props.item}
-								options={RundownLayoutType}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
 							{t('Expose layout as a standalone page')}
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -53,19 +27,8 @@ export default withTranslation()(
 								obj={this.props.item}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Expose as a layout for the shelf')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'exposeAsShelf'}
-								obj={this.props.item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -77,7 +40,8 @@ export default withTranslation()(
 								obj={this.props.item}
 								type="checkbox"
 								collection={RundownLayouts}
-								className="mod mas"></EditAttribute>
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -91,6 +55,34 @@ export default withTranslation()(
 								collection={RundownLayouts}
 								className="input text-input input-l"
 							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show Buckets')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'showBuckets'}
+								obj={this.props.item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Disable Context Menu')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'disableContextMenu'}
+								obj={this.props.item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							></EditAttribute>
 						</label>
 					</div>
 				</React.Fragment>

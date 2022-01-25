@@ -15,12 +15,14 @@ import { RundownTiming, TimingEvent } from '../RundownView/RundownTiming/Rundown
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { VTContent } from '@sofie-automation/blueprints-integration'
-import { getUnfinishedPieceInstancesReactive } from '../../lib/shelf'
+import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
+import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 interface IPieceCountdownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPieceCountdown
 	playlist: RundownPlaylist
+	showStyleBase: DBShowStyleBase
 }
 
 interface IPieceCountdownPanelTrackedProps {
@@ -44,11 +46,11 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 	}
 
 	componentDidMount() {
-		window.addEventListener(RundownTiming.Events.timeupdate, this.updateTimecode)
+		window.addEventListener(RundownTiming.Events.timeupdateLowResolution, this.updateTimecode)
 	}
 
 	componentWillUnmount() {
-		window.removeEventListener(RundownTiming.Events.timeupdate, this.updateTimecode)
+		window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.updateTimecode)
 	}
 
 	updateTimecode(e: TimingEvent) {
@@ -75,22 +77,22 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 			<div
 				className="piece-countdown-panel"
 				style={_.extend(
-					isDashboardLayout
-						? dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPieceCountdown), height: 1 })
-						: {},
+					isDashboardLayout ? dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPieceCountdown) }) : {},
 					{
 						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
-				)}>
+				)}
+			>
 				<span
 					className={ClassNames('piece-countdown-panel__timecode', {
-						overtime: !!(Math.floor(this.state.displayTimecode / 1000) > 0),
+						overtime: Math.floor(this.state.displayTimecode / 1000) > 0,
 					})}
 					style={{
 						fontSize: isDashboardLayout
 							? ((this.props.panel as DashboardLayoutPieceCountdown).scale || 1) * 1.5 + 'em'
 							: undefined,
-					}}>
+					}}
+				>
 					{RundownUtils.formatDiffToTimecode(
 						this.state.displayTimecode || 0,
 						true,
@@ -110,7 +112,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 
 export const PieceCountdownPanel = withTracker<IPieceCountdownPanelProps, IState, IPieceCountdownPanelTrackedProps>(
 	(props: IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps) => {
-		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
+		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist, props.showStyleBase)
 		const livePieceInstance: PieceInstance | undefined =
 			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
 				? _.flatten(Object.values(unfinishedPieces)).find((piece: PieceInstance) => {

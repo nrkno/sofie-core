@@ -1,4 +1,3 @@
-import { Omit } from '../lib'
 import { ClientAPI } from '../api/client'
 import { MethodContext } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
@@ -18,6 +17,8 @@ import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integr
 import { BucketAdLib } from '../collections/BucketAdlibs'
 import { AdLibActionId, AdLibActionCommon } from '../collections/AdLibActions'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
+import { PeripheralDeviceId } from '../collections/PeripheralDevices'
+import { RundownBaselineAdLibActionId } from '../collections/RundownBaselineAdLibActions'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -84,6 +85,7 @@ export interface NewUserActionAPI extends MethodContext {
 	executeAction(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
+		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
@@ -147,16 +149,27 @@ export interface NewUserActionAPI extends MethodContext {
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
 	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>> //
-	resyncSegment(
-		userEvent: string,
-		rundownId: RundownId,
-		segmentId: SegmentId
-	): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
 	mediaRestartWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaAbortWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaPrioritizeWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaRestartAllWorkflows(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
 	mediaAbortAllWorkflows(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
+	packageManagerRestartExpectation(
+		userEvent: string,
+		deviceId: PeripheralDeviceId,
+		workId: string
+	): Promise<ClientAPI.ClientResponse<void>>
+	packageManagerRestartAllExpectations(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<void>>
+	packageManagerAbortExpectation(
+		userEvent: string,
+		deviceId: PeripheralDeviceId,
+		workId: string
+	): Promise<ClientAPI.ClientResponse<void>>
+	packageManagerRestartPackageContainer(
+		userEvent: string,
+		deviceId: PeripheralDeviceId,
+		containerId: string
+	): Promise<ClientAPI.ClientResponse<void>>
 	regenerateRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	generateRestartToken(userEvent: string): Promise<ClientAPI.ClientResponse<string>>
 	restartCore(userEvent: string, token: string): Promise<ClientAPI.ClientResponse<string>>
@@ -257,13 +270,17 @@ export enum UserActionAPIMethods {
 
 	'removeRundown' = 'userAction.removeRundown',
 	'resyncRundown' = 'userAction.resyncRundown',
-	'resyncSegment' = 'userAction.resyncSegment',
 
 	'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
 	'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',
 	'mediaRestartAllWorkflows' = 'userAction.mediamanager.restartAllWorkflows',
 	'mediaAbortAllWorkflows' = 'userAction.mediamanager.abortAllWorkflows',
 	'mediaPrioritizeWorkflow' = 'userAction.mediamanager.mediaPrioritizeWorkflow',
+
+	'packageManagerRestartExpectation' = 'userAction.packagemanager.restartExpectation',
+	'packageManagerRestartAllExpectations' = 'userAction.packagemanager.restartAllExpectations',
+	'packageManagerAbortExpectation' = 'userAction.packagemanager.abortExpectation',
+	'packageManagerRestartPackageContainer' = 'userAction.packagemanager.restartPackageContainer',
 
 	'regenerateRundownPlaylist' = 'userAction.ingest.regenerateRundownPlaylist',
 
@@ -272,6 +289,8 @@ export enum UserActionAPIMethods {
 
 	'guiFocused' = 'userAction.focused',
 	'guiBlurred' = 'userAction.blurred',
+
+	'getTranslationBundle' = 'userAction.getTranslationBundle',
 
 	'switchRouteSet' = 'userAction.switchRouteSet',
 	'moveRundown' = 'userAction.moveRundown',

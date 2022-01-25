@@ -1,16 +1,12 @@
 import { PieceGeneric } from './Pieces'
-import { TransformedCollection } from '../typings/meteor'
 import { registerCollection } from '../lib'
-import { IBlueprintAdLibPiece, BaseContent } from '@sofie-automation/blueprints-integration'
+import { IBlueprintAdLibPiece } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { PartId } from './Parts'
 import { registerIndex } from '../database'
 
 export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
-	/** The object describing the piece in detail */
-	content?: BaseContent // TODO: Temporary, should be put into IBlueprintAdLibPiece
-
 	/** Rundown this AdLib belongs to */
 	rundownId: RundownId
 
@@ -18,9 +14,7 @@ export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	partId?: PartId
 }
 
-export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece> = createMongoCollection<AdLibPiece>(
-	'adLibPieces'
-)
+export const AdLibPieces = createMongoCollection<AdLibPiece, AdLibPiece>('adLibPieces')
 registerCollection('AdLibPieces', AdLibPieces)
 
 registerIndex(AdLibPieces, {

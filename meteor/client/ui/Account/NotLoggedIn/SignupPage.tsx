@@ -1,17 +1,13 @@
 import * as React from 'react'
-import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
-import { StatusResponse } from '../../../../lib/api/systemStatus'
-import { MeteorCall } from '../../../../lib/api/methods'
 import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 import { createUser } from '../../../../lib/api/user'
 
-interface ISignupPageProps extends RouteComponentProps {}
+type ISignupPageProps = RouteComponentProps
 
 interface ISignupPageState {
 	email: string
@@ -194,7 +190,8 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 						</Link>
 						<button
 							className="btn btn-primary"
-							onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.createAccount(e)}>
+							onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.createAccount(e)}
+						>
 							{t('Create New Account')}
 						</button>
 					</div>
