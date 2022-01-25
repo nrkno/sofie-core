@@ -12,10 +12,10 @@ export async function handleExpectedPackagesRegenerate(
 	context: JobContext,
 	data: ExpectedPackagesRegenerateProps
 ): Promise<void> {
-	await runWithRundownLock(context, data.rundownId, async (rundown) => {
+	await runWithRundownLock(context, data.rundownId, async (rundown, rundownLock) => {
 		if (!rundown) throw new Error(`Rundown "${data.rundownId}" not found`)
 
-		const cache = await CacheForIngest.createFromRundown(context, rundown)
+		const cache = await CacheForIngest.createFromRundown(context, rundownLock, rundown)
 
 		await updateExpectedPackagesOnRundown(context, cache)
 
