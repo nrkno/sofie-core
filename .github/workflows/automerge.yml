@@ -1,0 +1,20 @@
+name: Merge master to staging
+
+on:
+  schedule:
+    - cron: '23 45 * * *' # every night
+  workflow_dispatch: # on button click
+
+jobs:
+  sync:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: tgymnich/fork-sync@v1.6
+        with:
+          owner: tv2
+          head: master
+          base: staging
+          pr_title: Automerge master
+          auto_merge: false
