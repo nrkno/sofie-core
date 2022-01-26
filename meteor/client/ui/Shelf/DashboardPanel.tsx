@@ -107,7 +107,7 @@ export function dashboardElementStyle(el: DashboardPositionableElement): React.C
 				: el.height < 0
 				? `calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))`
 				: undefined,
-		fontSize: (el.scale || 1) * 1.5 + 'em',
+		fontSize: el.scale ? el.scale * 1.5 + 'em' : undefined,
 	}
 }
 

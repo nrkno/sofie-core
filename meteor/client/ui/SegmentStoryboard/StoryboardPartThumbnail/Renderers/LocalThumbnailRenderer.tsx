@@ -17,15 +17,13 @@ export function LocalThumbnailRenderer({ pieceInstance }: IProps) {
 			<div className="segment-storyboard__thumbnail__label segment-storyboard__thumbnail__label--lg">
 				{color && (
 					<span
-						style={{ color: color.startsWith('#') ? color : `#${color}` }}
-						className="segment-timeline__piece__label segment-timeline__piece__label__colored-mark"
+						style={{ backgroundColor: color.startsWith('#') ? color : `#${color}` }}
+						className="segment-storyboard__thumbnail__label segment-storyboard__thumbnail__label__colored-mark"
 					>
 						·
 					</span>
 				)}
-				{localContent.studioLabel
-					? `${pieceInstance.sourceLayer?.abbreviation}${localContent.studioLabel}` || pieceInstance.instance.piece.name
-					: pieceInstance.instance.piece.name}
+				{pieceInstance.instance.piece.name}
 			</div>
 		</>
 	)
