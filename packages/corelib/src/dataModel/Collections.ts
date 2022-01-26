@@ -43,4 +43,5 @@ export enum CollectionName {
 	TranslationsBundles = 'translationsBundles',
 	UserActionsLog = 'userActionsLog',
 	Users = 'Users',
+	Workers = 'workers',
 }

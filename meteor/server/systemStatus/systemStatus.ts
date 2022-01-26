@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, getRandomId, assertNever } from '../../lib/lib'
+import { getCurrentTime, Time, getRandomId, assertNever, literal } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	parseVersion,
@@ -26,6 +26,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemWriteAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { Workers } from '../../lib/collections/Workers'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -212,14 +213,56 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		checks: checks,
 	}
 
+	// Check status of workers
+	const workerStatuses = Workers.find().fetch()
+	if (!workerStatuses.length) {
+		if (!statusObj.components) statusObj.components = []
+		statusObj.components.push(
+			literal<Component>({
+				name: 'workers',
+				status: 'FAIL',
+				updated: new Date().toISOString(),
+				_status: StatusCode.BAD,
+				_internal: {
+					statusCodeString: StatusCode[StatusCode.BAD],
+					messages: ['No workers are set up'],
+					versions: {},
+				},
+			})
+		)
+	} else {
+		for (const workerStatus of workerStatuses) {
+			if (!statusObj.components) statusObj.components = []
+			const status = workerStatus.connected ? StatusCode.GOOD : StatusCode.BAD
+			statusObj.components.push(
+				literal<Component>({
+					name: `worker-${workerStatus.name}`,
+					status: workerStatus.connected ? 'OK' : 'FAIL',
+					updated: new Date().toISOString(),
+					_status: status,
+					_internal: {
+						statusCodeString: StatusCode[status],
+						messages: [workerStatus.status],
+						versions: {},
+					},
+				})
+			)
+		}
+	}
+
+	// Check status of devices:
 	let devices: PeripheralDevice[] = []
 	if (studioId) {
+		// Check status for a certain studio:
+
 		if (!StudioReadAccess.studioContent({ studioId: studioId }, cred0)) {
 			throw new Meteor.Error(403, `Not allowed`)
 		}
 		devices = PeripheralDevices.find({ studioId: studioId }).fetch()
 	} else {
 		if (Settings.enableUserAccounts) {
+			// Check status for the user's studios:
+
 			const cred = resolveCredentials(cred0)
 			if (!cred.organization) throw new Meteor.Error(500, 'user has no organization')
 			if (!OrganizationReadAccess.organizationContent({ organizationId: cred.organization._id }, cred)) {
@@ -227,6 +270,8 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 			}
 			devices = PeripheralDevices.find({ organizationId: cred.organization._id }).fetch()
 		} else {
+			// Check status for all studios:
+
 			devices = PeripheralDevices.find({}).fetch()
 		}
 	}

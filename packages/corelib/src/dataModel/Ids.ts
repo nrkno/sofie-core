@@ -125,3 +125,6 @@ export type UserActionsLogItemId = ProtectedString<'UserActionsLogItemId'>
 
 /** A string, identifying a User */
 export type UserId = ProtectedString<'UserId'>
+
+/** A string, identifying a Worker */
+export type WorkerId = ProtectedString<'WorkerId'>
