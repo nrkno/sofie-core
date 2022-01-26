@@ -22,7 +22,7 @@ import {
 	ISourceLayer,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
-	SomeTimelineContent,
+	SomeContent,
 } from '@sofie-automation/blueprints-integration'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -437,7 +437,7 @@ export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
 	)
 }
 
-export interface AdLibPieceUi extends AdLibPiece {
+export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> {
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	isGlobal?: boolean
@@ -515,12 +515,11 @@ function actionToAdLibPieceUi(
 ): AdLibPieceUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: SomeTimelineContent = { timelineObjects: [] }
+	let content: SomeContent = {}
 	if (RundownUtils.isAdlibActionContent(action.display)) {
 		sourceLayerId = action.display.sourceLayerId
 		outputLayerId = action.display.outputLayerId
 		content = {
-			timelineObjects: [],
 			...action.display.content,
 		}
 	}
@@ -793,14 +792,15 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 			rundownBaselineAdLibs = memoizedIsolatedAutorun(
 				(currentRundownId: RundownId, sourceLayerLookup: SourceLayerLookup) => {
-					const rundownAdLibItems: RundownBaselineAdLibItem[] = RundownBaselineAdLibPieces.find(
-						{
-							rundownId: currentRundownId,
-						},
-						{
-							sort: { sourceLayerId: 1, _rank: 1, name: 1 },
-						}
-					).fetch()
+					const rundownAdLibItems: Array<Omit<RundownBaselineAdLibItem, 'timelineObjectsString'>> =
+						RundownBaselineAdLibPieces.find(
+							{
+								rundownId: currentRundownId,
+							},
+							{
+								sort: { sourceLayerId: 1, _rank: 1, name: 1 },
+							}
+						).fetch()
 					rundownBaselineAdLibs = rundownAdLibItems.concat(
 						props.showStyleBase.sourceLayers
 							.filter((i) => i.isSticky)
@@ -821,7 +821,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 									sourceLayerId: layer._id,
 									outputLayerId: '',
 									_rank: 0,
-									content: { timelineObjects: [] },
+									content: {},
 								})
 							)
 					)
@@ -899,7 +899,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 								sourceLayerId: layer._id,
 								outputLayerId: '',
 								_rank: 0,
-								content: { timelineObjects: [] },
+								content: {},
 							})
 						)
 				},

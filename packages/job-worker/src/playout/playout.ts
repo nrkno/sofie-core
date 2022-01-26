@@ -550,7 +550,7 @@ export async function activateHold(context: JobContext, data: ActivateHoldProps)
 			}
 
 			const hasDynamicallyInserted = cache.PieceInstances.findOne(
-				(p) => p.partInstanceId === currentPartInstance._id && p.dynamicallyInserted
+				(p) => p.partInstanceId === currentPartInstance._id && !!p.dynamicallyInserted
 			)
 			if (hasDynamicallyInserted) throw UserError.create(UserErrorMessage.HoldAfterAdlib)
 

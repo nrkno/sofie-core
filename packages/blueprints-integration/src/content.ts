@@ -31,10 +31,6 @@ export enum SourceLayerType {
 	LOCAL = 15,
 }
 
-export type WithTimeline<T extends BaseContent> = T & {
-	timelineObjects: TimelineObjectCoreExt[]
-}
-
 export interface BaseContent {
 	editable?: BaseEditableParameters
 
@@ -64,7 +60,6 @@ export type SomeContent =
 	| GraphicsContent
 	| UnknownContent
 	| EvsContent
-export type SomeTimelineContent = WithTimeline<SomeContent>
 
 export type UnknownContent = BaseContent
 

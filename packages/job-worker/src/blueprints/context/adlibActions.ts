@@ -10,6 +10,8 @@ import {
 	IEventContext,
 	OmitId,
 	Time,
+	WithPieceTimelineObjects,
+	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -17,7 +19,7 @@ import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/Show
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { assertNever, clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
-import { ReadonlyDeep } from 'type-fest'
+import { ReadonlyDeep, SetRequired } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { ShowStyleUserContext, UserContextInfo } from './context'
 import { WatchedPackagesHelper } from './watchedPackages'
@@ -32,7 +34,7 @@ import {
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { JobContext } from '../../jobs'
-import { MongoQuery } from '../../db'
+import { MongoQuery, MongoModifier } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	innerFindLastPieceOnLayer,
@@ -41,9 +43,13 @@ import {
 	innerStartQueuedAdLib,
 	innerStopPieces,
 } from '../../playout/adlib'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBPartInstance, unprotectPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { IBlueprintMutatablePartSampleKeys, IBlueprintPieceSampleKeys } from './lib'
+import {
+	convertPieceInstanceToBlueprintsWithTimelineObjects,
+	IBlueprintMutatablePartSampleKeys,
+	IBlueprintPieceWithTimelineObjectsSampleKeys,
+} from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -253,7 +259,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return this._cache.Parts.findOne({ _id: pieceDB.startPartId })
 	}
 
-	async insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): Promise<IBlueprintPieceInstance> {
+	async insertPiece(
+		part: 'current' | 'next',
+		rawPiece: WithTimelineObjects<IBlueprintPiece>
+	): Promise<WithPieceTimelineObjects<IBlueprintPieceInstance>> {
 		const partInstanceId = this._getPartInstanceId(part)
 		if (!partInstanceId) {
 			throw new Error('Cannot insert piece when no active part')
@@ -269,7 +278,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Failed to find rundown of partInstance')
 		}
 
-		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, IBlueprintPieceSampleKeys)
+		const trimmedPiece: WithTimelineObjects<IBlueprintPiece> = _.pick(
+			rawPiece,
+			IBlueprintPieceWithTimelineObjectsSampleKeys
+		)
 
 		const piece = postProcessPieces(
 			this._context,
@@ -293,14 +305,17 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
-		return clone(unprotectObject(newPieceInstance))
+		return convertPieceInstanceToBlueprintsWithTimelineObjects(newPieceInstance)
 	}
 	async updatePieceInstance(
 		pieceInstanceId: string,
-		piece: Partial<OmitId<IBlueprintPiece>>
-	): Promise<IBlueprintPieceInstance> {
+		piece: Partial<OmitId<WithTimelineObjects<IBlueprintPiece>>>
+	): Promise<WithPieceTimelineObjects<IBlueprintPieceInstance>> {
 		// filter the submission to the allowed ones
-		const trimmedPiece: Partial<OmitId<IBlueprintPiece>> = _.pick(piece, IBlueprintPieceSampleKeys)
+		const trimmedPiece: Partial<OmitId<WithTimelineObjects<IBlueprintPiece>>> = _.pick(
+			piece,
+			IBlueprintPieceWithTimelineObjectsSampleKeys
+		)
 		if (Object.keys(trimmedPiece).length === 0) {
 			throw new Error('Some valid properties must be defined')
 		}
@@ -326,23 +341,27 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Can only update piece instances in current or next part instance')
 		}
 
-		if (piece.content && piece.content.timelineObjects) {
-			piece.content.timelineObjects = postProcessTimelineObjects(
-				pieceInstance.piece._id,
-				this.showStyleCompound.blueprintId,
-				piece.content.timelineObjects,
-				true
-			)
-		}
-
-		const update: any = {
+		const update: SetRequired<MongoModifier<PieceInstance>, '$set' | '$unset'> = {
 			$set: {},
 			$unset: {},
 		}
 
+		if (piece.timelineObjects) {
+			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
+				postProcessTimelineObjects(
+					pieceInstance.piece._id,
+					this.showStyleCompound.blueprintId,
+					piece.timelineObjects,
+					false
+				)
+			)
+			// This has been processed
+			delete piece.timelineObjects
+		}
+
 		for (const [k, val] of Object.entries(trimmedPiece)) {
 			if (val === undefined) {
-				update.$unset[`piece.${k}`] = val
+				update.$unset[`piece.${k}`] = 1
 			} else {
 				update.$set[`piece.${k}`] = val
 			}
@@ -358,9 +377,12 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const updatedPieceInstance = this._cache.PieceInstances.findOne(pieceInstance._id)
 		if (!updatedPieceInstance) throw new Error('PieceInstance disappeared!')
 
-		return clone(unprotectObject(updatedPieceInstance))
+		return convertPieceInstanceToBlueprintsWithTimelineObjects(updatedPieceInstance)
 	}
-	async queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance> {
+	async queuePart(
+		rawPart: IBlueprintPart,
+		rawPieces: WithTimelineObjects<IBlueprintPiece>[]
+	): Promise<IBlueprintPartInstance> {
 		const currentPartInstance = this._cache.Playlist.doc.currentPartInstanceId
 			? this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
 			: undefined

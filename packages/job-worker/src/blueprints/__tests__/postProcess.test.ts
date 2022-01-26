@@ -12,13 +12,18 @@ import {
 	TimelineObjectCoreExt,
 	TSR,
 	IBlueprintPieceType,
+	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { clone, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	deserializePieceTimelineObjectsBlob,
+	EmptyPieceTimelineObjectsBlob,
+	Piece,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 // Setup the mocks
 import * as hashlib from '@sofie-automation/corelib/dist/hash'
@@ -296,14 +301,15 @@ describe('Test blueprint post-process', () => {
 			const blueprintId = protectString('blueprint9')
 			const rundownId = protectString('rundown1')
 
-			const pieces = literal<IBlueprintAdLibPiece[]>([
+			const pieces = literal<Array<WithTimelineObjects<IBlueprintAdLibPiece>>>([
 				{
 					_rank: 2,
 					name: 'test',
 					externalId: 'eid1',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {} as any,
+					content: {},
+					timelineObjects: undefined as any,
 					lifespan: PieceLifespan.WithinPart,
 				},
 				{
@@ -312,9 +318,8 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid2',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {
-						timelineObjects: [],
-					},
+					content: {},
+					timelineObjects: [],
 					lifespan: PieceLifespan.WithinPart,
 				},
 				{
@@ -323,9 +328,8 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid2',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {
-						timelineObjects: [],
-					},
+					content: {},
+					timelineObjects: [],
 					lifespan: PieceLifespan.WithinPart,
 				},
 			])
@@ -349,9 +353,8 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: '',
 				rundownId: protectString(''),
 				status: 0,
-				content: {
-					timelineObjects: [],
-				},
+				content: {},
+				timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 				lifespan: PieceLifespan.WithinPart,
 			})
 			ensureAllKeysDefined(tmpObj, res)
@@ -373,24 +376,23 @@ describe('Test blueprint post-process', () => {
 			const blueprintId = protectString('blueprint0')
 			const rundownId = protectString('rundown1')
 
-			const piece = literal<IBlueprintAdLibPiece>({
+			const piece = literal<WithTimelineObjects<IBlueprintAdLibPiece>>({
 				_rank: 9,
 				name: 'test2',
 				externalId: 'eid2',
 				sourceLayerId: 'sl0',
 				outputLayerId: 'ol0',
-				content: {
-					timelineObjects: [
-						literal<TimelineObjectCoreExt>({
-							id: '',
-							enable: {},
-							layer: 'four',
-							content: {
-								deviceType: TSR.DeviceType.HYPERDECK,
-							},
-						}),
-					],
-				},
+				content: {},
+				timelineObjects: [
+					literal<TimelineObjectCoreExt>({
+						id: '',
+						enable: {},
+						layer: 'four',
+						content: {
+							deviceType: TSR.DeviceType.HYPERDECK,
+						},
+					}),
+				],
 				lifespan: PieceLifespan.WithinPart,
 			})
 
@@ -398,8 +400,8 @@ describe('Test blueprint post-process', () => {
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([piece])
 
-			const tlObjId = res[0].content.timelineObjects[0].id
-			expect(tlObjId).not.toEqual('')
+			const resObjects = deserializePieceTimelineObjectsBlob(res[0].timelineObjectsString)
+			expect(resObjects[0].id).not.toEqual('')
 		})
 	})
 
@@ -422,14 +424,15 @@ describe('Test blueprint post-process', () => {
 		test('various pieces', () => {
 			const jobContext = setupDefaultJobEnvironment()
 
-			const pieces = literal<IBlueprintPiece[]>([
+			const pieces = literal<Array<WithTimelineObjects<IBlueprintPiece>>>([
 				{
 					name: 'test',
 					externalId: 'eid1',
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {} as any,
+					content: {},
+					timelineObjects: [],
 					lifespan: PieceLifespan.OutOnSegmentEnd,
 				},
 				{
@@ -438,9 +441,8 @@ describe('Test blueprint post-process', () => {
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {
-						timelineObjects: [],
-					},
+					content: {},
+					timelineObjects: [],
 					lifespan: PieceLifespan.WithinPart,
 				},
 			])
@@ -474,9 +476,8 @@ describe('Test blueprint post-process', () => {
 				status: 0,
 				lifespan: PieceLifespan.WithinPart,
 				pieceType: IBlueprintPieceType.Normal,
-				content: {
-					timelineObjects: [],
-				},
+				content: {},
+				timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 				invalid: false,
 			})
 			ensureAllKeysDefined(tmpObj, res)
@@ -494,24 +495,23 @@ describe('Test blueprint post-process', () => {
 		test('piece with content', () => {
 			const jobContext = setupDefaultJobEnvironment()
 
-			const piece = literal<IBlueprintPiece>({
+			const piece = literal<WithTimelineObjects<IBlueprintPiece>>({
 				name: 'test2',
 				externalId: 'eid2',
 				enable: { start: 0 },
 				sourceLayerId: 'sl0',
 				outputLayerId: 'ol0',
-				content: {
-					timelineObjects: [
-						literal<TimelineObjectCoreExt>({
-							id: '',
-							enable: {},
-							layer: 'four',
-							content: {
-								deviceType: TSR.DeviceType.HYPERDECK,
-							},
-						}),
-					],
-				},
+				content: {},
+				timelineObjects: [
+					literal<TimelineObjectCoreExt>({
+						id: '',
+						enable: {},
+						layer: 'four',
+						content: {
+							deviceType: TSR.DeviceType.HYPERDECK,
+						},
+					}),
+				],
 				lifespan: PieceLifespan.OutOnRundownEnd,
 			})
 
@@ -526,8 +526,8 @@ describe('Test blueprint post-process', () => {
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([_.omit(piece, '_id')])
 
-			const tlObjId = res[0].content.timelineObjects[0].id
-			expect(tlObjId).not.toEqual('')
+			const resObjs = deserializePieceTimelineObjectsBlob(res[0].timelineObjectsString)
+			expect(resObjs[0].id).not.toEqual('')
 		})
 	})
 })

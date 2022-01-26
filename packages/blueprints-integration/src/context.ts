@@ -11,6 +11,8 @@ import {
 	IBlueprintSegmentDB,
 	IBlueprintPieceDB,
 	IBlueprintSegmentRundown,
+	WithTimelineObjects,
+	WithPieceTimelineObjects,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -171,11 +173,17 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 
 	/** Creative actions */
 	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
-	insertPiece(part: 'current' | 'next', piece: IBlueprintPiece): Promise<IBlueprintPieceInstance>
+	insertPiece(
+		part: 'current' | 'next',
+		piece: WithTimelineObjects<IBlueprintPiece>
+	): Promise<WithPieceTimelineObjects<IBlueprintPieceInstance>>
 	/** Update a piecesInstance */
-	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): Promise<IBlueprintPieceInstance>
+	updatePieceInstance(
+		pieceInstanceId: string,
+		piece: Partial<WithTimelineObjects<IBlueprintPiece>>
+	): Promise<WithPieceTimelineObjects<IBlueprintPieceInstance>>
 	/** Insert a queued part to follow the current part */
-	queuePart(part: IBlueprintPart, pieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance>
+	queuePart(part: IBlueprintPart, pieces: WithTimelineObjects<IBlueprintPiece>[]): Promise<IBlueprintPartInstance>
 	/** Update a partInstance */
 	updatePartInstance(
 		part: 'current' | 'next',
@@ -208,13 +216,16 @@ export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserCont
 	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to change the content of the instance */
 	syncPieceInstance(
 		pieceInstanceId: string,
-		mutatedPiece?: Omit<IBlueprintPiece, 'lifespan'>
+		mutatedPiece?: Omit<WithTimelineObjects<IBlueprintPiece>, 'lifespan'>
 	): IBlueprintPieceInstance
 
 	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
-	insertPieceInstance(piece: IBlueprintPiece): IBlueprintPieceInstance
+	insertPieceInstance(piece: WithTimelineObjects<IBlueprintPiece>): WithPieceTimelineObjects<IBlueprintPieceInstance>
 	/** Update a piecesInstance */
-	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): IBlueprintPieceInstance
+	updatePieceInstance(
+		pieceInstanceId: string,
+		piece: Partial<WithTimelineObjects<IBlueprintPiece>>
+	): WithPieceTimelineObjects<IBlueprintPieceInstance>
 	/** Remove a pieceInstance */
 	removePieceInstances(...pieceInstanceIds: string[]): string[]
 

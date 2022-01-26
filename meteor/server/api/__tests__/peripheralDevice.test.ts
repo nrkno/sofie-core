@@ -11,7 +11,7 @@ import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDev
 import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Parts } from '../../../lib/collections/Parts'
-import { Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 import {
 	getCurrentTime,
@@ -147,7 +147,8 @@ describe('test peripheralDevice general API methods', () => {
 			lifespan: PieceLifespan.WithinPart,
 			pieceType: IBlueprintPieceType.Normal,
 			invalid: false,
-			content: { timelineObjects: [] },
+			content: {},
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 		Parts.insert({
 			_id: protectString('part001'),

@@ -12,7 +12,7 @@ import {
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { CacheForPlayout } from '../../playout/cache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
-import { ReadonlyDeep } from 'type-fest'
+import { ReadonlyDeep, SetRequired } from 'type-fest'
 import _ = require('underscore')
 import { ContextInfo, RundownUserContext } from './context'
 import {
@@ -22,13 +22,21 @@ import {
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
+	WithTimelineObjects,
+	WithPieceTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
+import {
+	IBlueprintPieceWithTimelineObjectsSampleKeys,
+	IBlueprintMutatablePartSampleKeys,
+	convertPieceInstanceToBlueprintsWithTimelineObjects,
+} from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext } from '../../jobs'
 import { logChanges } from '../../cache/lib'
+import { MongoModifier } from '../../db'
+import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
@@ -90,7 +98,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 	syncPieceInstance(
 		pieceInstanceId: string,
-		modifiedPiece?: Omit<IBlueprintPiece, 'lifespan'>
+		modifiedPiece?: Omit<WithTimelineObjects<IBlueprintPiece>, 'lifespan'>
 	): IBlueprintPieceInstance {
 		const proposedPieceInstance = this._proposedPieceInstances.get(protectString(pieceInstanceId))
 		if (!proposedPieceInstance) {
@@ -127,8 +135,13 @@ export class SyncIngestUpdateToPartInstanceContext
 		return clone(unprotectObject(newPieceInstance))
 	}
 
-	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
-		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceSampleKeys)
+	insertPieceInstance(
+		piece0: WithTimelineObjects<IBlueprintPiece>
+	): WithPieceTimelineObjects<IBlueprintPieceInstance> {
+		const trimmedPiece: WithTimelineObjects<IBlueprintPiece> = _.pick(
+			piece0,
+			IBlueprintPieceWithTimelineObjectsSampleKeys
+		)
 
 		const piece = postProcessPieces(
 			this._context,
@@ -147,11 +160,17 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		this._pieceInstanceCache.insert(newPieceInstance)
 
-		return clone(unprotectObject(newPieceInstance))
+		return convertPieceInstanceToBlueprintsWithTimelineObjects(newPieceInstance)
 	}
-	updatePieceInstance(pieceInstanceId: string, updatedPiece: Partial<IBlueprintPiece>): IBlueprintPieceInstance {
+	updatePieceInstance(
+		pieceInstanceId: string,
+		updatedPiece: Partial<WithTimelineObjects<IBlueprintPiece>>
+	): WithPieceTimelineObjects<IBlueprintPieceInstance> {
 		// filter the submission to the allowed ones
-		const trimmedPiece: Partial<OmitId<IBlueprintPiece>> = _.pick(updatedPiece, IBlueprintPieceSampleKeys)
+		const trimmedPiece: Partial<OmitId<WithTimelineObjects<IBlueprintPiece>>> = _.pick(
+			updatedPiece,
+			IBlueprintPieceWithTimelineObjectsSampleKeys
+		)
 		if (Object.keys(trimmedPiece).length === 0) {
 			throw new Error(`Cannot update PieceInstance "${pieceInstanceId}". Some valid properties must be defined`)
 		}
@@ -164,23 +183,27 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`)
 		}
 
-		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
-			updatedPiece.content.timelineObjects = postProcessTimelineObjects(
-				pieceInstance.piece._id,
-				this.showStyleCompound.blueprintId,
-				updatedPiece.content.timelineObjects,
-				false
-			)
-		}
-
-		const update: any = {
+		const update: SetRequired<MongoModifier<PieceInstance>, '$set' | '$unset'> = {
 			$set: {},
 			$unset: {},
 		}
 
+		if (updatedPiece.timelineObjects) {
+			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
+				postProcessTimelineObjects(
+					pieceInstance.piece._id,
+					this.showStyleCompound.blueprintId,
+					updatedPiece.timelineObjects,
+					false
+				)
+			)
+			// This has been processed
+			delete updatedPiece.timelineObjects
+		}
+
 		for (const [k, val] of Object.entries(trimmedPiece)) {
 			if (val === undefined) {
-				update.$unset[`piece.${k}`] = val
+				update.$unset[`piece.${k}`] = 1
 			} else {
 				update.$set[`piece.${k}`] = val
 			}
@@ -193,7 +216,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found, after applying changes`)
 		}
 
-		return clone(unprotectObject(updatedPieceInstance))
+		return convertPieceInstanceToBlueprintsWithTimelineObjects(updatedPieceInstance)
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones

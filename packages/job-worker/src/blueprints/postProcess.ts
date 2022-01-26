@@ -14,6 +14,7 @@ import {
 	TSR,
 	PieceLifespan,
 	IBlueprintPieceType,
+	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleContext } from './context'
 import { prefixAllObjectIds } from '../playout/lib'
@@ -26,7 +27,12 @@ import {
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { JobContext } from '../jobs'
-import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	EmptyPieceTimelineObjectsBlob,
+	Piece,
+	PieceStatusCode,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
@@ -44,7 +50,7 @@ import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
  */
 export function postProcessPieces(
 	context: JobContext,
-	pieces: IBlueprintPiece[],
+	pieces: Array<WithTimelineObjects<IBlueprintPiece>>,
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
 	segmentId: SegmentId,
@@ -58,7 +64,7 @@ export function postProcessPieces(
 	const externalIds = new Map<string, number>()
 	const timelineUniqueIds = new Set<string>()
 
-	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
+	const processedPieces = pieces.map((orgPiece) => {
 		const i = externalIds.get(orgPiece.externalId) ?? 0
 		externalIds.set(orgPiece.externalId, i + 1)
 
@@ -73,6 +79,7 @@ export function postProcessPieces(
 			startPartId: partId,
 			status: PieceStatusCode.UNKNOWN,
 			invalid: setInvalid ?? false,
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		}
 
 		if (piece.pieceType !== IBlueprintPieceType.Normal) {
@@ -93,15 +100,15 @@ export function postProcessPieces(
 				`Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${piece.name}")`
 			)
 
-		if (piece.content?.timelineObjects) {
-			piece.content.timelineObjects = postProcessTimelineObjects(
-				piece._id,
-				blueprintId,
-				piece.content.timelineObjects,
-				prefixAllTimelineObjects || false,
-				timelineUniqueIds
-			)
-		}
+		const timelineObjects = postProcessTimelineObjects(
+			piece._id,
+			blueprintId,
+			orgPiece.timelineObjects,
+			prefixAllTimelineObjects || false,
+			timelineUniqueIds
+		)
+		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
+
 		// Fill in ids of unnamed expectedPackages
 		setDefaultIdOnExpectedPackages(piece.expectedPackages)
 
@@ -159,7 +166,7 @@ export function postProcessAdLibPieces(
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
 	partId: PartId | undefined,
-	adLibPieces: IBlueprintAdLibPiece[]
+	adLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPiece>>
 ): AdLibPiece[] {
 	const span = context.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
@@ -178,6 +185,7 @@ export function postProcessAdLibPieces(
 			rundownId: rundownId,
 			partId: partId,
 			status: PieceStatusCode.UNKNOWN,
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		}
 
 		if (!piece.externalId)
@@ -185,15 +193,15 @@ export function postProcessAdLibPieces(
 				`Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${piece.name}")`
 			)
 
-		if (piece.content && piece.content.timelineObjects) {
-			piece.content.timelineObjects = postProcessTimelineObjects(
-				piece._id,
-				blueprintId,
-				piece.content.timelineObjects,
-				false,
-				timelineUniqueIds
-			)
-		}
+		const timelineObjects = postProcessTimelineObjects(
+			piece._id,
+			blueprintId,
+			orgAdlib.timelineObjects,
+			false,
+			timelineUniqueIds
+		)
+		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
+
 		// Fill in ids of unnamed expectedPackages
 		setDefaultIdOnExpectedPackages(piece.expectedPackages)
 
@@ -261,7 +269,7 @@ export function postProcessRundownBaselineItems(
 
 export function postProcessBucketAdLib(
 	innerContext: ShowStyleContext,
-	itemOrig: IBlueprintAdLibPiece,
+	itemOrig: WithTimelineObjects<IBlueprintAdLibPiece>,
 	externalId: string,
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
@@ -281,18 +289,13 @@ export function postProcessBucketAdLib(
 		bucketId,
 		importVersions,
 		_rank: rank || itemOrig._rank,
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	// Fill in ids of unnamed expectedPackages
 	setDefaultIdOnExpectedPackages(piece.expectedPackages)
 
-	if (piece.content && piece.content.timelineObjects) {
-		piece.content.timelineObjects = postProcessTimelineObjects(
-			piece._id,
-			blueprintId,
-			piece.content.timelineObjects,
-			false
-		)
-	}
+	const timelineObjects = postProcessTimelineObjects(piece._id, blueprintId, itemOrig.timelineObjects, false)
+	piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
 
 	return piece
 }

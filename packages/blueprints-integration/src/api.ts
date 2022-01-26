@@ -34,6 +34,7 @@ import {
 	IBlueprintAdLibPieceDB,
 	IBlueprintPartDB,
 	ExpectedPlayoutItemGeneric,
+	WithTimelineObjects,
 } from './rundown'
 import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle'
 import { OnGenerateTimelineObj } from './timeline'
@@ -171,7 +172,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	getAdlibItem?: (
 		context: IShowStyleUserContext,
 		ingestItem: IngestAdlib
-	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
+	) => WithTimelineObjects<IBlueprintAdLibPiece> | IBlueprintActionManifest | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getShowStyleConfig. If not provided, getShowStyleConfig will return unprocessed blueprint config */
 	preprocessConfig?: (context: ICommonContext, config: IBlueprintConfig) => unknown
@@ -232,7 +233,7 @@ export interface BlueprintResultBaseline {
 export type BlueprintResultStudioBaseline = BlueprintResultBaseline
 export interface BlueprintResultRundown {
 	rundown: IBlueprintRundown
-	globalAdLibPieces: IBlueprintAdLibPiece[]
+	globalAdLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPiece>>
 	globalActions?: IBlueprintActionManifest[]
 	baseline: BlueprintResultBaseline
 }
@@ -243,10 +244,12 @@ export interface BlueprintResultSegment {
 
 export interface BlueprintResultPart {
 	part: IBlueprintPart
-	pieces: IBlueprintPiece[]
-	adLibPieces: IBlueprintAdLibPiece[]
+	pieces: Array<WithTimelineObjects<IBlueprintPiece>>
+	adLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPiece>>
 	actions?: IBlueprintActionManifest[]
 }
+
+// TODO - should any other places in here have the deserialized timelineObjects?
 
 export interface BlueprintSyncIngestNewData {
 	// source: BlueprintSyncIngestDataSource

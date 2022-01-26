@@ -4,7 +4,7 @@ import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/
 import { PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentNote, PartNote, RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
@@ -665,9 +665,8 @@ export async function saveChangesForRundown(
 			{
 				_id: getRandomId(7),
 				rundownId: dbRundown._id,
-				objects: postProcessRundownBaselineItems(
-					showStyle.base.blueprintId,
-					rundownRes.baseline.timelineObjects
+				timelineObjectsString: serializePieceTimelineObjectsBlob(
+					postProcessRundownBaselineItems(showStyle.base.blueprintId, rundownRes.baseline.timelineObjects)
 				),
 			},
 		]),

@@ -1,5 +1,6 @@
 import { IBlueprintAdLibPiece } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibId, BucketId, StudioId, ShowStyleVariantId } from './Ids'
+import { PieceTimelineObjectsBlob } from './Piece'
 import { RundownImportVersions } from './Rundown'
 
 export interface BucketAdLib extends IBlueprintAdLibPiece {
@@ -13,4 +14,7 @@ export interface BucketAdLib extends IBlueprintAdLibPiece {
 	studioId: StudioId
 	showStyleVariantId: ShowStyleVariantId
 	importVersions: RundownImportVersions // TODO - is this good?
+
+	/** Stringified timelineObjects */
+	timelineObjectsString: PieceTimelineObjectsBlob
 }

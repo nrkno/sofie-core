@@ -15,11 +15,10 @@ import {
 	IBlueprintPieceGeneric,
 	PieceLifespan,
 	VTContent,
-	WithTimeline,
 } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings, Studio } from '../collections/Studios'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
-import { PieceGeneric, PieceStatusCode } from '../collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob, PieceGeneric, PieceStatusCode } from '../collections/Pieces'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {
@@ -99,10 +98,9 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: literal<WithTimeline<VTContent>>({
+				content: literal<VTContent>({
 					fileName: 'test',
 					path: '',
-					timelineObjects: [],
 				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
@@ -121,10 +119,9 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: literal<WithTimeline<VTContent>>({
+				content: literal<VTContent>({
 					fileName: 'TEST',
 					path: '',
-					timelineObjects: [],
 				}),
 				lifespan: PieceLifespan.WithinPart,
 			}),
@@ -143,9 +140,7 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {
-					timelineObjects: [],
-				},
+				content: {},
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -245,11 +240,11 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: literal<WithTimeline<VTContent>>({
+			content: literal<VTContent>({
 				fileName: 'test_file',
 				path: '',
-				timelineObjects: [],
 			}),
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 
 		const sourcelayer1 = literal<ISourceLayer>({
@@ -333,11 +328,11 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: literal<WithTimeline<VTContent>>({
+			content: literal<VTContent>({
 				fileName: 'test_file_2',
 				path: '',
-				timelineObjects: [],
 			}),
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 
 		const piece3 = literal<PieceGeneric>({
@@ -350,11 +345,11 @@ describe('lib/mediaObjects', () => {
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: literal<WithTimeline<VTContent>>({
+			content: literal<VTContent>({
 				fileName: 'test_file_3',
 				path: '',
-				timelineObjects: [],
 			}),
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 
 		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudio)

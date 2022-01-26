@@ -40,7 +40,7 @@ import {
 } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -428,7 +428,7 @@ export function innerFindLastPieceOnLayer(
 	const span = context.startSpan('innerFindLastPieceOnLayer')
 	const rundownIds = getRundownIDsFromCache(cache)
 
-	const query = {
+	const query: MongoQuery<PieceInstance> = {
 		...customQuery,
 		playlistActivationId: cache.Playlist.doc.activationId,
 		rundownId: { $in: rundownIds },
@@ -682,9 +682,8 @@ export function innerStopPieces(
 								status: PieceStatusCode.UNKNOWN,
 								pieceType: IBlueprintPieceType.Normal,
 								virtual: true,
-								content: {
-									timelineObjects: [],
-								},
+								content: {},
+								timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 							},
 							currentPartInstance.playlistActivationId,
 							currentPartInstance.rundownId,

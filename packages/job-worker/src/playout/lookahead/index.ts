@@ -22,11 +22,12 @@ import { JobContext } from '../../jobs'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { Filter as FilterQuery } from 'mongodb'
 import _ = require('underscore')
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
+import { prefixSingleObjectId } from '../lib'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -176,7 +177,7 @@ export async function getLookeaheadObjects(
 
 // elsewhere uses prefixAllObjectIds to do this, but we want to apply to a single object from itself
 const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj): string =>
-	`#${obj.pieceInstanceId ?? ''}${obj.originalId ?? obj.id}.start`
+	`#${prefixSingleObjectId(obj, obj.pieceInstanceId ?? '')}.start`
 const calculateStartAfterPreviousObj = (
 	prevObj: TimelineObjRundown & OnGenerateTimelineObj
 ): TimelineTypes.TimelineEnable => {

@@ -49,6 +49,7 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
+import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
@@ -110,6 +111,7 @@ describe('Test blueprint api context', () => {
 						content: {
 							index: o,
 						} as any,
+						timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						lifespan: PieceLifespan.WithinPart,
 						pieceType: IBlueprintPieceType.Normal,
 						invalid: false,
@@ -386,9 +388,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 1000,
 					})
@@ -422,9 +423,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 2000,
 					})
@@ -479,9 +479,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 1000,
 					})
@@ -504,9 +503,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 2000,
 					})
@@ -563,9 +561,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 1000,
 					})
@@ -591,9 +588,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 2000,
 					})
@@ -1193,9 +1189,7 @@ describe('Test blueprint api context', () => {
 						externalId: '-',
 						enable: { start: 0 },
 						lifespan: PieceLifespan.OutOnRundownEnd,
-						content: {
-							timelineObjects: [],
-						},
+						content: {},
 					}
 					const newPart: IBlueprintPart = {
 						externalId: 'nope',

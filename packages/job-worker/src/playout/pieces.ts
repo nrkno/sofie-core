@@ -28,7 +28,11 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { JobContext } from '../jobs'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import _ = require('underscore')
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	deserializePieceTimelineObjectsBlob,
+	Piece,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { getPieceFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
 import { getCurrentTime } from '../lib'
@@ -361,8 +365,8 @@ export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstan
 		rundownId: protectString(''),
 	})
 
-	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {
-		const contentObjects = _.compact(newAdLibPiece.content.timelineObjects)
+	{
+		const contentObjects = _.compact(deserializePieceTimelineObjectsBlob(newAdLibPiece.timelineObjectsString))
 		const objs = prefixAllObjectIds(
 			contentObjects.map((obj) => ({
 				...obj,
@@ -370,7 +374,7 @@ export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstan
 			})),
 			newAdLibPiece._id + '_'
 		)
-		newAdLibPiece.content.timelineObjects = objs
+		newAdLibPiece.timelineObjectsString = serializePieceTimelineObjectsBlob(objs)
 	}
 
 	if (span) span.end()
@@ -414,8 +418,10 @@ export function convertAdLibToPieceInstance(
 
 	setupPieceInstanceInfiniteProperties(newPieceInstance)
 
-	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-		const contentObjects = _.compact(newPieceInstance.piece.content.timelineObjects)
+	{
+		const contentObjects = _.compact(
+			deserializePieceTimelineObjectsBlob(newPieceInstance.piece.timelineObjectsString)
+		)
 		const objs = prefixAllObjectIds(
 			contentObjects.map((obj) => ({
 				...obj,
@@ -423,7 +429,7 @@ export function convertAdLibToPieceInstance(
 			})),
 			newPieceId + '_'
 		)
-		newPieceInstance.piece.content.timelineObjects = objs
+		newPieceInstance.piece.timelineObjectsString = serializePieceTimelineObjectsBlob(objs)
 	}
 
 	if (span) span.end()

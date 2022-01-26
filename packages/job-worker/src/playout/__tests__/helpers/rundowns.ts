@@ -1,7 +1,7 @@
 import { IBlueprintPieceType, PieceLifespan, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -89,9 +89,8 @@ export async function setupRundownBase(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		...piecePropsOverride.piece0,
 	}
 	await context.directCollections.Pieces.insertOne(piece000)
@@ -112,9 +111,8 @@ export async function setupRundownBase(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		...piecePropsOverride.piece1,
 	}
 	await context.directCollections.Pieces.insertOne(piece001)
@@ -160,9 +158,8 @@ export async function setupPart2(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 
 		...piece0PropsOverride,
 	}
@@ -234,9 +231,8 @@ export async function setupRundownWithInTransitionPlannedPiece(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
 	await context.directCollections.Pieces.insertOne(piece011)
@@ -259,9 +255,8 @@ export async function setupRundownWithInTransitionPlannedPiece(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece012)
 
@@ -299,9 +294,8 @@ export async function setupRundownWithInTransitionContentDelay(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
 	await context.directCollections.Pieces.insertOne(piece011)
@@ -350,9 +344,8 @@ export async function setupRundownWithInTransitionContentDelayAndPreroll(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
 	await context.directCollections.Pieces.insertOne(piece011)
@@ -384,9 +377,8 @@ export async function setupRundownWithInTransitionExistingInfinite(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.OutOnSegmentEnd,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece002)
 
@@ -413,9 +405,8 @@ export async function setupRundownWithInTransitionExistingInfinite(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
 	await context.directCollections.Pieces.insertOne(piece011)
@@ -454,9 +445,8 @@ export async function setupRundownWithInTransitionNewInfinite(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
 	await context.directCollections.Pieces.insertOne(piece011)
@@ -477,9 +467,8 @@ export async function setupRundownWithInTransitionNewInfinite(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.OutOnSegmentEnd,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece012)
 
@@ -521,9 +510,8 @@ export async function setupRundownWithInTransitionEnableHold(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
 	await context.directCollections.Pieces.insertOne(piece011)
@@ -564,9 +552,8 @@ export async function setupRundownWithInTransitionDisabled(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
 	await context.directCollections.Pieces.insertOne(piece011)
@@ -601,9 +588,8 @@ export async function setupRundownWithOutTransition(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece002)
 
@@ -639,9 +625,8 @@ export async function setupRundownWithOutTransitionAndPreroll(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece002)
 
@@ -677,9 +662,8 @@ export async function setupRundownWithOutTransitionAndPreroll2(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece002)
 
@@ -715,9 +699,8 @@ export async function setupRundownWithOutTransitionAndInTransition(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece002)
 
@@ -746,9 +729,8 @@ export async function setupRundownWithOutTransitionAndInTransition(
 		outputLayerId: showStyle.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece011)
 

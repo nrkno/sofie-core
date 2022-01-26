@@ -15,6 +15,7 @@ import {
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../../jobs'
 import { PartAndPieces, PieceInstanceWithObjectMap } from './util'
+import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 function getBestPieceInstanceId(piece: PieceInstance): string {
 	if (!piece.isTemporary || piece.partInstanceId) {
@@ -57,7 +58,8 @@ function getObjectMapForPiece(piece: PieceInstanceWithObjectMap): NonNullable<Pi
 	if (!piece.objectMap) {
 		piece.objectMap = new Map()
 
-		for (const obj of piece.piece.content?.timelineObjects ?? []) {
+		const objects = deserializePieceTimelineObjectsBlob(piece.piece.timelineObjectsString)
+		for (const obj of objects) {
 			// Note: This is assuming that there is only one use of a layer in each piece.
 			if (typeof obj.layer === 'string' && !piece.objectMap.has(obj.layer)) {
 				piece.objectMap.set(obj.layer, obj)

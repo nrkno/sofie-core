@@ -2,7 +2,9 @@ import {
 	IBlueprintPieceGeneric,
 	IBlueprintPieceDB,
 	IBlueprintPieceType,
+	TimelineObjectCoreExt,
 } from '@sofie-automation/blueprints-integration'
+import { ProtectedString, protectString, unprotectString } from '../protectedString'
 import { PieceId, RundownId, SegmentId, PartId } from './Ids'
 
 /** A generic list of playback availability statuses for a Piece */
@@ -38,6 +40,9 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: PieceId
+
+	/** Stringified timelineObjects */
+	timelineObjectsString: PieceTimelineObjectsBlob
 }
 
 export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId'> {
@@ -63,3 +68,13 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 	/** This is set when the part is invalid and these pieces should be ignored */
 	invalid: boolean
 }
+
+export type PieceTimelineObjectsBlob = ProtectedString<'PieceTimelineObjectsBlob'>
+
+export function deserializePieceTimelineObjectsBlob(timelineBlob: PieceTimelineObjectsBlob): TimelineObjectCoreExt[] {
+	return JSON.parse(unprotectString(timelineBlob)) as Array<TimelineObjectCoreExt>
+}
+export function serializePieceTimelineObjectsBlob(timeline: TimelineObjectCoreExt[]): PieceTimelineObjectsBlob {
+	return protectString(JSON.stringify(timeline))
+}
+export const EmptyPieceTimelineObjectsBlob = serializePieceTimelineObjectsBlob([])

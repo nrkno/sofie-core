@@ -72,6 +72,7 @@ import {
 	getPartTimingsOrDefaults,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
+import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -923,8 +924,9 @@ function transformBaselineItemsIntoTimeline(
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	for (const obj of objs) {
+		const objects = deserializePieceTimelineObjectsBlob(obj.timelineObjectsString)
 		// the baseline objects are layed out without any grouping
-		for (const o of obj.objects) {
+		for (const o of objects) {
 			timelineObjs.push({
 				...o,
 				objectType: TimelineObjType.RUNDOWN,
@@ -1072,12 +1074,13 @@ function transformPieceGroupAndObjects(
 	const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable)
 	const timelineObjs = [pieceGroup, ...capObjs]
 
-	if (!pieceInstance.piece.virtual && pieceInstance.piece.content?.timelineObjects && !hasDefinitelyEnded) {
+	if (!pieceInstance.piece.virtual && !hasDefinitelyEnded) {
 		timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
 
 		const pieceObjects: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
-		for (const o of pieceInstance.piece.content.timelineObjects) {
+		const objects = deserializePieceTimelineObjectsBlob(pieceInstance.piece.timelineObjectsString)
+		for (const o of objects) {
 			// Some objects can be filtered out at times based on the holdMode of the object
 			switch (o.holdMode) {
 				case TimelineObjHoldMode.NORMAL:
@@ -1107,7 +1110,7 @@ function transformPieceGroupAndObjects(
 			})
 		}
 
-		// This `prefixAllObjectIds` call needs to match the one in, lookahead.ts getStartOfObjectRef() will need updating
+		// This `prefixAllObjectIds` call needs to match the one in, lookahead.ts. If changed then getStartOfObjectRef() will need updating
 		timelineObjs.push(...prefixAllObjectIds(pieceObjects, unprotectString(pieceInstance._id)))
 	}
 

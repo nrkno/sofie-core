@@ -17,7 +17,7 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
-	SomeTimelineContent,
+	SomeContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -128,7 +128,7 @@ const AdLibListView = withTranslation()(
 										outputLayerId: '',
 										rundownId: protectString(''),
 										_rank: layer._rank,
-										content: { timelineObjects: [] },
+										content: {},
 									})
 								)
 						)
@@ -309,13 +309,12 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			.map((action) => {
 				let sourceLayerId = ''
 				let outputLayerId = ''
-				let content: SomeTimelineContent = { timelineObjects: [] }
+				let content: SomeContent = {}
 				const isContent = RundownUtils.isAdlibActionContent(action.display)
 				if (isContent) {
 					sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
 					outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
 					content = {
-						timelineObjects: [],
 						...(action.display as IBlueprintActionManifestDisplayContent).content,
 					}
 				}

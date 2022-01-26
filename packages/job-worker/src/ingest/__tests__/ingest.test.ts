@@ -4,6 +4,7 @@ import {
 	IngestRundown,
 	IngestSegment,
 	PieceLifespan,
+	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import {
@@ -1711,14 +1712,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 0,
 								payload: {
 									pieces: [
-										literal<IBlueprintPiece>({
+										literal<WithTimelineObjects<IBlueprintPiece>>({
 											externalId: 'piece0',
 											name: '',
 											enable: { start: 0 },
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {},
+											timelineObjects: [],
 										}),
 									],
 								},
@@ -1729,14 +1731,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 1,
 								payload: {
 									pieces: [
-										literal<IBlueprintPiece>({
+										literal<WithTimelineObjects<IBlueprintPiece>>({
 											externalId: 'piece1',
 											name: '',
 											enable: { start: 0 },
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {},
+											timelineObjects: [],
 										}),
 									],
 								},
@@ -1898,14 +1901,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 0,
 								payload: {
 									pieces: [
-										literal<IBlueprintPiece>({
+										literal<WithTimelineObjects<IBlueprintPiece>>({
 											externalId: 'piece0',
 											name: '',
 											enable: { start: 0 },
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {},
+											timelineObjects: [],
 										}),
 									],
 								},
@@ -1916,14 +1920,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 1,
 								payload: {
 									pieces: [
-										literal<IBlueprintPiece>({
+										literal<WithTimelineObjects<IBlueprintPiece>>({
 											externalId: 'piece1',
 											name: '',
 											enable: { start: 0 },
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {},
+											timelineObjects: [],
 										}),
 									],
 								},
@@ -2226,14 +2231,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 0,
 								payload: {
 									pieces: [
-										literal<IBlueprintPiece>({
+										literal<WithTimelineObjects<IBlueprintPiece>>({
 											externalId: 'piece0',
 											name: '',
 											enable: { start: 0 },
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {},
+											timelineObjects: [],
 										}),
 									],
 								},
@@ -2244,14 +2250,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 1,
 								payload: {
 									pieces: [
-										literal<IBlueprintPiece>({
+										literal<WithTimelineObjects<IBlueprintPiece>>({
 											externalId: 'piece1',
 											name: '',
 											enable: { start: 0 },
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {},
+											timelineObjects: [],
 										}),
 									],
 								},

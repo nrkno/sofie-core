@@ -413,7 +413,7 @@ function startHold(
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
 	const itemsToCopy = cache.PieceInstances.findFetch(
-		(p) => p.partInstanceId === holdFromPartInstance._id && p.piece.extendOnHold
+		(p) => p.partInstanceId === holdFromPartInstance._id && !!p.piece.extendOnHold
 	)
 	itemsToCopy.forEach((instance) => {
 		if (!instance.infinite) {

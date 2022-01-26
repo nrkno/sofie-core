@@ -1,7 +1,11 @@
 import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleUserContext } from '../blueprints/context'
-import { IBlueprintActionManifest, IBlueprintAdLibPiece } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintActionManifest,
+	IBlueprintAdLibPiece,
+	WithTimelineObjects,
+} from '@sofie-automation/blueprints-integration'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { JobContext } from '../jobs'
 import { getSystemVersion } from '../lib'
@@ -112,7 +116,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 		watchedPackages
 	)
 
-	let rawAdlib: IBlueprintAdLibPiece | IBlueprintActionManifest | null = null
+	let rawAdlib: WithTimelineObjects<IBlueprintAdLibPiece> | IBlueprintActionManifest | null = null
 	try {
 		if (blueprint.blueprint.getAdlibItem) {
 			rawAdlib = blueprint.blueprint.getAdlibItem(context2, data.payload)
