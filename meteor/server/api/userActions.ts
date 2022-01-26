@@ -11,7 +11,7 @@ import { StudioId } from '../../lib/collections/Studios'
 import { Pieces, PieceId } from '../../lib/collections/Pieces'
 import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
-import { registerClassToMeteorMethods } from '../methods'
+import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
 import { ServerRundownAPI } from './rundown'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
@@ -82,7 +82,10 @@ async function pieceSetInOutPoints(
 
 let restartToken: string | undefined = undefined
 
-class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
+class ServerUserActionAPI
+	extends MethodContextAPI
+	implements ReplaceOptionalWithNullInMethodArguments<NewUserActionAPI>
+{
 	async take(userEvent: string, rundownPlaylistId: RundownPlaylistId, fromPartInstanceId: PartInstanceId | null) {
 		check(rundownPlaylistId, String)
 		check(fromPartInstanceId, Match.OneOf(String, null))
@@ -98,7 +101,12 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async setNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, nextPartId: PartId, timeOffset?: number) {
+	async setNext(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		nextPartId: PartId,
+		timeOffset: number | null
+	) {
 		check(rundownPlaylistId, String)
 		check(nextPartId, String)
 
@@ -111,7 +119,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 				playlistId: rundownPlaylistId,
 				nextPartId,
 				setManually: true,
-				nextTimeOffset: timeOffset,
+				nextTimeOffset: timeOffset ?? undefined,
 			}
 		)
 	}
@@ -173,7 +181,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean | null) {
+	async resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean | null) {
 		check(rundownPlaylistId, String)
 		check(rehearsal, Match.Maybe(Boolean))
 
@@ -232,7 +240,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean | null) {
+	async disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo: boolean | null) {
 		check(rundownPlaylistId, String)
 		check(undo, Match.Maybe(Boolean))
 
@@ -300,7 +308,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
-		triggerMode?: string | null
+		triggerMode: string | null
 	) {
 		check(rundownPlaylistId, String)
 		check(actionDocId, String)
@@ -437,7 +445,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
-		queue?: boolean | null
+		queue: boolean | null
 	) {
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
@@ -458,7 +466,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean | null) {
+	async activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo: boolean | null) {
 		check(rundownPlaylistId, String)
 		check(undo, Match.Maybe(Boolean))
 
@@ -712,12 +720,12 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		})
 	}
 
-	async guiFocused(userEvent: string, viewInfo: any[]) {
+	async guiFocused(userEvent: string, viewInfo: any[] | null) {
 		return ServerClientAPI.runUserActionInLog(this, userEvent, 'guiFocused', [viewInfo], async () => {
 			triggerWriteAccessBecauseNoCheckNecessary()
 		})
 	}
-	async guiBlurred(userEvent: string, viewInfo: any[]) {
+	async guiBlurred(userEvent: string, viewInfo: any[] | null) {
 		return ServerClientAPI.runUserActionInLog(this, userEvent, 'guiBlurred', [viewInfo], async () => {
 			triggerWriteAccessBecauseNoCheckNecessary()
 		})
