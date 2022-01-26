@@ -140,7 +140,7 @@ PickerGET.route('/actionTriggers/download/:showStyleBaseId?', (params, req: Inco
 function apiCreateTriggeredActions(
 	context: MethodContext,
 	showStyleBaseId: ShowStyleBaseId | null,
-	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
+	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
 ) {
 	check(showStyleBaseId, Match.Maybe(String))
 	check(base, Match.Maybe(Object))
@@ -153,7 +153,7 @@ function apiCreateTriggeredActions(
 		if (!access) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
 	}
 
-	return createTriggeredActions(showStyleBaseId, base)
+	return createTriggeredActions(showStyleBaseId, base || undefined)
 }
 function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId) {
 	check(id, String)
@@ -168,7 +168,7 @@ function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId
 class ServerTriggeredActionsAPI extends MethodContextAPI implements NewTriggeredActionsAPI {
 	async createTriggeredActions(
 		showStyleBaseId: ShowStyleBaseId | null,
-		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
+		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
 	) {
 		return makePromise(() => apiCreateTriggeredActions(this, showStyleBaseId, base))
 	}

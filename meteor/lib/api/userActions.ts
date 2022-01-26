@@ -30,7 +30,7 @@ export interface NewUserActionAPI extends MethodContext {
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partId: PartId,
-		timeOffset?: number
+		timeOffset?: number | null
 	): Promise<ClientAPI.ClientResponse<void>>
 	setNextSegment(
 		userEvent: string,
@@ -54,7 +54,7 @@ export interface NewUserActionAPI extends MethodContext {
 	resetAndActivate(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
-		rehearsal?: boolean
+		rehearsal?: boolean | null
 	): Promise<ClientAPI.ClientResponse<void>>
 	activate(
 		userEvent: string,
@@ -70,7 +70,7 @@ export interface NewUserActionAPI extends MethodContext {
 	disableNextPiece(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
-		undo?: boolean
+		undo?: boolean | null
 	): Promise<ClientAPI.ClientResponse<void>>
 	pieceTakeNow(
 		userEvent: string,
@@ -92,7 +92,7 @@ export interface NewUserActionAPI extends MethodContext {
 		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
-		triggerMode?: string
+		triggerMode?: string | null
 	): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart(
 		userEvent: string,
@@ -130,12 +130,12 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
-		queue?: boolean
+		queue?: boolean | null
 	): Promise<ClientAPI.ClientResponse<void>>
 	activateHold(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
-		undo?: boolean
+		undo?: boolean | null
 	): Promise<ClientAPI.ClientResponse<void>>
 	saveEvaluation(userEvent: string, evaluation: EvaluationBase): Promise<ClientAPI.ClientResponse<void>>
 	storeRundownSnapshot(
@@ -175,8 +175,8 @@ export interface NewUserActionAPI extends MethodContext {
 	regenerateRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	generateRestartToken(userEvent: string): Promise<ClientAPI.ClientResponse<string>>
 	restartCore(userEvent: string, token: string): Promise<ClientAPI.ClientResponse<string>>
-	guiFocused(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
-	guiBlurred(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
+	guiFocused(userEvent: string, viewInfo?: any[] | null): Promise<ClientAPI.ClientResponse<void>>
+	guiBlurred(userEvent: string, viewInfo?: any[] | null): Promise<ClientAPI.ClientResponse<void>>
 	bucketsRemoveBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucket(
 		userEvent: string,

@@ -173,9 +173,9 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
+	async resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean | null) {
 		check(rundownPlaylistId, String)
-		check(rehearsal, Match.Optional(Boolean))
+		check(rehearsal, Match.Maybe(Boolean))
 
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
@@ -232,9 +232,9 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	async disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean | null) {
 		check(rundownPlaylistId, String)
-		check(undo, Match.Optional(Boolean))
+		check(undo, Match.Maybe(Boolean))
 
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
@@ -300,13 +300,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
-		triggerMode?: string
+		triggerMode?: string | null
 	) {
 		check(rundownPlaylistId, String)
 		check(actionDocId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
-		check(triggerMode, Match.Optional(String))
+		check(triggerMode, Match.Maybe(String))
 
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
@@ -318,7 +318,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 				actionDocId,
 				actionId,
 				userData,
-				triggerMode,
+				triggerMode: triggerMode || undefined,
 			}
 		)
 	}
@@ -437,12 +437,12 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
-		queue?: boolean
+		queue?: boolean | null
 	) {
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
 		check(bucketAdlibId, String)
-		check(queue, Match.Optional(Boolean))
+		check(queue, Match.Maybe(Boolean))
 
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
@@ -458,9 +458,9 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	async activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean | null) {
 		check(rundownPlaylistId, String)
-		check(undo, Match.Optional(Boolean))
+		check(undo, Match.Maybe(Boolean))
 
 		if (undo) {
 			return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(

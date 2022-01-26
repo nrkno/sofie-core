@@ -10,7 +10,7 @@ export interface NewMigrationAPI {
 		chunks: Array<MigrationChunk>,
 		hash: string,
 		inputResults: Array<MigrationStepInputResult>,
-		isFirstOfPartialMigrations?: boolean
+		isFirstOfPartialMigrations?: boolean | null
 	): Promise<RunMigrationResult>
 	forceMigration(chunks: Array<MigrationChunk>): Promise<void>
 	resetDatabaseVersions(): Promise<void>
