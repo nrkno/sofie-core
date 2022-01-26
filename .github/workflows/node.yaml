@@ -377,7 +377,6 @@ jobs:
         with:
           node-version: 12.x
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
-        if: ${{ steps.do-publish.outputs.tag }}
         run: |
           cd packages
           yarn install
