@@ -471,29 +471,32 @@ export const SegmentStoryboard = React.memo(
 
 			const startingScrollLeft = scrollLeft
 
-			const onListPointerRelease = () => {
+			const onListTouchRelease = () => {
 				setTouched(null)
 				setAnimateScrollLeft(true)
 			}
-			const onPointerMove = (e: PointerEvent) => {
+			const onTouchMove = (e: TouchEvent) => {
 				e.preventDefault()
 				setScrollLeft(() => {
-					const newScrollLeft = Math.max(0, Math.min(startingScrollLeft + (touched.clientX - e.clientX), maxScrollLeft))
+					const newScrollLeft = Math.max(
+						0,
+						Math.min(startingScrollLeft + (touched.clientX - e.touches[0].clientX), maxScrollLeft)
+					)
 					props.onScroll(newScrollLeft, e)
 					return newScrollLeft
 				})
 			}
 
-			document.addEventListener('pointerup', onListPointerRelease)
-			document.addEventListener('pointercancel', onListPointerRelease)
-			document.addEventListener('pointermove', onPointerMove, {
+			document.addEventListener('touchend', onListTouchRelease)
+			document.addEventListener('touchcancel', onListTouchRelease)
+			document.addEventListener('touchmove', onTouchMove, {
 				passive: false,
 			})
 
 			return () => {
-				document.removeEventListener('pointerup', onListPointerRelease)
-				document.removeEventListener('pointercancel', onListPointerRelease)
-				document.removeEventListener('pointermove', onPointerMove)
+				document.removeEventListener('touchend', onListTouchRelease)
+				document.removeEventListener('touchcancel', onListTouchRelease)
+				document.removeEventListener('touchmove', onTouchMove)
 			}
 		}, [touched, renderedParts.length, props.onScroll])
 
