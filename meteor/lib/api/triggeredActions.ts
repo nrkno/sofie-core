@@ -4,7 +4,7 @@ import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 export interface NewTriggeredActionsAPI {
 	createTriggeredActions(
 		showStyleBaseId: ShowStyleBaseId | null,
-		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
+		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
 	): Promise<TriggeredActionId>
 	removeTriggeredActions(id: TriggeredActionId): Promise<void>
 }

@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
-import { registerClassToMeteorMethods } from '../methods'
+import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
 import { literal, getRandomId, protectString, makePromise, unprotectString } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
@@ -140,7 +140,7 @@ PickerGET.route('/actionTriggers/download/:showStyleBaseId?', (params, req: Inco
 function apiCreateTriggeredActions(
 	context: MethodContext,
 	showStyleBaseId: ShowStyleBaseId | null,
-	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
+	base: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
 ) {
 	check(showStyleBaseId, Match.Maybe(String))
 	check(base, Match.Maybe(Object))
@@ -165,10 +165,13 @@ function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId
 	removeTriggeredActions(id)
 }
 
-class ServerTriggeredActionsAPI extends MethodContextAPI implements NewTriggeredActionsAPI {
+class ServerTriggeredActionsAPI
+	extends MethodContextAPI
+	implements ReplaceOptionalWithNullInMethodArguments<NewTriggeredActionsAPI>
+{
 	async createTriggeredActions(
 		showStyleBaseId: ShowStyleBaseId | null,
-		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
+		base: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
 	) {
 		return makePromise(() => apiCreateTriggeredActions(this, showStyleBaseId, base))
 	}
