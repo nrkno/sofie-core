@@ -4,7 +4,7 @@ This is the "Core" application of the [**Sofie** TV News Studio Automation Syste
 
 The Core is a Meteor/Node.JS-based web server that serves the web-GUIs as well as handling the business logic for the Sofie TV Automation system.
 
-System documentation can be found here: [Sofie system documentation](https://nrkno.github.io/tv-automation-server-core/).
+System documentation can be found here: [Sofie system documentation](https://nrkno.github.io/sofie-core/).
 
 # For developers
 
@@ -22,8 +22,8 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 ### Quick-start:
 
 ```bash
-git clone -b master https://github.com/nrkno/tv-automation-server-core.git
-cd tv-automation-server-core
+git clone -b master https://github.com/nrkno/sofie-core.git
+cd sofie-core
 yarn start
 ```
 
@@ -34,13 +34,13 @@ yarn start
 1. Clone the repository (for development, it is recommended to base your work on the latest unstable release branch)
 
    ```bash
-   git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git
+   git clone -b releaseXYZ https://github.com/nrkno/sofie-core.git
    ```
 
 2. Go into the cloned directory
 
    ```bash
-   cd tv-automation-server-core
+   cd sofie-core
    ```
 
 3. Setup meteor and dependencies. (Before this, make sure your NODE_ENV environment variable is NOT set to "production"!)
@@ -58,14 +58,14 @@ yarn start
 5. In another window, start the playout-gateway. You will need to manually restart this upon making changes
 
    ```bash
-   cd tv-automation-server-core/packages/playout-gateway
+   cd sofie-core/packages/playout-gateway
    yarn buildstart
    ```
 
 If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.
 
 ```bash
-cd tv-automation-server-core/packages
+cd sofie-core/packages
 yarn watch # or yarn build to build just once
 ```
 
@@ -76,7 +76,7 @@ git clone -b master https://github.com/nrkno/tv-automation-mos-connection.git
 cd tv-automation-mos-connection
 npm run build
 npm link
-cd ../tv-automation-server-core/meteor
+cd ../sofie-core/meteor
 npm link mos-connection
 ```
 
