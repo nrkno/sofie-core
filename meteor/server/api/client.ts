@@ -54,6 +54,7 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		playlistId: RundownPlaylistId,
+		checkArgs: () => void,
 		jobName: T,
 		jobArguments: Parameters<StudioJobFunc[T]>[0]
 	): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
@@ -63,6 +64,8 @@ export namespace ServerClientAPI {
 			`worker.${jobName}`,
 			[jobArguments],
 			async (_credentials, userActionMetadata) => {
+				checkArgs()
+
 				const access = checkAccessToPlaylist(context, playlistId)
 				return runStudioJob(access.playlist.studioId, jobName, jobArguments, userActionMetadata)
 			}
@@ -76,6 +79,7 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		rundownId: RundownId,
+		checkArgs: () => void,
 		jobName: T,
 		jobArguments: Parameters<StudioJobFunc[T]>[0]
 	): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
@@ -85,6 +89,8 @@ export namespace ServerClientAPI {
 			`worker.${jobName}`,
 			[jobArguments],
 			async (_credentials, userActionMetadata) => {
+				checkArgs()
+
 				const access = checkAccessToRundown(context, rundownId)
 				return runStudioJob(access.rundown.studioId, jobName, jobArguments, userActionMetadata)
 			}
@@ -98,13 +104,16 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		playlistId: RundownPlaylistId,
+		checkArgs: () => void,
 		methodName: string,
 		args: any[],
 		fcn: (access: VerifiedRundownPlaylistContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
-		return runUserActionInLog(context, userEvent, methodName, args, async () =>
-			fcn(checkAccessToPlaylist(context, playlistId))
-		)
+		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+			checkArgs()
+
+			return fcn(checkAccessToPlaylist(context, playlistId))
+		})
 	}
 
 	/**
@@ -114,13 +123,16 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		rundownId: RundownId,
+		checkArgs: () => void,
 		methodName: string,
 		args: any[],
 		fcn: (access: VerifiedRundownContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
-		return runUserActionInLog(context, userEvent, methodName, args, async () =>
-			fcn(checkAccessToRundown(context, rundownId))
-		)
+		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+			checkArgs()
+
+			return fcn(checkAccessToRundown(context, rundownId))
+		})
 	}
 
 	async function runStudioJob<T extends keyof StudioJobFunc>(
@@ -163,7 +175,7 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		methodName: string,
-		args: any[],
+		methodArgs: unknown[],
 		fcn: (credentials: BasicAccessContext, userActionMetadata: UserActionMetadata) => Promise<TRes>
 	): Promise<ClientAPI.ClientResponse<TRes>> {
 		// If we are in the test write auth check mode, then bypass all special logic to ensure errors dont get mangled
@@ -201,7 +213,7 @@ export namespace ServerClientAPI {
 						userId: credentials.userId,
 						context: userEvent,
 						method: methodName,
-						args: JSON.stringify(args),
+						args: JSON.stringify(methodArgs),
 						timestamp: getCurrentTime(),
 					})
 				).catch((e) => {
@@ -236,7 +248,7 @@ export namespace ServerClientAPI {
 					const wrappedErrorStr = `ClientResponseError: ${translateMessage(
 						wrappedError.error.message,
 						interpollateTranslation
-					)}: ${stringifyError(wrappedError.error.rawError)}`
+					)}`
 
 					// Execute, but don't wait for it
 					pInitialInsert
