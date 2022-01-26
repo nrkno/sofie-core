@@ -16,16 +16,16 @@ function runMigration(
 	chunks: Array<MigrationChunk>,
 	hash: string,
 	inputResults: Array<MigrationStepInputResult>,
-	isFirstOfPartialMigrations?: boolean
+	isFirstOfPartialMigrations?: boolean | null
 ): RunMigrationResult {
 	check(chunks, Array)
 	check(hash, String)
 	check(inputResults, Array)
-	check(isFirstOfPartialMigrations, Match.Optional(Boolean))
+	check(isFirstOfPartialMigrations, Match.Maybe(Boolean))
 
 	SystemWriteAccess.migrations(context)
 
-	return Migrations.runMigration(chunks, hash, inputResults, isFirstOfPartialMigrations)
+	return Migrations.runMigration(chunks, hash, inputResults, isFirstOfPartialMigrations || false)
 }
 function forceMigration(context: MethodContext, chunks: Array<MigrationChunk>) {
 	check(chunks, Array)
@@ -45,7 +45,7 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		chunks: Array<MigrationChunk>,
 		hash: string,
 		inputResults: Array<MigrationStepInputResult>,
-		isFirstOfPartialMigrations?: boolean
+		isFirstOfPartialMigrations?: boolean | null
 	) {
 		return makePromise(() => runMigration(this, chunks, hash, inputResults, isFirstOfPartialMigrations))
 	}

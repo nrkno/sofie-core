@@ -11,7 +11,7 @@ import { StudioId } from '../../lib/collections/Studios'
 import { Pieces, PieceId } from '../../lib/collections/Pieces'
 import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
-import { registerClassToMeteorMethods } from '../methods'
+import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
 import { ServerRundownAPI } from './rundown'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
@@ -82,15 +82,19 @@ async function pieceSetInOutPoints(
 
 let restartToken: string | undefined = undefined
 
-class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
+class ServerUserActionAPI
+	extends MethodContextAPI
+	implements ReplaceOptionalWithNullInMethodArguments<NewUserActionAPI>
+{
 	async take(userEvent: string, rundownPlaylistId: RundownPlaylistId, fromPartInstanceId: PartInstanceId | null) {
-		check(rundownPlaylistId, String)
-		check(fromPartInstanceId, Match.OneOf(String, null))
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(fromPartInstanceId, Match.OneOf(String, null))
+			},
 			StudioJobs.TakeNextPart,
 			{
 				playlistId: rundownPlaylistId,
@@ -98,31 +102,38 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async setNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, nextPartId: PartId, timeOffset?: number) {
-		check(rundownPlaylistId, String)
-		check(nextPartId, String)
-
+	async setNext(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		nextPartId: PartId,
+		timeOffset: number | null
+	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(nextPartId, String)
+			},
 			StudioJobs.SetNextPart,
 			{
 				playlistId: rundownPlaylistId,
 				nextPartId,
 				setManually: true,
-				nextTimeOffset: timeOffset,
+				nextTimeOffset: timeOffset ?? undefined,
 			}
 		)
 	}
 	async setNextSegment(userEvent: string, rundownPlaylistId: RundownPlaylistId, nextSegmentId: SegmentId | null) {
-		check(rundownPlaylistId, String)
-		check(nextSegmentId, Match.OneOf(String, null))
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(nextSegmentId, Match.OneOf(String, null))
+			},
 			StudioJobs.SetNextSegment,
 			{
 				playlistId: rundownPlaylistId,
@@ -131,14 +142,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async moveNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, partDelta: number, segmentDelta: number) {
-		check(rundownPlaylistId, String)
-		check(partDelta, Number)
-		check(segmentDelta, Number)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(partDelta, Number)
+				check(segmentDelta, Number)
+			},
 			StudioJobs.MoveNextPart,
 			{
 				playlistId: rundownPlaylistId,
@@ -148,12 +160,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async prepareForBroadcast(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		check(rundownPlaylistId, String)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+			},
 			StudioJobs.PrepareRundownForBroadcast,
 			{
 				playlistId: rundownPlaylistId,
@@ -161,26 +174,28 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async resetRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		check(rundownPlaylistId, String)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+			},
 			StudioJobs.ResetRundownPlaylist,
 			{
 				playlistId: rundownPlaylistId,
 			}
 		)
 	}
-	async resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
-		check(rundownPlaylistId, String)
-		check(rehearsal, Match.Optional(Boolean))
-
+	async resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean | null) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(rehearsal, Match.Maybe(Boolean))
+			},
 			StudioJobs.ResetRundownPlaylist,
 			{
 				playlistId: rundownPlaylistId,
@@ -189,13 +204,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async activate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
-		check(rundownPlaylistId, String)
-		check(rehearsal, Boolean)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(rehearsal, Boolean)
+			},
 			StudioJobs.ActivateRundownPlaylist,
 			{
 				playlistId: rundownPlaylistId,
@@ -204,12 +220,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async deactivate(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		check(rundownPlaylistId, String)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+			},
 			StudioJobs.DeactivateRundownPlaylist,
 			{
 				playlistId: rundownPlaylistId,
@@ -217,13 +234,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async forceResetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
-		check(rundownPlaylistId, String)
-		check(rehearsal, Boolean)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(rehearsal, Boolean)
+			},
 			StudioJobs.ResetRundownPlaylist,
 			{
 				playlistId: rundownPlaylistId,
@@ -232,14 +250,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-		check(rundownPlaylistId, String)
-		check(undo, Match.Optional(Boolean))
-
+	async disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo: boolean | null) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(undo, Match.Maybe(Boolean))
+			},
 			StudioJobs.DisableNextPiece,
 			{
 				playlistId: rundownPlaylistId,
@@ -253,14 +272,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(pieceInstanceIdOrPieceIdToCopy, String)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(partInstanceId, String)
+				check(pieceInstanceIdOrPieceIdToCopy, String)
+			},
 			StudioJobs.TakePieceAsAdlibNow,
 			{
 				playlistId: rundownPlaylistId,
@@ -277,16 +297,17 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		inPoint: number,
 		duration: number
 	) {
-		check(rundownPlaylistId, String)
-		check(partId, String)
-		check(pieceId, String)
-		check(inPoint, Number)
-		check(duration, Number)
-
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(partId, String)
+				check(pieceId, String)
+				check(inPoint, Number)
+				check(duration, Number)
+			},
 			'pieceSetInOutPoints',
 			[rundownPlaylistId, partId, pieceId, inPoint, duration],
 			async (access) => {
@@ -300,25 +321,26 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
-		triggerMode?: string
+		triggerMode: string | null
 	) {
-		check(rundownPlaylistId, String)
-		check(actionDocId, String)
-		check(actionId, String)
-		check(userData, Match.Any)
-		check(triggerMode, Match.Optional(String))
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(actionDocId, String)
+				check(actionId, String)
+				check(userData, Match.Any)
+				check(triggerMode, Match.Maybe(String))
+			},
 			StudioJobs.ExecuteAction,
 			{
 				playlistId: rundownPlaylistId,
 				actionDocId,
 				actionId,
 				userData,
-				triggerMode,
+				triggerMode: triggerMode || undefined,
 			}
 		)
 	}
@@ -329,15 +351,16 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		adlibPieceId: PieceId,
 		queue: boolean
 	) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(adlibPieceId, String)
-		check(queue, Boolean)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(partInstanceId, String)
+				check(adlibPieceId, String)
+				check(queue, Boolean)
+			},
 			StudioJobs.AdlibPieceStart,
 			{
 				playlistId: rundownPlaylistId,
@@ -354,14 +377,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
 	) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(sourceLayerIds, Array) // TODO - can we verify these are strings?
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(partInstanceId, String)
+				check(sourceLayerIds, Array) // TODO - can we verify these are strings?
+			},
 			StudioJobs.StopPiecesOnSourceLayers,
 			{
 				playlistId: rundownPlaylistId,
@@ -377,15 +401,16 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		adlibPieceId: PieceId,
 		queue: boolean
 	) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(adlibPieceId, String)
-		check(queue, Boolean)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(partInstanceId, String)
+				check(adlibPieceId, String)
+				check(queue, Boolean)
+			},
 			StudioJobs.AdlibPieceStart,
 			{
 				playlistId: rundownPlaylistId,
@@ -397,13 +422,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async sourceLayerStickyPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
-		check(rundownPlaylistId, String)
-		check(sourceLayerId, String)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(sourceLayerId, String)
+			},
 			StudioJobs.StartStickyPieceOnSourceLayer,
 			{
 				playlistId: rundownPlaylistId,
@@ -417,16 +443,16 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		showStyleVariantId: ShowStyleVariantId,
 		ingestItem: IngestAdlib
 	) {
-		check(bucketId, String)
-		check(showStyleVariantId, String)
-		check(ingestItem, Object)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'bucketAdlibImport',
 			[bucketId, showStyleVariantId, ingestItem],
 			async () => {
+				check(bucketId, String)
+				check(showStyleVariantId, String)
+				check(ingestItem, Object)
+
 				const access = BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.importAdlibToBucket(access, showStyleVariantId, ingestItem)
 			}
@@ -437,17 +463,18 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
-		queue?: boolean
+		queue: boolean | null
 	) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
-		check(bucketAdlibId, String)
-		check(queue, Match.Optional(Boolean))
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(partInstanceId, String)
+				check(bucketAdlibId, String)
+				check(queue, Match.Maybe(Boolean))
+			},
 			StudioJobs.AdlibPieceStart,
 			{
 				playlistId: rundownPlaylistId,
@@ -458,15 +485,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			}
 		)
 	}
-	async activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-		check(rundownPlaylistId, String)
-		check(undo, Match.Optional(Boolean))
-
+	async activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo: boolean | null) {
 		if (undo) {
 			return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 				this,
 				userEvent,
 				rundownPlaylistId,
+				() => {
+					check(rundownPlaylistId, String)
+				},
 				StudioJobs.DeactivateHold,
 				{
 					playlistId: rundownPlaylistId,
@@ -477,6 +504,9 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 				this,
 				userEvent,
 				rundownPlaylistId,
+				() => {
+					check(rundownPlaylistId, String)
+				},
 				StudioJobs.ActivateHold,
 				{
 					playlistId: rundownPlaylistId,
@@ -489,6 +519,9 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			this,
 			userEvent,
 			evaluation.playlistId,
+			() => {
+				//
+			},
 			'saveEvaluation',
 			[evaluation],
 			async (access) => {
@@ -501,6 +534,10 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			this,
 			userEvent,
 			playlistId,
+			() => {
+				check(playlistId, String)
+				check(reason, String)
+			},
 			'storeRundownSnapshot',
 			[playlistId, reason],
 			async (access) => {
@@ -509,12 +546,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async removeRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		check(rundownPlaylistId, String)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+			},
 			StudioJobs.RemovePlaylist,
 			{
 				playlistId: rundownPlaylistId,
@@ -522,12 +560,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async resyncRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId) {
-		check(playlistId, String)
-
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
 			userEvent,
 			playlistId,
+			() => {
+				check(playlistId, String)
+			},
 			'resyncRundownPlaylist',
 			[playlistId],
 			async (access) => {
@@ -536,12 +575,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async unsyncRundown(userEvent: string, rundownId: RundownId) {
-		check(rundownId, String)
-
 		return ServerClientAPI.runUserActionInLogForRundown(
 			this,
 			userEvent,
 			rundownId,
+			() => {
+				check(rundownId, String)
+			},
 			'unsyncRundown',
 			[rundownId],
 			async (access) => {
@@ -550,12 +590,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async removeRundown(userEvent: string, rundownId: RundownId) {
-		check(rundownId, String)
-
 		return ServerClientAPI.runUserActionInLogForRundown(
 			this,
 			userEvent,
 			rundownId,
+			() => {
+				check(rundownId, String)
+			},
 			'removeRundown',
 			[rundownId],
 			async (access) => {
@@ -564,12 +605,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async resyncRundown(userEvent: string, rundownId: RundownId) {
-		check(rundownId, String)
-
 		return ServerClientAPI.runUserActionInLogForRundown(
 			this,
 			userEvent,
 			rundownId,
+			() => {
+				check(rundownId, String)
+			},
 			'resyncRundown',
 			[rundownId],
 			async (access) => {
@@ -578,15 +620,17 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		)
 	}
 	async mediaRestartWorkflow(userEvent: string, workflowId: MediaWorkFlowId) {
-		check(workflowId, String)
-
 		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaRestartWorkflow', [workflowId], async () => {
+			check(workflowId, String)
+
 			const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
 			return MediaManagerAPI.restartWorkflow(access)
 		})
 	}
 	async mediaAbortWorkflow(userEvent: string, workflowId: MediaWorkFlowId) {
 		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaAbortWorkflow', [workflowId], async () => {
+			check(workflowId, String)
+
 			const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
 			return MediaManagerAPI.abortWorkflow(access)
 		})
@@ -598,6 +642,8 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			'mediaPrioritizeWorkflow',
 			[workflowId],
 			async () => {
+				check(workflowId, String)
+
 				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
 				return MediaManagerAPI.prioritizeWorkflow(access)
 			}
@@ -616,71 +662,72 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		})
 	}
 	async packageManagerRestartExpectation(userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
-		check(deviceId, String)
-		check(workId, String)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'packageManagerRestartExpectation',
 			[deviceId, workId],
 			async () => {
+				check(deviceId, String)
+				check(workId, String)
+
 				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
 				return PackageManagerAPI.restartExpectation(access, workId)
 			}
 		)
 	}
 	async packageManagerRestartAllExpectations(userEvent: string, studioId: StudioId) {
-		check(studioId, String)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'packageManagerRestartAllExpectations',
 			[studioId],
 			async () => {
+				check(studioId, String)
+
 				const access = StudioContentWriteAccess.anyContent(this, studioId)
 				return PackageManagerAPI.restartAllExpectationsInStudio(access)
 			}
 		)
 	}
 	async packageManagerAbortExpectation(userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
-		check(deviceId, String)
-		check(workId, String)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'packageManagerAbortExpectation',
 			[deviceId, workId],
 			async () => {
+				check(deviceId, String)
+				check(workId, String)
+
 				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
 				return PackageManagerAPI.abortExpectation(access, workId)
 			}
 		)
 	}
 	async packageManagerRestartPackageContainer(userEvent: string, deviceId: PeripheralDeviceId, containerId: string) {
-		check(deviceId, String)
-		check(containerId, String)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'packageManagerRestartPackageContainer',
 			[deviceId, containerId],
 			async () => {
+				check(deviceId, String)
+				check(containerId, String)
+
 				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
 				return PackageManagerAPI.restartPackageContainer(access, containerId)
 			}
 		)
 	}
 	async regenerateRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		check(rundownPlaylistId, String)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+			},
 			StudioJobs.RegeneratePlaylist,
 			{
 				playlistId: rundownPlaylistId,
@@ -695,9 +742,9 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		})
 	}
 	async restartCore(userEvent: string, hashedRestartToken: string) {
-		check(hashedRestartToken, String)
-
 		return ServerClientAPI.runUserActionInLog(this, userEvent, 'restartCore', [hashedRestartToken], async () => {
+			check(hashedRestartToken, String)
+
 			SystemWriteAccess.system(this)
 
 			if (hashedRestartToken !== getHash(RESTART_SALT + restartToken)) {
@@ -712,58 +759,58 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		})
 	}
 
-	async guiFocused(userEvent: string, viewInfo: any[]) {
+	async guiFocused(userEvent: string, viewInfo: any[] | null) {
 		return ServerClientAPI.runUserActionInLog(this, userEvent, 'guiFocused', [viewInfo], async () => {
 			triggerWriteAccessBecauseNoCheckNecessary()
 		})
 	}
-	async guiBlurred(userEvent: string, viewInfo: any[]) {
+	async guiBlurred(userEvent: string, viewInfo: any[] | null) {
 		return ServerClientAPI.runUserActionInLog(this, userEvent, 'guiBlurred', [viewInfo], async () => {
 			triggerWriteAccessBecauseNoCheckNecessary()
 		})
 	}
 
 	async bucketsRemoveBucket(userEvent: string, bucketId: BucketId) {
-		check(bucketId, String)
-
 		return ServerClientAPI.runUserActionInLog(this, userEvent, 'bucketsRemoveBucket', [bucketId], async () => {
+			check(bucketId, String)
+
 			const access = BucketSecurity.allowWriteAccess(this, bucketId)
 			return BucketsAPI.removeBucket(access)
 		})
 	}
 	async bucketsModifyBucket(userEvent: string, bucketId: BucketId, bucketProps: Partial<Omit<Bucket, '_id'>>) {
-		check(bucketId, String)
-		check(bucketProps, Object)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'bucketsModifyBucket',
 			[bucketId, bucketProps],
 			async () => {
+				check(bucketId, String)
+				check(bucketProps, Object)
+
 				const access = BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.modifyBucket(access, bucketProps)
 			}
 		)
 	}
 	async bucketsEmptyBucket(userEvent: string, bucketId: BucketId) {
-		check(bucketId, String)
-
 		return ServerClientAPI.runUserActionInLog(this, userEvent, 'bucketsEmptyBucket', [bucketId], async () => {
+			check(bucketId, String)
+
 			const access = BucketSecurity.allowWriteAccess(this, bucketId)
 			return BucketsAPI.emptyBucket(access)
 		})
 	}
 	async bucketsCreateNewBucket(userEvent: string, studioId: StudioId, name: string) {
-		check(studioId, String)
-		check(name, String)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'bucketsCreateNewBucket',
 			[name, studioId],
 			async () => {
+				check(studioId, String)
+				check(name, String)
+
 				const access = StudioContentWriteAccess.bucket(this, studioId)
 				return BucketsAPI.createNewBucket(access, name)
 			}
@@ -778,29 +825,29 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		})
 	}
 	async bucketsRemoveBucketAdLibAction(userEvent: string, actionId: AdLibActionId) {
-		check(actionId, String)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'bucketsRemoveBucketAdLibAction',
 			[actionId],
 			async () => {
+				check(actionId, String)
+
 				const access = BucketSecurity.allowWriteAccessAction(this, actionId)
 				return BucketsAPI.removeBucketAdLibAction(access)
 			}
 		)
 	}
 	async bucketsModifyBucketAdLib(userEvent: string, adlibId: PieceId, adlibProps: Partial<Omit<BucketAdLib, '_id'>>) {
-		check(adlibId, String)
-		check(adlibProps, Object)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'bucketsModifyBucketAdLib',
 			[adlibId, adlibProps],
 			async () => {
+				check(adlibId, String)
+				check(adlibProps, Object)
+
 				const access = BucketSecurity.allowWriteAccessPiece(this, adlibId)
 				return BucketsAPI.modifyBucketAdLib(access, adlibProps)
 			}
@@ -811,15 +858,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		actionId: AdLibActionId,
 		actionProps: Partial<Omit<BucketAdLibAction, '_id'>>
 	) {
-		check(actionId, String)
-		check(actionProps, Object)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'bucketsModifyBucketAdLib',
 			[actionId, actionProps],
 			async () => {
+				check(actionId, String)
+				check(actionProps, Object)
+
 				const access = BucketSecurity.allowWriteAccessAction(this, actionId)
 				return BucketsAPI.modifyBucketAdLibAction(access, actionProps)
 			}
@@ -831,16 +878,16 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		bucketId: BucketId,
 		action: AdLibActionCommon | BucketAdLibAction
 	): Promise<ClientAPI.ClientResponse<BucketAdLibAction>> {
-		check(studioId, String)
-		check(bucketId, String)
-		check(action, Object)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'bucketsSaveActionIntoBucket',
 			[studioId, bucketId, action],
 			async () => {
+				check(studioId, String)
+				check(bucketId, String)
+				check(action, Object)
+
 				const access = BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.saveAdLibActionIntoBucket(access, action)
 			}
@@ -852,16 +899,16 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		routeSetId: string,
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
-		check(studioId, String)
-		check(routeSetId, String)
-		check(state, Boolean)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'packageManagerRestartAllExpectations',
 			[studioId, routeSetId, state],
 			async () => {
+				check(studioId, String)
+				check(routeSetId, String)
+				check(state, Boolean)
+
 				const access = StudioContentWriteAccess.routeSet(this, studioId)
 				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)
 			}
@@ -873,14 +920,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	): Promise<ClientAPI.ClientResponse<void>> {
-		check(rundownId, String)
-		check(intoPlaylistId, Match.OneOf(String, null))
-		check(rundownsIdsInPlaylistInOrder, Array)
-
 		return ServerClientAPI.runUserActionInLogForRundownOnWorker(
 			this,
 			userEvent,
 			rundownId,
+			() => {
+				check(rundownId, String)
+				check(intoPlaylistId, Match.OneOf(String, null))
+				check(rundownsIdsInPlaylistInOrder, Array)
+			},
 			StudioJobs.OrderMoveRundownToPlaylist,
 			{
 				rundownId: rundownId,
@@ -893,12 +941,13 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		userEvent: string,
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
-		check(playlistId, String)
-
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
 			playlistId,
+			() => {
+				check(playlistId, String)
+			},
 			StudioJobs.OrderRestoreToDefault,
 			{
 				playlistId: playlistId,
@@ -911,16 +960,16 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		subDeviceId: string,
 		disable: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
-		check(peripheralDeviceId, String)
-		check(subDeviceId, String)
-		check(disable, Boolean)
-
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'packageManagerRestartAllExpectations',
 			[peripheralDeviceId, subDeviceId, disable],
 			async () => {
+				check(peripheralDeviceId, String)
+				check(subDeviceId, String)
+				check(disable, Boolean)
+
 				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, peripheralDeviceId)
 				return ServerPeripheralDeviceAPI.disableSubDevice(access, subDeviceId, disable)
 			}
