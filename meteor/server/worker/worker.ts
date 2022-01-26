@@ -24,6 +24,7 @@ import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timel
 import { fetchStudioLight } from '../../lib/collections/optimizations'
 import * as path from 'path'
 import { LogEntry } from 'winston'
+import { initializeWorkerStatus, setWorkerStatus } from './workerStatus'
 
 interface JobEntry {
 	spec: JobSpec
@@ -209,6 +210,8 @@ Meteor.startup(() => {
 	}
 
 	logger.info('Worker threads initializing')
+	const workerInstanceId = `${Date.now()}_${getRandomString(4)}`
+	const workerId = initializeWorkerStatus(workerInstanceId, 'Default')
 	// Startup the worker 'parent' at startup
 	worker = waitForPromise(
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
@@ -225,6 +228,10 @@ Meteor.startup(() => {
 		worker!.run(mongoUri, dbName).catch((e) => {
 			logger.error(`Failed to reinit worker threads after restart: ${stringifyError(e)}`)
 		})
+		// Deferring, since this callback isn't running in a Fiber
+		Meteor.defer(() => {
+			setWorkerStatus(workerId, true, 'restarted', true)
+		})
 	})
 	ThreadedClassManager.onEvent(worker, 'thread_closed', () => {
 		// Thread closed, reject all jobs
@@ -233,10 +240,18 @@ Meteor.startup(() => {
 			job(now, now, new Error('Thread closed'), null)
 		}
 		runningJobs.clear()
+
+		// Deferring, since this callback isn't running in a Fiber
+		Meteor.defer(() => {
+			setWorkerStatus(workerId, false, 'Closed')
+		})
 	})
+
+	setWorkerStatus(workerId, true, 'Initializing...')
 
 	logger.info('Worker threads starting')
 	waitForPromise(worker.run(mongoUri, dbName))
+	setWorkerStatus(workerId, true, 'OK')
 	logger.info('Worker threads ready')
 })
 
