@@ -18,7 +18,7 @@ Tip: The different web views \(such as the host view and the prompter\) can easi
 
 ### Modular Device Control
 
-Sofie controls play-out devices \(such as vision and audio mixers, graphics and video playback\) via the Playout Gateway, using the [timeline](dictionary.md#timeline).  
+Sofie controls play-out devices \(such as vision and audio mixers, graphics and video playback\) via the Playout Gateway, using the [timeline](dictionary#timeline).  
 The Playout Gateway controls the devices and keeps track of their state and statuses, and lets the user know via the GUI if something's wrong that can affect the show.
 
 ### _State-based Play-out_
@@ -34,14 +34,3 @@ Sofie features a modular ingest data-flow, allowing multiple types of input data
 
 The [Blueprints ](features-and-configuration/concepts-and-architecture.md#blueprints)are plugins to Sofie, which allows for customization and tailor-made show designs.  
 The blueprints are made different depending on how the input data \(rundowns\) look like, how the show-design look like, and what devices to control.
-
-<!-- ## Documentation
-
-{% page-ref page="getting-started/" %}
-
-{% page-ref page="faq.md" %}
-
-{% page-ref page="releases.md" %}
-
-{% page-ref page="getting-started/installation/" %}
- -->

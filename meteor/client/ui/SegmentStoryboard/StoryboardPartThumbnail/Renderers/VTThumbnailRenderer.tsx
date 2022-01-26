@@ -88,26 +88,26 @@ export function VTThumbnailRenderer({
 			<RundownTimingConsumer
 				filter={(timingContext) => ({
 					partPlayed: timingContext.partPlayed && timingContext.partPlayed[unprotectString(partId)],
-					partExpectedDuration:
-						timingContext.partExpectedDurations && timingContext.partExpectedDurations[unprotectString(partId)],
+					partDisplayDurations:
+						timingContext.partDisplayDurations && timingContext.partDisplayDurations[unprotectString(partId)],
 				})}
 			>
 				{(timingContext) => {
-					if (!timingContext.partPlayed || !timingContext.partExpectedDurations) return null
+					if (!timingContext.partPlayed || !timingContext.partDisplayDurations) return null
 
 					const partPlayed = timingContext.partPlayed[unprotectString(partId)] ?? 0
+					const contentEnd =
+						(vtContent?.sourceDuration ?? 0) - (vtContent?.seek ?? 0) + (pieceInstance.renderedInPoint ?? 0)
 
-					const contentLeft =
-						(vtContent?.sourceDuration ?? 0) -
-						(vtContent?.seek ?? 0) +
-						(pieceInstance.renderedInPoint ?? 0) -
-						partPlayed
+					const contentLeft = contentEnd - partPlayed
 
-					const partLeft = timingContext.partExpectedDurations[unprotectString(partId)] - partPlayed
+					const partExpectedDuration = timingContext.partDisplayDurations[unprotectString(partId)]
+
+					const partLeft = partExpectedDuration - partPlayed
 
 					return !isFinished &&
 						!(hovering && thumbnailUrl && previewUrl) &&
-						contentLeft < 10000 &&
+						(contentLeft < 10000 || contentEnd < partExpectedDuration) &&
 						(!partAutoNext || partLeft > contentLeft) ? (
 						<div
 							className={classNames('segment-storyboard__thumbnail__countdown', {

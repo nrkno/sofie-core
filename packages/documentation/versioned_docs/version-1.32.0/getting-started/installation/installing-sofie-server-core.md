@@ -9,9 +9,9 @@
 
 ### Installation
 
-This docker-compose file automates the basic setup of the [Sofie-Core application](../../for-developers/libraries.md#main-application), the backend database and different Gateway options.
+This docker-compose file automates the basic setup of the [Sofie-Core application](../../for-developers/libraries#main-application), the backend database and different Gateway options.
 
-{% file src="/gitbook/assets/docker-compose \(2\).yaml" %}
+[Docker Compose File](/attachments/docs/getting-started/installation/docker-compose.yaml)
 
 After you've downloaded the file, open it in a text editor and navigate to the _ingest-gateway_ section, and select which type of _ingest-gateway_ you'd like installed by commenting out the others.
 
@@ -36,7 +36,7 @@ There are some things not covered in this guide needed to run Sofie in a product
 Installation instructions for installing Sofie-Core or the various gateways are available in the README-file in their respective github-repos. 
 
 Common prerequisites are [Node.js](https://nodejs.org/) and [Yarn](https://yarnpkg.com/).  
-Links to the repos are listed at [Applications & Libraries](../../for-developers/libraries.md).
+Links to the repos are listed at [Applications & Libraries](../../for-developers/libraries).
 
 [Sofie Core GitHub Page for Developers](https://github.com/nrkno/tv-automation-server-core)
 
