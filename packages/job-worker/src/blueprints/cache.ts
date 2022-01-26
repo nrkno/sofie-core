@@ -5,7 +5,6 @@ import {
 	StudioBlueprintManifest,
 	SystemBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { VM } from 'vm2'
 import { IDirectCollections } from '../db'
 import { ReadonlyDeep } from 'type-fest'
@@ -53,7 +52,13 @@ export async function loadBlueprintById(
 	if (blueprint.code) {
 		let manifest: SomeBlueprintManifest
 		try {
-			manifest = evalBlueprint(blueprint)
+			const vm = new VM({
+				sandbox: {},
+			})
+
+			// Future: we should look at freezing the object inside the vm
+			const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
+			manifest = entry.default
 		} catch (e) {
 			throw new Error(`Syntax error in blueprint "${blueprint._id}": ${stringifyError(e)}`)
 		}
@@ -66,33 +71,4 @@ export async function loadBlueprintById(
 	} else {
 		throw new Error(`Blueprint "${blueprint._id}".code not set!`)
 	}
-}
-
-export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
-	const vm = new VM({
-		sandbox: {},
-	})
-
-	// TODO: Worker - freeze the object inside the vm?
-	const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
-	const manifest: SomeBlueprintManifest = entry.default
-
-	// // Wrap the functions, to emit better errors
-	// _.each(_.keys(manifest), (key) => {
-	// 	const value = manifest[key]
-	// 	if (_.isFunction(value)) {
-	// 		manifest[key] = (...args: any[]) => {
-	// 			try {
-	// 				return value(...args)
-	// 			} catch (e) {
-	// 				let msg = `Error in Blueprint "${blueprint._id}".${key}: "${e.toString()}"`
-	// 				if (e.stack) msg += '\n' + e.stack
-	// 				logger.error(msg)
-	// 				throw e
-	// 			}
-	// 		}
-	// 	}
-	// })
-
-	return manifest
 }
