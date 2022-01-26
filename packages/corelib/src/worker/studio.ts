@@ -12,6 +12,7 @@ import {
 	StudioId,
 } from '../dataModel/Ids'
 
+/** List of all Jobs performed by the Worker related to a certain Studio */
 export enum StudioJobs {
 	UpdateTimeline = 'updateTimeline',
 	UpdateTimelineAfterIngest = 'updateTimelineAfterIngest',

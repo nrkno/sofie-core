@@ -27,26 +27,28 @@ import { LogEntry } from 'winston'
 
 interface JobEntry {
 	spec: JobSpec
-	complete: JobCompleted | null
+	/** The completionHandler is called when a job is completed. null implies "shoot-and-forget" */
+	completionHandler: JobCompletionHandler | null
 }
 
 interface JobQueue {
 	jobs: JobEntry[]
-	/** Notify that there is a job waiting */
-	notify: ManualPromise<JobSpec> | null
+	/** Notify that there is a job waiting (aka worker is long-polling) */
+	notifyWorker: ManualPromise<JobSpec> | null
 }
 
-type JobCompleted = (startedTime: number, finishedTime: number, err: any, result: any) => void
+type JobCompletionHandler = (startedTime: number, finishedTime: number, err: any, result: any) => void
 
 const queues = new Map<string, JobQueue>()
-const runningJobs = new Map<string, JobCompleted>()
+/** Contains all jobs that are currently being executed by a Worker. */
+const runningJobs = new Map<string, JobCompletionHandler>()
 
 function getOrCreateQueue(queueName: string): JobQueue {
 	let queue = queues.get(queueName)
 	if (!queue) {
 		queue = {
 			jobs: [],
-			notify: null,
+			notifyWorker: null,
 		}
 		queues.set(queueName, queue)
 	}
@@ -66,22 +68,27 @@ async function jobFinished(
 		job(startedTime, finishedTime, err, result)
 	}
 }
+/** This is called by each Worker Thread, when it is idle and wants another job */
 async function getNextJob(queueName: string): Promise<JobSpec> {
+	// Check if there is a job waiting:
 	const queue = getOrCreateQueue(queueName)
 	const job = queue.jobs.shift()
 	if (job) {
-		if (job.complete) runningJobs.set(job.spec.id, job.complete)
+		// If there is a completion handler, register it for execution
+		if (job.completionHandler) runningJobs.set(job.spec.id, job.completionHandler)
+		// Pass the job to the worker
 		return job.spec
 	}
+	// No job ready, do a long-poll
 
-	// Already something waiting? Reject it, as we replace it
-	if (queue.notify) {
-		const oldNotify = queue.notify
+	// Already a worker waiting? Reject it, as we replace it
+	if (queue.notifyWorker) {
+		const oldNotify = queue.notifyWorker
 
 		Meteor.defer(() => {
 			try {
 				// Notify the worker in the background
-				oldNotify.manualReject(new Error('new handler added'))
+				oldNotify.manualReject(new Error('new workerThread, replacing the old'))
 			} catch (e) {
 				// Ignore
 			}
@@ -89,55 +96,59 @@ async function getNextJob(queueName: string): Promise<JobSpec> {
 	}
 
 	// Wait to be notified about a job
-	queue.notify = createManualPromise()
-	return queue.notify
+	queue.notifyWorker = createManualPromise()
+	return queue.notifyWorker
 }
-async function queueJob(queueName: string, jobName: string, jobData: unknown): Promise<void> {
+async function queueJobWithoutResult(queueName: string, jobName: string, jobData: unknown): Promise<void> {
 	queueJobInner(queueName, {
 		spec: {
 			id: getRandomString(),
 			name: jobName,
 			data: jobData,
 		},
-		complete: null,
+		completionHandler: null,
 	})
 }
 
-function queueJobInner(queueName: string, job0: JobEntry): void {
+function queueJobInner(queueName: string, jobToQueue: JobEntry): void {
 	// const queueTime = getCurrentTime()
 
+	// Put the job at the end of the queue:
 	const queue = getOrCreateQueue(queueName)
-	queue.jobs.push(job0)
+	queue.jobs.push(jobToQueue)
 
-	if (queue.notify) {
-		const notify = queue.notify
+	// If there is a worker waiting to pick up a job
+	if (queue.notifyWorker) {
+		const notify = queue.notifyWorker
 		const job = queue.jobs.shift()
 		if (job) {
-			if (job.complete) runningJobs.set(job.spec.id, job.complete)
+			// If there is a completion handler, register it for execution
+			if (job.completionHandler) runningJobs.set(job.spec.id, job.completionHandler)
 
-			queue.notify = null
+			// Worker is about to be notified, so clear the handle:
+			queue.notifyWorker = null
 			Meteor.defer(() => {
 				try {
 					// Notify the worker in the background
 					notify.manualResolve(job.spec)
 				} catch (e) {
 					// Queue failed, inform caller
-					if (job.complete) job.complete(0, 0, e, null)
+					if (job.completionHandler) job.completionHandler(0, 0, e, null)
 				}
 			})
 		}
 	}
 }
 
-function queueJobWrapped<TRes>(queueName: string, job: JobSpec, now: Time): WorkerJob<TRes> {
-	const { res, handler } = wrapResult<TRes>(job.id, now)
+function queueJobAndWrapResult<TRes>(queueName: string, job: JobSpec, now: Time): WorkerJob<TRes> {
+	const { result, completionHandler } = generateCompletionHandler<TRes>(job.id, now)
 
 	queueJobInner(queueName, {
 		spec: job,
-		complete: handler,
+		completionHandler: completionHandler,
 	})
 
-	return res
+	return result
 }
 
 async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
@@ -203,7 +214,7 @@ Meteor.startup(() => {
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
 			workerEntrypoint,
 			'IpcJobWorker',
-			[jobFinished, getNextJob, queueJob, logLine, fastTrackTimeline],
+			[jobFinished, getNextJob, queueJobWithoutResult, logLine, fastTrackTimeline],
 			{}
 		)
 	)
@@ -259,7 +270,7 @@ export async function QueueForceClearAllCaches(studioIds: StudioId[]): Promise<v
 	for (const studioId of studioIds) {
 		// Clear studio
 		jobs.push(
-			queueJobWrapped(
+			queueJobAndWrapResult(
 				getStudioQueueName(studioId),
 				{
 					id: getRandomString(),
@@ -272,7 +283,7 @@ export async function QueueForceClearAllCaches(studioIds: StudioId[]): Promise<v
 
 		// Clear ingest
 		jobs.push(
-			queueJobWrapped(
+			queueJobAndWrapResult(
 				getIngestQueueName(studioId),
 				{
 					id: getRandomString(),
@@ -285,7 +296,7 @@ export async function QueueForceClearAllCaches(studioIds: StudioId[]): Promise<v
 
 		// Clear events
 		jobs.push(
-			queueJobWrapped(
+			queueJobAndWrapResult(
 				getEventsQueueName(studioId),
 				{
 					id: getRandomString(),
@@ -303,25 +314,25 @@ export async function QueueForceClearAllCaches(studioIds: StudioId[]): Promise<v
 
 /**
  * Queue a job for a studio
- * @param name Job name
+ * @param jobName Job name
  * @param studioId Id of the studio
- * @param data Job payload
+ * @param jobParameters Job payload
  * @returns Promise resolving once job has been queued successfully
  */
 export async function QueueStudioJob<T extends keyof StudioJobFunc>(
-	name: T,
+	jobName: T,
 	studioId: StudioId,
-	data: Parameters<StudioJobFunc[T]>[0]
+	jobParameters: Parameters<StudioJobFunc[T]>[0]
 ): Promise<WorkerJob<ReturnType<StudioJobFunc[T]>>> {
 	if (!studioId) throw new Meteor.Error(500, 'Missing studioId')
 
 	const now = getCurrentTime()
-	return queueJobWrapped(
+	return queueJobAndWrapResult(
 		getStudioQueueName(studioId),
 		{
 			id: getRandomString(),
-			name: name,
-			data: data,
+			name: jobName,
+			data: jobParameters,
 		},
 		now
 	)
@@ -329,31 +340,34 @@ export async function QueueStudioJob<T extends keyof StudioJobFunc>(
 
 /**
  * Queue a job for ingest
- * @param name Job name
+ * @param jobName Job name
  * @param studioId Id of the studio
- * @param data Job payload
+ * @param jobParameters Job payload
  * @returns Promise resolving once job has been queued successfully
  */
 export async function QueueIngestJob<T extends keyof IngestJobFunc>(
-	name: T,
+	jobName: T,
 	studioId: StudioId,
-	data: Parameters<IngestJobFunc[T]>[0]
+	jobParameters: Parameters<IngestJobFunc[T]>[0]
 ): Promise<WorkerJob<ReturnType<IngestJobFunc[T]>>> {
 	if (!studioId) throw new Meteor.Error(500, 'Missing studioId')
 
 	const now = getCurrentTime()
-	return queueJobWrapped(
+	return queueJobAndWrapResult(
 		getIngestQueueName(studioId),
 		{
 			id: getRandomString(),
-			name: name,
-			data: data,
+			name: jobName,
+			data: jobParameters,
 		},
 		now
 	)
 }
 
-function wrapResult<TRes>(jobId: string, queueTime: Time): { res: WorkerJob<TRes>; handler: JobCompleted } {
+function generateCompletionHandler<TRes>(
+	jobId: string,
+	queueTime: Time
+): { result: WorkerJob<TRes>; completionHandler: JobCompletionHandler } {
 	// logger.debug(`Queued job #${job.id} of "${name}" to "${queue.name}"`)
 
 	const complete = createManualPromise<TRes>()
@@ -361,7 +375,8 @@ function wrapResult<TRes>(jobId: string, queueTime: Time): { res: WorkerJob<TRes
 
 	// TODO: Worker - timeouts
 
-	const handler: JobCompleted = (startedTime: number, finishedTime: number, err: any, res: any) => {
+	/** The handler is called upon a completion */
+	const completionHandler: JobCompletionHandler = (startedTime: number, finishedTime: number, err: any, res: any) => {
 		try {
 			if (err) {
 				logger.debug(`Completed job #${jobId} with error`)
@@ -388,10 +403,10 @@ function wrapResult<TRes>(jobId: string, queueTime: Time): { res: WorkerJob<TRes
 	}
 
 	return {
-		res: {
+		result: {
 			complete,
 			getTimings,
 		},
-		handler,
+		completionHandler,
 	}
 }

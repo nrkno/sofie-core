@@ -15,9 +15,13 @@ import { LogEntry } from 'winston'
 setupApmAgent()
 setupInfluxDb()
 
+/** Specification for a Job, to be executed by a Workerthread */
 export interface JobSpec {
+	/** Unique identifier for the job */
 	id: string
+	/** Name of the function to be executed */
 	name: string
+	/** Parameter to the function to be executed */
 	data: unknown
 }
 
