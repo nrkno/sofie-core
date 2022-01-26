@@ -15,11 +15,13 @@ import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
+import { RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
 	rundownIds: RundownId[]
 	showStyleBaseId: ShowStyleBaseId
+	playlistActivationId: RundownPlaylistActivationId | undefined
 }
 
 export const PieceIcon = (props: {
@@ -66,7 +68,7 @@ export const PieceIcon = (props: {
 	return null
 }
 
-const supportedLayers = new Set([
+export const pieceIconSupportedLayers = new Set([
 	SourceLayerType.GRAPHICS,
 	SourceLayerType.LIVE_SPEAK,
 	SourceLayerType.REMOTE,
@@ -83,7 +85,7 @@ export const PieceIconContainerNoSub = withTracker(
 		}
 		renderUnknown?: boolean
 	}) => {
-		return findPieceInstanceToShowFromInstances(props.pieceInstances, props.sourceLayers, supportedLayers)
+		return findPieceInstanceToShowFromInstances(props.pieceInstances, props.sourceLayers, pieceIconSupportedLayers)
 	}
 )(
 	({
@@ -98,7 +100,7 @@ export const PieceIconContainerNoSub = withTracker(
 )
 
 export const PieceIconContainer = withTracker((props: IPropsHeader) => {
-	return findPieceInstanceToShow(props, supportedLayers)
+	return findPieceInstanceToShow(props, pieceIconSupportedLayers)
 })(
 	class PieceIconContainer extends MeteorReactComponent<
 		IPropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }
@@ -106,6 +108,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 		componentDidMount() {
 			this.subscribe(PubSub.pieceInstancesSimple, {
 				rundownId: { $in: this.props.rundownIds },
+				playlistActivationId: this.props.playlistActivationId,
 			})
 			this.subscribe(PubSub.showStyleBases, {
 				_id: this.props.showStyleBaseId,

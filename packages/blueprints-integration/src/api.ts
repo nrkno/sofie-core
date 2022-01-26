@@ -15,6 +15,7 @@ import {
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
 	IStudioBaselineContext,
+	IRundownUserContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -103,7 +104,8 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	/** Returns information about the playlist this rundown is a part of, return null to not make it a part of a playlist */
 	getRundownPlaylistInfo?: (
 		context: IStudioUserContext,
-		rundowns: IBlueprintRundownDB[]
+		rundowns: IBlueprintRundownDB[],
+		playlistExternalId: string
 	) => BlueprintResultRundownPlaylist | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
@@ -139,7 +141,6 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/**
 	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment() )
-	 * Warning: This is currently an experimental api, and is likely to break in the next release
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,
@@ -147,6 +148,15 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 		newData: BlueprintSyncIngestNewData,
 		playoutStatus: 'current' | 'next'
 	) => void
+
+	/**
+	 * Allows the blueprint to remove the next part instance if it has become orphaned.
+	 * This call will only be made if the part instance has been orphaned.
+	 */
+	shouldRemoveOrphanedPartInstance?: (
+		context: IRundownUserContext,
+		partInstance: BlueprintRemoveOrphanedPartInstance
+	) => boolean
 
 	/** Execute an action defined by an IBlueprintActionManifest */
 	executeAction?: (
@@ -267,6 +277,11 @@ export interface BlueprintSyncIngestPartInstance {
 	// Upcoming interface:
 	// adLibPieceInstances: IBlueprintAdlibPieceInstance[]
 	// adLibActionInstances: IBlueprintAdlibActionInstance[]
+}
+
+export interface BlueprintRemoveOrphanedPartInstance {
+	partInstance: IBlueprintPartInstance
+	pieceInstances: IBlueprintPieceInstance[]
 }
 
 /** Key is the ID of the external ID of the Rundown, Value is the rank to be assigned */

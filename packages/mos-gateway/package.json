@@ -1,6 +1,6 @@
 {
 	"name": "mos-gateway",
-	"version": "1.37.2",
+	"version": "1.38.0",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
@@ -64,18 +64,18 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.37.2",
-		"mos-connection": "^1.0.3",
+		"@sofie-automation/server-core-integration": "^1.38.0",
+		"mos-connection": "^1.0.5",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
 		"winston": "^2.4.2"
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier --write"
+			"prettier"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint --fix"
+			"yarn lint"
 		]
 	}
 }

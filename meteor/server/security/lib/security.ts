@@ -5,14 +5,20 @@ import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredent
 import { allAccess, noAccess, combineAccess, Access } from './access'
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { RundownId, Rundowns, Rundown } from '../../../lib/collections/Rundowns'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { StudioId } from '../../../lib/collections/Studios'
 import { isProtectedString } from '../../../lib/lib'
 import { OrganizationId, Organizations, Organization } from '../../../lib/collections/Organization'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { UserId } from '../../../lib/collections/Users'
-import { ShowStyleBaseId, ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
+import {
+	fetchShowStyleBasesLight,
+	fetchStudioLight,
+	ShowStyleBaseLight,
+	StudioLight,
+} from '../../../lib/collections/optimizations'
 
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 
@@ -77,15 +83,15 @@ export function allowAccessToOrganization(
 export function allowAccessToShowStyleBase(
 	cred0: Credentials | ResolvedCredentials,
 	showStyleBaseId: MongoQueryKey<ShowStyleBaseId>
-): Access<ShowStyleBase | null> {
+): Access<ShowStyleBaseLight | null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!showStyleBaseId) return noAccess('showStyleBaseId not set')
 	const cred = resolveCredentials(cred0)
 
-	const showStyleBases = ShowStyleBases.find({
+	const showStyleBases = fetchShowStyleBasesLight({
 		_id: showStyleBaseId,
-	}).fetch()
-	let access: Access<ShowStyleBase | null> = allAccess(null)
+	})
+	let access: Access<ShowStyleBaseLight | null> = allAccess(null)
 	for (const showStyleBase of showStyleBases) {
 		access = combineAccess(access, AccessRules.accessShowStyleBase(showStyleBase, cred))
 	}
@@ -107,10 +113,10 @@ export function allowAccessToShowStyleVariant(
 		_id: showStyleVariantId,
 	}).fetch()
 	const showStyleBaseIds = _.uniq(_.map(showStyleVariants, (v) => v.showStyleBaseId))
-	const showStyleBases = ShowStyleBases.find({
+	const showStyleBases = fetchShowStyleBasesLight({
 		_id: { $in: showStyleBaseIds },
-	}).fetch()
-	let access: Access<ShowStyleBase | null> = allAccess(null)
+	})
+	let access: Access<ShowStyleBaseLight | null> = allAccess(null)
 	for (const showStyleBase of showStyleBases) {
 		access = combineAccess(access, AccessRules.accessShowStyleBase(showStyleBase, cred))
 	}
@@ -119,13 +125,13 @@ export function allowAccessToShowStyleVariant(
 export function allowAccessToStudio(
 	cred0: Credentials | ResolvedCredentials,
 	studioId: MongoQueryKey<StudioId>
-): Access<Studio | null> {
+): Access<StudioLight | null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!studioId) return noAccess('studioId not set')
 	if (!isProtectedString(studioId)) return noAccess('studioId is not a string')
 	const cred = resolveCredentials(cred0)
 
-	const studio = Studios.findOne(studioId)
+	const studio = fetchStudioLight(studioId)
 	if (!studio) return noAccess('Studio not found')
 
 	return {
@@ -260,9 +266,9 @@ namespace AccessRules {
 		} else return noAccess(`User is not in the organization "${organization._id}"`)
 	}
 	export function accessShowStyleBase(
-		showStyleBase: ShowStyleBase,
+		showStyleBase: ShowStyleBaseLight,
 		cred: ResolvedCredentials
-	): Access<ShowStyleBase> {
+	): Access<ShowStyleBaseLight> {
 		if (!showStyleBase.organizationId) return noAccess('ShowStyleBase has no organization')
 		if (!cred.organization) return noAccess('No organization in credentials')
 		if (showStyleBase.organizationId === cred.organization._id) {
@@ -270,7 +276,7 @@ namespace AccessRules {
 			return allAccess(showStyleBase)
 		} else return noAccess(`User is not in the same organization as the showStyleBase "${showStyleBase._id}"`)
 	}
-	export function accessStudio(studio: Studio, cred: ResolvedCredentials): Access<Studio> {
+	export function accessStudio(studio: StudioLight, cred: ResolvedCredentials): Access<StudioLight> {
 		if (!studio.organizationId) return noAccess('Studio has no organization')
 		if (!cred.organization) return noAccess('No organization in credentials')
 		if (studio.organizationId === cred.organization._id) {
@@ -282,7 +288,7 @@ namespace AccessRules {
 		playlist: RundownPlaylist,
 		cred: ResolvedCredentials
 	): Access<RundownPlaylist> {
-		const studio = playlist.getStudio()
+		const studio = playlist.getStudioLight()
 		if (!studio) return noAccess(`Studio of playlist "${playlist._id}" not found`)
 		return { ...accessStudio(studio, cred), document: playlist }
 	}

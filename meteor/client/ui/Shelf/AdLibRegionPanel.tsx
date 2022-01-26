@@ -8,7 +8,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import {
-	dashboardElementPosition,
+	dashboardElementStyle,
 	IDashboardPanelTrackedProps,
 	getUnfinishedPieceInstancesGrouped,
 	getNextPieceInstancesGrouped,
@@ -34,7 +34,7 @@ interface IAdLibRegionPanelProps {
 
 type IAdLibRegionPanelTrackedProps = IDashboardPanelTrackedProps
 
-export class AdLibRegionPanelInner extends MeteorReactComponent<
+class AdLibRegionPanelInner extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
 	IState
 > {
@@ -114,7 +114,9 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+			doUserAction(t, e, UserAction.TAKE, (e) =>
+				MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+			)
 		}
 	}
 
@@ -143,14 +145,12 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 		return (
 			<div
 				className="adlib-region-panel"
-				style={_.extend(
-					RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-						? dashboardElementPosition(this.props.panel as DashboardLayoutAdLibRegion)
-						: {},
-					{
-						visibility: this.props.visible ? 'visible' : 'hidden',
-					}
-				)}
+				style={{
+					visibility: this.props.visible ? 'visible' : 'hidden',
+					...(RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+						? dashboardElementStyle(this.props.panel as DashboardLayoutAdLibRegion)
+						: {}),
+				}}
 			>
 				<div
 					className={ClassNames('adlib-region-panel__image-container', {

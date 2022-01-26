@@ -2,6 +2,7 @@ import { TSRHandler, TSRConfig } from './tsrHandler'
 import { CoreHandler, CoreConfig } from './coreHandler'
 import { LoggerInstance } from './index'
 import { Process } from './process'
+import { InfluxConfig } from './influxdb'
 // import {Conductor, DeviceType} from 'timeline-state-resolver'
 
 export interface Config {
@@ -9,6 +10,7 @@ export interface Config {
 	device: DeviceConfig
 	core: CoreConfig
 	tsr: TSRConfig
+	influx: InfluxConfig
 }
 export interface ProcessConfig {
 	/** Will cause the Node applocation to blindly accept all certificates. Not recommenced unless in local, controlled networks. */

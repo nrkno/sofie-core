@@ -257,6 +257,17 @@ export function getResolvedPiecesFromFullTimeline(
 
 	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
 		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))
+
+		// If a segment is queued and we're about to consume it, remove nextSegmentId from playlist
+		if (playlist.nextSegmentId) {
+			const consumedPartsInstancesInNextSegment = cache.PartInstances.findFetch({
+				_id: { $in: pieceInstances.map((p) => p.partInstanceId) },
+				segmentId: playlist.nextSegmentId,
+			})
+			if (consumedPartsInstancesInNextSegment.length) {
+				cache.Playlist.update({ $unset: { nextSegmentId: true } })
+			}
+		}
 	}
 
 	const transformedObjs = transformTimeline(objs)

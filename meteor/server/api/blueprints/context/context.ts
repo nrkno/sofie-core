@@ -13,6 +13,7 @@ import {
 	protectStringArray,
 	unDeepString,
 	waitForPromise,
+	assertNever,
 } from '../../../../lib/lib'
 import { PartId } from '../../../../lib/collections/Parts'
 import { check } from '../../../../lib/check'
@@ -25,7 +26,6 @@ import {
 	IBlueprintSegmentDB,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
-	IBlueprintRundownDB,
 	IBlueprintExternalMessageQueueObj,
 	IShowStyleContext,
 	IRundownContext,
@@ -38,6 +38,9 @@ import {
 	PackageInfo,
 	IStudioBaselineContext,
 	IShowStyleUserContext,
+	IBlueprintSegmentRundown,
+	NoteSeverity,
+	IRundownUserContext,
 } from '@sofie-automation/blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import {
@@ -49,7 +52,7 @@ import {
 } from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
-import { NoteType, INoteBase } from '../../../../lib/api/notes'
+import { INoteBase } from '../../../../lib/api/notes'
 import { RundownPlaylistId, ABSessionInfo, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	PieceInstances,
@@ -123,6 +126,18 @@ export class CommonContext implements ICommonContext {
 	logError(message: string): void {
 		logger.error(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
+	protected logNote(message: string, type: NoteSeverity): void {
+		if (type === NoteSeverity.ERROR) {
+			this.logError(message)
+		} else if (type === NoteSeverity.WARNING) {
+			this.logWarning(message)
+		} else if (type === NoteSeverity.INFO) {
+			this.logInfo(message)
+		} else {
+			assertNever(type)
+			this.logDebug(message)
+		}
+	}
 }
 
 /** Studio */
@@ -181,24 +196,21 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteType.ERROR,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
+		this.addNote(NoteSeverity.ERROR, message, params)
 	}
 	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.WARNING, message, params)
+	}
+
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.INFO, message, params)
+	}
+	private addNote(type: NoteSeverity, message: string, params?: { [key: string]: any }) {
 		if (this.tempSendNotesIntoBlackHole) {
-			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+			this.logNote(`UserNotes: "${message}", ${JSON.stringify(params)}`, type)
 		} else {
 			this.notes.push({
-				type: NoteType.WARNING,
+				type: type,
 				message: {
 					key: message,
 					args: params,
@@ -248,7 +260,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.ERROR,
+				type: NoteSeverity.ERROR,
 				message: {
 					key: message,
 					args: params,
@@ -261,7 +273,21 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
-				type: NoteType.WARNING,
+				type: NoteSeverity.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
+			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteSeverity.INFO,
 				message: {
 					key: message,
 					args: params,
@@ -279,7 +305,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 
 export class RundownContext extends ShowStyleContext implements IRundownContext {
 	readonly rundownId: string
-	readonly rundown: Readonly<IBlueprintRundownDB>
+	readonly rundown: Readonly<IBlueprintSegmentRundown>
 	readonly _rundown: ReadonlyDeep<Rundown>
 	readonly playlistId: RundownPlaylistId
 
@@ -292,9 +318,32 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		super(contextInfo, studio, showStyleCompound)
 
 		this.rundownId = unprotectString(rundown._id)
-		this.rundown = unprotectObject(rundown)
+		this.rundown = rundownToSegmentRundown(rundown)
 		this._rundown = rundown
 		this.playlistId = rundown.playlistId
+	}
+}
+
+export class RundownUserContext extends RundownContext implements IRundownUserContext {
+	public readonly notes: INoteBase[] = []
+
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.ERROR, message, params)
+	}
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.WARNING, message, params)
+	}
+	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
+		this.addNote(NoteSeverity.INFO, message, params)
+	}
+	private addNote(type: NoteSeverity, message: string, params?: { [key: string]: any }) {
+		this.notes.push({
+			type: type,
+			message: {
+				key: message,
+				args: params,
+			},
+		})
 	}
 }
 
@@ -339,7 +388,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 
 	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
 		this.notes.push({
-			type: NoteType.ERROR,
+			type: NoteSeverity.ERROR,
 			message: {
 				key: message,
 				args: params,
@@ -349,7 +398,18 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 	}
 	notifyUserWarning(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
 		this.notes.push({
-			type: NoteType.WARNING,
+			type: NoteSeverity.WARNING,
+			message: {
+				key: message,
+				args: params,
+			},
+			partExternalId: partExternalId,
+		})
+	}
+
+	notifyUserInfo(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
+		this.notes.push({
+			type: NoteSeverity.INFO,
 			message: {
 				key: message,
 				args: params,
@@ -722,5 +782,12 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 				rundownId: this._rundown._id,
 			})
 		)
+	}
+}
+
+export function rundownToSegmentRundown(rundown: ReadonlyDeep<Rundown>): IBlueprintSegmentRundown {
+	return {
+		externalId: rundown.externalId,
+		metaData: rundown.metaData,
 	}
 }

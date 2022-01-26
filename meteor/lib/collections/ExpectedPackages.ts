@@ -2,7 +2,7 @@ import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { registerCollection, ProtectedString, hashObj, assertNever, Time, literal, protectString } from '../lib'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
-import { Studio, StudioId } from './Studios'
+import { StudioId } from './Studios'
 import { PieceId } from './Pieces'
 import { registerIndex } from '../database'
 import { AdLibActionId } from './AdLibActions'
@@ -12,6 +12,7 @@ import { RundownBaselineAdLibActionId } from './RundownBaselineAdLibActions'
 import { SegmentId } from './Segments'
 import deepExtend from 'deep-extend'
 import { BucketId } from './Buckets'
+import { StudioLight } from './optimizations'
 /*
  Expected Packages are created from Pieces in the rundown.
  A "Package" is a generic term for a "thing that can be played", such as media files, audio, graphics etc..
@@ -152,6 +153,8 @@ export function getPreviewPackageSettings(
 		packagePath = expectedPackage.content.filePath
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.JSON_DATA) {
+		packagePath = undefined // Not supported
 	} else {
 		assertNever(expectedPackage)
 	}
@@ -171,6 +174,8 @@ export function getThumbnailPackageSettings(
 		packagePath = expectedPackage.content.filePath
 	} else if (expectedPackage.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
 		packagePath = expectedPackage.content.guid || expectedPackage.content.title
+	} else if (expectedPackage.type === ExpectedPackage.PackageType.JSON_DATA) {
+		packagePath = undefined // Not supported
 	} else {
 		assertNever(expectedPackage)
 	}
@@ -183,7 +188,7 @@ export function getThumbnailPackageSettings(
 }
 export function getSideEffect(
 	expectedPackage: ExpectedPackage.Base,
-	studio: Studio
+	studio: StudioLight
 ): ExpectedPackage.Base['sideEffect'] {
 	return deepExtend(
 		{},

@@ -5,6 +5,7 @@ import { SomeTimelineContent } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
 import { ActionUserData } from './action'
+import { NoteSeverity } from './lib'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -32,6 +33,10 @@ export interface PlaylistTimingBase {
 
 export interface PlaylistTimingNone {
 	type: PlaylistTimingType.None
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
 }
 
 export interface PlaylistTimingForwardTime extends PlaylistTimingBase {
@@ -113,6 +118,18 @@ export interface IBlueprintRundownDBData {
 	airStatus?: string
 }
 
+export interface IBlueprintSegmentRundown<TMetadata = unknown> {
+	externalId: string
+
+	/** Arbitrary data storage for plugins */
+	metaData?: TMetadata
+}
+
+export enum SegmentDisplayMode {
+	Timeline = 'timeline',
+	Storyboard = 'storyboard',
+}
+
 /** The Segment generated from Blueprint */
 export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-presentable name (Slug) for the Title */
@@ -123,6 +140,9 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	isHidden?: boolean
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
+
+	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
+	displayAs?: SegmentDisplayMode
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {
@@ -152,6 +172,9 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
+
+	/** Budget duration of this part, in milliseconds */
+	budgetDuration?: number
 
 	/** Whether this segment line supports being used in HOLD */
 	holdMode?: PartHoldMode
@@ -202,12 +225,15 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 *
 	 * @type {{
 	 * 		message: ITranslatableMessage,
+	 *      severity?: NoteSeverity
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
 		message: ITranslatableMessage
+		/** Set the severity of the displayed invalid part note */
+		severity?: NoteSeverity
 		color?: string
 	}
 
@@ -322,6 +348,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	content: SomeTimelineContent
 
 	/** The transition used by this piece to transition to and from the piece */
+	/** @deprecated */
 	transitions?: {
 		/** In transition for the piece */
 		inTransition?: PieceTransition
@@ -337,12 +364,6 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	 * @deprecated replaced by .expectedPackages
 	 */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
-	/** When queued, should the adlib autonext */
-	adlibAutoNext?: boolean
-	/** When queued, how much overlap with the next part */
-	adlibAutoNextOverlap?: number
-	/** When queued, block transition at the end of the part */
-	adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
 

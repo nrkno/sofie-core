@@ -44,6 +44,7 @@ describe('Test blueprint management api', () => {
 				_id: getRandomId(),
 				name: 'Fake blueprint',
 				organizationId: null,
+				hasCode: true,
 				code: `({default: (() => 5)()})`,
 				created: 0,
 				modified: 0,
@@ -302,6 +303,7 @@ describe('Test blueprint management api', () => {
 					TSRVersion: '0.3.0',
 					showStyleConfigManifest: ['show1'] as any,
 					studioConfigManifest: [],
+					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)
@@ -343,6 +345,7 @@ describe('Test blueprint management api', () => {
 					TSRVersion: '0.3.0',
 					showStyleConfigManifest: [],
 					studioConfigManifest: ['studio1'] as any,
+					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)
@@ -385,6 +388,7 @@ describe('Test blueprint management api', () => {
 					TSRVersion: '0.3.0',
 					showStyleConfigManifest: [],
 					studioConfigManifest: [],
+					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)
@@ -425,6 +429,7 @@ describe('Test blueprint management api', () => {
 					TSRVersion: '0.3.0',
 					showStyleConfigManifest: [],
 					studioConfigManifest: ['studio1'] as any,
+					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)
@@ -469,6 +474,7 @@ describe('Test blueprint management api', () => {
 					TSRVersion: '0.3.0',
 					showStyleConfigManifest: ['show1'] as any,
 					studioConfigManifest: [],
+					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)

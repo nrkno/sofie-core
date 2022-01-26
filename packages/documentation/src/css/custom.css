@@ -5,16 +5,24 @@
  * work well for content-centric websites.
  */
 
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,400;0,700;1,100;1,400;1,700&display=swap');
+
 /* You can override the default Infima variables here. */
 :root {
-	--ifm-color-primary: #25c2a0;
-	--ifm-color-primary-dark: rgb(33, 175, 144);
-	--ifm-color-primary-darker: rgb(31, 165, 136);
-	--ifm-color-primary-darkest: rgb(26, 136, 112);
-	--ifm-color-primary-light: rgb(70, 203, 174);
-	--ifm-color-primary-lighter: rgb(102, 212, 189);
-	--ifm-color-primary-lightest: rgb(146, 224, 208);
+	--ifm-color-primary: #1769ff;
+	--ifm-color-primary-dark: #0049d0;
+	--ifm-color-primary-darker: #00318b;
+	--ifm-color-primary-darkest: #001845;
+	--ifm-color-primary-light: #518efe;
+	--ifm-color-primary-lighter: #689dfe;
+	--ifm-color-primary-lightest: #8ab4ff;
 	--ifm-code-font-size: 95%;
+
+	--ifm-font-family-base: Roboto, Arial, sans-serif;
+}
+
+.footer--dark {
+	--ifm-footer-background-color: #252627;
 }
 
 .docusaurus-highlight-code-line {

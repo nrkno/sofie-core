@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-12-08T09:17:29.050Z\n"
-"PO-Revision-Date: 2021-12-08 14:36+0100\n"
+"POT-Creation-Date: 2021-12-17T08:27:08.153Z\n"
+"PO-Revision-Date: 2021-12-17 10:02+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0\n"
+"X-Generator: Poedit 3.0.1\n"
 
 msgid "Account Page"
 msgstr "Brukerkontoside"
@@ -455,38 +455,8 @@ msgstr ""
 "Du er i testmodus og sendingen starter om mindre enn ett minutt. Vil du "
 "laste inn kjøreplanen på nytt og gjøre klar til sending?"
 
-msgid "{{currentRundownName}} - {{rundownPlaylistName}} (Looping)"
-msgstr "{{currentRundownName}} - {{rundownPlaylistName}} (Looper)"
-
-msgid "{{currentRundownName}} - {{rundownPlaylistName}}"
-msgstr "{{currentRundownName}} - {{rundownPlaylistName}}"
-
-msgid "{{rundownPlaylistName}} (Looping)"
-msgstr "{{currentRundownName}} - {{rundownPlaylistName}} (Looper)"
-
-msgid "Started"
-msgstr "Startet"
-
-msgid "Planned Start"
-msgstr "Planlagt start"
-
-msgid "Expected Start"
-msgstr "Forventet slutt"
-
 msgid "Hold"
 msgstr "Hold"
-
-msgid "Next Loop at"
-msgstr "Neste loop starter"
-
-msgid "Expected End"
-msgstr "Forventet slutt"
-
-msgid "Diff"
-msgstr "Forskjell"
-
-msgid "Next Break"
-msgstr "Neste pause"
 
 msgid "Could not find a Piece that can be disabled."
 msgstr "Kunne ikke finne et element som kan skippes."
@@ -704,6 +674,9 @@ msgstr "(om: {{time}})"
 msgid "({{time}} ago)"
 msgstr "(for {{time}} siden)"
 
+msgid "Planned Start"
+msgstr "Planlagt start"
+
 msgid "Planned Duration"
 msgstr "Planlagt varighet"
 
@@ -834,6 +807,30 @@ msgstr "Avspilling"
 msgid "All devices working correctly"
 msgstr "Alle enheter fungerer som de skal"
 
+msgid "Diff"
+msgstr "Forskjell"
+
+msgid "Expected End"
+msgstr "Forventet slutt"
+
+msgid "Next Loop at"
+msgstr "Neste loop starter"
+
+msgid "Started"
+msgstr "Startet"
+
+msgid "Expected Start"
+msgstr "Forventet slutt"
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}} (Looping)"
+msgstr "{{currentRundownName}} - {{rundownPlaylistName}} (Looper)"
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}}"
+msgstr "{{currentRundownName}} - {{rundownPlaylistName}}"
+
+msgid "{{rundownPlaylistName}} (Looping)"
+msgstr "{{currentRundownName}} - {{rundownPlaylistName}} (Looper)"
+
 msgid "Switchboard"
 msgstr "Sentralbord"
 
@@ -843,23 +840,20 @@ msgstr "Endret fra standardoppsett"
 msgid "Off"
 msgstr "Av"
 
+msgid "BREAK"
+msgstr "PAUSE"
+
+msgid "Break In"
+msgstr "Pause om"
+
 msgid "Auto"
 msgstr "Auto"
-
-msgid "Show End"
-msgstr "Sendeslutt"
 
 msgid "Loops to top"
 msgstr "Looper til toppen"
 
-msgid "Set this part as <strong>Next</strong>"
-msgstr "Sett dette punktet som <strong>neste</strong>: Starter på neste Take"
-
-msgid "Set <strong>Next</strong> Here"
-msgstr "Sett <strong>Neste</strong> her"
-
-msgid "Play from Here"
-msgstr "Spill av herfra"
+msgid "Show End"
+msgstr "Sendeslutt"
 
 msgid "Set segment as <strong>Next</strong>"
 msgstr "Sett tittel som <strong>Neste</strong>: Starter på neste Take"
@@ -869,6 +863,15 @@ msgstr "Cue tittel: Starter når aktiv tittel er ferdig"
 
 msgid "Clear queued segment"
 msgstr "Fjern cuet tittel"
+
+msgid "Set this part as <strong>Next</strong>"
+msgstr "Sett dette punktet som <strong>neste</strong>: Starter på neste Take"
+
+msgid "Set <strong>Next</strong> Here"
+msgstr "Sett <strong>Neste</strong> her"
+
+msgid "Play from Here"
+msgstr "Spill av herfra"
 
 msgid "On Air"
 msgstr "On Air"
@@ -1134,7 +1137,7 @@ msgid "Display Rank"
 msgstr "Rangering for visning"
 
 msgid "Only Display AdLibs from Current Segment"
-msgstr "Vis kun adliber fra gjeldende segment"
+msgstr "Vis kun adliber fra gjeldende tittel"
 
 msgid "Include Global AdLibs"
 msgstr "Inkluder globale adliber"
@@ -1143,7 +1146,7 @@ msgid "Filter Disabled"
 msgstr "Filter deaktivert"
 
 msgid "Include Clear Source Layer in Ad-Libs"
-msgstr "Ta med\"Tøm kildelag\" i adliber"
+msgstr "Ta med \"Tøm kildelag\" i adliber"
 
 msgid "Source Layer Types"
 msgstr "Kildelagstyper"
@@ -1199,9 +1202,6 @@ msgstr ""
 msgid "URL"
 msgstr "Adresse (url)"
 
-msgid "Scale"
-msgstr "Skala"
-
 msgid "Role"
 msgstr "Rolle"
 
@@ -1213,6 +1213,97 @@ msgstr "Plasser etikett under panel"
 
 msgid "Disabled"
 msgstr "Deaktivert"
+
+msgid "Show segment name"
+msgstr "Vis tittelens navn"
+
+msgid "Show part title"
+msgstr "Vis delens tittel"
+
+msgid "Hide for dynamically inserted parts"
+msgstr "Skjul for dynamisk innsatte deler"
+
+msgid "Planned Start Text"
+msgstr "Tekst for planlagt start"
+
+msgid "Text to show above show start time"
+msgstr "Tekst som vises over klokkeslett for sendestart"
+
+msgid "Hide Diff"
+msgstr "Skjul forskjell"
+
+msgid "Hide Planned Start"
+msgstr "Skjul planlagt start"
+
+msgid "Planned End text"
+msgstr "Tekst for planlagt slutt"
+
+msgid "Text to show above show end time"
+msgstr "Tekst som vises over klokkeslett for sendeslutt"
+
+msgid "Hide Planned End Label"
+msgstr "Skjul etikett for planlagt slutt"
+
+msgid "Hide Diff Label"
+msgstr "Skjul etikett for forskjell"
+
+msgid "Hide Countdown"
+msgstr "Skjul nedtelling"
+
+msgid "Hide End Time"
+msgstr "Skjul sendeslutt"
+
+msgid "Hide Label"
+msgstr "Skjul etikett"
+
+msgid "Script Source Layers"
+msgstr ""
+
+msgid "Source layers containing script"
+msgstr ""
+
+msgid "Require Piece on Source Layer"
+msgstr ""
+
+msgid "Text"
+msgstr "Tekst"
+
+msgid "Show Rundown Name"
+msgstr "Vis kjøreplannavn"
+
+msgid "Segment"
+msgstr "Tittel"
+
+msgid "Part"
+msgstr "Del"
+
+msgid "Show Piece Icon Color"
+msgstr ""
+
+msgid "Use color of primary piece as background of panel"
+msgstr ""
+
+msgid "Box color"
+msgstr ""
+
+msgid "Also Require Source Layers"
+msgstr ""
+
+msgid ""
+"Specify additional layers where at least one layer must have an active piece"
+msgstr ""
+
+msgid "Require All Additional Source Layers"
+msgstr ""
+
+msgid "All additional source layers must have active pieces"
+msgstr ""
+
+msgid "Scale"
+msgstr "Skala"
+
+msgid "Custom Classes"
+msgstr "Tilpassede klasser"
 
 msgid "Device ID"
 msgstr "Enhets-id"
@@ -1274,7 +1365,44 @@ msgid "Mini Shelf Layout"
 msgstr "Layouter for miniskuff"
 
 msgid "Rundown Header Layout"
+msgstr "Layout for kjøreplanens topptekst"
+
+msgid "Live line countdown requires Source Layer"
 msgstr ""
+
+msgid ""
+"One of these source layers must have an active piece for the live line "
+"countdown to be show"
+msgstr ""
+
+msgid "Hide Rundown Divider"
+msgstr "Skjul kjøreplanskille"
+
+msgid "Hide rundown divider between rundowns in a playlist"
+msgstr "Skjul skille mellom kjøreplaner i en spilleliste"
+
+msgid "Show Breaks as Segments"
+msgstr "Vis pauser som titler"
+
+msgid "Segment countdown requires source layer"
+msgstr "Nedtelling for tittel krever kildelag"
+
+msgid ""
+"One of these source layers must have a piece for the countdown to segment on-"
+"air to be show"
+msgstr ""
+"Et av disse kildelagene må ha et element for at nedtelling til tittelen er "
+"OnAir vises"
+
+msgid "Fixed duration in Segment header"
+msgstr "Låst varighet i tittelheader"
+
+msgid ""
+"The segment duration in the segment header always displays the planned "
+"duration instead of acting as a counter"
+msgstr ""
+"Tittelens varighet i tittelheaderen vil alltid vise den planlagte varigheten "
+"i stedet for å telle ned"
 
 msgid "Select visible Source Layers"
 msgstr "Velg synlige kildelag"
@@ -1327,13 +1455,9 @@ msgstr "Adlib"
 msgid "Deactivate Rundown"
 msgstr "Deaktiver kjøreplan"
 
-#, fuzzy
-#| msgid "Disable the next element"
 msgid "Disable next Piece"
-msgstr "Skip neste super"
+msgstr "Skip neste element"
 
-#, fuzzy
-#| msgid "Move Next forwards"
 msgid "Move Next"
 msgstr "Skip neste"
 
@@ -1359,13 +1483,13 @@ msgid "Force (deactivate others)"
 msgstr "Tving (deaktiver andre)"
 
 msgid "Move Segments"
-msgstr ""
+msgstr "Skip segmenter"
 
 msgid "By Segments"
 msgstr ""
 
 msgid "Move Parts"
-msgstr ""
+msgstr "Skip del"
 
 msgid "By Parts"
 msgstr ""
@@ -1383,7 +1507,7 @@ msgid "Clear Source Layer"
 msgstr "Tøm kildelag"
 
 msgid "Sticky Piece"
-msgstr ""
+msgstr "Element er sticky"
 
 msgid "Global AdLibs"
 msgstr "Globale adliber"
@@ -1397,17 +1521,11 @@ msgstr "Grense"
 msgid "Output Layer"
 msgstr "Utgangslag"
 
-msgid "Part"
-msgstr "Del"
-
 msgid "Pick"
 msgstr "Plukk"
 
 msgid "Pick last"
 msgstr "Plukk siste"
-
-msgid "Segment"
-msgstr ""
 
 msgid "Source Layer"
 msgstr "Kildelag"
@@ -1881,7 +1999,7 @@ msgid "Display on Presenter's Screen"
 msgstr "Vis på presentatørskjerm"
 
 msgid "Pieces on this layer can be cleared"
-msgstr ""
+msgstr "Elementer på dette laget kan tømmes"
 
 msgid "Pieces on this layer are sticky"
 msgstr "Elementer i dette laget er sticky"
@@ -2225,7 +2343,7 @@ msgid "Accessors"
 msgstr "Aksessorer"
 
 msgid "Remove this Package Container Accessor?"
-msgstr "Fjern denne pakkekontainer-aksessoren"
+msgstr "Fjern denne pakkekontainer-aksessoren?"
 
 msgid ""
 "Are you sure you want to remove the Package Container Accessor "
@@ -2415,19 +2533,6 @@ msgstr "Dette vil fjerne {{indexCount}} gamle indexer. Vil du fortsette?"
 msgid "{{indexCount}} indexes was removed."
 msgstr "{{indexCount}} indexer ble fjernet."
 
-msgid "Remove old data"
-msgstr "Fjern gamle data"
-
-msgid ""
-"There are {{count}} documents in {{collections}} that can be removed, do you "
-"want to continue?"
-msgstr ""
-"Det er {{count}} dokumenter i {{collections}} som kan fjernes. Vil du "
-"fortsette?"
-
-msgid "The old data was removed."
-msgstr "Gamle data ble fjernet."
-
 msgid "Installation name"
 msgstr "Installasjonsnavn"
 
@@ -2501,6 +2606,28 @@ msgstr "Rydd opp i gamle databaseindexer"
 msgid "Cleanup old data"
 msgstr "Rydd opp i gamle data"
 
+msgid "Error when checking for cleaning up"
+msgstr ""
+
+msgid "Remove old data from database"
+msgstr "Fjern gamle data fra databasen"
+
+msgid ""
+"There are {{count}} documents that can be removed, do you want to continue?"
+msgstr "Det er {{count}} dokumenter som kan fjernes. Vil du fortsette?"
+
+msgid "Documents to be removed:"
+msgstr "Dokumenter som fjernes:"
+
+msgid "Retry"
+msgstr "Prøv igjen"
+
+msgid "Remove old data"
+msgstr "Fjern gamle data"
+
+msgid "The old data was removed."
+msgstr "Gamle data ble fjernet."
+
 msgid "Search..."
 msgstr "Søk..."
 
@@ -2521,6 +2648,9 @@ msgstr "Adlib satt på vent"
 
 msgid "Cannot play this AdLib because it is marked as Floated"
 msgstr "Kan ikke spille av adlib fordi den er markert som på vent (float)"
+
+msgid "End Words"
+msgstr "Stikkord"
 
 msgid "Cannot play this AdLib becasue it is marked as Invalid"
 msgstr "Kan ikke spille av adlib fordi den er markert som ugyldig"
@@ -2543,6 +2673,18 @@ msgstr "Vis i skuff"
 msgid "Edit in Nora"
 msgstr "Rediger i Nora"
 
+msgid "Current Part"
+msgstr "Nåværende del"
+
+msgid "Next Part"
+msgstr "Neste del"
+
+msgid "Part Count Down"
+msgstr "Nedtelling for del"
+
+msgid "Part Count Up"
+msgstr "Opptelling for del"
+
 msgid "New Bucket"
 msgstr "Ny bøtte"
 
@@ -2554,6 +2696,18 @@ msgstr "Er du sikker på at du vil slette denne bøtten?"
 
 msgid "Are you sure you want to empty (remove all adlibs inside) this Bucket?"
 msgstr "Er du sikker på at du vil tømme denne bøtten (fjerner alle adliber)?"
+
+msgid "Current Segment"
+msgstr "Nåværende tittel"
+
+msgid "Next Segment"
+msgstr "Neste tittel"
+
+msgid "Segment Count Down"
+msgstr "Nedtelling for tittel"
+
+msgid "Segment Count Up"
+msgstr "Opptelling for tittel"
 
 msgid "Start this AdLib"
 msgstr "Slett denne adliben"
@@ -2590,6 +2744,12 @@ msgstr "Globale adliber"
 
 msgid "Shortcuts"
 msgstr "Hurtigtaster"
+
+msgid "Show Style Variant"
+msgstr "Showstylevariant"
+
+msgid "Local Time"
+msgstr "Lokal tid"
 
 msgid "System"
 msgstr "System"
@@ -2880,8 +3040,16 @@ msgstr "Mer dokumentasjon er tilgjengelig på:"
 msgid "Timeline"
 msgstr "Tidslinje"
 
+#, fuzzy
+#| msgid "Layer Mappings"
+msgid "Mappings"
+msgstr "Lagmappinger"
+
 msgid "User Log Player"
 msgstr "Brukerloggspiller"
+
+msgid "Routed Mappings"
+msgstr ""
 
 msgid "Play from here"
 msgstr "Spill av herfra"
@@ -3009,8 +3177,8 @@ msgstr ""
 
 msgctxt "°°°°°°plural"
 msgid ""
-"There are {{count}} documents in {{collections}} that can be removed, do you "
-"want to continue?°°°°°°"
+"There are {{count}} documents that can be removed, do you want to continue?°°"
+"°°°°"
 msgstr ""
 "Det er {{count}} dokumenter i {{collections}} som kan fjernes. Vil du "
 "fortsette?°°°°°°"
@@ -3030,6 +3198,9 @@ msgstr "{{frames}} {{type}} frames oppdaget inne i klippet°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
+
+#~ msgid "Next Break"
+#~ msgstr "Neste pause"
 
 #~ msgid "Use {{nrcsName}} order"
 #~ msgstr "Bruk rekkefølge fra {{nrcsName}}"
@@ -3657,9 +3828,6 @@ msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
 
 #~ msgid "Are you sure you want to remove device \"{{devideId}}\"?"
 #~ msgstr "Er du sikker på at du vil fjerne enheten \"{{devideId}}\"?"
-
-#~ msgid "Default ShowStyleVariant"
-#~ msgstr "Standard showstylevariant"
 
 #~ msgid ""
 #~ "Only a single Rundown can be active in a studio at the same time. Please "

@@ -90,13 +90,13 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 #### Take Point
 
-The Take point is currently playing [Part](dictionary.md#part) in the rundown, indicated by the "On Air" line in the GUI.  
+The Take point is currently playing [Part](dictionary#part) in the rundown, indicated by the "On Air" line in the GUI.  
 What's played on air is calculated from the timeline objects in the Pieces in the currently playing part.
 
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
 
 :::info
-You can TAKE the next [Part](dictionary.md#part) by pressing F12 or the Numpad Enter key.
+You can TAKE the next [Part](dictionary#part) by pressing F12 or the Numpad Enter key.
 :::
 
 #### Next Point
@@ -115,7 +115,7 @@ If a Piece has more or less content than the Part's expected duration allows, an
 
 #### Lookahead
 
-Elements in the [Next point ](dictionary.md#next-point)\(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and play-out devices used. This feature is called "Lookahead".
+Elements in the [Next point ](dictionary#next-point)\(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and play-out devices used. This feature is called "Lookahead".
 
 ## Additional views
 

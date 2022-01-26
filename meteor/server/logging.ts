@@ -5,8 +5,11 @@ import { LogLevel } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 
-export function setLogLevel(level: LogLevel) {
-	if (logger.level !== level) {
+export function getLogLevel(): LogLevel {
+	return logger.level as LogLevel
+}
+export function setLogLevel(level: LogLevel, startup = false) {
+	if (logger.level !== level || startup) {
 		logger.level = level
 		if (transports.console) {
 			transports.console.level = level
@@ -14,7 +17,10 @@ export function setLogLevel(level: LogLevel) {
 		if (transports.file) {
 			transports.file.level = level
 		}
-		if (!Meteor.isTest) console.log(`Setting logger level to "${level}"`)
+		if (!Meteor.isTest) {
+			// Note: We can't use logger.info here, since that might be supressed by the log level.
+			console.log(`Setting logger level to "${level}"`)
+		}
 	}
 }
 

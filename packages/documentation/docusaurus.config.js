@@ -127,7 +127,7 @@ module.exports = {
 				sidebarPath: require.resolve('./sidebarsReleases.js'),
 				// ... other options
 			},
-		],
+		]
 		// [
 		//   '@docusaurus/plugin-content-docs',
 		//   {

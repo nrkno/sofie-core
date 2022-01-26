@@ -66,24 +66,6 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		}
 	}
 
-	outsideZoomAreaClick = (e: Event & any) => {
-		const offset = getElementDocumentOffset(this.parentElement)
-		const maxScrollLeft = this.props.segmentDuration - LIVELINE_HISTORY_SIZE / this.props.timeScale
-		if (offset) {
-			this.parentOffsetX = offset.left
-			this.parentOffsetY = offset.top
-			// - (this.props.liveLineHistorySize * (this.props.segmentDuration / this.state.width))
-			let seconds = ((e.clientX - this.parentOffsetX) / this.state.width) * maxScrollLeft
-			seconds -= this.props.liveLineHistorySize / this.props.timeScale
-			if (this.props.onScroll) {
-				this.props.onScroll(Math.min(Math.max(0, seconds), maxScrollLeft), e)
-			}
-
-			e.preventDefault()
-			e.stopPropagation()
-		}
-	}
-
 	onElementResize = (entries: ResizeObserverEntry[]) => {
 		let width: number
 		if (entries && entries[0] && entries[0].contentRect) {
@@ -284,20 +266,6 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		const maxScrollLeft = this.props.segmentDuration - LIVELINE_HISTORY_SIZE / this.props.timeScale
 		return (
 			<div className="segment-timeline__zoom-area__controls" ref={this.setParentRef}>
-				<div
-					className="segment-timeline__zoom-area__controls__left-mask"
-					style={{
-						width: Math.min(100, Math.max(0, (this.props.scrollLeft / maxScrollLeft) * 100)).toString() + '%',
-					}}
-					onClick={(e) => this.outsideZoomAreaClick(e)}
-				></div>
-				<div
-					className="segment-timeline__zoom-area__controls__right-mask"
-					style={{
-						width: Math.min(100, Math.max(0, (1 - this.props.scrollLeft / maxScrollLeft) * 100)).toString() + '%',
-					}}
-					onClick={(e) => this.outsideZoomAreaClick(e)}
-				></div>
 				<div
 					className="segment-timeline__zoom-area__controls__selected-area"
 					style={{

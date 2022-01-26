@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { ShowStyleBases, ShowStyleBaseId, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { logNotAllowed } from './lib/lib'
 import { ShowStyleVariants, ShowStyleVariantId, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { RundownLayouts, RundownLayoutId, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
@@ -13,6 +13,7 @@ import { Settings } from '../../lib/Settings'
 import { isProtectedString } from '../../lib/lib'
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { SystemWriteAccess } from './system'
+import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 type ShowStyleContent = { showStyleBaseId: ShowStyleBaseId }
 export namespace ShowStyleReadAccess {
@@ -101,7 +102,7 @@ export namespace ShowStyleContentWriteAccess {
 		userId: UserId | null
 		organizationId: OrganizationId | null
 		showStyleBaseId: ShowStyleBaseId | null
-		showStyleBase: ShowStyleBase | null
+		showStyleBase: ShowStyleBaseLight | null
 		cred: ResolvedCredentials | Credentials
 	} {
 		triggerWriteAccess()
@@ -110,7 +111,7 @@ export namespace ShowStyleContentWriteAccess {
 				userId: null,
 				organizationId: null,
 				showStyleBaseId: showStyleBaseId,
-				showStyleBase: ShowStyleBases.findOne(showStyleBaseId) || null,
+				showStyleBase: fetchShowStyleBaseLight(showStyleBaseId) || null,
 				cred: cred0,
 			}
 		}

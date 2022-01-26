@@ -1,10 +1,11 @@
 {
 	"name": "sofie-documentation",
-	"version": "1.37.2",
+	"version": "1.38.0",
 	"private": true,
 	"scripts": {
 		"docusaurus": "docusaurus",
-		"start": "docusaurus start",
+		"dev": "yarn start",
+		"start": "docusaurus start --port 4000",
 		"docs:build": "docusaurus build",
 		"swizzle": "docusaurus swizzle",
 		"deploy": "docusaurus deploy",

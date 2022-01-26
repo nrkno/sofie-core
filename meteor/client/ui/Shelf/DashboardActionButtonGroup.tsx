@@ -14,7 +14,7 @@ export interface IDashboardButtonGroupProps {
 	studioMode: boolean
 	playlist: RundownPlaylist
 
-	onChangeQueueAdLib: (isQueue: boolean, e: any) => void
+	onChangeQueueAdLib?: (isQueue: boolean, e: any) => void
 }
 
 export const DashboardActionButtonGroup = withTranslation()(
@@ -22,7 +22,9 @@ export const DashboardActionButtonGroup = withTranslation()(
 		take = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
-				doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+				doUserAction(t, e, UserAction.TAKE, (e) =>
+					MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+				)
 			}
 		}
 

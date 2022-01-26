@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, unprotectObject, clone, isProtectedString } from '../../../lib/lib'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { getHash, getCurrentTime, protectString, unprotectObject, clone } from '../../../lib/lib'
+import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
 	PeripheralDevices,
@@ -10,7 +10,7 @@ import {
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { SegmentId, Segment } from '../../../lib/collections/Segments'
+import { SegmentId, Segment, SegmentOrphanedReason } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
@@ -21,6 +21,7 @@ import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 import { CacheForIngest } from './cache'
+import { checkStudioExists } from '../../../lib/collections/optimizations'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -42,10 +43,10 @@ export function checkAccessAndGetPeripheralDevice(
 	return peripheralDevice
 }
 
-export function getRundownId(studio: ReadonlyDeep<Studio> | StudioId, rundownExternalId: string): RundownId {
-	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
+export function getRundownId(studioId: StudioId, rundownExternalId: string): RundownId {
+	if (!studioId) throw new Meteor.Error(500, 'getRundownId: studio not set!')
 	if (!rundownExternalId) throw new Meteor.Error(401, 'getRundownId: rundownExternalId must be set!')
-	return protectString<RundownId>(getHash(`${isProtectedString(studio) ? studio : studio._id}_${rundownExternalId}`))
+	return protectString<RundownId>(getHash(`${studioId}_${rundownExternalId}`))
 }
 export function getSegmentId(rundownId: RundownId, segmentExternalId: string): SegmentId {
 	if (!rundownId) throw new Meteor.Error(401, 'getSegmentId: rundownId must be set!')
@@ -58,24 +59,24 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 	return protectString<PartId>(getHash(`${rundownId}_part_${partExternalId}`))
 }
 
-export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio {
-	const span = profiler.startSpan('mosDevice.lib.getStudioFromDevice')
+export function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId {
+	const span = profiler.startSpan('mosDevice.lib.getStudioIdFromDevice')
 
 	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
-	const studio = Studios.findOne(studioId)
-	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
+	const studioExists = checkStudioExists(studioId)
+	if (!studioExists) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
 
 	span?.end()
-	return studio
+	return studioId
 }
 export function getRundown(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
 	const rundown = cache.Rundown.doc
 	if (!rundown) {
-		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
+		const rundownId = getRundownId(cache.Studio.doc._id, cache.RundownExternalId)
 		throw new Meteor.Error(404, `Rundown "${rundownId}" ("${cache.RundownExternalId}") not found`)
 	}
 	return rundown
@@ -99,10 +100,12 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 }
 
 function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
-	PeripheralDevices.update(deviceId, {
+	PeripheralDevices.updateAsync(deviceId, {
 		$set: {
 			lastDataReceived: getCurrentTime(),
 		},
+	}).catch((err) => {
+		logger.error(`Error in updateDeviceLastDataReceived "${deviceId}": ${err}`)
 	})
 }
 
@@ -124,7 +127,7 @@ export function canSegmentBeUpdated(
 	}
 
 	if (!segment) return true
-	if (segment.orphaned && !isCreateAction) {
+	if (segment.orphaned === SegmentOrphanedReason.DELETED && !isCreateAction) {
 		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
 		return false
 	}

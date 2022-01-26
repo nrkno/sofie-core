@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, canRundownBeUpdated, getPartId, getRundownId } from '../lib'
+import { canRundownBeUpdated, fetchStudioIdFromDevice, getPartId, getRundownId } from '../lib'
 import {
 	getRundownIdFromMosRO,
 	getPartIdFromMosStory,
@@ -12,7 +12,7 @@ import {
 } from './lib'
 import { literal, protectString, getCurrentTime, normalizeArray } from '../../../../lib/lib'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
-import { handleUpdatedRundownInner } from '../rundownInput'
+import { handleUpdatedRundownInner, handleUpdatedRundownMetaDataInner } from '../rundownInput'
 import { LocalIngestRundown, LocalIngestSegment, LocalIngestPart } from '../ingestCache'
 import { RundownId } from '../../../../lib/collections/Rundowns'
 import { logger } from '../../../../lib/logging'
@@ -103,15 +103,15 @@ export async function handleMosRundownData(
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	isCreateAction: boolean
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
-	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrder.ID)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
+	const rundownId = getRundownIdFromMosRO(studioId, mosRunningOrder.ID)
 	const rundownExternalId = parseMosString(mosRunningOrder.ID)
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
 	return runIngestOperationWithCache(
 		'handleMosRundownData',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !isCreateAction, []))
@@ -172,13 +172,13 @@ export async function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(mosRunningOrderBase.ID)
 
 	return runIngestOperationWithCache(
 		'handleMosRundownMetadata',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -194,7 +194,48 @@ export async function handleMosRundownMetadata(
 		async (cache, ingestRundown) => {
 			if (!ingestRundown) throw new Meteor.Error(`handleMosRundownMetadata lost the IngestRundown...`)
 
-			return handleUpdatedRundownInner(cache, ingestRundown, false, peripheralDevice)
+			return handleUpdatedRundownMetaDataInner(cache, ingestRundown, peripheralDevice)
+		}
+	)
+}
+
+export async function handleMosReadyToAir(
+	peripheralDevice: PeripheralDevice,
+	action: MOS.IMOSROReadyToAir
+): Promise<void> {
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
+
+	const rundownExternalId = parseMosString(action.ID)
+
+	return runIngestOperationWithCache(
+		'handleMosRundownMetadata',
+		studioId,
+		rundownExternalId,
+		(ingestRundown) => {
+			if (ingestRundown) {
+				// No changes
+				return ingestRundown
+			} else {
+				throw new Meteor.Error(404, `Rundown "${rundownExternalId}" not found`)
+			}
+		},
+		async (cache, ingestRundown) => {
+			if (!ingestRundown) throw new Meteor.Error(`handleMosReadyToAir lost the IngestRundown...`)
+			if (!cache.Rundown.doc) throw new Meteor.Error(`handleMosReadyToAir expects an existing Rundown...`)
+
+			if (!canRundownBeUpdated(cache.Rundown.doc, false)) return null
+
+			// Set the ready to air status of a Rundown
+			if (cache.Rundown.doc.airStatus !== action.Status) {
+				cache.Rundown.update((doc) => {
+					doc.airStatus = action.Status
+					return doc
+				})
+
+				return handleUpdatedRundownMetaDataInner(cache, ingestRundown, peripheralDevice)
+			} else {
+				return null
+			}
 		}
 	)
 }
@@ -207,14 +248,14 @@ export async function handleMosFullStory(
 	// @ts-ignore
 	// logger.debug(story)
 
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const partExternalId = parseMosString(story.ID)
 	const rundownExternalId = parseMosString(story.RunningOrderId)
 
 	return runIngestOperationWithCache(
 		'handleMosFullStory',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -255,13 +296,13 @@ export async function handleMosDeleteStory(
 ): Promise<void> {
 	if (stories.length === 0) return
 
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
-	const rundownId = getRundownId(studio, rundownExternalId)
+	const rundownId = getRundownId(studioId, rundownExternalId)
 	return runIngestOperationWithCache(
 		'handleMosDeleteStory',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -328,13 +369,13 @@ export async function handleMosInsertParts(
 	// inserts stories and all of their defined items before the referenced story in a Running Order
 	// ...and roStoryReplace message replaces the referenced story with another story or stories
 
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
-	const rundownId = getRundownId(studio, rundownExternalId)
+	const rundownId = getRundownId(studioId, rundownExternalId)
 	return runIngestOperationWithCache(
 		'handleMosInsertParts',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -396,7 +437,7 @@ export async function handleMosSwapStories(
 	story0: MOS.MosString128,
 	story1: MOS.MosString128
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const story0Str = parseMosString(story0)
 	const story1Str = parseMosString(story1)
@@ -408,10 +449,10 @@ export async function handleMosSwapStories(
 	}
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
-	const rundownId = getRundownId(studio, rundownExternalId)
+	const rundownId = getRundownId(studioId, rundownExternalId)
 	return runIngestOperationWithCache(
 		'handleMosSwapStories',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {
@@ -454,13 +495,13 @@ export async function handleMosMoveStories(
 	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
 ): Promise<void> {
-	const studio = getStudioFromDevice(peripheralDevice)
+	const studioId = fetchStudioIdFromDevice(peripheralDevice)
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
-	const rundownId = getRundownId(studio, rundownExternalId)
+	const rundownId = getRundownId(studioId, rundownExternalId)
 	return runIngestOperationWithCache(
 		'handleMosMoveStories',
-		studio._id,
+		studioId,
 		rundownExternalId,
 		(ingestRundown) => {
 			if (ingestRundown) {

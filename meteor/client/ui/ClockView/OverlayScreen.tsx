@@ -8,12 +8,14 @@ import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { getPresenterScreenReactive, PresenterScreenBase, RundownOverviewTrackedProps } from './PresenterScreen'
+import { StudioId } from '../../../lib/collections/Studios'
 
 interface TimeMap {
 	[key: string]: number
 }
 
 interface RundownOverviewProps {
+	studioId: StudioId
 	playlistId: RundownPlaylistId
 	segmentLiveDurations?: TimeMap
 }
@@ -79,6 +81,7 @@ export const OverlayScreen = withTranslation()(
 												partInstanceId={nextPart.instance._id}
 												showStyleBaseId={nextShowStyleBaseId}
 												rundownIds={this.props.rundownIds}
+												playlistActivationId={playlist?.activationId}
 											/>
 										) : null}
 									</div>
@@ -89,6 +92,7 @@ export const OverlayScreen = withTranslation()(
 												partInstanceId={nextPart.instance._id}
 												showStyleBaseId={nextShowStyleBaseId}
 												rundownIds={this.props.rundownIds}
+												playlistActivationId={playlist?.activationId}
 											/>
 										) : (
 											'_'

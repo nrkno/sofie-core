@@ -1,6 +1,6 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
-import { NoteType, TrackedNote } from './api/notes'
-import { Segments, DBSegment } from './collections/Segments'
+import { TrackedNote } from './api/notes'
+import { Segments, DBSegment, SegmentOrphanedReason } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { unprotectString, literal, generateTranslation, normalizeArrayToMap, assertNever } from './lib'
 import * as _ from 'underscore'
@@ -8,6 +8,7 @@ import { DBPartInstance, PartInstance, PartInstances } from './collections/PartI
 import { MongoFieldSpecifierOnes } from './typings/meteor'
 import { RundownPlaylist } from './collections/RundownPlaylists'
 import { ITranslatableMessage } from './api/TranslatableMessage'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 	const rundowns = Rundowns.find(
@@ -141,12 +142,23 @@ export function getBasicNotesForSegment(
 		)
 	}
 
-	if (segment.orphaned === 'deleted') {
+	if (segment.orphaned) {
+		let message: ITranslatableMessage
+		switch (segment.orphaned) {
+			case SegmentOrphanedReason.DELETED:
+				message = generateTranslation('Segment no longer exists in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
+				break
+			case SegmentOrphanedReason.HIDDEN:
+				message = generateTranslation('Segment was hidden in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
+				break
+		}
 		notes.push({
-			type: NoteType.WARNING,
-			message: generateTranslation('Segment no longer exists in {{nrcs}}', {
-				nrcs: nrcsName,
-			}),
+			type: NoteSeverity.WARNING,
+			message,
 			rank: segment._rank,
 			origin: {
 				segmentId: segment._id,
@@ -158,7 +170,7 @@ export function getBasicNotesForSegment(
 		const deletedPartInstances = partInstances.filter((p) => p.orphaned === 'deleted' && !p.reset)
 		if (deletedPartInstances.length > 0) {
 			notes.push({
-				type: NoteType.WARNING,
+				type: NoteSeverity.WARNING,
 				message: generateTranslation('The following parts no longer exist in {{nrcs}}: {{partNames}}', {
 					nrcs: nrcsName,
 					partNames: deletedPartInstances.map((p) => p.part.title).join(', '),
@@ -176,17 +188,15 @@ export function getBasicNotesForSegment(
 	for (const part of parts) {
 		const newNotes = part.notes?.slice() || []
 
-		// Temporarily disable showing invalidReason notifications
-		//		-- Jan Starzak, 2021/06/30
-		// if (part.invalidReason) {
-		// 	newNotes.push({
-		// 		type: NoteType.ERROR,
-		// 		message: part.invalidReason.message,
-		// 		origin: {
-		// 			name: part.title,
-		// 		},
-		// 	})
-		// }
+		if (part.invalidReason) {
+			newNotes.push({
+				type: part.invalidReason.severity ?? NoteSeverity.ERROR,
+				message: part.invalidReason.message,
+				origin: {
+					name: part.title,
+				},
+			})
+		}
 
 		if (newNotes.length > 0) {
 			notes.push(

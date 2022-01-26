@@ -25,6 +25,7 @@ import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { CacheForIngest } from '../ingest/cache'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { MongoQuery } from '../../../lib/typings/meteor'
 
 /**
  * This is a cache used for playout operations.
@@ -216,26 +217,30 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
 		const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
 
+		const partInstancesSelector: MongoQuery<PartInstance> = {
+			rundownId: { $in: rundownIds },
+			$or: [
+				{
+					reset: { $ne: true },
+				},
+				{
+					_id: { $in: selectedPartInstanceIds },
+				},
+			],
+		}
+		const pieceInstancesSelector: MongoQuery<PieceInstance> = {
+			rundownId: { $in: rundownIds },
+			partInstanceId: { $in: selectedPartInstanceIds },
+		}
+		if (playlist.activationId) {
+			partInstancesSelector.playlistActivationId = playlist.activationId
+			pieceInstancesSelector.playlistActivationId = playlist.activationId
+		}
 		const [segments, parts, ...collections] = await Promise.all([
 			DbCacheReadCollection.createFromDatabase(Segments, { rundownId: { $in: loadRundownIds } }),
 			DbCacheReadCollection.createFromDatabase(Parts, { rundownId: { $in: loadRundownIds } }),
-			DbCacheWriteCollection.createFromDatabase(PartInstances, {
-				rundownId: { $in: rundownIds },
-				playlistActivationId: playlist.activationId,
-				$or: [
-					{
-						reset: { $ne: true },
-					},
-					{
-						_id: { $in: selectedPartInstanceIds },
-					},
-				],
-			}),
-			DbCacheWriteCollection.createFromDatabase(PieceInstances, {
-				rundownId: { $in: rundownIds },
-				playlistActivationId: playlist.activationId,
-				partInstanceId: { $in: selectedPartInstanceIds },
-			}),
+			DbCacheWriteCollection.createFromDatabase(PartInstances, partInstancesSelector),
+			DbCacheWriteCollection.createFromDatabase(PieceInstances, pieceInstancesSelector),
 			// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
 			DbCacheWriteCollection.createFromDatabase(Timeline, { _id: playlist.studioId }),
 		])

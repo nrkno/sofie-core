@@ -10,8 +10,8 @@ import {
 	unprotectString,
 	isStringOrProtectedString,
 	getRandomId,
+	stringifyError,
 } from '../../../lib/lib'
-import { StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
@@ -24,7 +24,6 @@ import {
 	reportPartInstanceHasStopped,
 	reportPieceHasStopped,
 } from '../blueprints/events'
-import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
@@ -54,7 +53,8 @@ import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/se
 import { StudioContentWriteAccess } from '../../security/studio'
 import {
 	afterTake,
-	resetPreviousSegmentAndClearNextSegmentId,
+	clearNextSegmentId,
+	resetPreviousSegment,
 	takeNextPartInnerSync,
 	updatePartInstanceOnTake,
 } from './take'
@@ -79,6 +79,7 @@ import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { profiler } from '../profiler'
 import { MongoQuery } from '../../../lib/typings/meteor'
+import { fetchBlueprintVersion } from '../../../lib/collections/optimizations'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -291,7 +292,8 @@ export namespace ServerPlayoutAPI {
 	 */
 	export async function takeNextPart(
 		access: VerifiedRundownPlaylistContentAccess,
-		rundownPlaylistId: RundownPlaylistId
+		rundownPlaylistId: RundownPlaylistId,
+		fromPartInstanceId: PartInstanceId | null
 	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 
@@ -302,7 +304,12 @@ export namespace ServerPlayoutAPI {
 			'takeNextPartInner',
 			rundownPlaylistId,
 			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
+			async (cache) => {
+				const playlist = cache.Playlist.doc
+				if (playlist.currentPartInstanceId !== fromPartInstanceId) {
+					throw new Meteor.Error(500, 'Ignoring take as playing part has changed since TAKE was requested.')
+				}
+			},
 			async (cache) => {
 				return takeNextPartInnerSync(cache, now)
 			}
@@ -314,7 +321,8 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		nextPartId: PartId | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined
+		nextTimeOffset?: number | undefined,
+		clearNextSegment?: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		check(rundownPlaylistId, String)
 		if (nextPartId) check(nextPartId, String)
@@ -333,7 +341,7 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" cannot change next during hold!`)
 			},
 			async (cache) => {
-				await setNextPartInner(cache, nextPartId, setManually, nextTimeOffset)
+				await setNextPartInner(cache, nextPartId, setManually, nextTimeOffset, clearNextSegment)
 
 				return ClientAPI.responseSuccess(undefined)
 			}
@@ -344,7 +352,8 @@ export namespace ServerPlayoutAPI {
 		cache: CacheForPlayout,
 		nextPartId: PartId | DBPart | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined
+		nextTimeOffset?: number | undefined,
+		clearNextSegment?: boolean
 	): Promise<void> {
 		const playlist = cache.Playlist.doc
 		if (!playlist.activationId) throw new Meteor.Error(501, `Rundown Playlist "${playlist._id}" is not active!`)
@@ -361,6 +370,20 @@ export namespace ServerPlayoutAPI {
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
 		}
 
+		// If we're setting the next point to somewhere other than the current segment, and in the queued segment, clear the queued segment
+		const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+		if (
+			currentPartInstance &&
+			nextPart &&
+			currentPartInstance.segmentId !== nextPart.segmentId &&
+			playlist.nextSegmentId === nextPart.segmentId
+		) {
+			clearNextSegment = true
+		}
+
+		if (clearNextSegment) {
+			libSetNextSegment(cache, null)
+		}
 		await libsetNextPart(cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
 
 		// update lookahead and the next part when we have an auto-next
@@ -943,7 +966,8 @@ export namespace ServerPlayoutAPI {
 							currentPartInstance
 						)
 
-						resetPreviousSegmentAndClearNextSegmentId(cache)
+						clearNextSegmentId(cache, currentPartInstance)
+						resetPreviousSegment(cache)
 
 						// Update the next partinstance
 						const nextPart = selectNextPart(
@@ -1158,7 +1182,12 @@ export namespace ServerPlayoutAPI {
 
 						logger.debug(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-						blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+						try {
+							blueprint.blueprint.executeAction(actionContext, actionId, userData, triggerMode)
+						} catch (err) {
+							logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
+							throw err
+						}
 					}
 				)
 			}
@@ -1331,27 +1360,18 @@ export namespace ServerPlayoutAPI {
 		if (activePlaylists.length === 0) {
 			const studioTimeline = cache.Timeline.findOne(studio._id)
 			if (!studioTimeline) return 'noBaseline'
-			const markerObject = studioTimeline.timeline.find((x) => x.id === `baseline_version`)
-			if (!markerObject) return 'noBaseline'
-			// Accidental inclusion of one timeline code below - random ... don't know why
-			// const studioTimeline = cache.Timeline.findOne(studioId)
-			// if (!studioTimeline) return 'noBaseline'
-			// const markerObject = studioTimeline.timeline.find(
-			// 	(x) => x._id === protectString(`${studio._id}_baseline_version`)
-			// )
-			// if (!markerObject) return 'noBaseline'
+			const versionsContent = studioTimeline.generationVersions
+			if (!versionsContent) return 'noVersion'
 
-			const versionsContent = (markerObject.metaData as Partial<StatObjectMetadata> | undefined)?.versions
+			if (versionsContent.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
 
-			if (versionsContent?.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
+			if (versionsContent.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 
-			if (versionsContent?.studio !== (studio._rundownVersionHash || 0)) return 'studio'
-
-			if (versionsContent?.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
+			if (versionsContent.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
 			if (studio.blueprintId) {
-				const blueprint = await Blueprints.findOneAsync(studio.blueprintId)
-				if (!blueprint) return 'blueprintUnknown'
-				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
+				const blueprintVersion = await fetchBlueprintVersion(studio.blueprintId)
+				if (!blueprintVersion) return 'blueprintUnknown'
+				if (versionsContent.blueprintVersion !== (blueprintVersion || 0)) return 'blueprintVersion'
 			}
 		}
 
@@ -1402,7 +1422,7 @@ interface UpdateTimelineFromIngestDataTimeout {
 }
 const updateTimelineFromIngestDataTimeouts = new Map<RundownPlaylistId, UpdateTimelineFromIngestDataTimeout>()
 export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylistId, attempt: number = 1) {
-	if (process.env.JEST_WORKER_ID) {
+	if (Meteor.isTest) {
 		// Don't run this when in jest, as it is not useful and ends up producing errors
 		return
 	}

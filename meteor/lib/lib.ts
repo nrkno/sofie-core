@@ -7,10 +7,11 @@ import { Timecode } from 'timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
-import * as crypto from 'crypto'
 import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { ITranslatableMessage } from './api/TranslatableMessage'
 import { AsyncTransformedCollection } from './collections/lib'
+
+export * from './hash'
 
 const cloneOrg = require('fast-clone')
 
@@ -57,31 +58,6 @@ export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefin
 	}
 }
 
-export function getHash(str: string): string {
-	const hash = crypto.createHash('sha1')
-	return hash
-		.update(str)
-		.digest('base64')
-		.replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
-}
-/** Creates a hash based on the object properties (excluding ordering of properties) */
-export function hashObj(obj: any): string {
-	if (typeof obj === 'object') {
-		const keys = Object.keys(obj).sort((a, b) => {
-			if (a > b) return 1
-			if (a < b) return -1
-			return 0
-		})
-
-		const strs: string[] = []
-		for (const key of keys) {
-			strs.push(hashObj(obj[key]))
-		}
-		return getHash(strs.join('|'))
-	}
-	return obj + ''
-}
-
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
 	return Random.id(numberOfChars) as any
 }
@@ -113,15 +89,16 @@ export async function MeteorPromiseCall(callName: string, ...args: any[]): Promi
 export type Time = number
 export type TimeDuration = number
 
+// The diff is currently only used client-side
 const systemTime = {
 	hasBeenSet: false,
 	diff: 0,
 	stdDev: 9999,
+	lastSync: 0,
 }
 /**
- * Returns the current (synced) time
- * The synced time differs from Date.now() in that it uses a time synced with the Sofie server,
- * so it is unaffected of whether the client has a well-synced computer time or not.
+ * Returns the current (synced) time.
+ * If NTP-syncing is enabled, it'll be unaffected of whether the client has a well-synced computer time or not.
  * @return {Time}
  */
 export function getCurrentTime(): Time {
@@ -265,6 +242,11 @@ export function stringifyObjects(objs: any): string {
 export const Collections: { [name: string]: AsyncTransformedCollection<any, any> } = {}
 export function registerCollection(name: string, collection: AsyncTransformedCollection<any, any>) {
 	Collections[name] = collection
+}
+export function getCollectionKey(collection: AsyncTransformedCollection<any, any>): string {
+	const o = Object.entries(Collections).find(([_key, col]) => col === collection)
+	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
+	return o[0] // collectionName
 }
 // export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
 // 	function getCollectionIndexes(collection: TransformedCollection<any, any>, cb) {
@@ -709,7 +691,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 }
 export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id?: ProtectedString<any> }>(
 	docs0: ReadonlyArray<Class>,
-	options?: FindOptions<DBInterface>
+	options: FindOptions<DBInterface> | undefined
 ): Class[] {
 	let docs = [...docs0] // Shallow clone it
 	if (options) {
@@ -1037,7 +1019,7 @@ export function extendMandadory<A, B extends A>(original: A, extendObj: Differen
 	return _.extend(original, extendObj)
 }
 
-export function trimIfString<T extends any>(value: T): T | string {
+export function trimIfString<T>(value: T): T | string {
 	if (_.isString(value)) return value.trim()
 	return value
 }
@@ -1134,7 +1116,7 @@ export function unpartialString<T extends ProtectedString<any>>(str: T | Partial
 	return str as any
 }
 
-export function isPromise<T extends any>(val: any): val is Promise<T> {
+export function isPromise<T>(val: any): val is Promise<T> {
 	return _.isObject(val) && typeof val.then === 'function' && typeof val.catch === 'function'
 }
 
@@ -1150,7 +1132,7 @@ export function assertNever(_never: never): void {
  * @param a
  * @param b
  */
-export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
+export function equalSets<T>(a: Set<T>, b: Set<T>): boolean {
 	if (a === b) return true
 	if (a.size !== b.size) return false
 	for (const val of a.values()) {
@@ -1207,4 +1189,28 @@ export enum LogLevel {
 	INFO = 'info',
 	WARN = 'warn',
 	ERROR = 'error',
+	NONE = 'crit',
+}
+/** Make a string out of an error, including any additional data such as stack trace if available */
+export function stringifyError(error: unknown, noStack = false): string {
+	let str: string
+
+	if (error && typeof error === 'object' && (error as Error | Meteor.Error).message) {
+		str = `${(error as Error | Meteor.Error).message}`
+	} else if (error && typeof error === 'object' && (error as Meteor.Error).reason) {
+		str = `${(error as Meteor.Error).reason}`
+	} else {
+		str = `${error}`
+	}
+
+	if (error && typeof error === 'object' && (error as any).details) {
+		str = `${(error as any).details}`
+	}
+
+	if (!noStack) {
+		if (error && typeof error === 'object' && (error as any).stack) {
+			str += ', ' + (error as any).stack
+		}
+	}
+	return str
 }

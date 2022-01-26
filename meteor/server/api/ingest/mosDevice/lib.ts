@@ -1,19 +1,19 @@
 import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
-import { Studio } from '../../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { getRundownId, getPartId } from '../lib'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 import { getCurrentTime } from '../../../../lib/lib'
+import { StudioId } from '../../../../lib/collections/Studios'
 
-export function getRundownIdFromMosRO(studio: Studio, runningOrderMosId: MOS.MosString128) {
+export function getRundownIdFromMosRO(studioId: StudioId, runningOrderMosId: MOS.MosString128) {
 	if (!runningOrderMosId) throw new Meteor.Error(401, 'parameter runningOrderMosId missing!')
-	return getRundownId(studio, parseMosString(runningOrderMosId))
+	return getRundownId(studioId, parseMosString(runningOrderMosId))
 }
 
-export function getRundownFromMosRO(studio: Studio, runningOrderMosId: MOS.MosString128) {
-	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
+export function getRundownFromMosRO(studioId: StudioId, runningOrderMosId: MOS.MosString128) {
+	const rundownId = getRundownIdFromMosRO(studioId, runningOrderMosId)
 	const rundownExternalId = parseMosString(runningOrderMosId)
 
 	const rundown = Rundowns.findOne(rundownId)

@@ -281,7 +281,7 @@ jobs:
       fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
-        node-version: [12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
 
     # Gateways dont support node 10. but no tests to run anyway :)
     # if: "!(endsWith(matrix.package-name, 'gateway') & matrix.node-version == '10.x')"
@@ -376,6 +376,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
+      - name: Prepare Environment # have to run this first to make sure the semver lib is available
+        if: ${{ steps.do-publish.outputs.tag }}
+        run: |
+          cd packages
+          yarn install
+        env:
+          CI: true
       - name: Check release is desired
         id: do-publish
         run: |
@@ -395,13 +402,6 @@ jobs:
             echo ::set-output name=tag::"$NPM_TAG"
 
           fi
-      - name: Prepare Environment
-        if: ${{ steps.do-publish.outputs.tag }}
-        run: |
-          cd packages
-          yarn install
-        env:
-          CI: true
       - name: Build
         if: ${{ steps.do-publish.outputs.tag }}
         run: |

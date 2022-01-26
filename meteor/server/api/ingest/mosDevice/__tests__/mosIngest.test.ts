@@ -1178,7 +1178,7 @@ describe('Test recieved mos ingest payloads', () => {
 		// activate and set on air
 		await MeteorCall.userAction.activate('', rundown.playlistId, true)
 		await MeteorCall.userAction.setNext('', rundown.playlistId, getPartId(rundown._id, 'ro1;s2;p1'))
-		await MeteorCall.userAction.take('', rundown.playlistId)
+		await MeteorCall.userAction.take('', rundown.playlistId, null)
 
 		const partInstances0 = rundown.getAllPartInstances()
 		const { segments: segments0, parts: parts0 } = rundown.getSegmentsAndPartsSync()
@@ -1209,7 +1209,7 @@ describe('Test recieved mos ingest payloads', () => {
 		// activate and set on air
 		await MeteorCall.userAction.activate('', rundown.playlistId, true)
 		await MeteorCall.userAction.setNext('', rundown.playlistId, getPartId(rundown._id, 'ro1;s2;p1'))
-		await MeteorCall.userAction.take('', rundown.playlistId)
+		await MeteorCall.userAction.take('', rundown.playlistId, null)
 
 		const partInstances0 = rundown.getAllPartInstances()
 		const { segments: segments0, parts: parts0 } = rundown.getSegmentsAndPartsSync()

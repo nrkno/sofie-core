@@ -186,6 +186,10 @@ export abstract class WithManagedTracker {
 		}, 2000) // wait for a couple of seconds, before unsubscribing
 	}
 
+	subscriptionsReady(): boolean {
+		return this._subs.every((e) => e.ready())
+	}
+
 	protected subscribe(sub: PubSub, ...args: any[]) {
 		this._subs.push(Meteor.subscribe(sub, ...args))
 	}

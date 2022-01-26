@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { IBlueprintActionManifest, IBlueprintAdLibPiece, IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
@@ -24,6 +23,8 @@ import {
 } from './expectedPackages'
 import { ShowStyleUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { logger } from '../../logging'
+import { stringifyError } from '../../../lib/lib'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -49,8 +50,16 @@ export async function updateBucketAdlibFromIngestData(
 		showStyle,
 		watchedPackages
 	)
-	if (!blueprint.getAdlibItem) throw new Meteor.Error(501, "This blueprint doesn't support ingest AdLibs")
-	const rawAdlib = blueprint.getAdlibItem(context, ingestData)
+
+	let rawAdlib: IBlueprintAdLibPiece | IBlueprintActionManifest | null = null
+	try {
+		if (blueprint.getAdlibItem) {
+			rawAdlib = blueprint.getAdlibItem(context, ingestData)
+		}
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.getShowStyleVariantId: ${stringifyError(err)}`)
+		rawAdlib = null
+	}
 
 	const importVersions: RundownImportVersions = {
 		studio: studio._rundownVersionHash,

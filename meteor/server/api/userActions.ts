@@ -9,9 +9,9 @@ import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { StudioId } from '../../lib/collections/Studios'
+import { StudioId, Studios } from '../../lib/collections/Studios'
 import { Pieces, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
+import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -73,7 +73,8 @@ export function setMinimumTakeSpan(span: number) {
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
 export async function take(
 	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId
+	rundownPlaylistId: RundownPlaylistId,
+	fromPartInstanceId: PartInstanceId | null
 ): Promise<ClientAPI.ClientResponse<void>> {
 	// Called by the user. Wont throw as nasty errors
 	const now = getCurrentTime()
@@ -88,6 +89,11 @@ export async function take(
 		if (!playlist.nextPartInstanceId) {
 			return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
 		}
+
+		if (playlist.currentPartInstanceId !== fromPartInstanceId) {
+			return ClientAPI.responseError('Ignoring take as playing part has changed since TAKE was requested.')
+		}
+
 		if (playlist.currentPartInstanceId) {
 			const currentPartInstance = await PartInstances.findOneAsync(playlist.currentPartInstanceId)
 			if (currentPartInstance && currentPartInstance.timings) {
@@ -112,7 +118,7 @@ export async function take(
 				)
 			}
 		}
-		return ServerPlayoutAPI.takeNextPart(access, playlist._id)
+		return ServerPlayoutAPI.takeNextPart(access, playlist._id, playlist.currentPartInstanceId)
 	})
 }
 
@@ -165,28 +171,6 @@ export async function setNextSegment(
 	if (nextSegmentId) {
 		nextSegment = (await Segments.findOneAsync(nextSegmentId)) || null
 		if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
-
-		const rundownIds = playlist.getRundownIDs()
-		if (rundownIds.indexOf(nextSegment.rundownId) === -1) {
-			throw new Meteor.Error(
-				404,
-				`Segment "${nextSegmentId}" does not belong to Rundown Playlist "${rundownPlaylistId}"!`
-			)
-		}
-
-		const partsInSegment = await Parts.findFetchAsync({
-			rundownId: nextSegment.rundownId,
-			segmentId: nextSegment._id,
-		})
-		const firstValidPartInSegment = partsInSegment.find((p) => p.isPlayable())
-
-		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
-
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-		if (!currentPartInstance || !nextPartInstance || nextPartInstance.segmentId !== currentPartInstance.segmentId) {
-			// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart
-			return ServerPlayoutAPI.setNextPart(access, rundownPlaylistId, firstValidPartInSegment._id, true, 0)
-		}
 	}
 
 	return ServerPlayoutAPI.setNextSegment(access, rundownPlaylistId, nextSegmentId)
@@ -393,12 +377,7 @@ export async function pieceTakeNow(
 	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
 	if (!pieceToCopy.allowDirectPlay) {
-		// Not explicitly allowed, use legacy route
-		const showStyleBase = rundown.getShowStyleBase()
-		const sourceLayerId = pieceToCopy.sourceLayerId
-		const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
-		if (sourceL && (sourceL.type !== SourceLayerType.LOWER_THIRD || sourceL.exclusiveGroup))
-			return ClientAPI.responseError(`PieceInstance or Piece "${pieceToCopy.name}" cannot be direct played!`)
+		return ClientAPI.responseError(`PieceInstance or Piece "${pieceToCopy.name}" cannot be direct played!`)
 	}
 
 	return ClientAPI.responseSuccess(
@@ -771,23 +750,31 @@ export async function bucketAdlibImport(
 	bucketId: BucketId,
 	ingestItem: IngestAdlib
 ): Promise<ClientAPI.ClientResponse<undefined>> {
-	const { studio } = OrganizationContentWriteAccess.studio(context, studioId)
+	const o = OrganizationContentWriteAccess.studio(context, studioId)
+	const studioLight = o.studio
+
+	// Optimization: since
+	const pStudio = studioLight ? Studios.findOneAsync(studioLight._id) : Promise.resolve(undefined)
 
 	check(studioId, String)
 	check(showStyleVariantId, String)
 	check(bucketId, String)
 	// TODO - validate IngestAdlib
 
-	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+	if (!studioLight) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 	const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
 	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
 
-	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
+	if (studioLight.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
 		throw new Meteor.Error(500, `ShowStyle Variant "${showStyleVariantId}" not supported by studio "${studioId}"`)
 	}
 
 	const bucket = await Buckets.findOneAsync(bucketId)
 	if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found`)
+
+	const studio = await pStudio
+	if (!studio)
+		throw new Meteor.Error(404, `Studio "${studioLight._id}" not found (even though the studioLight was found)`)
 
 	await updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
 
@@ -812,13 +799,13 @@ export async function bucketsSaveActionIntoBucket(
 	return ClientAPI.responseSuccess(result)
 }
 
-export function bucketAdlibStart(
+export async function bucketAdlibStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
 	bucketAdlibId: PieceId,
 	queue?: boolean
-) {
+): Promise<ClientAPI.ClientResponse<void>> {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(bucketAdlibId, String)
@@ -832,9 +819,14 @@ export function bucketAdlibStart(
 		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
 	}
 
-	return ClientAPI.responseSuccess(
-		ServerPlayoutAdLibAPI.startBucketAdlibPiece(access, rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
+	const result = await ServerPlayoutAdLibAPI.startBucketAdlibPiece(
+		access,
+		rundownPlaylistId,
+		partInstanceId,
+		bucketAdlibId,
+		!!queue
 	)
+	return ClientAPI.responseSuccess(result)
 }
 
 let restartToken: string | undefined = undefined
@@ -918,8 +910,8 @@ export async function traceAction<T extends (...args: any[]) => any>(
 }
 
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
-	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return traceAction(UserActionAPIMethods.take, take, this, rundownPlaylistId)
+	async take(_userEvent: string, rundownPlaylistId: RundownPlaylistId, fromPartInstanceId: PartInstanceId | null) {
+		return traceAction(UserActionAPIMethods.take, take, this, rundownPlaylistId, fromPartInstanceId)
 	}
 	async setNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
 		return traceAction(UserActionAPIMethods.setNext, setNext, this, rundownPlaylistId, partId, true, timeOffset)

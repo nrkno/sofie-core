@@ -80,6 +80,11 @@ cd ../sofie-core/meteor
 npm link mos-connection
 ```
 
+### When using the Visual Studio Code IDE
+
+We provide a `settings.json.default` file in `.vscode` that you should consider using with your IDE. Also consider installing suggested
+extensions, which should help you create PRs consistent with project's code standards.
+
 ### Dealing with strange errors
 
 If you get any strange errors (such as the application crashing, "Unable to resolve some modules" or errors during installation of dependencies), the last resort is to reset and restart:

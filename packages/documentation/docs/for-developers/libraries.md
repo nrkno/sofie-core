@@ -40,17 +40,18 @@ There are a number of libraries used in the Sofie ecosystem:
 
 There are also a few typings-only libraries that define interfaces between applications:
 
-* [**Blueprints integration**](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) Defines the interface between [**Blueprints** ](../dictionary.md#blueprints)and [**Sofie Core**](../dictionary.md#sofie-core).
-* [**Timeline State Resolver types**](https://www.npmjs.com/package/timeline-state-resolver-types) Defines the interface between [**Blueprints**](../dictionary.md#blueprints) and the timeline that will be fed into **TSR** for playout.
+* [**Blueprints integration**](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) Defines the interface between [**Blueprints**](../dictionary#blueprints) and [**Sofie Core**](../dictionary#sofie-core).
+* [**Timeline State Resolver types**](https://www.npmjs.com/package/timeline-state-resolver-types) Defines the interface between [**Blueprints**](../dictionary#blueprints) and the timeline that will be fed into **TSR** for playout.
 
 ## Other Sofie-related Repositories
 
 * [**CasparCG Server** \(NRK fork\)](https://github.com/nrkno/tv-automation-casparcg-server) Sofie-specific fork of CasparCG Server.
 * [**CasparCG Launcher**](https://github.com/nrkno/tv-automation-casparcg-launcher) Launcher, controller, and logger for CasparCG Server.
 * [**CasparCG Media Scanner** \(NRK fork\)](https://github.com/nrkno/tv-automation-casparcg-server) Sofie-specific fork of CasparCG Server 2.2 Media Scanner.
-* [**Media Manager**](https://github.com/nrkno/tv-automation-media-management) Handles media transfer and media file management for pulling new files and deleting expired files on playout devices.
+* [**Package Manager**](https://github.com/nrkno/tv-automation-package-manager) Handles media asset transfer and media file management for pulling new files and deleting expired files on playout devices in a more performant, and possibly distributed, way. Can smartly figure out how to get a file on storage A to playout server B.
+* [**Media Manager**](https://github.com/nrkno/tv-automation-media-management) *(deprecated)* Handles media transfer and media file management for pulling new files and deleting expired files on playout devices.
 * [**Quantel Browser plugin**](https://github.com/nrkno/tv-automation-quantel-browser-plugin) MOS-compatible Quantel video clip browser for use with Sofie.
-* [**Sisyfos Audio Controller**](https://github.com/nrkno/tv-automation-sisyfos-audio-controller) developed by **[_olzzon_](https://github.com/olzzon/)**
+* [**Sisyfos Audio Controller**](https://github.com/nrkno/tv-automation-sisyfos-audio-controller) *developed by [_olzzon_](https://github.com/olzzon/)*
 
 
 

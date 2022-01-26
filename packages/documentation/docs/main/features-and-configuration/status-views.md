@@ -1,3 +1,7 @@
+---
+sidebar_position: 8
+---
+
 # Status views
 
 ## System Status
