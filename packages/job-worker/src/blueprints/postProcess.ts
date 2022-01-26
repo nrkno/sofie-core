@@ -4,7 +4,7 @@ import {
 	TimelineObjRundown,
 	TimelineObjType,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	IBlueprintActionManifest,
@@ -17,7 +17,6 @@ import {
 	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleContext } from './context'
-import { prefixAllObjectIds } from '../playout/lib'
 import {
 	BlueprintId,
 	BucketId,
@@ -55,8 +54,7 @@ export function postProcessPieces(
 	rundownId: RundownId,
 	segmentId: SegmentId,
 	partId: PartId,
-	allowNowForPiece?: boolean,
-	prefixAllTimelineObjects?: boolean,
+	allowNowForPiece: boolean,
 	setInvalid?: boolean
 ): Piece[] {
 	const span = context.startSpan('blueprints.postProcess.postProcessPieces')
@@ -104,7 +102,6 @@ export function postProcessPieces(
 			piece._id,
 			blueprintId,
 			orgPiece.timelineObjects,
-			prefixAllTimelineObjects || false,
 			timelineUniqueIds
 		)
 		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
@@ -131,10 +128,9 @@ export function postProcessTimelineObjects(
 	pieceId: PieceId,
 	blueprintId: BlueprintId,
 	timelineObjects: TSR.TSRTimelineObjBase[],
-	prefixAllTimelineObjects: boolean, // TODO: remove, default to true?
 	timelineUniqueIds: Set<string> = new Set<string>()
 ): TimelineObjRundown[] {
-	let newObjs = timelineObjects.map((o: TimelineObjectCoreExt, i) => {
+	return timelineObjects.map((o: TimelineObjectCoreExt, i) => {
 		const obj: TimelineObjRundown = {
 			...o,
 			id: o.id,
@@ -153,12 +149,6 @@ export function postProcessTimelineObjects(
 
 		return obj
 	})
-
-	if (prefixAllTimelineObjects) {
-		newObjs = prefixAllObjectIds(newObjs, unprotectString(pieceId) + '_')
-	}
-
-	return newObjs
 }
 
 export function postProcessAdLibPieces(
@@ -197,7 +187,6 @@ export function postProcessAdLibPieces(
 			piece._id,
 			blueprintId,
 			orgAdlib.timelineObjects,
-			false,
 			timelineUniqueIds
 		)
 		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
@@ -257,14 +246,14 @@ export function postProcessStudioBaselineObjects(
 	studio: ReadonlyDeep<DBStudio>,
 	objs: TSR.TSRTimelineObjBase[]
 ): TimelineObjRundown[] {
-	return postProcessTimelineObjects(protectString('studio'), studio.blueprintId ?? protectString(''), objs, false)
+	return postProcessTimelineObjects(protectString('studio'), studio.blueprintId ?? protectString(''), objs)
 }
 
 export function postProcessRundownBaselineItems(
 	blueprintId: BlueprintId,
 	baselineItems: TSR.TSRTimelineObjBase[]
 ): TimelineObjGeneric[] {
-	return postProcessTimelineObjects(protectString('baseline'), blueprintId, baselineItems, false)
+	return postProcessTimelineObjects(protectString('baseline'), blueprintId, baselineItems)
 }
 
 export function postProcessBucketAdLib(
@@ -294,7 +283,7 @@ export function postProcessBucketAdLib(
 	// Fill in ids of unnamed expectedPackages
 	setDefaultIdOnExpectedPackages(piece.expectedPackages)
 
-	const timelineObjects = postProcessTimelineObjects(piece._id, blueprintId, itemOrig.timelineObjects, false)
+	const timelineObjects = postProcessTimelineObjects(piece._id, blueprintId, itemOrig.timelineObjects)
 	piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
 
 	return piece

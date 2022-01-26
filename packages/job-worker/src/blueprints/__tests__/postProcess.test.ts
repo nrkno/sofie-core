@@ -416,7 +416,8 @@ describe('Test blueprint post-process', () => {
 				protectString('blueprint9'),
 				protectString('fakeRo'),
 				protectString('segment5'),
-				protectString('part8')
+				protectString('part8'),
+				false
 			)
 			expect(res).toHaveLength(0)
 		})
@@ -458,7 +459,8 @@ describe('Test blueprint post-process', () => {
 				protectString('blueprint9'),
 				protectString('fakeRo'),
 				protectString('segment5'),
-				protectString('part8')
+				protectString('part8'),
+				false
 			)
 			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
 
@@ -521,7 +523,8 @@ describe('Test blueprint post-process', () => {
 				protectString('blueprint9'),
 				protectString('fakeRo'),
 				protectString('segment8'),
-				protectString('part6')
+				protectString('part6'),
+				false
 			)
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([_.omit(piece, '_id')])

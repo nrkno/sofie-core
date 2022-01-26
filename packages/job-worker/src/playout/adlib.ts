@@ -8,7 +8,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { assertNever, getRandomId, getRank, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, getRandomId, getRank, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import {
@@ -24,7 +24,7 @@ import {
 } from './cache'
 import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline'
-import { prefixAllObjectIds, selectNextPart, setNextPart } from './lib'
+import { selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
 import {
 	convertAdLibToPieceInstance,
@@ -42,8 +42,6 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
-import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -172,17 +170,6 @@ async function pieceTakeNowAsAdlib(
 		partInstance,
 		false
 	)
-	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-		newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
-			newPieceInstance.piece.content.timelineObjects.map((obj) => {
-				return literal<TimelineObjGeneric>({
-					...obj,
-					objectType: TimelineObjType.RUNDOWN,
-				})
-			}),
-			unprotectString(newPieceInstance._id)
-		)
-	}
 
 	// Disable the original piece if from the same Part
 	if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {

@@ -43,6 +43,7 @@ import {
 	PlaylistTimingType,
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
+	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 // import _ = require('underscore')
@@ -296,8 +297,8 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 				// displayDuration?: number;
 				// invalid?: boolean
 			}
-			const pieces: IBlueprintPiece[] = ingestPart.payload?.pieces ?? []
-			const adLibPieces: IBlueprintAdLibPiece[] = []
+			const pieces: Array<WithTimelineObjects<IBlueprintPiece>> = ingestPart.payload?.pieces ?? []
+			const adLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPiece>> = []
 			parts.push({
 				part,
 				pieces,

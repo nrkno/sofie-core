@@ -265,8 +265,7 @@ export async function calculateSegmentsFromIngestData(
 					rundown._id,
 					newSegment._id,
 					part._id,
-					undefined,
-					undefined,
+					false,
 					part.invalid
 				)
 				res.pieces.push(...processedPieces)

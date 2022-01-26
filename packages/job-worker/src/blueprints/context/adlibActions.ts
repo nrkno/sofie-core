@@ -290,8 +290,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			partInstance.rundownId,
 			partInstance.segmentId,
 			partInstance.part._id,
-			part === 'current',
-			true
+			part === 'current'
 		)[0]
 		piece._id = getRandomId() // Make id random, as postProcessPieces is too predictable (for ingest)
 		const newPieceInstance = wrapPieceToInstance(piece, this.playlistActivationId, partInstance._id)
@@ -351,8 +350,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
-					piece.timelineObjects,
-					false
+					piece.timelineObjects
 				)
 			)
 			// This has been processed
@@ -437,7 +435,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			this.showStyleCompound.blueprintId,
 			currentPartInstance.rundownId,
 			newPartInstance.segmentId,
-			newPartInstance.part._id
+			newPartInstance.part._id,
+			false
 		)
 		const newPieceInstances = pieces.map((piece) =>
 			wrapPieceToInstance(piece, this.playlistActivationId, newPartInstance._id)

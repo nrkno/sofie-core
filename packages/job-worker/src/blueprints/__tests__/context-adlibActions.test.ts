@@ -4,6 +4,7 @@ import {
 	IBlueprintPiece,
 	IBlueprintPieceType,
 	PieceLifespan,
+	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context/adlibActions'
 import { isTooCloseToAutonext } from '../../playout/lib'
@@ -958,7 +959,6 @@ describe('Test blueprint api context', () => {
 						partInstance.rundownId,
 						partInstance.segmentId,
 						partInstance.part._id,
-						true,
 						true
 					)
 					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(1)
@@ -1182,7 +1182,7 @@ describe('Test blueprint api context', () => {
 					expect(partInstance).toBeTruthy()
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
-					const newPiece: IBlueprintPiece = {
+					const newPiece: WithTimelineObjects<IBlueprintPiece> = {
 						name: 'test piece',
 						sourceLayerId: 'sl1',
 						outputLayerId: 'o1',
@@ -1190,6 +1190,7 @@ describe('Test blueprint api context', () => {
 						enable: { start: 0 },
 						lifespan: PieceLifespan.OutOnRundownEnd,
 						content: {},
+						timelineObjects: [],
 					}
 					const newPart: IBlueprintPart = {
 						externalId: 'nope',

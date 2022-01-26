@@ -22,12 +22,13 @@ import { JobContext } from '../../jobs'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { Filter as FilterQuery } from 'mongodb'
 import _ = require('underscore')
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
 import { prefixSingleObjectId } from '../lib'
+import { LookaheadTimelineObject } from './findObjects'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -190,16 +191,16 @@ const calculateStartAfterPreviousObj = (
 	}
 }
 function mutateLookaheadObject(
-	rawObj: TimelineObjRundown & OnGenerateTimelineObjExt,
+	rawObj: LookaheadTimelineObject,
 	i: string,
 	enable: TimelineObjRundown['enable'],
 	mode: ValidLookaheadMode,
 	priority: number,
 	disabled: boolean
-): TimelineObjRundown & OnGenerateTimelineObjExt {
+): LookaheadTimelineObject {
 	const obj = clone(rawObj)
 
-	obj.id = `lookahead_${i}_${obj.id}`
+	obj.id = `lookahead_${i}_${prefixSingleObjectId(obj, obj.pieceInstanceId)}`
 	obj.priority = priority
 	obj.enable = enable
 	obj.isLookahead = true
@@ -216,11 +217,8 @@ function mutateLookaheadObject(
 	return obj
 }
 
-function processResult(
-	lookaheadObjs: LookaheadResult,
-	mode: ValidLookaheadMode
-): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
-	const res: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+function processResult(lookaheadObjs: LookaheadResult, mode: ValidLookaheadMode): Array<LookaheadTimelineObject> {
+	const res: Array<LookaheadTimelineObject> = []
 
 	// Add the objects that have some timing info
 	lookaheadObjs.timed.forEach((obj, i) => {

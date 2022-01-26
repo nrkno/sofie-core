@@ -120,8 +120,7 @@ export class SyncIngestUpdateToPartInstanceContext
 					this.partInstance.rundownId,
 					this.partInstance.segmentId,
 					this.partInstance.part._id,
-					this.playStatus === 'current',
-					true
+					this.playStatus === 'current'
 			  )[0]
 			: proposedPieceInstance.piece
 
@@ -150,8 +149,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.partInstance.rundownId,
 			this.partInstance.segmentId,
 			this.partInstance.part._id,
-			this.playStatus === 'current',
-			true
+			this.playStatus === 'current'
 		)[0]
 		const newPieceInstance = wrapPieceToInstance(piece, this.playlistActivationId, this.partInstance._id)
 
@@ -193,8 +191,7 @@ export class SyncIngestUpdateToPartInstanceContext
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
-					updatedPiece.timelineObjects,
-					false
+					updatedPiece.timelineObjects
 				)
 			)
 			// This has been processed
