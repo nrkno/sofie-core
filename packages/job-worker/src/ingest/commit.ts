@@ -10,7 +10,7 @@ import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../r
 import {
 	getPlaylistIdFromExternalId,
 	produceRundownPlaylistInfoFromRundown,
-	removeRundownsFromDb,
+	removeRundownFromDb,
 } from '../rundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForIngest } from './cache'
@@ -172,7 +172,7 @@ export async function CommitIngestOperation(
 	if (data.removeRundown && !trappedInPlaylistId) {
 		// It was removed from the playlist just above us, so this can simply discard the contents
 		ingestCache.discardChanges()
-		await removeRundownsFromDb(context, [ingestCache.RundownId])
+		await removeRundownFromDb(context, ingestCache.RundownLock)
 		return
 	}
 

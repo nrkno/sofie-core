@@ -12,6 +12,7 @@ import {
 	StudioId,
 } from '../dataModel/Ids'
 
+/** List of all Jobs performed by the Worker related to a certain Studio */
 export enum StudioJobs {
 	UpdateTimeline = 'updateTimeline',
 	UpdateTimelineAfterIngest = 'updateTimelineAfterIngest',
@@ -110,9 +111,7 @@ export interface DisableNextPieceProps extends RundownPlayoutPropsBase {
 	undo: boolean
 }
 export type RemovePlaylistProps = RundownPlayoutPropsBase
-export interface RegeneratePlaylistProps extends RundownPlayoutPropsBase {
-	purgeExisting: boolean
-}
+export type RegeneratePlaylistProps = RundownPlayoutPropsBase
 
 export interface OnPiecePlaybackStartedProps extends RundownPlayoutPropsBase {
 	pieceInstanceId: PieceInstanceId

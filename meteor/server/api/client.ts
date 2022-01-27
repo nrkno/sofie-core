@@ -54,17 +54,20 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		playlistId: RundownPlaylistId,
-		name: T,
-		data: Parameters<StudioJobFunc[T]>[0]
+		checkArgs: () => void,
+		jobName: T,
+		jobArguments: Parameters<StudioJobFunc[T]>[0]
 	): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
 		return runUserActionInLog(
 			context,
 			userEvent,
-			`worker.${name}`,
-			[data],
-			async (_credentials, additionalData) => {
+			`worker.${jobName}`,
+			[jobArguments],
+			async (_credentials, userActionMetadata) => {
+				checkArgs()
+
 				const access = checkAccessToPlaylist(context, playlistId)
-				return runStudioJob(access.playlist.studioId, name, data, additionalData)
+				return runStudioJob(access.playlist.studioId, jobName, jobArguments, userActionMetadata)
 			}
 		)
 	}
@@ -76,17 +79,20 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		rundownId: RundownId,
-		name: T,
-		data: Parameters<StudioJobFunc[T]>[0]
+		checkArgs: () => void,
+		jobName: T,
+		jobArguments: Parameters<StudioJobFunc[T]>[0]
 	): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
 		return runUserActionInLog(
 			context,
 			userEvent,
-			`worker.${name}`,
-			[data],
-			async (_credentials, additionalData) => {
+			`worker.${jobName}`,
+			[jobArguments],
+			async (_credentials, userActionMetadata) => {
+				checkArgs()
+
 				const access = checkAccessToRundown(context, rundownId)
-				return runStudioJob(access.rundown.studioId, name, data, additionalData)
+				return runStudioJob(access.rundown.studioId, jobName, jobArguments, userActionMetadata)
 			}
 		)
 	}
@@ -98,13 +104,16 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		playlistId: RundownPlaylistId,
+		checkArgs: () => void,
 		methodName: string,
 		args: any[],
 		fcn: (access: VerifiedRundownPlaylistContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
-		return runUserActionInLog(context, userEvent, methodName, args, async () =>
-			fcn(checkAccessToPlaylist(context, playlistId))
-		)
+		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+			checkArgs()
+
+			return fcn(checkAccessToPlaylist(context, playlistId))
+		})
 	}
 
 	/**
@@ -114,35 +123,38 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		rundownId: RundownId,
+		checkArgs: () => void,
 		methodName: string,
 		args: any[],
 		fcn: (access: VerifiedRundownContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
-		return runUserActionInLog(context, userEvent, methodName, args, async () =>
-			fcn(checkAccessToRundown(context, rundownId))
-		)
+		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+			checkArgs()
+
+			return fcn(checkAccessToRundown(context, rundownId))
+		})
 	}
 
 	async function runStudioJob<T extends keyof StudioJobFunc>(
 		studioId: StudioId,
-		name: T,
-		data: Parameters<StudioJobFunc[T]>[0],
-		additionalData: AdditionalUserActionLogData
+		jobName: T,
+		jobArguments: Parameters<StudioJobFunc[T]>[0],
+		userActionMetadata: UserActionMetadata
 	): Promise<ReturnType<StudioJobFunc[T]>> {
-		const job = await QueueStudioJob(name, studioId, data)
+		const queuedJob = await QueueStudioJob(jobName, studioId, jobArguments)
 
 		try {
 			const span = profiler.startSpan('queued-job')
-			const res = await job.complete
+			const res = await queuedJob.complete
 			span?.end()
 
 			return res
 		} finally {
 			try {
-				const timings = await job.getTimings
+				const timings = await queuedJob.getTimings
 				// If the worker reported timings, use them
 				if (timings.finishedTime && timings.startedTime) {
-					additionalData.workerDuration = timings.finishedTime - timings.startedTime
+					userActionMetadata.workerDuration = timings.finishedTime - timings.startedTime
 				}
 			} catch (_e) {
 				// Failed to get the timings, so ignore it
@@ -150,8 +162,8 @@ export namespace ServerClientAPI {
 		}
 	}
 
-	/** Additional data to track as the output of a UserAction */
-	export interface AdditionalUserActionLogData {
+	/** Metadata to track as the output of a UserAction */
+	export interface UserActionMetadata {
 		/** How long did the worker take to execute this job? */
 		workerDuration?: number
 	}
@@ -163,8 +175,8 @@ export namespace ServerClientAPI {
 		context: MethodContext,
 		userEvent: string,
 		methodName: string,
-		args: any[],
-		fcn: (credentials: BasicAccessContext, additionalData: AdditionalUserActionLogData) => Promise<TRes>
+		methodArgs: unknown[],
+		fcn: (credentials: BasicAccessContext, userActionMetadata: UserActionMetadata) => Promise<TRes>
 	): Promise<ClientAPI.ClientResponse<TRes>> {
 		// If we are in the test write auth check mode, then bypass all special logic to ensure errors dont get mangled
 		if (isInTestWrite()) {
@@ -201,7 +213,7 @@ export namespace ServerClientAPI {
 						userId: credentials.userId,
 						context: userEvent,
 						method: methodName,
-						args: JSON.stringify(args),
+						args: JSON.stringify(methodArgs),
 						timestamp: getCurrentTime(),
 					})
 				).catch((e) => {
@@ -209,9 +221,9 @@ export namespace ServerClientAPI {
 					logger.warn(`Failed to insert into UserActionsLog: ${stringifyError(e)}`)
 				})
 
-				const additionalData: AdditionalUserActionLogData = {}
+				const userActionMetadata: UserActionMetadata = {}
 				try {
-					const result = await fcn(credentials, additionalData)
+					const result = await fcn(credentials, userActionMetadata)
 
 					const completeTime = Date.now()
 					await UserActionsLog.updateAsync(actionId, {
@@ -219,7 +231,7 @@ export namespace ServerClientAPI {
 							success: true,
 							doneTime: completeTime,
 							executionTime: completeTime - startTime,
-							workerTime: additionalData.workerDuration,
+							workerTime: userActionMetadata.workerDuration,
 						},
 					})
 
@@ -236,7 +248,7 @@ export namespace ServerClientAPI {
 					const wrappedErrorStr = `ClientResponseError: ${translateMessage(
 						wrappedError.error.message,
 						interpollateTranslation
-					)}: ${stringifyError(wrappedError.error.rawError)}`
+					)}`
 
 					// Execute, but don't wait for it
 					pInitialInsert
@@ -246,7 +258,7 @@ export namespace ServerClientAPI {
 									success: false,
 									doneTime: errorTime,
 									executionTime: errorTime - startTime,
-									workerTime: additionalData.workerDuration,
+									workerTime: userActionMetadata.workerDuration,
 									errorMessage: wrappedErrorStr,
 								},
 							})

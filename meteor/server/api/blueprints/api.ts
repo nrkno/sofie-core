@@ -12,7 +12,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
-import { registerClassToMeteorMethods } from '../../methods'
+import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
 import { parseVersion, CoreSystem, SYSTEM_ID, getCoreSystem } from '../../../lib/collections/CoreSystem'
 import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
@@ -248,7 +248,7 @@ export async function innerUploadBlueprint(
 	return newBlueprint
 }
 
-async function assignSystemBlueprint(methodContext: MethodContext, blueprintId?: BlueprintId): Promise<void> {
+async function assignSystemBlueprint(methodContext: MethodContext, blueprintId: BlueprintId | null): Promise<void> {
 	SystemWriteAccess.coreSystem(methodContext)
 
 	if (blueprintId !== undefined && blueprintId !== null) {
@@ -280,14 +280,14 @@ async function assignSystemBlueprint(methodContext: MethodContext, blueprintId?:
 	}
 }
 
-class ServerBlueprintAPI extends MethodContextAPI implements NewBlueprintAPI {
+class ServerBlueprintAPI extends MethodContextAPI implements ReplaceOptionalWithNullInMethodArguments<NewBlueprintAPI> {
 	async insertBlueprint() {
 		return insertBlueprint(this)
 	}
 	async removeBlueprint(blueprintId: BlueprintId) {
 		return removeBlueprint(this, blueprintId)
 	}
-	async assignSystemBlueprint(blueprintId?: BlueprintId) {
+	async assignSystemBlueprint(blueprintId: BlueprintId | null) {
 		return assignSystemBlueprint(this, blueprintId)
 	}
 }

@@ -6,21 +6,21 @@ title: Getting Started
 
 # Getting Started
 
-_Sofie_ can be installed in many different ways, depending on which platforms, needs, and features you desire. If this is your first time working with _Sofie_, we recommend you start with the [Installation and Setup](installation/) portion of this guide. It will walk you through all the required steps to get _Sofie_ running on your local machine as well as provide the resources to attach additional hardware \(vision mixers, audio mixes, etcetera\) if necessary.
+_Sofie_ can be installed in many different ways, depending on which platforms, needs, and features you desire. If this is your first time working with _Sofie_, we recommend you start with the [Installation and Setup](installation/README) portion of this guide. It will walk you through all the required steps to get _Sofie_ running on your local machine as well as provide the resources to attach additional hardware \(vision mixers, audio mixes, etcetera\) if necessary.
 
 ## Sofie Core Pages
 
 The _Rundowns_ page will display all the active rundowns that the _Sofie Core_ has access to. 
 
-![Rundown Page](/gitbook/assets/rundown-page.png)
+![Rundown Page](/img/docs/getting-started/rundowns-in-sofie.png)
 
 The _Status_ pages displays the current status for the attached devices and gateways.
 
-![Status Page &#x2013; Describes the state of Sofie Core](/gitbook/assets/status-page.jpg)
+![Status Page &#x2013; Describes the state of Sofie Core](/img/docs/getting-started/status-page.jpg)
 
-The _Settings_ pages contains various settings for the studio, show styles, blueprints etc.. If the link to the settings page is not visible in your application, check your [Access Levels](../features-and-configuration/sofie-navigation.md). More info on specific parts of the _Settings_ page can be found in their corresponding guide sections. 
+The _Settings_ pages contains various settings for the studio, show styles, blueprints etc.. If the link to the settings page is not visible in your application, check your [Access Levels](./sofie-navigation.md). More info on specific parts of the _Settings_ page can be found in their corresponding guide sections. 
 
-![Settings Page &#x2013; Describes how the Core is configured](/gitbook/assets/settings-page.jpg)
+![Settings Page &#x2013; Describes how the Core is configured](/img/docs/getting-started/settings-page.jpg)
 
 ## Sofie Core Overview
 
@@ -36,8 +36,8 @@ Blueprints can be described as the logic that determines how a studio and show s
 
 ## Further Reading
 
-* [Installation & Setup](installation/)
-* [Under the Hood \(for developers\)](for-developers/)
+* [Installation & Setup](/getting-started/installation/README)
+* [Under the Hood \(for developers\)](/for-developers/intro)
 
 
 

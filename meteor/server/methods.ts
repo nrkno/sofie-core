@@ -36,6 +36,21 @@ function getAllClassMethods(myClass: any): string[] {
 		.filter((name) => typeof myClass.prototype[name] === 'function')
 }
 
+/** This expects an array of values (likely the output of Parameters<T>), and makes anything optional be nullable instead */
+export type ReplaceOptionalWithNullInArray<T extends any[]> = {
+	[K in keyof T]: undefined extends T[K] ? NonNullable<T[K]> | null : T[K]
+}
+
+/**
+ * This expects an interface of functions, and makes any optional parameters to the functions be nullable instead
+ * Using this is necessary for any methods exposed to DDP, as undefined values there are encoded as null
+ */
+export type ReplaceOptionalWithNullInMethodArguments<T> = {
+	[K in keyof T]: T[K] extends (...args: infer P) => infer R
+		? (...args: ReplaceOptionalWithNullInArray<P>) => R
+		: T[K]
+}
+
 export function registerClassToMeteorMethods(
 	methodEnum: any,
 	orgClass: typeof MethodContextAPI,

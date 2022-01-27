@@ -6,7 +6,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { removeRundownsFromDb } from '../../rundownPlaylists'
+import { removeRundownFromDb } from '../../rundownPlaylists'
 import {
 	setupMockPeripheralDevice,
 	setupDefaultRundownPlaylist,
@@ -15,6 +15,7 @@ import {
 import { activateRundownPlaylist, prepareStudioForBroadcast } from '../actions'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { runJobWithPlayoutCache } from '../lock'
+import { runWithRundownLock } from '../../ingest/lock'
 
 jest.mock('../../peripheralDevice')
 import { executePeripheralDeviceFunction } from '../../peripheralDevice'
@@ -38,10 +39,11 @@ describe('Playout Actions', () => {
 		)
 
 		const rundowns = await context.directCollections.Rundowns.findFetch()
-		await removeRundownsFromDb(
-			context,
-			rundowns.map((r) => r._id)
-		)
+		for (const rundown of rundowns) {
+			await runWithRundownLock(context, rundown._id, async (_rd, lock) => {
+				await removeRundownFromDb(context, lock)
+			})
+		}
 
 		executePeripheralDeviceFunctionMock.mockClear()
 		executePeripheralDeviceFunctionMock.mockImplementation(() => Promise.resolve())

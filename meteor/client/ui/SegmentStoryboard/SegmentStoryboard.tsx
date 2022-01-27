@@ -91,6 +91,7 @@ export const SegmentStoryboard = React.memo(
 		const [listWidth, setListWidth] = useState(0)
 		const [scrollLeft, setScrollLeft] = useState(0)
 		const [grabbed, setGrabbed] = useState<{ clientX: number; clientY: number } | null>(null)
+		const [touched, setTouched] = useState<{ clientX: number; clientY: number } | null>(null)
 		const [animateScrollLeft, setAnimateScrollLeft] = useState(true)
 		const { t } = useTranslation()
 		const notes: Array<SegmentNote> = props.segmentNotes
@@ -389,6 +390,12 @@ export const SegmentStoryboard = React.memo(
 					clientY: e.clientY,
 				})
 				setAnimateScrollLeft(false)
+			} else if ((e.pointerType === 'touch' && e.isPrimary) || (e.pointerType === 'pen' && e.isPrimary)) {
+				setTouched({
+					clientX: e.clientX,
+					clientY: e.clientY,
+				})
+				setAnimateScrollLeft(false)
 			}
 		}
 
@@ -458,6 +465,40 @@ export const SegmentStoryboard = React.memo(
 				document.removeEventListener('pointermove', onPointerMove)
 			}
 		}, [grabbed, renderedParts.length, props.onScroll])
+
+		useEffect(() => {
+			if (!touched) return
+
+			const startingScrollLeft = scrollLeft
+
+			const onListTouchRelease = () => {
+				setTouched(null)
+				setAnimateScrollLeft(true)
+			}
+			const onTouchMove = (e: TouchEvent) => {
+				e.preventDefault()
+				setScrollLeft(() => {
+					const newScrollLeft = Math.max(
+						0,
+						Math.min(startingScrollLeft + (touched.clientX - e.touches[0].clientX), maxScrollLeft)
+					)
+					props.onScroll(newScrollLeft, e)
+					return newScrollLeft
+				})
+			}
+
+			document.addEventListener('touchend', onListTouchRelease)
+			document.addEventListener('touchcancel', onListTouchRelease)
+			document.addEventListener('touchmove', onTouchMove, {
+				passive: false,
+			})
+
+			return () => {
+				document.removeEventListener('touchend', onListTouchRelease)
+				document.removeEventListener('touchcancel', onListTouchRelease)
+				document.removeEventListener('touchmove', onTouchMove)
+			}
+		}, [touched, renderedParts.length, props.onScroll])
 
 		useLayoutEffect(() => {
 			const segment = innerRef.current

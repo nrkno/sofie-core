@@ -2,6 +2,7 @@ import { IDirectCollections } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import {
+	RundownId,
 	RundownPlaylistId,
 	ShowStyleBaseId,
 	ShowStyleVariantId,
@@ -15,7 +16,7 @@ import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/di
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { PlaylistLock } from './lock'
+import { PlaylistLock, RundownLock } from './lock'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
@@ -37,8 +38,10 @@ export interface JobContext {
 	/** Internal: Track a cache, to check it was saved at the end of the job */
 	trackCache(cache: ReadOnlyCacheBase<any>): void
 
-	/** Aquire the read/write lock for a Playlist */
+	/** Aquire the CacheForPlayout/write lock for a Playlist */
 	lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock>
+	/** Aquire the CacheForIngest/write lock for a Rundown */
+	lockRundown(rundownId: RundownId): Promise<RundownLock>
 
 	/** Start an APM span, if there is an active APM transaction */
 	startSpan(name: string): ApmSpan | null

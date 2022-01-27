@@ -16,7 +16,7 @@ if (!Settings.enableUserAccounts) {
 		/**
 		 * Simulate a 'Reload from NRCS' for the specified playlist
 		 */
-		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
+		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId) => {
 			try {
 				check(rundownPlaylistId, String)
 
@@ -26,7 +26,6 @@ if (!Settings.enableUserAccounts) {
 				const job = waitForPromise(
 					QueueStudioJob(StudioJobs.RegeneratePlaylist, playlist.studioId, {
 						playlistId: playlist._id,
-						purgeExisting: !!purgeExisting,
 					})
 				)
 				waitForPromise(job.complete)

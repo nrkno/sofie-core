@@ -1,5 +1,5 @@
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { clone, getHash, getRandomString, getRank, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectObjectArray, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -31,14 +31,23 @@ import { DbCacheWriteCollection } from './cache/CacheCollection'
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { RundownLock } from './jobs/lock'
+import { runWithRundownLock } from './ingest/lock'
 
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
-	// TODO: Worker - should this lock each rundown for removal? Perhaps by putting work onto the ingest queue?
-	await runJobWithPlaylistLock(context, data, async (playlist) => {
+	const removed = await runJobWithPlaylistLock(context, data, async (playlist) => {
 		if (playlist) {
-			await removeRundownPlaylistFromDb(context, playlist)
+			await context.directCollections.RundownPlaylists.remove(playlist._id)
+			return true
+		} else {
+			return false
 		}
 	})
+
+	if (removed) {
+		// Playlist was removed, cleanup contents
+		await cleanupRundownsForRemovedPlaylist(context, data.playlistId)
+	}
 }
 
 /**
@@ -64,21 +73,13 @@ export async function handleRegenerateRundownPlaylist(
 			)
 		if (rundowns.length === 0) return []
 
-		// Cleanup old state
-		if (data.purgeExisting) {
-			await removeRundownsFromDb(
-				context,
-				rundowns.map((r) => r._id)
-			)
-		} else {
-			await runWithPlaylistCache(context, playlist, playlistLock, null, async (cache) => {
-				await resetRundownPlaylist(context, cache)
+		await runWithPlaylistCache(context, playlist, playlistLock, null, async (cache) => {
+			await resetRundownPlaylist(context, cache)
 
-				if (cache.Playlist.doc.activationId) {
-					await updateTimeline(context, cache)
-				}
-			})
-		}
+			if (cache.Playlist.doc.activationId) {
+				await updateTimeline(context, cache)
+			}
+		})
 
 		// exit the sync function, so the cache is written back
 		return rundowns.map((rundown) => ({
@@ -105,43 +106,53 @@ export function getPlaylistIdFromExternalId(studioId: StudioId, playlistExternal
 	return protectString(getHash(`${studioId}_${playlistExternalId}`))
 }
 
-export async function removeRundownPlaylistFromDb(
+/**
+ * Warning: this must not be executed inside a PlaylistLock, otherwise we risk getting into a deadlock
+ */
+export async function cleanupRundownsForRemovedPlaylist(
 	context: JobContext,
-	playlist: ReadonlyDeep<DBRundownPlaylist>
+	playlistId: RundownPlaylistId
 ): Promise<void> {
-	if (playlist.activationId) throw new Error(`RundownPlaylist "${playlist._id}" is active and cannot be removed`)
+	const rundowns = (await context.directCollections.Rundowns.findFetch(
+		{ playlistId: playlistId },
+		{ projection: { _id: 1 } }
+	)) as Array<Pick<Rundown, '_id'>>
 
-	// We assume we have the master lock at this point
-	const rundownIds = (
-		await context.directCollections.Rundowns.findFetch({ playlistId: playlist._id }, { projection: { _id: 1 } })
-	).map((r) => r._id)
-
-	await Promise.allSettled([
-		context.directCollections.RundownPlaylists.remove({ _id: playlist._id }),
-		removeRundownsFromDb(context, rundownIds),
-	])
+	await Promise.all(
+		rundowns.map(async (rd) => {
+			//
+			return runWithRundownLock(context, rd._id, async (rundown, lock) => {
+				// Make sure rundown exists, and still belongs to the playlist
+				if (rundown && rundown.playlistId === playlistId) {
+					await removeRundownFromDb(context, lock)
+				}
+			})
+		})
+	)
 }
-export async function removeRundownsFromDb(context: JobContext, rundownIds: RundownId[]): Promise<void> {
+
+export async function removeRundownFromDb(context: JobContext, lock: RundownLock): Promise<void> {
+	if (!lock.isLocked) throw new Error(`Can't delete Rundown without lock: ${lock.toString()}`)
+
+	const rundownId = lock.rundownId
 	// Note: playlists are not removed by this, one could be left behind empty
-	if (rundownIds.length > 0) {
-		await Promise.allSettled([
-			context.directCollections.Rundowns.remove({ _id: { $in: rundownIds } }),
-			context.directCollections.AdLibActions.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.AdLibPieces.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.ExpectedMediaItems.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.ExpectedPlayoutItems.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.ExpectedPackages.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.IngestDataCache.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.RundownBaselineAdLibPieces.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.Segments.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.Parts.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.PartInstances.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.Pieces.remove({ startRundownId: { $in: rundownIds } }),
-			context.directCollections.PieceInstances.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.RundownBaselineAdLibActions.remove({ rundownId: { $in: rundownIds } }),
-			context.directCollections.RundownBaselineObjects.remove({ rundownId: { $in: rundownIds } }),
-		])
-	}
+	await Promise.allSettled([
+		context.directCollections.Rundowns.remove({ _id: rundownId }),
+		context.directCollections.AdLibActions.remove({ rundownId: rundownId }),
+		context.directCollections.AdLibPieces.remove({ rundownId: rundownId }),
+		context.directCollections.ExpectedMediaItems.remove({ rundownId: rundownId }),
+		context.directCollections.ExpectedPlayoutItems.remove({ rundownId: rundownId }),
+		context.directCollections.ExpectedPackages.remove({ rundownId: rundownId }),
+		context.directCollections.IngestDataCache.remove({ rundownId: rundownId }),
+		context.directCollections.RundownBaselineAdLibPieces.remove({ rundownId: rundownId }),
+		context.directCollections.Segments.remove({ rundownId: rundownId }),
+		context.directCollections.Parts.remove({ rundownId: rundownId }),
+		context.directCollections.PartInstances.remove({ rundownId: rundownId }),
+		context.directCollections.Pieces.remove({ startRundownId: rundownId }),
+		context.directCollections.PieceInstances.remove({ rundownId: rundownId }),
+		context.directCollections.RundownBaselineAdLibActions.remove({ rundownId: rundownId }),
+		context.directCollections.RundownBaselineObjects.remove({ rundownId: rundownId }),
+	])
 }
 
 export interface RundownPlaylistAndOrder {
@@ -289,7 +300,8 @@ export async function moveRundownIntoPlaylist(
 ): Promise<void> {
 	const studio = context.studio
 
-	// TODO: Worker - this feels dangerously like it will clash with ingest/playout operations due to all the locking. Perhaps it should be done as an 'ingest' operation?
+	// Future: the locking here will clash with the ingest/playout operations, and be full of race conditions.
+	// We need to rethink the ownership of the playlistId and _rank property on the rundowns, and the requirements for where/when it can be changed
 
 	const rundown = await context.directCollections.Rundowns.findOne(data.rundownId)
 	if (!rundown || rundown.studioId !== context.studioId) throw new Error(`Rundown "${data.rundownId}" not found`)

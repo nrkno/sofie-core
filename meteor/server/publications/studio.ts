@@ -134,12 +134,12 @@ meteorPublish(PubSub.packageInfos, function (selector, token) {
 })
 meteorPublish(
 	PubSub.packageContainerPackageStatuses,
-	function (studioId: StudioId, containerId?: string, packageId?: ExpectedPackageId) {
+	function (studioId: StudioId, containerId?: string | null, packageId?: ExpectedPackageId | null) {
 		if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
 
 		check(studioId, String)
-		check(containerId, Match.Optional(String))
-		check(packageId, Match.Optional(String))
+		check(containerId, Match.Maybe(String))
+		check(packageId, Match.Maybe(String))
 
 		const modifier: FindOptions<PackageContainerPackageStatusDB> = {
 			fields: {},

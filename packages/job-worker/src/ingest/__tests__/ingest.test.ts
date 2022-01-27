@@ -17,7 +17,6 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
-import { removeRundownPlaylistFromDb } from '../../rundownPlaylists'
 import { MongoQuery } from '../../db'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { setupMockPeripheralDevice, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
@@ -41,6 +40,7 @@ import { getSelectedPartInstancesFromCache } from '../../playout/cache'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { innerStartQueuedAdLib } from '../../playout/adlib'
 import { IngestJobs, RemoveOrphanedSegmentsProps } from '@sofie-automation/corelib/dist/worker/ingest'
+import { removeRundownPlaylistFromDb } from './lib'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1546,7 +1546,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			{
 				// Cleanup any rundowns / playlists
 				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
-				await Promise.all(playlists.map(async (p) => removeRundownPlaylistFromDb(context, p)))
+				await removeRundownPlaylistFromDb(
+					context,
+					playlists.map((p) => p._id)
+				)
 			}
 
 			const rundownData: IngestRundown = {
@@ -1686,7 +1689,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			{
 				// Cleanup any rundowns / playlists
 				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
-				await Promise.all(playlists.map(async (p) => removeRundownPlaylistFromDb(context, p)))
+				await removeRundownPlaylistFromDb(
+					context,
+					playlists.map((p) => p._id)
+				)
 			}
 
 			const rundownData: IngestRundown = {
@@ -1870,7 +1876,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			{
 				// Cleanup any rundowns / playlists
 				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
-				await Promise.all(playlists.map(async (p) => removeRundownPlaylistFromDb(context, p)))
+				await removeRundownPlaylistFromDb(
+					context,
+					playlists.map((p) => p._id)
+				)
 			}
 
 			const rundownData: IngestRundown = {
@@ -2186,7 +2195,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			{
 				// Cleanup any rundowns / playlists
 				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
-				await Promise.all(playlists.map(async (p) => removeRundownPlaylistFromDb(context, p)))
+				await removeRundownPlaylistFromDb(
+					context,
+					playlists.map((p) => p._id)
+				)
 			}
 
 			context.setStudio({

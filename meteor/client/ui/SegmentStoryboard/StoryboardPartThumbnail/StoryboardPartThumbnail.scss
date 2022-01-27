@@ -63,6 +63,19 @@
 			font-size: 0.85em;
 			letter-spacing: normal;
 		}
+
+		> .segment-storyboard__thumbnail__label__colored-mark {
+			font-size: 1em;
+			color: transparent;
+			display: inline-block;
+			height: 0.8em;
+			width: 0.8em;
+			border-radius: 100%;
+			margin-right: 0.5em;
+			vertical-align: middle;
+			box-shadow: 0 0 6px rgba(0, 0, 0, 1);
+			margin-top: -0.1em;
+		}
 	}
 
 	> .segment-storyboard__thumbnail__countdown {
