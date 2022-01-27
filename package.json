@@ -29,5 +29,8 @@
 	},
 	"devDependencies": {
 		"rimraf": "^3.0.2"
+	},
+	"dependencies": {
+		"snyk-nodejs-lockfile-parser": "^1.38.0"
 	}
 }

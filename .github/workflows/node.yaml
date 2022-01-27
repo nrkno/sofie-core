@@ -409,3 +409,27 @@ jobs:
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
         env:
           CI: true
+  check-for-multiple-library-versions:
+    name: Check for multiple library versions
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/setup-meteor
+      - name: restore node_modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            meteor/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+      - name: Prepare Environment
+        run: |
+          yarn
+        env:
+          CI: true
+      - name: Run check
+        run: |
+          node scripts/checkForMultipleVersions.mjs
+        env:
+          CI: true
