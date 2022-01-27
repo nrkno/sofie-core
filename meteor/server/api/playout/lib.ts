@@ -88,7 +88,12 @@ export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void
 		})
 
 		// put the first on queue:
-		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
+		const firstPart = selectNextPart(
+			cache.Playlist.doc,
+			null,
+			null,
+			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+		)
 		await setNextPart(cache, firstPart)
 	} else {
 		await setNextPart(cache, null)
@@ -108,10 +113,17 @@ export interface PartsAndSegments {
 export function selectNextPart(
 	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: PartInstance | null,
-	{ parts, segments }: PartsAndSegments,
+	currentlySelectedPartInstance: PartInstance | null,
+	{ parts: parts0, segments }: PartsAndSegments,
 	ignoreUnplayabale = true
 ): SelectNextPartResult | null {
 	const span = profiler.startSpan('selectNextPart')
+
+	// In the parts array, insert currentlySelectedPartInstance over its part, as it is already nexted, so wont change unless necessary
+	const parts = currentlySelectedPartInstance
+		? parts0.map((p) => (p._id === currentlySelectedPartInstance.part._id ? currentlySelectedPartInstance.part : p))
+		: parts0
+
 	/**
 	 * Iterates over all the parts and searches for the first one to be playable
 	 * @param offset the index from where to start the search

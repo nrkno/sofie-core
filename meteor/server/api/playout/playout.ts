@@ -973,6 +973,7 @@ export namespace ServerPlayoutAPI {
 						const nextPart = selectNextPart(
 							playlist,
 							playingPartInstance,
+							null,
 							getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 						)
 						await libsetNextPart(cache, nextPart)
@@ -997,6 +998,7 @@ export namespace ServerPlayoutAPI {
 							const nextPart = selectNextPart(
 								playlist,
 								playingPartInstance,
+								null,
 								getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 							)
 							await libsetNextPart(cache, nextPart)
