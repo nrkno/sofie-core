@@ -164,7 +164,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
-				query[`piece.metaData.${key}`] = value
+				// Casting to any, as metaData is `unknown` so no subkeys are known to be valid
+				;(query as any)[`piece.metaData.${key}`] = value
 			}
 		}
 
@@ -197,7 +198,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
-				query[`metaData.${key}`] = value
+				// Casting to any, as metaData is `unknown` so no subkeys are known to be valid
+				;(query as any)[`metaData.${key}`] = value
 			}
 		}
 
@@ -345,16 +347,16 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			$unset: {},
 		}
 
-		if (piece.timelineObjects) {
+		if (trimmedPiece.timelineObjects) {
 			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
-					piece.timelineObjects
+					trimmedPiece.timelineObjects
 				)
 			)
 			// This has been processed
-			delete piece.timelineObjects
+			delete trimmedPiece.timelineObjects
 		}
 
 		for (const [k, val] of Object.entries(trimmedPiece)) {

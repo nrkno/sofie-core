@@ -39,9 +39,7 @@ Object {
             "partInstanceId": "randomId9002_part0_0_tmp_instance",
             "piece": Object {
               "_id": "randomId9002_piece001",
-              "content": Object {
-                "timelineObjects": Array [],
-              },
+              "content": Object {},
               "enable": Object {
                 "start": 0,
               },
@@ -56,6 +54,7 @@ Object {
               "startRundownId": "randomId9002",
               "startSegmentId": "randomId9002_segment0",
               "status": 0,
+              "timelineObjectsString": "[]",
             },
             "playlistActivationId": "",
             "priority": 5,
@@ -92,9 +91,7 @@ Object {
                       "partInstanceId": "randomId9002_part0_1_tmp_instance",
                       "piece": Object {
                         "_id": "randomId9002_piece010",
-                        "content": Object {
-                          "timelineObjects": Array [],
-                        },
+                        "content": Object {},
                         "enable": Object {
                           "start": 0,
                         },
@@ -109,6 +106,7 @@ Object {
                         "startRundownId": "randomId9002",
                         "startSegmentId": "randomId9002_segment0",
                         "status": 0,
+                        "timelineObjectsString": "[]",
                       },
                       "playlistActivationId": "",
                       "priority": 5,
@@ -172,9 +170,7 @@ Object {
             "partInstanceId": "randomId9002_part0_1_tmp_instance",
             "piece": Object {
               "_id": "randomId9002_piece010",
-              "content": Object {
-                "timelineObjects": Array [],
-              },
+              "content": Object {},
               "enable": Object {
                 "start": 0,
               },
@@ -189,6 +185,7 @@ Object {
               "startRundownId": "randomId9002",
               "startSegmentId": "randomId9002_segment0",
               "status": 0,
+              "timelineObjectsString": "[]",
             },
             "playlistActivationId": "",
             "priority": 5,
@@ -214,9 +211,7 @@ Object {
                       "partInstanceId": "randomId9002_part0_0_tmp_instance",
                       "piece": Object {
                         "_id": "randomId9002_piece001",
-                        "content": Object {
-                          "timelineObjects": Array [],
-                        },
+                        "content": Object {},
                         "enable": Object {
                           "start": 0,
                         },
@@ -231,6 +226,7 @@ Object {
                         "startRundownId": "randomId9002",
                         "startSegmentId": "randomId9002_segment0",
                         "status": 0,
+                        "timelineObjectsString": "[]",
                       },
                       "playlistActivationId": "",
                       "priority": 5,
@@ -305,9 +301,7 @@ Object {
                   "partInstanceId": "randomId9002_part0_0_tmp_instance",
                   "piece": Object {
                     "_id": "randomId9002_piece001",
-                    "content": Object {
-                      "timelineObjects": Array [],
-                    },
+                    "content": Object {},
                     "enable": Object {
                       "start": 0,
                     },
@@ -322,6 +316,7 @@ Object {
                     "startRundownId": "randomId9002",
                     "startSegmentId": "randomId9002_segment0",
                     "status": 0,
+                    "timelineObjectsString": "[]",
                   },
                   "playlistActivationId": "",
                   "priority": 5,
@@ -349,9 +344,7 @@ Object {
                   "partInstanceId": "randomId9002_part0_1_tmp_instance",
                   "piece": Object {
                     "_id": "randomId9002_piece010",
-                    "content": Object {
-                      "timelineObjects": Array [],
-                    },
+                    "content": Object {},
                     "enable": Object {
                       "start": 0,
                     },
@@ -366,6 +359,7 @@ Object {
                     "startRundownId": "randomId9002",
                     "startSegmentId": "randomId9002_segment0",
                     "status": 0,
+                    "timelineObjectsString": "[]",
                   },
                   "playlistActivationId": "",
                   "priority": 5,

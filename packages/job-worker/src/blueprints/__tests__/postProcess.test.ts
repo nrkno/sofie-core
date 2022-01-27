@@ -309,7 +309,7 @@ describe('Test blueprint post-process', () => {
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {},
-					timelineObjects: undefined as any,
+					timelineObjects: [],
 					lifespan: PieceLifespan.WithinPart,
 				},
 				{

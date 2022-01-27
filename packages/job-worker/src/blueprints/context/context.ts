@@ -734,10 +734,12 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 		const query: MongoQuery<DBPartInstance> = {
 			rundownId: this._rundown._id,
 			playlistActivationId: this._currentPart.playlistActivationId,
+			'part.untimed': { $ne: true },
 		}
 
-		if (!allowUntimed) {
-			query['part.untimed'] = { $ne: true }
+		if (allowUntimed) {
+			// This is a weird way to define the query, but its necessary to make typings happy
+			delete query['part.untimed']
 		}
 
 		const partInstance = await this.context.directCollections.PartInstances.findOne(query, {

@@ -15,7 +15,7 @@ import { setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../playout/lock'
 import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	PartInstanceId,
 	PieceInstanceId,
@@ -30,6 +30,10 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { getCurrentTime } from '../../lib'
+import {
+	EmptyPieceTimelineObjectsBlob,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 import * as PlayoutAdlib from '../../playout/adlib'
 type TinnerStopPieces = jest.MockedFunction<typeof PlayoutAdlib.innerStopPieces>
@@ -49,13 +53,19 @@ type TgetResolvedPieces = jest.MockedFunction<typeof getResolvedPieces>
 const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
-import { postProcessPieces } from '../postProcess'
-import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
+import { convertPieceInstanceToBlueprintsWithTimelineObjects } from '../context/lib'
+import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+const { postProcessPieces: postProcessPiecesOrig, postProcessTimelineObjects: postProcessTimelineObjectsOrig } =
+	jest.requireActual('../postProcess')
 
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])
-const { postProcessPieces: postProcessPiecesOrig } = jest.requireActual('../postProcess')
+
+type TpostProcessTimelineObjects = jest.MockedFunction<typeof postProcessTimelineObjects>
+const postProcessTimelineObjectsMock = postProcessTimelineObjects as TpostProcessTimelineObjects
+postProcessTimelineObjectsMock.mockImplementation(postProcessTimelineObjectsOrig)
 
 describe('Test blueprint api context', () => {
 	async function generateSparsePieceInstances(
@@ -944,6 +954,7 @@ describe('Test blueprint api context', () => {
 					postProcessPiecesMock.mockImplementationOnce(() => [
 						{
 							_id: 'fake4', // Should be ignored
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						} as any,
 					])
 					innerStartAdLibPieceMock.mockImplementationOnce(innerStartAdLibPieceOrig)
@@ -1052,11 +1063,20 @@ describe('Test blueprint api context', () => {
 
 					// Update it and expect it to match
 					const pieceInstance0Before = clone(pieceInstance0)
-					const pieceInstance0Delta = {
+					const pieceInstance0Delta: any = {
 						_id: 'sdf', // This will be dropped
 						sourceLayerId: 'new',
 						enable: { start: 99, end: 123 },
 						badProperty: 9, // This will be dropped
+						timelineObjects: [
+							literal<TimelineObjRundown>({
+								id: 'a',
+								enable: { start: 0 },
+								content: {} as any,
+								layer: 1,
+								objectType: TimelineObjType.RUNDOWN,
+							}),
+						],
 					}
 					const resultPiece = await context.updatePieceInstance(
 						unprotectString(pieceInstance0._id),
@@ -1065,12 +1085,15 @@ describe('Test blueprint api context', () => {
 					const pieceInstance1 = cache.PieceInstances.findOne(pieceInstance0._id) as PieceInstance
 					expect(pieceInstance1).toBeTruthy()
 
-					expect(resultPiece).toEqual(pieceInstance1)
+					expect(resultPiece).toEqual(convertPieceInstanceToBlueprintsWithTimelineObjects(pieceInstance1))
 					const pieceInstance0After = {
 						...pieceInstance0Before,
 						piece: {
 							...pieceInstance0Before.piece,
-							..._.omit(pieceInstance0Delta, 'badProperty', '_id'),
+							..._.omit(pieceInstance0Delta, 'badProperty', '_id', 'timelineObjects'),
+							timelineObjectsString: serializePieceTimelineObjectsBlob(
+								pieceInstance0Delta.timelineObjects
+							),
 						},
 					}
 					expect(pieceInstance1).toEqual(pieceInstance0After)
