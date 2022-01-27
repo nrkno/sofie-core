@@ -1,10 +1,10 @@
 ---
-sidebar_label: v1.38 (2022)
-sidebar_position: 998
+sidebar_label: v1.38 (2022-01-26)
+sidebar_position: 995 # Note: decrement for each release
 title: Release 38
 ---
 
-Release date: 2022 \(1.38.0\)
+Release date: 2022-01-26 \(1.38.0\)
 
 ### Main features
 
