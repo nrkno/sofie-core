@@ -159,7 +159,7 @@ export interface SplitsContentBoxProperties {
 		}
 	}
 }
-export type SplitsContentBoxContent = Omit<VTContent | CameraContent | RemoteContent | NoraContent, 'timelineObjects'>
+export type SplitsContentBoxContent = VTContent | CameraContent | RemoteContent | NoraContent
 export interface SplitsContent extends BaseContent {
 	/** Array of contents, 0 is towards the rear */
 	boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
