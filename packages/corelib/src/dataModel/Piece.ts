@@ -31,7 +31,7 @@ export enum PieceStatusCode {
 }
 
 /** A Single item in a Part: script, VT, cameras */
-export interface PieceGeneric extends IBlueprintPieceGeneric {
+export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'timelineObjects'> {
 	_id: PieceId // TODO - this should be moved to the implementation types
 
 	/** Playback availability status */
@@ -45,7 +45,7 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	timelineObjectsString: PieceTimelineObjectsBlob
 }
 
-export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId'> {
+export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId' | 'timelineObjects'> {
 	/**
 	 * This is the id of the rundown this piece starts playing in.
 	 * Currently this is the only rundown the piece could be playing in

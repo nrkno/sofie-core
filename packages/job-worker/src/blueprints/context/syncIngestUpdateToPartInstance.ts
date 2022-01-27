@@ -22,14 +22,12 @@ import {
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
-	WithTimelineObjects,
-	WithPieceTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import {
-	IBlueprintPieceWithTimelineObjectsSampleKeys,
+	IBlueprintPieceObjectsSampleKeys,
 	IBlueprintMutatablePartSampleKeys,
-	convertPieceInstanceToBlueprintsWithTimelineObjects,
+	convertPieceInstanceToBlueprints,
 } from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -98,7 +96,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 	syncPieceInstance(
 		pieceInstanceId: string,
-		modifiedPiece?: Omit<WithTimelineObjects<IBlueprintPiece>, 'lifespan'>
+		modifiedPiece?: Omit<IBlueprintPiece, 'lifespan'>
 	): IBlueprintPieceInstance {
 		const proposedPieceInstance = this._proposedPieceInstances.get(protectString(pieceInstanceId))
 		if (!proposedPieceInstance) {
@@ -131,16 +129,11 @@ export class SyncIngestUpdateToPartInstanceContext
 			piece: piece,
 		}
 		this._pieceInstanceCache.replace(newPieceInstance)
-		return clone(unprotectObject(newPieceInstance))
+		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}
 
-	insertPieceInstance(
-		piece0: WithTimelineObjects<IBlueprintPiece>
-	): WithPieceTimelineObjects<IBlueprintPieceInstance> {
-		const trimmedPiece: WithTimelineObjects<IBlueprintPiece> = _.pick(
-			piece0,
-			IBlueprintPieceWithTimelineObjectsSampleKeys
-		)
+	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
+		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceObjectsSampleKeys)
 
 		const piece = postProcessPieces(
 			this._context,
@@ -158,17 +151,11 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		this._pieceInstanceCache.insert(newPieceInstance)
 
-		return convertPieceInstanceToBlueprintsWithTimelineObjects(newPieceInstance)
+		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}
-	updatePieceInstance(
-		pieceInstanceId: string,
-		updatedPiece: Partial<WithTimelineObjects<IBlueprintPiece>>
-	): WithPieceTimelineObjects<IBlueprintPieceInstance> {
+	updatePieceInstance(pieceInstanceId: string, updatedPiece: Partial<IBlueprintPiece>): IBlueprintPieceInstance {
 		// filter the submission to the allowed ones
-		const trimmedPiece: Partial<OmitId<WithTimelineObjects<IBlueprintPiece>>> = _.pick(
-			updatedPiece,
-			IBlueprintPieceWithTimelineObjectsSampleKeys
-		)
+		const trimmedPiece: Partial<OmitId<IBlueprintPiece>> = _.pick(updatedPiece, IBlueprintPieceObjectsSampleKeys)
 		if (Object.keys(trimmedPiece).length === 0) {
 			throw new Error(`Cannot update PieceInstance "${pieceInstanceId}". Some valid properties must be defined`)
 		}
@@ -213,7 +200,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found, after applying changes`)
 		}
 
-		return convertPieceInstanceToBlueprintsWithTimelineObjects(updatedPieceInstance)
+		return convertPieceInstanceToBlueprints(updatedPieceInstance)
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones

@@ -34,8 +34,6 @@ import {
 	IBlueprintAdLibPieceDB,
 	IBlueprintPartDB,
 	ExpectedPlayoutItemGeneric,
-	WithTimelineObjects,
-	WithPieceTimelineObjects,
 } from './rundown'
 import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle'
 import { OnGenerateTimelineObj } from './timeline'
@@ -173,7 +171,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	getAdlibItem?: (
 		context: IShowStyleUserContext,
 		ingestItem: IngestAdlib
-	) => WithTimelineObjects<IBlueprintAdLibPiece> | IBlueprintActionManifest | null
+	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getShowStyleConfig. If not provided, getShowStyleConfig will return unprocessed blueprint config */
 	preprocessConfig?: (context: ICommonContext, config: IBlueprintConfig) => unknown
@@ -234,7 +232,7 @@ export interface BlueprintResultBaseline {
 export type BlueprintResultStudioBaseline = BlueprintResultBaseline
 export interface BlueprintResultRundown {
 	rundown: IBlueprintRundown
-	globalAdLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPiece>>
+	globalAdLibPieces: Array<IBlueprintAdLibPiece>
 	globalActions?: IBlueprintActionManifest[]
 	baseline: BlueprintResultBaseline
 }
@@ -245,8 +243,8 @@ export interface BlueprintResultSegment {
 
 export interface BlueprintResultPart {
 	part: IBlueprintPart
-	pieces: Array<WithTimelineObjects<IBlueprintPiece>>
-	adLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPiece>>
+	pieces: Array<IBlueprintPiece>
+	adLibPieces: Array<IBlueprintAdLibPiece>
 	actions?: IBlueprintActionManifest[]
 }
 
@@ -255,13 +253,13 @@ export interface BlueprintSyncIngestNewData {
 	/** The new part */
 	part: IBlueprintPartDB
 	/** A list of pieces (including infinites) that would be present in a fresh copy of this partInstance */
-	pieceInstances: Array<WithPieceTimelineObjects<IBlueprintPieceInstance>>
+	pieceInstances: Array<IBlueprintPieceInstance>
 	/** The adlib pieces belonging to this part */
-	adLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPieceDB>>
+	adLibPieces: Array<IBlueprintAdLibPieceDB>
 	/** The adlib actions belonging to this part */
 	actions: IBlueprintActionManifest[]
 	/** A list of adlibs that have pieceInstances in the partInstance in question */
-	referencedAdlibs: Array<WithTimelineObjects<IBlueprintAdLibPieceDB>>
+	referencedAdlibs: Array<IBlueprintAdLibPieceDB>
 }
 
 // TODO: add something like this later?
@@ -276,7 +274,7 @@ export interface BlueprintSyncIngestNewData {
 
 export interface BlueprintSyncIngestPartInstance {
 	partInstance: IBlueprintPartInstance
-	pieceInstances: Array<WithPieceTimelineObjects<IBlueprintPieceInstance>>
+	pieceInstances: Array<IBlueprintPieceInstance>
 	// Upcoming interface:
 	// adLibPieceInstances: IBlueprintAdlibPieceInstance[]
 	// adLibActionInstances: IBlueprintAdlibActionInstance[]
@@ -284,7 +282,7 @@ export interface BlueprintSyncIngestPartInstance {
 
 export interface BlueprintRemoveOrphanedPartInstance {
 	partInstance: IBlueprintPartInstance
-	pieceInstances: Array<WithPieceTimelineObjects<IBlueprintPieceInstance>>
+	pieceInstances: Array<IBlueprintPieceInstance>
 }
 
 /** Key is the ID of the external ID of the Rundown, Value is the rank to be assigned */

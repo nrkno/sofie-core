@@ -4,7 +4,6 @@ import {
 	IngestRundown,
 	IngestSegment,
 	PieceLifespan,
-	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import {
@@ -1712,7 +1711,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 0,
 								payload: {
 									pieces: [
-										literal<WithTimelineObjects<IBlueprintPiece>>({
+										literal<IBlueprintPiece>({
 											externalId: 'piece0',
 											name: '',
 											enable: { start: 0 },
@@ -1731,7 +1730,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 1,
 								payload: {
 									pieces: [
-										literal<WithTimelineObjects<IBlueprintPiece>>({
+										literal<IBlueprintPiece>({
 											externalId: 'piece1',
 											name: '',
 											enable: { start: 0 },
@@ -1901,7 +1900,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 0,
 								payload: {
 									pieces: [
-										literal<WithTimelineObjects<IBlueprintPiece>>({
+										literal<IBlueprintPiece>({
 											externalId: 'piece0',
 											name: '',
 											enable: { start: 0 },
@@ -1920,7 +1919,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 1,
 								payload: {
 									pieces: [
-										literal<WithTimelineObjects<IBlueprintPiece>>({
+										literal<IBlueprintPiece>({
 											externalId: 'piece1',
 											name: '',
 											enable: { start: 0 },
@@ -2231,7 +2230,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 0,
 								payload: {
 									pieces: [
-										literal<WithTimelineObjects<IBlueprintPiece>>({
+										literal<IBlueprintPiece>({
 											externalId: 'piece0',
 											name: '',
 											enable: { start: 0 },
@@ -2250,7 +2249,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 								rank: 1,
 								payload: {
 									pieces: [
-										literal<WithTimelineObjects<IBlueprintPiece>>({
+										literal<IBlueprintPiece>({
 											externalId: 'piece1',
 											name: '',
 											enable: { start: 0 },

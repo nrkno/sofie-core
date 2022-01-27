@@ -12,7 +12,6 @@ import {
 	TimelineObjectCoreExt,
 	TSR,
 	IBlueprintPieceType,
-	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { clone, literal } from '@sofie-automation/corelib/dist/lib'
@@ -301,7 +300,7 @@ describe('Test blueprint post-process', () => {
 			const blueprintId = protectString('blueprint9')
 			const rundownId = protectString('rundown1')
 
-			const pieces = literal<Array<WithTimelineObjects<IBlueprintAdLibPiece>>>([
+			const pieces = literal<Array<IBlueprintAdLibPiece>>([
 				{
 					_rank: 2,
 					name: 'test',
@@ -376,7 +375,7 @@ describe('Test blueprint post-process', () => {
 			const blueprintId = protectString('blueprint0')
 			const rundownId = protectString('rundown1')
 
-			const piece = literal<WithTimelineObjects<IBlueprintAdLibPiece>>({
+			const piece = literal<IBlueprintAdLibPiece>({
 				_rank: 9,
 				name: 'test2',
 				externalId: 'eid2',
@@ -425,7 +424,7 @@ describe('Test blueprint post-process', () => {
 		test('various pieces', () => {
 			const jobContext = setupDefaultJobEnvironment()
 
-			const pieces = literal<Array<WithTimelineObjects<IBlueprintPiece>>>([
+			const pieces = literal<Array<IBlueprintPiece>>([
 				{
 					name: 'test',
 					externalId: 'eid1',
@@ -497,7 +496,7 @@ describe('Test blueprint post-process', () => {
 		test('piece with content', () => {
 			const jobContext = setupDefaultJobEnvironment()
 
-			const piece = literal<WithTimelineObjects<IBlueprintPiece>>({
+			const piece = literal<IBlueprintPiece>({
 				name: 'test2',
 				externalId: 'eid2',
 				enable: { start: 0 },

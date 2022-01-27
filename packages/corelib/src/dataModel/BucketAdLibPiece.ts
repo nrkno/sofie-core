@@ -3,7 +3,7 @@ import { BucketAdLibId, BucketId, StudioId, ShowStyleVariantId } from './Ids'
 import { PieceTimelineObjectsBlob } from './Piece'
 import { RundownImportVersions } from './Rundown'
 
-export interface BucketAdLib extends IBlueprintAdLibPiece {
+export interface BucketAdLib extends Omit<IBlueprintAdLibPiece, 'timelineObjects'> {
 	_id: BucketAdLibId
 	bucketId: BucketId
 

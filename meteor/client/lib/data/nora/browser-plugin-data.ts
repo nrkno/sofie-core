@@ -2,7 +2,9 @@ import { IBlueprintPieceGeneric, NoraContent } from '@sofie-automation/blueprint
 
 export { createMosObjectXmlStringNoraBluePrintPiece }
 
-function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneric): string {
+function createMosObjectXmlStringNoraBluePrintPiece(
+	piece: Pick<IBlueprintPieceGeneric, 'content' | 'externalId'>
+): string {
 	const noraContent = piece.content as NoraContent | undefined
 	const noraPayload = noraContent?.payload
 	if (!noraContent || !noraPayload) {

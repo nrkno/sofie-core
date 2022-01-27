@@ -1,9 +1,7 @@
 import {
 	IBlueprintPiece,
 	IBlueprintMutatablePart,
-	WithTimelineObjects,
 	IBlueprintPieceInstance,
-	WithPieceTimelineObjects,
 	IBlueprintPartInstance,
 	IBlueprintResolvedPieceInstance,
 	IBlueprintPartDB,
@@ -12,15 +10,13 @@ import {
 	IBlueprintShowStyleBase,
 	IBlueprintShowStyleVariant,
 	IBlueprintRundownDB,
+	IBlueprintPieceDB,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import {
-	deserializePieceTimelineObjectsBlob,
-	EmptyPieceTimelineObjectsBlob,
-} from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { deserializePieceTimelineObjectsBlob, Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
 	PieceInstance,
 	PieceInstancePiece,
@@ -45,7 +41,7 @@ function allKeysOfObject<T>(sample: AllValuesAsTrue<T>): Array<keyof T> {
 }
 
 // Compile a list of the keys which are allowed to be set
-export const IBlueprintPieceWithTimelineObjectsSampleKeys = allKeysOfObject<WithTimelineObjects<IBlueprintPiece>>({
+export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>({
 	externalId: true,
 	enable: true,
 	virtual: true,
@@ -94,20 +90,8 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 
 export function convertPieceInstanceToBlueprints(pieceInstance: PieceInstance): IBlueprintPieceInstance {
 	const cloned = clone(pieceInstance)
-	// Prune out this large and hidden value
-	cloned.piece.timelineObjectsString = EmptyPieceTimelineObjectsBlob
 
-	const obj: IBlueprintPieceInstance = unprotectObject(cloned)
-
-	return obj
-}
-
-export function convertPieceInstanceToBlueprintsWithTimelineObjects(
-	pieceInstance: PieceInstance
-): WithPieceTimelineObjects<IBlueprintPieceInstance> {
-	const cloned = clone(pieceInstance)
-
-	const obj: WithPieceTimelineObjects<IBlueprintPieceInstance> = {
+	const obj: IBlueprintPieceInstance = {
 		...unprotectObject(cloned),
 		piece: {
 			...unprotectObject(cloned.piece),
@@ -128,10 +112,20 @@ export function convertResolvedPieceInstanceToBlueprints(
 	pieceInstance: ResolvedPieceInstance
 ): IBlueprintResolvedPieceInstance {
 	const cloned = clone(pieceInstance)
-	// Prune out this large and hidden value
-	cloned.piece.timelineObjectsString = EmptyPieceTimelineObjectsBlob
 
-	const obj: IBlueprintResolvedPieceInstance = unprotectObject(cloned)
+	const obj: IBlueprintResolvedPieceInstance = {
+		...unprotectObject(cloned),
+		piece: {
+			...unprotectObject(cloned.piece),
+			timelineObjects: deserializePieceTimelineObjectsBlob(pieceInstance.piece.timelineObjectsString),
+		},
+	}
+
+	{
+		// Clean out a large unused property
+		const obj2 = obj.piece as unknown as Partial<PieceInstancePiece>
+		delete obj2.timelineObjectsString
+	}
 
 	return obj
 }
@@ -142,13 +136,29 @@ export function convertPartInstanceToBlueprints(partInstance: DBPartInstance): I
 	return cloned as any
 }
 
+export function convertPieceToBlueprints(piece: Piece): IBlueprintPieceDB {
+	const cloned = clone(piece)
+
+	const obj: IBlueprintPieceDB = {
+		...unprotectObject(cloned),
+		timelineObjects: deserializePieceTimelineObjectsBlob(piece.timelineObjectsString),
+	}
+
+	{
+		// Clean out a large unused property
+		const obj2 = obj as unknown as Partial<AdLibPiece>
+		delete obj2.timelineObjectsString
+	}
+
+	return obj
+}
 export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 	return unprotectObject(clone(part))
 }
-export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): WithTimelineObjects<IBlueprintAdLibPieceDB> {
+export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLibPieceDB {
 	const cloned = clone(adLib)
 
-	const obj: WithTimelineObjects<IBlueprintAdLibPieceDB> = {
+	const obj: IBlueprintAdLibPieceDB = {
 		...unprotectObject(cloned),
 		timelineObjects: deserializePieceTimelineObjectsBlob(adLib.timelineObjectsString),
 	}

@@ -4,7 +4,6 @@ import {
 	IBlueprintPiece,
 	IBlueprintPieceType,
 	PieceLifespan,
-	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context/adlibActions'
 import { isTooCloseToAutonext } from '../../playout/lib'
@@ -54,7 +53,7 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { convertPieceInstanceToBlueprintsWithTimelineObjects } from '../context/lib'
+import { convertPieceInstanceToBlueprints } from '../context/lib'
 import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 const { postProcessPieces: postProcessPiecesOrig, postProcessTimelineObjects: postProcessTimelineObjectsOrig } =
 	jest.requireActual('../postProcess')
@@ -323,14 +322,23 @@ describe('Test blueprint api context', () => {
 							expect(cache2).toBe(cache)
 							expect(showStyleBase).toBeTruthy()
 							mockCalledIds.push(partInstance._id)
-							return ['abc'] as any as ResolvedPieceInstance[]
+							return [
+								{
+									_id: 'abc',
+									piece: {
+										timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+									},
+								},
+							] as any as ResolvedPieceInstance[]
 						}
 					)
 
 					// Check the current part
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstanceIds[1] } })
 					await expect(context.getResolvedPieceInstances('next')).resolves.toHaveLength(0)
-					await expect(context.getResolvedPieceInstances('current')).resolves.toEqual(['abc'])
+					await expect(
+						context.getResolvedPieceInstances('current').then((res) => res.map((p) => p._id))
+					).resolves.toEqual(['abc'])
 					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(1)
 					expect(mockCalledIds).toEqual([partInstanceIds[1]])
 
@@ -340,7 +348,9 @@ describe('Test blueprint api context', () => {
 					// Now the next part
 					cache.Playlist.update({ $set: { currentPartInstanceId: null } })
 					cache.Playlist.update({ $set: { nextPartInstanceId: partInstanceIds[2] } })
-					await expect(context.getResolvedPieceInstances('next')).resolves.toEqual(['abc'])
+					await expect(
+						context.getResolvedPieceInstances('next').then((res) => res.map((p) => p._id))
+					).resolves.toEqual(['abc'])
 					await expect(context.getResolvedPieceInstances('current')).resolves.toHaveLength(0)
 					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(1)
 					expect(mockCalledIds).toEqual([partInstanceIds[2]])
@@ -1085,7 +1095,7 @@ describe('Test blueprint api context', () => {
 					const pieceInstance1 = cache.PieceInstances.findOne(pieceInstance0._id) as PieceInstance
 					expect(pieceInstance1).toBeTruthy()
 
-					expect(resultPiece).toEqual(convertPieceInstanceToBlueprintsWithTimelineObjects(pieceInstance1))
+					expect(resultPiece).toEqual(convertPieceInstanceToBlueprints(pieceInstance1))
 					const pieceInstance0After = {
 						...pieceInstance0Before,
 						piece: {
@@ -1205,7 +1215,7 @@ describe('Test blueprint api context', () => {
 					expect(partInstance).toBeTruthy()
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
-					const newPiece: WithTimelineObjects<IBlueprintPiece> = {
+					const newPiece: IBlueprintPiece = {
 						name: 'test piece',
 						sourceLayerId: 'sl1',
 						outputLayerId: 'o1',

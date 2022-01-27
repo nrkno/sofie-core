@@ -13,10 +13,7 @@ import { clone } from 'underscore'
 import { RundownUserContext } from '../blueprints/context'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
 import { isTooCloseToAutonext } from '../playout/lib'
-import {
-	convertPartInstanceToBlueprints,
-	convertPieceInstanceToBlueprintsWithTimelineObjects,
-} from '../blueprints/context/lib'
+import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from '../blueprints/context/lib'
 
 export async function shouldRemoveOrphanedPartInstance(
 	context: JobContext,
@@ -38,7 +35,7 @@ export async function shouldRemoveOrphanedPartInstance(
 
 	const existingResultPartInstance: BlueprintRemoveOrphanedPartInstance = {
 		partInstance: convertPartInstanceToBlueprints(orphanedPartInstance),
-		pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprintsWithTimelineObjects),
+		pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprints),
 	}
 
 	const orphanedPartInstanceContext = new RundownUserContext(

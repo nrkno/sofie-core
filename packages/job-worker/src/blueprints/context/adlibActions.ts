@@ -10,14 +10,12 @@ import {
 	IEventContext,
 	OmitId,
 	Time,
-	WithPieceTimelineObjects,
-	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { assertNever, clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
 import { ReadonlyDeep, SetRequired } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
@@ -28,7 +26,6 @@ import {
 	protectString,
 	protectStringArray,
 	UnprotectedStringProperties,
-	unprotectObject,
 	unprotectString,
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
@@ -47,9 +44,11 @@ import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/core
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	convertPartInstanceToBlueprints,
-	convertPieceInstanceToBlueprintsWithTimelineObjects,
+	convertPieceInstanceToBlueprints,
+	convertPieceToBlueprints,
+	convertResolvedPieceInstanceToBlueprints,
 	IBlueprintMutatablePartSampleKeys,
-	IBlueprintPieceWithTimelineObjectsSampleKeys,
+	IBlueprintPieceObjectsSampleKeys,
 } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { isTooCloseToAutonext } from '../../playout/lib'
@@ -126,7 +125,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		const partInstance = this._cache.PartInstances.findOne(partInstanceId)
-		return clone(unprotectObject(partInstance))
+		return partInstance && convertPartInstanceToBlueprints(partInstance)
 	}
 	async getPieceInstances(part: 'current' | 'next'): Promise<IBlueprintPieceInstance[]> {
 		const partInstanceId = this._getPartInstanceId(part)
@@ -135,7 +134,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		const pieceInstances = this._cache.PieceInstances.findFetch({ partInstanceId })
-		return pieceInstances.map((piece) => clone(unprotectObject(piece)))
+		return pieceInstances.map(convertPieceInstanceToBlueprints)
 	}
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]> {
 		const partInstanceId = this._getPartInstanceId(part)
@@ -149,7 +148,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		const resolvedInstances = getResolvedPieces(this._context, this._cache, this.showStyleCompound, partInstance)
-		return resolvedInstances.map((piece) => clone(unprotectObject(piece)))
+		return resolvedInstances.map(convertResolvedPieceInstanceToBlueprints)
 	}
 
 	async findLastPieceOnLayer(
@@ -184,7 +183,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			query
 		)
 
-		return clone(unprotectObject(lastPieceInstance))
+		return lastPieceInstance && convertPieceInstanceToBlueprints(lastPieceInstance)
 	}
 
 	async findLastScriptedPieceOnLayer(
@@ -218,7 +217,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		const lastPiece = await innerFindLastScriptedPieceOnLayer(this._context, this._cache, sourceLayerId, query)
 
-		return clone(unprotectObject(lastPiece))
+		return lastPiece && convertPieceToBlueprints(lastPiece)
 	}
 
 	async getPartInstanceForPreviousPiece(piece: IBlueprintPieceInstance): Promise<IBlueprintPartInstance> {
@@ -230,7 +229,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		const cached = this._cache.PartInstances.findOne(partInstanceId)
 		if (cached) {
-			return clone(unprotectObject(cached))
+			return convertPartInstanceToBlueprints(cached)
 		}
 
 		// It might be reset and so not in the cache
@@ -262,10 +261,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return this._cache.Parts.findOne({ _id: pieceDB.startPartId })
 	}
 
-	async insertPiece(
-		part: 'current' | 'next',
-		rawPiece: WithTimelineObjects<IBlueprintPiece>
-	): Promise<WithPieceTimelineObjects<IBlueprintPieceInstance>> {
+	async insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): Promise<IBlueprintPieceInstance> {
 		const partInstanceId = this._getPartInstanceId(part)
 		if (!partInstanceId) {
 			throw new Error('Cannot insert piece when no active part')
@@ -281,10 +277,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Failed to find rundown of partInstance')
 		}
 
-		const trimmedPiece: WithTimelineObjects<IBlueprintPiece> = _.pick(
-			rawPiece,
-			IBlueprintPieceWithTimelineObjectsSampleKeys
-		)
+		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, IBlueprintPieceObjectsSampleKeys)
 
 		const piece = postProcessPieces(
 			this._context,
@@ -307,17 +300,14 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
-		return convertPieceInstanceToBlueprintsWithTimelineObjects(newPieceInstance)
+		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}
 	async updatePieceInstance(
 		pieceInstanceId: string,
-		piece: Partial<OmitId<WithTimelineObjects<IBlueprintPiece>>>
-	): Promise<WithPieceTimelineObjects<IBlueprintPieceInstance>> {
+		piece: Partial<OmitId<IBlueprintPiece>>
+	): Promise<IBlueprintPieceInstance> {
 		// filter the submission to the allowed ones
-		const trimmedPiece: Partial<OmitId<WithTimelineObjects<IBlueprintPiece>>> = _.pick(
-			piece,
-			IBlueprintPieceWithTimelineObjectsSampleKeys
-		)
+		const trimmedPiece: Partial<OmitId<IBlueprintPiece>> = _.pick(piece, IBlueprintPieceObjectsSampleKeys)
 		if (Object.keys(trimmedPiece).length === 0) {
 			throw new Error('Some valid properties must be defined')
 		}
@@ -378,12 +368,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const updatedPieceInstance = this._cache.PieceInstances.findOne(pieceInstance._id)
 		if (!updatedPieceInstance) throw new Error('PieceInstance disappeared!')
 
-		return convertPieceInstanceToBlueprintsWithTimelineObjects(updatedPieceInstance)
+		return convertPieceInstanceToBlueprints(updatedPieceInstance)
 	}
-	async queuePart(
-		rawPart: IBlueprintPart,
-		rawPieces: WithTimelineObjects<IBlueprintPiece>[]
-	): Promise<IBlueprintPartInstance> {
+	async queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance> {
 		const currentPartInstance = this._cache.Playlist.doc.currentPartInstanceId
 			? this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
 			: undefined
@@ -457,7 +444,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
 
-		return clone(unprotectObject(newPartInstance))
+		return convertPartInstanceToBlueprints(newPartInstance)
 	}
 	async moveNextPart(partDelta: number, segmentDelta: number): Promise<void> {
 		await moveNextPartInner(this._context, this._cache, partDelta, segmentDelta)
@@ -511,7 +498,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('PartInstance could not be found, after applying changes')
 		}
 
-		return clone(unprotectObject(updatedPartInstance))
+		return convertPartInstanceToBlueprints(updatedPartInstance)
 	}
 
 	async stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): Promise<string[]> {

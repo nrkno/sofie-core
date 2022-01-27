@@ -21,6 +21,7 @@ import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/Show
 import { wrapPartToTemporaryInstance } from '../../__mocks__/partinstance'
 import { ReadonlyDeep } from 'type-fest'
 import { convertPartInstanceToBlueprints } from '../context/lib'
+import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 describe('Test blueprint api context', () => {
 	async function generateSparsePieceInstances(rundown: DBRundown) {
@@ -56,6 +57,7 @@ describe('Test blueprint api context', () => {
 						content: {
 							index: o,
 						},
+						timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 					},
 				} as any)
 			}

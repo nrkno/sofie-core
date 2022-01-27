@@ -14,7 +14,6 @@ import {
 	TSR,
 	PieceLifespan,
 	IBlueprintPieceType,
-	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleContext } from './context'
 import {
@@ -49,7 +48,7 @@ import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
  */
 export function postProcessPieces(
 	context: JobContext,
-	pieces: Array<WithTimelineObjects<IBlueprintPiece>>,
+	pieces: Array<IBlueprintPiece>,
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
 	segmentId: SegmentId,
@@ -156,7 +155,7 @@ export function postProcessAdLibPieces(
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
 	partId: PartId | undefined,
-	adLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPiece>>
+	adLibPieces: Array<IBlueprintAdLibPiece>
 ): AdLibPiece[] {
 	const span = context.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
@@ -258,7 +257,7 @@ export function postProcessRundownBaselineItems(
 
 export function postProcessBucketAdLib(
 	innerContext: ShowStyleContext,
-	itemOrig: WithTimelineObjects<IBlueprintAdLibPiece>,
+	itemOrig: IBlueprintAdLibPiece,
 	externalId: string,
 	blueprintId: BlueprintId,
 	bucketId: BucketId,

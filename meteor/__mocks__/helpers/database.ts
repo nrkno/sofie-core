@@ -32,7 +32,6 @@ import {
 	PlayoutActions,
 	StatusCode,
 	IBlueprintPieceType,
-	WithTimelineObjects,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -422,8 +421,8 @@ export async function setupMockShowStyleBlueprint(
 							// displayDuration?: number;
 							// invalid?: boolean
 						}
-						const pieces: Array<WithTimelineObjects<IBlueprintPiece>> = ingestPart.payload?.pieces ?? []
-						const adLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPiece>> = []
+						const pieces: Array<IBlueprintPiece> = ingestPart.payload?.pieces ?? []
+						const adLibPieces: Array<IBlueprintAdLibPiece> = []
 						parts.push({
 							part,
 							pieces,

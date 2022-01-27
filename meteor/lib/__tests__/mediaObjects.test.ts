@@ -102,6 +102,7 @@ describe('lib/mediaObjects', () => {
 					fileName: 'test',
 					path: '',
 				}),
+				timelineObjects: [],
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -123,6 +124,7 @@ describe('lib/mediaObjects', () => {
 					fileName: 'TEST',
 					path: '',
 				}),
+				timelineObjects: [],
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -141,6 +143,7 @@ describe('lib/mediaObjects', () => {
 				sourceLayerId: '',
 				outputLayerId: '',
 				content: {},
+				timelineObjects: [],
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({

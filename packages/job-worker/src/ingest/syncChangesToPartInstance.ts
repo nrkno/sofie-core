@@ -26,7 +26,7 @@ import {
 	convertAdLibPieceToBlueprints,
 	convertPartInstanceToBlueprints,
 	convertPartToBlueprints,
-	convertPieceInstanceToBlueprintsWithTimelineObjects,
+	convertPieceInstanceToBlueprints,
 } from '../blueprints/context/lib'
 
 export async function syncChangesToPartInstances(
@@ -88,7 +88,7 @@ export async function syncChangesToPartInstances(
 				const partId = existingPartInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
 					partInstance: convertPartInstanceToBlueprints(existingPartInstance),
-					pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprintsWithTimelineObjects),
+					pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprints),
 				}
 
 				const referencedAdlibIds = _.compact(pieceInstancesInPart.map((p) => p.adLibSourceId))
@@ -110,7 +110,7 @@ export async function syncChangesToPartInstances(
 
 				const newResultData: BlueprintSyncIngestNewData = {
 					part: convertPartToBlueprints(newPart),
-					pieceInstances: proposedPieceInstances.map(convertPieceInstanceToBlueprintsWithTimelineObjects),
+					pieceInstances: proposedPieceInstances.map(convertPieceInstanceToBlueprints),
 					adLibPieces: adlibPieces.map(convertAdLibPieceToBlueprints),
 					actions: adlibActions.map(convertAdLibActionToBlueprints),
 					referencedAdlibs: referencedAdlibs.map(convertAdLibPieceToBlueprints),
