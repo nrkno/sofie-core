@@ -44,8 +44,9 @@ import {
 	innerStopPieces,
 } from '../../playout/adlib'
 import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { DBPartInstance, unprotectPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
+	convertPartInstanceToBlueprints,
 	convertPieceInstanceToBlueprintsWithTimelineObjects,
 	IBlueprintMutatablePartSampleKeys,
 	IBlueprintPieceWithTimelineObjectsSampleKeys,
@@ -239,7 +240,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			rundownId: { $in: rundownIds },
 		})
 		if (oldInstance) {
-			return unprotectPartInstance(oldInstance)
+			return convertPartInstanceToBlueprints(oldInstance)
 		} else {
 			throw new Error('Cannot find PartInstance for PieceInstance')
 		}

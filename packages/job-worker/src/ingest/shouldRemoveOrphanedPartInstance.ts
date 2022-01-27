@@ -6,7 +6,6 @@ import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { unprotectObject, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from 'elastic-apm-node'
 import { JobContext } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
@@ -14,6 +13,10 @@ import { clone } from 'underscore'
 import { RundownUserContext } from '../blueprints/context'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
 import { isTooCloseToAutonext } from '../playout/lib'
+import {
+	convertPartInstanceToBlueprints,
+	convertPieceInstanceToBlueprintsWithTimelineObjects,
+} from '../blueprints/context/lib'
 
 export async function shouldRemoveOrphanedPartInstance(
 	context: JobContext,
@@ -34,8 +37,8 @@ export async function shouldRemoveOrphanedPartInstance(
 	})
 
 	const existingResultPartInstance: BlueprintRemoveOrphanedPartInstance = {
-		partInstance: unprotectObject(orphanedPartInstance),
-		pieceInstances: unprotectObjectArray(pieceInstancesInPart),
+		partInstance: convertPartInstanceToBlueprints(orphanedPartInstance),
+		pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprintsWithTimelineObjects),
 	}
 
 	const orphanedPartInstanceContext = new RundownUserContext(

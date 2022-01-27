@@ -15,7 +15,7 @@ import {
 	TimelineObjHoldMode,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
-import { protectString, unprotectObjectArray, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
 	deserializeTimelineBlob,
 	OnGenerateTimelineObjExt,
@@ -60,7 +60,7 @@ import {
 import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
 import { getLookeaheadObjects } from './lookahead'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
-import { StudioBaselineContext, TimelineEventContext } from '../blueprints/context'
+import { StudioBaselineContext, OnTimelineGenerateContext } from '../blueprints/context'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
@@ -73,6 +73,7 @@ import {
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -355,7 +356,7 @@ async function getTimelineRundown(
 			)
 
 			if (blueprint.blueprint.onTimelineGenerate) {
-				const context2 = new TimelineEventContext(
+				const context2 = new OnTimelineGenerateContext(
 					context.studio,
 					context.getStudioBlueprintConfig(),
 					showStyle,
@@ -367,6 +368,7 @@ async function getTimelineRundown(
 					nextPartInstance
 				)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
+				context2.trackPieceInstances(resolvedPieces.pieces)
 				try {
 					const span = context.startSpan('blueprint.onTimelineGenerate')
 					const influxTrace = startTrace('blueprints:onTimelineGenerate')
@@ -375,7 +377,7 @@ async function getTimelineRundown(
 						timelineObjs,
 						cache.Playlist.doc.previousPersistentState,
 						currentPartInstance?.previousPartEndState,
-						unprotectObjectArray(resolvedPieces.pieces)
+						resolvedPieces.pieces.map(convertResolvedPieceInstanceToBlueprints)
 					)
 					sendTrace(endTrace(influxTrace))
 					if (span) span.end()

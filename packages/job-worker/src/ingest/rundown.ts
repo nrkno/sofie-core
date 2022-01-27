@@ -2,7 +2,7 @@ import { ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { protectString, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import { createShowStyleCompound } from '../showStyles'
 import _ = require('underscore')
@@ -10,6 +10,7 @@ import { StudioUserContext } from '../blueprints/context'
 import { JobContext } from '../jobs'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { convertShowStyleBaseToBlueprints, convertShowStyleVariantToBlueprints } from '../blueprints/context/lib'
 
 export interface SelectedShowStyleVariant {
 	variant: ReadonlyDeep<DBShowStyleVariant>
@@ -45,7 +46,7 @@ export async function selectShowStyleVariant(
 		showStyleId = protectString(
 			studioBlueprint.blueprint.getShowStyleId(
 				blueprintContext,
-				unprotectObjectArray(showStyleBases),
+				showStyleBases.map(convertShowStyleBaseToBlueprints),
 				ingestRundown
 			)
 		)
@@ -77,7 +78,7 @@ export async function selectShowStyleVariant(
 		variantId = protectString(
 			showStyleBlueprint.blueprint.getShowStyleVariantId(
 				blueprintContext,
-				unprotectObjectArray(showStyleVariants),
+				showStyleVariants.map(convertShowStyleVariantToBlueprints),
 				ingestRundown
 			)
 		)

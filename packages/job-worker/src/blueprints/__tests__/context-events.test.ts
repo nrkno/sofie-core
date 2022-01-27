@@ -2,13 +2,13 @@ import * as _ from 'underscore'
 import { IBlueprintSegmentDB, IBlueprintPieceInstance } from '@sofie-automation/blueprints-integration'
 import {
 	PartEventContext,
-	TimelineEventContext,
+	OnTimelineGenerateContext,
 	RundownDataChangedEventContext,
 	RundownTimingEventContext,
 } from '../context'
 import { PartInstanceId, PieceInstanceInfiniteId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { DBPartInstance, unprotectPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
@@ -20,6 +20,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { wrapPartToTemporaryInstance } from '../../__mocks__/partinstance'
 import { ReadonlyDeep } from 'type-fest'
+import { convertPartInstanceToBlueprints } from '../context/lib'
 
 describe('Test blueprint api context', () => {
 	async function generateSparsePieceInstances(rundown: DBRundown) {
@@ -250,26 +251,19 @@ describe('Test blueprint api context', () => {
 			// Check what was generated
 			const context = await getContext(rundown, undefined, partInstance, undefined)
 			await expect(
-				context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance))
+				context.getPartInstancesInSegmentPlayoutId(convertPartInstanceToBlueprints(partInstance))
 			).resolves.toHaveLength(2)
 
 			// Insert a new instance, and try again
-			const newId = await jobContext.directCollections.PartInstances.insertOne({
+			await jobContext.directCollections.PartInstances.insertOne({
 				...partInstance,
 				_id: getRandomId(),
 				segmentPlayoutId: protectString('new segment'),
 			})
 
 			await expect(
-				context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance))
+				context.getPartInstancesInSegmentPlayoutId(convertPartInstanceToBlueprints(partInstance))
 			).resolves.toHaveLength(2)
-
-			// Try for the new instance
-			const partInstance2 = (await jobContext.directCollections.PartInstances.findOne(newId)) as DBPartInstance
-			expect(partInstance2).toBeTruthy()
-			await expect(
-				context.getPartInstancesInSegmentPlayoutId(unprotectPartInstance(partInstance2))
-			).resolves.toHaveLength(1)
 		})
 
 		test('getPieceInstances', async () => {
@@ -379,7 +373,7 @@ describe('Test blueprint api context', () => {
 		})
 	})
 
-	describe('TimelineEventContext', () => {
+	describe('OnTimelineGenerateContext', () => {
 		const getSessionId = (n: number): string => `session#${n}`
 		async function getContext(
 			rundown: DBRundown,
@@ -392,7 +386,7 @@ describe('Test blueprint api context', () => {
 			)) as DBRundownPlaylist
 			expect(playlist).toBeTruthy()
 
-			const context = new TimelineEventContext(
+			const context = new OnTimelineGenerateContext(
 				jobContext.studio,
 				jobContext.getStudioBlueprintConfig(),
 				showStyle,
@@ -410,7 +404,7 @@ describe('Test blueprint api context', () => {
 			return context
 		}
 
-		function getAllKnownSessions(context: TimelineEventContext): ABSessionInfo[] {
+		function getAllKnownSessions(context: OnTimelineGenerateContext): ABSessionInfo[] {
 			const sessions: ABSessionInfo[] = (context as any)._knownSessions
 			expect(sessions).toBeTruthy()
 
@@ -421,15 +415,20 @@ describe('Test blueprint api context', () => {
 		// 	context2._knownSessions = sessions
 		// }
 		function createPieceInstance(
+			context: OnTimelineGenerateContext,
 			partInstanceId: PartInstanceId | string,
 			infiniteInstanceId?: PieceInstanceInfiniteId
 		): IBlueprintPieceInstance {
 			// This defines only the minimum required values for the method we are calling
-			return {
-				// _id: id,
+			const pieceInstance = {
+				_id: getRandomId(),
 				partInstanceId,
 				infinite: infiniteInstanceId ? { infiniteInstanceId } : undefined,
 			} as any
+
+			context.trackPieceInstances([pieceInstance])
+
+			return pieceInstance
 		}
 		function createTimelineObject(
 			partInstanceId: PartInstanceId | string | null,
@@ -488,12 +487,12 @@ describe('Test blueprint api context', () => {
 			{
 				const context = await getContext(rundown, undefined, undefined, undefined)
 
-				const piece1 = createPieceInstance(undefined as any)
+				const piece1 = createPieceInstance(context, undefined as any)
 				expect(() => context.getPieceABSessionId(piece1, 'name0')).toThrow(
 					'Missing partInstanceId in call to getPieceABSessionId'
 				)
 
-				const piece2 = createPieceInstance('defdef')
+				const piece2 = createPieceInstance(context, 'defdef')
 				expect(() => context.getPieceABSessionId(piece2, 'name0')).toThrow(
 					'Unknown partInstanceId in call to getPieceABSessionId'
 				)
@@ -503,12 +502,12 @@ describe('Test blueprint api context', () => {
 				const tmpPartInstance = createPartInstance('abcdef', 'aaa', 1)
 				const context = await getContext(rundown, undefined, undefined, tmpPartInstance)
 
-				const piece0 = createPieceInstance('defdef')
+				const piece0 = createPieceInstance(context, 'defdef')
 				expect(() => context.getPieceABSessionId(piece0, 'name0')).toThrow(
 					'Unknown partInstanceId in call to getPieceABSessionId'
 				)
 
-				const piece1 = createPieceInstance('abcdef')
+				const piece1 = createPieceInstance(context, 'abcdef')
 				expect(context.getPieceABSessionId(piece1, 'name0')).toBeTruthy()
 			}
 		})
@@ -523,7 +522,7 @@ describe('Test blueprint api context', () => {
 			const context = await getContext(rundown, undefined, currentPartInstance, nextPartInstance)
 
 			// Get the id
-			const piece0 = createPieceInstance(nextPartInstance._id)
+			const piece0 = createPieceInstance(context, nextPartInstance._id)
 			const expectedSessions: ABSessionInfo[] = [
 				{
 					id: getSessionId(0),
@@ -541,13 +540,13 @@ describe('Test blueprint api context', () => {
 			expect(getAllKnownSessions(context)).toEqual(expectedSessions)
 			expect(context.knownSessions).toHaveLength(1)
 
-			const piece1 = createPieceInstance(nextPartInstance._id)
+			const piece1 = createPieceInstance(context, nextPartInstance._id)
 			expect(context.getPieceABSessionId(piece1, 'name0')).toEqual(expectedSessions[0].id)
 			expect(getAllKnownSessions(context)).toEqual(expectedSessions)
 			expect(context.knownSessions).toHaveLength(1)
 
 			// Try for the other part
-			const piece2 = createPieceInstance(currentPartInstance._id)
+			const piece2 = createPieceInstance(context, currentPartInstance._id)
 			expect(context.getPieceABSessionId(piece2, 'name0')).not.toEqual(expectedSessions[0].id)
 			expect(context.knownSessions).toHaveLength(2)
 
@@ -590,17 +589,17 @@ describe('Test blueprint api context', () => {
 			const context = await getContext(rundown, undefined, currentPartInstance, nextPartInstance)
 
 			// Reuse the ids
-			const piece0 = createPieceInstance(currentPartInstance._id)
+			const piece0 = createPieceInstance(context, currentPartInstance._id)
 			expect(context.getPieceABSessionId(piece0, 'name0')).toEqual(expectedSessions[0].id)
 			expect(getAllKnownSessions(context)).toEqual(expectedSessions)
 			expect(context.knownSessions).toHaveLength(1)
 
-			const piece1 = createPieceInstance(currentPartInstance._id)
+			const piece1 = createPieceInstance(context, currentPartInstance._id)
 			expect(context.getPieceABSessionId(piece1, 'name1')).toEqual(expectedSessions[1].id)
 			expect(getAllKnownSessions(context)).toEqual(expectedSessions)
 			expect(context.knownSessions).toHaveLength(2)
 
-			const piece2 = createPieceInstance(nextPartInstance._id)
+			const piece2 = createPieceInstance(context, nextPartInstance._id)
 			expect(context.getPieceABSessionId(piece2, 'name0')).toEqual(expectedSessions[2].id)
 			expect(getAllKnownSessions(context)).toEqual(expectedSessions)
 			expect(context.knownSessions).toHaveLength(3)
@@ -617,11 +616,11 @@ describe('Test blueprint api context', () => {
 			const context = await getContext(rundown, undefined, currentPartInstance, nextPartInstance)
 
 			const sessionId = getSessionId(0)
-			const piece0 = createPieceInstance(currentPartInstance._id)
+			const piece0 = createPieceInstance(context, currentPartInstance._id)
 			expect(context.getPieceABSessionId(piece0, 'name0')).toEqual(sessionId)
 			expect(context.knownSessions).toHaveLength(1)
 
-			const piece2 = createPieceInstance(nextPartInstance._id)
+			const piece2 = createPieceInstance(context, nextPartInstance._id)
 			expect(context.getPieceABSessionId(piece2, 'name0')).toEqual(sessionId)
 			expect(context.knownSessions).toHaveLength(1)
 		})
@@ -664,18 +663,18 @@ describe('Test blueprint api context', () => {
 			const context = await getContext(rundown, previousPartInstance, currentPartInstance, undefined)
 
 			// lookahead0 is for us
-			const piece0 = createPieceInstance(currentPartInstance._id)
+			const piece0 = createPieceInstance(context, currentPartInstance._id)
 			expect(context.getPieceABSessionId(piece0, 'name0')).toEqual('lookahead0')
 			expect(context.knownSessions).toHaveLength(1)
 
 			// lookahead1 is for us
-			const piece1 = createPieceInstance(currentPartInstance._id)
+			const piece1 = createPieceInstance(context, currentPartInstance._id)
 			expect(context.getPieceABSessionId(piece1, 'name1')).toEqual('lookahead1')
 			expect(context.knownSessions).toHaveLength(2)
 
 			// lookahead2 is not for us, so we shouldnt get it
 			const sessionId = getSessionId(0)
-			const piece2 = createPieceInstance(currentPartInstance._id)
+			const piece2 = createPieceInstance(context, currentPartInstance._id)
 			expect(context.getPieceABSessionId(piece2, 'name2')).toEqual(sessionId)
 			expect(context.knownSessions).toHaveLength(3)
 		})
@@ -693,7 +692,7 @@ describe('Test blueprint api context', () => {
 			// Start a new infinite session
 			const sessionId0 = getSessionId(0)
 			const infinite0 = protectString('infinite0')
-			const piece0 = createPieceInstance(currentPartInstance._id, infinite0)
+			const piece0 = createPieceInstance(context, currentPartInstance._id, infinite0)
 			expect(context.getPieceABSessionId(piece0, 'name0')).toEqual(sessionId0)
 			expect(context.knownSessions).toHaveLength(1)
 
@@ -703,12 +702,12 @@ describe('Test blueprint api context', () => {
 
 			// Normal piece in the same part gets different id
 			const sessionId1 = getSessionId(1)
-			const piece1 = createPieceInstance(currentPartInstance._id)
+			const piece1 = createPieceInstance(context, currentPartInstance._id)
 			expect(context.getPieceABSessionId(piece1, 'name0')).toEqual(sessionId1)
 			expect(context.knownSessions).toHaveLength(2)
 
 			// Span session to a part with a lower rank
-			const piece2 = createPieceInstance(nextPartInstance._id, infinite0)
+			const piece2 = createPieceInstance(context, nextPartInstance._id, infinite0)
 			expect(context.getPieceABSessionId(piece2, 'name0')).toEqual(sessionId0)
 			expect(context.knownSessions).toHaveLength(2)
 		})

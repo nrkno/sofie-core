@@ -35,6 +35,7 @@ import {
 	IBlueprintPartDB,
 	ExpectedPlayoutItemGeneric,
 	WithTimelineObjects,
+	WithPieceTimelineObjects,
 } from './rundown'
 import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle'
 import { OnGenerateTimelineObj } from './timeline'
@@ -249,20 +250,18 @@ export interface BlueprintResultPart {
 	actions?: IBlueprintActionManifest[]
 }
 
-// TODO - should any other places in here have the deserialized timelineObjects?
-
 export interface BlueprintSyncIngestNewData {
 	// source: BlueprintSyncIngestDataSource
 	/** The new part */
 	part: IBlueprintPartDB
 	/** A list of pieces (including infinites) that would be present in a fresh copy of this partInstance */
-	pieceInstances: IBlueprintPieceInstance[]
+	pieceInstances: Array<WithPieceTimelineObjects<IBlueprintPieceInstance>>
 	/** The adlib pieces belonging to this part */
-	adLibPieces: IBlueprintAdLibPieceDB[]
+	adLibPieces: Array<WithTimelineObjects<IBlueprintAdLibPieceDB>>
 	/** The adlib actions belonging to this part */
 	actions: IBlueprintActionManifest[]
 	/** A list of adlibs that have pieceInstances in the partInstance in question */
-	referencedAdlibs: IBlueprintAdLibPieceDB[]
+	referencedAdlibs: Array<WithTimelineObjects<IBlueprintAdLibPieceDB>>
 }
 
 // TODO: add something like this later?
@@ -277,7 +276,7 @@ export interface BlueprintSyncIngestNewData {
 
 export interface BlueprintSyncIngestPartInstance {
 	partInstance: IBlueprintPartInstance
-	pieceInstances: IBlueprintPieceInstance[]
+	pieceInstances: Array<WithPieceTimelineObjects<IBlueprintPieceInstance>>
 	// Upcoming interface:
 	// adLibPieceInstances: IBlueprintAdlibPieceInstance[]
 	// adLibActionInstances: IBlueprintAdlibActionInstance[]
@@ -285,7 +284,7 @@ export interface BlueprintSyncIngestPartInstance {
 
 export interface BlueprintRemoveOrphanedPartInstance {
 	partInstance: IBlueprintPartInstance
-	pieceInstances: IBlueprintPieceInstance[]
+	pieceInstances: Array<WithPieceTimelineObjects<IBlueprintPieceInstance>>
 }
 
 /** Key is the ID of the external ID of the Rundown, Value is the rank to be assigned */
