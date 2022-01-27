@@ -17,6 +17,16 @@ body {
 	touch-action: pan-x pan-y;
 }
 
+:fullscreen ::-webkit-scrollbar {
+	background: #252627;
+}
+
+:fullscreen ::-webkit-scrollbar-thumb {
+	background: #555;
+	border: 3px solid #252627;
+	border-radius: 10px;
+}
+
 .scroll-sink {
 	overscroll-behavior: none;
 }

@@ -152,6 +152,10 @@ export interface ExternalApplicationResource {
  */
 export interface ShortcutItem {
 	/**
+	 * A string that represents the id of the shortcut item
+	 */
+	id?: string
+	/**
 	 * The name member of a shortcut item is a string that represents the name of the shortcut as it is usually displayed to the user in a context menu.
 	 */
 	name: string

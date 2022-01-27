@@ -4,6 +4,7 @@ import { translateWithTracker, Translated } from './ReactMeteorData/ReactMeteorD
 import { CoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
 
 import { ReactiveVar } from 'meteor/reactive-var'
+import { isRunningInPWA } from './lib'
 
 /**
  * A reactive variable that allows setting the title of the current view.
@@ -23,13 +24,6 @@ interface IProps {}
 interface ITrackedProps {
 	cs: ICoreSystem | undefined
 	doc: string | null
-}
-
-function isRunningInPWA() {
-	if (window.matchMedia('(display-mode: browser)').matches) {
-		return false
-	}
-	return true
 }
 
 /**
