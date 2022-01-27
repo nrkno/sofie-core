@@ -1,5 +1,4 @@
 import { Time } from './common'
-import { TimelineObjectCoreExt } from './timeline'
 
 /** The type of the source layer, used to enable specific functions for special-type layers */
 export enum SourceLayerType {
