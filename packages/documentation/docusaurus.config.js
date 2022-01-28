@@ -20,8 +20,7 @@ module.exports = {
 				src: 'img/sofie-logo.svg',
 			},
 			items: [
-				{ to: '/docs/getting-started/intro', label: 'Getting Started', position: 'left' },
-				{ to: '/docs/main/intro', label: 'Docs', position: 'left' },
+				{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
 				{ href: 'https://nrkno.github.io/sofie-core/typedoc', label: 'API Docs' }, // external link to typedoc
 				{ to: '/releases', label: 'Releases', position: 'left' },
