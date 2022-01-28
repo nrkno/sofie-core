@@ -2,7 +2,7 @@ name: Merge master to staging
 
 on:
   schedule:
-    - cron: '23 45 * * *' # every night
+    - cron: '30 23 * * *' # every night
   workflow_dispatch: # on button click
 
 jobs:
