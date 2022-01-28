@@ -1,5 +1,5 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { PackageInfo } from '@sofie-automation/blueprints-integration'
+import { PackageInfo, WithTimeline } from '@sofie-automation/blueprints-integration'
 import {
 	buildFormatString,
 	acceptFormat,
@@ -98,11 +98,11 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: 'test',
 					path: '',
+					timelineObjects: [],
 				}),
-				timelineObjects: [],
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -120,11 +120,11 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: literal<VTContent>({
+				content: literal<WithTimeline<VTContent>>({
 					fileName: 'TEST',
 					path: '',
+					timelineObjects: [],
 				}),
-				timelineObjects: [],
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
@@ -142,8 +142,9 @@ describe('lib/mediaObjects', () => {
 				name: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				content: {},
-				timelineObjects: [],
+				content: {
+					timelineObjects: [],
+				},
 				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({

@@ -9,13 +9,15 @@ import {
 	IBlueprintResolvedPieceInstance,
 	IEventContext,
 	OmitId,
+	SomeContent,
 	Time,
+	WithTimeline,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { assertNever, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
 import { ReadonlyDeep, SetRequired } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
@@ -338,16 +340,16 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			$unset: {},
 		}
 
-		if (trimmedPiece.timelineObjects) {
+		if (trimmedPiece.content?.timelineObjects) {
 			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
-					trimmedPiece.timelineObjects
+					trimmedPiece.content.timelineObjects
 				)
 			)
 			// This has been processed
-			delete trimmedPiece.timelineObjects
+			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
 		for (const [k, val] of Object.entries(trimmedPiece)) {

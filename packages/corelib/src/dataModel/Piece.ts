@@ -3,6 +3,7 @@ import {
 	IBlueprintPieceDB,
 	IBlueprintPieceType,
 	TimelineObjectCoreExt,
+	SomeContent,
 } from '@sofie-automation/blueprints-integration'
 import { ProtectedString, protectString, unprotectString } from '../protectedString'
 import { PieceId, RundownId, SegmentId, PartId } from './Ids'
@@ -31,8 +32,10 @@ export enum PieceStatusCode {
 }
 
 /** A Single item in a Part: script, VT, cameras */
-export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'timelineObjects'> {
+export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'content'> {
 	_id: PieceId // TODO - this should be moved to the implementation types
+
+	content: SomeContent
 
 	/** Playback availability status */
 	status: PieceStatusCode
@@ -45,7 +48,7 @@ export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'timelineObje
 	timelineObjectsString: PieceTimelineObjectsBlob
 }
 
-export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId' | 'timelineObjects'> {
+export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId' | 'content'> {
 	/**
 	 * This is the id of the rundown this piece starts playing in.
 	 * Currently this is the only rundown the piece could be playing in

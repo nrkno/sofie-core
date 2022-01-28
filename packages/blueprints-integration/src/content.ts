@@ -1,4 +1,5 @@
 import { Time } from './common'
+import { TimelineObjectCoreExt } from './timeline'
 
 /** The type of the source layer, used to enable specific functions for special-type layers */
 export enum SourceLayerType {
@@ -28,6 +29,10 @@ export enum SourceLayerType {
 	// LIGHTS = 14,
 	/** Uncontrolled local sources, such as PowerPoint presentation inputs, Weather systems, EVS replay machines, etc. */
 	LOCAL = 15,
+}
+
+export type WithTimeline<T extends BaseContent> = T & {
+	timelineObjects: TimelineObjectCoreExt[]
 }
 
 export interface BaseContent {

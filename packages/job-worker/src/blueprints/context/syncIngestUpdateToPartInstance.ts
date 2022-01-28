@@ -2,7 +2,7 @@ import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { clone, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { clone, normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
 import {
 	protectString,
 	unprotectObject,
@@ -22,6 +22,8 @@ import {
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
+	SomeContent,
+	WithTimeline,
 } from '@sofie-automation/blueprints-integration'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import {
@@ -173,16 +175,16 @@ export class SyncIngestUpdateToPartInstanceContext
 			$unset: {},
 		}
 
-		if (updatedPiece.timelineObjects) {
+		if (updatedPiece.content?.timelineObjects) {
 			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
-					updatedPiece.timelineObjects
+					updatedPiece.content.timelineObjects
 				)
 			)
 			// This has been processed
-			delete updatedPiece.timelineObjects
+			updatedPiece.content = omit(updatedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
 		for (const [k, val] of Object.entries(trimmedPiece)) {

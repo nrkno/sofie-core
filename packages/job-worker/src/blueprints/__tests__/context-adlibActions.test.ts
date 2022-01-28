@@ -14,7 +14,7 @@ import { setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../playout/lock'
 import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomId, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import {
 	PartInstanceId,
 	PieceInstanceId,
@@ -1078,15 +1078,17 @@ describe('Test blueprint api context', () => {
 						sourceLayerId: 'new',
 						enable: { start: 99, end: 123 },
 						badProperty: 9, // This will be dropped
-						timelineObjects: [
-							literal<TimelineObjRundown>({
-								id: 'a',
-								enable: { start: 0 },
-								content: {} as any,
-								layer: 1,
-								objectType: TimelineObjType.RUNDOWN,
-							}),
-						],
+						content: {
+							timelineObjects: [
+								literal<TimelineObjRundown>({
+									id: 'a',
+									enable: { start: 0 },
+									content: {} as any,
+									layer: 1,
+									objectType: TimelineObjType.RUNDOWN,
+								}),
+							],
+						},
 					}
 					const resultPiece = await context.updatePieceInstance(
 						unprotectString(pieceInstance0._id),
@@ -1100,9 +1102,12 @@ describe('Test blueprint api context', () => {
 						...pieceInstance0Before,
 						piece: {
 							...pieceInstance0Before.piece,
-							..._.omit(pieceInstance0Delta, 'badProperty', '_id', 'timelineObjects'),
+							...omit(pieceInstance0Delta, 'badProperty', '_id'),
+							content: {
+								...omit(pieceInstance0Delta.content, 'timelineObjects'),
+							},
 							timelineObjectsString: serializePieceTimelineObjectsBlob(
-								pieceInstance0Delta.timelineObjects
+								pieceInstance0Delta.content.timelineObjects
 							),
 						},
 					}
@@ -1222,8 +1227,9 @@ describe('Test blueprint api context', () => {
 						externalId: '-',
 						enable: { start: 0 },
 						lifespan: PieceLifespan.OutOnRundownEnd,
-						content: {},
-						timelineObjects: [],
+						content: {
+							timelineObjects: [],
+						},
 					}
 					const newPart: IBlueprintPart = {
 						externalId: 'nope',

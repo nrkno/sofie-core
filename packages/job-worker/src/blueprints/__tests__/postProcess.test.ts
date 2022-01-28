@@ -14,7 +14,7 @@ import {
 	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { clone, literal } from '@sofie-automation/corelib/dist/lib'
+import { clone, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
@@ -307,8 +307,9 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid1',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {},
-					timelineObjects: [],
+					content: {
+						timelineObjects: [],
+					},
 					lifespan: PieceLifespan.WithinPart,
 				},
 				{
@@ -317,8 +318,9 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid2',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {},
-					timelineObjects: [],
+					content: {
+						timelineObjects: [],
+					},
 					lifespan: PieceLifespan.WithinPart,
 				},
 				{
@@ -327,8 +329,9 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid2',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {},
-					timelineObjects: [],
+					content: {
+						timelineObjects: [],
+					},
 					lifespan: PieceLifespan.WithinPart,
 				},
 			])
@@ -340,7 +343,14 @@ describe('Test blueprint post-process', () => {
 
 			const res = postProcessAdLibPieces(jobContext, blueprintId, rundownId, undefined, pieces)
 			// expect(res).toHaveLength(3)
-			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
+			expect(res).toMatchObject(
+				pieces.map((p) => ({
+					...p,
+					content: {
+						...omit(p.content, 'timelineObjects'),
+					},
+				}))
+			)
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<AdLibPiece>({
@@ -381,23 +391,29 @@ describe('Test blueprint post-process', () => {
 				externalId: 'eid2',
 				sourceLayerId: 'sl0',
 				outputLayerId: 'ol0',
-				content: {},
-				timelineObjects: [
-					literal<TimelineObjectCoreExt>({
-						id: '',
-						enable: {},
-						layer: 'four',
-						content: {
-							deviceType: TSR.DeviceType.HYPERDECK,
-						},
-					}),
-				],
+				content: {
+					timelineObjects: [
+						literal<TimelineObjectCoreExt>({
+							id: '',
+							enable: {},
+							layer: 'four',
+							content: {
+								deviceType: TSR.DeviceType.HYPERDECK,
+							},
+						}),
+					],
+				},
 				lifespan: PieceLifespan.WithinPart,
 			})
 
 			const res = postProcessAdLibPieces(jobContext, blueprintId, rundownId, undefined, [piece])
 			expect(res).toHaveLength(1)
-			expect(res).toMatchObject([piece])
+			expect(res).toMatchObject([
+				{
+					...piece,
+					content: omit(piece.content, 'timelineObjects'),
+				},
+			])
 
 			const resObjects = deserializePieceTimelineObjectsBlob(res[0].timelineObjectsString)
 			expect(resObjects[0].id).not.toEqual('')
@@ -431,8 +447,9 @@ describe('Test blueprint post-process', () => {
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {},
-					timelineObjects: [],
+					content: {
+						timelineObjects: [],
+					},
 					lifespan: PieceLifespan.OutOnSegmentEnd,
 				},
 				{
@@ -441,8 +458,9 @@ describe('Test blueprint post-process', () => {
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {},
-					timelineObjects: [],
+					content: {
+						timelineObjects: [],
+					},
 					lifespan: PieceLifespan.WithinPart,
 				},
 			])
@@ -461,7 +479,14 @@ describe('Test blueprint post-process', () => {
 				protectString('part8'),
 				false
 			)
-			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
+			expect(res).toMatchObject(
+				pieces.map((p) => ({
+					...p,
+					content: {
+						...omit(p.content, 'timelineObjects'),
+					},
+				}))
+			)
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<Piece>({
@@ -502,17 +527,18 @@ describe('Test blueprint post-process', () => {
 				enable: { start: 0 },
 				sourceLayerId: 'sl0',
 				outputLayerId: 'ol0',
-				content: {},
-				timelineObjects: [
-					literal<TimelineObjectCoreExt>({
-						id: '',
-						enable: {},
-						layer: 'four',
-						content: {
-							deviceType: TSR.DeviceType.HYPERDECK,
-						},
-					}),
-				],
+				content: {
+					timelineObjects: [
+						literal<TimelineObjectCoreExt>({
+							id: '',
+							enable: {},
+							layer: 'four',
+							content: {
+								deviceType: TSR.DeviceType.HYPERDECK,
+							},
+						}),
+					],
+				},
 				lifespan: PieceLifespan.OutOnRundownEnd,
 			})
 
@@ -526,7 +552,12 @@ describe('Test blueprint post-process', () => {
 				false
 			)
 			expect(res).toHaveLength(1)
-			expect(res).toMatchObject([_.omit(piece, '_id')])
+			expect(res).toMatchObject([
+				{
+					...piece,
+					content: omit(piece.content, 'timelineObjects'),
+				},
+			])
 
 			const resObjs = deserializePieceTimelineObjectsBlob(res[0].timelineObjectsString)
 			expect(resObjs[0].id).not.toEqual('')

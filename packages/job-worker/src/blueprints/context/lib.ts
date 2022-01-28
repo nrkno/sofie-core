@@ -63,7 +63,6 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 	hasSideEffects: true,
 	allowDirectPlay: true,
 	notInVision: true,
-	timelineObjects: true,
 })
 
 // Compile a list of the keys which are allowed to be set
@@ -95,7 +94,10 @@ export function convertPieceInstanceToBlueprints(pieceInstance: PieceInstance): 
 		...unprotectObject(cloned),
 		piece: {
 			...unprotectObject(cloned.piece),
-			timelineObjects: deserializePieceTimelineObjectsBlob(pieceInstance.piece.timelineObjectsString),
+			content: {
+				...cloned.piece.content,
+				timelineObjects: deserializePieceTimelineObjectsBlob(pieceInstance.piece.timelineObjectsString),
+			},
 		},
 	}
 
@@ -117,7 +119,10 @@ export function convertResolvedPieceInstanceToBlueprints(
 		...unprotectObject(cloned),
 		piece: {
 			...unprotectObject(cloned.piece),
-			timelineObjects: deserializePieceTimelineObjectsBlob(pieceInstance.piece.timelineObjectsString),
+			content: {
+				...cloned.piece.content,
+				timelineObjects: deserializePieceTimelineObjectsBlob(pieceInstance.piece.timelineObjectsString),
+			},
 		},
 	}
 
@@ -141,7 +146,10 @@ export function convertPieceToBlueprints(piece: Piece): IBlueprintPieceDB {
 
 	const obj: IBlueprintPieceDB = {
 		...unprotectObject(cloned),
-		timelineObjects: deserializePieceTimelineObjectsBlob(piece.timelineObjectsString),
+		content: {
+			...cloned.content,
+			timelineObjects: deserializePieceTimelineObjectsBlob(piece.timelineObjectsString),
+		},
 	}
 
 	{
@@ -160,7 +168,10 @@ export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLi
 
 	const obj: IBlueprintAdLibPieceDB = {
 		...unprotectObject(cloned),
-		timelineObjects: deserializePieceTimelineObjectsBlob(adLib.timelineObjectsString),
+		content: {
+			...cloned.content,
+			timelineObjects: deserializePieceTimelineObjectsBlob(adLib.timelineObjectsString),
+		},
 	}
 
 	{

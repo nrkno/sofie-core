@@ -1,12 +1,11 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
 import { ExpectedPackage } from './package'
-import { SomeContent } from './content'
+import { SomeContent, WithTimeline } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
 import { ActionUserData } from './action'
 import { NoteSeverity } from './lib'
-import { TimelineObjectCoreExt } from './timeline'
 
 export interface IBlueprintRundownPlaylistInfo {
 	/** Rundown playlist slug - user-presentable name */
@@ -364,9 +363,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content: SomeContent
-
-	timelineObjects: TimelineObjectCoreExt[]
+	content: WithTimeline<SomeContent>
 
 	/** The transition used by this piece to transition to and from the piece */
 	/** @deprecated */

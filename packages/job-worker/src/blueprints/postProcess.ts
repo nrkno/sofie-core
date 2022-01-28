@@ -69,6 +69,8 @@ export function postProcessPieces(
 			pieceType: IBlueprintPieceType.Normal,
 
 			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
+			content: omit(orgPiece.content, 'timelineObjects'),
+
 			_id: protectString(getHash(`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
 			continuesRefId: protectString(orgPiece.continuesRefId),
 			startRundownId: rundownId,
@@ -100,7 +102,7 @@ export function postProcessPieces(
 		const timelineObjects = postProcessTimelineObjects(
 			piece._id,
 			blueprintId,
-			orgPiece.timelineObjects,
+			orgPiece.content.timelineObjects,
 			timelineUniqueIds
 		)
 		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
@@ -168,6 +170,7 @@ export function postProcessAdLibPieces(
 
 		const piece: AdLibPiece = {
 			...orgAdlib,
+			content: omit(orgAdlib.content, 'timelineObjects'),
 			_id: protectString(
 				getHash(`${rundownId}_${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
 			),
@@ -185,7 +188,7 @@ export function postProcessAdLibPieces(
 		const timelineObjects = postProcessTimelineObjects(
 			piece._id,
 			blueprintId,
-			orgAdlib.timelineObjects,
+			orgAdlib.content.timelineObjects,
 			timelineUniqueIds
 		)
 		piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
@@ -266,6 +269,7 @@ export function postProcessBucketAdLib(
 ): BucketAdLib {
 	const piece: BucketAdLib = {
 		...itemOrig,
+		content: omit(itemOrig.content, 'timelineObjects'),
 		_id: protectString(
 			getHash(
 				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
@@ -282,7 +286,7 @@ export function postProcessBucketAdLib(
 	// Fill in ids of unnamed expectedPackages
 	setDefaultIdOnExpectedPackages(piece.expectedPackages)
 
-	const timelineObjects = postProcessTimelineObjects(piece._id, blueprintId, itemOrig.timelineObjects)
+	const timelineObjects = postProcessTimelineObjects(piece._id, blueprintId, itemOrig.content.timelineObjects)
 	piece.timelineObjectsString = serializePieceTimelineObjectsBlob(timelineObjects)
 
 	return piece
