@@ -1,7 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Dictionary
+# Dictionary for Developers
 
 :::info
 Reading tip: [Concepts & Architecture](features-and-configuration/concepts-and-architecture.md)
