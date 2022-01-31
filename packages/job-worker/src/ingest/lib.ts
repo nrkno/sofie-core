@@ -1,8 +1,8 @@
 import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { clone, getHash } from '@sofie-automation/corelib/dist/lib'
-import { isProtectedString, protectString, unprotectObject } from '@sofie-automation/corelib/dist/protectedString'
+import { getHash } from '@sofie-automation/corelib/dist/lib'
+import { isProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForIngest } from './cache'
@@ -10,6 +10,7 @@ import { logger } from '../logging'
 import { ExtendedIngestRundown, IngestRundown } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { convertRundownToBlueprints } from '../blueprints/context/lib'
 
 export function getRundownId(studio: ReadonlyDeep<DBStudio> | StudioId, rundownExternalId: string): RundownId {
 	if (!studio) throw new Error('getRundownId: studio not set!')
@@ -67,7 +68,7 @@ export function extendIngestRundownCore(
 ): ExtendedIngestRundown {
 	const extendedIngestRundown: ExtendedIngestRundown = {
 		...ingestRundown,
-		coreData: unprotectObject(clone(existingDbRundown)),
+		coreData: existingDbRundown && convertRundownToBlueprints(existingDbRundown),
 	}
 	return extendedIngestRundown
 }

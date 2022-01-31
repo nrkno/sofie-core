@@ -30,7 +30,6 @@ import {
 	protectStringArray,
 	unDeepString,
 	unpartialString,
-	unprotectObject,
 	unprotectObjectArray,
 	unprotectString,
 } from '@sofie-automation/corelib/dist/protectedString'
@@ -63,7 +62,7 @@ import { WatchedPackagesHelper } from './watchedPackages'
 import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { JobContext } from '../../jobs'
 import { MongoQuery } from '../../db'
-import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from './lib'
+import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints, convertSegmentToBlueprints } from './lib'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -818,12 +817,12 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 	async getSegment(segmentId: string): Promise<Readonly<IBlueprintSegmentDB<unknown>> | undefined> {
 		if (!segmentId) return undefined
 
-		return unprotectObject(
-			await this.context.directCollections.Segments.findOne({
-				_id: protectString(segmentId),
-				rundownId: this._rundown._id,
-			})
-		)
+		const segment = await this.context.directCollections.Segments.findOne({
+			_id: protectString(segmentId),
+			rundownId: this._rundown._id,
+		})
+
+		return segment && convertSegmentToBlueprints(segment)
 	}
 }
 

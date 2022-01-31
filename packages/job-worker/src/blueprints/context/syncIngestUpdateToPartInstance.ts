@@ -2,13 +2,8 @@ import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { clone, normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
-import {
-	protectString,
-	unprotectObject,
-	protectStringArray,
-	unprotectStringArray,
-} from '@sofie-automation/corelib/dist/protectedString'
+import { normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
+import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { CacheForPlayout } from '../../playout/cache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
@@ -30,6 +25,7 @@ import {
 	IBlueprintPieceObjectsSampleKeys,
 	IBlueprintMutatablePartSampleKeys,
 	convertPieceInstanceToBlueprints,
+	convertPartInstanceToBlueprints,
 } from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -231,7 +227,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PartInstance could not be found, after applying changes`)
 		}
 
-		return clone(unprotectObject(updatedPartInstance))
+		return convertPartInstanceToBlueprints(updatedPartInstance)
 	}
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
 		const pieceInstances = this._pieceInstanceCache.findFetch({
