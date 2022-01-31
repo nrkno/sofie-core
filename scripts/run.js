@@ -73,7 +73,7 @@ function watchMeteor() {
 		{
 			prefix: "name",
 			killOthers: ["failure", "success"],
-			restartTries: 1,
+			restartTries: 0,
 		}
 	);
 })();
