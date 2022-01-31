@@ -1,20 +1,23 @@
-name: Merge master to staging
+name: automerge
 
 on:
   schedule:
-    - cron: '30 23 * * *' # every night
+    - cron: '45 23 * * *' # every night
   workflow_dispatch: # on button click
 
 jobs:
-  sync:
-
+  merge-staging-to-dev:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: tgymnich/fork-sync@v1.6
-        with:
-          owner: tv2
-          head: master
-          base: staging
-          pr_title: Automerge master
-          auto_merge: false
+      - uses: actions/checkout@v2
+      - name: Set Git config
+        run: |
+          git config --local user.email "${GITHUB_ACTOR}"
+          git config --local user.name "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Merge master to staging
+        run: |
+          git fetch --unshallow
+          git checkout staging
+          git pull
+          git merge --no-ff origin/master -m "Auto-merge master to staging"
+          git push
