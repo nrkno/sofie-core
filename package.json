@@ -27,7 +27,8 @@
 		"reset": "meteor node scripts/reset.js",
 		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn lint:packages && yarn lint:meteor && yarn test:packages && yarn test:meteor"
 	},
-	"devDependencies": {
+	"dependencies": {
+		"snyk-nodejs-lockfile-parser": "^1.38.0",
 		"rimraf": "^3.0.2",
 		"semver": "^7.3.5"
 	}
