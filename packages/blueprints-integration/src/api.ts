@@ -146,7 +146,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 		context: ISyncIngestUpdateToPartInstanceContext,
 		existingPartInstance: BlueprintSyncIngestPartInstance,
 		newData: BlueprintSyncIngestNewData,
-		playoutStatus: 'current' | 'next'
+		playoutStatus: 'previous' | 'current' | 'next'
 	) => void
 
 	/**

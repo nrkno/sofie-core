@@ -53,7 +53,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		private partInstance: PartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
-		private playStatus: 'current' | 'next'
+		private playStatus: 'previous' | 'current' | 'next'
 	) {
 		super(contextInfo, studio, showStyleCompound, rundown)
 

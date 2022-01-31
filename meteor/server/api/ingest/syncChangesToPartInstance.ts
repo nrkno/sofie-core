@@ -24,9 +24,19 @@ import {
 import { isTooCloseToAutonext, updateExpectedDurationWithPrerollForPartInstance } from '../playout/lib'
 import { CacheForIngest } from './cache'
 
+type PlayStatus = 'previous' | 'current' | 'next'
+type ReadOnlyIngestCacheWithoutRundown = Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'>
+type SyncedInstance = {
+	existingPartInstance: PartInstance
+	previousPartInstance: PartInstance | undefined
+	playStatus: PlayStatus
+	newPart: Part
+	piecesThatMayBeActive: Promise<Piece[]>
+}
+
 export async function syncChangesToPartInstances(
 	cache: CacheForPlayout,
-	ingestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'>,
+	ingestCache: ReadOnlyIngestCacheWithoutRundown,
 	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>,
 	rundown: ReadonlyDeep<Rundown>
@@ -34,38 +44,46 @@ export async function syncChangesToPartInstances(
 	if (cache.Playlist.doc.activationId) {
 		if (blueprint.syncIngestUpdateToPartInstance) {
 			const playlistPartInstances = getSelectedPartInstancesFromCache(cache)
-			const instances: Array<{
-				existingPartInstance: PartInstance
-				previousPartInstance: PartInstance | undefined
-				playStatus: 'current' | 'next'
-				newPart: Part
-				piecesThatMayBeActive: Promise<Piece[]>
-			}> = []
+			const instances: SyncedInstance[] = []
 			if (playlistPartInstances.currentPartInstance) {
-				const newPart = cache.Parts.findOne(playlistPartInstances.currentPartInstance.part._id)
-				if (newPart) {
-					instances.push({
-						existingPartInstance: playlistPartInstances.currentPartInstance,
-						previousPartInstance: playlistPartInstances.previousPartInstance,
-						playStatus: 'current',
-						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, newPart),
-					})
+				findPartAndInsertToSyncedInstanceCandidates(
+					instances,
+					cache,
+					ingestCache,
+					playlistPartInstances.currentPartInstance,
+					playlistPartInstances.previousPartInstance,
+					'current'
+				)
+				// If the currentPartInstance is adlibbed we probably also need to find the earliest
+				// non-adlibbed Part within this segment and check it for updates too. It may have something
+				// changed (like timing) that will affect what's going on.
+				if (playlistPartInstances.currentPartInstance.orphaned === 'adlib-part') {
+					const partAndPartInstance = findLastUnorphanedPartInstanceInSegment(
+						cache,
+						playlistPartInstances.currentPartInstance
+					)
+					if (partAndPartInstance) {
+						insertToSyncedInstanceCandidates(
+							instances,
+							cache,
+							ingestCache,
+							partAndPartInstance.partInstance,
+							undefined,
+							partAndPartInstance.part,
+							'previous'
+						)
+					}
 				}
 			}
 			if (playlistPartInstances.nextPartInstance) {
-				const newPart = cache.Parts.findOne(playlistPartInstances.nextPartInstance.part._id)
-				if (newPart) {
-					instances.push({
-						existingPartInstance: playlistPartInstances.nextPartInstance,
-						previousPartInstance: playlistPartInstances.currentPartInstance,
-						playStatus: isTooCloseToAutonext(playlistPartInstances.currentPartInstance, false)
-							? 'current'
-							: 'next',
-						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, newPart),
-					})
-				}
+				findPartAndInsertToSyncedInstanceCandidates(
+					instances,
+					cache,
+					ingestCache,
+					playlistPartInstances.nextPartInstance,
+					playlistPartInstances.currentPartInstance,
+					isTooCloseToAutonext(playlistPartInstances.currentPartInstance, false) ? 'current' : 'next'
+				)
 			}
 
 			for (const {
@@ -178,4 +196,103 @@ export async function syncChangesToPartInstances(
 			// blueprint.syncIngestUpdateToPartInstance is not set, default behaviour is to not sync the partInstance at all.
 		}
 	}
+}
+
+/**
+ * Inserts given PartInstances and underlying Part to the list of PartInstances to be synced
+ */
+function insertToSyncedInstanceCandidates(
+	instances: SyncedInstance[],
+	cache: CacheForPlayout,
+	ingestCache: ReadOnlyIngestCacheWithoutRundown,
+	thisPartInstance: PartInstance,
+	previousPartInstance: PartInstance | undefined,
+	part: Part,
+	playStatus: PlayStatus
+): void {
+	instances.push({
+		existingPartInstance: thisPartInstance,
+		previousPartInstance: previousPartInstance,
+		playStatus,
+		newPart: part,
+		piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, part),
+	})
+}
+
+/**
+ * Finds the underlying Part for a given `thisPartInstance` and inserts it to the list of PartInstances to be synced.
+ * Doesn't do anything if it can't find the underlying Part in `cache`.
+ */
+function findPartAndInsertToSyncedInstanceCandidates(
+	instances: SyncedInstance[],
+	cache: CacheForPlayout,
+	ingestCache: ReadOnlyIngestCacheWithoutRundown,
+	thisPartInstance: PartInstance,
+	previousPartInstance: PartInstance | undefined,
+	playStatus: PlayStatus
+): void {
+	const newPart = cache.Parts.findOne(thisPartInstance.part._id)
+	if (!newPart) return
+
+	insertToSyncedInstanceCandidates(
+		instances,
+		cache,
+		ingestCache,
+		thisPartInstance,
+		previousPartInstance,
+		newPart,
+		playStatus
+	)
+}
+
+/**
+ * Finds the most recent Part before a given `currentPartInstance` within the current Segment. Then finds the
+ * PartInstance that matches that Part. Returns them if found or returns `null` if it can't find anything.
+ */
+function findLastUnorphanedPartInstanceInSegment(
+	cache: CacheForPlayout,
+	currentPartInstance: PartInstance
+): {
+	partInstance: PartInstance
+	part: Part
+} | null {
+	const previousParts = cache.Parts.findFetch(
+		{
+			segmentId: currentPartInstance.segmentId,
+			_rank: {
+				$lte: currentPartInstance.part._rank,
+			},
+		},
+		{
+			sort: {
+				_rank: -1,
+			},
+		}
+	)
+	// No previous Part found, abort now
+	if (previousParts.length === 0) return null
+
+	// Go through the Previous Parts and find one that has been played. Ideally, this will return on the first iteration.
+	for (const previousPart of previousParts) {
+		// If we've found an old Part that matches what we need, let's look for it's corresponding
+		// non-reset, same-playthrough PartInstance as the currentPartInstance
+		const oldPartInstance = cache.PartInstances.findOne(
+			(p) =>
+				p.part._id === previousPart._id &&
+				!p.orphaned &&
+				!p.reset &&
+				p.playlistActivationId === cache.Playlist.doc.activationId &&
+				p.segmentPlayoutId === currentPartInstance.segmentPlayoutId
+		)
+
+		// No matching PartInstance found, continue to the next Part
+		if (!oldPartInstance) continue
+
+		return {
+			partInstance: oldPartInstance,
+			part: previousPart,
+		}
+	}
+
+	return null
 }
