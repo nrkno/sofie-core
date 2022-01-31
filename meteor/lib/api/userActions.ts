@@ -21,7 +21,11 @@ import { PeripheralDeviceId } from '../collections/PeripheralDevices'
 import { RundownBaselineAdLibActionId } from '../collections/RundownBaselineAdLibActions'
 
 export interface NewUserActionAPI extends MethodContext {
-	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	take(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		fromPartInstanceId: PartInstanceId | null
+	): Promise<ClientAPI.ClientResponse<void>>
 	setNext(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
@@ -96,20 +100,20 @@ export interface NewUserActionAPI extends MethodContext {
 		partInstanceId: PartInstanceId,
 		adLibPieceId: PieceId,
 		queue: boolean
-	)
+	): Promise<ClientAPI.ClientResponse<void>>
 	sourceLayerOnPartStop(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
-	)
+	): Promise<ClientAPI.ClientResponse<void>>
 	baselineAdLibPieceStart(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
 		queue: boolean
-	)
+	): Promise<ClientAPI.ClientResponse<void>>
 	sourceLayerStickyPieceStart(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
@@ -121,14 +125,14 @@ export interface NewUserActionAPI extends MethodContext {
 		showStyleVariantId: ShowStyleVariantId,
 		bucketId: BucketId,
 		ingestItem: IngestAdlib
-	)
+	): Promise<ClientAPI.ClientResponse<void>>
 	bucketAdlibStart(
 		_userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
 		queue?: boolean
-	)
+	): Promise<ClientAPI.ClientResponse<void>>
 	activateHold(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
@@ -218,6 +222,12 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	): Promise<ClientAPI.ClientResponse<void>>
 	restoreRundownOrder(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	disablePeripheralSubDevice(
+		userEvent: string,
+		peripheralDeviceId: PeripheralDeviceId,
+		subDeviceId: string,
+		disable: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -270,6 +280,9 @@ export enum UserActionAPIMethods {
 	'removeRundown' = 'userAction.removeRundown',
 	'resyncRundown' = 'userAction.resyncRundown',
 
+	'moveRundown' = 'userAction.moveRundown',
+	'restoreRundownOrder' = 'userAction.restoreRundownOrder',
+
 	'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
 	'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',
 	'mediaRestartAllWorkflows' = 'userAction.mediamanager.restartAllWorkflows',
@@ -289,11 +302,9 @@ export enum UserActionAPIMethods {
 	'guiFocused' = 'userAction.focused',
 	'guiBlurred' = 'userAction.blurred',
 
-	'getTranslationBundle' = 'userAction.getTranslationBundle',
-
 	'switchRouteSet' = 'userAction.switchRouteSet',
-	'moveRundown' = 'userAction.moveRundown',
-	'restoreRundownOrder' = 'userAction.restoreRundownOrder',
+
+	'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
 }
 
 export interface ReloadRundownPlaylistResponse {

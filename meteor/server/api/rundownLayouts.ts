@@ -126,6 +126,7 @@ function apiCreateRundownLayout(
 	check(name, String)
 	check(type, String)
 	check(showStyleBaseId, String)
+	check(regionId, String)
 
 	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 

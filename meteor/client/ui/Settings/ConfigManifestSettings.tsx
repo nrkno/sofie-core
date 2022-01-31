@@ -71,8 +71,8 @@ function filterLayerMappings(
 	return result
 }
 
-function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, DocClass extends DBInterface>(
-	collection: TransformedCollection<DocClass, DBInterface>,
+function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
+	collection: TransformedCollection<DBInterface, DBInterface>,
 	object: DBInterface,
 	item: BasicConfigManifestEntry,
 	attribute: string,
@@ -214,9 +214,8 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 }
 
 interface IConfigManifestSettingsProps<
-	TCol extends TransformedCollection<DocClass, DBInterface>,
-	DBInterface extends { _id: ProtectedString<any> },
-	DocClass extends DBInterface
+	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	DBInterface extends { _id: ProtectedString<any> }
 > {
 	manifest: ConfigManifestEntry[]
 
@@ -239,9 +238,8 @@ interface IConfigManifestSettingsState {
 }
 
 interface IConfigManifestTableProps<
-	TCol extends TransformedCollection<DocClass, DBInterface>,
-	DBInterface extends { _id: ProtectedString<any> },
-	DocClass extends DBInterface
+	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	DBInterface extends { _id: ProtectedString<any> }
 > {
 	item: ConfigManifestEntryTable
 	baseAttribute: string
@@ -261,14 +259,10 @@ interface IConfigManifestTableState {
 }
 
 export class ConfigManifestTable<
-	TCol extends TransformedCollection<DocClass, DBInterface>,
-	DBInterface extends DBObj,
-	DocClass extends DBInterface
-> extends React.Component<
-	Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>,
-	IConfigManifestTableState
-> {
-	constructor(props: Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>) {
+	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	DBInterface extends DBObj
+> extends React.Component<Translated<IConfigManifestTableProps<TCol, DBInterface>>, IConfigManifestTableState> {
+	constructor(props: Translated<IConfigManifestTableProps<TCol, DBInterface>>) {
 		super(props)
 
 		this.state = {
@@ -534,14 +528,10 @@ export class ConfigManifestTable<
 }
 
 export class ConfigManifestSettings<
-	TCol extends TransformedCollection<DocClass, DBInterface>,
-	DBInterface extends DBObj,
-	DocClass extends DBInterface
-> extends React.Component<
-	Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>,
-	IConfigManifestSettingsState
-> {
-	constructor(props: Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>) {
+	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	DBInterface extends DBObj
+> extends React.Component<Translated<IConfigManifestSettingsProps<TCol, DBInterface>>, IConfigManifestSettingsState> {
+	constructor(props: Translated<IConfigManifestSettingsProps<TCol, DBInterface>>) {
 		super(props)
 
 		this.state = {

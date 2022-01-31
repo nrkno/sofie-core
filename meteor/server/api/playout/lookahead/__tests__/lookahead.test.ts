@@ -8,7 +8,7 @@ import { DBRundown, RundownId, Rundowns } from '../../../../../lib/collections/R
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
 import { getCurrentTime, getRandomId, protectString } from '../../../../../lib/lib'
 import { SegmentId } from '../../../../../lib/collections/Segments'
-import { DBPart, Part, PartId, Parts } from '../../../../../lib/collections/Parts'
+import { DBPart, PartId, Parts } from '../../../../../lib/collections/Parts'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { MappingsExt, Studios } from '../../../../../lib/collections/Studios'
 import { OnGenerateTimelineObjExt, TimelineObjRundown } from '../../../../../lib/collections/Timeline'
@@ -94,6 +94,7 @@ describe('Lookahead', () => {
 						_rank: index,
 						externalId: 'MOCK_PART_' + index,
 						title: 'Part ' + index,
+						expectedDurationWithPreroll: undefined,
 					}
 				}
 
@@ -161,7 +162,7 @@ describe('Lookahead', () => {
 
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
-		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
+		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts.map((p) => p.part))
 
 		const res = await runPlayoutOperationWithCache(
@@ -191,7 +192,7 @@ describe('Lookahead', () => {
 	testInFiber('got some objects', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
-		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
+		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts.map((p) => p.part))
 
 		findLookaheadForLayerMock
@@ -276,7 +277,7 @@ describe('Lookahead', () => {
 	})
 
 	testInFiber('PartInstances translation', async () => {
-		const fakeParts = partIds.map((p) => ({ part: new Part({ _id: p } as any), pieces: [] }))
+		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValue(fakeParts.map((p) => p.part))
 
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {

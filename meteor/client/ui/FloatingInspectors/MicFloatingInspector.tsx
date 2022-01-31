@@ -40,9 +40,9 @@ export function MicFloatingInspector(props: IProps) {
 						)
 					) : props.content.lastWords ? (
 						<span className="mini-inspector__full-text">{props.content.lastWords}</span>
-					) : (
+					) : !props.content?.comment ? (
 						<span className="mini-inspector__system">{t('Script is empty')}</span>
-					)}
+					) : null}
 					{props.content?.comment ? (
 						<span className="mini-inspector__full-text text-comment text-end">{props.content.comment}</span>
 					) : null}

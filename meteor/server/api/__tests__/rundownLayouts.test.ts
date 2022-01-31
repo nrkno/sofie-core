@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
@@ -11,46 +10,43 @@ import {
 	RundownLayouts,
 	RundownLayout,
 	CustomizableRegions,
+	RundownLayoutId,
 } from '../../../lib/collections/RundownLayouts'
+import { MeteorCall } from '../../../lib/api/methods'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundownLayouts') // include in order to create the Meteor methods needed
-
-enum RundownLayoutsAPIMethods { // Using our own method definition, to catch external API changes
-	'removeRundownLayout' = 'rundownLayout.removeRundownLayout',
-	'createRundownLayout' = 'rundownLayout.createRundownLayout',
-}
 
 describe('Rundown Layouts', () => {
 	let env: DefaultEnvironment
 	beforeAll(async () => {
 		env = await setupDefaultStudioEnvironment()
 	})
-	let rundownLayoutId: string
-	testInFiber('Create rundown layout', () => {
-		const res = Meteor.call(
-			RundownLayoutsAPIMethods.createRundownLayout,
+	let rundownLayoutId: RundownLayoutId
+	testInFiber('Create rundown layout', async () => {
+		const res = await MeteorCall.rundownLayout.createRundownLayout(
 			'Test',
 			RundownLayoutType.RUNDOWN_LAYOUT,
-			env.showStyleBaseId
+			env.showStyleBaseId,
+			'shelf_layouts'
 		)
 		expect(typeof res).toBe('string') // this should contain the ID for the rundown layout
 		rundownLayoutId = res
 
-		const item = RundownLayouts.findOne(protectString(rundownLayoutId))
+		const item = RundownLayouts.findOne(rundownLayoutId)
 		expect(item).toMatchObject({
 			_id: rundownLayoutId,
 		})
 	})
-	testInFiber('Remove rundown layout', () => {
-		const item0 = RundownLayouts.findOne(protectString(rundownLayoutId))
+	testInFiber('Remove rundown layout', async () => {
+		const item0 = RundownLayouts.findOne(rundownLayoutId)
 		expect(item0).toMatchObject({
 			_id: rundownLayoutId,
 		})
 
-		Meteor.call(RundownLayoutsAPIMethods.removeRundownLayout, rundownLayoutId)
+		await MeteorCall.rundownLayout.removeRundownLayout(rundownLayoutId)
 
-		const item1 = RundownLayouts.findOne(protectString(rundownLayoutId))
+		const item1 = RundownLayouts.findOne(rundownLayoutId)
 		expect(item1).toBeUndefined()
 	})
 

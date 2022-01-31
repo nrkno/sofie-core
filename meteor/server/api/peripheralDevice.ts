@@ -2,18 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, getRandomId, applyToArray, stringifyObjects } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, stringifyObjects } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import {
-	deserializeTimelineBlob,
-	serializeTimelineBlob,
-	Timeline,
-	TimelineComplete,
-	TimelineHash,
-} from '../../lib/collections/Timeline'
+import { TimelineHash } from '../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -40,22 +34,13 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getValidActivationCache } from '../cache/ActivationCache'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { PieceGroupMetadata } from '../../lib/rundown/pieces'
+import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
-import { runStudioOperationWithCache, StudioLockFunctionPriority } from './studio/lockFunction'
-import { PlayoutLockFunctionPriority, runPlayoutOperationWithLockFromStudioOperation } from './playout/lockFunction'
-import { DbCacheWriteCollection } from '../cache/CacheCollection'
-import { CacheForStudio } from './studio/cache'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { profiler } from './profiler'
-import { FastTrackObservers, triggerFastTrackObserver } from '../publications/fastTrack'
-
-// import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
+import { ConfigManifestEntryType, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -245,140 +230,12 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			await runStudioOperationWithCache(
-				'timelineTriggerTime',
-				studioId,
-				StudioLockFunctionPriority.CALLBACK_PLAYOUT,
-				async (studioCache) => {
-					const activePlaylists = studioCache.getActiveRundownPlaylists()
-
-					if (activePlaylists.length === 1) {
-						const activePlaylist = activePlaylists[0]
-						const playlistId = activePlaylist._id
-						await runPlayoutOperationWithLockFromStudioOperation(
-							'timelineTriggerTime',
-							studioCache,
-							activePlaylist,
-							PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
-							async () => {
-								const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
-
-								// We only need the PieceInstances, so load just them
-								const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
-									PieceInstances,
-									{
-										rundownId: { $in: rundownIDs },
-									}
-								)
-
-								// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
-								timelineTriggerTimeInner(studioCache, results, pieceInstanceCache, activePlaylist)
-
-								await pieceInstanceCache.updateDatabaseWithData()
-							}
-						)
-					} else {
-						timelineTriggerTimeInner(studioCache, results, undefined, undefined)
-					}
-				}
-			)
+			await ServerPlayoutAPI.timelineTriggerTimeForStudioId(studioId, results)
 		}
 
 		transaction?.end()
 	}
 
-	function timelineTriggerTimeInner(
-		cache: CacheForStudio,
-		results: PeripheralDeviceAPI.TimelineTriggerTimeResult,
-		pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance> | undefined,
-		activePlaylist: RundownPlaylist | undefined
-	) {
-		let lastTakeTime: number | undefined
-
-		// ------------------------------
-		const timeline = cache.Timeline.findOne(cache.Studio.doc._id)
-		if (timeline) {
-			const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
-			let tlChanged = false
-
-			_.each(results, (o) => {
-				check(o.id, String)
-
-				logger.info(`Timeline: Setting time: "${o.id}": ${o.time}`)
-
-				const obj = timelineObjs.find((tlo) => tlo.id === o.id)
-				if (obj) {
-					applyToArray(obj.enable, (enable) => {
-						if (enable.start === 'now') {
-							enable.start = o.time
-							enable.setFromNow = true
-
-							tlChanged = true
-						}
-					})
-
-					// TODO - we should do the same for the partInstance.
-					// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
-
-					const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
-					if (objPieceId && activePlaylist && pieceInstanceCache) {
-						logger.info('Update PieceInstance: ', {
-							pieceId: objPieceId,
-							time: new Date(o.time).toTimeString(),
-						})
-
-						const pieceInstance = pieceInstanceCache.findOne(objPieceId)
-						if (pieceInstance) {
-							pieceInstanceCache.update(pieceInstance._id, {
-								$set: {
-									'piece.enable.start': o.time,
-								},
-							})
-
-							const takeTime = pieceInstance.dynamicallyInserted
-							if (pieceInstance.dynamicallyInserted && takeTime) {
-								lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
-							}
-						}
-					}
-				}
-			})
-
-			if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
-				// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-				const remainingNowPieces = pieceInstanceCache.findFetch({
-					partInstanceId: activePlaylist.currentPartInstanceId,
-					dynamicallyInserted: { $exists: true },
-					disabled: { $ne: true },
-				})
-				for (const piece of remainingNowPieces) {
-					const pieceTakeTime = piece.dynamicallyInserted
-					if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
-						// Disable and hide the instance
-						pieceInstanceCache.update(piece._id, {
-							$set: {
-								disabled: true,
-								hidden: true,
-							},
-						})
-					}
-				}
-			}
-			if (tlChanged) {
-				const newTimeline: TimelineComplete = {
-					_id: cache.Studio.doc._id,
-					timelineBlob: serializeTimelineBlob(timelineObjs),
-					timelineHash: getRandomId(),
-					generated: getCurrentTime(),
-					generationVersions: timeline.generationVersions,
-				}
-
-				cache.Timeline.replace(newTimeline)
-				// Also do a fast-track for the timeline to be published faster:
-				triggerFastTrackObserver(FastTrackObservers.TIMELINE, [cache.Studio.doc._id], newTimeline)
-			}
-		}
-	}
 	export async function partPlaybackStarted(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
@@ -485,18 +342,15 @@ export namespace ServerPeripheralDeviceAPI {
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		PeripheralDeviceAPI.executeFunction(
-			peripheralDevice._id,
-			(err, res) => {
-				if (err) {
-					logger.warn(err)
-				}
+		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, 'pingResponse', message)
+			.then((res) => {
+				if (cb) cb(null, res)
+			})
+			.catch((err) => {
+				logger.warn(err)
 
-				if (cb) cb(err, res)
-			},
-			'pingResponse',
-			message
-		)
+				if (cb) cb(err, null)
+			})
 
 		ping(context, deviceId, token)
 	}
@@ -516,6 +370,59 @@ export namespace ServerPeripheralDeviceAPI {
 			return true
 		}
 		return false
+	}
+	export function disableSubDevice(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		token: string | undefined,
+		subDeviceId: string,
+		disable: boolean
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
+		// check that the peripheralDevice has subDevices
+		if (!peripheralDevice.settings)
+			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not provide a settings object`)
+		if (!peripheralDevice.configManifest)
+			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not provide a configuration manifest`)
+
+		const subDevicesProp = peripheralDevice.configManifest.deviceConfig.find(
+			(prop) => prop.type === ConfigManifestEntryType.TABLE && prop.isSubDevices === true
+		) as TableConfigManifestEntry | undefined
+
+		if (!subDevicesProp)
+			throw new Meteor.Error(
+				405,
+				`PeripheralDevice "${deviceId}" does not provide a subDevices configuration property`
+			)
+
+		const subDevicesPropId = subDevicesProp.id
+
+		const subDevices = peripheralDevice.settings[subDevicesPropId]
+		if (!subDevices) throw new Meteor.Error(500, `PeripheralDevice "${deviceId}" has a malformed settings object`)
+
+		// check if the subDevice supports disabling using the magical 'disable' BOOLEAN property.
+		const subDeviceSettings = subDevices[subDeviceId] as Record<string, any> | undefined
+		if (!subDeviceSettings)
+			throw new Meteor.Error(404, `PeripheralDevice "${deviceId}", subDevice "${subDeviceId}" is not configured`)
+
+		const subDeviceType = subDeviceSettings[subDevicesProp.typeField || 'type']
+		const subDeviceSettingTopology = subDevicesProp.config[subDeviceType]
+
+		const hasDisableProperty = subDeviceSettingTopology.find(
+			(prop) => prop.id === 'disable' && prop.type === ConfigManifestEntryType.BOOLEAN
+		)
+		if (!hasDisableProperty)
+			throw new Meteor.Error(
+				405,
+				`PeripheralDevice "${deviceId}, subDevice "${subDeviceId}" of type "${subDeviceType}" does not support the disable property`
+			)
+
+		PeripheralDevices.update(deviceId, {
+			$set: {
+				[`settings.${subDevicesPropId}.${subDeviceId}.disable`]: disable,
+			},
+		})
 	}
 	export function testMethod(
 		context: MethodContext,
@@ -537,12 +444,6 @@ export namespace ServerPeripheralDeviceAPI {
 			return returnValue
 		}
 	}
-	export const executeFunction: (deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => any =
-		Meteor.wrapAsync((deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) => {
-			const args0 = args.slice(0, -1)
-			const cb = args.slice(-1)[0] // the last argument in ...args
-			PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
-		})
 
 	export function requestUserAuthToken(
 		context: MethodContext,
@@ -611,77 +512,38 @@ export namespace ServerPeripheralDeviceAPI {
 		check(timelineHash, String)
 		check(resolveDuration, Number)
 
-		if (peripheralDevice.studioId) {
-			const timeline = (await Timeline.findOneAsync(
-				{
-					_id: peripheralDevice.studioId,
+		// Look up the userAction associated with this timelineHash.
+		// We're using that to determine when the timeline was generated (in Core)
+		// In order to determine the total latency (roundtrip from timeline-generation => resolving done in playout-gateway)
+		const userAction = (await UserActionsLog.findOneAsync(
+			{
+				timelineHash: timelineHash,
+			},
+			{
+				fields: {
+					timelineGenerated: 1,
 				},
-				{
-					fields: {
-						timelineHash: 1,
-						generated: 1,
-					},
-				}
-			)) as Pick<TimelineComplete, 'timelineHash' | 'generated'>
-
-			// Compare the timelineHash with the one we have in the timeline.
-			// We're using that to determine when the timeline was generated (in Core)
-			// In order to determine the total latency (roundtrip from timeline-generation => resolving done in playout-gateway)
-			if (timeline) {
-				if (timeline.timelineHash === timelineHash) {
-					/** Time when timeline was generated in Core */
-					const startTime = timeline.generated
-					const endTime = getCurrentTime()
-
-					const totalLatency = endTime - startTime
-
-					/** How many latencies we store for statistics */
-					const LATENCIES_MAX_LENGTH = 100
-
-					/** Any latency higher than this is not realistic */
-					const MAX_REALISTIC_LATENCY = 1000 // ms
-
-					if (totalLatency < MAX_REALISTIC_LATENCY) {
-						if (!peripheralDevice.latencies) peripheralDevice.latencies = []
-						peripheralDevice.latencies.unshift(totalLatency)
-
-						if (peripheralDevice.latencies.length > LATENCIES_MAX_LENGTH) {
-							// Trim anything after LATENCIES_MAX_LENGTH
-							peripheralDevice.latencies.splice(LATENCIES_MAX_LENGTH, 999)
-						}
-						await PeripheralDevices.updateAsync(peripheralDevice._id, {
-							$set: {
-								latencies: peripheralDevice.latencies,
-							},
-						})
-						// Because the ActivationCache is used during playout, we need to update that as well:
-						const activationCache = getValidActivationCache(peripheralDevice.studioId)
-						if (activationCache) {
-							const device = (await activationCache.getPeripheralDevices()).find(
-								(device) => device._id === peripheralDevice._id
-							)
-							if (device) {
-								device.latencies = peripheralDevice.latencies
-							}
-						}
-
-						// Also store the result to userActions, if possible.
-						await UserActionsLog.updateAsync(
-							{
-								success: true,
-								doneTime: { $gt: startTime },
-							},
-							{
-								$push: {
-									gatewayDuration: totalLatency,
-									timelineResolveDuration: resolveDuration,
-								},
-							},
-							{ multi: false }
-						)
-					}
-				}
 			}
+		)) as Pick<UserActionsLogItem, '_id' | 'timelineGenerated'>
+
+		// Compare the timelineHash with the one we have in the timeline.
+
+		if (userAction && userAction.timelineGenerated) {
+			/** Time when timeline was generated in Core */
+			const startTime = userAction.timelineGenerated
+			const endTime = getCurrentTime()
+
+			const totalLatency = endTime - startTime
+
+			await updatePeripheralDeviceLatency(totalLatency, peripheralDevice)
+
+			// Also store the result to the userAction:
+			await UserActionsLog.updateAsync(userAction._id, {
+				$push: {
+					gatewayDuration: totalLatency,
+					timelineResolveDuration: resolveDuration,
+				},
+			})
 		}
 	}
 }
@@ -732,6 +594,42 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 
 	res.end(content)
 })
+
+async function updatePeripheralDeviceLatency(totalLatency: number, peripheralDevice: PeripheralDevice) {
+	/** How many latencies we store for statistics */
+	const LATENCIES_MAX_LENGTH = 100
+
+	/** Any latency higher than this is not realistic */
+	const MAX_REALISTIC_LATENCY = 3000 // ms
+
+	if (totalLatency < MAX_REALISTIC_LATENCY) {
+		if (!peripheralDevice.latencies) peripheralDevice.latencies = []
+		peripheralDevice.latencies.unshift(totalLatency)
+
+		if (peripheralDevice.latencies.length > LATENCIES_MAX_LENGTH) {
+			// Trim anything after LATENCIES_MAX_LENGTH
+			peripheralDevice.latencies.splice(LATENCIES_MAX_LENGTH, 999)
+		}
+		await PeripheralDevices.updateAsync(peripheralDevice._id, {
+			$set: {
+				latencies: peripheralDevice.latencies,
+			},
+		})
+
+		if (peripheralDevice.studioId) {
+			// Because the ActivationCache is used during playout, we need to update that as well:
+			const activationCache = getValidActivationCache(peripheralDevice.studioId)
+			if (activationCache) {
+				const device = (await activationCache.getPeripheralDevices()).find(
+					(device) => device._id === peripheralDevice._id
+				)
+				if (device) {
+					device.latencies = peripheralDevice.latencies
+				}
+			}
+		}
+	}
+}
 
 /** WHen a device has executed a PeripheralDeviceCommand, it will reply to this endpoint with the result */
 function functionReply(

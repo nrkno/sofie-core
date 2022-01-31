@@ -76,6 +76,9 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 						this.subscription = this.subscribe(PubSub.mediaObjects, this.props.studio._id, {
 							mediaId: this.objId,
 						})
+					} else if (!objId && objId !== this.objId) {
+						if (this.subscription) this.subscription.stop()
+						this.subscription = undefined
 					}
 				}
 

@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import {
@@ -7,27 +6,16 @@ import {
 	setupDefaultRundownPlaylist,
 	setupDefaultRundown,
 } from '../../../__mocks__/helpers/database'
-import { protectString } from '../../../lib/lib'
+import { protectString, protectStringArray } from '../../../lib/lib'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
-import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+} from '../../../lib/collections/RundownPlaylists'
 import { produceRundownPlaylistInfoFromRundown, updateRundownsInPlaylist } from '../rundownPlaylist'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
-
-require('../client') // include in order to create the Meteor methods needed
-require('../rundown') // include in order to create the Meteor methods needed
-
-export enum RundownAPIMethods { // Using our own method definition, to catch external API changes
-	'removeRundownPlaylist' = 'rundown.removeRundownPlaylist',
-	'resyncRundownPlaylist' = 'rundown.resyncRundownPlaylist',
-	'rundownPlaylistNeedsResync' = 'rundown.rundownPlaylistNeedsResync',
-	'rundownPlaylistValidateBlueprintConfig' = 'rundown.rundownPlaylistValidateBlueprintConfig',
-
-	'removeRundown' = 'rundown.removeRundown',
-	'resyncRundown' = 'rundown.resyncRundown',
-	'unsyncRundown' = 'rundown.unsyncRundown',
-	'moveRundown' = 'rundown.moveRundown',
-	'restoreRundownsInPlaylistToDefaultOrder' = 'rundown.restoreRundownsInPlaylistToDefaultOrder',
-}
+import { MeteorCall } from '../../../lib/api/methods'
 
 describe('Rundown', () => {
 	let env: DefaultEnvironment
@@ -80,20 +68,28 @@ describe('Rundown', () => {
 		await rundownsCollection.updateDatabaseWithData()
 
 		// Expect the rundowns to be in the right order:
-		const rundownsInPLaylist0 = playlist0.getRundowns()
+		const rundownsInPLaylist0 = RundownPlaylistCollectionUtil.getRundowns(playlist0)
 		expect(rundownsInPLaylist0[0]).toMatchObject({ _id: 'rundown00', _rank: 1 })
 		expect(rundownsInPLaylist0[1]).toMatchObject({ _id: 'rundown01', _rank: 2 })
 		expect(rundownsInPLaylist0[2]).toMatchObject({ _id: 'rundown02', _rank: 3 })
 
 		// Move the rundown:
-		Meteor.call(RundownAPIMethods.moveRundown, rundownId00, playlist0, ['rundown01', 'rundown02', 'rundown00'])
-		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown02', 'rundown00'])
+		await MeteorCall.rundown.moveRundown(
+			rundownId00,
+			playlist0._id,
+			protectStringArray(['rundown01', 'rundown02', 'rundown00'])
+		)
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist0)).toEqual(['rundown01', 'rundown02', 'rundown00'])
 
 		playlist0 = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 		expect(playlist0).toBeTruthy()
 
-		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, playlist0, ['rundown02', 'rundown01', 'rundown00'])
-		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown02', 'rundown01', 'rundown00'])
+		await MeteorCall.rundown.moveRundown(
+			rundownId02,
+			playlist0._id,
+			protectStringArray(['rundown02', 'rundown01', 'rundown00'])
+		)
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist0)).toEqual(['rundown02', 'rundown01', 'rundown00'])
 
 		// Introduce another playlist
 		const { rundownId: rundownId10, playlistId: playlistId1 } = setupDefaultRundownPlaylist(
@@ -107,39 +103,43 @@ describe('Rundown', () => {
 		expect(RundownPlaylists.find().count()).toEqual(2)
 
 		// Move over a rundown to the other playlist:
-		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, playlist1, ['rundown10', 'rundown02'])
-		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown00'])
-		expect(playlist1.getRundowns().map((r) => r._id)).toEqual(['rundown10', 'rundown02'])
+		await MeteorCall.rundown.moveRundown(rundownId02, playlist1._id, protectStringArray(['rundown10', 'rundown02']))
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist0)).toEqual(['rundown01', 'rundown00'])
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist1)).toEqual(['rundown10', 'rundown02'])
 
 		// Move a rundown out of a playlist:
-		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, null, [])
-		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown00'])
-		expect(playlist1.getRundowns().map((r) => r._id)).toEqual(['rundown10'])
+		await MeteorCall.rundown.moveRundown(rundownId02, null, [])
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist0)).toEqual(['rundown01', 'rundown00'])
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist1)).toEqual(['rundown10'])
 		expect(RundownPlaylists.find().count()).toEqual(3) // A new playlist has been created
 		// The newly created playlist:
 		const newPlaylist = RundownPlaylists.findOne({ _id: { $nin: [playlistId0, playlistId1] } }) as RundownPlaylist
 		expect(newPlaylist).toBeTruthy()
-		expect(newPlaylist.getRundowns().map((r) => r._id)).toEqual(['rundown02'])
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(newPlaylist)).toEqual(['rundown02'])
 
 		// Move the last rundown into another playlist:
-		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, null, [])
+		await MeteorCall.rundown.moveRundown(rundownId02, null, [])
 		expect(RundownPlaylists.find().count()).toEqual(3) // A new playlist has been created, and an old one was removed
 		const newPlaylist2 = RundownPlaylists.findOne({
 			_id: { $nin: [playlistId0, playlistId1, newPlaylist._id] },
 		}) as RundownPlaylist
 		expect(newPlaylist2).toBeTruthy()
-		expect(newPlaylist2.getRundowns().map((r) => r._id)).toEqual(['rundown02'])
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(newPlaylist2)).toEqual(['rundown02'])
 
 		// Move the rundown back into a playlist:
-		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown00'])
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist0)).toEqual(['rundown01', 'rundown00'])
 		// Note: the order here will be ignored, new rundowns are placed last:
-		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, playlist0, ['rundown01', 'rundown02', 'rundown00'])
-		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown02', 'rundown00'])
-		expect(playlist1.getRundowns().map((r) => r._id)).toEqual(['rundown10'])
+		await MeteorCall.rundown.moveRundown(
+			rundownId02,
+			playlist0._id,
+			protectStringArray(['rundown01', 'rundown02', 'rundown00'])
+		)
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist0)).toEqual(['rundown01', 'rundown02', 'rundown00'])
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist1)).toEqual(['rundown10'])
 		expect(RundownPlaylists.find().count()).toEqual(2) // A playlist was removed
 
 		// Restore the order:
-		Meteor.call(RundownAPIMethods.restoreRundownsInPlaylistToDefaultOrder, playlist0)
-		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown00', 'rundown01', 'rundown02'])
+		await MeteorCall.rundown.restoreRundownsInPlaylistToDefaultOrder(playlist0._id)
+		expect(RundownPlaylistCollectionUtil.getRundownIDs(playlist0)).toEqual(['rundown00', 'rundown01', 'rundown02'])
 	})
 })

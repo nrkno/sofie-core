@@ -2,7 +2,7 @@ import { IngestSegment } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { SegmentId, Segment } from '../../../../lib/collections/Segments'
+import { SegmentId, Segment, SegmentOrphanedReason } from '../../../../lib/collections/Segments'
 import { clone, deleteAllUndefinedProperties, literal, normalizeArray } from '../../../../lib/lib'
 import { Settings } from '../../../../lib/Settings'
 import { profiler } from '../../profiler'
@@ -77,9 +77,9 @@ export async function diffAndApplyChanges(
 	// Remove/orphan old segments
 	const segmentIdsToRemove = new Set(Object.keys(segmentDiff.removed).map((id) => getSegmentId(rundown._id, id)))
 	// We orphan it and queue for deletion. the commit phase will complete if possible
-	cache.Segments.update((s) => segmentIdsToRemove.has(s._id), {
+	const orphanedSegmentIds = cache.Segments.update((s) => segmentIdsToRemove.has(s._id), {
 		$set: {
-			orphaned: 'deleted',
+			orphaned: SegmentOrphanedReason.DELETED,
 		},
 	})
 
@@ -93,7 +93,7 @@ export async function diffAndApplyChanges(
 	span?.end()
 	return literal<CommitIngestData>({
 		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
-		removedSegmentIds: Array.from(segmentIdsToRemove),
+		removedSegmentIds: orphanedSegmentIds, // Only inform about the ones that werent renamed
 		renamedSegments: renamedSegments,
 
 		removeRundown: false,

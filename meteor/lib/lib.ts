@@ -7,10 +7,11 @@ import { Timecode } from 'timecode'
 import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from '@sofie-automation/blueprints-integration'
-import * as crypto from 'crypto'
 import { ReadonlyDeep, PartialDeep } from 'type-fest'
 import { ITranslatableMessage } from './api/TranslatableMessage'
-import { AsyncTransformedCollection } from './collections/lib'
+import { AsyncMongoCollection } from './collections/lib'
+
+export * from './hash'
 
 const cloneOrg = require('fast-clone')
 
@@ -55,31 +56,6 @@ export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefin
 	} else {
 		return _.max(vals, iterator)
 	}
-}
-
-export function getHash(str: string): string {
-	const hash = crypto.createHash('sha1')
-	return hash
-		.update(str)
-		.digest('base64')
-		.replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
-}
-/** Creates a hash based on the object properties (excluding ordering of properties) */
-export function hashObj(obj: any): string {
-	if (typeof obj === 'object') {
-		const keys = Object.keys(obj).sort((a, b) => {
-			if (a > b) return 1
-			if (a < b) return -1
-			return 0
-		})
-
-		const strs: string[] = []
-		for (const key of keys) {
-			strs.push(hashObj(obj[key]))
-		}
-		return getHash(strs.join('|'))
-	}
-	return obj + ''
 }
 
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
@@ -159,9 +135,6 @@ export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
 	return _.omit(obj, ...(props as string[]))
 }
 
-export function applyClassToDocument(docClass, document) {
-	return new docClass(document)
-}
 export function formatDateAsTimecode(date: Date) {
 	const tc = Timecode.init({
 		framerate: Settings.frameRate + '',
@@ -263,27 +236,15 @@ export function stringifyObjects(objs: any): string {
 		return objs + ''
 	}
 }
-export const Collections: { [name: string]: AsyncTransformedCollection<any, any> } = {}
-export function registerCollection(name: string, collection: AsyncTransformedCollection<any, any>) {
+export const Collections: { [name: string]: AsyncMongoCollection<any> } = {}
+export function registerCollection(name: string, collection: AsyncMongoCollection<any>) {
 	Collections[name] = collection
 }
-export function getCollectionKey(collection: AsyncTransformedCollection<any, any>): string {
+export function getCollectionKey(collection: AsyncMongoCollection<any>): string {
 	const o = Object.entries(Collections).find(([_key, col]) => col === collection)
 	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
 	return o[0] // collectionName
 }
-// export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
-// 	function getCollectionIndexes(collection: TransformedCollection<any, any>, cb) {
-// 		let raw = collection.rawCollection()
-// 		raw.indexes(cb) // TODO - invalid
-// 	}
-// )
-export const getCollectionStats: (collection: AsyncTransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
-	function getCollectionStats(collection: AsyncTransformedCollection<any, any>, cb) {
-		const raw = collection.rawCollection()
-		raw.stats(cb)
-	}
-)
 
 /**
  * Returns a rank number, to be used to insert new objects in a ranked list
@@ -533,33 +494,33 @@ export function toc(name: string = 'default', logStr?: string | Promise<any>[]) 
 	}
 }
 
-export function MeteorWrapAsync(func: Function, context?: Object): any {
-	// A variant of Meteor.wrapAsync to fix the bug
-	// https://github.com/meteor/meteor/issues/11120
+// export function MeteorWrapAsync(func: Function, context?: Object): any {
+// 	// A variant of Meteor.wrapAsync to fix the bug
+// 	// https://github.com/meteor/meteor/issues/11120
 
-	return Meteor.wrapAsync((...args: any[]) => {
-		// Find the callback-function:
-		for (let i = args.length - 1; i >= 0; i--) {
-			if (typeof args[i] === 'function') {
-				if (i < args.length - 1) {
-					// The callback is not the last argument, make it so then:
-					const callback = args[i]
-					const fixedArgs = args
-					fixedArgs[i] = undefined
-					fixedArgs.push(callback)
+// 	return Meteor.wrapAsync((...args: any[]) => {
+// 		// Find the callback-function:
+// 		for (let i = args.length - 1; i >= 0; i--) {
+// 			if (typeof args[i] === 'function') {
+// 				if (i < args.length - 1) {
+// 					// The callback is not the last argument, make it so then:
+// 					const callback = args[i]
+// 					const fixedArgs = args
+// 					fixedArgs[i] = undefined
+// 					fixedArgs.push(callback)
 
-					func.apply(context, fixedArgs)
-					return
-				} else {
-					// The callback is the last argument, that's okay
-					func.apply(context, args)
-					return
-				}
-			}
-		}
-		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
-	})
-}
+// 					func.apply(context, fixedArgs)
+// 					return
+// 				} else {
+// 					// The callback is the last argument, that's okay
+// 					func.apply(context, args)
+// 					return
+// 				}
+// 			}
+// 		}
+// 		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
+// 	})
+// }
 
 /**
  * Blocks the fiber until all the Promises have resolved
@@ -713,10 +674,10 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 	})
 	return ok
 }
-export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id?: ProtectedString<any> }>(
-	docs0: ReadonlyArray<Class>,
-	options?: FindOptions<DBInterface>
-): Class[] {
+export function mongoFindOptions<DBInterface extends { _id?: ProtectedString<any> }>(
+	docs0: ReadonlyArray<DBInterface>,
+	options: FindOptions<DBInterface> | undefined
+): DBInterface[] {
 	let docs = [...docs0] // Shallow clone it
 	if (options) {
 		const sortOptions = options.sort
@@ -1055,8 +1016,6 @@ export function firstIfArray<T>(value: T | T[]): T
 export function firstIfArray<T>(value: any): T {
 	return _.isArray(value) ? _.first(value) : value
 }
-
-export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)
 
 /**
  * Wait for specified time

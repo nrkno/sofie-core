@@ -11,7 +11,7 @@
  * describe some properties to be rendered inside this table
  *
  * IMPORTANT - any updates done to this file should also be changed in
- * @tv-automation/server-core-integration, such that the gateways can actually
+ * @sofie-automation/server-core-integration, such that the gateways can actually
  * implement it in the manifests.
  */
 
@@ -72,7 +72,10 @@ export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
 export interface ConfigManifestEntryDefault extends ConfigManifestEntryBase {
 	type: Exclude<
 		ConfigManifestEntryType,
-		ConfigManifestEntryType.ENUM | ConfigManifestEntryType.INT | ConfigManifestEntryType.FLOAT
+		| ConfigManifestEntryType.ENUM
+		| ConfigManifestEntryType.INT
+		| ConfigManifestEntryType.FLOAT
+		| ConfigManifestEntryType.TABLE
 	>
 }
 export interface ConfigManifestIntEntry extends ConfigManifestEntryBase {
@@ -108,7 +111,9 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	deviceTypesMapping?: any
 	/** The name of the the property used to decide the type of the entry */
 	typeField?: string
-	/** Only one type means that the type option will not be present */
+	/** Only one type means that the type option will not be present. When using this as a subDevice configuration object,
+	 * a property of type BOOLEAN and id `disable` has special meaning and can be operated on outside of the GUI
+	 */
 	config: { [type: string]: TableEntryConfigManifestEntry[] }
 }
 

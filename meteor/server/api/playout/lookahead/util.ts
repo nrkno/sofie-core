@@ -1,6 +1,6 @@
 import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
-import { Part } from '../../../../lib/collections/Parts'
+import { isPartPlayable, Part } from '../../../../lib/collections/Parts'
 import { PieceInstance, PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { profiler } from '../../profiler'
@@ -62,7 +62,7 @@ export function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: 
 		return []
 	}
 
-	const playablePartsSlice = partsAndSegments.parts.slice(nextNextPart.index).filter((p) => p.isPlayable())
+	const playablePartsSlice = partsAndSegments.parts.slice(nextNextPart.index).filter(isPartPlayable)
 
 	const res: Part[] = []
 
@@ -87,7 +87,7 @@ export function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: 
 
 	if (res.length < partCount && playlist.loop) {
 		// The rundown would loop here, so lets run with that
-		const playableParts = partsAndSegments.parts.filter((p) => p.isPlayable())
+		const playableParts = partsAndSegments.parts.filter(isPartPlayable)
 		// Note: We only add it once, as lookahead is unlikely to show anything new in a second pass
 		res.push(...playableParts)
 

@@ -1,40 +1,40 @@
 ---
 sidebar_position: 1
 ---
+
 # Concepts & Architecture
 
 ## System architecture
 
-![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](/gitbook/assets/sofie-pogw-spreadheet.png)
+![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](/img/docs/main/features-and-configuration/playout-and-spreadsheet-example.png)
 
 ### Sofie Core
 
 [**Sofie Core**](../dictionary#sofie-core) is a web-server which handle business logic and serves the Web-GUI.  
 It is a [NodeJS](https://nodejs.org) process backed up by a [MongoDB](https://www.mongodb.com/) database and based on the framework [Meteor](http://meteor.com).  
-Read more: [_System architecture_](concepts-and-architecture.md#system-architecture), [_Getting Started_](../getting-started/intro)
+Read more: [_System architecture_](concepts-and-architecture.md#system-architecture)_,_ [_Getting Started_](/docs/getting-started/intro)
 
 ### Gateways
 
 Gateways are applications that connect to Sofie Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline ](../dictionary#timeline)for play-out.
 
 Examples of Gateways are the [MOS Gateway](https://github.com/nrkno/tv-automation-mos-gateway), the [Spreadsheet Gateway](https://github.com/SuperFlyTV/spreadsheet-gateway) and the [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway).  
-All gateways use the [Core-integration library](https://github.com/nrkno/tv-automation-server-core-integration) to communicate with Core.  
-
+All gateways use the [Core-integration library](https://github.com/nrkno/tv-automation-server-core-integration) to communicate with Core.
 
 ## System, \(Organization\), Studio & Show Style
 
 To be able to facilitate various work-flows and to Here's a short explanation about the differences between the "System", "Organization", "Studio" and "Show Style".
 
-* The **System** defines the whole of the Sofie Core
-* The **Organization** \(only available if user accounts are enabled\) defines things that are common for an organization. An organization consists of: **Users, Studios** and **ShowStyles**.
-* The **Studio** contains things that are related to the "hardware" or "rig". Technically, a Studio is defined as an entity that can have one \(or none\) rundown active at any given time. In most cases, this will be a representation of your gallery, with cameras, video playback and graphics systems, external inputs, sound mixers, lighting controls and so on. A single System can easily control multiple Studios.
-* The **Show Style** contains settings for the "show", for example if there's a "Morning Show" and an "Afternoon Show" - produced in the same gallery - they might be two different Show Styles \(played in the same Studio\).
+- The **System** defines the whole of the Sofie Core
+- The **Organization** \(only available if user accounts are enabled\) defines things that are common for an organization. An organization consists of: **Users, Studios** and **ShowStyles**.
+- The **Studio** contains things that are related to the "hardware" or "rig". Technically, a Studio is defined as an entity that can have one \(or none\) rundown active at any given time. In most cases, this will be a representation of your gallery, with cameras, video playback and graphics systems, external inputs, sound mixers, lighting controls and so on. A single System can easily control multiple Studios.
+- The **Show Style** contains settings for the "show", for example if there's a "Morning Show" and an "Afternoon Show" - produced in the same gallery - they might be two different Show Styles \(played in the same Studio\).
 
-![](/gitbook/assets/frame-9-2-.png)
+![Sofie Architecture Venn Diagram](/img/docs/main/features-and-configuration/sofie-venn-diagram.png)
 
-## Playlists, Rundowns, Parts, Pieces
+## Playlists, Rundowns, Segments, Parts, Pieces
 
-![](/gitbook/assets/frame-11.png)
+![Playlists, Rundowns, Segments, Parts, Pieces](/img/docs/main/features-and-configuration/playlist-rundown-segment-part-piece.png)
 
 ### Playlist
 
@@ -88,7 +88,7 @@ An AdLib isn't added to the Part in the GUI until it starts playing, instead you
 
 Blueprints are plug-ins that run in Sofie Core. They interpret the data coming in from the rundowns and transform them into a rich set of playable elements \(Segments, Parts, AdLibs etc\).
 
-The blueprints are webpacked javascript bundles which are uploaded into Sofie via the GUI. They are custom-made and changes depending on the show style, type of input data \(NRCS\) and the types of controlled devices. A generic [blueprint based on spreadsheets is available here](https://github.com/SuperFlyTV/sofie-blueprints-spreadsheet).
+The blueprints are webpacked javascript bundles which are uploaded into Sofie via the GUI. They are custom-made and changes depending on the show style, type of input data \(NRCS\) and the types of controlled devices. A generic [blueprint that works with spreadsheets is available here](https://github.com/SuperFlyTV/sofie-demo-blueprints).
 
 When [Sofie Core](../dictionary#sofie-core) calls upon a Blueprint, it returns a JavaScript object containing methods callable by Sofie Core. These methods will be called by Sofie Core in different situations, depending on the method.  
 Documentation on these interfaces are available in the [Blueprints integration](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) library.
@@ -119,17 +119,17 @@ Documentation on the interface to be exposed by the Blueprint:
 
 The Timeline is a collection of timeline-objects, that together form a "target state", i.e. an intent on what is to be played and at what times.
 
-The timeline-objects can be programmed to contain relative references to each other, so programming things like _"play this thing right after this other thing"_  is as easy as `{start: { #otherThing.end }}` 
+The timeline-objects can be programmed to contain relative references to each other, so programming things like _"play this thing right after this other thing"_ is as easy as `{start: { #otherThing.end }}`
 
-The [Playout Gateway](../../for-developers/libraries.md) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)\) controls the play-out devices to make sure that they actually play what is intended.
+The [Playout Gateway](../../for-developers/libraries) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)\) controls the play-out devices to make sure that they actually play what is intended.
 
-![Example of 2 objects in a timeline: The \#video object, destined to play at a certain time, and \#gfx0, destined to start 15 seconds into the video.](/gitbook/assets/timeline.png)
+![Example of 2 objects in a timeline: The #video object, destined to play at a certain time, and #gfx0, destined to start 15 seconds into the video.](/img/docs/main/features-and-configuration/timeline.png)
 
 ### Why a timeline?
 
 The Sofie system is made to work with a modern web- and IT-based approach in mind. Therefore, the Sofie Core can be run either on-site, or in an off-site cloud.
 
-![Sofie Core can run in the cloud](/gitbook/assets/sofie-web-architecture-2.png)
+![Sofie Core can run in the cloud](/img/docs/main/features-and-configuration/sofie-web-architecture.png)
 
 One drawback of running in a cloud over the public internet is the - sometimes unpredictable - latency. The Timeline overcomes this by moving all the immediate control of the play-out devices to the Playout Gateway, which is intended to run on a local network, close to the hardware it controls.  
 This also gives the system a simple way of load-balancing - since the number of web-clients or load on Sofie Core won't affect the play-out.
@@ -148,22 +148,22 @@ The Timeline is stored by Sofie Core in a MongoDB collection. It is generated wh
 
 [Sofie Core](../dictionary#sofie-core) generates the timeline using:
 
-* The [Studio Baseline](../dictionary#baseline) \(only if no rundown is currently active\)
-* The [Showstyle Baseline](../dictionary#baseline), of the currently active rundown.
-* The [currently playing Part](../dictionary#take-point)
-* The [Next:ed Part](../dictionary#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](../dictionary#lookahead)\)
-* Any [AdLibs ](../dictionary#adlib-pieces)the user has manually selected to play
+- The [Studio Baseline](../dictionary#baseline) \(only if no rundown is currently active\)
+- The [Showstyle Baseline](../dictionary#baseline), of the currently active rundown.
+- The [currently playing Part](../dictionary#take-point)
+- The [Next:ed Part](../dictionary#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](../dictionary#lookahead)\)
+- Any [AdLibs ](../dictionary#adlib-pieces)the user has manually selected to play
 
-The [**Playout Gateway**](../for-developers/libraries.md#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)-library \(TSR\).
+The [**Playout Gateway**](../for-developers/libraries#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)-library \(TSR\).
 
 The TSR then...
 
-* Resolves the timeline, using the [timeline-library](https://github.com/SuperFlyTV/supertimeline)
-* Calculates new target-states for each relevant point in time
-* Maps the target-state to each play-out device.
-* Compares the target-states for each device with the currently-tracked-state and..
-* ..generates commands to send to each device to account for the change.
-* The commands are then put on queue and sent to the devices at the correct time.
+- Resolves the timeline, using the [timeline-library](https://github.com/SuperFlyTV/supertimeline)
+- Calculates new target-states for each relevant point in time
+- Maps the target-state to each play-out device.
+- Compares the target-states for each device with the currently-tracked-state and..
+- ..generates commands to send to each device to account for the change.
+- The commands are then put on queue and sent to the devices at the correct time.
 
 :::info
 For more information about what play-out devices the TSR supports, and examples of the timeline-objects, see the [README of TSR](https://github.com/nrkno/tv-automation-state-timeline-resolver#timeline-state-resolver)
@@ -172,4 +172,3 @@ For more information about what play-out devices the TSR supports, and examples 
 :::info
 For more information about how to program timeline-objects, see the [README of the timeline-library](https://github.com/SuperFlyTV/supertimeline#superfly-timeline)
 :::
-

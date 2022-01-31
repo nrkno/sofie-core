@@ -13,56 +13,47 @@ import { profiler } from '../api/profiler'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
 import { Changes } from '../lib/database'
-import { AsyncTransformedCollection } from '../../lib/collections/lib'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 
 /**
  * Caches a single object, allowing reads from cache, but not writes
  * This should be used when the cache can only have one of something, and that must exist
  */
-export class DbCacheReadObject<
-	Class extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> },
-	DocOptional extends boolean = false
-> {
-	protected _document: Class
-	protected _rawDocument: Class
+export class DbCacheReadObject<DBInterface extends { _id: ProtectedString<any> }, DocOptional extends boolean = false> {
+	protected _document: DBInterface
+	protected _rawDocument: DBInterface
 
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
 	protected constructor(
-		protected readonly _collection: AsyncTransformedCollection<Class, DBInterface>,
+		protected readonly _collection: AsyncMongoCollection<DBInterface>,
 		private readonly _optional: DocOptional,
-		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
+		doc: DocOptional extends true ? ReadonlyDeep<DBInterface> | undefined : ReadonlyDeep<DBInterface>
 	) {
-		this._document = (doc ? this._transform(clone(doc as any)) : doc) as any
+		this._document = doc ? clone(doc as any) : doc
 		this._rawDocument = clone(doc as any)
 	}
 	get name(): string | null {
 		return this._collection.name
 	}
 
-	public static createFromDoc<
-		Class extends DBInterface,
-		DBInterface extends { _id: ProtectedString<any> },
-		DocOptional extends boolean = false
-	>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
+	public static createFromDoc<DBInterface extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
-		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
-	): DbCacheReadObject<Class, DBInterface, DocOptional> {
-		return new DbCacheReadObject<Class, DBInterface, DocOptional>(collection, optional, doc)
+		doc: DocOptional extends true ? ReadonlyDeep<DBInterface> | undefined : ReadonlyDeep<DBInterface>
+	): DbCacheReadObject<DBInterface, DocOptional> {
+		return new DbCacheReadObject<DBInterface, DocOptional>(collection, optional, doc)
 	}
 
 	public static async createFromDatabase<
-		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any> },
 		DocOptional extends boolean = false
 	>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
 		id: DBInterface['_id']
-	): Promise<DbCacheReadObject<Class, DBInterface, DocOptional>> {
+	): Promise<DbCacheReadObject<DBInterface, DocOptional>> {
 		const doc = await collection.findOneAsync(id)
 		if (!doc && !optional) {
 			throw new Meteor.Error(
@@ -71,19 +62,11 @@ export class DbCacheReadObject<
 			)
 		}
 
-		return DbCacheReadObject.createFromDoc<Class, DBInterface, DocOptional>(collection, optional, doc as any)
+		return DbCacheReadObject.createFromDoc<DBInterface, DocOptional>(collection, optional, doc as any)
 	}
 
-	get doc(): DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class> {
+	get doc(): DocOptional extends true ? ReadonlyDeep<DBInterface> | undefined : ReadonlyDeep<DBInterface> {
 		return this._document as any
-	}
-
-	protected _transform(doc: DBInterface): Class {
-		// @ts-ignore hack: using internal function in collection
-		const transform = this._collection._transform
-		if (transform) {
-			return transform(doc)
-		} else return doc as Class
 	}
 
 	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
@@ -97,41 +80,35 @@ export class DbCacheReadObject<
  * This should be used when the cache can only have one of something, and that must exist
  */
 export class DbCacheWriteObject<
-	Class extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> },
 	DocOptional extends boolean = false
-> extends DbCacheReadObject<Class, DBInterface, DocOptional> {
+> extends DbCacheReadObject<DBInterface, DocOptional> {
 	private _updated = false
 
 	constructor(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
-		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
+		doc: DocOptional extends true ? ReadonlyDeep<DBInterface> | undefined : ReadonlyDeep<DBInterface>
 	) {
 		super(collection, optional, doc)
 	}
 
-	public static createFromDoc<
-		Class extends DBInterface,
-		DBInterface extends { _id: ProtectedString<any> },
-		DocOptional extends boolean = false
-	>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
+	public static createFromDoc<DBInterface extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
-		doc: DocOptional extends true ? ReadonlyDeep<Class> | undefined : ReadonlyDeep<Class>
-	): DbCacheWriteObject<Class, DBInterface, DocOptional> {
-		return new DbCacheWriteObject<Class, DBInterface, DocOptional>(collection, optional, doc)
+		doc: DocOptional extends true ? ReadonlyDeep<DBInterface> | undefined : ReadonlyDeep<DBInterface>
+	): DbCacheWriteObject<DBInterface, DocOptional> {
+		return new DbCacheWriteObject<DBInterface, DocOptional>(collection, optional, doc)
 	}
 
 	public static async createFromDatabase<
-		Class extends DBInterface,
 		DBInterface extends { _id: ProtectedString<any> },
 		DocOptional extends boolean = false
 	>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
+		collection: AsyncMongoCollection<DBInterface>,
 		optional: DocOptional,
 		id: DBInterface['_id']
-	): Promise<DbCacheWriteObject<Class, DBInterface, DocOptional>> {
+	): Promise<DbCacheWriteObject<DBInterface, DocOptional>> {
 		const doc = await collection.findOneAsync(id)
 		if (!doc && !optional) {
 			throw new Meteor.Error(
@@ -140,7 +117,7 @@ export class DbCacheWriteObject<
 			)
 		}
 
-		return DbCacheWriteObject.createFromDoc<Class, DBInterface, DocOptional>(collection, optional, doc as any)
+		return DbCacheWriteObject.createFromDoc<DBInterface, DocOptional>(collection, optional, doc as any)
 	}
 
 	protected assertNotToBeRemoved(methodName: string): void {
@@ -157,7 +134,7 @@ export class DbCacheWriteObject<
 	update(modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>): boolean {
 		this.assertNotToBeRemoved('update')
 
-		const localDoc: ReadonlyDeep<Class> | undefined = this.doc
+		const localDoc: ReadonlyDeep<DBInterface> | undefined = this.doc
 		if (!localDoc) throw new Meteor.Error(404, `Error: The document does not yet exist`)
 
 		const newDoc: DBInterface = _.isFunction(modifier)
@@ -175,7 +152,7 @@ export class DbCacheWriteObject<
 		deleteAllUndefinedProperties(newDoc)
 
 		if (!_.isEqual(this.doc, newDoc)) {
-			this._document = this._transform(newDoc)
+			this._document = newDoc
 
 			this._updated = true
 			return true
@@ -212,7 +189,7 @@ export class DbCacheWriteObject<
 	discardChanges() {
 		if (this.isModified()) {
 			this._updated = false
-			this._document = this._rawDocument ? this._transform(clone(this._rawDocument)) : this._rawDocument
+			this._document = this._rawDocument ? clone(this._rawDocument) : this._rawDocument
 		}
 	}
 
@@ -225,39 +202,36 @@ export class DbCacheWriteObject<
  * Caches a single object, allowing reads and writes that will be later committed back to mongo. This variant allows the object to start off undefined
  * This should be used when the cache can only have one of something, and that must exist
  */
-export class DbCacheWriteOptionalObject<
-	Class extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
-> extends DbCacheWriteObject<Class, DBInterface, true> {
+export class DbCacheWriteOptionalObject<DBInterface extends { _id: ProtectedString<any> }> extends DbCacheWriteObject<
+	DBInterface,
+	true
+> {
 	private _inserted = false
 
-	constructor(collection: AsyncTransformedCollection<Class, DBInterface>, doc: ReadonlyDeep<Class> | undefined) {
+	constructor(collection: AsyncMongoCollection<DBInterface>, doc: ReadonlyDeep<DBInterface> | undefined) {
 		super(collection, true, doc)
 	}
 
-	public static createOptionalFromDoc<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
-		doc: ReadonlyDeep<Class> | undefined
-	): DbCacheWriteOptionalObject<Class, DBInterface> {
-		return new DbCacheWriteOptionalObject<Class, DBInterface>(collection, doc)
+	public static createOptionalFromDoc<DBInterface extends { _id: ProtectedString<any> }>(
+		collection: AsyncMongoCollection<DBInterface>,
+		doc: ReadonlyDeep<DBInterface> | undefined
+	): DbCacheWriteOptionalObject<DBInterface> {
+		return new DbCacheWriteOptionalObject<DBInterface>(collection, doc)
 	}
 
-	public static async createOptionalFromDatabase<
-		Class extends DBInterface,
-		DBInterface extends { _id: ProtectedString<any> }
-	>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
+	public static async createOptionalFromDatabase<DBInterface extends { _id: ProtectedString<any> }>(
+		collection: AsyncMongoCollection<DBInterface>,
 		id: DBInterface['_id']
-	): Promise<DbCacheWriteOptionalObject<Class, DBInterface>> {
+	): Promise<DbCacheWriteOptionalObject<DBInterface>> {
 		const doc = await collection.findOneAsync(id)
 
-		return DbCacheWriteOptionalObject.createOptionalFromDoc<Class, DBInterface>(
+		return DbCacheWriteOptionalObject.createOptionalFromDoc<DBInterface>(
 			collection,
-			doc as ReadonlyDeep<Class> | undefined
+			doc as ReadonlyDeep<DBInterface> | undefined
 		)
 	}
 
-	replace(doc: DBInterface): ReadonlyDeep<Class> {
+	replace(doc: DBInterface): ReadonlyDeep<DBInterface> {
 		this.assertNotToBeRemoved('replace')
 
 		this._inserted = true
@@ -269,7 +243,7 @@ export class DbCacheWriteOptionalObject<
 		// ensure no properties are 'undefined'
 		deleteAllUndefinedProperties(newDoc)
 
-		this._document = this._transform(newDoc)
+		this._document = newDoc
 
 		return this._document as any
 	}

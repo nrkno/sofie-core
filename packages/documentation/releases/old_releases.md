@@ -9,33 +9,33 @@ description: >-
 
 # Releases
 
-| Release | Status |
-| :--- | :--- |
-| [Release 31](releases.md#release-31) | Released 2021-05-05 |
-| [Release 30](releases.md#release-30) | _Released 2021-03-22_ |
-| [Release 29](releases.md#release-29) | _Released 2021-02-08_ |
-| [Release 28](releases.md#release-27) | _Released 2021-01-19_ |
-| [Release 27](releases.md#release-27) | _Released 2020-12-08_ |
-| [Release 26](releases.md#release-26) | _Released 2020-11-10_ |
-| [Release 25](releases.md#release-25) | _Released 2020-10-19_ |
-| [Release 24](releases.md#release-24) | _Released 2020-09-28_ |
-| [Release 23](releases.md#release-23-skipped) | Skipped |
-| [Release 22](releases.md#release-22) | Released 2020-08-17 |
-| [Release 21](https://github.com/nrkno/Sofie-TV-automation/issues/17) | Skipped |
+| Release                                                              | Status                |
+| :------------------------------------------------------------------- | :-------------------- |
+| [Release 31](old_releases#release-31)                                | Released 2021-05-05   |
+| [Release 30](old_releases#release-30)                                | _Released 2021-03-22_ |
+| [Release 29](old_releases#release-29)                                | _Released 2021-02-08_ |
+| [Release 28](old_releases#release-27)                                | _Released 2021-01-19_ |
+| [Release 27](old_releases#release-27)                                | _Released 2020-12-08_ |
+| [Release 26](old_releases#release-26)                                | _Released 2020-11-10_ |
+| [Release 25](old_releases#release-25)                                | _Released 2020-10-19_ |
+| [Release 24](old_releases#release-24)                                | _Released 2020-09-28_ |
+| [Release 23](old_releases#release-23-skipped)                        | Skipped               |
+| [Release 22](old_releases#release-22)                                | Released 2020-08-17   |
+| [Release 21](https://github.com/nrkno/Sofie-TV-automation/issues/17) | Skipped               |
 | [Release 20](https://github.com/nrkno/Sofie-TV-automation/issues/16) | _Released 2020-05-12_ |
-| [Release 19](releases.md#release-19) | _Released 2020-03-31_ |
-| [Release 18](releases.md#release-18) | _Released 2020-03-04_ |
-| [Release 17](releases.md#release-17) | _Released 2020-01-24_ |
-| [Release 16](releases.md#release-16) | _Released 2020-01-02_ |
-| [Release 15](releases.md#release-15) | _Released 2019-11-25_ |
-| [Release 14](releases.md#release-14) | _Released 2019-11-06_ |
-| [Release 13](releases.md#release-13) | _Released 2019-10-17_ |
-| [Release 12](releases.md#release-12) | _Released 2019-09-11_ |
-| [Release 11](releases.md#release-11) | _Released 2019-08-19_ |
-| [Release 10](releases.md#release-10) | _Released 2019-07-05_ |
-| [Release 9](releases.md#release-9) | _Released 2019-05-16_ |
-| [Release 8](releases.md#release-8) | _Released 2019-04-08_ |
-| [Release 7](releases.md#release-7) | _Released 2019-03-15_ |
+| [Release 19](old_releases#release-19)                                | _Released 2020-03-31_ |
+| [Release 18](old_releases#release-18)                                | _Released 2020-03-04_ |
+| [Release 17](old_releases#release-17)                                | _Released 2020-01-24_ |
+| [Release 16](old_releases#release-16)                                | _Released 2020-01-02_ |
+| [Release 15](old_releases#release-15)                                | _Released 2019-11-25_ |
+| [Release 14](old_releases#release-14)                                | _Released 2019-11-06_ |
+| [Release 13](old_releases#release-13)                                | _Released 2019-10-17_ |
+| [Release 12](old_releases#release-12)                                | _Released 2019-09-11_ |
+| [Release 11](old_releases#release-11)                                | _Released 2019-08-19_ |
+| [Release 10](old_releases#release-10)                                | _Released 2019-07-05_ |
+| [Release 9](old_releases#release-9)                                  | _Released 2019-05-16_ |
+| [Release 8](old_releases#release-8)                                  | _Released 2019-04-08_ |
+| [Release 7](old_releases#release-7)                                  | _Released 2019-03-15_ |
 ## _Release 31_
 
 Release date: 2021-05-05 \(1.19.1\)
@@ -287,14 +287,14 @@ Release date: 2020-12-08
 
 ### Components
 
-| Component | Version |
-| :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.15 |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.5.0 |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver) | 5.2.0 |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.13.0 |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.7.0 |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.3.0 |
+| Component                                                                                             | Version |
+| :---------------------------------------------------------------------------------------------------- | :------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.15    |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.5.0   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver)                     | 5.2.0   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.13.0  |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.7.0   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.3.0   |
 
 ## _Release 26_
 
@@ -311,14 +311,14 @@ Release date: 2020-11-10
 
 ### Components
 
-| Component | Version |
-| :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.14.0 |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.4.0 |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver) | 5.1.2 |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.12.0 |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.6.0 |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.2.1 |
+| Component                                                                                             | Version |
+| :---------------------------------------------------------------------------------------------------- | :------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.14.0  |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.4.0   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver)                     | 5.1.2   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.12.0  |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.6.0   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.2.1   |
 
 ## _Release 25_
 
@@ -338,14 +338,14 @@ This release mainly builds upon _Release 24_ with some bugfixes, tweaks and impr
 
 ### Components
 
-| Component | Version |
-| :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.13.0 |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.3.1 |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver) | 5.1.0 |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.11.0 |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.5.1 |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.2.1 |
+| Component                                                                                             | Version |
+| :---------------------------------------------------------------------------------------------------- | :------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.13.0  |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.3.1   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver)                     | 5.1.0   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.11.0  |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.5.1   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.2.1   |
 
 ## _Release 25_
 
@@ -363,14 +363,14 @@ Release date: 2020-10-19
 
 ### Components
 
-| Component | Version |
-| :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.13.0 |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.3.1 |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver) | 5.1.0 |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.11.0 |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.5.1 |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.2.1 |
+| Component                                                                                             | Version |
+| :---------------------------------------------------------------------------------------------------- | :------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.13.0  |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.3.1   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver)                     | 5.1.0   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.11.0  |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.5.1   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.2.1   |
 
 ## _Release 25_
 
@@ -388,14 +388,14 @@ Release date: 2020-10-19
 
 ### Components
 
-| Component | Version |
-| :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.13.0 |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.3.1 |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver) | 5.1.0 |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.11.0 |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.5.1 |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.2.1 |
+| Component                                                                                             | Version |
+| :---------------------------------------------------------------------------------------------------- | :------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.13.0  |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.3.1   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver)                     | 5.1.0   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.11.0  |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.5.1   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.2.1   |
 
 ## _Release 25_
 
@@ -413,14 +413,14 @@ Release date: 2020-10-19
 
 ### Components
 
-| Component | Version |
-| :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.13.0 |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.3.1 |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver) | 5.1.0 |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.11.0 |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.5.1 |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.2.1 |
+| Component                                                                                             | Version |
+| :---------------------------------------------------------------------------------------------------- | :------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.13.0  |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.3.1   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver)                     | 5.1.0   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.11.0  |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.5.1   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.2.1   |
 
 ## _Release 24_
 
@@ -447,14 +447,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version |
-| :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.12.0 _\(**Bugfix**: 1.12.1 - 2020/10/12\)_ |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.2.1 |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver) | 5.0.0 |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.10.1 |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.5.0 |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.2.1 |
+| Component                                                                                             | Version                                      |
+| :---------------------------------------------------------------------------------------------------- | :------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.12.0 _\(**Bugfix**: 1.12.1 - 2020/10/12\)_ |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 2.2.1                                        |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver)                     | 5.0.0                                        |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.10.1                                       |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.5.0                                        |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.2.1                                        |
 
 ## _Release 23 \(skipped\)_
 
@@ -476,14 +476,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version |
-| :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.10.0 |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | TBD |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver) | 4.0.0 |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.9.0 |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.4.x |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | - |
+| Component                                                                                             | Version |
+| :---------------------------------------------------------------------------------------------------- | :------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.10.0  |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | TBD     |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver)                     | 4.0.0   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.9.0   |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.4.x   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | -       |
 
 ## _Release 21 \(skipped\)_
 
@@ -503,14 +503,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.8.2 | [Changelog](https://github.com/nrkno/tv-automation-server-core/blob/4c428983f4fba1fd366e52f71d523d707badb969/meteor/CHANGELOG.md) |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.11.0 | [Changelog](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/40c38a3805de5bc8794cf020c78fddc2eb674f9e/CHANGELOG.md) |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver) | 3.20.0 | [Changelog](https://github.com/nrkno/tv-automation-state-timeline-resolver/blob/cadcde8a54008e8b9597a2622c18487b53833b80/CHANGELOG.md) |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.7.0 | [Changelog](https://github.com/nrkno/tv-automation-playout-gateway/blob/8807ca4250fb68629eb6c161522ccf984ac6fcf4/CHANGELOG.md) |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.2.0 | Unchanged |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.1.0 | Unchanged |
+| Component                                                                                             | Version | Changelog                                                                                                                                   |
+| :---------------------------------------------------------------------------------------------------- | :------ | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.8.2   | [Changelog](https://github.com/nrkno/tv-automation-server-core/blob/4c428983f4fba1fd366e52f71d523d707badb969/meteor/CHANGELOG.md)           |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.11.0  | [Changelog](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/40c38a3805de5bc8794cf020c78fddc2eb674f9e/CHANGELOG.md) |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver)                     | 3.20.0  | [Changelog](https://github.com/nrkno/tv-automation-state-timeline-resolver/blob/cadcde8a54008e8b9597a2622c18487b53833b80/CHANGELOG.md)      |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.7.0   | [Changelog](https://github.com/nrkno/tv-automation-playout-gateway/blob/8807ca4250fb68629eb6c161522ccf984ac6fcf4/CHANGELOG.md)              |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.2.0   | Unchanged                                                                                                                                   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.1.0   | Unchanged                                                                                                                                   |
 
 ## _Release 19_
 
@@ -526,14 +526,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.7.0 | [Changelog](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#170-0-2020-03-25) |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.10.0 | [Changelog](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/CHANGELOG.md#1100-2020-03-24) |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.19.0 | [Changelog](https://github.com/nrkno/tv-automation-state-timeline-resolver/blob/master/CHANGELOG.md#3190-2020-03-25) |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.6.2 | [Changelog](https://github.com/nrkno/tv-automation-playout-gateway/blob/develop/CHANGELOG.md#160-2020-03-04) |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.2.0 | [Changelog](https://github.com/nrkno/tv-automation-mos-gateway/blob/release19/CHANGELOG.md#120-0-2020-03-24) |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.1.0 | N/A |
+| Component                                                                                             | Version | Changelog                                                                                                                 |
+| :---------------------------------------------------------------------------------------------------- | :------ | :------------------------------------------------------------------------------------------------------------------------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.7.0   | [Changelog](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#170-0-2020-03-25)          |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.10.0  | [Changelog](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/CHANGELOG.md#1100-2020-03-24) |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.19.0  | [Changelog](https://github.com/nrkno/tv-automation-state-timeline-resolver/blob/master/CHANGELOG.md#3190-2020-03-25)      |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.6.2   | [Changelog](https://github.com/nrkno/tv-automation-playout-gateway/blob/develop/CHANGELOG.md#160-2020-03-04)              |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.2.0   | [Changelog](https://github.com/nrkno/tv-automation-mos-gateway/blob/release19/CHANGELOG.md#120-0-2020-03-24)              |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.1.0   | N/A                                                                                                                       |
 
 ## _Release 18_
 
@@ -552,14 +552,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.6.0 | [Changelog](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#160-2020-03-04) |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.8.0 | [Changelog](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/CHANGELOG.md#180-2020-02-19) |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.18.0 | [Changelog](https://github.com/nrkno/tv-automation-state-timeline-resolver/blob/master/CHANGELOG.md#3180-2020-02-19) |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.6.0 | [Changelog](https://github.com/nrkno/tv-automation-playout-gateway/blob/master/CHANGELOG.md#160-0-2020-02-19) |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.1.0 | N/A |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.1.0 | N/A |
+| Component                                                                                             | Version | Changelog                                                                                                                |
+| :---------------------------------------------------------------------------------------------------- | :------ | :----------------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.6.0   | [Changelog](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#160-2020-03-04)           |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.8.0   | [Changelog](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/CHANGELOG.md#180-2020-02-19) |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.18.0  | [Changelog](https://github.com/nrkno/tv-automation-state-timeline-resolver/blob/master/CHANGELOG.md#3180-2020-02-19)     |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.6.0   | [Changelog](https://github.com/nrkno/tv-automation-playout-gateway/blob/master/CHANGELOG.md#160-0-2020-02-19)            |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.1.0   | N/A                                                                                                                      |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.1.0   | N/A                                                                                                                      |
 
 ## _Release 17_
 
@@ -578,14 +578,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.5.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#150-2020-01-24)\_\_ |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.7.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/CHANGELOG.md#170-2020-01-07)\_\_ |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.17.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-state-timeline-resolver/blob/master/CHANGELOG.md#3170-2020-01-08)\_\_ |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.5.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-playout-gateway/blob/master/CHANGELOG.md#150-2020-01-24)\_\_ |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.1.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-mos-gateway/blob/master/CHANGELOG.md#1190-2020-01-24)\_\_ |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.1.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-media-management/blob/master/CHANGELOG.md#110-2020-01-24)\_\_ |
+| Component                                                                                             | Version | Changelog                                                                                                                          |
+| :---------------------------------------------------------------------------------------------------- | :------ | :--------------------------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.5.0   | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#150-2020-01-24)\_\_           |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.7.0   | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/CHANGELOG.md#170-2020-01-07)\_\_ |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.17.0  | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-state-timeline-resolver/blob/master/CHANGELOG.md#3170-2020-01-08)\_\_     |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.5.0   | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-playout-gateway/blob/master/CHANGELOG.md#150-2020-01-24)\_\_              |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.1.0   | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-mos-gateway/blob/master/CHANGELOG.md#1190-2020-01-24)\_\_                 |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.1.0   | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-media-management/blob/master/CHANGELOG.md#110-2020-01-24)\_\_             |
 
 ## _Release 16_
 
@@ -605,14 +605,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.4.1 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#120-2019-11-06)\_\_ |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.5.0 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.15.1 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.4.0 |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.0.1 \(unchanged\) |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.0.2 \(unchanged\) |  |
+| Component                                                                                             | Version             | Changelog                                                                                                                |
+| :---------------------------------------------------------------------------------------------------- | :------------------ | :----------------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.4.1               | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#120-2019-11-06)\_\_ |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.5.0               |                                                                                                                          |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.15.1              |                                                                                                                          |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.4.0               |                                                                                                                          |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.0.1 \(unchanged\) |                                                                                                                          |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.0.2 \(unchanged\) |                                                                                                                          |
 
 ## _Release 15_
 
@@ -631,14 +631,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.3.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#120-2019-11-06)\_\_ |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.2.1 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.14.0 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.3.0 |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.0.1 \(unchanged\) |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.0.2 |  |
+| Component                                                                                             | Version             | Changelog                                                                                                                |
+| :---------------------------------------------------------------------------------------------------- | :------------------ | :----------------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.3.0               | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#120-2019-11-06)\_\_ |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.2.1               |                                                                                                                          |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.14.0              |                                                                                                                          |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.3.0               |                                                                                                                          |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.0.1 \(unchanged\) |                                                                                                                          |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.0.2               |                                                                                                                          |
 
 ## _Release 14_
 
@@ -659,14 +659,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.2.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#120-2019-11-06)\_\_ |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.1.0 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.13.1 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.2.1 _\(patched\)_ |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.0.1 |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.0.1 |  |
+| Component                                                                                             | Version             | Changelog                                                                                                                |
+| :---------------------------------------------------------------------------------------------------- | :------------------ | :----------------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.2.0               | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#120-2019-11-06)\_\_ |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.1.0               |                                                                                                                          |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.13.1              |                                                                                                                          |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.2.1 _\(patched\)_ |                                                                                                                          |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.0.1               |                                                                                                                          |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.0.1               |                                                                                                                          |
 
 ## _Release 13_
 
@@ -689,14 +689,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.1.2 \(patched!\) | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md)\_\_ |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.1.0 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.12.0 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.1.0 |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.0.0 |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.0.1 |  |
+| Component                                                                                             | Version            | Changelog                                                                                                 |
+| :---------------------------------------------------------------------------------------------------- | :----------------- | :-------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.1.2 \(patched!\) | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md)\_\_ |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 1.1.0              |                                                                                                           |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.12.0             |                                                                                                           |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.1.0              |                                                                                                           |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.0.0              |                                                                                                           |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.0.1              |                                                                                                           |
 
 ## _Release 12_
 
@@ -717,14 +717,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.0.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#100-2019-09-11)\_\_ |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.24.0 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.8.3 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.0.0 |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 1.0.0 |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.0.0 |  |
+| Component                                                                                             | Version | Changelog                                                                                                                |
+| :---------------------------------------------------------------------------------------------------- | :------ | :----------------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 1.0.0   | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#100-2019-09-11)\_\_ |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.24.0  |                                                                                                                          |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.8.3   |                                                                                                                          |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 1.0.0   |                                                                                                                          |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 1.0.0   |                                                                                                                          |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 1.0.0   |                                                                                                                          |
 
 ## _Release 11_
 
@@ -742,14 +742,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 0.26.0 | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0260-2019-08-19)\_\_ |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.24.1 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.1.1 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 0.21.0 |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 0.8.0 |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 0.2.1 |  |
+| Component                                                                                             | Version | Changelog                                                                                                                 |
+| :---------------------------------------------------------------------------------------------------- | :------ | :------------------------------------------------------------------------------------------------------------------------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 0.26.0  | \_\_[_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0260-2019-08-19)\_\_ |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.24.1  |                                                                                                                           |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.1.1   |                                                                                                                           |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 0.21.0  |                                                                                                                           |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 0.8.0   |                                                                                                                           |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 0.2.1   |                                                                                                                           |
 
 ## Release 10
 
@@ -777,14 +777,14 @@ See the [tracking issue on github](https://github.com/nrkno/Sofie-TV-automation/
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 0.25.0 | [_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0250-2019-07-05) |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.23.0 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 3.0.1 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 0.20.0 |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 0.8.0 |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 0.2.0 |  |
+| Component                                                                                             | Version | Changelog                                                                                                         |
+| :---------------------------------------------------------------------------------------------------- | :------ | :---------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 0.25.0  | [_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0250-2019-07-05) |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.23.0  |                                                                                                                   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 3.0.1   |                                                                                                                   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 0.20.0  |                                                                                                                   |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 0.8.0   |                                                                                                                   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 0.2.0   |                                                                                                                   |
 
 ## Release 9
 
@@ -800,16 +800,16 @@ Release date: 2019-05-16
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 0.24.0 | [_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0240-2019-05-16) |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.19.0 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 2.2.0 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 0.19.1 |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 0.7.0 |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 0.1.8 \(no changes\) |  |
-| [CasparCG](https://github.com/nrkno/tv-automation-casparcg-server) | [2.1.7\_NRK](https://github.com/nrkno/tv-automation-casparcg-server/releases/tag/v2.1.7_NRK) |  |
-| [CasparCG Media-Scanner](https://github.com/nrkno/tv-automation-media-scanner) | [1.5.3\_NRK](https://github.com/nrkno/tv-automation-media-scanner/releases/tag/v1.5.3rc4) |  |
+| Component                                                                                             | Version                                                                                      | Changelog                                                                                                         |
+| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 0.24.0                                                                                       | [_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0240-2019-05-16) |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.19.0                                                                                       |                                                                                                                   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 2.2.0                                                                                        |                                                                                                                   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 0.19.1                                                                                       |                                                                                                                   |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 0.7.0                                                                                        |                                                                                                                   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 0.1.8 \(no changes\)                                                                         |                                                                                                                   |
+| [CasparCG](https://github.com/nrkno/tv-automation-casparcg-server)                                    | [2.1.7\_NRK](https://github.com/nrkno/tv-automation-casparcg-server/releases/tag/v2.1.7_NRK) |                                                                                                                   |
+| [CasparCG Media-Scanner](https://github.com/nrkno/tv-automation-media-scanner)                        | [1.5.3\_NRK](https://github.com/nrkno/tv-automation-media-scanner/releases/tag/v1.5.3rc4)    |                                                                                                                   |
 
 ## Release 8
 
@@ -822,15 +822,15 @@ Release date: 2019-04-08
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 0.23.0 | [_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0230-2019-04-08) |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.16.0 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 2.0.1 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 0.18.0 |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 0.5.3 |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 0.1.8 |  |
-| [CasparCG Launcher](https://github.com/nrkno/tv-automation-casparcg-launcher) | [0.6.1](https://github.com/nrkno/tv-automation-casparcg-launcher/releases/tag/v0.6.1) |  |
+| Component                                                                                             | Version                                                                               | Changelog                                                                                                         |
+| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 0.23.0                                                                                | [_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0230-2019-04-08) |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.16.0                                                                                |                                                                                                                   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 2.0.1                                                                                 |                                                                                                                   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 0.18.0                                                                                |                                                                                                                   |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 0.5.3                                                                                 |                                                                                                                   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | 0.1.8                                                                                 |                                                                                                                   |
+| [CasparCG Launcher](https://github.com/nrkno/tv-automation-casparcg-launcher)                         | [0.6.1](https://github.com/nrkno/tv-automation-casparcg-launcher/releases/tag/v0.6.1) |                                                                                                                   |
 
 ## Release 7
 
@@ -838,16 +838,16 @@ Release date: 2019-03-15
 
 ### Components
 
-| Component | Version | Changelog |
-| :--- | :--- | :--- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 0.22.0 | [_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0220-2019-03-15) |
-| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.13.0 |  |
-| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types) | 1.6.3 |  |
-| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 0.17.0 |  |
-| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) | 0.5.2 |  |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | [r7rc1](https://github.com/nrkno/tv-automation-media-management/releases/tag/r7rc1) |  |
-| [CasparCG Launcher](https://github.com/nrkno/tv-automation-casparcg-launcher) | [0.6.0](https://github.com/nrkno/tv-automation-casparcg-launcher/releases/tag/v0.6.0) |  |
-| [CasparCG](https://github.com/nrkno/tv-automation-casparcg-server) | [2.1.6\_NRK](https://github.com/nrkno/tv-automation-casparcg-server/releases/tag/v2.1.6_NRK) |  |
+| Component                                                                                             | Version                                                                                      | Changelog                                                                                                         |
+| :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                            | 0.22.0                                                                                       | [_Changelog_](https://github.com/nrkno/tv-automation-server-core/blob/master/meteor/CHANGELOG.md#0220-2019-03-15) |
+| [Blueprints API \( Core \)](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) | 0.13.0                                                                                       |                                                                                                                   |
+| [Blueprints API \( TSR \)](https://www.npmjs.com/package/timeline-state-resolver-types)               | 1.6.3                                                                                        |                                                                                                                   |
+| [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway)                             | 0.17.0                                                                                       |                                                                                                                   |
+| [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)                                     | 0.5.2                                                                                        |                                                                                                                   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                              | [r7rc1](https://github.com/nrkno/tv-automation-media-management/releases/tag/r7rc1)          |                                                                                                                   |
+| [CasparCG Launcher](https://github.com/nrkno/tv-automation-casparcg-launcher)                         | [0.6.0](https://github.com/nrkno/tv-automation-casparcg-launcher/releases/tag/v0.6.0)        |                                                                                                                   |
+| [CasparCG](https://github.com/nrkno/tv-automation-casparcg-server)                                    | [2.1.6\_NRK](https://github.com/nrkno/tv-automation-casparcg-server/releases/tag/v2.1.6_NRK) |                                                                                                                   |
 
 ## Release 6
 

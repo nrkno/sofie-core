@@ -4,7 +4,7 @@ import { Settings } from '../../../lib/Settings'
 import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredentials } from './credentials'
 import { allAccess, noAccess, combineAccess, Access } from './access'
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { RundownId, Rundowns, Rundown } from '../../../lib/collections/Rundowns'
+import { RundownId, Rundowns, Rundown, RundownCollectionUtil } from '../../../lib/collections/Rundowns'
 import { StudioId } from '../../../lib/collections/Studios'
 import { isProtectedString } from '../../../lib/lib'
 import { OrganizationId, Organizations, Organization } from '../../../lib/collections/Organization'
@@ -288,12 +288,12 @@ namespace AccessRules {
 		playlist: RundownPlaylist,
 		cred: ResolvedCredentials
 	): Access<RundownPlaylist> {
-		const studio = playlist.getStudioLight()
+		const studio = fetchStudioLight(playlist.studioId)
 		if (!studio) return noAccess(`Studio of playlist "${playlist._id}" not found`)
 		return { ...accessStudio(studio, cred), document: playlist }
 	}
 	export function accessRundown(rundown: Rundown, cred: ResolvedCredentials): Access<Rundown> {
-		const playlist = rundown.getRundownPlaylist()
+		const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
 		if (!playlist) return noAccess(`Rundown playlist of rundown "${rundown._id}" not found`)
 		return { ...accessRundownPlaylist(playlist, cred), document: rundown }
 	}

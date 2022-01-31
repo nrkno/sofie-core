@@ -1,18 +1,5 @@
-import * as fs from 'fs'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-
-export const fsWriteFile: (
-	path: fs.PathLike | number,
-	data: any,
-	options?: { encoding?: string | null; mode?: number | string; flag?: string } | string | undefined | null
-) => void = Meteor.wrapAsync(fs.writeFile)
-export const fsReadFile: (
-	path: fs.PathLike | number,
-	options?: { encoding?: null; flag?: string } | undefined | null
-) => Buffer = Meteor.wrapAsync(fs.readFile)
-export const fsUnlinkFile: (path: fs.PathLike) => void = Meteor.wrapAsync(fs.unlink)
-export const fsMakeDir: (path: fs.PathLike, options?: fs.MakeDirectoryOptions) => void = Meteor.wrapAsync(fs.mkdir)
 
 export function getAbsolutePath(): string {
 	// @ts-ignore Meteor.absolutePath is injected by the package ostrio:meteor-root

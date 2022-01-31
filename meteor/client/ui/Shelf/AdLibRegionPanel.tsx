@@ -22,6 +22,7 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 
 interface IState {}
 
@@ -114,7 +115,9 @@ class AdLibRegionPanelInner extends MeteorReactComponent<
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+			doUserAction(t, e, UserAction.TAKE, (e) =>
+				MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+			)
 		}
 	}
 
@@ -179,7 +182,7 @@ export const AdLibRegionPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
-		const studio = props.playlist.getStudio()
+		const studio = RundownPlaylistCollectionUtil.getStudio(props.playlist)
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
 			props.showStyleBase

@@ -32,7 +32,11 @@ import { TrackedNote } from '../../../lib/api/notes'
 import { PieceId, Piece } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
-import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylistId,
+	RundownPlaylistCollectionUtil,
+} from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../../lib/api/rundownNotifications'
@@ -569,6 +573,9 @@ class RundownViewNotifier extends WithManagedTracker {
 									mediaId: mediaId.toUpperCase(),
 								})
 							}
+
+							if (!this.subscriptionsReady()) return
+
 							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
 							if (status !== RundownAPI.PieceStatusCode.UNKNOWN || message) {
 								localStatus.push({
@@ -707,7 +714,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				let newNotification: Notification | undefined = undefined
 				if (versionMismatch && versionMismatch.length) {
 					const playlist = RundownPlaylists.findOne(playlistId)
-					const firstRundown = playlist ? _.first(playlist.getRundowns()) : undefined
+					const firstRundown = playlist ? _.first(RundownPlaylistCollectionUtil.getRundowns(playlist)) : undefined
 
 					newNotification = new Notification(
 						'rundown_importVersions',

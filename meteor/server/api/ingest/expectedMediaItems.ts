@@ -220,5 +220,5 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForIngest): void {
 	const actions = cache.AdLibActions.findFetch({})
 
 	const eMIs = generateExpectedMediaItemsFull(cache.Studio.doc._id, cache.RundownId, pieces, adlibs, actions)
-	saveIntoCache<ExpectedMediaItem, ExpectedMediaItem>(cache.ExpectedMediaItems, {}, eMIs)
+	saveIntoCache<ExpectedMediaItem>(cache.ExpectedMediaItems, {}, eMIs)
 }

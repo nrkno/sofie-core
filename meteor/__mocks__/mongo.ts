@@ -30,7 +30,7 @@ import {
 	BulkWriteDeleteOneOperation,
 	BulkWriteDeleteManyOperation,
 } from 'mongodb'
-import { AsyncTransformedCollection } from '../lib/collections/lib'
+import { AsyncMongoCollection } from '../lib/collections/lib'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -61,12 +61,11 @@ export namespace MongoMock {
 
 		public asyncBulkWriteDelay = 100
 
-		private _transform?: (o: T) => T
-
 		constructor(name: string, options?: any) {
 			this._options = options || {}
 			this._name = name
-			this._transform = this._options.transform
+
+			if (this._options.transform) throw new Error('document transform is no longer supported')
 		}
 
 		find(query: any, options?: FindOptions<T>) {
@@ -100,10 +99,7 @@ export namespace MongoMock {
 					return docs
 				},
 				fetch: () => {
-					const transform = this._transform ? this._transform : (doc) => doc
-					return _.map(docs, (doc) => {
-						return transform(clone(doc))
-					})
+					return clone(docs)
 				},
 				count: () => {
 					return docs.length
@@ -313,7 +309,7 @@ export namespace MongoMock {
 	}
 	// Mock functions:
 	export function mockSetData<T extends CollectionObject>(
-		collection: AsyncTransformedCollection<T, T>,
+		collection: AsyncMongoCollection<T>,
 		data: MockCollection<T> | Array<T> | null
 	) {
 		const collectionName = collection.name
@@ -345,10 +341,7 @@ export namespace MongoMock {
 	 * This simulates the async nature of writes to mongo, and aims to detect race conditions in our code.
 	 * This method will change the duration of the sleep, and returns the old delay value
 	 */
-	export function setCollectionAsyncBulkWriteDelay(
-		collection: AsyncTransformedCollection<any, any>,
-		delay: number
-	): number {
+	export function setCollectionAsyncBulkWriteDelay(collection: AsyncMongoCollection<any>, delay: number): number {
 		const collection2 = collection as any
 		if (typeof collection2.asyncWriteDelay !== 'number') {
 			throw new Error(

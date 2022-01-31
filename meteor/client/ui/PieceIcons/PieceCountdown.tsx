@@ -10,11 +10,13 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { findPieceInstanceToShow } from './utils'
 import { Timediff } from '../ClockView/Timediff'
 import { getCurrentTime } from '../../../lib/lib'
+import { RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
 	rundownIds: RundownId[]
 	showStyleBaseId: ShowStyleBaseId
+	playlistActivationId: RundownPlaylistActivationId | undefined
 	partExpectedDuration: number | undefined
 	partStartedPlayback: number | undefined
 	partAutoNext: boolean
@@ -37,6 +39,7 @@ export const PieceCountdownContainer = withTracker((props: IPropsHeader) => {
 		componentDidMount() {
 			this.subscribe(PubSub.pieceInstancesSimple, {
 				rundownId: { $in: this.props.rundownIds },
+				playlistActivationId: this.props.playlistActivationId,
 			})
 			this.subscribe(PubSub.showStyleBases, {
 				_id: this.props.showStyleBaseId,
@@ -58,7 +61,8 @@ export const PieceCountdownContainer = withTracker((props: IPropsHeader) => {
 					(!this.props.partAutoNext &&
 						Math.abs(pieceEnable + (sourceDuration - seek) - (this.props.partExpectedDuration || 0)) > 500))
 			) {
-				const freezeCountdown = this.props.partStartedPlayback + pieceEnable + sourceDuration - getCurrentTime()
+				const freezeCountdown =
+					this.props.partStartedPlayback + pieceEnable + (sourceDuration - seek) - getCurrentTime()
 				if (freezeCountdown > 0) {
 					return (
 						<>

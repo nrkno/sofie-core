@@ -7,6 +7,8 @@ import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '../../../../lib/rundown/timings'
+import { unprotectString } from '../../../../lib/lib'
 type IProps = ICustomLayerItemProps
 interface IState {}
 
@@ -45,7 +47,12 @@ export const MicSourceRenderer = withTranslation()(
 			if (this.itemElement && !this.props.relative) {
 				this.itemPosition = this.itemElement.offsetLeft
 				const content = this.props.piece.instance.piece.content as ScriptContent | undefined
-				if (content && content.sourceDuration) {
+				if (
+					content &&
+					content.sourceDuration &&
+					!this.props.piece.instance.piece.virtual &&
+					(this.props.piece.renderedDuration === null || this.props.piece.renderedDuration > 0)
+				) {
 					const scriptReadTime = Math.round(content.sourceDuration * this.props.timeScale)
 					this.readTime = content.sourceDuration
 					const positionByReadTime = this.itemPosition + scriptReadTime
@@ -89,6 +96,7 @@ export const MicSourceRenderer = withTranslation()(
 		componentDidMount() {
 			// Create line element
 			this.lineItem = document.createElement('div')
+			this.lineItem.dataset['ownerObjId'] = unprotectString(this.props.piece.instance._id)
 			this.lineItem.classList.add('segment-timeline__piece-appendage', 'script-line', 'hidden')
 			this.updateAnchoredElsWidths()
 			if (this.props.itemElement) {
@@ -126,8 +134,10 @@ export const MicSourceRenderer = withTranslation()(
 			if (
 				!_forceSizingRecheck &&
 				this._lineAtEnd === true &&
-				(this.props.part.instance.part.expectedDuration || this.props.partDuration) * this.props.timeScale !==
-					(prevProps.part.instance.part.expectedDuration || prevProps.partDuration) * prevProps.timeScale
+				(calculatePartInstanceExpectedDurationWithPreroll(this.props.part.instance) || this.props.partDuration) *
+					this.props.timeScale !==
+					(calculatePartInstanceExpectedDurationWithPreroll(prevProps.part.instance) || prevProps.partDuration) *
+						prevProps.timeScale
 			) {
 				_forceSizingRecheck = true
 			}

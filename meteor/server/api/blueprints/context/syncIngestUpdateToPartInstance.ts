@@ -1,4 +1,4 @@
-import { ContextInfo, RundownContext } from './context'
+import { ContextInfo, RundownUserContext } from './context'
 import {
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
@@ -6,9 +6,8 @@ import {
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
 	ISyncIngestUpdateToPartInstanceContext,
-	NoteSeverity,
 } from '@sofie-automation/blueprints-integration'
-import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
@@ -30,22 +29,20 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { DbCacheWriteCollection } from '../../../cache/CacheCollection'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { Meteor } from 'meteor/meteor'
-import { INoteBase } from '../../../../lib/api/notes'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../../lib/collections/Studios'
 import { CacheForPlayout } from '../../playout/cache'
+import { logChanges } from '../../../cache/lib'
 
 export class SyncIngestUpdateToPartInstanceContext
-	extends RundownContext
+	extends RundownUserContext
 	implements ISyncIngestUpdateToPartInstanceContext
 {
-	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
-	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>
+	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance>
+	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
-	public readonly notes: INoteBase[] = []
-	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(
 		contextInfo: ContextInfo,
@@ -67,47 +64,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		this._proposedPieceInstances = normalizeArrayToMap(proposedPieceInstances, '_id')
 	}
 
-	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteSeverity.ERROR,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
-	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteSeverity.WARNING,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
-	}
-
-	notifyUserInfo(message: string, params?: { [key: string]: any }): void {
-		if (this.tempSendNotesIntoBlackHole) {
-			this.logInfo(`UserNotes: "${message}", ${JSON.stringify(params)}`)
-		} else {
-			this.notes.push({
-				type: NoteSeverity.INFO,
-				message: {
-					key: message,
-					args: params,
-				},
-			})
-		}
-	}
-
 	applyChangesToCache(cache: CacheForPlayout) {
 		if (this._partInstanceCache.isModified() || this._pieceInstanceCache.isModified()) {
 			this.logInfo(`Found ingest changes to apply to PartInstance`)
@@ -115,8 +71,11 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.logInfo(`No ingest changes to apply to PartInstance`)
 		}
 
-		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
-		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
+		const pieceChanges = this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
+		const partChanges = this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
+
+		logChanges('PartInstances', partChanges)
+		logChanges('PieceInstances', pieceChanges)
 	}
 
 	syncPieceInstance(
@@ -131,7 +90,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		// filter the submission to the allowed ones
 		const piece = modifiedPiece
 			? postProcessPieces(
-					this,
 					[
 						{
 							...modifiedPiece,
@@ -162,7 +120,6 @@ export class SyncIngestUpdateToPartInstanceContext
 		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceSampleKeys)
 
 		const piece = postProcessPieces(
-			this,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
 			this.partInstance.rundownId,
@@ -203,7 +160,6 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
 			updatedPiece.content.timelineObjects = postProcessTimelineObjects(
-				this,
 				pieceInstance.piece._id,
 				this.showStyleCompound.blueprintId,
 				updatedPiece.content.timelineObjects,

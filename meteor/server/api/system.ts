@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { makePromise, waitTime, MeteorWrapAsync } from '../../lib/lib'
+import { makePromise, waitTime, waitForPromise } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -30,7 +30,7 @@ function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 
 	const removeIndexes: IndexSpecification[] = []
 	_.each(indexes, (i, collectionName) => {
-		const existingIndexes = getCollectionIndexes(i.collection)
+		const existingIndexes = waitForPromise(getCollectionIndexes(i.collection))
 
 		// Check if there are old indexes in the database that should be removed:
 		_.each(existingIndexes, (existingIndex) => {
@@ -77,11 +77,18 @@ function ensureIndexes(): void {
 	})
 }
 
-const getCollectionIndexes: (collection: TransformedCollection<any, any>) => IndexSpecification[] = MeteorWrapAsync(
-	function getCollectionIndexes(collection: TransformedCollection<any, any>, callback: (err, result) => void) {
-		collection.rawCollection().indexes(callback)
-	}
-)
+async function getCollectionIndexes(collection: TransformedCollection<any, any>): Promise<IndexSpecification[]> {
+	return new Promise((resolve, reject) => {
+		try {
+			collection.rawCollection().indexes((err, res) => {
+				if (err) reject(err)
+				else resolve(res)
+			})
+		} catch (e) {
+			reject(e)
+		}
+	})
+}
 
 Meteor.startup(() => {
 	// Ensure indexes are created on startup:
@@ -108,7 +115,7 @@ let mongoTest: TransformedCollection<any, any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
-		mongoTest = createMongoCollection<any, any>('benchmark-test')
+		mongoTest = createMongoCollection<any>('benchmark-test')
 		mongoTest._ensureIndex({
 			indexedProp: 1,
 		})

@@ -8,7 +8,7 @@ import { registerIndex } from '../database'
 /** A string, identifying a ShowStyleVariant */
 export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
 
-export interface DBShowStyleVariant extends ProtectedStringProperties<IBlueprintShowStyleVariant, '_id'> {
+export interface ShowStyleVariant extends ProtectedStringProperties<IBlueprintShowStyleVariant, '_id'> {
 	_id: ShowStyleVariantId
 	/** Id of parent ShowStyleBase */
 	showStyleBaseId: ShowStyleBaseId
@@ -21,8 +21,10 @@ export interface ShowStyleCompound extends ShowStyleBase {
 	_rundownVersionHashVariant: string
 }
 
-export type ShowStyleVariant = DBShowStyleVariant
-export const ShowStyleVariants = createMongoCollection<ShowStyleVariant, DBShowStyleVariant>('showStyleVariants')
+/** Note: Use ShowStyleVariant instead */
+export type DBShowStyleVariant = ShowStyleVariant
+
+export const ShowStyleVariants = createMongoCollection<DBShowStyleVariant>('showStyleVariants')
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 
 registerIndex(ShowStyleVariants, {

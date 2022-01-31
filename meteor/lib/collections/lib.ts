@@ -18,13 +18,13 @@ const ObserveChangeBufferTimeout = 2000
 
 type Timeout = number
 
-export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: ProtectedString<any> }>(
-	collection: AsyncTransformedCollection<Ta, Tb>,
+export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString<any> }>(
+	collection: AsyncMongoCollection<DBInterface>,
 	hashName: string,
 	hashFields: string[],
 	skipEnsureUpdatedOnStart?: boolean
 ) {
-	const doUpdate = (id: Tb['_id'], obj: any) => {
+	const doUpdate = (id: DBInterface['_id'], obj: any) => {
 		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
 
 		if (newHash !== obj[hashName]) {
@@ -35,10 +35,10 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 		}
 	}
 
-	const observedChangesTimeouts = new Map<Tb['_id'], Timeout>()
+	const observedChangesTimeouts = new Map<DBInterface['_id'], Timeout>()
 
 	collection.find().observeChanges({
-		changed: (id: Tb['_id'], changedFields) => {
+		changed: (id: DBInterface['_id'], changedFields) => {
 			// Ignore the hash field, to stop an infinite loop
 			delete changedFields[hashName]
 
@@ -72,39 +72,41 @@ export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: Protected
 	}
 }
 
-export function createMongoCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+export function createMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: string | null,
 	options?: {
 		connection?: Object | null
 		idGeneration?: string
-		transform?: Function
 	}
-): AsyncTransformedCollection<Class, DBInterface> {
-	const collection: TransformedCollection<Class, DBInterface> = new Mongo.Collection<Class>(name, options) as any
+): AsyncMongoCollection<DBInterface> {
+	const collection: TransformedCollection<DBInterface, DBInterface> = new Mongo.Collection<DBInterface>(
+		name,
+		options
+	) as any
 
 	if ((collection as any)._isMock) {
 		return new WrappedMockCollection(collection, name)
 	} else {
 		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
-		return new WrappedAsyncTransformedCollection(collection, name)
+		return new WrappedAsyncMongoCollection(collection, name)
 	}
 }
 
 export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: Mongo.Collection<DBInterface>,
 	name: string
-): AsyncTransformedCollection<DBInterface, DBInterface> {
-	return new WrappedAsyncTransformedCollection<DBInterface, DBInterface>(collection as any, name)
+): AsyncMongoCollection<DBInterface> {
+	return new WrappedAsyncMongoCollection<DBInterface>(collection as any, name)
 }
 
-class WrappedTransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>
-	implements TransformedCollection<Class, DBInterface>
+class WrappedTransformedCollection<DBInterface extends { _id: ProtectedString<any> }>
+	implements TransformedCollection<DBInterface, DBInterface>
 {
-	readonly #collection: TransformedCollection<Class, DBInterface>
+	readonly #collection: TransformedCollection<DBInterface, DBInterface>
 
 	public readonly name: string | null
 
-	constructor(collection: TransformedCollection<Class, DBInterface>, name: string | null) {
+	constructor(collection: TransformedCollection<DBInterface, DBInterface>, name: string | null) {
 		this.#collection = collection
 		this.name = name
 	}
@@ -114,37 +116,32 @@ class WrappedTransformedCollection<Class extends DBInterface, DBInterface extend
 		return this.#collection._isMock
 	}
 
-	private get _transform() {
-		// @ts-expect-error re-export private property
-		return this.#collection._transform
-	}
-
 	private wrapMongoError(e: any): never {
 		const str = (e && e.reason) || e.toString() || e || 'Unknown MongoDB Error'
 		throw new Meteor.Error((e && e.error) || 500, `Collection "${this.name}": ${str}`)
 	}
 
-	allow(...args: Parameters<TransformedCollection<Class, DBInterface>['allow']>): boolean {
+	allow(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['allow']>): boolean {
 		return this.#collection.allow(...args)
 	}
-	deny(...args: Parameters<TransformedCollection<Class, DBInterface>['deny']>): boolean {
+	deny(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['deny']>): boolean {
 		return this.#collection.deny(...args)
 	}
-	find(...args: Parameters<TransformedCollection<Class, DBInterface>['find']>): Mongocursor<Class> {
+	find(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['find']>): Mongocursor<DBInterface> {
 		try {
 			return this.#collection.find(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	findOne(...args: Parameters<TransformedCollection<Class, DBInterface>['findOne']>): Class | undefined {
+	findOne(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['findOne']>): DBInterface | undefined {
 		try {
 			return this.#collection.findOne(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	insert(...args: Parameters<TransformedCollection<Class, DBInterface>['insert']>): DBInterface['_id'] {
+	insert(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['insert']>): DBInterface['_id'] {
 		try {
 			return this.#collection.insert(...args)
 		} catch (e) {
@@ -157,21 +154,21 @@ class WrappedTransformedCollection<Class extends DBInterface, DBInterface extend
 	rawDatabase(): any {
 		return this.#collection.rawDatabase()
 	}
-	remove(...args: Parameters<TransformedCollection<Class, DBInterface>['remove']>): number {
+	remove(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['remove']>): number {
 		try {
 			return this.#collection.remove(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	update(...args: Parameters<TransformedCollection<Class, DBInterface>['update']>): number {
+	update(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['update']>): number {
 		try {
 			return this.#collection.update(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	upsert(...args: Parameters<TransformedCollection<Class, DBInterface>['upsert']>): {
+	upsert(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['upsert']>): {
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
 	} {
@@ -182,14 +179,14 @@ class WrappedTransformedCollection<Class extends DBInterface, DBInterface extend
 		}
 	}
 
-	_ensureIndex(...args: Parameters<TransformedCollection<Class, DBInterface>['_ensureIndex']>): void {
+	_ensureIndex(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['_ensureIndex']>): void {
 		try {
 			return this.#collection._ensureIndex(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	_dropIndex(...args: Parameters<TransformedCollection<Class, DBInterface>['_dropIndex']>): void {
+	_dropIndex(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['_dropIndex']>): void {
 		try {
 			return this.#collection._dropIndex(...args)
 		} catch (e) {
@@ -198,14 +195,14 @@ class WrappedTransformedCollection<Class extends DBInterface, DBInterface extend
 	}
 }
 
-class WrappedAsyncTransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>
-	extends WrappedTransformedCollection<Class, DBInterface>
-	implements AsyncTransformedCollection<Class, DBInterface>
+class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
+	extends WrappedTransformedCollection<DBInterface>
+	implements AsyncMongoCollection<DBInterface>
 {
 	async findFetchAsync(
 		selector: MongoQuery<DBInterface> | string,
 		options?: FindOptions<DBInterface>
-	): Promise<Array<Class>> {
+	): Promise<Array<DBInterface>> {
 		// Make the collection fethcing in another Fiber:
 		const p = makePromise(() => {
 			return this.find(selector as any, options).fetch()
@@ -218,7 +215,7 @@ class WrappedAsyncTransformedCollection<Class extends DBInterface, DBInterface e
 	async findOneAsync(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		options?: FindOptions<DBInterface>
-	): Promise<Class | undefined> {
+	): Promise<DBInterface | undefined> {
 		const arr = await this.findFetchAsync(selector, { ...options, limit: 1 })
 		return arr[0]
 	}
@@ -327,13 +324,13 @@ class WrappedAsyncTransformedCollection<Class extends DBInterface, DBInterface e
 }
 
 /** This is for the mock mongo collection, as internally it is sync and so we dont need or want to play around with fibers */
-class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>
-	extends WrappedTransformedCollection<Class, DBInterface>
-	implements AsyncTransformedCollection<Class, DBInterface>
+class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
+	extends WrappedTransformedCollection<DBInterface>
+	implements AsyncMongoCollection<DBInterface>
 {
 	private readonly realSleep: (time: number) => Promise<void>
 
-	constructor(collection: TransformedCollection<Class, DBInterface>, name: string | null) {
+	constructor(collection: TransformedCollection<DBInterface, DBInterface>, name: string | null) {
 		super(collection, name)
 
 		if (!this._isMock) throw new Meteor.Error(500, 'WrappedMockCollection is only valid for a mock collection')
@@ -345,7 +342,7 @@ class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id
 	async findFetchAsync(
 		selector: MongoQuery<DBInterface> | string,
 		options?: FindOptions<DBInterface>
-	): Promise<Array<Class>> {
+	): Promise<Array<DBInterface>> {
 		await this.realSleep(0)
 		return this.find(selector as any, options).fetch()
 	}
@@ -353,7 +350,7 @@ class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id
 	async findOneAsync(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		options?: FindOptions<DBInterface>
-	): Promise<Class | undefined> {
+	): Promise<DBInterface | undefined> {
 		const arr = await this.findFetchAsync(selector, { ...options, limit: 1 })
 		return arr[0]
 	}
@@ -443,17 +440,15 @@ class WrappedMockCollection<Class extends DBInterface, DBInterface extends { _id
 	}
 }
 
-export interface AsyncTransformedCollection<
-	Class extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
-> extends TransformedCollection<Class, DBInterface> {
+export interface AsyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
+	extends TransformedCollection<DBInterface, DBInterface> {
 	name: string | null
 
-	findFetchAsync(selector: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<Array<Class>>
+	findFetchAsync(selector: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<Array<DBInterface>>
 	findOneAsync(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		options?: FindOptions<DBInterface>
-	): Promise<Class | undefined>
+	): Promise<DBInterface | undefined>
 
 	insertAsync(doc: DBInterface): Promise<DBInterface['_id']>
 

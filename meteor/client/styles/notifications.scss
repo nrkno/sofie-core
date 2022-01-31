@@ -16,6 +16,13 @@
 	pointer-events: none;
 	max-height: 1000px;
 
+	visibility: visible;
+
+	&.notification-pop-ups--empty {
+		visibility: hidden;
+		transition: 0s visibility 5s;
+	}
+
 	.notification-pop-up {
 		font-size: 0.9em;
 		letter-spacing: 0.3px;
@@ -435,12 +442,20 @@
 }
 
 .rundown-view + .notification-pop-ups {
-	transition: 1s right ease-out;
+	transition: right 1s ease-out;
+
+	&.notification-pop-ups--empty {
+		transition: right 1s ease-out, visibility 0s 5s;
+	}
 }
 
 .rundown-view.notification-center-open + .notification-pop-ups {
 	right: 460px;
-	transition: 1s right ease-out;
+	transition: right 1s ease-out;
+
+	&.notification-pop-ups--empty {
+		transition: right 1s ease-out, visibility 0s 5s;
+	}
 }
 
 @media screen and (max-width: 1600px) {

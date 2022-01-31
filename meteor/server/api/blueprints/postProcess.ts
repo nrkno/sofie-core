@@ -1,6 +1,6 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, unprotectString, literal } from '../../../lib/lib'
+import { protectString, unprotectString, literal, getHash } from '../../../lib/lib'
 import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -10,8 +10,8 @@ import {
 	IBlueprintAdLibPiece,
 	TSR,
 	IBlueprintActionManifest,
-	ICommonContext,
-	IShowStyleContext,
+	PieceLifespan,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
@@ -26,7 +26,7 @@ import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
-import { CommonContext, ShowStyleContext } from './context'
+import { ShowStyleContext } from './context'
 import { ReadonlyDeep } from 'type-fest'
 import { processAdLibActionITranslatableMessages } from '../../../lib/api/TranslatableMessage'
 import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
@@ -37,7 +37,6 @@ import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
  * prefixAllTimelineObjects: Add a prefix to the timeline object ids, to ensure duplicate ids don't occur when inserting a copy of a piece
  */
 export function postProcessPieces(
-	innerContext: IShowStyleContext,
 	pieces: IBlueprintPiece[],
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
@@ -55,9 +54,12 @@ export function postProcessPieces(
 	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
 		const i = externalIds.get(orgPiece.externalId) ?? 0
 		externalIds.set(orgPiece.externalId, i + 1)
+
 		const piece: Piece = {
+			pieceType: IBlueprintPieceType.Normal,
+
 			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
-			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
+			_id: protectString(getHash(`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
 			continuesRefId: protectString(orgPiece.continuesRefId),
 			startRundownId: rundownId,
 			startSegmentId: segmentId,
@@ -66,24 +68,28 @@ export function postProcessPieces(
 			invalid: setInvalid ?? false,
 		}
 
-		if (!piece.externalId && !piece.isTransition)
+		if (piece.pieceType !== IBlueprintPieceType.Normal) {
+			// transition pieces must not be infinite, lets enforce that
+			piece.lifespan = PieceLifespan.WithinPart
+		}
+		if (piece.extendOnHold) {
+			// HOLD pieces must not be infinite, as they become that when being held
+			piece.lifespan = PieceLifespan.WithinPart
+		}
+
+		if (!piece.externalId && piece.pieceType === IBlueprintPieceType.Normal)
 			throw new Meteor.Error(
 				400,
-				`Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${innerContext.unhashId(
-					unprotectString(piece._id)
-				)}")`
+				`Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${piece.name}")`
 			)
 		if (!allowNowForPiece && piece.enable.start === 'now')
 			throw new Meteor.Error(
 				400,
-				`Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${innerContext.unhashId(
-					unprotectString(piece._id)
-				)}")`
+				`Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${piece.name}")`
 			)
 
 		if (piece.content?.timelineObjects) {
 			piece.content.timelineObjects = postProcessTimelineObjects(
-				innerContext,
 				piece._id,
 				blueprintId,
 				piece.content.timelineObjects,
@@ -110,7 +116,6 @@ function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
 }
 
 export function postProcessTimelineObjects(
-	innerContext: ICommonContext,
 	pieceId: PieceId,
 	blueprintId: BlueprintId,
 	timelineObjects: TSR.TSRTimelineObjBase[],
@@ -124,21 +129,17 @@ export function postProcessTimelineObjects(
 			objectType: TimelineObjType.RUNDOWN,
 		}
 
-		if (!obj.id) obj.id = innerContext.getHashId(pieceId + '_' + i++)
+		if (!obj.id) obj.id = getHash(pieceId + '_' + i++)
 		if (isNow(obj.enable))
 			throw new Meteor.Error(
 				400,
-				`Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(
-					unprotectString(pieceId)
-				)}")`
+				`Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${obj.id}")`
 			)
 
 		if (timelineUniqueIds.has(obj.id))
 			throw new Meteor.Error(
 				400,
-				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("${innerContext.unhashId(
-					obj.id
-				)}")`
+				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("${obj.id}")`
 			)
 		timelineUniqueIds.add(obj.id)
 
@@ -153,7 +154,6 @@ export function postProcessTimelineObjects(
 }
 
 export function postProcessAdLibPieces(
-	innerContext: ICommonContext,
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
 	partId: PartId | undefined,
@@ -171,7 +171,7 @@ export function postProcessAdLibPieces(
 		const piece: AdLibPiece = {
 			...orgAdlib,
 			_id: protectString(
-				innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
+				getHash(`${rundownId}_${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
 			),
 			rundownId: rundownId,
 			partId: partId,
@@ -181,14 +181,11 @@ export function postProcessAdLibPieces(
 		if (!piece.externalId)
 			throw new Meteor.Error(
 				400,
-				`Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(
-					unprotectString(piece._id)
-				)}")`
+				`Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${piece.name}")`
 			)
 
 		if (piece.content && piece.content.timelineObjects) {
 			piece.content.timelineObjects = postProcessTimelineObjects(
-				innerContext,
 				piece._id,
 				blueprintId,
 				piece.content.timelineObjects,
@@ -207,7 +204,6 @@ export function postProcessAdLibPieces(
 }
 
 export function postProcessGlobalAdLibActions(
-	innerContext: ICommonContext,
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
 	adlibActions: IBlueprintActionManifest[]
@@ -219,7 +215,7 @@ export function postProcessGlobalAdLibActions(
 		return literal<RundownBaselineAdLibAction>({
 			...action,
 			actionId: action.actionId,
-			_id: protectString(innerContext.getHashId(`${blueprintId}_global_adlib_action_${i}`)),
+			_id: protectString(getHash(`${rundownId}_${blueprintId}_global_adlib_action_${i}`)),
 			rundownId: rundownId,
 			partId: undefined,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
@@ -228,7 +224,6 @@ export function postProcessGlobalAdLibActions(
 }
 
 export function postProcessAdLibActions(
-	innerContext: ICommonContext,
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
 	partId: PartId,
@@ -241,7 +236,7 @@ export function postProcessAdLibActions(
 		return literal<AdLibAction>({
 			...action,
 			actionId: action.actionId,
-			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_action_${i}`)),
+			_id: protectString(getHash(`${rundownId}_${blueprintId}_${partId}_adlib_action_${i}`)),
 			rundownId: rundownId,
 			partId: partId,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
@@ -253,16 +248,14 @@ export function postProcessStudioBaselineObjects(
 	studio: ReadonlyDeep<Studio>,
 	objs: TSR.TSRTimelineObjBase[]
 ): TimelineObjRundown[] {
-	const context = new CommonContext({ identifier: 'studio', name: 'studio' })
-	return postProcessTimelineObjects(context, protectString('studio'), studio.blueprintId!, objs, false)
+	return postProcessTimelineObjects(protectString('studio'), studio.blueprintId!, objs, false)
 }
 
 export function postProcessRundownBaselineItems(
-	innerContext: ICommonContext,
 	blueprintId: BlueprintId,
 	baselineItems: TSR.TSRTimelineObjBase[]
 ): TimelineObjGeneric[] {
-	return postProcessTimelineObjects(innerContext, protectString('baseline'), blueprintId, baselineItems, false)
+	return postProcessTimelineObjects(protectString('baseline'), blueprintId, baselineItems, false)
 }
 
 export function postProcessBucketAdLib(
@@ -277,7 +270,7 @@ export function postProcessBucketAdLib(
 	const piece: BucketAdLib = {
 		...itemOrig,
 		_id: protectString(
-			innerContext.getHashId(
+			getHash(
 				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),
@@ -293,7 +286,6 @@ export function postProcessBucketAdLib(
 
 	if (piece.content && piece.content.timelineObjects) {
 		piece.content.timelineObjects = postProcessTimelineObjects(
-			innerContext,
 			piece._id,
 			blueprintId,
 			piece.content.timelineObjects,
@@ -316,7 +308,7 @@ export function postProcessBucketAction(
 	const action: BucketAdLibAction = {
 		...itemOrig,
 		_id: protectString(
-			innerContext.getHashId(
+			getHash(
 				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
 			)
 		),

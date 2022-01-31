@@ -7,7 +7,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -75,7 +75,9 @@ class PartTimingPanelInner extends MeteorReactComponent<
 export const PartTimingPanel = translateWithTracker<IPartTimingPanelProps, IState, IPartTimingPanelTrackedProps>(
 	(props: IPartTimingPanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
-			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
+			const livePart = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+				_id: props.playlist.currentPartInstanceId,
+			})[0]
 			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)
 
 			return { active, livePart }

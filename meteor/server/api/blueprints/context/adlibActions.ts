@@ -12,7 +12,7 @@ import {
 	UnprotectedStringProperties,
 	clone,
 } from '../../../../lib/lib'
-import { Part } from '../../../../lib/collections/Parts'
+import { isPartPlayable } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
 	IEventContext,
@@ -25,6 +25,7 @@ import {
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPieceDB,
+	Time,
 } from '@sofie-automation/blueprints-integration'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylistActivationId } from '../../../../lib/collections/RundownPlaylists'
@@ -252,7 +253,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, IBlueprintPieceSampleKeys)
 
 		const piece = postProcessPieces(
-			this,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
 			partInstance.rundownId,
@@ -305,7 +305,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		if (piece.content && piece.content.timelineObjects) {
 			piece.content.timelineObjects = postProcessTimelineObjects(
-				this,
 				pieceInstance.piece._id,
 				this.showStyleCompound.blueprintId,
 				piece.content.timelineObjects,
@@ -358,7 +357,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('New part must contain at least one piece')
 		}
 
-		const newPartInstance = new PartInstance({
+		const newPartInstance: PartInstance = {
 			_id: getRandomId(),
 			rundownId: currentPartInstance.rundownId,
 			segmentId: currentPartInstance.segmentId,
@@ -366,7 +365,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			segmentPlayoutId: currentPartInstance.segmentPlayoutId,
 			takeCount: currentPartInstance.takeCount + 1,
 			rehearsal: currentPartInstance.rehearsal,
-			part: new Part({
+			part: {
 				...rawPart,
 				_id: getRandomId(),
 				rundownId: currentPartInstance.rundownId,
@@ -376,15 +375,15 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				invalid: false,
 				invalidReason: undefined,
 				floated: false,
-			}),
-		})
+				expectedDurationWithPreroll: undefined, // Filled in later
+			},
+		}
 
-		if (!newPartInstance.part.isPlayable()) {
+		if (!isPartPlayable(newPartInstance.part)) {
 			throw new Error('Cannot queue a part which is not playable')
 		}
 
 		const pieces = postProcessPieces(
-			this,
 			rawPieces,
 			this.showStyleCompound.blueprintId,
 			currentPartInstance.rundownId,
@@ -502,6 +501,24 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		this.takeAfterExecute = take
 
 		return this.takeAfterExecute
+	}
+
+	blockTakeUntil(time: Time | null): void {
+		if (time !== null && (time < getCurrentTime() || typeof time !== 'number'))
+			throw new Error('Cannot block taking out of the current part, to a time in the past')
+
+		const partInstanceId = this._cache.Playlist.doc.currentPartInstanceId
+		if (!partInstanceId) {
+			throw new Error('Cannot block take when there is no part playing')
+		}
+		this._cache.PartInstances.update(partInstanceId, (doc) => {
+			if (time) {
+				doc.blockTakeUntil = time
+			} else {
+				delete doc.blockTakeUntil
+			}
+			return doc
+		})
 	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {

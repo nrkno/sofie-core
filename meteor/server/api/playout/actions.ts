@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { getCurrentTime, getRandomId, makePromise, stringifyError } from '../../../lib/lib'
+import { getCurrentTime, getRandomId, stringifyError } from '../../../lib/lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownEventContext } from '../blueprints/context'
 import { setNextPart, onPartHasStoppedPlaying, selectNextPart, LOW_PRIO_DEFER_TIME, resetRundownPlaylist } from './lib'
@@ -168,6 +168,7 @@ export async function deactivateRundownPlaylistInner(cache: CacheForPlayout): Pr
 		},
 		$unset: {
 			activationId: 1,
+			nextSegmentId: 1,
 		},
 	})
 	await setNextPart(cache, null)
@@ -193,25 +194,21 @@ export async function prepareStudioForBroadcast(cache: CacheForPlayout, okToDest
 
 	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
-	await Promise.allSettled(
-		playoutDevices.map(async (device) =>
-			makePromise(() => {
-				PeripheralDeviceAPI.executeFunction(
-					device._id,
-					(err) => {
-						if (err) {
-							logger.error(err)
-						} else {
-							logger.info('devicesMakeReady OK')
-						}
-					},
-					'devicesMakeReady',
-					okToDestoryStuff,
-					rundownPlaylistToBeActivated._id
-				)
-			})
+	for (const device of playoutDevices) {
+		// Fire the command and don't wait for the result
+		PeripheralDeviceAPI.executeFunction(
+			device._id,
+			'devicesMakeReady',
+			okToDestoryStuff,
+			rundownPlaylistToBeActivated._id
 		)
-	)
+			.then(() => {
+				logger.info(`devicesMakeReady: "${device._id}" OK`)
+			})
+			.catch((err) => {
+				logger.error(`devicesMakeReady: "${device._id} Fail: ${stringifyError(err)}"`)
+			})
+	}
 }
 /**
  * Makes a studio "stand down" after a broadcast
@@ -223,22 +220,14 @@ export async function standDownStudio(cache: CacheForPlayout, okToDestoryStuff: 
 
 	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
-	await Promise.allSettled(
-		playoutDevices.map(async (device) =>
-			makePromise(() => {
-				PeripheralDeviceAPI.executeFunction(
-					device._id,
-					(err) => {
-						if (err) {
-							logger.error(err)
-						} else {
-							logger.info('devicesStandDown OK')
-						}
-					},
-					'devicesStandDown',
-					okToDestoryStuff
-				)
+	for (const device of playoutDevices) {
+		// Fire the command and don't wait for the result
+		PeripheralDeviceAPI.executeFunction(device._id, 'devicesStandDown', okToDestoryStuff)
+			.then(() => {
+				logger.info(`devicesStandDown: "${device._id}" OK`)
 			})
-		)
-	)
+			.catch((err) => {
+				logger.error(`devicesStandDown: "${device._id} Fail: ${stringifyError(err)}"`)
+			})
+	}
 }

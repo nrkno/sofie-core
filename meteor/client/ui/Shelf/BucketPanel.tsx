@@ -45,7 +45,7 @@ import {
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceId } from '../../../lib/collections/Pieces'
@@ -271,7 +271,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			}
 		}
 		if (showStyleVariantId === undefined) {
-			const rundown = props.playlist.getRundowns(
+			const rundown = RundownPlaylistCollectionUtil.getRundowns(
+				props.playlist,
 				{},
 				{
 					fields: {
@@ -317,7 +318,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			.sort((a, b) => a._rank - b._rank || a.name.localeCompare(b.name))
 		return literal<IBucketPanelTrackedProps>({
 			adLibPieces: allBucketItems,
-			studio: props.playlist.getStudio(),
+			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
 			unfinishedAdLibIds,
 			unfinishedTags,
 			showStyleVariantId,
@@ -367,9 +368,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						_id: this.props.playlist.studioId,
 					})
 					this.autorun(() => {
-						const showStyles = this.props.playlist
-							.getRundowns()
-							.map((rundown) => [rundown.showStyleBaseId, rundown.showStyleVariantId])
+						const showStyles = RundownPlaylistCollectionUtil.getRundowns(this.props.playlist).map((rundown) => [
+							rundown.showStyleBaseId,
+							rundown.showStyleVariantId,
+						])
 						const showStyleBases = showStyles.map((showStyle) => showStyle[0])
 						const showStyleVariants = showStyles.map((showStyle) => showStyle[1])
 						this.subscribe(PubSub.bucketAdLibPieces, {

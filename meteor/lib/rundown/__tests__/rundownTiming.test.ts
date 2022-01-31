@@ -1,30 +1,28 @@
 import { PartInstance } from '../../collections/PartInstances'
 import { DBPart, Part, PartId } from '../../collections/Parts'
 import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
-import { DBRundown, Rundown } from '../../collections/Rundowns'
+import { DBRundown } from '../../collections/Rundowns'
 import { literal, protectString, unprotectString } from '../../lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 
 const DEFAULT_DURATION = 4000
 
 function makeMockPlaylist(): RundownPlaylist {
-	return new RundownPlaylist(
-		literal<DBRundownPlaylist>({
-			_id: protectString('mock-playlist'),
-			externalId: 'mock-playlist',
-			organizationId: protectString('test'),
-			studioId: protectString('studio0'),
-			name: 'Mock Playlist',
-			created: 0,
-			modified: 0,
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null,
-			timing: {
-				type: 'none' as any,
-			},
-		})
-	)
+	return literal<DBRundownPlaylist>({
+		_id: protectString('mock-playlist'),
+		externalId: 'mock-playlist',
+		organizationId: protectString('test'),
+		studioId: protectString('studio0'),
+		name: 'Mock Playlist',
+		created: 0,
+		modified: 0,
+		currentPartInstanceId: null,
+		nextPartInstanceId: null,
+		previousPartInstanceId: null,
+		timing: {
+			type: 'none' as any,
+		},
+	})
 }
 
 function makeMockPart(
@@ -39,41 +37,38 @@ function makeMockPart(
 		displayDurationGroup?: string
 	}
 ): Part {
-	return new Part(
-		literal<DBPart>({
-			_id: protectString(id),
-			externalId: id,
-			title: '',
-			segmentId: protectString(segmentId),
-			_rank: rank,
-			rundownId: protectString(rundownId),
-			...durations,
-		})
-	)
+	return literal<DBPart>({
+		_id: protectString(id),
+		externalId: id,
+		title: '',
+		segmentId: protectString(segmentId),
+		_rank: rank,
+		rundownId: protectString(rundownId),
+		...durations,
+		expectedDurationWithPreroll: durations.expectedDuration,
+	})
 }
 
 function makeMockRundown(id: string, playlistId: string, rank: number) {
-	return new Rundown(
-		literal<DBRundown>({
-			_id: protectString(id),
-			externalId: id,
-			timing: {
-				type: 'none' as any,
-			},
-			studioId: protectString('studio0'),
-			showStyleBaseId: protectString(''),
-			showStyleVariantId: protectString('variant0'),
-			peripheralDeviceId: protectString(''),
-			created: 0,
-			modified: 0,
-			importVersions: {} as any,
-			name: 'test',
-			externalNRCSName: 'mockNRCS',
-			organizationId: protectString(''),
-			playlistId: protectString(playlistId),
-			_rank: rank,
-		})
-	)
+	return literal<DBRundown>({
+		_id: protectString(id),
+		externalId: id,
+		timing: {
+			type: 'none' as any,
+		},
+		studioId: protectString('studio0'),
+		showStyleBaseId: protectString(''),
+		showStyleVariantId: protectString('variant0'),
+		peripheralDeviceId: protectString(''),
+		created: 0,
+		modified: 0,
+		importVersions: {} as any,
+		name: 'test',
+		externalNRCSName: 'mockNRCS',
+		organizationId: protectString(''),
+		playlistId: protectString(playlistId),
+		_rank: rank,
+	})
 }
 
 describe('rundown Timing Calculator', () => {

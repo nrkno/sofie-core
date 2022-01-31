@@ -33,6 +33,10 @@ export interface PlaylistTimingBase {
 
 export interface PlaylistTimingNone {
 	type: PlaylistTimingType.None
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
 }
 
 export interface PlaylistTimingForwardTime extends PlaylistTimingBase {
@@ -121,6 +125,11 @@ export interface IBlueprintSegmentRundown<TMetadata = unknown> {
 	metaData?: TMetadata
 }
 
+export enum SegmentDisplayMode {
+	Timeline = 'timeline',
+	Storyboard = 'storyboard',
+}
+
 /** The Segment generated from Blueprint */
 export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-presentable name (Slug) for the Title */
@@ -131,10 +140,29 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	isHidden?: boolean
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
+
+	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
+	displayAs?: SegmentDisplayMode
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {
 	_id: string
+}
+
+/** Timings for the inTransition, when supported and allowed */
+export interface IBlueprintPartInTransition {
+	/** Duration this transition block a take for. After this time, another take is allowed which may cut this transition off early */
+	blockTakeDuration: number
+	/** Duration the previous part be kept playing once the transition is started. Typically the duration of it remaining in-vision */
+	previousPartKeepaliveDuration: number
+	/** Duration the pieces of the part should be delayed for once the transition starts. Typically the duration until the new part is in-vision */
+	partContentDelayDuration: number
+}
+
+/** Timings for the outTransition, when supported and allowed */
+export interface IBlueprintPartOutTransition {
+	/** How long to keep this part alive after taken out  */
+	duration: number
 }
 
 export interface IBlueprintMutatablePart<TMetadata = unknown> {
@@ -147,16 +175,15 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	autoNext?: boolean
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
-	/** How long until this part is ready to take over from the previous */
-	prerollDuration?: number
-	/** How long until this part is ready to take over from the previous (during transition) */
-	transitionPrerollDuration?: number | null
-	/** How long to keep the old part alive during the transition */
-	transitionKeepaliveDuration?: number | null
-	/** How long the transition is active for (used to block another take from happening) */
-	transitionDuration?: number | null
-	/** Should we block a transition at the out of this Part */
-	disableOutTransition?: boolean
+
+	/** Timings for the inTransition, when supported and allowed */
+	inTransition?: IBlueprintPartInTransition
+
+	/** Should we block the inTransition when starting the next Part */
+	disableNextInTransition?: boolean
+
+	/** Timings for the outTransition, when supported and allowed */
+	outTransition?: IBlueprintPartOutTransition
 
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
@@ -266,6 +293,9 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 
 	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
 	orphaned?: 'adlib-part' | 'deleted'
+
+	/** If taking out of the current part is blocked, this is the time it is blocked until */
+	blockTakeUntil?: number
 }
 
 export interface IBlueprintPartInstanceTimings {
@@ -336,6 +366,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	content: SomeTimelineContent
 
 	/** The transition used by this piece to transition to and from the piece */
+	/** @deprecated */
 	transitions?: {
 		/** In transition for the piece */
 		inTransition?: PieceTransition
@@ -343,20 +374,18 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 		outTransition?: PieceTransition
 	}
 
-	/** Duration to preroll/overlap when running this adlib */
-	adlibPreroll?: number
+	/**
+	 * How long this piece needs to prepare its content before it will have an effect on the output.
+	 * This allows for flows such as starting a clip playing, then cutting to it after some ms once the player is outputting frames.
+	 */
+	prerollDuration?: number
+
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
 	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
 	 * @deprecated replaced by .expectedPackages
 	 */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
-	/** When queued, should the adlib autonext */
-	adlibAutoNext?: boolean
-	/** When queued, how much overlap with the next part */
-	adlibAutoNextOverlap?: number
-	/** When queued, block transition at the end of the part */
-	adlibDisableOutTransition?: boolean
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
 
@@ -384,6 +413,13 @@ export interface ExpectedPlayoutItemGeneric {
 }
 export { ExpectedPlayoutItemContent }
 
+/** Special types of pieces. Some are not always used in all circumstances */
+export enum IBlueprintPieceType {
+	Normal = 'normal',
+	InTransition = 'in-transition',
+	OutTransition = 'out-transition',
+}
+
 /** A Single item in a "line": script, VT, cameras. Generated by Blueprint */
 export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGeneric<TMetadata> {
 	/** Timeline enabler. When the piece should be active on the timeline. */
@@ -396,7 +432,11 @@ export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGen
 	virtual?: boolean
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string // TODO - is this useful to define from the blueprints?
-	isTransition?: boolean
+
+	/** Whether this piece is a special piece */
+	pieceType?: IBlueprintPieceType
+
+	/** Whether this piece should be extended into the next part when HOLD is used */
 	extendOnHold?: boolean
 
 	/** Whether the piece affects the output of the Studio or is describing an invisible state within the Studio */

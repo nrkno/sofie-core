@@ -24,7 +24,11 @@ import {
 	PackageContainerOnPackage,
 	AccessorOnPackage,
 } from '@sofie-automation/blueprints-integration'
-import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import {
+	DBRundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylists,
+} from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { clone, DBObj, literal, omit, protectString, unprotectObject, unprotectString } from '../../lib/lib'
 import deepExtend from 'deep-extend'
@@ -285,7 +289,8 @@ meteorCustomPublishArray(
 							  }).fetch()
 							: []
 
-						const selectPartInstances = activePlaylist?.getSelectedPartInstances()
+						const selectPartInstances =
+							activePlaylist && RundownPlaylistCollectionUtil.getSelectedPartInstances(activePlaylist)
 						context.nextPartInstance = selectPartInstances?.nextPartInstance
 						context.currentPartInstance = selectPartInstances?.currentPartInstance
 
@@ -545,7 +550,9 @@ function generateExpectedPackages(
 				}
 
 				if (!combinedSources.length) {
-					logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
+					if (expectedPackage.sources.length !== 0) {
+						logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
+					}
 				}
 				if (!combinedTargets.length) {
 					logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)

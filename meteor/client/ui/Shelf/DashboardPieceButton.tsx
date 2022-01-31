@@ -11,7 +11,7 @@ import {
 	SourceLayerType,
 	VTContent,
 	NoraContent,
-	Accessor,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -26,8 +26,7 @@ import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspect
 import { protectString } from '../../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { getThumbnailUrlForAdLibPieceUi } from '../../lib/ui/clipPreview'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -105,61 +104,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	getThumbnailUrl = (piece: IAdLibListItem, studio: Studio): string | undefined => {
-		if (piece.expectedPackages) {
-			// use Expected packages:
-			// Just use the first one we find.
-			// TODO: support multiple expected packages?
-
-			let thumbnailContainerId: string | undefined
-			let packageThumbnailPath: string | undefined
-			for (const expectedPackage of piece.expectedPackages) {
-				const sideEffect = getSideEffect(expectedPackage, studio)
-
-				packageThumbnailPath = sideEffect.thumbnailPackageSettings?.path
-				thumbnailContainerId = sideEffect.thumbnailContainerId
-
-				if (packageThumbnailPath && thumbnailContainerId) {
-					break // don't look further
-				}
-			}
-			if (packageThumbnailPath && thumbnailContainerId) {
-				const packageContainer = studio.packageContainers[thumbnailContainerId]
-				if (packageContainer) {
-					// Look up an accessor we can use:
-					for (const accessor of Object.values(packageContainer.container.accessors)) {
-						if (
-							(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
-							accessor.baseUrl
-						) {
-							// Currently we only support public accessors (ie has no networkId set)
-							if (!accessor.networkId) {
-								return [
-									accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
-									encodeURIComponent(
-										packageThumbnailPath.replace(/^\//, '') // trim leading slash
-									),
-								].join('/')
-							}
-						}
-					}
-				}
-			}
-		} else {
-			// Fallback to media objects
-			if (this.props.mediaPreviewUrl && piece.contentMetaData) {
-				if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
-					return (
-						ensureHasTrailingSlash(this.props.mediaPreviewUrl ?? null) +
-						'media/thumbnail/' +
-						encodeURIComponent(piece.contentMetaData.mediaId)
-					)
-				}
-			}
-		}
-		return undefined
-	}
-
 	renderGraphics() {
 		const adLib = this.props.piece as any as AdLibPieceUi
 		const noraContent = adLib.content as NoraContent | undefined
@@ -175,7 +119,13 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}}
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={this.element}
-					piece={{ ...adLib, enable: { start: 0 }, startPartId: protectString(''), invalid: false }}
+					piece={{
+						...adLib,
+						enable: { start: 0 },
+						startPartId: protectString(''),
+						invalid: false,
+						pieceType: IBlueprintPieceType.Normal,
+					}}
 					pieceRenderedDuration={adLib.expectedDuration || null}
 					pieceRenderedIn={null}
 					displayOn="viewport"
@@ -189,7 +139,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		let sourceDuration: number | undefined
 		const adLib = this.props.piece as any as AdLibPieceUi
 		if (this.props.piece.content && this.props.studio) {
-			thumbnailUrl = this.getThumbnailUrl(this.props.piece, this.props.studio!)
+			thumbnailUrl = getThumbnailUrlForAdLibPieceUi(this.props.piece, this.props.studio!, this.props.mediaPreviewUrl)
 			const vtContent = adLib.content as VTContent | undefined
 			sourceDuration = vtContent?.sourceDuration
 		}

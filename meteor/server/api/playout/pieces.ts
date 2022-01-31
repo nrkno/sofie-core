@@ -23,7 +23,12 @@ import {
 	OnGenerateTimelineObjExt,
 } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
-import { TimelineObjectCoreExt, TSR, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import {
+	TimelineObjectCoreExt,
+	TSR,
+	PieceLifespan,
+	IBlueprintPieceType,
+} from '@sofie-automation/blueprints-integration'
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
@@ -40,6 +45,12 @@ import { getPieceFirstObjectId } from '../../../lib/rundown/timeline'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
+	if (a.pieceType === IBlueprintPieceType.OutTransition && b.pieceType !== IBlueprintPieceType.OutTransition) {
+		return 1
+	} else if (a.pieceType !== IBlueprintPieceType.OutTransition && b.pieceType === IBlueprintPieceType.OutTransition) {
+		return -1
+	}
+
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
 	const bStart = b.enable.start === 'now' ? nowInPart : b.enable.start
 	if (aStart < bStart) {
@@ -47,10 +58,12 @@ function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: 
 	} else if (aStart > bStart) {
 		return 1
 	} else {
+		const aIsInTransition = a.pieceType === IBlueprintPieceType.InTransition
+		const bIsInTransition = b.pieceType === IBlueprintPieceType.InTransition
 		// Transitions first
-		if (a.isTransition && !b.isTransition) {
+		if (aIsInTransition && !bIsInTransition) {
 			return -1
-		} else if (!a.isTransition && b.isTransition) {
+		} else if (!aIsInTransition && bIsInTransition) {
 			return 1
 		} else if (a._id < b._id) {
 			// Then go by id to make it consistent
@@ -170,9 +183,12 @@ function resolvePieceTimeline(
 		} else if (a.resolvedStart > b.resolvedStart) {
 			return 1
 		} else {
-			if (a.piece.isTransition === b.piece.isTransition) {
+			// We only care about inTransitions here, outTransitions are either not present or will be timed appropriately
+			const aIsInTransition = a.piece.pieceType === IBlueprintPieceType.InTransition
+			const bIsInTransition = b.piece.pieceType === IBlueprintPieceType.InTransition
+			if (aIsInTransition === bIsInTransition) {
 				return 0
-			} else if (b.piece.isTransition) {
+			} else if (bIsInTransition) {
 				return 1
 			} else {
 				return -1
@@ -257,6 +273,17 @@ export function getResolvedPiecesFromFullTimeline(
 
 	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
 		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))
+
+		// If a segment is queued and we're about to consume it, remove nextSegmentId from playlist
+		if (playlist.nextSegmentId) {
+			const consumedPartsInstancesInNextSegment = cache.PartInstances.findFetch({
+				_id: { $in: pieceInstances.map((p) => p.partInstanceId) },
+				segmentId: playlist.nextSegmentId,
+			})
+			if (consumedPartsInstancesInNextSegment.length) {
+				cache.Playlist.update({ $unset: { nextSegmentId: true } })
+			}
+		}
 	}
 
 	const transformedObjs = transformTimeline(objs)
@@ -378,6 +405,7 @@ export function convertAdLibToPieceInstance(
 			...(_.omit(adLibPiece, '_rank', 'expectedDuration', 'partId', 'rundownId') as PieceInstancePiece), // TODO - this could be typed stronger
 			_id: protectString(newPieceId),
 			startPartId: partInstance.part._id,
+			pieceType: IBlueprintPieceType.Normal,
 			enable: {
 				start: queue ? 0 : 'now',
 				duration: !queue && adLibPiece.lifespan === PieceLifespan.WithinPart ? duration : undefined,

@@ -1,12 +1,12 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
 import { TrackedNote } from './api/notes'
-import { Segments, DBSegment } from './collections/Segments'
+import { Segments, DBSegment, SegmentOrphanedReason } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
 import { unprotectString, literal, generateTranslation, normalizeArrayToMap, assertNever } from './lib'
 import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
-import { RundownPlaylist } from './collections/RundownPlaylists'
+import { RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
 import { ITranslatableMessage } from './api/TranslatableMessage'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
@@ -82,8 +82,8 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 		}
 	).fetch()
 
-	const sortedSegments = RundownPlaylist._sortSegments(segments, rundowns)
-	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
+	const sortedSegments = RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
+	const sortedParts = RundownPlaylistCollectionUtil._sortPartsInner(parts, segments)
 
 	return getAllNotesForSegmentAndParts(rundowns, sortedSegments, sortedParts, deletedPartInstances)
 }
@@ -142,12 +142,23 @@ export function getBasicNotesForSegment(
 		)
 	}
 
-	if (segment.orphaned === 'deleted') {
+	if (segment.orphaned) {
+		let message: ITranslatableMessage
+		switch (segment.orphaned) {
+			case SegmentOrphanedReason.DELETED:
+				message = generateTranslation('Segment no longer exists in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
+				break
+			case SegmentOrphanedReason.HIDDEN:
+				message = generateTranslation('Segment was hidden in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
+				break
+		}
 		notes.push({
 			type: NoteSeverity.WARNING,
-			message: generateTranslation('Segment no longer exists in {{nrcs}}', {
-				nrcs: nrcsName,
-			}),
+			message,
 			rank: segment._rank,
 			origin: {
 				segmentId: segment._id,
@@ -179,7 +190,7 @@ export function getBasicNotesForSegment(
 
 		if (part.invalidReason) {
 			newNotes.push({
-				type: part.invalidReason.level ?? NoteSeverity.ERROR,
+				type: part.invalidReason.severity ?? NoteSeverity.ERROR,
 				message: part.invalidReason.message,
 				origin: {
 					name: part.title,

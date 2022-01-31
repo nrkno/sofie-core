@@ -1,6 +1,29 @@
+/**
+ * A device has configuration options. This file describes a format using
+ * typescript in which these options can be described.
+ *
+ * In general a device can have an array of configuration fields like strings,
+ * booleans, numbers etc.
+ *
+ * A special type is the TABLE. This type describes another array of config
+ * options. A table type is rendered as an actual table in core, where the rows
+ * are instances of a certain type or are all the same. Manifests entries can
+ * describe some properties to be rendered inside this table
+ */
+
 export interface DeviceConfigManifest {
+	/**
+	 * A description of the config fields
+	 */
 	deviceConfig: ConfigManifestEntry[]
+	/**
+	 * If the device has an OAuthFlow (like spreadsheet gw) the instructions for
+	 * getting an authentication token go in here
+	 */
 	deviceOAuthFlow?: DeviceOAuthFlow
+	/**
+	 * A description of the layer mapping config fields
+	 */
 	layerMappings?: MappingsManifest
 }
 
@@ -28,7 +51,7 @@ export enum ConfigManifestEntryType {
 	INT = 'int',
 	TABLE = 'table',
 	OBJECT = 'object',
-	ENUM = 'enum', // @todo: implement
+	ENUM = 'enum',
 }
 
 export type ConfigManifestEntry =
@@ -50,7 +73,10 @@ export interface ConfigManifestEntryBase {
 export interface ConfigManifestEntryDefault extends ConfigManifestEntryBase {
 	type: Exclude<
 		ConfigManifestEntryType,
-		ConfigManifestEntryType.ENUM | ConfigManifestEntryType.INT | ConfigManifestEntryType.FLOAT
+		| ConfigManifestEntryType.ENUM
+		| ConfigManifestEntryType.INT
+		| ConfigManifestEntryType.FLOAT
+		| ConfigManifestEntryType.TABLE
 	>
 }
 export interface ConfigManifestIntEntry extends ConfigManifestEntryBase {
@@ -76,12 +102,18 @@ export interface SubDeviceConfigManifestEntry extends ConfigManifestEntryBase {
 export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	/** Whether this follows the deviceId logic for updating */
 	isSubDevices?: boolean
+	/** The default name/id for any new devices */
 	subDeviceDefaultName?: string
+	/** The type any new entry gets by default */
 	defaultType?: string
 	type: ConfigManifestEntryType.TABLE
+	/** Used when the .config indexes are different from the type enum */
 	deviceTypesMapping?: any
+	/** The name of the the property used to decide the type of the entry */
 	typeField?: string
-	/** Only one type means that the option will not be present */
+	/** Only one type means that the type option will not be present. When using this as a subDevice configuration object,
+	 * a property of type BOOLEAN and id `disable` has special meaning and can be operated on outside of the GUI
+	 */
 	config: { [type: string]: ConfigManifestEntry[] }
 }
 

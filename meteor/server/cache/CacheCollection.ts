@@ -17,8 +17,8 @@ import { Meteor } from 'meteor/meteor'
 import { BulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import { logger } from '../logging'
-import { Changes } from '../lib/database'
-import { AsyncTransformedCollection } from '../../lib/collections/lib'
+import { ChangedIds, Changes } from '../lib/database'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
 type DbCacheCollectionDocument<Class> = {
@@ -29,32 +29,29 @@ type DbCacheCollectionDocument<Class> = {
 } | null // removed
 
 /** Caches data, allowing reads from cache, but not writes */
-export class DbCacheReadCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
-	documents = new Map<DBInterface['_id'], DbCacheCollectionDocument<Class>>()
-	protected originalDocuments: ReadonlyDeep<Array<Class>> = []
+export class DbCacheReadCollection<DBInterface extends { _id: ProtectedString<any> }> {
+	documents = new Map<DBInterface['_id'], DbCacheCollectionDocument<DBInterface>>()
+	protected originalDocuments: ReadonlyDeep<Array<DBInterface>> = []
 
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
-	protected constructor(protected _collection: AsyncTransformedCollection<Class, DBInterface>) {
+	protected constructor(protected _collection: AsyncMongoCollection<DBInterface>) {
 		//
 	}
 
-	public static createFromArray<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
-		docs: Class[] | ReadonlyDeep<Array<Class>>
-	): DbCacheReadCollection<Class, DBInterface> {
+	public static createFromArray<DBInterface extends { _id: ProtectedString<any> }>(
+		collection: AsyncMongoCollection<DBInterface>,
+		docs: DBInterface[] | ReadonlyDeep<Array<DBInterface>>
+	): DbCacheReadCollection<DBInterface> {
 		const col = new DbCacheReadCollection(collection)
 		col.fillWithDataFromArray(docs as any)
 		return col
 	}
-	public static async createFromDatabase<
-		Class extends DBInterface,
-		DBInterface extends { _id: ProtectedString<any> }
-	>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
+	public static async createFromDatabase<DBInterface extends { _id: ProtectedString<any> }>(
+		collection: AsyncMongoCollection<DBInterface>,
 		selector: MongoQuery<DBInterface>
-	): Promise<DbCacheReadCollection<Class, DBInterface>> {
+	): Promise<DbCacheReadCollection<DBInterface>> {
 		const docs = await collection.findFetchAsync(selector)
 
 		return DbCacheReadCollection.createFromArray(collection, docs)
@@ -67,7 +64,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	findFetch(
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
-	): Class[] {
+	): DBInterface[] {
 		const span = profiler.startSpan(`DBCache.findFetch.${this.name}`)
 
 		selector = selector || {}
@@ -85,7 +82,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 			}
 		}
 
-		const results: Class[] = []
+		const results: DBInterface[] = []
 		docsToSearch.forEach((doc, _id) => {
 			if (doc === null) return
 			if (
@@ -114,7 +111,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	findOne(
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOneOptions<DBInterface>
-	): Class | undefined {
+	): DBInterface | undefined {
 		return this.findFetch(selector, options)[0]
 	}
 
@@ -133,7 +130,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	 * Note: By default this wipes the current collection first
 	 * @param documents The documents to store
 	 */
-	fillWithDataFromArray(documents: ReadonlyDeep<Array<Class>>, append = false) {
+	fillWithDataFromArray(documents: ReadonlyDeep<Array<DBInterface>>, append = false) {
 		if (append) {
 			this.originalDocuments = this.originalDocuments.concat(documents)
 		} else {
@@ -149,15 +146,8 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 				)
 			}
 
-			this.documents.set(id, { document: this._transform(clone(doc)) })
+			this.documents.set(id, { document: clone(doc) })
 		})
-	}
-	protected _transform(doc: DBInterface): Class {
-		// @ts-ignore hack: using internal function in collection
-		const transform = this._collection._transform
-		if (transform) {
-			return transform(doc)
-		} else return doc as Class
 	}
 
 	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
@@ -169,9 +159,8 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 }
 /** Caches data, allowing writes that will later be committed to mongo */
 export class DbCacheWriteCollection<
-	Class extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
-> extends DbCacheReadCollection<Class, DBInterface> {
+> extends DbCacheReadCollection<DBInterface> {
 	protected assertNotToBeRemoved(methodName: string): void {
 		if (this.isToBeRemoved) {
 			const msg = `DbCacheWriteCollection: got call to "${methodName} when cache has been flagged for removal"`
@@ -183,21 +172,18 @@ export class DbCacheWriteCollection<
 		}
 	}
 
-	public static createFromArray<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
-		docs: Class[]
-	): DbCacheWriteCollection<Class, DBInterface> {
+	public static createFromArray<DBInterface extends { _id: ProtectedString<any> }>(
+		collection: AsyncMongoCollection<DBInterface>,
+		docs: DBInterface[]
+	): DbCacheWriteCollection<DBInterface> {
 		const col = new DbCacheWriteCollection(collection)
 		col.fillWithDataFromArray(docs as any)
 		return col
 	}
-	public static async createFromDatabase<
-		Class extends DBInterface,
-		DBInterface extends { _id: ProtectedString<any> }
-	>(
-		collection: AsyncTransformedCollection<Class, DBInterface>,
+	public static async createFromDatabase<DBInterface extends { _id: ProtectedString<any> }>(
+		collection: AsyncMongoCollection<DBInterface>,
 		selector: MongoQuery<DBInterface>
-	): Promise<DbCacheWriteCollection<Class, DBInterface>> {
+	): Promise<DbCacheWriteCollection<DBInterface>> {
 		const docs = await collection.findFetchAsync(selector)
 
 		return DbCacheWriteCollection.createFromArray(collection, docs)
@@ -221,7 +207,7 @@ export class DbCacheWriteCollection<
 		this.documents.set(doc._id, {
 			inserted: existing !== null,
 			updated: existing === null,
-			document: this._transform(newDoc), // Unlinke a normal collection, this class stores the transformed objects
+			document: newDoc,
 		})
 		if (span) span.end()
 		return doc._id
@@ -250,6 +236,14 @@ export class DbCacheWriteCollection<
 		if (span) span.end()
 		return removedIds
 	}
+
+	/**
+	 * Update some documents
+	 * @param selector Filter function or mongo query
+	 * @param modifier
+	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
+	 * @returns All the ids that matched the selector
+	 */
 	update(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface> = {},
@@ -282,16 +276,17 @@ export class DbCacheWriteCollection<
 			// ensure no properties are 'undefined'
 			deleteAllUndefinedProperties(newDoc)
 
-			if (forceUpdate || !_.isEqual(doc, newDoc)) {
-				const docEntry = this.documents.get(_id)
-				if (!docEntry) {
-					throw new Meteor.Error(
-						500,
-						`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
-					)
-				}
+			const docEntry = this.documents.get(_id)
+			if (!docEntry) {
+				throw new Meteor.Error(
+					500,
+					`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
+				)
+			}
 
-				docEntry.document = this._transform(newDoc)
+			const hasPendingChanges = docEntry.inserted || docEntry.updated // If the doc is already dirty, then there is no point trying to diff it
+			if (forceUpdate || hasPendingChanges || !_.isEqual(doc, newDoc)) {
+				docEntry.document = newDoc
 				docEntry.updated = true
 			}
 			changedIds.push(_id)
@@ -318,11 +313,11 @@ export class DbCacheWriteCollection<
 		const oldDoc = this.documents.get(_id)
 		if (oldDoc) {
 			oldDoc.updated = true
-			oldDoc.document = this._transform(newDoc)
+			oldDoc.document = newDoc
 		} else {
 			this.documents.set(_id, {
 				inserted: true,
-				document: this._transform(newDoc),
+				document: newDoc,
 			})
 		}
 
@@ -383,7 +378,7 @@ export class DbCacheWriteCollection<
 		}
 
 		const updates: BulkWriteOperation<DBInterface>[] = []
-		const removedDocs: Class['_id'][] = []
+		const removedDocs: DBInterface['_id'][] = []
 		this.documents.forEach((doc, id) => {
 			if (doc === null) {
 				removedDocs.push(id)
@@ -446,19 +441,37 @@ export class DbCacheWriteCollection<
 	 * Write all the documents in this cache into another. This assumes that this cache is a subset of the other and was populated with a subset of its data
 	 * @param otherCache The cache to update
 	 */
-	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<Class, DBInterface>) {
+	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<DBInterface>): ChangedIds<DBInterface['_id']> {
+		const changes: ChangedIds<DBInterface['_id']> = {
+			added: [],
+			updated: [],
+			removed: [],
+			unchanged: [],
+		}
+
 		this.documents.forEach((doc, id) => {
 			if (doc === null) {
 				otherCache.remove(id)
 				this.documents.delete(id)
+				changes.removed.push(id)
 			} else {
-				if (doc.inserted || doc.updated) {
+				if (doc.inserted) {
 					otherCache.replace(doc.document)
+
+					changes.added.push(id)
+				} else if (doc.updated) {
+					otherCache.replace(doc.document)
+
+					changes.updated.push(id)
+				} else {
+					changes.unchanged.push(id)
 				}
 				delete doc.inserted
 				delete doc.updated
 			}
 		})
+
+		return changes
 	}
 	isModified(): boolean {
 		for (const doc of Array.from(this.documents.values())) {

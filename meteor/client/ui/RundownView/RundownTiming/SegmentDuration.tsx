@@ -5,6 +5,7 @@ import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { SegmentId } from '../../../../lib/collections/Segments'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '../../../../lib/rundown/timings'
 
 interface ISegmentDurationProps {
 	segmentId: SegmentId
@@ -41,7 +42,10 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 		const { partPlayed } = props.timingDurations
 		if (segmentBudgetDuration === undefined) {
 			props.parts.forEach((part) => {
-				budget += part.instance.orphaned || part.instance.part.untimed ? 0 : part.instance.part.expectedDuration || 0
+				budget +=
+					part.instance.orphaned || part.instance.part.untimed
+						? 0
+						: calculatePartInstanceExpectedDurationWithPreroll(part.instance) || 0
 			})
 		}
 		props.parts.forEach((part) => {

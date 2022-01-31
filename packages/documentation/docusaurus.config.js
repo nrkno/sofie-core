@@ -6,15 +6,15 @@ module.exports = {
 	title: 'Sofie Automation',
 	tagline: '',
 	url: 'https://nrkno.github.io',
-	baseUrl: '/tv-automation-server-core/',
+	baseUrl: '/sofie-core/',
 	onBrokenLinks: 'warn',
 	onBrokenMarkdownLinks: 'warn',
 	favicon: 'img/favicon.ico',
 	organizationName: 'nrkno',
-	projectName: 'tv-automation-server-core',
+	projectName: 'sofie-core',
 	themeConfig: {
 		navbar: {
-			title: 'Sofie Automation',
+			title: 'Sofie TV Automation',
 			logo: {
 				alt: 'Sofie Logo',
 				src: 'img/sofie-logo.svg',
@@ -23,7 +23,7 @@ module.exports = {
 				{ to: '/docs/getting-started/intro', label: 'Getting Started', position: 'left' },
 				{ to: '/docs/main/intro', label: 'Docs', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-				{ href: 'https://nrkno.github.io/tv-automation-server-core/typedoc', label: 'API Docs' }, // external link to typedoc
+				{ href: 'https://nrkno.github.io/sofie-core/typedoc', label: 'API Docs' }, // external link to typedoc
 				{ to: '/releases', label: 'Releases', position: 'left' },
 				// {to: '/blog', label: 'Blog', position: 'left'},
 
@@ -39,7 +39,7 @@ module.exports = {
 					docsPluginId: 'default',
 				},
 				{
-					href: 'https://github.com/nrkno/tv-automation-server-core',
+					href: 'https://github.com/nrkno/sofie-core',
 					label: 'GitHub',
 					position: 'right',
 				},
@@ -67,7 +67,7 @@ module.exports = {
 						},
 					],
 				},
-				{
+/* 				{
 					title: 'More',
 					items: [
 						// {
@@ -80,7 +80,7 @@ module.exports = {
 						},
 					],
 				},
-			],
+ */			],
 			copyright: `Copyright © ${new Date().getFullYear()} Norsk rikskringkasting AS and Contributors`,
 		},
 		prism: {
@@ -94,7 +94,7 @@ module.exports = {
 			{
 				docs: {
 					sidebarPath: require.resolve('./sidebars.js'),
-					editUrl: 'https://github.com/nrkno/tv-automation-server-core/edit/master/packages/documentation/',
+					editUrl: 'https://github.com/nrkno/sofie-core/edit/master/packages/documentation/',
 					// default to the 'next' docs
 					lastVersion: 'current',
 					versions: {
@@ -104,7 +104,6 @@ module.exports = {
 							banner: 'none',
 						},
 					},
-
 				},
 				// blog: {
 				//   showReadingTime: true,

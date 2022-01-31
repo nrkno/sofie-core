@@ -12,10 +12,10 @@ Object {
   "isNextSegment": false,
   "parts": Array [
     Object {
-      "instance": PartInstance {
+      "instance": Object {
         "_id": "randomId9002_part0_0_tmp_instance",
         "isTemporary": true,
-        "part": Part {
+        "part": Object {
           "_id": "randomId9002_part0_0",
           "_rank": 0,
           "externalId": "MOCK_PART_0_0",
@@ -50,6 +50,7 @@ Object {
               "lifespan": "part-only",
               "name": "Piece 001",
               "outputLayerId": "pgm",
+              "pieceType": "normal",
               "sourceLayerId": "vt0",
               "startPartId": "randomId9002_part0_0",
               "startRundownId": "randomId9002",
@@ -102,6 +103,7 @@ Object {
                         "lifespan": "part-only",
                         "name": "Piece 010",
                         "outputLayerId": "pgm",
+                        "pieceType": "normal",
                         "sourceLayerId": "cam0",
                         "startPartId": "randomId9002_part0_1",
                         "startRundownId": "randomId9002",
@@ -143,10 +145,10 @@ Object {
       "willProbablyAutoNext": false,
     },
     Object {
-      "instance": PartInstance {
+      "instance": Object {
         "_id": "randomId9002_part0_1_tmp_instance",
         "isTemporary": true,
-        "part": Part {
+        "part": Object {
           "_id": "randomId9002_part0_1",
           "_rank": 1,
           "externalId": "MOCK_PART_0_1",
@@ -181,6 +183,7 @@ Object {
               "lifespan": "part-only",
               "name": "Piece 010",
               "outputLayerId": "pgm",
+              "pieceType": "normal",
               "sourceLayerId": "cam0",
               "startPartId": "randomId9002_part0_1",
               "startRundownId": "randomId9002",
@@ -222,6 +225,7 @@ Object {
                         "lifespan": "part-only",
                         "name": "Piece 001",
                         "outputLayerId": "pgm",
+                        "pieceType": "normal",
                         "sourceLayerId": "vt0",
                         "startPartId": "randomId9002_part0_0",
                         "startRundownId": "randomId9002",
@@ -312,6 +316,7 @@ Object {
                     "lifespan": "part-only",
                     "name": "Piece 001",
                     "outputLayerId": "pgm",
+                    "pieceType": "normal",
                     "sourceLayerId": "vt0",
                     "startPartId": "randomId9002_part0_0",
                     "startRundownId": "randomId9002",
@@ -355,6 +360,7 @@ Object {
                     "lifespan": "part-only",
                     "name": "Piece 010",
                     "outputLayerId": "pgm",
+                    "pieceType": "normal",
                     "sourceLayerId": "cam0",
                     "startPartId": "randomId9002_part0_1",
                     "startRundownId": "randomId9002",
@@ -387,6 +393,22 @@ Object {
         "name": "Camera",
         "pieces": Array [],
         "type": 1,
+      },
+      "graphics0": Object {
+        "_id": "graphics0",
+        "_rank": 3,
+        "followingItems": Array [],
+        "name": "Graphic",
+        "pieces": Array [],
+        "type": 5,
+      },
+      "transition0": Object {
+        "_id": "transition0",
+        "_rank": 2,
+        "followingItems": Array [],
+        "name": "Transition",
+        "pieces": Array [],
+        "type": 13,
       },
       "vt0": Object {
         "_id": "vt0",

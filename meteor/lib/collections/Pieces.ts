@@ -1,7 +1,11 @@
 import { RundownAPI } from '../api/rundown'
 import { PartId } from './Parts'
 import { registerCollection, ProtectedString } from '../lib'
-import { IBlueprintPieceGeneric, IBlueprintPieceDB } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPieceGeneric,
+	IBlueprintPieceDB,
+	IBlueprintPieceType,
+} from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
@@ -39,11 +43,14 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 	 */
 	startPartId: PartId
 
+	/** Whether this piece is a special piece */
+	pieceType: IBlueprintPieceType
+
 	/** This is set when the part is invalid and these pieces should be ignored */
 	invalid: boolean
 }
 
-export const Pieces = createMongoCollection<Piece, Piece>('pieces')
+export const Pieces = createMongoCollection<Piece>('pieces')
 registerCollection('Pieces', Pieces)
 
 registerIndex(Pieces, {

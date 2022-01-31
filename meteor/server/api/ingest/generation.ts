@@ -14,16 +14,16 @@ import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBase
 import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
-import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { DBSegment, SegmentId, SegmentOrphanedReason } from '../../../lib/collections/Segments'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { getCurrentTime, literal, protectString, stringifyError, unprotectString } from '../../../lib/lib'
-import { Settings } from '../../../lib/Settings'
+import { calculatePartExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
 import { logChanges, saveIntoCache } from '../../cache/lib'
 import { PackageInfo } from '../../coreSystem'
 import { sumChanges, anythingChanged } from '../../lib/database'
 import { logger } from '../../logging'
 import { WrappedShowStyleBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import { CommonContext, SegmentUserContext, ShowStyleUserContext, StudioUserContext } from '../blueprints/context'
+import { SegmentUserContext, ShowStyleUserContext, StudioUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessPieces,
@@ -121,7 +121,9 @@ export async function calculateSegmentsFromIngestData(
 			const context = new SegmentUserContext(
 				{
 					name: `getSegment=${ingestSegment.name}`,
-					identifier: `rundownId=${rundown._id},segmentId=${segmentId}`,
+					// Note: this intentionally does not include the segmentId, as parts may be moved between segemnts later on
+					// This isn't much entropy, blueprints may want to add more for each Part they generate
+					identifier: `rundownId=${rundown._id}`,
 				},
 				cache.Studio.doc,
 				showStyle,
@@ -239,52 +241,36 @@ export async function calculateSegmentsFromIngestData(
 
 					// Preserve:
 					status: existingPart?.status, // This property is 'owned' by core and updated via its own flow
+					expectedDurationWithPreroll: undefined, // Below
 				})
 				res.parts.push(part)
 
-				// This ensures that it doesn't accidently get played while hidden
-				if (blueprintSegment.segment.isHidden) {
-					part.invalid = true
-				}
-
 				// Update pieces
-				res.pieces.push(
-					...postProcessPieces(
-						context,
-						blueprintPart.pieces,
-						blueprint.blueprintId,
-						rundown._id,
-						newSegment._id,
-						part._id,
-						undefined,
-						undefined,
-						part.invalid
-					)
+				const processedPieces = postProcessPieces(
+					blueprintPart.pieces,
+					blueprint.blueprintId,
+					rundown._id,
+					newSegment._id,
+					part._id,
+					undefined,
+					undefined,
+					part.invalid
 				)
+				res.pieces.push(...processedPieces)
 				res.adlibPieces.push(
-					...postProcessAdLibPieces(
-						context,
-						blueprint.blueprintId,
-						rundown._id,
-						part._id,
-						blueprintPart.adLibPieces
-					)
+					...postProcessAdLibPieces(blueprint.blueprintId, rundown._id, part._id, blueprintPart.adLibPieces)
 				)
 				res.adlibActions.push(
 					...postProcessAdLibActions(
-						context,
 						blueprint.blueprintId,
 						rundown._id,
 						part._id,
 						blueprintPart.actions || []
 					)
 				)
-			})
 
-			// If the segment has no parts, then hide it
-			if (blueprintSegment.parts.length === 0) {
-				newSegment.isHidden = true
-			}
+				part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, processedPieces)
+			})
 		}
 
 		span?.end()
@@ -320,7 +306,7 @@ export function saveSegmentChangesToCache(
 	const newPartIds = data.parts.map((p) => p._id)
 	const newSegmentIds = data.segments.map((p) => p._id)
 
-	const partChanges = saveIntoCache<Part, DBPart>(
+	const partChanges = saveIntoCache<Part>(
 		cache.Parts,
 		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
 		data.parts
@@ -330,7 +316,7 @@ export function saveSegmentChangesToCache(
 
 	logChanges(
 		'Pieces',
-		saveIntoCache<Piece, Piece>(
+		saveIntoCache<Piece>(
 			cache.Pieces,
 			isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
 			data.pieces
@@ -338,7 +324,7 @@ export function saveSegmentChangesToCache(
 	)
 	logChanges(
 		'AdLibActions',
-		saveIntoCache<AdLibAction, AdLibAction>(
+		saveIntoCache<AdLibAction>(
 			cache.AdLibActions,
 			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
 			data.adlibActions
@@ -346,7 +332,7 @@ export function saveSegmentChangesToCache(
 	)
 	logChanges(
 		'AdLibPieces',
-		saveIntoCache<AdLibPiece, AdLibPiece>(
+		saveIntoCache<AdLibPiece>(
 			cache.AdLibPieces,
 			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
 			data.adlibPieces
@@ -628,10 +614,6 @@ export async function saveChangesForRundown(
 	const dbRundown = cache.Rundown.replace(dbRundownData)
 
 	// Save the baseline
-	const blueprintRundownContext = new CommonContext({
-		name: dbRundown.name,
-		identifier: `rundownId=${dbRundown._id}`,
-	})
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.timelineObjects.length} objects from baseline.`)
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
@@ -639,38 +621,26 @@ export async function saveChangesForRundown(
 
 	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
 	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(baselineObjects, {}, [
+		saveIntoCache<RundownBaselineObj>(baselineObjects, {}, [
 			{
 				_id: protectString<RundownBaselineObjId>(Random.id(7)),
 				rundownId: dbRundown._id,
 				objects: postProcessRundownBaselineItems(
-					blueprintRundownContext,
 					showStyle.base.blueprintId,
 					rundownRes.baseline.timelineObjects
 				),
 			},
 		]),
 		// Save the global adlibs
-		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
+		saveIntoCache<RundownBaselineAdLibItem>(
 			baselineAdlibPieces,
 			{},
-			postProcessAdLibPieces(
-				blueprintRundownContext,
-				showStyle.base.blueprintId,
-				dbRundown._id,
-				undefined,
-				rundownRes.globalAdLibPieces
-			)
+			postProcessAdLibPieces(showStyle.base.blueprintId, dbRundown._id, undefined, rundownRes.globalAdLibPieces)
 		),
-		saveIntoCache<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
+		saveIntoCache<RundownBaselineAdLibAction>(
 			baselineAdlibActions,
 			{},
-			postProcessGlobalAdLibActions(
-				blueprintRundownContext,
-				showStyle.base.blueprintId,
-				dbRundown._id,
-				rundownRes.globalActions || []
-			)
+			postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
 		)
 	)
 	if (anythingChanged(rundownBaselineChanges)) {
@@ -701,21 +671,8 @@ export async function resolveSegmentChangesForUpdatedRundown(
 	for (const oldSegment of removedSegments) {
 		segmentChanges.segments.push({
 			...oldSegment,
-			orphaned: 'deleted',
+			orphaned: SegmentOrphanedReason.DELETED,
 		})
-	}
-
-	if (Settings.preserveUnsyncedPlayingSegmentContents && removedSegments.length > 0) {
-		// Preserve any old content, unless the part is referenced in another segment
-		const retainSegments = new Set(removedSegments.map((s) => s._id))
-		const newPartIds = new Set(segmentChanges.parts.map((p) => p._id))
-		const oldParts = cache.Parts.findFetch((p) => retainSegments.has(p.segmentId) && !newPartIds.has(p._id))
-		segmentChanges.parts.push(...oldParts)
-
-		const oldPartIds = new Set(oldParts.map((p) => p._id))
-		segmentChanges.pieces.push(...cache.Pieces.findFetch((p) => oldPartIds.has(p.startPartId)))
-		segmentChanges.adlibPieces.push(...cache.AdLibPieces.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
-		segmentChanges.adlibActions.push(...cache.AdLibActions.findFetch((p) => p.partId && oldPartIds.has(p.partId)))
 	}
 
 	return { segmentChanges, removedSegments }
