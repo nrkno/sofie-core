@@ -326,22 +326,32 @@ export function removeNullyProperties<T>(obj: T): T {
 	return obj
 }
 
-/** Make a string out of an error, including any additional data such as stack trace if available */
+/** Make a string out of an error (or other equivalents), including any additional data such as stack trace if available */
 export function stringifyError(error: unknown, noStack = false): string {
-	let str: string
+	let str: string | undefined = undefined
 
 	if (error && UserError.isUserError(error)) {
+		// Is a UserError
 		str = UserError.toJSON(error)
-	} else if (error && typeof error === 'object' && (error as Error).message) {
-		str = `${(error as Error).message}`
-	} else if (error && typeof error === 'object' && (error as any).reason) {
-		str = `${(error as any).reason}`
+	} else if (error && typeof error === 'object') {
+		if ((error as Error).message) {
+			// Is an Error
+			str = `${(error as Error).message}`
+		} else if ((error as any).reason) {
+			// Is a Meteor.Error
+			str = `${(error as any).reason}`
+		} else if ((error as any).details) {
+			str = `${(error as any).details}`
+		} else {
+			try {
+				// Try to stringify the object:
+				str = JSON.stringify(error)
+			} catch (e) {
+				str = `${error} (stringifyError: ${e})`
+			}
+		}
 	} else {
 		str = `${error}`
-	}
-
-	if (error && typeof error === 'object' && (error as any).details) {
-		str = `${(error as any).details}`
 	}
 
 	if (!noStack) {
@@ -349,5 +359,6 @@ export function stringifyError(error: unknown, noStack = false): string {
 			str += ', ' + (error as any).stack
 		}
 	}
+
 	return str
 }
