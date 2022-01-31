@@ -6,7 +6,7 @@ import { isDbCacheWritable } from './lib'
 import { anythingChanged, sumChanges } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
-import { sleep } from '@sofie-automation/corelib/dist/lib'
+import { sleep, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs'
 
 type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
@@ -136,8 +136,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 			if (!IS_PRODUCTION) {
 				throw error
 			} else {
-				logger.error(error.toString())
-				if (error.stack) logger.error(error.stack)
+				logger.error(stringifyError(error))
 			}
 		}
 

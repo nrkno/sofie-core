@@ -15,6 +15,7 @@ import { I18NextData } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/api/methods'
 import { ClientAPI } from '../../lib/api/client'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { stringifyError } from '../../lib/lib'
 
 const i18nOptions = {
 	fallbackLng: {
@@ -89,7 +90,7 @@ class I18nContainer extends WithManagedTracker {
 				document.documentElement.lang = i18n.language
 			})
 			.catch((err: Error) => {
-				console.error('Error initializing i18Next:', err)
+				console.error(`Error initializing i18Next: ${stringifyError(err)}`)
 			})
 
 		this.subscribe(PubSub.translationsBundles, {})
@@ -128,11 +129,13 @@ class I18nContainer extends WithManagedTracker {
 							)
 						})
 						.catch((reason) => {
-							console.error(`Failed to fetch translations bundle "${bundleMetadata._id}": `, reason)
+							console.error(
+								`Failed to fetch translations bundle "${bundleMetadata._id}": ${stringifyError(reason)}`
+							)
 						})
 				)
 			).catch((reason) => {
-				console.error(`One of the translation bundles failed to load: `, reason)
+				console.error(`One of the translation bundles failed to load: ${stringifyError(reason)}`)
 			})
 		})
 	}

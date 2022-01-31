@@ -3,6 +3,7 @@ import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import Spline from 'cubic-spline'
 
 import webmidi, { Input, InputEventControlchange } from 'webmidi'
+import { stringifyError } from '../../../../lib/lib'
 
 /**
  * This class handles control of the prompter using
@@ -93,7 +94,7 @@ export class MidiPedalController extends ControllerAbstract {
 
 	private setupMidiListeners(err: Error | undefined) {
 		if (err) {
-			console.error('Error enabling WebMIDI', err)
+			console.error(`Error enabling WebMIDI: ${stringifyError(err)}`)
 			return
 		}
 

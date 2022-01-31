@@ -18,7 +18,7 @@ import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
 import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
-import { clone } from '../../../../lib/lib'
+import { clone, stringifyError } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 import StudioContext from '../../RundownView/StudioContext'
@@ -112,7 +112,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					try {
 						this.rightLabelContainer?.remove()
 					} catch (err) {
-						console.error('Error in VTSourceRendererBase.mountRightLabelContainer 1', err)
+						console.error(`Error in VTSourceRendererBase.mountRightLabelContainer 1: ${stringifyError(err)}`)
 					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
@@ -126,7 +126,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					try {
 						this.rightLabelContainer?.remove()
 					} catch (err) {
-						console.error('Error in VTSourceRendererBase.mountRightLabelContainer 2', err)
+						console.error(`Error in VTSourceRendererBase.mountRightLabelContainer 2: ${stringifyError(err)}`)
 					}
 					itemElement.appendChild(this.rightLabelContainer)
 					newState.rightLabelIsAppendage = false
@@ -167,7 +167,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			try {
 				this.countdownContainer.remove()
 			} catch (err) {
-				console.error('Error in VTSourceRendererBase.mountSourceEndedCountdownContainer 1', err)
+				console.error(`Error in VTSourceRendererBase.mountSourceEndedCountdownContainer 1: ${stringifyError(err)}`)
 			}
 			newState.sourceEndCountdownAppendage = false
 		}
@@ -286,7 +286,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			try {
 				this.rightLabelContainer.remove()
 			} catch (err) {
-				console.error('Error in VTSourceRendererBase.componentWillUnmount 1', err)
+				console.error(`Error in VTSourceRendererBase.componentWillUnmount 1: ${stringifyError(err)}`)
 			}
 			this.rightLabelContainer = null
 		}
@@ -295,7 +295,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			try {
 				this.countdownContainer.remove()
 			} catch (err) {
-				console.error('Error in VTSourceRendererBase.componentWillUnmount 2', err)
+				console.error(`Error in VTSourceRendererBase.componentWillUnmount 2: ${stringifyError(err)}`)
 			}
 			this.countdownContainer = null
 		}

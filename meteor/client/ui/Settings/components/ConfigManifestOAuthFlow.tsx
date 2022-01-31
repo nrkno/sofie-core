@@ -87,7 +87,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 				// 			}).then(res => {
 				// 				console.log('Blueprint restore success')
 				// 			}).catch(err => {
-				// 				console.error('Blueprint restore failure: ', err)
+				// 				console.error(`Blueprint restore failure: ${stringifyError(err)}`)
 				// 			})
 				// 		}
 				// 	},

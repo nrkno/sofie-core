@@ -99,7 +99,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 					broadcastMediums: this.state.broadcastMediums,
 				},
 			}).catch((error) => {
-				console.error('Error creating new User', error)
+				console.error(`Error creating new User: ${stringifyError(error)}`)
 				this.handleError(`Error creating new user: ${error.reason || error.toString()}`)
 			})
 		}

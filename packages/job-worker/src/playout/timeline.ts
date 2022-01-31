@@ -441,7 +441,7 @@ function processTimelineObjects(context: JobContext, timelineObjs: Array<Timelin
 					objectType: o.objectType,
 					inGroup: o.id,
 				}
-				if (!childFixed.id) logger.error(`TimelineObj missing id attribute (child of ${o.id})`, childFixed)
+				if (!childFixed.id) logger.error(`TimelineObj missing id attribute (child of ${o.id})`, { childFixed })
 				timelineObjs.push(childFixed)
 
 				fixObjectChildren(childFixed)

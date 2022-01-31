@@ -88,7 +88,7 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 			})
 
 			connection.on('error', (err) => {
-				logger.error('AMQP connection error', err)
+				logger.error(`AMQP connection error: ${stringifyError(err)}`)
 				this.errorCount++
 			})
 			connection.on('close', () => {
@@ -97,7 +97,7 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 			})
 			connection.on('blocked', (reason) => {
 				this.blocked = true
-				logger.error('AMQP connection blocked', reason)
+				logger.error(`AMQP connection blocked: ${stringifyError(reason)}`)
 			})
 			connection.on('unblocked', () => {
 				this.blocked = false
@@ -151,7 +151,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 
 			channel.on('error', (err) => {
 				this.errorCount++
-				logger.error('AMQP channel error', err)
+				logger.error(`AMQP channel error: ${stringifyError(err)}`)
 			})
 			channel.on('close', () => {
 				this.open = false
@@ -159,7 +159,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 			})
 			channel.on('blocked', (reason) => {
 				this.blocked = true
-				logger.error('AMQP channel blocked', reason)
+				logger.error(`AMQP channel blocked: ${stringifyError(reason)}`)
 			})
 			channel.on('unblocked', () => {
 				this.blocked = false
@@ -167,7 +167,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 			})
 			// When a "mandatory" message cannot be delivered, it's returned here:
 			// channel.on('return', message => {
-			// 	logger.error('AMQP channel return', message)
+			// 	logger.error(`AMQP channel return: ${stringifyError(message)}')
 			// })
 			channel.on('drain', () => {
 				logger.error('AMQP channel drain')

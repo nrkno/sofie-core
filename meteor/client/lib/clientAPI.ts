@@ -2,6 +2,7 @@ import * as _ from 'underscore'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'
+import { stringifyError } from '../../lib/lib'
 
 export async function callPeripheralDeviceFunction(
 	e: any,
@@ -52,8 +53,7 @@ export function eventContextForLog(e: any): string {
 		str = e.type
 	}
 	if (!str) {
-		logger.error('Unknown event', e)
-		console.error(e)
+		logger.error(`Unknown event: ${stringifyError(e)}`)
 		str = 'N/A'
 	}
 

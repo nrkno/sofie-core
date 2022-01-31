@@ -8,7 +8,7 @@ import * as _ from 'underscore'
 import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
-import { unprotectString } from '../../../../lib/lib'
+import { stringifyError, unprotectString } from '../../../../lib/lib'
 
 type IProps = ICustomLayerItemProps
 interface IState {}
@@ -149,7 +149,7 @@ export const MicSourceRenderer = withTranslation()(
 					try {
 						this.lineItem.remove()
 					} catch (err) {
-						console.error('Error in MicSourceRenderer.componentDidUpdate', err)
+						console.error(`Error in MicSourceRenderer.componentDidUpdate: ${stringifyError(err)}`)
 					}
 				}
 				this.itemElement = this.props.itemElement
@@ -178,7 +178,7 @@ export const MicSourceRenderer = withTranslation()(
 				// Remove the line element
 				this.lineItem?.remove()
 			} catch (err) {
-				console.error('Error in MicSourceRenderer.componentWillUnmount', err)
+				console.error(`Error in MicSourceRenderer.componentWillUnmount: ${stringifyError(err)}`)
 			}
 		}
 

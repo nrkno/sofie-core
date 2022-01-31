@@ -22,7 +22,7 @@ import {
 } from '../../../lib/api/triggers/actionFactory'
 import { Tracker } from 'meteor/tracker'
 import { PartId } from '../../../lib/collections/Parts'
-import { flatten, ProtectedString, protectString } from '../../../lib/lib'
+import { flatten, ProtectedString, protectString, stringifyError } from '../../../lib/lib'
 import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompilers'
 import { Mongo } from 'meteor/mongo'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
@@ -440,7 +440,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					try {
 						previewAdLibs = action.preview()
 					} catch (e) {
-						console.error('Exception thrown while previewing action', e)
+						console.error(`Exception thrown while previewing action: ${stringifyError(e)}`)
 					}
 
 					previewAdLibs.forEach((adLib) => {

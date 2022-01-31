@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { makePromise, unprotectString, waitForPromise, protectString, waitTime } from '../../lib/lib'
+import { makePromise, unprotectString, waitForPromise, protectString, waitTime, stringifyError } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewUserAPI, UserAPIMethods, createUser } from '../../lib/api/user'
 import { registerClassToMeteorMethods } from '../methods'
@@ -25,7 +25,7 @@ export function enrollUser(email: string, name: string): UserId {
 	try {
 		Accounts.sendEnrollmentEmail(unprotectString(id), email)
 	} catch (error) {
-		console.error('ERROR sending email enrollment', error)
+		console.error(`ERROR sending email enrollment: ${stringifyError(error)}`)
 	}
 
 	return id
@@ -66,7 +66,7 @@ function sendVerificationEmail(userId: UserId) {
 			}
 		})
 	} catch (error) {
-		console.error('ERROR sending email verification', error)
+		console.error(`ERROR sending email verification: ${stringifyError(error)}`)
 	}
 }
 

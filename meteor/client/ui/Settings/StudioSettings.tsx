@@ -46,7 +46,7 @@ import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
-import { unprotectString, protectString } from '../../../lib/lib'
+import { unprotectString, protectString, stringifyError } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -2155,7 +2155,7 @@ class StudioBaselineStatus extends MeteorReactComponent<
 				if (this.updateInterval) this.setState({ needsUpdate: !!result })
 			})
 			.catch((err) => {
-				console.error('Failed to update studio baseline status', err)
+				console.error(`Failed to update studio baseline status: ${stringifyError(err)}`)
 				if (this.updateInterval) this.setState({ needsUpdate: false })
 			})
 	}
@@ -2167,7 +2167,7 @@ class StudioBaselineStatus extends MeteorReactComponent<
 				if (this.updateInterval) this.setState({ needsUpdate: !!result })
 			})
 			.catch((err) => {
-				console.error('Failed to update studio baseline', err)
+				console.error(`Failed to update studio baseline: ${stringifyError(err)}`)
 				if (this.updateInterval) this.setState({ needsUpdate: false })
 			})
 	}

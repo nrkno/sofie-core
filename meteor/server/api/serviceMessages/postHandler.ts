@@ -74,7 +74,7 @@ function postHandler(params, req: BodyParsingIncomingMessage, res: ServerRespons
 		res.setHeader('Content-Type', 'application/json; charset-utf8')
 		res.end(JSON.stringify(serviceMessage))
 	} catch (error) {
-		logger.error(`Unable to store message`, { serviceMessage, error })
+		logger.error(`Unable to store message: ${error}`, { serviceMessage })
 		res.statusCode = 500
 		res.end('System error, unable to store message')
 	}

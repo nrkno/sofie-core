@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { Time } from '@sofie-automation/blueprints-integration'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, stringifyError } from '../../lib/lib'
 import { MeteorCall } from '../../lib/api/methods'
 
 interface LoggedError {
@@ -42,7 +42,7 @@ function uncaughtErrorHandler(errorObj: any) {
 	// To get the textual content of Error('my Error')
 	let stringContent: string = `${errorObj}`
 	if (Array.isArray(errorObj)) {
-		stringContent = errorObj.map((err) => `${err?.stack ? err.stack : err}`).join(',')
+		stringContent = errorObj.map((err) => stringifyError(err)).join(',')
 	}
 	const errorLog: LoggedError = {
 		location: window.location.href,
