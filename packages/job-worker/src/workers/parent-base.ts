@@ -31,6 +31,7 @@ export enum ThreadStatus {
 const WATCHDOG_INTERVAL = 5 * 1000
 /** The maximum duration a job is allowed to run for before the thread is killed */
 const WATCHDOG_KILL_DURATION = 30 * 1000
+const WATCHDOG_WARN_DURATION = 10 * 1000
 
 export interface WorkerParentOptions {
 	workerId: WorkerId
@@ -142,6 +143,15 @@ export abstract class WorkerParentBase {
 				}
 			}, WATCHDOG_INTERVAL)
 		}
+
+		// Monitor statuses:
+		const statusMonitorInterval = setInterval(() => {
+			this.updatesThreadStatus()
+
+			if (this.#terminate) {
+				clearInterval(statusMonitorInterval)
+			}
+		}, 1000)
 
 		setImmediate(async () => {
 			try {
@@ -255,6 +265,67 @@ export abstract class WorkerParentBase {
 				this.#terminate.manualResolve()
 			}
 		})
+	}
+
+	private updatesThreadStatus() {
+		let statusCode: StatusCode
+		let reason: string
+		switch (this.#threadStatus) {
+			case ThreadStatus.Closed:
+				statusCode = StatusCode.BAD
+				reason = 'Closed'
+				break
+			case ThreadStatus.PendingInit:
+				statusCode = StatusCode.BAD
+				reason = 'Thread restarting'
+				break
+			case ThreadStatus.Ready:
+				statusCode = StatusCode.GOOD
+				reason = 'OK'
+				break
+			default:
+				statusCode = StatusCode.FATAL
+				reason = `Unknown status: ${this.#threadStatus}`
+				assertNever(this.#threadStatus)
+		}
+
+		if (statusCode === StatusCode.GOOD) {
+			if (this.#watchdogJobStarted && Date.now() - this.#watchdogJobStarted > WATCHDOG_WARN_DURATION) {
+				statusCode = StatusCode.WARNING_MINOR
+				reason = 'Job is running slow'
+			}
+		}
+
+		if (statusCode !== this.#reportedStatusCode || reason !== this.#reportedReason) {
+			this.#reportedStatusCode = statusCode
+			this.#reportedReason = reason
+
+			this.saveStatusCode(statusCode, reason)
+		}
+	}
+
+	private async saveStatusCode(statusCode: StatusCode, reason: string) {
+		const db = this.#mongoClient.db(this.#mongoDbName)
+		const collection = db.collection<WorkerThreadStatus>(CollectionName.WorkerThreads)
+
+		const workerThreadId: WorkerThreadId = protectString(`${this.#workerId}_${this.#queueName}`)
+
+		const status: WorkerThreadStatus = {
+			_id: workerThreadId,
+			workerId: this.#workerId,
+
+			instanceId: this.#threadInstanceId,
+			name: this.#prettyName,
+			statusCode: statusCode,
+			reason: reason,
+		}
+		return collection
+			.replaceOne({ _id: status._id }, status, {
+				upsert: true,
+			})
+			.catch((e) => {
+				logger.error(`Failed to update WorkerThreadStatus: ${stringifyError(e)}`)
+			})
 	}
 
 	/** Terminate and cleanup the worker thread */

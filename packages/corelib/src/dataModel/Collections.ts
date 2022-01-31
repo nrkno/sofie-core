@@ -44,4 +44,5 @@ export enum CollectionName {
 	UserActionsLog = 'userActionsLog',
 	Users = 'Users',
 	Workers = 'workers',
+	WorkerThreads = 'workersThreads',
 }

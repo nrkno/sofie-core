@@ -27,6 +27,7 @@ import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemWriteAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { Workers } from '../../lib/collections/Workers'
+import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -217,6 +218,8 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 	const workerStatuses = Workers.find().fetch()
 	if (!workerStatuses.length) {
 		if (!statusObj.components) statusObj.components = []
+
+		// No workers at all? that's weird
 		statusObj.components.push(
 			literal<Component>({
 				name: 'workers',
@@ -247,6 +250,25 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 					},
 				})
 			)
+
+			WorkerThreadStatuses.find({
+				workerId: workerStatus._id,
+			}).forEach((wts) => {
+				if (!statusObj.components) statusObj.components = []
+				statusObj.components.push(
+					literal<Component>({
+						name: `worker-${wts.name}`,
+						status: status2ExternalStatus(wts.statusCode),
+						updated: new Date().toISOString(),
+						_status: wts.statusCode,
+						_internal: {
+							statusCodeString: StatusCode[status],
+							messages: [wts.reason],
+							versions: {},
+						},
+					})
+				)
+			})
 		}
 	}
 
