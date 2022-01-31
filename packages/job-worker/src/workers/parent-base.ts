@@ -1,12 +1,13 @@
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StudioId, WorkerId, WorkerThreadId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	ManualPromise,
 	createManualPromise,
 	stringifyError,
 	assertNever,
 	sleep,
+	getRandomString,
 } from '@sofie-automation/corelib/dist/lib'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { startTransaction } from '../profiler'
 import { ChangeStream, MongoClient } from 'mongodb'
 import { createInvalidateWorkerDataCache, InvalidateWorkerDataCache } from './caches'
@@ -16,6 +17,9 @@ import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/sh
 import { JobManager, JobStream } from '../manager'
 import { UserError } from '@sofie-automation/corelib/dist/error'
 import { Promisify, ThreadedClassManager } from 'threadedclass'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 
 export enum ThreadStatus {
 	Closed = 0,
@@ -28,12 +32,30 @@ const WATCHDOG_INTERVAL = 5 * 1000
 /** The maximum duration a job is allowed to run for before the thread is killed */
 const WATCHDOG_KILL_DURATION = 30 * 1000
 
-export abstract class WorkerParentBase {
-	// readonly #workerId: string
-	readonly #studioId: StudioId
-	readonly #threadId: string
+export interface WorkerParentOptions {
+	workerId: WorkerId
+	studioId: StudioId
+	mongoClient: MongoClient
+	/** The name of the MongoDB database */
+	mongoDbName: string
+	locksManager: LocksManager
+	jobManager: JobManager
+}
+export interface WorkerParentBaseOptions extends WorkerParentOptions {
+	/** The internal job-queue */
+	queueName: string
+	/** User-facing label */
+	prettyName: string
+}
 
-	// readonly #mongoClient: MongoClient
+export abstract class WorkerParentBase {
+	readonly #workerId: WorkerId
+	readonly #studioId: StudioId
+	readonly #queueName: string
+	readonly #prettyName: string
+
+	readonly #mongoClient: MongoClient
+	readonly #mongoDbName: string
 	readonly #locksManager: LocksManager
 
 	#terminate: ManualPromise<void> | undefined
@@ -50,34 +72,34 @@ export abstract class WorkerParentBase {
 	#watchdog: NodeJS.Timeout | undefined
 	#watchdogJobStarted: number | undefined
 
+	#reportedStatusCode: StatusCode = StatusCode.BAD
+	#reportedReason: string = 'N/A'
+	#threadInstanceId: string
+
 	public get threadId(): string {
-		return this.#threadId
+		return this.#queueName
 	}
 
-	protected constructor(
-		workerId: string,
-		threadId: string,
-		studioId: StudioId,
-		_mongoClient: MongoClient, // Included here for future use
-		locksManager: LocksManager,
-		queueName: string,
-		jobManager: JobManager
-	) {
-		// this.#workerId = workerId
-		this.#studioId = studioId
-		this.#threadId = threadId
-		// this.#mongoClient = mongoClient
-		this.#locksManager = locksManager
+	protected constructor(options: WorkerParentBaseOptions) {
+		this.#workerId = options.workerId
+		this.#studioId = options.studioId
+		this.#queueName = options.queueName
+		this.#mongoClient = options.mongoClient
+		this.#mongoDbName = options.mongoDbName
+		this.#locksManager = options.locksManager
+		this.#prettyName = options.prettyName
 
-		this.#jobManager = jobManager
-		this.#jobStream = jobManager.subscribeToQueue(queueName, workerId)
+		this.#jobManager = options.jobManager
+		this.#jobStream = this.#jobManager.subscribeToQueue(this.#queueName, this.#workerId)
 
 		this.#threadStatus = ThreadStatus.PendingInit
+		this.#threadInstanceId = getRandomString()
 	}
 
 	protected registerStatusEvents(workerThread: Promisify<any>): void {
 		ThreadedClassManager.onEvent(workerThread, 'restarted', () => {
 			this.#threadStatus = ThreadStatus.PendingInit
+			this.#threadInstanceId = getRandomString()
 		})
 		ThreadedClassManager.onEvent(workerThread, 'thread_closed', () => {
 			this.#threadStatus = ThreadStatus.Closed
@@ -104,7 +126,7 @@ export abstract class WorkerParentBase {
 	public abstract workerLockChange(lockId: string, locked: boolean): Promise<void>
 
 	/** Start the loop feeding work to the worker */
-	protected startWorkerLoop(mongoUri: string, dbName: string): void {
+	protected startWorkerLoop(mongoUri: string): void {
 		if (!this.#watchdog) {
 			// Start a watchdog, to detect if a job has been running for longer than a max threshold. If it has, then we forcefully kill it
 			// ThreadedClass will propogate the completion error through the usual route
@@ -112,10 +134,10 @@ export abstract class WorkerParentBase {
 				if (this.#watchdogJobStarted && this.#watchdogJobStarted + WATCHDOG_KILL_DURATION < Date.now()) {
 					// A job has been running for too long.
 
-					logger.warn(`Force restarting worker thread: "${this.#threadId}"`)
+					logger.warn(`Force restarting worker thread: "${this.#queueName}"`)
 					this.#watchdogJobStarted = undefined
 					this.restartWorkerThread().catch((e) => {
-						logger.warn(`Restarting worker thread "${this.#threadId}" error: ${stringifyError(e)}`)
+						logger.warn(`Restarting worker thread "${this.#queueName}" error: ${stringifyError(e)}`)
 					})
 				}
 			}, WATCHDOG_INTERVAL)
@@ -137,10 +159,11 @@ export abstract class WorkerParentBase {
 							// Check again
 							continue
 						case ThreadStatus.PendingInit:
-							logger.debug(`Re-initialising worker thread: "${this.#threadId}"`)
+							logger.debug(`Re-initialising worker thread: "${this.#queueName}"`)
 							// Reinit the worker
-							await this.initWorker(mongoUri, dbName, this.#studioId)
+							await this.initWorker(mongoUri, this.#mongoDbName, this.#studioId)
 							this.#threadStatus = ThreadStatus.Ready
+
 							break
 						case ThreadStatus.Ready:
 							// Thread is happy to accept a job
@@ -210,7 +233,7 @@ export abstract class WorkerParentBase {
 						}
 
 						// Ensure all locks have been freed after the job
-						await this.#locksManager.releaseAllForThread(this.#threadId)
+						await this.#locksManager.releaseAllForThread(this.#queueName)
 
 						transaction?.end()
 					}
@@ -221,7 +244,7 @@ export abstract class WorkerParentBase {
 			} catch (e) {
 				logger.error(`Worker thread errored: ${stringifyError(e)}`)
 
-				await this.#locksManager.releaseAllForThread(this.#threadId)
+				await this.#locksManager.releaseAllForThread(this.#queueName)
 
 				// Ensure the termination is tracked
 				if (!this.#terminate) {
@@ -241,7 +264,9 @@ export abstract class WorkerParentBase {
 			this.#watchdog = undefined
 		}
 
-		await this.#locksManager.releaseAllForThread(this.#threadId)
+		await this.saveStatusCode(StatusCode.BAD, 'Shutting down')
+
+		await this.#locksManager.releaseAllForThread(this.#queueName)
 
 		if (!this.#terminate) {
 			this.#terminate = createManualPromise()

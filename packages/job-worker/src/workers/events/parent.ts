@@ -1,74 +1,48 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { EventsWorkerChild } from './child'
-import { MongoClient } from 'mongodb'
 import { InvalidateWorkerDataCache } from '../caches'
-import { LocksManager } from '../../locks'
-import { WorkerParentBase } from '../parent-base'
+import { WorkerParentBase, WorkerParentBaseOptions, WorkerParentOptions } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
-import { JobManager } from '../../manager'
-import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
 import { addThreadNameToLogLine } from '../../logging'
 
 export class EventsWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<EventsWorkerChild>
 
-	private constructor(
-		workerId: string,
-		threadId: string,
-		studioId: StudioId,
-		mongoClient: MongoClient,
-		locksManager: LocksManager,
-		queueName: string,
-		jobManager: JobManager,
-		thread: Promisify<EventsWorkerChild>
-	) {
-		super(workerId, threadId, studioId, mongoClient, locksManager, queueName, jobManager)
-
+	private constructor(baseOptions: WorkerParentBaseOptions, thread: Promisify<EventsWorkerChild>) {
+		super(baseOptions)
 		this.#thread = thread
 	}
 
 	static async start(
-		workerId: string,
+		baseOptions: WorkerParentOptions,
 		mongoUri: string,
-		mongoDb: string,
-		mongoClient: MongoClient,
-		locksManager: LocksManager,
-		studioId: StudioId,
-		jobManager: JobManager,
 		logLine: LogLineWithSourceFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	): Promise<EventsWorkerParent> {
-		const threadId = getRandomString()
-		const emitLockEvent = (e: AnyLockEvent) => locksManager.handleLockEvent(threadId, e)
-		const logLineInner = (msg: unknown) => logLine(addThreadNameToLogLine(getEventsQueueName(studioId), msg))
+		const queueName = getEventsQueueName(baseOptions.studioId)
+		const prettyName = queueName
+
+		const emitLockEvent = (e: AnyLockEvent) => baseOptions.locksManager.handleLockEvent(queueName, e)
+		const logLineInner = (msg: unknown) => logLine(addThreadNameToLogLine(queueName, msg))
 
 		const workerThread = await threadedClass<EventsWorkerChild, typeof EventsWorkerChild>(
 			'./child',
 			'EventsWorkerChild',
-			[emitLockEvent, jobManager.queueJob, logLineInner, fastTrackTimeline],
+			[emitLockEvent, baseOptions.jobManager.queueJob, logLineInner, fastTrackTimeline],
 			{
-				instanceName: `Events: ${studioId}`,
+				instanceName: `Events: ${baseOptions.studioId}`,
 			}
 		)
 
 		// create and start the worker
-		const parent = new EventsWorkerParent(
-			workerId,
-			threadId,
-			studioId,
-			mongoClient,
-			locksManager,
-			getEventsQueueName(studioId),
-			jobManager,
-			workerThread
-		)
+		const parent = new EventsWorkerParent({ ...baseOptions, queueName, prettyName }, workerThread)
 
 		parent.registerStatusEvents(workerThread)
 
-		parent.startWorkerLoop(mongoUri, mongoDb)
+		parent.startWorkerLoop(mongoUri)
 		return parent
 	}
 

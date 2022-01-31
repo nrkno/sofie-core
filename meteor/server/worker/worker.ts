@@ -217,35 +217,38 @@ Meteor.startup(() => {
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
 			workerEntrypoint,
 			'IpcJobWorker',
-			[jobFinished, getNextJob, queueJobWithoutResult, logLine, fastTrackTimeline],
+			[workerId, jobFinished, getNextJob, queueJobWithoutResult, logLine, fastTrackTimeline],
 			{}
 		)
 	)
 
-	ThreadedClassManager.onEvent(worker, 'restarted', () => {
-		logger.warn(`Worker threads restarted`)
+	ThreadedClassManager.onEvent(
+		worker,
+		'restarted',
+		Meteor.bindEnvironment(() => {
+			logger.warn(`Worker threads restarted`)
 
-		worker!.run(mongoUri, dbName).catch((e) => {
-			logger.error(`Failed to reinit worker threads after restart: ${stringifyError(e)}`)
-		})
-		// Deferring, since this callback isn't running in a Fiber
-		Meteor.defer(() => {
+			worker!.run(mongoUri, dbName).catch((e) => {
+				logger.error(`Failed to reinit worker threads after restart: ${stringifyError(e)}`)
+			})
+
 			setWorkerStatus(workerId, true, 'restarted', true)
 		})
-	})
-	ThreadedClassManager.onEvent(worker, 'thread_closed', () => {
-		// Thread closed, reject all jobs
-		const now = getCurrentTime()
-		for (const job of runningJobs.values()) {
-			job(now, now, new Error('Thread closed'), null)
-		}
-		runningJobs.clear()
+	)
+	ThreadedClassManager.onEvent(
+		worker,
+		'thread_closed',
+		Meteor.bindEnvironment(() => {
+			// Thread closed, reject all jobs
+			const now = getCurrentTime()
+			for (const job of runningJobs.values()) {
+				job(now, now, new Error('Thread closed'), null)
+			}
+			runningJobs.clear()
 
-		// Deferring, since this callback isn't running in a Fiber
-		Meteor.defer(() => {
 			setWorkerStatus(workerId, false, 'Closed')
 		})
-	})
+	)
 
 	setWorkerStatus(workerId, true, 'Initializing...')
 

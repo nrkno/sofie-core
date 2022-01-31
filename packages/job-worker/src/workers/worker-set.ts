@@ -1,4 +1,4 @@
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StudioId, WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ChangeStream, ChangeStreamDocument, MongoClient } from 'mongodb'
 import { LocksManager } from '../locks'
 import { IngestWorkerParent } from './ingest/parent'
@@ -6,7 +6,7 @@ import { StudioWorkerParent } from './studio/parent'
 import { EventsWorkerParent } from './events/parent'
 import { JobManager } from '../manager'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../main'
-import { WorkerParentBase } from './parent-base'
+import { WorkerParentBase, WorkerParentOptions } from './parent-base'
 import { logger } from '../logging'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
@@ -44,10 +44,10 @@ export class StudioWorkerSet {
 	}
 
 	public static async create(
-		workerId: string,
+		workerId: WorkerId,
 		mongoUri: string,
-		dbName: string,
 		mongoClient: MongoClient,
+		mongoDbName: string,
 		studioId: StudioId,
 		jobManager: JobManager,
 		logLine: LogLineWithSourceFunc,
@@ -71,47 +71,20 @@ export class StudioWorkerSet {
 			)
 		}
 
-		tryAddThread(
-			StudioWorkerParent.start(
-				workerId,
-				mongoUri,
-				dbName,
-				mongoClient,
-				result.#locksManager,
-				studioId,
-				jobManager,
-				logLine,
-				fastTrackTimeline
-			)
-		)
+		const baseOptions: WorkerParentOptions = {
+			workerId,
+			mongoClient,
+			mongoDbName,
+			locksManager: result.#locksManager,
+			studioId,
+			jobManager,
+		}
 
-		tryAddThread(
-			EventsWorkerParent.start(
-				workerId,
-				mongoUri,
-				dbName,
-				mongoClient,
-				result.#locksManager,
-				studioId,
-				jobManager,
-				logLine,
-				fastTrackTimeline
-			)
-		)
+		tryAddThread(StudioWorkerParent.start(baseOptions, mongoUri, logLine, fastTrackTimeline))
 
-		tryAddThread(
-			IngestWorkerParent.start(
-				workerId,
-				mongoUri,
-				dbName,
-				mongoClient,
-				result.#locksManager,
-				studioId,
-				jobManager,
-				logLine,
-				fastTrackTimeline
-			)
-		)
+		tryAddThread(EventsWorkerParent.start(baseOptions, mongoUri, logLine, fastTrackTimeline))
+
+		tryAddThread(IngestWorkerParent.start(baseOptions, mongoUri, logLine, fastTrackTimeline))
 
 		logger.info(`Starting threads for ${studioId}`)
 		await Promise.allSettled(ps)
@@ -123,7 +96,7 @@ export class StudioWorkerSet {
 			throw new Error(`Failed to initialise ${failed} threads`)
 		}
 
-		result.subscribeToCommonCacheInvalidations(dbName)
+		result.subscribeToCommonCacheInvalidations(mongoDbName)
 
 		return result
 	}
