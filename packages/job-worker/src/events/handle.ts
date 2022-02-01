@@ -242,9 +242,22 @@ export async function handleNotifyCurrentlyPlayingPart(
 
 	const device = await context.directCollections.PeripheralDevices.findOne({
 		_id: rundown.peripheralDeviceId,
-		studioId: context.studioId,
+		// Future: we really should be constraining this to the studio, but that is often only defined on the parent of this device
+		// studioId: context.studioId,
+		parentDeviceId: { $exists: true },
 	})
-	if (!device) {
+	if (!device || !device.parentDeviceId) {
+		logger.warn(
+			`PeripheralDevice "${rundown.peripheralDeviceId}" for Rundown "${rundown._id} not found. Skipping notifyCurrentPlayingPart`
+		)
+		return
+	}
+	const parentDevice = await context.directCollections.PeripheralDevices.findOne({
+		_id: device.parentDeviceId,
+		studioId: context.studioId,
+		parentDeviceId: { $exists: false },
+	})
+	if (!parentDevice) {
 		logger.warn(
 			`PeripheralDevice "${rundown.peripheralDeviceId}" for Rundown "${rundown._id} not found. Skipping notifyCurrentPlayingPart`
 		)
@@ -255,6 +268,7 @@ export async function handleNotifyCurrentlyPlayingPart(
 	const currentPlayingPartExternalId: string | null = data.isRehearsal ? null : data.partExternalId
 
 	// Lock the rundown so that we are allowed to write to it
+	// This is technically a bit of a race condition, but is really low risk and low impact if it does
 	await runWithRundownLock(context, rundown._id, async (rundown0) => {
 		if (rundown0) {
 			if (currentPlayingPartExternalId) {
