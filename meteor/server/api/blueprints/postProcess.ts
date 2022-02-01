@@ -59,7 +59,11 @@ export function postProcessPieces(
 			pieceType: IBlueprintPieceType.Normal,
 
 			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
-			_id: protectString(getHash(`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
+			_id: protectString(
+				getHash(
+					`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.sourceLayerId}_${orgPiece.externalId}_${i}`
+				)
+			),
 			continuesRefId: protectString(orgPiece.continuesRefId),
 			startRundownId: rundownId,
 			startSegmentId: segmentId,
@@ -171,7 +175,9 @@ export function postProcessAdLibPieces(
 		const piece: AdLibPiece = {
 			...orgAdlib,
 			_id: protectString(
-				getHash(`${rundownId}_${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
+				getHash(
+					`${rundownId}_${blueprintId}_${partId}_adlib_piece_${orgAdlib.sourceLayerId}_${orgAdlib.externalId}_${i}`
+				)
 			),
 			rundownId: rundownId,
 			partId: partId,
