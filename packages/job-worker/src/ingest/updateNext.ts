@@ -32,7 +32,13 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 
 		if (currentPartInstance && nextPartInstance) {
 			// Check if the part is the same
-			const newNextPart = selectNextPart(context, playlist, currentPartInstance, allPartsAndSegments)
+			const newNextPart = selectNextPart(
+				context,
+				playlist,
+				currentPartInstance,
+				nextPartInstance,
+				allPartsAndSegments
+			)
 			if (!newNextPart) {
 				// No new next, so leave as is
 				span?.end()
@@ -45,7 +51,13 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 			}
 		} else if (!nextPartInstance || nextPartInstance.orphaned === 'deleted') {
 			// Don't have a nextPart or it has been deleted, so autoselect something
-			const newNextPart = selectNextPart(context, playlist, currentPartInstance ?? null, allPartsAndSegments)
+			const newNextPart = selectNextPart(
+				context,
+				playlist,
+				currentPartInstance ?? null,
+				nextPartInstance ?? null,
+				allPartsAndSegments
+			)
 			await setNextPartInner(context, cache, newNextPart?.part ?? null)
 		}
 	}

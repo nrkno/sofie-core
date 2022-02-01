@@ -23,8 +23,8 @@ import { logger, LogLevel, setLogLevel } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
 const PackageInfo = require('../package.json')
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
-import { profiler } from './api/profiler'
+// import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+// import { profiler } from './api/profiler'
 import { TMP_TSR_VERSION, StatusCode } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
 import { fetchShowStyleBasesLight, fetchStudiosLight } from '../lib/collections/optimizations'
@@ -396,29 +396,33 @@ function startInstrumenting() {
 	}
 
 	// attempt init elastic APM
-	const system = getCoreSystem()
-	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
 
-	if (APM_HOST && system && system.apm) {
-		logger.info(`APM agent starting up`)
-		Agent.start({
-			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
-			hostname: APP_HOST,
-			serverUrl: APM_HOST,
-			secretToken: APM_SECRET,
-			active: system.apm.enabled,
-			transactionSampleRate: system.apm.transactionSampleRate,
-			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-		})
-		profiler.setActive(system.apm.enabled || false)
-	} else {
-		logger.info(`APM agent inactive`)
-		Agent.start({
-			serviceName: 'tv-automation-server-core',
-			active: false,
-			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-		})
-	}
+	// Note: meteor-elastic-apm has been temporarily disabled due to being incompatible Meteor 2.3
+	// See https://github.com/Meteor-Community-Packages/meteor-elastic-apm/pull/61
+	//
+	// const system = getCoreSystem()
+	// const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
+
+	// if (APM_HOST && system && system.apm) {
+	// 	logger.info(`APM agent starting up`)
+	// 	Agent.start({
+	// 		serviceName: KIBANA_INDEX || 'tv-automation-server-core',
+	// 		hostname: APP_HOST,
+	// 		serverUrl: APM_HOST,
+	// 		secretToken: APM_SECRET,
+	// 		active: system.apm.enabled,
+	// 		transactionSampleRate: system.apm.transactionSampleRate,
+	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+	// 	})
+	// 	profiler.setActive(system.apm.enabled || false)
+	// } else {
+	// 	logger.info(`APM agent inactive`)
+	// 	Agent.start({
+	// 		serviceName: 'tv-automation-server-core',
+	// 		active: false,
+	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+	// 	})
+	// }
 }
 function updateLoggerLevel(startup: boolean) {
 	const coreSystem = getCoreSystem()
@@ -431,6 +435,7 @@ function updateLoggerLevel(startup: boolean) {
 }
 
 Meteor.startup(() => {
+	console.log('startup')
 	if (Meteor.isServer) {
 		startupMessage()
 		updateLoggerLevel(true)

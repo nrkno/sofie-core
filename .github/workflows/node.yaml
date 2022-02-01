@@ -16,10 +16,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
+      - name: Use Node.js 14.x
         uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
@@ -45,10 +45,10 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
+      - name: Use Node.js 14.x
         uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
@@ -110,11 +110,11 @@ jobs:
           else
             echo "Skipping docker build"
           fi
-      - name: Use Node.js 12.x
+      - name: Use Node.js 14.x
         uses: actions/setup-node@v1
         if: ${{ steps.image-tags.outputs.images }}
         with:
-          node-version: 12.x
+          node-version: 14.x
       - uses: ./.github/actions/setup-meteor
         if: ${{ steps.image-tags.outputs.images }}
       - name: Prepare Environment
@@ -291,10 +291,10 @@ jobs:
         node-version: [12.x, 14.x, 16.x]
         include:
           # include additional configs, to run certain packages in a single version of node
-          - node-version: 12.x
+          - node-version: 14.x
             package-name: corelib
             send-coverage: true
-          - node-version: 12.x
+          - node-version: 14.x
             package-name: job-worker
             send-coverage: true
           # No tests for the gateways yet
@@ -337,10 +337,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
+      - name: Use Node.js 14.x
         uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 14.x
       - name: Prepare Environment
         run: |
           cd packages 
@@ -393,7 +393,6 @@ jobs:
         with:
           node-version: 12.x
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
-        if: ${{ steps.do-publish.outputs.tag }}
         run: |
           cd packages
           yarn install
@@ -432,5 +431,33 @@ jobs:
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
+        env:
+          CI: true
+  check-for-multiple-library-versions:
+    name: Check for multiple library versions
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - uses: ./.github/actions/setup-meteor
+      - name: restore node_modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            meteor/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+      - name: Prepare Environment
+        run: |
+          yarn
+        env:
+          CI: true
+      - name: Run check
+        run: |
+          node scripts/checkForMultipleVersions.mjs
         env:
           CI: true

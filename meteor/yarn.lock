@@ -5479,11 +5479,6 @@ html-encoding-sniffer@^2.0.1:
   dependencies:
     whatwg-encoding "^1.0.5"
 
-html-entities@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/html-entities/-/html-entities-1.4.0.tgz#cfbd1b01d2afaf9adca1b10ae7dffab98c71d2dc"
-  integrity sha512-8nxjcBcd8wovbeKx7h3wTji4e6+rhaVuPNpMqwWgnHh+N9ToqsCs6XztWRBPQ+UtzsoMAdKZtUENoVzU/EMtZA==
-
 html-escaper@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
@@ -7436,6 +7431,17 @@ mos-connection@1.0.5-nightly-latest-20211118-081133-434af7d.0:
   version "1.0.5-nightly-latest-20211118-081133-434af7d.0"
   resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.5-nightly-latest-20211118-081133-434af7d.0.tgz#f9c846c63e4f131f6df79499d72e50b9f51bcef4"
   integrity sha512-1+n1Vp/Z5ANaFgEYsOzBSd1mzEnALCX8FzhjdvKSiLfOB+S7dTPfwBQgi8veVQMcM2lGKlTVwfk1A2FIy7nM1Q==
+  dependencies:
+    iconv-lite "^0.6.2"
+    moment "^2.29.1"
+    tslib "^2.2.0"
+    xml-js "^1.6.11"
+    xmlbuilder "^15.1.1"
+
+mos-connection@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.5.tgz#c67a54752351590181e0918ff3962614ff60990b"
+  integrity sha512-oCIDIaf4BvzOrFSaZ4bGwIb5jyhU0q5ARN4iF9L/BT+6pfMzOLV6x5Z8zC7y4iQpE7q3OvmYrZ34VoVR6GqpuQ==
   dependencies:
     iconv-lite "^0.6.2"
     moment "^2.29.1"
@@ -9938,10 +9944,10 @@ superfly-timeline@8.2.1:
     tslib "^2.2.0"
     underscore "^1.13.1"
 
-superfly-timeline@^8.2.2:
-  version "8.2.2"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.2.tgz#dede70ff10f2cb600c3eb344c314dcb931ca04b8"
-  integrity sha512-RZz9fULViZJ3lIGf5VW1lsrbWdtU8HFUX/UjAXItFqXaMXBXdS5jrjSPFqMmxV+ep6KMStqFJvjyFNVzy7b6WQ==
+superfly-timeline@^8.2.1:
+  version "8.2.5"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.5.tgz#2bc5a49cc26e18ef64481456b1a25039813c237f"
+  integrity sha512-m4pRS1VgTwFvv5rpZx7jcvbH3/z86k0qAcirBAgvbBUtUg8CfhJaHBCgGloKYGrsS+Zo+T5drUh0yyKUxGghHg==
   dependencies:
     tslib "^2.2.0"
     underscore "^1.13.1"

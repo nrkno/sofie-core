@@ -871,6 +871,7 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 						context,
 						playlist,
 						playingPartInstance,
+						null,
 						getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 					)
 					await libSetNextPart(context, cache, nextPart)
@@ -896,6 +897,7 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 							context,
 							playlist,
 							playingPartInstance,
+							null,
 							getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 						)
 						await libSetNextPart(context, cache, nextPart)

@@ -71,7 +71,11 @@ export function postProcessPieces(
 			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
 			content: omit(orgPiece.content, 'timelineObjects'),
 
-			_id: protectString(getHash(`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
+			_id: protectString(
+				getHash(
+					`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.sourceLayerId}_${orgPiece.externalId}_${i}`
+				)
+			),
 			continuesRefId: protectString(orgPiece.continuesRefId),
 			startRundownId: rundownId,
 			startSegmentId: segmentId,
@@ -172,7 +176,9 @@ export function postProcessAdLibPieces(
 			...orgAdlib,
 			content: omit(orgAdlib.content, 'timelineObjects'),
 			_id: protectString(
-				getHash(`${rundownId}_${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
+				getHash(
+					`${rundownId}_${blueprintId}_${partId}_adlib_piece_${orgAdlib.sourceLayerId}_${orgAdlib.externalId}_${i}`
+				)
 			),
 			rundownId: rundownId,
 			partId: partId,
