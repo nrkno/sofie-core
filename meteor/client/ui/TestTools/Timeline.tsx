@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { deserializeTimelineBlob } from '../../../lib/collections/Timeline'
+import { deserializeTimelineBlob, RoutedTimeline } from '../../../lib/collections/Timeline'
 import { Time, applyToArray, clone } from '../../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
@@ -11,7 +11,6 @@ import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
 import { Mongo } from 'meteor/mongo'
-import { RoutedTimeline } from '../../../lib/collections/Timeline'
 
 const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
 
@@ -62,6 +61,8 @@ interface ITimelineSimulateTrackedProps {
 }
 interface ITimelineSimulateState {
 	time: Time | null
+	layerFilter: string | RegExp | undefined
+	layerFilterText: string
 }
 export const ComponentTimelineSimulate = withTracker<
 	ITimelineSimulateProps,
@@ -127,14 +128,21 @@ export const ComponentTimelineSimulate = withTracker<
 
 			this.state = {
 				time: null,
+				layerFilter: undefined,
+				layerFilterText: '',
 			}
 		}
 		componentDidMount() {
 			this.subscribe(PubSub.timelineForStudio, this.props.studioId)
 		}
 		renderTimelineState(state: TimelineState) {
+			const filter = this.state.layerFilter
 			return _.map(
-				_.sortBy(_.values(state.layers), (o) => o.layer),
+				_.filter(
+					_.sortBy(_.values(state.layers), (o) => o.layer),
+					(o) =>
+						!filter || (typeof filter === 'string' ? String(o.layer).includes(filter) : !!String(o.layer).match(filter))
+				),
 				(o) => (
 					<tr key={o.layer}>
 						<td>{o.layer}</td>
@@ -154,6 +162,28 @@ export const ComponentTimelineSimulate = withTracker<
 				)
 			)
 		}
+		changeLayerFilter = (e: React.ChangeEvent<HTMLInputElement>) => {
+			if (e.target.value === '') {
+				this.setState({
+					layerFilter: undefined,
+					layerFilterText: e.target.value,
+				})
+				return
+			}
+
+			if (e.target.value.match(/^\/.+\/$/)) {
+				this.setState({
+					layerFilter: new RegExp(e.target.value.substr(1, e.target.value.length - 2)),
+					layerFilterText: e.target.value,
+				})
+			} else {
+				this.setState({
+					layerFilter: e.target.value,
+					layerFilterText: e.target.value,
+				})
+			}
+		}
+
 		render() {
 			const state = this.props.allStates
 				? Resolver.getState(this.props.allStates, this.state.time ?? this.props.now)
@@ -163,24 +193,35 @@ export const ComponentTimelineSimulate = withTracker<
 
 			return (
 				<div>
-					<h2>Timeline state</h2>
-					<p>
-						Time:{' '}
-						<select
-							onChange={(e) => {
-								const val = Number(e.target.value)
-								this.setState({ time: isNaN(val) ? null : val })
-							}}
-							value={this.state.time ?? 'now'}
-						>
-							<option id="now">Now: {this.props.now}</option>
-							{times.map((e) => (
-								<option id={e + ''} key={e}>
-									{e}
-								</option>
-							))}
-						</select>
-					</p>
+					<h2 className="mhn">Timeline state</h2>
+					<div className="flex-row mbl">
+						<div className="col mrl">
+							Time:{' '}
+							<select
+								onChange={(e) => {
+									const val = Number(e.target.value)
+									this.setState({ time: isNaN(val) ? null : val })
+								}}
+								value={this.state.time ?? 'now'}
+							>
+								<option id="now">Now: {this.props.now}</option>
+								{times.map((e) => (
+									<option id={e + ''} key={e}>
+										{e}
+									</option>
+								))}
+							</select>
+						</div>
+						<div className="col">
+							Layer Filter:{' '}
+							<input
+								type="text"
+								value={this.state.layerFilterText}
+								onChange={this.changeLayerFilter}
+								placeholder="Text or /RegEx/"
+							/>
+						</div>
+					</div>
 
 					<div>
 						{this.props.errorMsg ? (
