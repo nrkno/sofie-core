@@ -232,7 +232,7 @@ export interface BlueprintResultBaseline {
 export type BlueprintResultStudioBaseline = BlueprintResultBaseline
 export interface BlueprintResultRundown {
 	rundown: IBlueprintRundown
-	globalAdLibPieces: Array<IBlueprintAdLibPiece>
+	globalAdLibPieces: IBlueprintAdLibPiece[]
 	globalActions?: IBlueprintActionManifest[]
 	baseline: BlueprintResultBaseline
 }
@@ -243,8 +243,8 @@ export interface BlueprintResultSegment {
 
 export interface BlueprintResultPart {
 	part: IBlueprintPart
-	pieces: Array<IBlueprintPiece>
-	adLibPieces: Array<IBlueprintAdLibPiece>
+	pieces: IBlueprintPiece[]
+	adLibPieces: IBlueprintAdLibPiece[]
 	actions?: IBlueprintActionManifest[]
 }
 
@@ -253,13 +253,13 @@ export interface BlueprintSyncIngestNewData {
 	/** The new part */
 	part: IBlueprintPartDB
 	/** A list of pieces (including infinites) that would be present in a fresh copy of this partInstance */
-	pieceInstances: Array<IBlueprintPieceInstance>
+	pieceInstances: IBlueprintPieceInstance[]
 	/** The adlib pieces belonging to this part */
-	adLibPieces: Array<IBlueprintAdLibPieceDB>
+	adLibPieces: IBlueprintAdLibPieceDB[]
 	/** The adlib actions belonging to this part */
 	actions: IBlueprintActionManifest[]
 	/** A list of adlibs that have pieceInstances in the partInstance in question */
-	referencedAdlibs: Array<IBlueprintAdLibPieceDB>
+	referencedAdlibs: IBlueprintAdLibPieceDB[]
 }
 
 // TODO: add something like this later?
@@ -274,7 +274,7 @@ export interface BlueprintSyncIngestNewData {
 
 export interface BlueprintSyncIngestPartInstance {
 	partInstance: IBlueprintPartInstance
-	pieceInstances: Array<IBlueprintPieceInstance>
+	pieceInstances: IBlueprintPieceInstance[]
 	// Upcoming interface:
 	// adLibPieceInstances: IBlueprintAdlibPieceInstance[]
 	// adLibActionInstances: IBlueprintAdlibActionInstance[]
@@ -282,7 +282,7 @@ export interface BlueprintSyncIngestPartInstance {
 
 export interface BlueprintRemoveOrphanedPartInstance {
 	partInstance: IBlueprintPartInstance
-	pieceInstances: Array<IBlueprintPieceInstance>
+	pieceInstances: IBlueprintPieceInstance[]
 }
 
 /** Key is the ID of the external ID of the Rundown, Value is the rank to be assigned */

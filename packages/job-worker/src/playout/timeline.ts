@@ -375,8 +375,8 @@ async function getTimelineRundown(
 					const tlGenRes = await blueprint.blueprint.onTimelineGenerate(
 						context2,
 						timelineObjs,
-						cache.Playlist.doc.previousPersistentState,
-						currentPartInstance?.previousPartEndState,
+						clone(cache.Playlist.doc.previousPersistentState),
+						clone(currentPartInstance?.previousPartEndState),
 						resolvedPieces.pieces.map(convertResolvedPieceInstanceToBlueprints)
 					)
 					sendTrace(endTrace(influxTrace))

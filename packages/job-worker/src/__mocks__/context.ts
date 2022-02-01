@@ -296,8 +296,8 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 				// displayDuration?: number;
 				// invalid?: boolean
 			}
-			const pieces: Array<IBlueprintPiece> = ingestPart.payload?.pieces ?? []
-			const adLibPieces: Array<IBlueprintAdLibPiece> = []
+			const pieces: IBlueprintPiece[] = ingestPart.payload?.pieces ?? []
+			const adLibPieces: IBlueprintAdLibPiece[] = []
 			parts.push({
 				part,
 				pieces,
