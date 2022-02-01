@@ -504,6 +504,7 @@ describe('ensureNextPartIsValid', () => {
 			segmentId: protectString('mock_segment1'),
 			externalId: 'o1',
 			title: 'Orphan 1',
+			expectedDurationWithPreroll: undefined,
 		})
 		PartInstances.insert(
 			literal<DBPartInstance>({
