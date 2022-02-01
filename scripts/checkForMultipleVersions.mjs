@@ -59,6 +59,8 @@ await addDepsForRoot("./packages");
 await addDepsForRoot("./packages", "blueprints-integration");
 await addDepsForRoot("./packages", "server-core-integration");
 await addDepsForRoot("./packages", "mos-gateway");
+await addDepsForRoot("./packages", "core-lib");
+await addDepsForRoot("./packages", "job-worker");
 await addDepsForRoot("./packages", "playout-gateway");
 
 let hasFailure = false;
