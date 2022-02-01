@@ -103,6 +103,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 		context,
 		cache.Playlist.doc,
 		takePartInstance,
+		null,
 		getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 	)
 

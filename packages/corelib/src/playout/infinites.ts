@@ -502,6 +502,30 @@ function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number
 	return typeof start === 'number' ? start + offset : `#${getPieceGroupId(newPiece)}.start + ${offset}`
 }
 
+function isClear(piece?: PieceInstance): boolean {
+	return !!piece?.piece.virtual
+}
+
+function isCappedByAVirtual(
+	activePieces: PieceInstanceOnInfiniteLayers,
+	key: keyof PieceInstanceOnInfiniteLayers,
+	newPiece: PieceInstance
+): boolean {
+	if (
+		(key === 'onRundownEnd' || key === 'onShowStyleEnd') &&
+		activePieces.onSegmentEnd &&
+		isCandidateMoreImportant(newPiece, activePieces.onSegmentEnd)
+	)
+		return true
+	if (
+		key === 'onShowStyleEnd' &&
+		activePieces.onRundownEnd &&
+		isCandidateMoreImportant(newPiece, activePieces.onRundownEnd)
+	)
+		return true
+	return false
+}
+
 /**
  * Process the infinite pieces to determine the start time and a maximum end time for each.
  * Any pieces which have no chance of being shown (duplicate start times) are pruned
@@ -516,8 +540,6 @@ export function processAndPrunePieceInstanceTimings(
 ): PieceInstanceWithTimings[] {
 	const result: PieceInstanceWithTimings[] = []
 
-	const isClear = (piece?: PieceInstance): boolean => !!piece?.piece.virtual
-
 	const updateWithNewPieces = (
 		activePieces: PieceInstanceOnInfiniteLayers,
 		newPieces: PieceInstanceOnInfiniteLayers,
@@ -530,12 +552,16 @@ export function processAndPrunePieceInstanceTimings(
 			if (activePiece) {
 				activePiece.resolvedEndCap = offsetFromStart(start, newPiece)
 			}
+			// track the new piece
+			activePieces[key] = newPiece
 
 			// We don't want to include virtual pieces in the output (most of the time)
 			// TODO - do we want to always output virtual pieces from the 'other' group?
-			if (!isClear(newPiece) || key === 'other' || includeVirtual) {
-				// track the new piece
-				activePieces[key] = newPiece
+			if (
+				includeVirtual ||
+				((!isClear(newPiece) || key === 'other') && !isCappedByAVirtual(activePieces, key, newPiece))
+			) {
+				// add the piece to results
 				result.push(newPiece)
 
 				if (
@@ -553,9 +579,6 @@ export function processAndPrunePieceInstanceTimings(
 						activePieces.other = undefined
 					}
 				}
-			} else {
-				// the piece has stopped with no replacement, so clear the tracking state
-				activePieces[key] = undefined
 			}
 		}
 	}
@@ -604,7 +627,7 @@ export function processAndPrunePieceInstanceTimings(
 	return result.filter((p) => p.resolvedEndCap === undefined || p.resolvedEndCap !== p.piece.enable.start)
 }
 
-function isCandidateBetterToBeContinued(best: PieceInstance, candidate: PieceInstance): boolean {
+function isCandidateMoreImportant(best: PieceInstance, candidate: PieceInstance): boolean | undefined {
 	// Prioritise the one from this part over previous part
 	if (best.infinite?.fromPreviousPart && !candidate.infinite?.fromPreviousPart) {
 		// Prefer the candidate as it is not from previous
@@ -639,9 +662,13 @@ function isCandidateBetterToBeContinued(best: PieceInstance, candidate: PieceIns
 		return true
 	}
 
+	return undefined
+}
+
+function isCandidateBetterToBeContinued(best: PieceInstance, candidate: PieceInstance): boolean {
 	// Fallback to id, as we dont have any other criteria and this will be stable.
 	// Note: we shouldnt even get here, as it shouldnt be possible for multiple to start at the same time, but it is possible
-	return best.piece._id < candidate.piece._id
+	return isCandidateMoreImportant(best, candidate) ?? best.piece._id < candidate.piece._id
 }
 
 interface PieceInstanceOnInfiniteLayers {

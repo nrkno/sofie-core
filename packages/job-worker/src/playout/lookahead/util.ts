@@ -56,6 +56,7 @@ export function getOrderedPartsAfterPlayhead(context: JobContext, cache: CacheFo
 		context,
 		strippedPlaylist,
 		nextPartInstance ?? currentPartInstance ?? null,
+		null,
 		partsAndSegments
 	)
 	if (!nextNextPart) {

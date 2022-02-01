@@ -536,6 +536,7 @@ export async function innerStartQueuedAdLib(
 		context,
 		cache.Playlist.doc,
 		currentPartInstance,
+		null,
 		getOrderedSegmentsAndPartsFromPlayoutCache(cache),
 		true
 	)

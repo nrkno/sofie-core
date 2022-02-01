@@ -412,6 +412,27 @@ describe('Infinites', () => {
 				},
 			])
 		})
+		test('stop onRundownEnd continuation when start=0 and onSegmentEnd is present', () => {
+			const pieceInstances = [
+				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnRundownEnd, false, {
+					fromPreviousPart: true,
+					infiniteInstanceId: protectString('one_a'),
+					infinitePieceId: protectString('one_b'),
+				}),
+				createPieceInstance('two', { start: 0 }, 'one', PieceLifespan.OutOnSegmentEnd, false, {
+					fromPreviousPart: false,
+					infiniteInstanceId: protectString('two_a'),
+					infinitePieceId: protectString('two_b'),
+				}),
+			]
+
+			pieceInstances[1].piece.virtual = true
+
+			const resolvedInstances = runAndTidyResult(pieceInstances, 500)
+
+			// don't expect virtual Pieces in the results, but 'one' should be pruned too
+			expect(resolvedInstances).toEqual([])
+		})
 	})
 	describe('getPlayheadTrackingInfinitesForPart', () => {
 		function runAndTidyResult(

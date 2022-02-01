@@ -81,6 +81,7 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 			context,
 			cache.Playlist.doc,
 			null,
+			null,
 			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 		)
 		await setNextPart(context, cache, firstPart)
@@ -103,10 +104,17 @@ export function selectNextPart(
 	context: JobContext,
 	rundownPlaylist: Pick<DBRundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: DBPartInstance | null,
-	{ parts, segments }: PartsAndSegments,
+	currentlySelectedPartInstance: DBPartInstance | null,
+	{ parts: parts0, segments }: PartsAndSegments,
 	ignoreUnplayabale = true
 ): SelectNextPartResult | null {
 	const span = context.startSpan('selectNextPart')
+
+	// In the parts array, insert currentlySelectedPartInstance over its part, as it is already nexted, so wont change unless necessary
+	const parts = currentlySelectedPartInstance
+		? parts0.map((p) => (p._id === currentlySelectedPartInstance.part._id ? currentlySelectedPartInstance.part : p))
+		: parts0
+
 	/**
 	 * Iterates over all the parts and searches for the first one to be playable
 	 * @param offset the index from where to start the search

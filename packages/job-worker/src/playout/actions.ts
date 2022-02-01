@@ -71,6 +71,7 @@ export async function activateRundownPlaylist(
 			context,
 			cache.Playlist.doc,
 			null,
+			null,
 			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 		)
 		await setNextPart(context, cache, firstPart)

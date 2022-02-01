@@ -358,9 +358,9 @@ describe('Test blueprint post-process', () => {
 
 			// Ensure getHash was called as expected
 			expect(getHashMock).toHaveBeenCalledTimes(3)
-			expect(getHashMock).toHaveBeenNthCalledWith(1, 'rundown1_blueprint9_undefined_adlib_piece_eid1_0')
-			expect(getHashMock).toHaveBeenNthCalledWith(2, 'rundown1_blueprint9_undefined_adlib_piece_eid2_0')
-			expect(getHashMock).toHaveBeenNthCalledWith(3, 'rundown1_blueprint9_undefined_adlib_piece_eid2_1')
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid1_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid2_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(3, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid2_1')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
@@ -483,8 +483,8 @@ describe('Test blueprint post-process', () => {
 
 			// Ensure getHash was called as expected
 			expect(getHashMock).toHaveBeenCalledTimes(2)
-			expect(getHashMock).toHaveBeenNthCalledWith(1, 'fakeRo_blueprint9_part8_piece_eid1_0')
-			expect(getHashMock).toHaveBeenNthCalledWith(2, 'fakeRo_blueprint9_part8_piece_eid2_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'fakeRo_blueprint9_part8_piece_sl0_eid1_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'fakeRo_blueprint9_part8_piece_sl0_eid2_0')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
