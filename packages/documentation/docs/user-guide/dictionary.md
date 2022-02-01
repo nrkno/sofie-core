@@ -49,6 +49,10 @@ Clock on the right is a countdown to the beginning of a given segment. This take
 
 In the illustration above, the first Segment \(_Ny Sak_\) has been playing for 4 minutes and 25 seconds longer than it was planned for. The second segment \(_Direkte Strømstad\)_ is planned to play for 4 minutes and 40 seconds. There are 5 minutes and 46 seconds worth of content between the current On Air line \(which is in the first Segment\) and the second Segment.
 
+If you click on the Segment header countdowns, you can switch the _Segment Countdown_ to a _Segment OnAir Clock_ where this will show the time-of-day when a given Segment is expected to air.
+
+![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/img/docs/main/features-and-configuration/segment-header-2.png)
+
 ### Rundown dividers
 
 When using a workflow and blueprints that combine multiple NRCS Rundowns into a single Sofie Rundown \(such as when using the "Ready To Air" functionality in AP ENPS\), information about these individual NRCS Rundowns will be inserted into the Rundown View at the point where each of these incoming Rundowns start.
@@ -93,13 +97,13 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 #### Take Point
 
-The Take point is currently playing [Part](dictionary.md#part) in the rundown, indicated by the "On Air" line in the GUI.  
+The Take point is currently playing [Part](dictionary#part) in the rundown, indicated by the "On Air" line in the GUI.  
 What's played on air is calculated from the timeline objects in the Pieces in the currently playing part.
 
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
 
 :::info
-You can TAKE the next [Part](dictionary.md#part) by pressing F12 or the Numpad Enter key.
+You can TAKE the next [Part](dictionary#part) by pressing F12 or the Numpad Enter key.
 :::
 
 #### Next Point
@@ -118,7 +122,23 @@ If a Piece has more or less content than the Part's expected duration allows, an
 
 #### Lookahead
 
-Elements in the [Next point ](dictionary.md#next-point)\(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and play-out devices used. This feature is called "Lookahead".
+Elements in the [Next point](dictionary#next-point) \(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and play-out devices used. This feature is called "Lookahead".
+
+### Storyboard Mode
+
+To the left side of the Zoom buttons, there's a button controlling the display style of a given Segment. The default display style of
+a Segment can be indicated by the [Blueprints](features-and-configuration/concepts-and-architecture#blueprints), but the User can switch to
+a different mode at any time.
+
+![Storyboard Mode](/img/docs/main/storyboard.png)
+
+The **_Storyboard_** mode is an alternative to the default **_Timeline_** mode. In Storyboard mode, the accurate placement in time of each Piece is not visualized, so that more Parts can be visualized at once. This can be particularly useful in Shows without very strict timing planning or where timing is not driven by the User, but rather some external factor; or in Shows where very long Parts are joined with very short ones: sports, events and debates. This mode also does not visualize the history of the playback: rather, it only shows what is currently On Air or is planned to go On Air.
+
+Storyboard mode selects a "main" Piece of the Part, using the same logic as the [Presenter's screen](features-and-configuration/sofie-pages#presenter-screen), and presents it with a big, hover-scrub-enabled thumbnail for easy preview. The countdown to freeze-frame is displayed in the top-right hand corner of the Thumbnail, once less than 10 seconds remain to freeze-frame. The Transition Piece is displayed on top of the thumbnail. Other Pieces are placed below the thumbnail, stacked in order of playback. After a Piece goes off-air, it will dissapear from the view.
+
+If no more Parts can be displayed in a given Segment, they are stacked in order on the right side of the Segment. The User can scroll through thse Parts by click-and-dragging the Storyboard area, or using the mouse wheel - `Alt`+Wheel, if only a vertical wheel is present in the mouse.
+
+All user interactions work in the Storyboard mode the same as in Timeline mode: Takes, AdLibs, Holds and moving the [Next Point](#next-point) around the Rundown.
 
 ## Additional views
 
