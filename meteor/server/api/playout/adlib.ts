@@ -567,6 +567,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const followingPart = selectNextPart(
 			cache.Playlist.doc,
 			currentPartInstance,
+			null,
 			getOrderedSegmentsAndPartsFromPlayoutCache(cache),
 			true
 		)
