@@ -53,7 +53,7 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { convertPieceInstanceToBlueprints } from '../context/lib'
+import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from '../context/lib'
 import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 const { postProcessPieces: postProcessPiecesOrig, postProcessTimelineObjects: postProcessTimelineObjectsOrig } =
 	jest.requireActual('../postProcess')
@@ -1493,7 +1493,7 @@ describe('Test blueprint api context', () => {
 					const partInstance1 = cache.PartInstances.findOne({}) as DBPartInstance
 					expect(partInstance1).toBeTruthy()
 
-					expect(resultPiece).toEqual(partInstance1)
+					expect(resultPiece).toEqual(convertPartInstanceToBlueprints(partInstance1))
 
 					const pieceInstance0After = {
 						...partInstance0Before,

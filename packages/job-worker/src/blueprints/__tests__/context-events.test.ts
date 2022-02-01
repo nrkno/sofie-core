@@ -102,7 +102,7 @@ describe('Test blueprint api context', () => {
 			)
 			expect(context.studio).toBeTruthy()
 
-			expect(context.part).toEqual(tmpPart)
+			expect(context.part).toEqual(convertPartInstanceToBlueprints(tmpPart))
 		})
 	})
 
@@ -188,7 +188,7 @@ describe('Test blueprint api context', () => {
 
 			const context = await getContext(rundown, undefined, partInstance, undefined)
 			await expect(context.getFirstPartInstanceInRundown()).resolves.toMatchObject({
-				playlistActivationId: partInstance.playlistActivationId,
+				_id: partInstance._id,
 			})
 
 			// look for a different playlistActivationId
@@ -223,18 +223,17 @@ describe('Test blueprint api context', () => {
 				_id: { $ne: partInstance._id },
 			})) as DBPartInstance
 			expect(secondPartInstance).toBeTruthy()
+			expect(secondPartInstance.playlistActivationId).toBe(partInstance.playlistActivationId)
 
 			const context = await getContext(rundown, undefined, partInstance, undefined)
 			// Get the 'timed' partInstance
 			await expect(context.getFirstPartInstanceInRundown()).resolves.toMatchObject({
 				_id: secondPartInstance._id,
-				playlistActivationId: partInstance.playlistActivationId,
 			})
 
 			// Get the 'untimed' partInstance
 			await expect(context.getFirstPartInstanceInRundown(true)).resolves.toMatchObject({
 				_id: partInstance._id,
-				playlistActivationId: partInstance.playlistActivationId,
 			})
 		})
 
