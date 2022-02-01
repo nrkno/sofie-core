@@ -22,9 +22,7 @@ module.exports = {
 			items: [
 				{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-				{ href: 'https://nrkno.github.io/sofie-core/typedoc', label: 'API Docs' }, // external link to typedoc
 				{ to: '/releases', label: 'Releases', position: 'left' },
-				// {to: '/blog', label: 'Blog', position: 'left'},
 
 				{
 					type: 'docsVersionDropdown',
@@ -48,13 +46,11 @@ module.exports = {
 			style: 'dark',
 			links: [
 				{
-					title: 'Docs',
+					title: 'Documentation',
 					items: [
-						{ to: '/docs/getting-started/intro', label: 'Getting Started' },
-						{ to: '/docs/main/intro', label: 'Docs' },
-						{ to: '/docs/for-developers/intro', label: 'For Developers' },
-						{ to: '/typedoc', label: 'API Docs' },
-						{ to: '/releases', label: 'Releases' },
+						{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
+						{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
+						{ to: '/releases', label: 'Releases', position: 'left' },
 					],
 				},
 				{
