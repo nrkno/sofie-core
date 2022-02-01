@@ -60,6 +60,11 @@ export const addSteps = addMigrationSteps('0.1.0', [
 		canBeRunAutomatically: true,
 		dependOnResultFrom: 'studio exists',
 		validate: () => {
+			const studios = Studios.find().fetch()
+			if (studios.length > 1) {
+				return false
+			}
+
 			let missing: string | boolean = false
 			PeripheralDevices.find({
 				parentDeviceId: { $exists: false },
