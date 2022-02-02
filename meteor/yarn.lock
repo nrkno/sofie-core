@@ -7427,17 +7427,6 @@ monitor-event-loop-delay@^1.0.0:
   resolved "https://registry.yarnpkg.com/monitor-event-loop-delay/-/monitor-event-loop-delay-1.0.0.tgz#b5ab78165a3bb93f2b275c50d01430c7f155d1f7"
   integrity sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==
 
-mos-connection@1.0.5-nightly-latest-20211118-081133-434af7d.0:
-  version "1.0.5-nightly-latest-20211118-081133-434af7d.0"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.5-nightly-latest-20211118-081133-434af7d.0.tgz#f9c846c63e4f131f6df79499d72e50b9f51bcef4"
-  integrity sha512-1+n1Vp/Z5ANaFgEYsOzBSd1mzEnALCX8FzhjdvKSiLfOB+S7dTPfwBQgi8veVQMcM2lGKlTVwfk1A2FIy7nM1Q==
-  dependencies:
-    iconv-lite "^0.6.2"
-    moment "^2.29.1"
-    tslib "^2.2.0"
-    xml-js "^1.6.11"
-    xmlbuilder "^15.1.1"
-
 mos-connection@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.5.tgz#c67a54752351590181e0918ff3962614ff60990b"
@@ -9940,14 +9929,6 @@ superfly-timeline@8.2.1:
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.1.tgz#07c0dfee351ae0597c9dcf0a33794ff53f90829e"
   integrity sha512-cwd5mGL/2KP8JSBxdxU1bIG4zB3KtWUB/DwhyxBKtTQksAxgplZmWxSqkrE69LfmEQ/8nYBct2NFZ0fCTZzEnQ==
-  dependencies:
-    tslib "^2.2.0"
-    underscore "^1.13.1"
-
-superfly-timeline@^8.2.1:
-  version "8.2.5"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.5.tgz#2bc5a49cc26e18ef64481456b1a25039813c237f"
-  integrity sha512-m4pRS1VgTwFvv5rpZx7jcvbH3/z86k0qAcirBAgvbBUtUg8CfhJaHBCgGloKYGrsS+Zo+T5drUh0yyKUxGghHg==
   dependencies:
     tslib "^2.2.0"
     underscore "^1.13.1"
