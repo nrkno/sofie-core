@@ -5,7 +5,6 @@ import { render } from 'react-dom'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { SorensenContextProvider } from './lib/SorensenContext'
-import { isRunningInPWA } from './lib/lib'
 
 // Import some browser polyfills to handle rare features
 import './lib/polyfill/polyfills'
@@ -42,27 +41,4 @@ Meteor.startup(() => {
 		</DndProvider>,
 		document.getElementById('render-target')
 	)
-
-	if (isRunningInPWA()) {
-		document.addEventListener(
-			'mousedown',
-			() => {
-				document.documentElement
-					.requestFullscreen({
-						navigationUI: 'auto',
-					})
-					.catch((e) => console.error('Could not get FullScreen when running as a PWA', e))
-
-				// Use Keyboard API to lock the keyboard and disable all browser shortcuts
-				if ('keyboard' in navigator) {
-					//@ts-ignore
-					navigator.keyboard.lock().catch((e) => console.error('Could not get Keyboard Lock when running as a PWA', e))
-				}
-			},
-			{
-				once: true,
-				passive: false,
-			}
-		)
-	}
 })
