@@ -46,17 +46,11 @@ export async function syncChangesToPartInstances(
 			const playlistPartInstances = getSelectedPartInstancesFromCache(cache)
 			const instances: SyncedInstance[] = []
 			if (playlistPartInstances.currentPartInstance) {
-				findPartAndInsertToSyncedInstanceCandidates(
-					instances,
-					cache,
-					ingestCache,
-					playlistPartInstances.currentPartInstance,
-					playlistPartInstances.previousPartInstance,
-					'current'
-				)
 				// If the currentPartInstance is adlibbed we probably also need to find the earliest
 				// non-adlibbed Part within this segment and check it for updates too. It may have something
 				// changed (like timing) that will affect what's going on.
+				// The previous "planned" Part Instance needs to be inserted into the `instances` first, so that
+				// it's ran first through the blueprints.
 				if (playlistPartInstances.currentPartInstance.orphaned === 'adlib-part') {
 					const partAndPartInstance = findLastUnorphanedPartInstanceInSegment(
 						cache,
@@ -74,6 +68,15 @@ export async function syncChangesToPartInstances(
 						)
 					}
 				}
+				// We can now run the current Part Instance.
+				findPartAndInsertToSyncedInstanceCandidates(
+					instances,
+					cache,
+					ingestCache,
+					playlistPartInstances.currentPartInstance,
+					playlistPartInstances.previousPartInstance,
+					'current'
+				)
 			}
 			if (playlistPartInstances.nextPartInstance) {
 				findPartAndInsertToSyncedInstanceCandidates(
@@ -256,43 +259,36 @@ function findLastUnorphanedPartInstanceInSegment(
 	partInstance: PartInstance
 	part: Part
 } | null {
-	const previousParts = cache.Parts.findFetch(
+	// Find the "latest" (last played), non-orphaned PartInstance in this Segment, in this play-through
+	const previousPartInstance = cache.PartInstances.findOne(
 		{
+			playlistActivationId: currentPartInstance.playlistActivationId,
 			segmentId: currentPartInstance.segmentId,
-			_rank: {
-				$lte: currentPartInstance.part._rank,
+			segmentPlayoutId: currentPartInstance.segmentPlayoutId,
+			takeCount: {
+				$lt: currentPartInstance.takeCount,
+			},
+			orphaned: {
+				$exists: false,
+			},
+			reset: {
+				$ne: true,
 			},
 		},
 		{
 			sort: {
-				_rank: -1,
+				takeCount: -1,
 			},
 		}
 	)
-	// No previous Part found, abort now
-	if (previousParts.length === 0) return null
 
-	// Go through the Previous Parts and find one that has been played. Ideally, this will return on the first iteration.
-	for (const previousPart of previousParts) {
-		// If we've found an old Part that matches what we need, let's look for it's corresponding
-		// non-reset, same-playthrough PartInstance as the currentPartInstance
-		const oldPartInstance = cache.PartInstances.findOne(
-			(p) =>
-				p.part._id === previousPart._id &&
-				!p.orphaned &&
-				!p.reset &&
-				p.playlistActivationId === cache.Playlist.doc.activationId &&
-				p.segmentPlayoutId === currentPartInstance.segmentPlayoutId
-		)
+	if (!previousPartInstance) return null
 
-		// No matching PartInstance found, continue to the next Part
-		if (!oldPartInstance) continue
+	const previousPart = cache.Parts.findOne(previousPartInstance.part._id)
+	if (!previousPart) return null
 
-		return {
-			partInstance: oldPartInstance,
-			part: previousPart,
-		}
+	return {
+		partInstance: previousPartInstance,
+		part: previousPart,
 	}
-
-	return null
 }
