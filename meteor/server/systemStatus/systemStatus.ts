@@ -216,24 +216,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 
 	// Check status of workers
 	const workerStatuses = Workers.find().fetch()
-	if (!workerStatuses.length) {
-		if (!statusObj.components) statusObj.components = []
-
-		// No workers at all? that's weird
-		statusObj.components.push(
-			literal<Component>({
-				name: 'workers',
-				status: 'FAIL',
-				updated: new Date().toISOString(),
-				_status: StatusCode.BAD,
-				_internal: {
-					statusCodeString: StatusCode[StatusCode.BAD],
-					messages: ['No workers are set up'],
-					versions: {},
-				},
-			})
-		)
-	} else {
+	if (workerStatuses.length) {
 		for (const workerStatus of workerStatuses) {
 			if (!statusObj.components) statusObj.components = []
 			const status = workerStatus.connected ? StatusCode.GOOD : StatusCode.BAD
