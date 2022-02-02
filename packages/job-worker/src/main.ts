@@ -1,9 +1,8 @@
 import { logger } from './logging'
 import { protectString, protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StudioId, WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupApmAgent } from './profiler'
 import { createMongoConnection } from './db'
-import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { StudioWorkerSet } from './workers/worker-set'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Db as MongoDb, MongoClient } from 'mongodb'
@@ -34,7 +33,7 @@ async function defaultThreadLogger(msg: LogEntry) {
 }
 
 export abstract class JobWorkerBase {
-	readonly #workerId = getWorkerId()
+	readonly #workerId: WorkerId
 	readonly #workers = new Map<StudioId, StudioWorkerSet>()
 
 	readonly #logLine: LogLineWithSourceFunc
@@ -45,10 +44,12 @@ export abstract class JobWorkerBase {
 	#jobManager: JobManager
 
 	constructor(
+		workerId: WorkerId,
 		jobManager: JobManager,
 		logLine: LogLineWithSourceFunc | null,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	) {
+		this.#workerId = workerId
 		this.#jobManager = jobManager
 
 		this.#logLine = logLine || defaultThreadLogger
@@ -59,7 +60,7 @@ export abstract class JobWorkerBase {
 		}
 	}
 
-	public async run(mongoUri: string, dbName: string): Promise<void> {
+	public async run(mongoUri: string, mongoDbName: string): Promise<void> {
 		if (this.#client) throw new Error('Already running')
 
 		logger.info('Starting')
@@ -74,7 +75,7 @@ export abstract class JobWorkerBase {
 			process.exit(0)
 		})
 
-		const db = this.#client.db(dbName)
+		const db = this.#client.db(mongoDbName)
 		// Find the current studios
 		const studioIds = await getStudioIdsToRun(db)
 		for (const studioId of studioIds) {
@@ -84,8 +85,8 @@ export abstract class JobWorkerBase {
 				await StudioWorkerSet.create(
 					this.#workerId,
 					mongoUri,
-					dbName,
 					this.#client,
+					mongoDbName,
 					studioId,
 					this.#jobManager,
 					this.#logLine,
@@ -148,17 +149,5 @@ async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 		const ids = studios.map((s) => protectString(s._id))
 		logger.warn(`Running for all studios: ${JSON.stringify(ids)}. Make sure there is only one worker running!`)
 		return ids
-	}
-}
-
-/** The unique id for this worker, used by the queue to track job ownership */
-function getWorkerId(): string {
-	if (process.env.WORKER_ID) {
-		logger.info(`Running with id "${process.env.WORKER_ID}"`)
-		return process.env.WORKER_ID
-	} else {
-		const id = getRandomString(10)
-		logger.info(`Running with generated id "${id}"`)
-		return id
 	}
 }
