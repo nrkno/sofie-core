@@ -7,6 +7,7 @@ import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Meteor } from 'meteor/meteor'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
 interface IDevicePackageManagerSettingsProps {
 	deviceId: PeripheralDeviceId
@@ -344,14 +345,24 @@ const TableFromObjectArray: React.FC<TableFromObjectArrayData<any>> = function T
 						return (
 							<tr key={dataObj.id || `__index${index}`}>
 								{keys.map((key) => {
-									let value = dataObj[key]
-									if (typeof value === 'object') {
-										value = JSON.stringify(value)
+									const value = dataObj[key]
+									let returnValue
+									if (Array.isArray(value)) {
+										returnValue = <TableFromObjectArray dataObjs={value} />
+									} else if (typeof value === 'object') {
+										try {
+											returnValue = JSON.stringify(value)
+										} catch (e) {
+											returnValue = `>Error parsing: ${stringifyError(e, true)}<`
+										}
+									} else if (value === true) {
+										returnValue = 'true'
+									} else if (value === false) {
+										returnValue = 'false'
+									} else {
+										returnValue = `${value}`
 									}
-									if (value === true) value = 'true'
-									if (value === false) value = 'false'
-
-									return <td key={key}>{value}</td>
+									return <td key={key}>{returnValue}</td>
 								})}
 
 								{rowFcn ? <td>{rowFcn(dataObj)}</td> : null}
