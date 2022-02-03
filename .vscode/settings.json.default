@@ -9,5 +9,5 @@
         "packages/job-worker"
     ],
     "prettier.enable": true,
-    "sonarlint.connectedMode.project": { "projectKey": "nrkno_tv-automation-server-core" },
+    "sonarlint.connectedMode.project": { "projectKey": "nrkno_sofie-core" },
 }

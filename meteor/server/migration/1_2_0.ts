@@ -5,7 +5,7 @@ import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/Cor
 export const addSteps = addMigrationSteps('1.2.0', [
 	{
 		id: 'CoreSystem.storePath fix',
-		// Fix a bug where CoreSystemPath is the string "undefined", ref (https://github.com/nrkno/tv-automation-server-core/pull/91)
+		// Fix a bug where CoreSystemPath is the string "undefined", ref (https://github.com/nrkno/sofie-core/pull/91)
 		canBeRunAutomatically: true,
 		validate: () => {
 			const system = getCoreSystem()
