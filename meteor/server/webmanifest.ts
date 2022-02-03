@@ -1,46 +1,101 @@
 import os from 'os'
 import { PickerGET } from './api/http'
 import { ServerResponse } from 'http'
-import type { JSONSchemaForWebApplicationManifestFiles, ShortcutItem } from '../lib/typings/webmanifest'
-import { getCoreSystem } from '../lib/collections/CoreSystem'
+import type {
+	JSONSchemaForWebApplicationManifestFiles,
+	ManifestImageResource,
+	ShortcutItem,
+} from '../lib/typings/webmanifest'
+import { getCoreSystemAsync } from '../lib/collections/CoreSystem'
 import { logger } from '../lib/logging'
 import { MongoSelector } from '../lib/typings/meteor'
 import { DBStudio, Studios } from '../lib/collections/Studios'
 import { Rundowns } from '../lib/collections/Rundowns'
 import { DBRundownPlaylist, RundownPlaylists } from '../lib/collections/RundownPlaylists'
+import { getLocale, Translations } from './lib'
+import { generateTranslation } from '../lib/lib'
+import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
+import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 const appShortName = 'Sofie'
+const SOFIE_DEFAULT_ICONS: ManifestImageResource[] = [
+	{
+		src: '/icons/mstile-144x144.png',
+		sizes: '144x144',
+		purpose: 'monochrome',
+		type: 'image/png',
+	},
+	{
+		src: '/icons/maskable-96x96.png',
+		sizes: '96x96',
+		purpose: 'maskable',
+		type: 'image/png',
+	},
+]
 
-function getShortcutsForStudio(studio: Pick<DBStudio, '_id' | 'name'>, studioCount: number): ShortcutItem[] {
+const t = generateTranslation
+
+function translateMessage(locale: Translations, message: ITranslatableMessage): string {
+	const localized = locale[message.key] || message.key
+	return interpollateTranslation(localized, message.args)
+}
+
+function getShortcutsForStudio(
+	locale: Translations,
+	studio: Pick<DBStudio, '_id' | 'name'>,
+	studioCount: number
+): ShortcutItem[] {
 	const multiStudio = studioCount > 1
 	return [
 		{
 			id: `${studio._id}_activeRundown`,
-			name: multiStudio ? `${studio.name}: Active Rundown` : 'Active Rundown',
+			name: translateMessage(
+				locale,
+				multiStudio
+					? t('{{studioName}}: Active Rundown', {
+							studioName: studio.name,
+					  })
+					: t('Active Rundown')
+			),
+			icons: SOFIE_DEFAULT_ICONS,
 			url: `/activeRundown/${studio._id}`,
 		},
 		{
 			id: `${studio._id}_prompter`,
-			name: multiStudio ? `${studio.name}: Prompter` : 'Prompter',
+			name: translateMessage(
+				locale,
+				multiStudio
+					? t('{{studioName}}: Prompter', {
+							studioName: studio.name,
+					  })
+					: t('Prompter')
+			),
+			icons: SOFIE_DEFAULT_ICONS,
 			url: `/prompter/${studio._id}`,
 		},
 		{
 			id: `${studio._id}_countdowns`,
-			name: multiStudio ? `${studio.name}: Presenter screen` : 'Presenter screen',
+			name: translateMessage(
+				locale,
+				multiStudio ? t('{{studioName}}: Presenter screen', { studioName: studio.name }) : t('Presenter screen')
+			),
+			icons: SOFIE_DEFAULT_ICONS,
 			url: `/countdowns/${studio._id}/presenter`,
 		},
 	]
 }
 
-function getWebManifest(): JSONSchemaForWebApplicationManifestFiles {
-	const core = getCoreSystem()
-
-	const studios = Studios.find().fetch()
-
+async function getWebManifest(languageCode: string): Promise<JSONSchemaForWebApplicationManifestFiles> {
 	const shortcuts: ShortcutItem[] = []
 
+	const [core, studios, locale] = await Promise.all([
+		getCoreSystemAsync(),
+		Studios.findFetchAsync({}),
+		getLocale(languageCode),
+	])
+
 	studios.forEach((studio) => {
-		shortcuts.push(...getShortcutsForStudio(studio, studios.length))
+		shortcuts.push(...getShortcutsForStudio(locale, studio, studios.length))
 	})
 
 	const csName = core?.name
@@ -116,6 +171,10 @@ function getRundownPlaylistFromExternalId(externalId: string): DBRundownPlaylist
 	return RundownPlaylists.findOne(rundownPlaylistSelector)
 }
 
+/**
+ * Serve a localized version of the WebManifest. It will return an English version by default, one can specify a
+ * supported locale using ?lng=XX URL query parameter. Uses the same localisation files as the Frontend app.
+ */
 PickerGET.route('/site.webmanifest', (_, req, res) => {
 	logger.debug(`WebManifest: ${req.connection.remoteAddress} GET "${req.url}"`, {
 		url: req.url,
@@ -125,18 +184,28 @@ PickerGET.route('/site.webmanifest', (_, req, res) => {
 		headers: req.headers,
 	})
 
-	try {
-		res.statusCode = 200
-		res.setHeader('Content-Type', 'application/manifest+json')
-		res.end(JSON.stringify(getWebManifest()))
-		return
-	} catch (e) {
-		logger.error(`Could not produce PWA WebManifest`, e)
+	let lngCode = 'en' // EN is the default locale
+	if (req.url) {
+		const url = new URL(req.url, 'http://s/') // the second part needs to be a dummy url, we just want to parse the URL query
+		lngCode = url.searchParams.get('lng') || lngCode
 	}
 
-	sendResponseCode(res, 500, 'Internal Server Error')
+	getWebManifest(lngCode)
+		.then((manifest) => {
+			res.statusCode = 200
+			res.setHeader('Content-Type', 'application/manifest+json;charset=utf-8')
+			res.end(JSON.stringify(manifest))
+		})
+		.catch((e) => {
+			logger.error(`Could not produce PWA WebManifest`, e)
+			sendResponseCode(res, 500, 'Internal Server Error')
+		})
 })
 
+/**
+ * Handle the web+nrcs://<NRCS-EXTERNAL-ID> URL scheme. This allows for external integrations to direct the User
+ * to a Sofie Rundown View of a given Rundown or Rundown Playlist.
+ */
 PickerGET.route('/url/nrcs', (_, req, res) => {
 	logger.debug(`NRCS URL: ${req.connection.remoteAddress} GET "${req.url}"`, {
 		url: req.url,
