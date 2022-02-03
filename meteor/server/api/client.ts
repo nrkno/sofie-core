@@ -240,9 +240,6 @@ export namespace ServerClientAPI {
 					const errorTime = Date.now()
 
 					logger.error(`Error in ${methodName}: ${stringifyError(e)}`)
-					if ((e instanceof Error || e instanceof Meteor.Error) && e.stack) {
-						logger.error(e.stack)
-					}
 
 					const wrappedError = rewrapError(methodName, e)
 					const wrappedErrorStr = `ClientResponseError: ${translateMessage(

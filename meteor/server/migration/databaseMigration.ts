@@ -649,9 +649,6 @@ export function runMigration(
 			}
 		} catch (e) {
 			logger.error(`Error in Migration step ${step.id}: ${stringifyError(e)}`)
-			if ((e instanceof Error || e instanceof Meteor.Error) && e.stack) {
-				logger.error(e.stack)
-			}
 			warningMessages.push(`Internal server error in step ${step.id}`)
 		}
 	})

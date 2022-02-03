@@ -364,7 +364,6 @@ export async function runInFiber<T>(fcn: () => T | Promise<T>): Promise<T> {
 			} catch (e: any) {
 				// Note: we cannot use
 				console.log('Error: ' + stringifyError(e))
-				if ((e instanceof Error || e instanceof MeteorMock.Error) && e.stack) console.log(e.stack)
 				reject(e)
 			}
 		}).run()
