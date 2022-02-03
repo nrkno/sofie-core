@@ -203,7 +203,7 @@ PickerGET.route('/site.webmanifest', (_, req, res) => {
 })
 
 /**
- * Handle the web+nrcs://<NRCS-EXTERNAL-ID> URL scheme. This allows for external integrations to direct the User
+ * Handle the web+nrcs://rundown/<NRCS-EXTERNAL-ID> URL scheme. This allows for external integrations to direct the User
  * to a Sofie Rundown View of a given Rundown or Rundown Playlist.
  */
 PickerGET.route('/url/nrcs', (_, req, res) => {
@@ -222,7 +222,15 @@ PickerGET.route('/url/nrcs', (_, req, res) => {
 
 	try {
 		const url = new URL(req.url, 'http://s/') // the second part needs to be a dummy url, we just want to parse the URL query
-		const externalId = url.searchParams.get('q')
+		const webNrcsUrl = url.searchParams.get('q')
+		if (webNrcsUrl === null) {
+			sendResponseCode(res, 400, 'Needs query parameter "q"')
+			return
+		}
+
+		// Unfortunately, URL interface can't handle custom URL schemes like web+something, so we need to use the
+		// URLSearchParams interface and trick it into parsing the URL-encoded externalId
+		const externalId = new URLSearchParams(webNrcsUrl.replace(/^web\+nrcs:\/\/rundown\//, '?q=')).get('q')
 		if (externalId === null) {
 			sendResponseCode(res, 400, 'Needs query parameter "q"')
 			return
@@ -236,7 +244,7 @@ PickerGET.route('/url/nrcs', (_, req, res) => {
 			sendResponseCode(res, 303, `Could not find requested object: "${externalId}", see the full list`, '/')
 			return
 		}
-		logger.debug(`NRCS URL: External ID found "${rundownPlaylist._id}"`)
+		logger.debug(`NRCS URL: External ID found "${externalId}" in "${rundownPlaylist._id}"`)
 		sendResponseCode(
 			res,
 			302,
