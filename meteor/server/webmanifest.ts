@@ -1,9 +1,13 @@
 import os from 'os'
-import { PickerGET } from './http'
-import type { JSONSchemaForWebApplicationManifestFiles, ShortcutItem } from '../../lib/typings/webmanifest'
-import { getCoreSystem } from '../../lib/collections/CoreSystem'
-import { logger } from '../../lib/logging'
-import { DBStudio, Studios } from '../../lib/collections/Studios'
+import { PickerGET } from './api/http'
+import { ServerResponse } from 'http'
+import type { JSONSchemaForWebApplicationManifestFiles, ShortcutItem } from '../lib/typings/webmanifest'
+import { getCoreSystem } from '../lib/collections/CoreSystem'
+import { logger } from '../lib/logging'
+import { MongoSelector } from '../lib/typings/meteor'
+import { DBStudio, Studios } from '../lib/collections/Studios'
+import { Rundowns } from '../lib/collections/Rundowns'
+import { DBRundownPlaylist, RundownPlaylists } from '../lib/collections/RundownPlaylists'
 
 const appShortName = 'Sofie'
 
@@ -95,6 +99,23 @@ function getWebManifest(): JSONSchemaForWebApplicationManifestFiles {
 	}
 }
 
+function getRundownPlaylistFromExternalId(externalId: string): DBRundownPlaylist | undefined {
+	const rundown = Rundowns.findOne({ externalId })
+
+	let rundownPlaylistSelector: MongoSelector<DBRundownPlaylist>
+	if (rundown) {
+		rundownPlaylistSelector = {
+			_id: rundown.playlistId,
+		}
+	} else {
+		rundownPlaylistSelector = {
+			externalId,
+		}
+	}
+
+	return RundownPlaylists.findOne(rundownPlaylistSelector)
+}
+
 PickerGET.route('/site.webmanifest', (_, req, res) => {
 	logger.debug(`WebManifest: ${req.connection.remoteAddress} GET "${req.url}"`, {
 		url: req.url,
@@ -113,6 +134,58 @@ PickerGET.route('/site.webmanifest', (_, req, res) => {
 		logger.error(`Could not produce PWA WebManifest`, e)
 	}
 
-	res.statusCode = 500
-	res.end('Internal Server Error')
+	sendResponseCode(res, 500, 'Internal Server Error')
 })
+
+PickerGET.route('/url/nrcs', (_, req, res) => {
+	logger.debug(`NRCS URL: ${req.connection.remoteAddress} GET "${req.url}"`, {
+		url: req.url,
+		method: 'GET',
+		remoteAddress: req.connection.remoteAddress,
+		remotePort: req.connection.remotePort,
+		headers: req.headers,
+	})
+
+	if (!req.url) {
+		sendResponseCode(res, 400, 'Needs query parameter "q"')
+		return
+	}
+
+	try {
+		const url = new URL(req.url, 'http://s/') // the second part needs to be a dummy url, we just want to parse the URL query
+		const externalId = url.searchParams.get('q')
+		if (externalId === null) {
+			sendResponseCode(res, 400, 'Needs query parameter "q"')
+			return
+		}
+
+		const rundownPlaylist = getRundownPlaylistFromExternalId(externalId)
+
+		if (!rundownPlaylist) {
+			// we couldn't find the External ID for Rundown/Rundown Playlist
+			logger.debug(`NRCS URL: External ID not found "${externalId}"`)
+			sendResponseCode(res, 303, `Could not find requested object: "${externalId}", see the full list`, '/')
+			return
+		}
+		logger.debug(`NRCS URL: External ID found "${rundownPlaylist._id}"`)
+		sendResponseCode(
+			res,
+			302,
+			`Requested object found in Rundown Playlist "${rundownPlaylist._id}"`,
+			`/rundown/${rundownPlaylist._id}`
+		)
+		return
+	} catch (e) {
+		logger.error(`Unknown error in /url/nrcs`, e)
+	}
+
+	sendResponseCode(res, 500, 'Internal Server Error')
+})
+
+function sendResponseCode(res: ServerResponse, code: number, description: string, redirect?: string): void {
+	res.statusCode = code
+	if (redirect) {
+		res.setHeader('Location', redirect)
+	}
+	res.end(description)
+}
