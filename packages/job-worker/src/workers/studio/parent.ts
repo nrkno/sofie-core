@@ -6,7 +6,6 @@ import { WorkerParentBase, WorkerParentOptions, WorkerParentBaseOptions } from '
 import { AnyLockEvent } from '../locks'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
-import { addThreadNameToLogLine } from '../../logging'
 
 export class StudioWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<StudioWorkerChild>
@@ -26,11 +25,11 @@ export class StudioWorkerParent extends WorkerParentBase {
 		const queueName = getStudioQueueName(baseOptions.studioId)
 		const prettyName = queueName
 		const emitLockEvent = (e: AnyLockEvent) => baseOptions.locksManager.handleLockEvent(queueName, e)
-		const logLineInner = (msg: unknown) => logLine(addThreadNameToLogLine(queueName, msg))
+
 		const workerThread = await threadedClass<StudioWorkerChild, typeof StudioWorkerChild>(
 			'./child',
 			'StudioWorkerChild',
-			[emitLockEvent, baseOptions.jobManager.queueJob, logLineInner, fastTrackTimeline],
+			[emitLockEvent, baseOptions.jobManager.queueJob, logLine, fastTrackTimeline],
 			{
 				instanceName: `Studio: ${baseOptions.studioId}`,
 			}

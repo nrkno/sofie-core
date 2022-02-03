@@ -1,5 +1,4 @@
-import { LogEntry } from 'winston'
-import { addThreadNameToLogLine, interceptLogging } from './logging'
+import { interceptLogging, LogEntry } from './logging'
 import { FastTrackTimelineFunc, JobSpec, JobWorkerBase } from './main'
 import { JobManager, JobStream } from './manager'
 import { WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -40,8 +39,8 @@ export class IpcJobWorker extends JobWorkerBase {
 		logLine: (msg: LogEntry) => Promise<void>,
 		fastTrackTimeline: FastTrackTimelineFunc
 	) {
-		// Intercept winston to pipe back over ipc
-		interceptLogging((...args) => logLine(addThreadNameToLogLine('worker-parent', ...args)))
+		// Intercept logging to pipe back over ipc
+		interceptLogging('worker-parent', (msg) => logLine(msg))
 
 		const jobManager = new IpcJobManager(jobFinished, queueJob, getNextJob)
 		super(workerId, jobManager, logLine, fastTrackTimeline)

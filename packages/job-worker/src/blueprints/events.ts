@@ -10,6 +10,7 @@ import { PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dis
 import { logger } from '../logging'
 import * as debounceFn from 'debounce-fn'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
 const EVENT_WAIT_TIME = 500
 
@@ -37,9 +38,9 @@ function handlePartInstanceTimingEvent(
 						partInstanceId,
 					})
 					.catch((e) => {
-						let msg = `Failed to queue job in handlePartInstanceTimingEvent "${funcId}": "${e.toString()}"`
-						if (e.stack) msg += '\n' + e.stack
-						logger.error(msg)
+						logger.error(
+							`Failed to queue job in handlePartInstanceTimingEvent "${funcId}": "${stringifyError(e)}"`
+						)
 					})
 			},
 			{

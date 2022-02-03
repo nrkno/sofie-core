@@ -6,7 +6,6 @@ import { AnyLockEvent } from '../locks'
 import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
-import { addThreadNameToLogLine } from '../../logging'
 
 export class IngestWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<IngestWorkerChild>
@@ -27,12 +26,11 @@ export class IngestWorkerParent extends WorkerParentBase {
 		const prettyName = queueName
 
 		const emitLockEvent = (e: AnyLockEvent) => baseOptions.locksManager.handleLockEvent(queueName, e)
-		const logLineInner = (msg: unknown) => logLine(addThreadNameToLogLine(queueName, msg))
 
 		const workerThread = await threadedClass<IngestWorkerChild, typeof IngestWorkerChild>(
 			'./child',
 			'IngestWorkerChild',
-			[emitLockEvent, baseOptions.jobManager.queueJob, logLineInner, fastTrackTimeline],
+			[emitLockEvent, baseOptions.jobManager.queueJob, logLine, fastTrackTimeline],
 			{
 				instanceName: `Ingest: ${baseOptions.studioId}`,
 			}

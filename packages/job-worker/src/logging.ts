@@ -1,63 +1,75 @@
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
-import * as Winston from 'winston'
-import TransportStream = require('winston-transport')
 
-// Log all to console for now. Can be improved later
-const consoleTransport = new Winston.transports.Console({
-	level: 'silly',
-	handleExceptions: true,
-	handleRejections: true,
-})
+// TODO: These types should perhaps be made a little more solid
+export type LeveledLogMethodFixed = (msg: any, ...meta: any[]) => void
+export interface LoggerInstanceFixed {
+	// for cli and npm levels
+	error: LeveledLogMethodFixed
+	warn: LeveledLogMethodFixed
+	help: LeveledLogMethodFixed
+	data: LeveledLogMethodFixed
+	info: LeveledLogMethodFixed
+	debug: LeveledLogMethodFixed
+	prompt: LeveledLogMethodFixed
+	http: LeveledLogMethodFixed
+	verbose: LeveledLogMethodFixed
+	input: LeveledLogMethodFixed
+	silly: LeveledLogMethodFixed
+
+	// for syslog levels only
+	emerg: LeveledLogMethodFixed
+	alert: LeveledLogMethodFixed
+	crit: LeveledLogMethodFixed
+	warning: LeveledLogMethodFixed
+	notice: LeveledLogMethodFixed
+}
 
 // Setup logging --------------------------------------
-export const logger = Winston.createLogger({
-	format: Winston.format.json(),
-	transports: [consoleTransport],
-})
+export const logger: LoggerInstanceFixed = {
+	error: (...args: any[]) => handleLog('error', ...args),
+	warn: (...args: any[]) => handleLog('warn', ...args),
+	help: (...args: any[]) => handleLog('help', ...args),
+	data: (...args: any[]) => handleLog('data', ...args),
+	info: (...args: any[]) => handleLog('info', ...args),
+	debug: (...args: any[]) => handleLog('debug', ...args),
+	prompt: (...args: any[]) => handleLog('prompt', ...args),
+	http: (...args: any[]) => handleLog('http', ...args),
+	verbose: (...args: any[]) => handleLog('verbose', ...args),
+	input: (...args: any[]) => handleLog('input', ...args),
+	silly: (...args: any[]) => handleLog('silly', ...args),
 
-export function interceptLogging(handler: (msg: unknown) => Promise<void>) {
-	const customTransport = new CustomTransport(handler)
-
-	// Replace transports
-	logger.add(customTransport)
-	logger.remove(consoleTransport)
+	// for syslog levels only
+	emerg: (...args: any[]) => handleLog('emerg', ...args),
+	alert: (...args: any[]) => handleLog('alert', ...args),
+	crit: (...args: any[]) => handleLog('crit', ...args),
+	warning: (...args: any[]) => handleLog('warning', ...args),
+	notice: (...args: any[]) => handleLog('notice', ...args),
+}
+function handleLog(level: string, ...args: any[]) {
+	for (const target of targets) {
+		target(level, args)
+	}
 }
 
-export function addThreadNameToLogLine(threadName: string, msg: unknown): Winston.LogEntry {
-	if (typeof msg === 'object') {
-		return {
-			...(msg as Winston.LogEntry),
-			threadName: threadName,
-		}
-	} else {
-		return {
-			message: stringifyError(msg),
-			level: 'info',
-			threadName: threadName,
-		}
-	}
+export interface LogEntry {
+	level: string
+	source: string
+	message: string
 }
 
-class CustomTransport extends TransportStream {
-	constructor(
-		private readonly handler: (msg: unknown) => Promise<void>,
-		options: TransportStream.TransportStreamOptions = {}
-	) {
-		super(options)
+type LogLineHandler = (msg: LogEntry) => Promise<void>
+type LogTarget = (level: string, args: any[]) => void
+const targets: LogTarget[] = []
 
-		this.setMaxListeners(30)
-	}
+/** Intercept all calls to the logger, and pipe the results to logLine */
+export function interceptLogging(threadName: string, logLine: LogLineHandler) {
+	targets.push((level: string, args: any[]) => {
+		const message: string = args.map((arg) => stringifyError(arg)).join(',')
 
-	log(info: any, next: () => void) {
-		setImmediate(() => this.emit('logged', info))
-
-		this.handler(info).catch((e) => {
-			// Something failed, so write to the console instead
-			console.error(`Failed to proxy message: ${stringifyError(e)}`, info)
-		})
-
-		if (next) {
-			next()
-		}
-	}
+		logLine({
+			level,
+			source: threadName,
+			message,
+		}).catch(console.error)
+	})
 }

@@ -7,7 +7,7 @@ import { setupApmAgent, startTransaction } from '../../profiler'
 import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
 import { QueueJobFunc, JobContextImpl } from '../context'
 import { AnyLockEvent, LocksManager } from '../locks'
-import { FastTrackTimelineFunc, LogLineFunc } from '../../main'
+import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
 import { interceptLogging, logger } from '../../logging'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { setupInfluxDb } from '../../influx'
@@ -29,10 +29,11 @@ export class StudioWorkerChild {
 	constructor(
 		emitLockEvent: (event: AnyLockEvent) => Promise<void>,
 		queueJob: QueueJobFunc,
-		logLine: LogLineFunc,
+		logLine: LogLineWithSourceFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	) {
-		interceptLogging(logLine)
+		// Intercept logging to pipe back over ipc
+		interceptLogging('studio-child', logLine)
 
 		setupApmAgent()
 		setupInfluxDb()

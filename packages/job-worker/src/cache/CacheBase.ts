@@ -136,8 +136,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 			if (!IS_PRODUCTION) {
 				throw error
 			} else {
-				logger.error(error.toString())
-				if (error.stack) logger.error(error.stack)
+				logger.error(error)
 			}
 		}
 
