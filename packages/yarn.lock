@@ -14690,17 +14690,17 @@ thunky@^1.0.2:
   resolved "https://registry.yarnpkg.com/thunky/-/thunky-1.1.0.tgz#5abaf714a9405db0504732bbccd2cedd9ef9537d"
   integrity sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==
 
-timeline-state-resolver-types@6.4.0-nightly-release39-20220117-145627-f32e78af4.0:
-  version "6.4.0-nightly-release39-20220117-145627-f32e78af4.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.4.0-nightly-release39-20220117-145627-f32e78af4.0.tgz#fc839625ce353bff02dae1967d52b750ed98750d"
-  integrity sha512-/AHYHNxOfwJktd5vchrieTTHnUEAudYvw2nTeSHtt+pvUYZuBpvC+I6fOg9GfAbUT1Opu3/Wc1ZXnS2ACf14rw==
+timeline-state-resolver-types@6.4.0-release39.1:
+  version "6.4.0-release39.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-6.4.0-release39.1.tgz#d0a352debc2126e76fa9c7d21d221c29d68ab95e"
+  integrity sha512-j23PFqdmJH8euiQHxGv+UBDYXIm7kLWdEUosnseEMvbJImn4EHGvPqOV6bX/Y17iKEMWnJX6htFYN551+QpBOA==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@6.4.0-nightly-release39-20220117-145627-f32e78af4.0:
-  version "6.4.0-nightly-release39-20220117-145627-f32e78af4.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.4.0-nightly-release39-20220117-145627-f32e78af4.0.tgz#4a3dbe1fe77d8882b97e5e19808d3d407f3064c8"
-  integrity sha512-gNXOnKqjhAi+7chwIb60ShWx47rxA4yUW1kJdyTzakQSzI8EjHX8w2lIx7+VrjsIbK+LqTkzwfve6eg0LzZnJg==
+timeline-state-resolver@6.4.0-release39.1:
+  version "6.4.0-release39.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-6.4.0-release39.1.tgz#70f23ae572de099ce190f295396a46fada106dfb"
+  integrity sha512-QQuK26O8F8zPGQRImysh/Uih+2WNo82k6dO9DvmNJSPtIAhj1QjWER9H60RDgK7TwNe/upOQ5goRjUf+Lkw62A==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "2.4.0"
@@ -14722,7 +14722,7 @@ timeline-state-resolver@6.4.0-nightly-release39-20220117-145627-f32e78af4.0:
     sprintf-js "^1.1.2"
     superfly-timeline "8.2.1"
     threadedclass "^1.0.1"
-    timeline-state-resolver-types "6.4.0-nightly-release39-20220117-145627-f32e78af4.0"
+    timeline-state-resolver-types "6.4.0-release39.1"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
