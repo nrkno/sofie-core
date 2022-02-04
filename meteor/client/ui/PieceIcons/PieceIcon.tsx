@@ -1,6 +1,12 @@
 import React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { SourceLayerType, ISourceLayer, CameraContent, RemoteContent } from '@sofie-automation/blueprints-integration'
+import {
+	SourceLayerType,
+	ISourceLayer,
+	CameraContent,
+	RemoteContent,
+	EvsContent,
+} from '@sofie-automation/blueprints-integration'
 import CamInputIcon from './Renderers/CamInput'
 import VTInputIcon from './Renderers/VTInput'
 import SplitInputIcon from './Renderers/SplitInput'
@@ -15,6 +21,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
 import { RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
+import LocalInputIcon from './Renderers/LocalInput'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
@@ -40,6 +47,15 @@ export const PieceIcon = (props: {
 				return (
 					<RemoteInputIcon
 						inputIndex={rmContent ? rmContent.studioLabel : undefined}
+						abbreviation={props.sourceLayer.abbreviation}
+					/>
+				)
+			}
+			case SourceLayerType.LOCAL: {
+				const localContent = piece ? (piece.content as EvsContent | undefined) : undefined
+				return (
+					<LocalInputIcon
+						inputIndex={localContent ? localContent.studioLabel : undefined}
 						abbreviation={props.sourceLayer.abbreviation}
 					/>
 				)
@@ -74,6 +90,7 @@ export const pieceIconSupportedLayers = new Set([
 	SourceLayerType.SPLITS,
 	SourceLayerType.VT,
 	SourceLayerType.CAMERA,
+	SourceLayerType.LOCAL,
 ])
 
 export function PieceIconContainerNoSub({
@@ -102,7 +119,11 @@ export function PieceIconContainerNoSub({
 export function PieceIconContainer(props: IPropsHeader): JSX.Element | null {
 	const { pieceInstance, sourceLayer } = useTracker(
 		() => findPieceInstanceToShow(props, pieceIconSupportedLayers),
-		[props.partInstanceId, props.showStyleBaseId]
+		[props.partInstanceId, props.showStyleBaseId],
+		{
+			pieceInstance: undefined,
+			sourceLayer: undefined,
+		}
 	)
 
 	useSubscription(PubSub.pieceInstancesSimple, {

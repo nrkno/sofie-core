@@ -3,6 +3,14 @@ $liveline-timecode-color: $general-countdown-to-next-color; //$general-live-colo
 $hold-status-color: $liveline-timecode-color;
 
 .piece__label__colored-mark {
+	display: inline-block;
+	background-color: currentColor;
+	border-radius: 100%;
+	width: 0.75em;
+	height: 0.75em;
+	margin-right: 0.125em;
+	margin-left: 0.125em;
+	line-height: 0.75em;
 }
 
 .presenter-screen {
