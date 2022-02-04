@@ -1,10 +1,8 @@
-import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import * as React from 'react'
-import { SourceLayerType, ISourceLayer, VTContent } from '@sofie-automation/blueprints-integration'
+import React from 'react'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { SourceLayerType, VTContent } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { findPieceInstanceToShow } from './utils'
@@ -22,57 +20,57 @@ export interface IPropsHeader {
 	partAutoNext: boolean
 }
 
-export const PieceCountdownContainer = withTracker((props: IPropsHeader) => {
-	const supportedLayers = new Set([
-		SourceLayerType.GRAPHICS,
-		SourceLayerType.LIVE_SPEAK,
-		SourceLayerType.REMOTE,
-		SourceLayerType.SPLITS,
-		SourceLayerType.VT,
-		SourceLayerType.CAMERA,
-	])
-	return findPieceInstanceToShow(props, supportedLayers)
-})(
-	class PieceCountdown extends MeteorReactComponent<
-		IPropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }
-	> {
-		componentDidMount() {
-			this.subscribe(PubSub.pieceInstancesSimple, {
-				rundownId: { $in: this.props.rundownIds },
-				playlistActivationId: this.props.playlistActivationId,
-			})
-			this.subscribe(PubSub.showStyleBases, {
-				_id: this.props.showStyleBaseId,
-			})
-		}
+const supportedLayers = new Set([
+	SourceLayerType.GRAPHICS,
+	SourceLayerType.LIVE_SPEAK,
+	SourceLayerType.REMOTE,
+	SourceLayerType.SPLITS,
+	SourceLayerType.VT,
+	SourceLayerType.CAMERA,
+])
 
-		render() {
-			const piece = this.props.pieceInstance ? this.props.pieceInstance.piece : undefined
-			const sourceDuration = (piece?.content as VTContent)?.sourceDuration
-			const seek = (piece?.content as VTContent)?.seek || 0
-			const pieceEnable = typeof piece?.enable.start !== 'number' ? 0 : piece?.enable.start
-			if (
-				this.props.partStartedPlayback &&
-				this.props.sourceLayer &&
-				piece &&
-				piece.content &&
-				sourceDuration &&
-				((this.props.partAutoNext && pieceEnable + (sourceDuration - seek) < (this.props.partExpectedDuration || 0)) ||
-					(!this.props.partAutoNext &&
-						Math.abs(pieceEnable + (sourceDuration - seek) - (this.props.partExpectedDuration || 0)) > 500))
-			) {
-				const freezeCountdown =
-					this.props.partStartedPlayback + pieceEnable + (sourceDuration - seek) - getCurrentTime()
-				if (freezeCountdown > 0) {
-					return (
-						<>
-							<Timediff time={freezeCountdown} />
-							<img className="freeze-icon" src="/icons/freeze-presenter-screen.svg" />
-						</>
-					)
-				}
-			}
-			return null
+export function PieceCountdownContainer(props: IPropsHeader): JSX.Element | null {
+	const { pieceInstance, sourceLayer } = useTracker(
+		() => findPieceInstanceToShow(props, supportedLayers),
+		[props.partInstanceId, props.showStyleBaseId],
+		{
+			sourceLayer: undefined,
+			pieceInstance: undefined,
+		}
+	)
+
+	useSubscription(PubSub.pieceInstancesSimple, {
+		rundownId: { $in: props.rundownIds },
+		playlistActivationId: props.playlistActivationId,
+	})
+
+	useSubscription(PubSub.showStyleBases, {
+		_id: props.showStyleBaseId,
+	})
+
+	const piece = pieceInstance ? pieceInstance.piece : undefined
+	const sourceDuration = (piece?.content as VTContent)?.sourceDuration
+	const seek = (piece?.content as VTContent)?.seek || 0
+	const pieceEnable = typeof piece?.enable.start !== 'number' ? 0 : piece?.enable.start
+	if (
+		props.partStartedPlayback &&
+		sourceLayer &&
+		piece &&
+		piece.content &&
+		sourceDuration &&
+		((props.partAutoNext && pieceEnable + (sourceDuration - seek) < (props.partExpectedDuration || 0)) ||
+			(!props.partAutoNext &&
+				Math.abs(pieceEnable + (sourceDuration - seek) - (props.partExpectedDuration || 0)) > 500))
+	) {
+		const freezeCountdown = props.partStartedPlayback + pieceEnable + (sourceDuration - seek) - getCurrentTime()
+		if (freezeCountdown > 0) {
+			return (
+				<>
+					<Timediff time={freezeCountdown} />
+					<img className="freeze-icon" src="/icons/freeze-presenter-screen.svg" />
+				</>
+			)
 		}
 	}
-)
+	return null
+}
