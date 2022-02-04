@@ -10,6 +10,7 @@ on:
 name: SonarCloud
 jobs:
   sonarcloud:
+    name: SonarCloud
     runs-on: ubuntu-latest
     if: ${{ github.repository_owner == 'nrkno' }}
       
