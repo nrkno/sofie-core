@@ -9,12 +9,13 @@ export const addSteps = addMigrationSteps('1.9.0', [
 		validate: () => {
 			const devices = PeripheralDevices.find({}).fetch()
 			const monitors: any[][] = devices
-				.filter((d) => {
-					d.settings &&
+				.filter(
+					(d) =>
+						d.settings &&
 						d.type === PeripheralDeviceType.MEDIA_MANAGER &&
 						(d.settings as any).monitors &&
 						(d.settings as any).monitors
-				})
+				)
 				.map((x) => Object.values((x.settings as any).monitors || []))
 			let scannerCount = 0
 			for (const mons of monitors) {
