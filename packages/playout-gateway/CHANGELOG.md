@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+
+### Bug Fixes
+
+* add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/tv-automation-server-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
+* add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/tv-automation-server-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
+* TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/tv-automation-server-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
+* TSR dep ([8b506fa](https://github.com/nrkno/tv-automation-server-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
+
+
+
+
+
 ## [1.38.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0...v1.38.1) (2022-01-27)
 
 **Note:** Version bump only for package playout-gateway

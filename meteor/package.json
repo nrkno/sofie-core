@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.39.0-in-development",
+	"version": "1.39.0-in-testing.0",
 	"private": true,
 	"engines": {
 		"node": ">=14.18.0"
@@ -137,6 +137,8 @@
 		"@types/request": "^2.48.7",
 		"@types/semver": "^7.3.8",
 		"@types/sinon": "^9.0.11",
+		"@types/underscore": "1.10.0",
+		"@types/winston": "^2.4.4",
 		"@types/xml2json": "^0.11.4",
 		"@types/xmldom": "^0.1.31",
 		"@welldone-software/why-did-you-render": "^4.3.1",
