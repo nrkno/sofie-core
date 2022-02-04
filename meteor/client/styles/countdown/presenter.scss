@@ -2,6 +2,9 @@
 $liveline-timecode-color: $general-countdown-to-next-color; //$general-live-color;
 $hold-status-color: $liveline-timecode-color;
 
+.piece__label__colored-mark {
+}
+
 .presenter-screen {
 	position: fixed;
 	top: 0;
@@ -40,7 +43,7 @@ $hold-status-color: $liveline-timecode-color;
 				color: #fff;
 				border-top: 0.1em solid #fff;
 				-webkit-text-stroke: black;
-    			-webkit-text-stroke-width: 0.025em;
+				-webkit-text-stroke-width: 0.025em;
 				text-shadow: 0px 0px 20px #00000044;
 			}
 
