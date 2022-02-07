@@ -470,7 +470,7 @@ describe('ensureNextPartIsValid', () => {
 					_id: protectString('orphan_1'),
 					_rank: 1.5,
 					rundownId: rundownId,
-					segmentId: protectString('mock_segment4'),
+					segmentId: protectString('mock_segment1'),
 					externalId: 'o1',
 					title: 'Orphan 1',
 					expectedDurationWithPreroll: undefined,
@@ -492,6 +492,47 @@ describe('ensureNextPartIsValid', () => {
 		} finally {
 			// Cleanup to not mess with other tests
 			PartInstances.remove(instanceId)
+		}
+	})
+	testInFiber('Next part is invalid, but instance is not', () => {
+		// Insert a temporary instance
+		const instanceId: PartInstanceId = protectString('orphaned_first_part')
+		const part = literal<DBPart>({
+			_id: protectString('orphan_1'),
+			_rank: 1.5,
+			rundownId: rundownId,
+			segmentId: protectString('mock_segment1'),
+			externalId: 'o1',
+			title: 'Orphan 1',
+			expectedDurationWithPreroll: undefined,
+		})
+		PartInstances.insert(
+			literal<DBPartInstance>({
+				_id: instanceId,
+				rundownId: rundownId,
+				segmentId: protectString('mock_segment1'),
+				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
+				takeCount: 0,
+				rehearsal: false,
+				part: part,
+			})
+		)
+		Parts.insert({
+			...part,
+			invalid: true,
+		})
+
+		try {
+			resetPartIds('mock_part_instance1', instanceId, false)
+
+			ensureNextPartIsValid()
+
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(0)
+		} finally {
+			// Cleanup to not mess with other tests
+			PartInstances.remove(instanceId)
+			Parts.remove(part._id)
 		}
 	})
 })

@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+
+### Features
+
+* adlib-actions can block a take from happening until a certain time ([588f4d9](https://github.com/nrkno/tv-automation-server-core/commit/588f4d9f071530b59fb400e7a3e1d3ad43e5090f))
+* out transitions ([03101a5](https://github.com/nrkno/tv-automation-server-core/commit/03101a503a82254baeaa279c4131cdad308c5344))
+
+
+
+
+
+## [1.38.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0...v1.38.1) (2022-01-27)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
 # [1.38.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.2...v1.38.0) (2022-01-26)
 
 

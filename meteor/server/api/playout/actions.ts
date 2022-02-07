@@ -62,7 +62,12 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 		})
 
 		// If we are not playing anything, then regenerate the next part
-		const firstPart = selectNextPart(cache.Playlist.doc, null, getOrderedSegmentsAndPartsFromPlayoutCache(cache))
+		const firstPart = selectNextPart(
+			cache.Playlist.doc,
+			null,
+			null,
+			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+		)
 		await setNextPart(cache, firstPart)
 	} else {
 		// Otherwise preserve the active partInstances

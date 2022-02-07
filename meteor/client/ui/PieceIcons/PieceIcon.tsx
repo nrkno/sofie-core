@@ -1,7 +1,12 @@
-import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import * as React from 'react'
-import { SourceLayerType, ISourceLayer, CameraContent, RemoteContent } from '@sofie-automation/blueprints-integration'
+import React from 'react'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import {
+	SourceLayerType,
+	ISourceLayer,
+	CameraContent,
+	RemoteContent,
+	EvsContent,
+} from '@sofie-automation/blueprints-integration'
 import CamInputIcon from './Renderers/CamInput'
 import VTInputIcon from './Renderers/VTInput'
 import SplitInputIcon from './Renderers/SplitInput'
@@ -16,6 +21,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
 import { RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
+import LocalInputIcon from './Renderers/LocalInput'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
@@ -41,6 +47,15 @@ export const PieceIcon = (props: {
 				return (
 					<RemoteInputIcon
 						inputIndex={rmContent ? rmContent.studioLabel : undefined}
+						abbreviation={props.sourceLayer.abbreviation}
+					/>
+				)
+			}
+			case SourceLayerType.LOCAL: {
+				const localContent = piece ? (piece.content as EvsContent | undefined) : undefined
+				return (
+					<LocalInputIcon
+						inputIndex={localContent ? localContent.studioLabel : undefined}
 						abbreviation={props.sourceLayer.abbreviation}
 					/>
 				)
@@ -75,48 +90,50 @@ export const pieceIconSupportedLayers = new Set([
 	SourceLayerType.SPLITS,
 	SourceLayerType.VT,
 	SourceLayerType.CAMERA,
+	SourceLayerType.LOCAL,
 ])
 
-export const PieceIconContainerNoSub = withTracker(
-	(props: {
-		pieceInstances: PieceInstance[]
-		sourceLayers: {
-			[key: string]: ISourceLayer
-		}
-		renderUnknown?: boolean
-	}) => {
-		return findPieceInstanceToShowFromInstances(props.pieceInstances, props.sourceLayers, pieceIconSupportedLayers)
+export function PieceIconContainerNoSub({
+	pieceInstances,
+	sourceLayers,
+	renderUnknown,
+}: {
+	pieceInstances: PieceInstance[]
+	sourceLayers: {
+		[key: string]: ISourceLayer
 	}
-)(
-	({
-		sourceLayer,
-		pieceInstance,
-		renderUnknown,
-	}: {
-		sourceLayer: ISourceLayer | undefined
-		pieceInstance: PieceInstance | undefined
-		renderUnknown?: boolean
-	}) => <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} renderUnknown={renderUnknown} />
-)
-
-export const PieceIconContainer = withTracker((props: IPropsHeader) => {
-	return findPieceInstanceToShow(props, pieceIconSupportedLayers)
-})(
-	class PieceIconContainer extends MeteorReactComponent<
-		IPropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }
-	> {
-		componentDidMount() {
-			this.subscribe(PubSub.pieceInstancesSimple, {
-				rundownId: { $in: this.props.rundownIds },
-				playlistActivationId: this.props.playlistActivationId,
-			})
-			this.subscribe(PubSub.showStyleBases, {
-				_id: this.props.showStyleBaseId,
-			})
+	renderUnknown?: boolean
+}): JSX.Element | null {
+	const { pieceInstance, sourceLayer } = useTracker(
+		() => findPieceInstanceToShowFromInstances(pieceInstances, sourceLayers, pieceIconSupportedLayers),
+		[pieceInstances, sourceLayers],
+		{
+			sourceLayer: undefined,
+			pieceInstance: undefined,
 		}
+	)
 
-		render() {
-			return <PieceIcon pieceInstance={this.props.pieceInstance} sourceLayer={this.props.sourceLayer} />
+	return <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} renderUnknown={renderUnknown} />
+}
+
+export function PieceIconContainer(props: IPropsHeader): JSX.Element | null {
+	const { pieceInstance, sourceLayer } = useTracker(
+		() => findPieceInstanceToShow(props, pieceIconSupportedLayers),
+		[props.partInstanceId, props.showStyleBaseId],
+		{
+			pieceInstance: undefined,
+			sourceLayer: undefined,
 		}
-	}
-)
+	)
+
+	useSubscription(PubSub.pieceInstancesSimple, {
+		rundownId: { $in: props.rundownIds },
+		playlistActivationId: props.playlistActivationId,
+	})
+
+	useSubscription(PubSub.showStyleBases, {
+		_id: props.showStyleBaseId,
+	})
+
+	return <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} />
+}

@@ -55,6 +55,7 @@ export function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: 
 	const nextNextPart = selectNextPart(
 		strippedPlaylist,
 		nextPartInstance ?? currentPartInstance ?? null,
+		null,
 		partsAndSegments
 	)
 	if (!nextNextPart) {
