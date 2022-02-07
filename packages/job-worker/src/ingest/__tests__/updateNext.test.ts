@@ -13,7 +13,7 @@ jest.mock('../../playout/playout')
 import { setNextPartInner } from '../../playout/playout'
 type TsetNextPartInner = jest.MockedFunction<typeof setNextPartInner>
 const setNextPartInnerMock = setNextPartInner as TsetNextPartInner
-setNextPartInnerMock.mockImplementation(() => Promise.resolve()) // Default mock
+setNextPartInnerMock.mockImplementation(async () => Promise.resolve()) // Default mock
 
 const rundownId: RundownId = protectString('mock_ro')
 const rundownPlaylistId: RundownPlaylistId = protectString('mock_rpl')

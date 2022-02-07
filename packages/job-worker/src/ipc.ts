@@ -23,7 +23,7 @@ class IpcJobManager implements JobManager {
 	public subscribeToQueue(queueName: string, _workerId: WorkerId): JobStream {
 		return {
 			next: async () => this.getNextJob(queueName),
-			close: () => Promise.resolve(),
+			close: async () => Promise.resolve(),
 		}
 	}
 }
@@ -41,7 +41,7 @@ export class IpcJobWorker extends JobWorkerBase {
 		fastTrackTimeline: FastTrackTimelineFunc
 	) {
 		// Intercept winston to pipe back over ipc
-		interceptLogging((...args) => logLine(addThreadNameToLogLine('worker-parent', ...args)))
+		interceptLogging(async (...args) => logLine(addThreadNameToLogLine('worker-parent', ...args)))
 
 		const jobManager = new IpcJobManager(jobFinished, queueJob, getNextJob)
 		super(workerId, jobManager, logLine, fastTrackTimeline)

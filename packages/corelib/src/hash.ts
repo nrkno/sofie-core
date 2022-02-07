@@ -6,6 +6,7 @@ export function getHash(str: string): string {
 }
 
 /** Creates a hash based on the object properties (excluding ordering of properties) */
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function hashObj(obj: any): string {
 	if (typeof obj === 'object') {
 		const keys = Object.keys(obj).sort((a, b) => {

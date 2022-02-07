@@ -28,6 +28,6 @@ export async function removeRundownPlaylistFromDb(
 
 	await Promise.allSettled([
 		context.directCollections.RundownPlaylists.remove({ _id: { $in: playlistIds } }),
-		rundowns.map((rd) => removeRundownFromDb(context, new FakeRundownLock(rd._id))),
+		rundowns.map(async (rd) => removeRundownFromDb(context, new FakeRundownLock(rd._id))),
 	])
 }

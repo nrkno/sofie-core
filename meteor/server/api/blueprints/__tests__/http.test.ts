@@ -14,7 +14,12 @@ require('../http.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint http api', () => {
 	describe('router restore single', () => {
-		function callRoute(blueprintId: string, body: any, name?: string, force?: boolean): MockResponseDataString {
+		async function callRoute(
+			blueprintId: string,
+			body: any,
+			name?: string,
+			force?: boolean
+		): Promise<MockResponseDataString> {
 			const routeName = '/blueprints/restore/:blueprintId'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
@@ -28,7 +33,7 @@ describe('Test blueprint http api', () => {
 			})
 			req.body = body
 
-			route.handler({ blueprintId }, req, res, jest.fn())
+			await route.handler({ blueprintId }, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
 			expect(resStr).toMatchObject(
@@ -53,53 +58,53 @@ describe('Test blueprint http api', () => {
 			resetUploadMock()
 		})
 
-		testInFiber('missing body', () => {
-			const res = callRoute('id1', undefined)
+		testInFiber('missing body', async () => {
+			const res = await callRoute('id1', undefined)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('empty body', () => {
-			const res = callRoute('id1', '')
+		testInFiber('empty body', async () => {
+			const res = await callRoute('id1', '')
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('non-string body', () => {
+		testInFiber('non-string body', async () => {
 			const id = 'id1'
 			const body = 99
 
-			const res = callRoute(id, body)
+			const res = await callRoute(id, body)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('with body', () => {
+		testInFiber('with body', async () => {
 			const id = 'id1'
 			const body = '0123456789'
 
-			const res = callRoute(id, body)
+			const res = await callRoute(id, body)
 			expect(res.statusCode).toEqual(200)
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
 			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, undefined, false)
 		})
-		testInFiber('with body & force', () => {
+		testInFiber('with body & force', async () => {
 			const id = 'id1'
 			const body = '0123456789'
 
-			const res = callRoute(id, body, undefined, true)
+			const res = await callRoute(id, body, undefined, true)
 			expect(res.statusCode).toEqual(200)
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
 			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, undefined, true)
 		})
-		testInFiber('internal error', () => {
+		testInFiber('internal error', async () => {
 			const id = 'id1'
 			const body = '0123456789'
 
@@ -109,7 +114,7 @@ describe('Test blueprint http api', () => {
 			})
 
 			try {
-				const res = callRoute(id, body)
+				const res = await callRoute(id, body)
 
 				expect(res.statusCode).toEqual(500)
 				expect(res.bufferStr).toEqual('[505] Some thrown error')
@@ -120,12 +125,12 @@ describe('Test blueprint http api', () => {
 				uploadBlueprint.mockRestore()
 			}
 		})
-		testInFiber('with name', () => {
+		testInFiber('with name', async () => {
 			const id = 'id1'
 			const body = '0123456789'
 			const name = 'custom_name'
 
-			const res = callRoute(id, body, name)
+			const res = await callRoute(id, body, name)
 			// expect(res.statusCode).toEqual(200)
 			expect(res.bufferStr).toEqual('')
 
@@ -135,7 +140,7 @@ describe('Test blueprint http api', () => {
 	})
 
 	describe('router restore bulk', () => {
-		function callRoute(body: any): MockResponseDataString {
+		async function callRoute(body: any): Promise<MockResponseDataString> {
 			const routeName = '/blueprints/restore'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
@@ -147,7 +152,7 @@ describe('Test blueprint http api', () => {
 			})
 			req.body = body
 
-			route.handler({}, req, res, jest.fn())
+			await route.handler({}, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
 			expect(resStr).toMatchObject(
@@ -172,48 +177,48 @@ describe('Test blueprint http api', () => {
 			resetUploadMock()
 		})
 
-		testInFiber('missing body', () => {
-			const res = callRoute(undefined)
+		testInFiber('missing body', async () => {
+			const res = await callRoute(undefined)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('empty body', () => {
-			const res = callRoute('')
+		testInFiber('empty body', async () => {
+			const res = await callRoute('')
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('non-string body', () => {
+		testInFiber('non-string body', async () => {
 			const body = 99
 
-			const res = callRoute(body)
+			const res = await callRoute(body)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('invalid body', () => {
+		testInFiber('invalid body', async () => {
 			const body = '99'
 
-			const res = callRoute(body)
+			const res = await callRoute(body)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('non-json body', () => {
+		testInFiber('non-json body', async () => {
 			const body = '0123456789012'
 
-			const res = callRoute(body)
+			const res = await callRoute(body)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Failed to parse request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('with json body', () => {
+		testInFiber('with json body', async () => {
 			const id = 'id1'
 			const body = 'bodyStr1'
 
@@ -222,14 +227,14 @@ describe('Test blueprint http api', () => {
 			}
 			payload.blueprints[id] = body
 
-			const res = callRoute(JSON.stringify(payload))
+			const res = await callRoute(JSON.stringify(payload))
 			expect(res.statusCode).toEqual(200)
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
 			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, id)
 		})
-		testInFiber('with json body as object', () => {
+		testInFiber('with json body as object', async () => {
 			const id = 'id1'
 			const body = 'bodyStr1'
 
@@ -238,14 +243,14 @@ describe('Test blueprint http api', () => {
 			}
 			payload.blueprints[id] = body
 
-			const res = callRoute(payload)
+			const res = await callRoute(payload)
 			expect(res.statusCode).toEqual(200)
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
 			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, id)
 		})
-		testInFiber('with json body - multiple', () => {
+		testInFiber('with json body - multiple', async () => {
 			const count = 10
 
 			const payload: any = {
@@ -255,7 +260,7 @@ describe('Test blueprint http api', () => {
 				payload.blueprints[`id${i}`] = `body${i}`
 			}
 
-			const res = callRoute(JSON.stringify(payload))
+			const res = await callRoute(JSON.stringify(payload))
 			expect(res.statusCode).toEqual(200)
 			expect(res.bufferStr).toEqual('')
 
@@ -264,7 +269,7 @@ describe('Test blueprint http api', () => {
 				expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, `id${i}`, `body${i}`, `id${i}`)
 			}
 		})
-		testInFiber('with errors', () => {
+		testInFiber('with errors', async () => {
 			const count = 10
 
 			const payload: any = {
@@ -284,7 +289,7 @@ describe('Test blueprint http api', () => {
 			})
 
 			try {
-				const res = callRoute(JSON.stringify(payload))
+				const res = await callRoute(JSON.stringify(payload))
 				expect(res.statusCode).toEqual(500)
 				expect(res.bufferStr).toEqual(
 					'Errors were encountered: \n[505] Some thrown error\n[505] Some thrown error\n'

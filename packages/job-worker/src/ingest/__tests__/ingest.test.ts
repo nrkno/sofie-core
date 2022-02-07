@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import {
 	IBlueprintPiece,
 	IngestPart,
@@ -2448,7 +2449,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			})
 
 			// Intercept the calls to queueIngestJob
-			context.queueIngestJob = jest.fn(() => Promise.resolve())
+			context.queueIngestJob = jest.fn(async () => Promise.resolve())
 			expect(context.queueIngestJob).toHaveBeenCalledTimes(0)
 
 			// Take Segment 1

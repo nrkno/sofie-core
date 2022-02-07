@@ -6,13 +6,13 @@ import { logger } from '../logging'
 import { ChangedIds, SaveIntoDbHooks, saveIntoBase } from '../db/changes'
 import { JobContext } from '../jobs'
 
-export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any> {
-	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
+export function isDbCacheReadCollection(o: unknown): o is DbCacheReadCollection<any> {
+	return !!(o && typeof o === 'object' && 'fillWithDataFromDatabase' in o)
 }
 export function isDbCacheWritable(
-	o: any
+	o: unknown
 ): o is DbCacheWriteCollection<any> | DbCacheWriteObject<any> | DbCacheWriteOptionalObject<any> {
-	return !!(o && typeof o === 'object' && o.updateDatabaseWithData)
+	return !!(o && typeof o === 'object' && 'updateDatabaseWithData' in o)
 }
 /** Caches data, allowing reads from cache, but not writes */
 export function saveIntoCache<TDoc extends { _id: ProtectedString<any> }>(

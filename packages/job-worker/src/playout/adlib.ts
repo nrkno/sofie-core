@@ -306,7 +306,7 @@ export async function innerStartOrQueueAdLibPiece(
 	queue: boolean,
 	currentPartInstance: DBPartInstance,
 	adLibPiece: AdLibPiece | BucketAdLib
-) {
+): Promise<void> {
 	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw new Error('RundownPlaylist is not active')
 
@@ -418,7 +418,7 @@ export async function startStickyPieceOnSourceLayer(
 	)
 }
 
-export function innerFindLastPieceOnLayer(
+export async function innerFindLastPieceOnLayer(
 	context: JobContext,
 	cache: CacheForPlayout,
 	sourceLayerId: string[],

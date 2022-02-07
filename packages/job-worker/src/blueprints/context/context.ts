@@ -89,7 +89,7 @@ export class CommonContext implements ICommonContext {
 		this._contextIdentifier = info.identifier
 		this._contextName = info.name
 	}
-	getHashId(str: string, isNotUnique?: boolean) {
+	getHashId(str: string, isNotUnique?: boolean): string {
 		if (!str) str = 'hash' + this.hashI++
 
 		if (isNotUnique) {

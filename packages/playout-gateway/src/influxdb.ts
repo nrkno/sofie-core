@@ -58,7 +58,7 @@ export function endTrace(trace: Trace): FinishedTrace {
 	}
 }
 
-export function sendTrace(trace: FinishedTrace) {
+export function sendTrace(trace: FinishedTrace): void {
 	if (!client || Number.isNaN(trace.duration)) return
 
 	const point = {
