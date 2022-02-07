@@ -74,7 +74,7 @@ export abstract class WorkerParentBase {
 	#watchdogJobStarted: number | undefined
 
 	#reportedStatusCode: StatusCode = StatusCode.BAD
-	#reportedReason: string = 'N/A'
+	#reportedReason = 'N/A'
 	#threadInstanceId: string
 
 	public get threadId(): string {
@@ -300,7 +300,9 @@ export abstract class WorkerParentBase {
 			this.#reportedStatusCode = statusCode
 			this.#reportedReason = reason
 
-			this.saveStatusCode(statusCode, reason)
+			this.saveStatusCode(statusCode, reason).catch((e) => {
+				logger.error('Error updating thread status', e)
+			})
 		}
 	}
 

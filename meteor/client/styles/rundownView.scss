@@ -226,8 +226,8 @@ body.no-overflow {
 	z-index: 10000;
 	pointer-events: none;
 
-	@media screen and (prefer-reduced-motion: reduce) {
-		// if prefer-reduced-motion is set in the browser, the animation will be skipped
+	@media screen and (prefers-reduced-motion: reduce) {
+		// if prefers-reduced-motion is set in the browser, the animation will be skipped
 		animation: none;
 	}
 

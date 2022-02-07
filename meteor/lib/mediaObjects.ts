@@ -70,9 +70,9 @@ export function buildPackageFormatString(
 			format += 'i'
 			break
 	}
-	if (stream.codec_time_base) {
-		const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec_time_base) as RegExpExecArray
-		let fps = Number(formattedTimebase[2]) / Number(formattedTimebase[1])
+	if (stream.r_frame_rate) {
+		const formattedFramerate = /(\d+)\/(\d+)/.exec(stream.r_frame_rate) as RegExpExecArray
+		let fps = Number(formattedFramerate[1]) / Number(formattedFramerate[2])
 		fps = Math.floor(fps * 100 * 100) / 100
 		format += fps
 	}

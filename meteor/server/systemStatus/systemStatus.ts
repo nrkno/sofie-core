@@ -204,7 +204,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		updated: new Date(getCurrentTime()).toISOString(),
 		status: 'UNDEFINED',
 		_status: StatusCode.UNKNOWN,
-		documentation: 'https://github.com/nrkno/tv-automation-server-core',
+		documentation: 'https://github.com/nrkno/sofie-core',
 		_internal: {
 			// this _internal is set later
 			statusCodeString: StatusCode[StatusCode.UNKNOWN],
