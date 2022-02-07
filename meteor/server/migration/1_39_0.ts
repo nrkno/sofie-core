@@ -1,5 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { Parts } from '../../lib/collections/Parts'
 
 /*
@@ -12,7 +11,7 @@ import { Parts } from '../../lib/collections/Parts'
  * **************************************************************************************
  */
 // Release 39
-export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
+export const addSteps = addMigrationSteps('1.39.0', [
 	{
 		id: `Parts.expectedDurationWithPreroll`,
 		canBeRunAutomatically: true,
