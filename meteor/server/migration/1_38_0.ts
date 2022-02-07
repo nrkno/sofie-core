@@ -1,5 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
 
@@ -13,7 +12,7 @@ import { getHash, protectString, unprotectString } from '../../lib/lib'
  * **************************************************************************************
  */
 // Release 38
-export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
+export const addSteps = addMigrationSteps('1.38.0', [
 	// Add some migrations!
 	{
 		id: `TriggeredActions.core.fixIds`,
