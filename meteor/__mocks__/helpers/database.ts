@@ -32,6 +32,7 @@ import {
 	PlayoutActions,
 	StatusCode,
 	IBlueprintPieceType,
+	IBlueprintActionManifest,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -392,6 +393,7 @@ export async function setupMockShowStyleBlueprint(
 					return {
 						rundown,
 						globalAdLibPieces: [],
+						globalActions: [],
 						baseline: { timelineObjects: [] },
 					}
 				},
@@ -426,10 +428,12 @@ export async function setupMockShowStyleBlueprint(
 						}
 						const pieces: IBlueprintPiece[] = ingestPart.payload?.pieces ?? []
 						const adLibPieces: IBlueprintAdLibPiece[] = []
+						const actions: IBlueprintActionManifest[] = []
 						parts.push({
 							part,
 							pieces,
 							adLibPieces,
+							actions,
 						})
 					})
 					return {
