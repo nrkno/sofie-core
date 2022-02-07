@@ -229,28 +229,14 @@ PickerGET.route('/url/nrcs', (_, req, res) => {
 		}
 
 		// Unfortunately, URL interface can't handle custom URL schemes like web+something, so we need to use the
-		// URLSearchParams interface and trick it into parsing the URL-encoded externalId
-		const externalId = new URLSearchParams(webNrcsUrl.replace(/^web\+nrcs:\/\/rundown\//, '?q=')).get('q')
-		if (externalId === null) {
-			sendResponseCode(res, 400, 'Needs query parameter "q"')
+		// URL interface and trick it into parsing the URL-encoded externalId
+		const parsedWebNrcsUrl = new URL(webNrcsUrl.replace(/^web\+nrcs:\/\//, 'http://'))
+		if (parsedWebNrcsUrl.host === 'rundown') {
+			webNrcsRundownRoute(res, parsedWebNrcsUrl)
 			return
 		}
 
-		const rundownPlaylist = getRundownPlaylistFromExternalId(externalId)
-
-		if (!rundownPlaylist) {
-			// we couldn't find the External ID for Rundown/Rundown Playlist
-			logger.debug(`NRCS URL: External ID not found "${externalId}"`)
-			sendResponseCode(res, 303, `Could not find requested object: "${externalId}", see the full list`, '/')
-			return
-		}
-		logger.debug(`NRCS URL: External ID found "${externalId}" in "${rundownPlaylist._id}"`)
-		sendResponseCode(
-			res,
-			302,
-			`Requested object found in Rundown Playlist "${rundownPlaylist._id}"`,
-			`/rundown/${rundownPlaylist._id}`
-		)
+		sendResponseCode(res, 400, `Unsupported namespace: "${parsedWebNrcsUrl.host}"`)
 		return
 	} catch (e) {
 		logger.error(`Unknown error in /url/nrcs`, e)
@@ -265,4 +251,30 @@ function sendResponseCode(res: ServerResponse, code: number, description: string
 		res.setHeader('Location', redirect)
 	}
 	res.end(description)
+}
+
+function webNrcsRundownRoute(res: ServerResponse, parsedUrl: URL) {
+	// the "path" will contain the initial forward slash, so we need to strip that out
+	const externalId = decodeURIComponent(parsedUrl.pathname.substr(1))
+	if (externalId === null) {
+		sendResponseCode(res, 400, 'Needs an External ID to be provided')
+		return
+	}
+
+	const rundownPlaylist = getRundownPlaylistFromExternalId(externalId)
+
+	if (!rundownPlaylist) {
+		// we couldn't find the External ID for Rundown/Rundown Playlist
+		logger.debug(`NRCS URL: External ID not found "${externalId}"`)
+		sendResponseCode(res, 303, `Could not find requested object: "${externalId}", see the full list`, '/')
+		return
+	}
+
+	logger.debug(`NRCS URL: External ID found "${externalId}" in "${rundownPlaylist._id}"`)
+	sendResponseCode(
+		res,
+		302,
+		`Requested object found in Rundown Playlist "${rundownPlaylist._id}"`,
+		`/rundown/${rundownPlaylist._id}`
+	)
 }
