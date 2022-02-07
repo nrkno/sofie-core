@@ -277,6 +277,16 @@ export class CoreConnection extends EventEmitter {
 			this.ddp.ddpClient.call(methodName, fullAttrs, (err: Error, id: string) => {
 				this._timeLastMethodReply = Date.now()
 				if (err) {
+					if (typeof err === 'object') {
+						// Add a custom toString() method, because the default object will just print "[object Object]"
+						err.toString = () => {
+							if (err.message) {
+								return err.message + (err.stack ? '\n' + err.stack : '')
+							} else {
+								return JSON.stringify(err)
+							}
+						}
+					}
 					reject(err)
 				} else {
 					resolve(id)
