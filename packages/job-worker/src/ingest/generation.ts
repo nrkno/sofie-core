@@ -14,7 +14,7 @@ import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/Show
 import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { ShowStyleUserContext, StudioUserContext, SegmentUserContext } from '../blueprints/context'
+import { ShowStyleUserContext, StudioUserContext, SegmentUserContext, GetRundownContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessAdLibActions,
@@ -46,6 +46,7 @@ import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultRundown, BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -557,7 +558,9 @@ export async function getRundownFromIngestData(
 			pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
 	)
 
-	const blueprintContext = new ShowStyleUserContext(
+	const playlistsInStudio: DBRundownPlaylist[] = [] // TODO: how to get this?
+
+	const blueprintContext = new GetRundownContext(
 		{
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
@@ -566,7 +569,8 @@ export async function getRundownFromIngestData(
 		context.getStudioBlueprintConfig(),
 		showStyle.compound,
 		context.getShowStyleBlueprintConfig(showStyle.compound),
-		rundownBaselinePackages
+		rundownBaselinePackages,
+		playlistsInStudio
 	)
 	let rundownRes: BlueprintResultRundown | null = null
 	try {

@@ -26,7 +26,7 @@ import {
 	IBlueprintPiece,
 	IBlueprintResolvedPieceInstance,
 	IBlueprintRundown,
-	IBlueprintRundownPlaylistInfo,
+	IBlueprintResultRundownPlaylist,
 	IBlueprintSegment,
 	IBlueprintRundownDB,
 	IBlueprintPieceInstance,
@@ -291,7 +291,7 @@ export interface BlueprintResultOrderedRundowns {
 }
 
 export interface BlueprintResultRundownPlaylist {
-	playlist: IBlueprintRundownPlaylistInfo
+	playlist: IBlueprintResultRundownPlaylist
 	/** Returns information about the order of rundowns in a playlist, null will use natural sorting on rundown name */
 	order: BlueprintResultOrderedRundowns | null
 }

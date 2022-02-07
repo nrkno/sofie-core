@@ -11,6 +11,7 @@ import {
 	IBlueprintSegmentDB,
 	IBlueprintPieceDB,
 	IBlueprintSegmentRundown,
+	IBlueprintRundownPlaylist,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -116,6 +117,11 @@ export interface IShowStyleContext extends ICommonContext, IStudioContext {
 }
 
 export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleContext, IPackageInfoContext {}
+
+export interface IGetRundownContext extends IShowStyleUserContext {
+	/** Returns a list of the Playlists in the studio */
+	getPlaylists: () => Readonly<IBlueprintRundownPlaylist[]>
+}
 
 /** Rundown */
 

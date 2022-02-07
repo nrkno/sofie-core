@@ -21,6 +21,8 @@ import {
 	NoteSeverity,
 	IBlueprintSegmentRundown,
 	IRundownUserContext,
+	IGetRundownContext,
+	IBlueprintRundownPlaylist,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
@@ -293,6 +295,39 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 
 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
 		return this.watchedPackages.getPackageInfo(packageId)
+	}
+}
+export class GetRundownContext extends ShowStyleUserContext implements IGetRundownContext {
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<DBStudio>,
+		studioBlueprintConfig: ProcessedStudioConfig,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
+		watchedPackages: WatchedPackagesHelper,
+		private playlistsInStudio: DBRundownPlaylist[]
+	) {
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, watchedPackages)
+	}
+	getPlaylists(): Readonly<IBlueprintRundownPlaylist[]> {
+		return this.playlistsInStudio.map((playlist) => ({
+			name: playlist.name,
+
+			timing: playlist.timing,
+			outOfOrderTiming: playlist.outOfOrderTiming,
+			loop: playlist.loop,
+			timeOfDayCountdowns: playlist.timeOfDayCountdowns,
+
+			metaData: playlist.metaData,
+
+			_id: unprotectString(playlist._id),
+			externalId: playlist.externalId,
+			created: playlist.created,
+			modified: playlist.modified,
+			isActive: !!playlist.activationId,
+			rehearsal: playlist.rehearsal ?? false,
+			startedPlayback: playlist.startedPlayback,
+		}))
 	}
 }
 
