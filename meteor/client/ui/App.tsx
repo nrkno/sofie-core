@@ -172,7 +172,9 @@ export const App = translateWithTracker(() => {
 		private mountPWAFullScreenTrigger() {
 			document.addEventListener(
 				'mousedown',
-				(e) => {
+				(event) => {
+					event.preventDefault()
+
 					document.documentElement
 						.requestFullscreen({
 							navigationUI: 'auto',
@@ -189,8 +191,6 @@ export const App = translateWithTracker(() => {
 							)
 						})
 						.catch((e) => console.error('Could not get FullScreen when running as a PWA', e))
-
-					e.preventDefault()
 
 					// Use Keyboard API to lock the keyboard and disable all browser shortcuts
 					if ('keyboard' in navigator) {
