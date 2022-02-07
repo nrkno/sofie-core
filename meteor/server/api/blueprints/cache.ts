@@ -4,7 +4,6 @@ import { logger } from '../../logging'
 import { Blueprint } from '../../../lib/collections/Blueprints'
 import { SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { Meteor } from 'meteor/meteor'
 
 export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 	const vm = new VM({
