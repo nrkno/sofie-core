@@ -42,7 +42,7 @@
 		"moment": "2.29.1",
 		"timeline-state-resolver-types": "6.4.0-release39.1",
 		"tslib": "^2.3.1",
-		"type-fest": "^2.10.0"
+		"type-fest": "^2.11.1"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

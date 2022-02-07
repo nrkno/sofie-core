@@ -49,7 +49,7 @@
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
 		"tslib": "^2.1.0",
-		"type-fest": "^2.9.0",
+		"type-fest": "^2.11.1",
 		"underscore": "^1.13.2"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
