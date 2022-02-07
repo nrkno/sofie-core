@@ -14,10 +14,10 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 
 // Release 24
 export const addSteps = addMigrationSteps('1.12.0', [
-	ensureCollectionProperty(CollectionName.Studios, {}, 'routeSets', {}, undefined),
-	ensureCollectionProperty(CollectionName.Studios, {}, 'organizationId', null, undefined),
-	ensureCollectionProperty(CollectionName.PeripheralDevices, {}, 'organizationId', null, undefined),
-	ensureCollectionProperty(CollectionName.ShowStyleBases, {}, 'organizationId', null, undefined),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'routeSets', {}),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'organizationId', null),
+	ensureCollectionProperty(CollectionName.PeripheralDevices, {}, 'organizationId', null),
+	ensureCollectionProperty(CollectionName.ShowStyleBases, {}, 'organizationId', null),
 	removeCollectionProperty(CollectionName.ShowStyleBases, {}, 'runtimeArguments'),
 
 	{

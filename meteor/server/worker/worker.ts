@@ -112,8 +112,6 @@ async function queueJobWithoutResult(queueName: string, jobName: string, jobData
 }
 
 function queueJobInner(queueName: string, jobToQueue: JobEntry): void {
-	// const queueTime = getCurrentTime()
-
 	// Put the job at the end of the queue:
 	const queue = getOrCreateQueue(queueName)
 	queue.jobs.push(jobToQueue)
