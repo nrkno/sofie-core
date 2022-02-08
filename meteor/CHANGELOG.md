@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.39.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+
+### Features
+
+* allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
+
 ## [1.39.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
 
 
