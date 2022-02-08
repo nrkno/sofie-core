@@ -26,6 +26,7 @@ import { getShowHiddenSourceLayers } from '../../../lib/localStorage'
 import { Part } from '../../../../lib/collections/Parts'
 import { RundownTimingContext } from '../../../lib/rundownTiming'
 import { OutputGroup } from './OutputGroup'
+import { InvalidPartCover } from './InvalidPartCover'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -595,7 +596,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						</div>
 					)}
 					{this.renderTimelineOutputGroups(this.props.part)}
-					{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
+					{innerPart.invalid ? (
+						<InvalidPartCover className="segment-timeline__part__invalid-cover" part={innerPart} />
+					) : null}
 					{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
 					{this.props.playlist.nextTimeOffset &&
 						this.state.isNext && ( // This is the off-set line
