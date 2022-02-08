@@ -13,10 +13,10 @@ Release date: 2022-02-04 \(1.39.0-in-testing.0\)
 
 ### Components
 
-| Component | Version |
-| :- | :- |
-| [Core](https://github.com/nrkno/tv-automation-server-core) | 1.39 |
-| [Blueprints API ( Core )](https://www.npmjs.com/package/@sofie-automation/blueprints-integration)<br>[Gateway API](https://www.npmjs.com/package/@sofie-automation/server-core-integration)<br>[Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway)<br>[Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.39 |
-| [Blueprints API ( TSR )](https://www.npmjs.com/package/timeline-state-resolver) | 6.4.0 |
-| [Media Manager](https://github.com/nrkno/tv-automation-media-management) | 1.13 |
-| [Quantel Gateway](https://github.com/nrkno/tv-automation-quantel-gateway) | 1.5.1 |
+| Component                                                                                                                                                                                                                                                                                                                                              | Version |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------ |
+| [Core](https://github.com/nrkno/tv-automation-server-core)                                                                                                                                                                                                                                                                                             | 1.39    |
+| [Blueprints API ( Core )](https://www.npmjs.com/package/@sofie-automation/blueprints-integration) <br/> [Gateway API](https://www.npmjs.com/package/@sofie-automation/server-core-integration) <br/> [Mos Gateway](https://github.com/nrkno/tv-automation-mos-gateway) <br/> [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway) | 1.39    |
+| [Blueprints API ( TSR )](https://www.npmjs.com/package/timeline-state-resolver)                                                                                                                                                                                                                                                                        | 6.4.0   |
+| [Media Manager](https://github.com/nrkno/tv-automation-media-management)                                                                                                                                                                                                                                                                               | 1.13    |
+| [Quantel Gateway](https://github.com/nrkno/tv-automation-quantel-gateway)                                                                                                                                                                                                                                                                              | 1.5.1   |
