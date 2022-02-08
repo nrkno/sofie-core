@@ -120,7 +120,7 @@ export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleCont
 
 export interface IGetRundownContext extends IShowStyleUserContext {
 	/** Returns a list of the Playlists in the studio */
-	getPlaylists: () => Readonly<IBlueprintRundownPlaylist[]>
+	getPlaylists: () => Promise<Readonly<IBlueprintRundownPlaylist[]>>
 }
 
 /** Rundown */

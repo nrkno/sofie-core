@@ -135,7 +135,10 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => string | null
 
 	/** Generate rundown from ingest data. return null to ignore that rundown */
-	getRundown: (context: IShowStyleUserContext, ingestRundown: ExtendedIngestRundown) => BlueprintResultRundown
+	getRundown: (
+		context: IShowStyleUserContext,
+		ingestRundown: ExtendedIngestRundown
+	) => BlueprintResultRundown | null | Promise<BlueprintResultRundown | null>
 
 	/** Generate segment from ingest data */
 	getSegment: (context: ISegmentUserContext, ingestSegment: IngestSegment) => BlueprintResultSegment
