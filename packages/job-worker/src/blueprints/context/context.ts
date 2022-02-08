@@ -305,12 +305,12 @@ export class GetRundownContext extends ShowStyleUserContext implements IGetRundo
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		watchedPackages: WatchedPackagesHelper,
-		private playlistsInStudio: DBRundownPlaylist[]
+		private getPlaylistsInStudio: () => Promise<DBRundownPlaylist[]>
 	) {
 		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, watchedPackages)
 	}
-	getPlaylists(): Readonly<IBlueprintRundownPlaylist[]> {
-		return this.playlistsInStudio.map((playlist) => ({
+	async getPlaylists(): Promise<Readonly<IBlueprintRundownPlaylist[]>> {
+		return (await this.getPlaylistsInStudio()).map((playlist) => ({
 			name: playlist.name,
 
 			timing: playlist.timing,

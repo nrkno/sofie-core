@@ -14,7 +14,7 @@ import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/Show
 import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { ShowStyleUserContext, StudioUserContext, SegmentUserContext, GetRundownContext } from '../blueprints/context'
+import { StudioUserContext, SegmentUserContext, GetRundownContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessAdLibActions,
@@ -46,7 +46,6 @@ import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultRundown, BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -558,8 +557,6 @@ export async function getRundownFromIngestData(
 			pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
 	)
 
-	const playlistsInStudio: DBRundownPlaylist[] = [] // TODO: how to get this?
-
 	const blueprintContext = new GetRundownContext(
 		{
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
@@ -570,11 +567,17 @@ export async function getRundownFromIngestData(
 		showStyle.compound,
 		context.getShowStyleBlueprintConfig(showStyle.compound),
 		rundownBaselinePackages,
-		playlistsInStudio
+		async () => {
+			// Note: This can cause a mild race-condition, in the case of two Rundowns being created at the same time.
+			// But we're just ignoreing that for now.
+			return context.directCollections.RundownPlaylists.findFetch({
+				studioId: context.studioId,
+			})
+		}
 	)
 	let rundownRes: BlueprintResultRundown | null = null
 	try {
-		rundownRes = showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
+		rundownRes = await showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.getRundown: ${stringifyError(err)}`)
 		rundownRes = null
