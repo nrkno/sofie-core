@@ -25,7 +25,7 @@ import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -572,7 +572,11 @@ interface IPrompterTrackedProps {
 type ScrollAnchor = [number, string] | null
 
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
-	const playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
+	const playlist = RundownPlaylists.findOne(props.rundownPlaylistId, {
+		fields: {
+			_id: 1,
+		},
+	}) as Pick<RundownPlaylist, '_id'> | undefined
 
 	if (playlist) {
 		const prompterData = PrompterAPI.getPrompterData(props.rundownPlaylistId)
@@ -599,7 +603,12 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
 
 			this.autorun(() => {
-				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId)
+				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId, {
+					fields: {
+						_id: 1,
+						activationId: 1,
+					},
+				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 				if (playlist) {
 					const rundownIDs = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
 					this.subscribe(PubSub.segments, {
@@ -608,8 +617,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					this.subscribe(PubSub.parts, {
 						rundownId: { $in: rundownIDs },
 					})
-					this.subscribe(PubSub.partInstancesSimple, {
+					this.subscribe(PubSub.partInstances, {
 						rundownId: { $in: rundownIDs },
+						playlistActivationId: playlist.activationId,
 						reset: { $ne: true },
 					})
 					this.subscribe(PubSub.pieces, {
@@ -623,7 +633,15 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			})
 
 			this.autorun(() => {
-				const rundowns = Rundowns.find({ playlistId: this.props.rundownPlaylistId }).fetch()
+				const rundowns = Rundowns.find(
+					{ playlistId: this.props.rundownPlaylistId },
+					{
+						fields: {
+							_id: 1,
+							showStyleBaseId: 1,
+						},
+					}
+				).fetch() as Pick<Rundown, '_id' | 'showStyleBaseId'>[]
 				this.subscribe(PubSub.showStyleBases, {
 					_id: {
 						$in: rundowns.map((rundown) => rundown.showStyleBaseId),
