@@ -16,6 +16,7 @@ import {
 	IRundownTimingEventContext,
 	IStudioBaselineContext,
 	IRundownUserContext,
+	IGetRundownContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -136,7 +137,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 	/** Generate rundown from ingest data. return null to ignore that rundown */
 	getRundown: (
-		context: IShowStyleUserContext,
+		context: IGetRundownContext,
 		ingestRundown: ExtendedIngestRundown
 	) => BlueprintResultRundown | null | Promise<BlueprintResultRundown | null>
 
