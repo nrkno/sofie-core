@@ -114,6 +114,7 @@
 	},
 	"devDependencies": {
 		"@babel/core": "^7.17.0",
+		"@babel/plugin-transform-modules-commonjs": "^7.16.8",
 		"@sofie-automation/code-standard-preset": "~1.1.0",
 		"@types/amqplib": "^0.5.17",
 		"@types/app-root-path": "^1.2.4",

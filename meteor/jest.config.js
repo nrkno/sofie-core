@@ -36,6 +36,7 @@ const commonConfig = {
 		},
 	},
 	coverageDirectory: './.coverage/',
+	coverageProvider: 'v8',
 	collectCoverageFrom: [
 		'server/**/*.{js,ts}',
 		'lib/**/*.{js,ts}',
