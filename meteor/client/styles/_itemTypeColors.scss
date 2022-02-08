@@ -401,6 +401,7 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 }
 
 :root {
+	--segment-layer-border-unknown: #{$segment-layer-border-unknown};
 	--segment-layer-background-unknown: #{$segment-layer-background-unknown};
 	--segment-layer-background-unknown--second: #{$segment-layer-background-unknown};
 	--segment-layer-background-camera: #{$segment-layer-background-camera};
