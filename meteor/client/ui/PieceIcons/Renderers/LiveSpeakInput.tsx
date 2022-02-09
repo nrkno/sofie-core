@@ -5,6 +5,10 @@ export default class LiveSpeakInputIcon extends React.Component<{ abbreviation?:
 		return (
 			<svg className="piece_icon" version="1.1" viewBox="0 0 126.5 89" xmlns="http://www.w3.org/2000/svg">
 				<rect width="126.5" height="89" className="live-speak" />
+				<linearGradient id="background-gradient" gradientTransform="rotate(90)">
+					<stop className="stop1" offset={0.5} />
+					<stop className="stop2" offset={0.5} />
+				</linearGradient>
 				<text
 					x="5"
 					y="66.514"

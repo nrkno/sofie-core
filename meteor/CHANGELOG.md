@@ -2,6 +2,94 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+
+
+### Features
+
+* 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/tv-automation-server-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
+* add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/tv-automation-server-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
+* kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/tv-automation-server-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
+* lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/tv-automation-server-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
+* make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/tv-automation-server-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
+* monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/tv-automation-server-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
+* monitor the status of the Worker ([746ba96](https://github.com/nrkno/tv-automation-server-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
+* move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/tv-automation-server-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
+* parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/tv-automation-server-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
+* refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/tv-automation-server-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
+* replace threads with threadedclass ([a3773ed](https://github.com/nrkno/tv-automation-server-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
+
+
+### Bug Fixes
+
+* add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/tv-automation-server-core/commit/213904cccdba4d45c219cbd855526118653fa133))
+* ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/tv-automation-server-core/issues/666)) ([ca9dba1](https://github.com/nrkno/tv-automation-server-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
+* better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+* blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/tv-automation-server-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
+* bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/tv-automation-server-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
+* bug found by sonar ([65337e8](https://github.com/nrkno/tv-automation-server-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
+* clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/tv-automation-server-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
+* collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/tv-automation-server-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
+* **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/tv-automation-server-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
+* correctly show timecode values ([4eb3c0d](https://github.com/nrkno/tv-automation-server-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
+* disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/tv-automation-server-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
+* disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/tv-automation-server-core/commit/547674e8799217e290df4a57a12787d975ff5025))
+* don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/tv-automation-server-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
+* downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/tv-automation-server-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
+* failing tests ([84f2063](https://github.com/nrkno/tv-automation-server-core/commit/84f206337048441216b6e3589db753aba17d14e9))
+* GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/tv-automation-server-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
+* handle lock timeouts in workers ([783a214](https://github.com/nrkno/tv-automation-server-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
+* hook up broken debug method ([341cd6c](https://github.com/nrkno/tv-automation-server-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
+* Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/tv-automation-server-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
+* import error ([391b334](https://github.com/nrkno/tv-automation-server-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
+* improve accuracy of package framerate detection ([#653](https://github.com/nrkno/tv-automation-server-core/issues/653)) ([ad7926c](https://github.com/nrkno/tv-automation-server-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
+* improve meteor method signatures ([#669](https://github.com/nrkno/tv-automation-server-core/issues/669)) ([5fd4839](https://github.com/nrkno/tv-automation-server-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
+* influxdb for worker ([ee747b7](https://github.com/nrkno/tv-automation-server-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+* job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/tv-automation-server-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
+* launching of worker ([4adf500](https://github.com/nrkno/tv-automation-server-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
+* look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/tv-automation-server-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
+* meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/tv-automation-server-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
+* move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/tv-automation-server-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
+* multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/tv-automation-server-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
+* **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/tv-automation-server-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
+* package-lock ([55ee0ba](https://github.com/nrkno/tv-automation-server-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
+* parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/tv-automation-server-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
+* plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/tv-automation-server-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
+* port some more code ([4b742f5](https://github.com/nrkno/tv-automation-server-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
+* pre-commit hook ([621c184](https://github.com/nrkno/tv-automation-server-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
+* **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/tv-automation-server-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
+* remaining meteor tests ([2f6a7e4](https://github.com/nrkno/tv-automation-server-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
+* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+* replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/tv-automation-server-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
+* route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/tv-automation-server-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
+* show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/tv-automation-server-core/issues/665)) ([6c88614](https://github.com/nrkno/tv-automation-server-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
+* some ci issues ([790fa30](https://github.com/nrkno/tv-automation-server-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
+* some meteor tests ([bcd016e](https://github.com/nrkno/tv-automation-server-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
+* some more cache invalidation ([26b1461](https://github.com/nrkno/tv-automation-server-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
+* some type errors ([872504a](https://github.com/nrkno/tv-automation-server-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
+* some work queue management bits ([ce4d019](https://github.com/nrkno/tv-automation-server-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
+* **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/tv-automation-server-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
+* **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/tv-automation-server-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
+* tests ([91823ba](https://github.com/nrkno/tv-automation-server-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
+* type errors ([c67bd0e](https://github.com/nrkno/tv-automation-server-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
+* type errors ([5f807ee](https://github.com/nrkno/tv-automation-server-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
+* typings ([91bbae2](https://github.com/nrkno/tv-automation-server-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
+* typings errors ([56ddd0e](https://github.com/nrkno/tv-automation-server-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
+* update docker image node version ([8f0f92b](https://github.com/nrkno/tv-automation-server-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
+* update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/tv-automation-server-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
+* update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/tv-automation-server-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
+* worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/tv-automation-server-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
+* worker unit tests ([d5d3f10](https://github.com/nrkno/tv-automation-server-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
+* workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/tv-automation-server-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
+* yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/tv-automation-server-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
+
+## [1.39.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+
+### Features
+
+* allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
+
 ## [1.39.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
 
 

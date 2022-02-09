@@ -38,7 +38,7 @@ interface ITrackedProps {
 	mediaObject: MediaObject | undefined
 	studio: Studio | undefined
 	maxDuration: number
-	frameRate: number | number
+	frameRate: number
 }
 
 interface IState {

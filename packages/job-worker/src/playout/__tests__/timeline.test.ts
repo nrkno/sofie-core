@@ -284,7 +284,7 @@ describe('Timeline', () => {
 		showStyle = await setupMockShowStyleCompound(context)
 
 		// Ignore calls to queueEventJob, they are expected
-		context.queueEventJob = () => Promise.resolve()
+		context.queueEventJob = async () => Promise.resolve()
 	})
 	afterEach(() => {
 		useRealCurrentTime()
@@ -833,7 +833,7 @@ describe('Timeline', () => {
 			time: Time
 		) {
 			const pieceInstance = (await context.directCollections.PieceInstances.findOne({
-				partInstanceId: currentPartInstance!._id,
+				partInstanceId: currentPartInstance._id,
 				'piece._id': adlibbedPieceId,
 			})) as PieceInstance
 			expect(pieceInstance).toBeTruthy()

@@ -2,7 +2,7 @@ import { MOS } from '@sofie-automation/corelib'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 
 export const mockRO = {
-	roCreate: () =>
+	roCreate: (): MOS.IMOSRunningOrder =>
 		literal<MOS.IMOSRunningOrder>({
 			ID: new MOS.MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa'),
 			Slug: new MOS.MosString128('All effect1 into clip combinations'),
@@ -79,6 +79,7 @@ export const mockRO = {
 				},
 			],
 		}),
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	segmentIdMap: () => [
 		{
 			parts: ['ro1;s1;p1', 'ro1;s1;p2', 'ro1;s1;p3'],
@@ -97,7 +98,7 @@ export const mockRO = {
 			segmentId: 'XF9ZBDI5IouvkmTbounEfoJ6ijY_',
 		},
 	],
-	newItem: (id: string, slug: string) =>
+	newItem: (id: string, slug: string): MOS.IMOSROStory =>
 		literal<MOS.IMOSROStory>({
 			ID: new MOS.MosString128(id),
 			Slug: new MOS.MosString128(slug),

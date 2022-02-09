@@ -140,8 +140,8 @@ export const SegmentTimingPanel = translateWithTracker<
 			const rundownOrder = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
 			const rundownIndex = rundownOrder.indexOf(liveSegment.rundownId)
 			const rundowns = RundownPlaylistCollectionUtil.getRundowns(props.playlist)
-			const rundown = rundowns.find((r) => r._id === liveSegment!.rundownId)
-			const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === liveSegment!._id)
+			const rundown = rundowns.find((r) => r._id === liveSegment.rundownId)
+			const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === liveSegment._id)
 
 			if (!rundown) return { active }
 

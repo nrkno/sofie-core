@@ -103,8 +103,8 @@ export function acceptFormat(format: string, formats: Array<Array<string>>): boo
 	const mediaFormat = match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 	for (const candidateFormat of formats) {
 		let failed = false
-		for (const param in candidateFormat) {
-			if (candidateFormat[param] && candidateFormat[param] !== mediaFormat[param]) {
+		for (let i = 0; i < candidateFormat.length; i++) {
+			if (candidateFormat[i] && candidateFormat[i] !== mediaFormat[i]) {
 				failed = true
 				break
 			}

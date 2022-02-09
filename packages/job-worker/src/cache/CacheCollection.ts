@@ -138,7 +138,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	 * Note: By default this wipes the current collection first
 	 * @param documents The documents to store
 	 */
-	fillWithDataFromArray(documents: ReadonlyDeep<Array<TDoc>>, append = false) {
+	fillWithDataFromArray(documents: ReadonlyDeep<Array<TDoc>>, append = false): void {
 		if (append) {
 			this.originalDocuments = this.originalDocuments.concat(documents)
 		} else {
@@ -157,7 +157,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		})
 	}
 	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
-	markForRemoval() {
+	markForRemoval(): void {
 		this.isToBeRemoved = true
 		this.documents = new Map()
 		this.originalDocuments = []
@@ -409,7 +409,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		if (span) span.end()
 		return changes
 	}
-	discardChanges() {
+	discardChanges(): void {
 		if (this.isModified()) {
 			this.fillWithDataFromArray(this.originalDocuments)
 		}

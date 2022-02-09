@@ -89,7 +89,7 @@ import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataMode
 const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
 
 let MINIMUM_TAKE_SPAN = 1000
-export function setMinimumTakeSpan(span: number) {
+export function setMinimumTakeSpan(span: number): void {
 	// Used in tests
 	MINIMUM_TAKE_SPAN = span
 }

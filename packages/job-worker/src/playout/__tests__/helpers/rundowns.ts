@@ -17,7 +17,7 @@ export async function setupRundownBase(
 	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	partPropsOverride: Partial<DBPart> = {},
 	piecePropsOverride: { piece0: Partial<Piece>; piece1: Partial<Piece> } = { piece0: {}, piece1: {} }
-) {
+): Promise<{ rundown: DBRundown; segment0: DBSegment; part00: DBPart }> {
 	const rundown: DBRundown = {
 		peripheralDeviceId: undefined,
 		organizationId: null,
@@ -130,7 +130,7 @@ export async function setupPart2(
 	segment0: DBSegment,
 	partPropsOverride: Partial<DBPart> = {},
 	piece0PropsOverride: Partial<Piece> = {}
-) {
+): Promise<{ part01: DBPart }> {
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
 		segmentId: segment0._id,

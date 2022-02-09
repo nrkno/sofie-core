@@ -54,10 +54,10 @@
 		"superfly-timeline": "8.2.1",
 		"threadedclass": "^1.0.0",
 		"tslib": "^2.1.0",
-		"type-fest": "^2.9.0",
+		"type-fest": "^2.11.1",
 		"underscore": "^1.13.2",
 		"vm2": "^3.9.5",
-		"winston": "^3.4.0"
+		"winston": "^3.5.1"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"husky": {

@@ -333,7 +333,7 @@ export class TSRHandler {
 			tsrHandler.sendStatus()
 		})
 	}
-	destroy(): Promise<void> {
+	async destroy(): Promise<void> {
 		return this.tsr.destroy()
 	}
 	getTimeline():
@@ -534,7 +534,7 @@ export class TSRHandler {
 
 		let ps: Promise<any>[] = []
 		const promiseOperations: { [id: string]: true } = {}
-		const keepTrack = <T>(p: Promise<T>, name: string) => {
+		const keepTrack = async <T>(p: Promise<T>, name: string) => {
 			promiseOperations[name] = true
 			return p.then((result) => {
 				delete promiseOperations[name]
@@ -596,7 +596,7 @@ export class TSRHandler {
 							this.logger.info('old', oldDevice.deviceOptions)
 							this.logger.info('new', deviceOptions)
 							ps.push(
-								keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId).then(() => {
+								keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId).then(async () => {
 									return keepTrack(this._addDevice(deviceId, deviceOptions), 're-add_' + deviceId)
 								})
 							)

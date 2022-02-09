@@ -328,11 +328,6 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 					<th key="action">&nbsp;</th>,
 				]
 
-				const deviceTypesObj = {}
-				for (const i in deviceTypes) {
-					deviceTypesObj[deviceTypes[i]] = deviceTypes[i]
-				}
-
 				return (
 					<React.Fragment>
 						<thead>
@@ -564,11 +559,6 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 					..._.map(this.getConfigSummaryFields(configField), (f) => <th key={f.columnName}>{f.columnName}</th>),
 				]
 				propNames.push(<th key="actions">&nbsp;</th>)
-
-				const configTypesObj = {}
-				for (const i in configTypes) {
-					configTypesObj[configTypes[i]] = configTypes[i]
-				}
 
 				return (
 					<React.Fragment key={configField.id}>

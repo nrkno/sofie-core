@@ -67,7 +67,7 @@
 		"mos-connection": "^1.0.5",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
-		"winston": "^3.4.0"
+		"winston": "^3.5.1"
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [

@@ -62,7 +62,7 @@ import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mock
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
 	.spyOn(peripheralDeviceLib, 'executePeripheralDeviceFunction')
-	.mockImplementation(() => sleep(10))
+	.mockImplementation(async () => sleep(10))
 
 describe('Playout API', () => {
 	let context: MockJobContext
@@ -110,7 +110,7 @@ describe('Playout API', () => {
 		context = setupDefaultJobEnvironment()
 
 		// Ignore event jobs
-		jest.spyOn(context, 'queueEventJob').mockImplementation(() => Promise.resolve())
+		jest.spyOn(context, 'queueEventJob').mockImplementation(async () => Promise.resolve())
 
 		showStyle = await setupMockShowStyleCompound(context)
 

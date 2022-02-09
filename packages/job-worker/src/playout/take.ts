@@ -181,7 +181,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	if (span) span.end()
 }
 
-export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInstance?: DBPartInstance) {
+export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInstance?: DBPartInstance): void {
 	if (
 		takeOrCurrentPartInstance?.consumesNextSegmentId &&
 		cache.Playlist.doc.nextSegmentId === takeOrCurrentPartInstance.segmentId
@@ -195,7 +195,7 @@ export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInst
 	}
 }
 
-export function resetPreviousSegment(cache: CacheForPlayout) {
+export function resetPreviousSegment(cache: CacheForPlayout): void {
 	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the playlist is looping and

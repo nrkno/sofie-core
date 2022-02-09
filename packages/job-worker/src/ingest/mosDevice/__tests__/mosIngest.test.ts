@@ -1345,7 +1345,7 @@ describe('Test recieved mos ingest payloads', () => {
 	test('Playlist updates when removing one (of multiple) rundowns', async () => {
 		// Cleanup any existing playlists
 		await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
-		await context.directCollections.RundownPlaylists.findFetch().then((playlists) =>
+		await context.directCollections.RundownPlaylists.findFetch().then(async (playlists) =>
 			removeRundownPlaylistFromDb(
 				context,
 				playlists.map((p) => p._id)
