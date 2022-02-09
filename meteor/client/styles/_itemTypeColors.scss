@@ -296,7 +296,29 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 }
 
 @mixin missing-overlay {
-	&.source-broken,
+	&.source-broken {
+	  &::after {
+		content: ' ';
+		display: block;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 1;
+		mix-blend-mode: normal;
+		background-image: repeating-linear-gradient(
+						45deg,
+						transparent,
+						transparent 10px,
+						black 11px,
+						black 15px,
+						transparent 16px
+		);
+		opacity: 0.4;
+	  }
+	}
+
 	&.source-missing {
 		&::after {
 			content: ' ';
@@ -312,8 +334,8 @@ $layer-types: 'unknown', 'camera', 'lower-third', 'graphics', 'live-speak', 'rem
 				45deg,
 				transparent,
 				transparent 10px,
-				black 11px,
-				black 15px,
+				red 11px,
+				red 15px,
 				transparent 16px
 			);
 			opacity: 0.4;
