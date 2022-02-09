@@ -182,5 +182,9 @@
 		"scripts": {
 			"postbump": "yarn libs:syncVersionsAndChangelogs"
 		}
+	},
+	"resolutions": {
+		"@babel/core": "7.16.7",
+		"@babel/generator": "7.16.7"
 	}
 }
