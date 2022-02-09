@@ -703,7 +703,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	uiPartSegmentMap.forEach((segment) => {
 		// Sort the pieces:
 		segment.pieces = sortAdlibs(
-			segment.pieces.map((piece) => ({
+			segment.pieces.map((piece, index) => ({
 				adlib: piece,
 				label: piece.adlibAction?.display?.label ?? piece.name,
 				adlibRank: piece._rank,
@@ -711,6 +711,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 				partRank: (piece.partId && uiPartMap.get(piece.partId))?._rank ?? null,
 				segmentRank: segment._rank,
 				rundownRank: 0, // not needed, bacause we are in just one rundown
+				cursorIndex: index,
 			}))
 		)
 	})

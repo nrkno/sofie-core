@@ -748,7 +748,7 @@ export function compileAdLibFilter(
 
 			// Sort the adliba:
 			resultingAdLibs = sortAdlibs(
-				resultingAdLibs.map((adlib) => {
+				resultingAdLibs.map((adlib, index) => {
 					const part = adlib.partId && partRankMap.get(adlib.partId)
 					const segmentRank = part?.segmentId && segmentRankMap.get(part.segmentId)
 					const rundownRank = part?.rundownId && rundownRankMap.get(part.rundownId)
@@ -761,6 +761,7 @@ export function compileAdLibFilter(
 						partRank: part?._rank ?? null,
 						segmentRank: segmentRank ?? null,
 						rundownRank: rundownRank ?? null,
+						cursorIndex: index,
 					}
 				})
 			)

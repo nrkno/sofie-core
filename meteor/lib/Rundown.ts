@@ -329,6 +329,8 @@ export function sortAdlibs<T>(
 		partRank: number | null
 		segmentRank: number | null
 		rundownRank: number | null
+		/** Allows to maintain ordering stability on data returned from a Meteor Cursor */
+		cursorIndex: number | null
 	}[]
 ) {
 	adlibs = adlibs.sort((a, b) => {
@@ -353,6 +355,12 @@ export function sortAdlibs<T>(
 		// Sort by adlib rank
 		if (a.adlibRank > b.adlibRank) return 1
 		if (a.adlibRank < b.adlibRank) return -1
+
+		// If defined, maintain the cursor index at this point
+		a.cursorIndex = a.cursorIndex ?? Number.POSITIVE_INFINITY
+		b.cursorIndex = b.cursorIndex ?? Number.POSITIVE_INFINITY
+		if (a.cursorIndex > b.cursorIndex) return 1
+		if (a.cursorIndex < b.cursorIndex) return -1
 
 		// Sort by labels:
 		const r = compareLabels(a.label, b.label)

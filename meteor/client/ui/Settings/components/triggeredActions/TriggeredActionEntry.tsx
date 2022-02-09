@@ -265,6 +265,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 				dragPreview(el)
 				drop(el)
 			}}
+			data-obj-id={triggeredAction._id}
 		>
 			{!selected && !locked ? (
 				<div className="triggered-action-entry__drag-handle" ref={drag}>
