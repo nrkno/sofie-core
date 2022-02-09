@@ -122,7 +122,6 @@ export class RundownTimingCalculator {
 		let currentRemaining = 0
 		let startsAtAccumulator = 0
 		let displayStartsAtAccumulator = 0
-		let segmentDisplayDuration = 0
 		let segmentBudgetDurationLeft = 0
 
 		const rundownExpectedDurations: Record<string, number> = {}
@@ -182,7 +181,6 @@ export class RundownTimingCalculator {
 					this.untimedSegments.add(partInstance.segmentId)
 					lastSegmentId = partInstance.segmentId
 				}
-				segmentDisplayDuration = 0
 				if (segmentBudgetDurationLeft > 0) {
 					waitAccumulator += segmentBudgetDurationLeft
 				}
@@ -303,7 +301,6 @@ export class RundownTimingCalculator {
 						currentRemaining = Math.max(
 							0,
 							this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] -
-								segmentDisplayDuration -
 								(now - lastStartedPlayback)
 						)
 						segmentBudgetDurationLeft = 0
