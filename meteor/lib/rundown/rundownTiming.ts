@@ -181,12 +181,12 @@ export class RundownTimingCalculator {
 				if (partInstance.segmentId !== lastSegmentId) {
 					this.untimedSegments.add(partInstance.segmentId)
 					lastSegmentId = partInstance.segmentId
-					segmentDisplayDuration = 0
-					if (segmentBudgetDurationLeft > 0) {
-						waitAccumulator += segmentBudgetDurationLeft
-					}
-					segmentBudgetDurationLeft = this.segmentBudgetDurations[unprotectString(partInstance.segmentId)]
 				}
+				segmentDisplayDuration = 0
+				if (segmentBudgetDurationLeft > 0) {
+					waitAccumulator += segmentBudgetDurationLeft
+				}
+				segmentBudgetDurationLeft = this.segmentBudgetDurations[unprotectString(partInstance.segmentId)]
 
 				// add piece to accumulator
 				const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1
