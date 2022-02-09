@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+
+
+### Bug Fixes
+
+* blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/tv-automation-server-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
+* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+
+
+
+
+
 # [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
 
 
