@@ -8,7 +8,7 @@ import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { parseMosString } from './lib'
-import { waitForPromise, WrapAsyncCallback } from '../../../../lib/lib'
+import { stringifyError, waitForPromise, WrapAsyncCallback } from '../../../../lib/lib'
 import * as _ from 'underscore'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 
@@ -80,7 +80,7 @@ export namespace MOSDeviceActions {
 						)
 					)
 				} catch (error) {
-					logger.error('Error in setStoryStatus PLAY', error)
+					logger.error(`Error in setStoryStatus PLAY: ${stringifyError(error)}`)
 				}
 			}
 			if (oldPlayingPartExternalId) {
@@ -94,7 +94,7 @@ export namespace MOSDeviceActions {
 						)
 					)
 				} catch (error) {
-					logger.error('Error in setStoryStatus STOP', error)
+					logger.error(`Error in setStoryStatus STOP: ${stringifyError(error)}`)
 				}
 			}
 		}
