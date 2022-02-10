@@ -283,7 +283,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				setSelectedTriggeredActionId(triggeredActionId)
 			}
 		},
-		[setSelectedTriggeredActionId]
+		[selectedTriggeredActionId]
 	)
 
 	const onNewTriggeredAction = useCallback(() => {
@@ -452,12 +452,12 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						triggeredActionId={triggeredActionId}
 						selected={selectedTriggeredActionId === triggeredActionId}
 						locked={!!parsedTriggerFilter}
-						onEdit={() => onEditEntry(triggeredActionId)}
-						onRemove={() => onRemoveTriggeredAction(triggeredActionId)}
-						onDuplicate={() => onDuplicateEntry(triggeredActionId)}
+						onEdit={onEditEntry}
+						onRemove={onRemoveTriggeredAction}
+						onDuplicate={onDuplicateEntry}
 						showStyleBase={showStyleBase}
 						previewContext={rundownPlaylist && selectedTriggeredActionId === triggeredActionId ? previewContext : null}
-						onFocus={() => setSelectedTriggeredActionId(triggeredActionId)}
+						onFocus={setSelectedTriggeredActionId}
 					/>
 				))}
 			</div>
@@ -485,14 +485,14 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 										triggeredActionId={triggeredActionId}
 										selected={selectedTriggeredActionId === triggeredActionId}
 										locked={!!parsedTriggerFilter}
-										onEdit={() => onEditEntry(triggeredActionId)}
-										onRemove={() => onRemoveTriggeredAction(triggeredActionId)}
-										onDuplicate={() => onDuplicateEntry(triggeredActionId)}
+										onEdit={onEditEntry}
+										onRemove={onRemoveTriggeredAction}
+										onDuplicate={onDuplicateEntry}
 										showStyleBase={showStyleBase}
 										previewContext={
 											rundownPlaylist && selectedTriggeredActionId === triggeredActionId ? previewContext : null
 										}
-										onFocus={() => setSelectedTriggeredActionId(triggeredActionId)}
+										onFocus={setSelectedTriggeredActionId}
 									/>
 							  ))
 							: null}
