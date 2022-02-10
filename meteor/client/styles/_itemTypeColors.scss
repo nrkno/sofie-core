@@ -1,5 +1,6 @@
 $segment-timeline-background-color: #1f1f1f;
 
+$segment-layer-border-unknown: darken(#4b4b4b, 10%);
 $segment-layer-background-unknown: #4b4b4b;
 $segment-layer-background-camera: #18791c;
 $segment-layer-background-camera--second: darken($segment-layer-background-camera, 10%);
@@ -400,6 +401,7 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 }
 
 :root {
+	--segment-layer-border-unknown: #{$segment-layer-border-unknown};
 	--segment-layer-background-unknown: #{$segment-layer-background-unknown};
 	--segment-layer-background-unknown--second: #{$segment-layer-background-unknown};
 	--segment-layer-background-camera: #{$segment-layer-background-camera};
