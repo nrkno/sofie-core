@@ -17,6 +17,7 @@ import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../Rundo
 import { Meteor } from 'meteor/meteor'
 import { StoryboardPartTransitions } from './StoryboardPartTransitions'
 import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
+import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
 
 interface IProps {
 	className?: string
@@ -147,7 +148,9 @@ export function StoryboardPart({
 					</div>
 				</>
 			)}
-			{isInvalid ? <div className="segment-storyboard__part__invalid-cover"></div> : null}
+			{isInvalid ? (
+				<InvalidPartCover className="segment-storyboard__part__invalid-cover" part={part.instance.part} />
+			) : null}
 			{isFloated ? <div className="segment-storyboard__part__floated-cover"></div> : null}
 			<div className="segment-storyboard__part__title">{part.instance.part.title}</div>
 			<div

@@ -5,6 +5,13 @@
 	@include item-type-colors();
 	@include missing-overlay();
 
+	// LiveSpeak needs a bit of special set up, because the thumbnail may make the dual-color setup invisible
+	&.live-speak {
+		background-color: var(--segment-layer-background-live-speak-1);
+		background-position: 0 2.7em;
+		background-repeat: repeat-x;
+	}
+
 	position: relative;
 	width: 100%;
 	height: $segment-storyboard-thumbnail-height;
@@ -42,6 +49,7 @@
 		text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 		font-weight: 400;
 		margin: 0.2em 0.4em;
+		overflow-wrap: break-word;
 
 		> .piece__status-icon {
 			line-height: 0.6em;

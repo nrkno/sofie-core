@@ -1422,7 +1422,7 @@ svg.icon {
 				bottom: 0;
 				right: 1px;
 				z-index: 10;
-				pointer-events: none;
+				pointer-events: all;
 				background-image: repeating-linear-gradient(
 						45deg,
 						var(--invalid-reason-color-transparent) 0%,

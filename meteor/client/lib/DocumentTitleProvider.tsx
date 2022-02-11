@@ -4,6 +4,7 @@ import { translateWithTracker, Translated } from './ReactMeteorData/ReactMeteorD
 import { CoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
 
 import { ReactiveVar } from 'meteor/reactive-var'
+import { isRunningInPWA } from './lib'
 
 /**
  * A reactive variable that allows setting the title of the current view.
@@ -39,26 +40,20 @@ export const DocumentTitleProvider = translateWithTracker((_props: IProps) => {
 		private formatDocumentTitle(docTitle: string | undefined, csName: string | undefined) {
 			const { t } = this.props
 			const appShortName = t('Sofie')
-			let compiledTitle = appShortName
-			if (docTitle && csName) {
-				compiledTitle = t('{{docTitle}} – {{appShortName}} – {{systemName}}', {
-					docTitle,
-					appShortName,
-					systemName: csName,
-				})
-			} else if (docTitle && !csName) {
-				compiledTitle = t('{{docTitle}} – {{appShortName}}', {
-					docTitle,
-					appShortName,
-				})
-			} else if (csName && !docTitle) {
-				compiledTitle = t('{{appShortName}} – {{systemName}}', {
-					appShortName,
-					systemName: csName,
-				})
+			const compiledTitle: string[] = []
+
+			if (docTitle) {
+				compiledTitle.push(docTitle)
+			}
+			if (!isRunningInPWA()) {
+				compiledTitle.push(appShortName)
+
+				if (csName) {
+					compiledTitle.push(csName)
+				}
 			}
 
-			document.title = compiledTitle
+			document.title = compiledTitle.join(' – ')
 		}
 
 		componentDidMount() {
