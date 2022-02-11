@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.38.2-0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.38.2-0) (2022-02-11)
+
+
+### Bug Fixes
+
+* **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([0cbcc60](https://github.com/nrkno/sofie-core/commit/0cbcc6011ce587241783053af77af53bac64d3b8))
+* add more variance to piece ids, to avoid the same id being used on different sourceLayers for different part types ([91d802c](https://github.com/nrkno/sofie-core/commit/91d802c450f94c7a329ade3c31975346a12b017b))
+* temporary logging fix ([95fa5e3](https://github.com/nrkno/sofie-core/commit/95fa5e37cbf33a030b266753731ce0e682719457))
+* when nexted-part is invalid, but the instance still exists then it is still valid ([22d7da1](https://github.com/nrkno/sofie-core/commit/22d7da1b189b33c98673cf0bef3ef066ff0afb11))
+
 ### [1.38.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0...v1.38.1) (2022-01-27)
 
 ## [1.38.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.2...v1.38.0) (2022-01-26)
