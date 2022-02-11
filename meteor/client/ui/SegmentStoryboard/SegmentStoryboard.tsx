@@ -659,6 +659,7 @@ export const SegmentStoryboard = React.memo(
 						<button
 							className="segment-storyboard__storyboard-view-controls__button segment-storyboard__storyboard-view-controls__button--switch-mode segment-storyboard__storyboard-view-controls--switch-mode--timeline"
 							onClick={onSwitchViewMode}
+							title={t('Switch to Timeline mode')}
 						>
 							<Timeline />
 						</button>

@@ -41,7 +41,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 	const { t, rundownLayout, onSwitchTab } = props
 	return (
 		<React.Fragment>
-			<div className="rundown-view__shelf__tabs">
+			<div className="rundown-view__shelf__tabs" role="tablist">
 				<OverflowingContainer className="rundown-view__shelf__tabs__tab-group">
 					<div
 						className={ClassNames('rundown-view__shelf__tabs__tab', {
@@ -49,6 +49,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 						})}
 						onClick={() => onSwitchTab(ShelfTabs.ADLIB)}
 						tabIndex={0}
+						role="tab"
 					>
 						{t('AdLib')}
 					</div>
@@ -64,6 +65,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 									key={panel._id}
 									onClick={() => onSwitchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`)}
 									tabIndex={0}
+									role="tab"
 								>
 									{panel.name}
 								</div>
@@ -75,6 +77,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 					})}
 					onClick={() => onSwitchTab(ShelfTabs.GLOBAL_ADLIB)}
 					tabIndex={0}
+					role="tab"
 				>
 					{t('Global AdLib')}
 				</div>
@@ -84,11 +87,12 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 					})}
 					onClick={() => onSwitchTab(ShelfTabs.SYSTEM_HOTKEYS)}
 					tabIndex={0}
+					role="tab"
 				>
 					{t('Shortcuts')}
 				</div>
 			</div>
-			<div className="rundown-view__shelf__panel super-dark">
+			<div className="rundown-view__shelf__panel super-dark" role="tabpanel">
 				<AdLibPanel
 					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.ADLIB}
 					registerHotkeys={true}

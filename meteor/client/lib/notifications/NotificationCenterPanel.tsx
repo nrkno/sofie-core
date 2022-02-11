@@ -131,6 +131,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 								e.stopPropagation()
 								if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
 							}}
+							aria-label={i18nTranslator('Dismiss')}
 						>
 							{this.props.item.persistent ? <CollapseChevrons /> : <CoreIcon.NrkClose id="nrk-close" />}
 						</button>
@@ -485,6 +486,7 @@ interface IToggleProps {
 	isOpen?: boolean
 	filter?: NoticeLevel
 	className?: string
+	title?: string
 }
 
 interface ITrackedCountProps {
@@ -520,6 +522,7 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 					role="button"
 					onClick={this.props.onClick}
 					tabIndex={0}
+					aria-label={this.props.title}
 				>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{
