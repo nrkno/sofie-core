@@ -345,14 +345,10 @@ function compileAdLibActionFilter(
 				}
 				return
 			case 'limit':
-				options['limit'] = link.value
 				limit = link.value
 				return
 			case 'pick':
 				pick = link.value
-				if (!options['limit']) {
-					options['limit'] = link.value + 1 // there's no point in getting more than a positive pick
-				}
 				return
 			case 'pickEnd':
 				pick = (link.value + 1) * -1
@@ -443,14 +439,10 @@ function compileAdLibPieceFilter(
 				}
 				return
 			case 'limit':
-				options['limit'] = link.value
 				limit = link.value
 				return
 			case 'pick':
 				pick = link.value
-				if (!options['limit']) {
-					options['limit'] = link.value + 1 // there's no point in getting more than a positive pick
-				}
 				return
 			case 'pickEnd':
 				pick = (link.value + 1) * -1
@@ -570,13 +562,7 @@ export function compileAdLibFilter(
 								rundownId: currentRundownId,
 							},
 						} as Mongo.QueryWithModifiers<RundownBaselineAdLibItem>,
-						{
-							...adLibPieceTypeFilter.options,
-							sort: {
-								_rank: 1,
-								name: 1,
-							},
-						}
+						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'rundownBaselineAdLibItem'))
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
 					adLibPieces = AdLibPieces.find(
@@ -587,13 +573,7 @@ export function compileAdLibFilter(
 								rundownId: currentRundownId,
 							},
 						} as Mongo.QueryWithModifiers<AdLibPiece>,
-						{
-							...adLibPieceTypeFilter.options,
-							sort: {
-								_rank: 1,
-								name: 1,
-							},
-						}
+						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'adLibPiece'))
 			}
 		}
@@ -622,14 +602,7 @@ export function compileAdLibFilter(
 								rundownId: currentRundownId,
 							},
 						} as Mongo.QueryWithModifiers<RundownBaselineAdLibAction>,
-						{
-							...adLibActionTypeFilter.options,
-							sort: {
-								//@ts-ignore deep sorting
-								'display._rank': 1,
-								'display.label.key': 1,
-							},
-						}
+						adLibActionTypeFilter.options
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === false)
 					adLibActions = AdLibActions.find(
@@ -640,14 +613,7 @@ export function compileAdLibFilter(
 								rundownId: currentRundownId,
 							},
 						} as Mongo.QueryWithModifiers<AdLibAction>,
-						{
-							...adLibActionTypeFilter.options,
-							sort: {
-								//@ts-ignore deep sorting
-								'display._rank': 1,
-								'display.label.key': 1,
-							},
-						}
+						adLibActionTypeFilter.options
 					).map((item) => wrapAdLibAction(item, 'adLibAction'))
 			}
 		}
@@ -726,7 +692,7 @@ export function compileAdLibFilter(
 							}
 						).fetch() as Pick<DBPart, '_id' | '_rank' | 'segmentId' | 'rundownId'>[]
 					}
-				}, `partRanks_${JSON.stringify(partFilter)}`)
+				}, `partRanks_${JSON.stringify(partFilter ?? rundownRankMap.keys())}`)
 
 				partRanks.forEach((part) => {
 					partRankMap.set(part._id, part)
