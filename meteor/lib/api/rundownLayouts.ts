@@ -320,6 +320,10 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.NEXT_INFO
 	}
 
+	export function isMiniRundown(element: RundownLayoutElementBase): element is RundownLayoutNextInfo {
+		return element.type === RundownLayoutElementType.MINI_RUNDOWN
+	}
+
 	export function isPlaylistStartTimer(
 		element: RundownLayoutElementBase
 	): element is RundownLayoutPlaylistStartTimer {

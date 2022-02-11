@@ -66,6 +66,7 @@ export enum RundownLayoutElementType {
 	SEGMENT_NAME = 'segment_name',
 	PART_NAME = 'part_name',
 	COLORED_BOX = 'colored_box',
+	MINI_RUNDOWN = 'mini_rundown',
 }
 
 export interface RundownLayoutElementBase {
