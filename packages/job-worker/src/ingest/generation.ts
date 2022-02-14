@@ -610,10 +610,6 @@ export async function getRundownFromIngestData(
 			},
 		})
 	)
-	rundownRes.rundown.playlistExternalId = modifyPlaylistExternalId(
-		rundownRes.rundown.playlistExternalId,
-		showStyle.base
-	)
 
 	const peripheralDevice = await pPeripheralDevice
 	const dbRundownData = literal<DBRundown>({
