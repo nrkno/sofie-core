@@ -68,6 +68,7 @@ export function SupportPopUpToggle(props: IToggleProps) {
 			tabIndex={0}
 			aria-label={props.title}
 			aria-haspopup="dialog"
+			aria-pressed={props.isOpen ? 'true' : 'false'}
 		>
 			<FontAwesomeIcon icon={faQuestion} />
 		</button>

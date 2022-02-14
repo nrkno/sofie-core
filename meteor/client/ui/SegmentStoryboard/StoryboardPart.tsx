@@ -127,6 +127,9 @@ export function StoryboardPart({
 				style: style,
 				onMouseEnter: onHoverOver,
 				onMouseLeave: onHoverOut,
+				role: 'region',
+				'aria-roledescription': 'part',
+				'aria-label': `${part.instance.part.identifier}: ${part.instance.part.title}`,
 			}}
 			holdToDisplay={contextMenuHoldToDisplayTime()}
 			collect={getPartContext}

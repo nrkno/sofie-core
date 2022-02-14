@@ -838,14 +838,18 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						collapsable: isCollapsable,
 						collapsed: this.isOutputGroupCollapsed(outputLayer),
 					})}
+					role="group"
+					aria-labelledby={`segment-outputs-${this.props.segment._id}-${outputLayer._id}`}
 				>
 					<div
+						id={`segment-outputs-${this.props.segment._id}-${outputLayer._id}`}
 						className="segment-timeline__output-layer-control__label"
 						data-output-id={outputLayer._id}
 						tabIndex={0}
 						onClick={(e) =>
 							isCollapsable && this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)
 						}
+						role="presentation"
 					>
 						{outputLayer.name}
 					</div>
@@ -860,6 +864,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 											key={sourceLayer._id}
 											className="segment-timeline__output-layer-control__layer"
 											data-source-id={sourceLayer._id}
+											role="treeitem"
 										>
 											{array.length === 1 || sourceLayer.name === outputLayer.name ? '\xa0' : sourceLayer.name}
 										</div>
@@ -954,6 +959,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				})}
 				data-obj-id={this.props.segment._id}
 				ref={this.setSegmentRef}
+				role="region"
+				aria-roledescription={t('segment')}
+				aria-labelledby={`segment-name-${this.props.segment._id}`}
 			>
 				<ContextMenuTrigger
 					id="segment-timeline-context-menu"
@@ -965,6 +973,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					renderTag="div"
 				>
 					<h2
+						id={`segment-name-${this.props.segment._id}`}
 						className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '')}
 						data-identifier={this.props.segment.identifier}
 					>
@@ -979,6 +988,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 										this.props.onHeaderNoteClick &&
 										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.ERROR)
 									}
+									aria-label={t('Critical problems')}
 								>
 									<CriticalIconSmall />
 									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
@@ -991,6 +1001,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 										this.props.onHeaderNoteClick &&
 										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.WARNING)
 									}
+									aria-label={t('Warnings')}
 								>
 									<WarningIconSmall />
 									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
@@ -1049,7 +1060,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					)}
 				</div>
 				<div className="segment-timeline__mos-id">{this.props.segment.externalId}</div>
-				<div className="segment-timeline__output-layers">{this.renderOutputLayerControls(activeOutputGroups)}</div>
+				<div className="segment-timeline__output-layers" role="tree" aria-label={t('Sources')}>
+					{this.renderOutputLayerControls(activeOutputGroups)}
+				</div>
 				<div className="segment-timeline__timeline-background" />
 				<TimelineGrid
 					onResize={this.onTimelineResize}

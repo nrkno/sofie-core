@@ -584,6 +584,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					data-obj-id={this.props.part.instance._id}
 					id={SegmentTimelinePartElementId + this.props.part.instance._id}
 					style={{ ...this.getPartStyle(), ...invalidReasonColorVars }}
+					role="region"
+					aria-roledescription={t('part')}
+					aria-label={this.props.part.instance.part.title}
 				>
 					{DEBUG_MODE && (
 						<div className="segment-timeline__debug-info">

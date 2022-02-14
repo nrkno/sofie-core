@@ -334,7 +334,11 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	render() {
 		return (
 			<div className="segment-timeline__timeline-grid" ref={this.setParentRef}>
-				<canvas className="segment-timeline__timeline-grid__canvas" ref={this.setCanvasRef}></canvas>
+				<canvas
+					className="segment-timeline__timeline-grid__canvas"
+					ref={this.setCanvasRef}
+					role="presentation"
+				></canvas>
 			</div>
 		)
 	}

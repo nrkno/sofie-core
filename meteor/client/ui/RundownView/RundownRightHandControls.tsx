@@ -205,6 +205,7 @@ export function RundownRightHandControls(props: IProps) {
 							tabIndex={0}
 							aria-label={t('Toggle Switchboard Panel')}
 							aria-haspopup="dialog"
+							aria-pressed={switchboardOpen ? 'true' : 'false'}
 						>
 							<SwitchboardIcon />
 							{nonDefaultRoutes > 0 && (

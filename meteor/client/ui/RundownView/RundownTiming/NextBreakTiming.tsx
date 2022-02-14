@@ -47,7 +47,10 @@ export const NextBreakTiming = withTranslation()(
 
 				return (
 					<React.Fragment>
-						<span className={ClassNames('timing-clock plan-end right', { 'visual-last-child': this.props.lastChild })}>
+						<span
+							className={ClassNames('timing-clock plan-end right', { 'visual-last-child': this.props.lastChild })}
+							role="timer"
+						>
 							<span className="timing-clock-label right">{t(this.props.breakText || 'Next Break')}</span>
 							<Moment interval={0} format="HH:mm:ss" date={expectedEnd} />
 						</span>

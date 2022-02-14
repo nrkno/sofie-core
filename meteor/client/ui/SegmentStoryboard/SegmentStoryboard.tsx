@@ -549,6 +549,9 @@ export const SegmentStoryboard = React.memo(
 				})}
 				data-obj-id={props.segment._id}
 				ref={combinedRef}
+				role="region"
+				aria-labelledby={`segment-name-${props.segment._id}`}
+				aria-roledescription={t('segment')}
 			>
 				<StudioContext.Provider value={props.studio}>
 					<ContextMenuTrigger
@@ -561,6 +564,7 @@ export const SegmentStoryboard = React.memo(
 						renderTag="div"
 					>
 						<h2
+							id={`segment-name-${props.segment._id}`}
 							className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
 							data-identifier={props.segment.identifier}
 						>
@@ -574,6 +578,7 @@ export const SegmentStoryboard = React.memo(
 										onClick={() =>
 											props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.ERROR)
 										}
+										aria-label={t('Critical problems')}
 									>
 										<CriticalIconSmall />
 										<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
@@ -585,6 +590,7 @@ export const SegmentStoryboard = React.memo(
 										onClick={() =>
 											props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.WARNING)
 										}
+										aria-label={t('Warnings')}
 									>
 										<WarningIconSmall />
 										<div className="segment-timeline__title__notes__count">{warningNotes}</div>
@@ -640,14 +646,14 @@ export const SegmentStoryboard = React.memo(
 						)}
 					</div>
 					<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
-					<div className="segment-timeline__source-layers">
+					<div className="segment-timeline__source-layers" role="tree" aria-label={t('Sources')}>
 						{Object.values(props.segment.outputLayers)
 							.filter((outputGroup) => outputGroup.used)
 							.map((outputGroup) => (
 								<div className="segment-timeline__output-group" key={outputGroup._id}>
 									{filterSecondarySourceLayers(outputGroup.sourceLayers).map((sourceLayer) =>
 										sourceLayer.pieces.length > 0 ? (
-											<div className="segment-timeline__source-layer" key={sourceLayer._id}>
+											<div className="segment-timeline__source-layer" key={sourceLayer._id} role="treeitem">
 												{sourceLayer.name}
 											</div>
 										) : null
