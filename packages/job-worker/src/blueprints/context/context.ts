@@ -53,7 +53,7 @@ import {
 	getRandomString,
 	omit,
 } from '@sofie-automation/corelib/dist/lib'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib'
 import {
@@ -67,6 +67,7 @@ import { WatchedPackagesHelper } from './watchedPackages'
 import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { JobContext } from '../../jobs'
 import { MongoQuery } from '../../db'
+import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -298,6 +299,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 	}
 }
 export class GetRundownContext extends ShowStyleUserContext implements IGetRundownContext {
+	private cachedPlaylistsInStudio: Promise<Readonly<IBlueprintRundownPlaylist>[]> | undefined
 	constructor(
 		contextInfo: UserContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
@@ -305,12 +307,39 @@ export class GetRundownContext extends ShowStyleUserContext implements IGetRundo
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		watchedPackages: WatchedPackagesHelper,
-		private getPlaylistsInStudio: () => Promise<DBRundownPlaylist[]>
+		private getPlaylistsInStudio: () => Promise<DBRundownPlaylist[]>,
+		private getRundownsInStudio: () => Promise<Rundown[]>,
+		private getExistingRundown: () => Promise<ReadonlyObjectDeep<Rundown> | undefined>
 	) {
 		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, watchedPackages)
 	}
+	private async _getPlaylistsInStudio() {
+		if (!this.cachedPlaylistsInStudio) {
+			this.cachedPlaylistsInStudio = Promise.resolve().then(async () => {
+				const [rundownsInStudio, playlistsInStudio] = await Promise.all([
+					this.getRundownsInStudio(),
+					this.getPlaylistsInStudio(),
+				])
+
+				return playlistsInStudio.map((playlist) => this.stripPlaylist(playlist, rundownsInStudio))
+			})
+		}
+		return this.cachedPlaylistsInStudio
+	}
 	async getPlaylists(): Promise<Readonly<IBlueprintRundownPlaylist[]>> {
-		return (await this.getPlaylistsInStudio()).map((playlist) => ({
+		return this._getPlaylistsInStudio()
+	}
+	async getCurrentPlaylist(): Promise<Readonly<IBlueprintRundownPlaylist | undefined>> {
+		const existingRundown = await this.getExistingRundown()
+		if (!existingRundown) return undefined
+
+		const rundownPlaylistId = unprotectString(existingRundown.playlistId)
+
+		const playlists = await this._getPlaylistsInStudio()
+		return playlists.find((playlist) => playlist._id === rundownPlaylistId)
+	}
+	private stripPlaylist(playlist: DBRundownPlaylist, rundownsInStudio: Rundown[]): IBlueprintRundownPlaylist {
+		return {
 			name: playlist.name,
 
 			timing: playlist.timing,
@@ -327,7 +356,9 @@ export class GetRundownContext extends ShowStyleUserContext implements IGetRundo
 			isActive: !!playlist.activationId,
 			rehearsal: playlist.rehearsal ?? false,
 			startedPlayback: playlist.startedPlayback,
-		}))
+
+			rundownCount: rundownsInStudio.filter((rundown) => rundown.playlistId === playlist._id).length,
+		}
 	}
 }
 

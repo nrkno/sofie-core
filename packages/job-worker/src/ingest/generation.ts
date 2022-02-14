@@ -30,14 +30,7 @@ import { logger } from '../logging'
 import _ = require('underscore')
 import { CacheForIngest } from './cache'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
-import {
-	getSegmentId,
-	getPartId,
-	getRundown,
-	canSegmentBeUpdated,
-	extendIngestRundownCore,
-	modifyPlaylistExternalId,
-} from './lib'
+import { getSegmentId, getPartId, getRundown, canSegmentBeUpdated, extendIngestRundownCore } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
 import { SelectedShowStyleVariant, selectShowStyleVariant } from './rundown'
@@ -573,6 +566,14 @@ export async function getRundownFromIngestData(
 			return context.directCollections.RundownPlaylists.findFetch({
 				studioId: context.studioId,
 			})
+		},
+		async () => {
+			return context.directCollections.Rundowns.findFetch({
+				studioId: context.studioId,
+			})
+		},
+		async () => {
+			return cache.Rundown.doc
 		}
 	)
 	let rundownRes: BlueprintResultRundown | null = null

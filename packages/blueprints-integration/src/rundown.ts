@@ -37,6 +37,9 @@ export interface IBlueprintRundownPlaylist extends IBlueprintResultRundownPlayli
 	rehearsal: boolean
 	/** Actual time of playback starting */
 	startedPlayback?: Time
+
+	/** The number of rundowns in the playlist */
+	rundownCount: number
 }
 
 export enum PlaylistTimingType {
