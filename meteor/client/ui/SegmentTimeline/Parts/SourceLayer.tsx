@@ -86,6 +86,9 @@ export function SourceLayer(props: ISourceLayerProps) {
 				//@ts-ignore A Data attribue is perfectly fine
 				'data-layer-id': props.layer._id,
 				onMouseUpCapture: (e) => onMouseUp(e),
+				role: 'log',
+				'aria-live': 'assertive',
+				'aria-label': props.layer.name,
 			}}
 			holdToDisplay={contextMenuHoldToDisplayTime()}
 			collect={getPartContext}

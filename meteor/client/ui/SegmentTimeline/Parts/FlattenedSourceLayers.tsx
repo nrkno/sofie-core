@@ -19,6 +19,9 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps) {
 			attributes={{
 				className: 'segment-timeline__layer segment-timeline__layer--flattened',
 				onMouseUpCapture: (e) => onMouseUp(e),
+				role: 'log',
+				'aria-live': 'assertive',
+				'aria-label': props.outputLayer.name,
 			}}
 			collect={getPartContext}
 		>

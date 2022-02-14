@@ -35,7 +35,13 @@ export const StoryboardPartSecondaryPieces = React.memo(function StoryboardPartS
 					if (sourceLayers.length === 0) return null
 
 					return (
-						<div key={outputLayer._id} className="segment-storyboard__part__output-group" data-obj-id={outputLayer._id}>
+						<div
+							key={outputLayer._id}
+							className="segment-storyboard__part__output-group"
+							data-obj-id={outputLayer._id}
+							role="log"
+							aria-live="assertive"
+						>
 							{sourceLayers.map((sourceLayer) => (
 								<StoryboardSourceLayer
 									key={sourceLayer._id}
