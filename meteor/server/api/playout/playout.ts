@@ -606,12 +606,17 @@ export namespace ServerPlayoutAPI {
 				}
 
 				const hasDynamicallyInserted = cache.PieceInstances.findOne(
-					(p) => p.partInstanceId === currentPartInstance._id && p.dynamicallyInserted
+					(p) =>
+						p.partInstanceId === currentPartInstance._id &&
+						p.dynamicallyInserted &&
+						// If its a continuation of an infinite adlib it is probably a graphic, so is 'fine'
+						!p.infinite?.fromPreviousPart &&
+						!p.infinite?.fromPreviousPlayhead
 				)
 				if (hasDynamicallyInserted)
 					throw new Meteor.Error(
 						400,
-						`RundownPlaylist "${rundownPlaylistId}" cannot hold once an adlib has been used!`
+						`RundownPlaylist "${rundownPlaylistId}" cannot hold once an adlib ("${hasDynamicallyInserted._id}") has been used!`
 					)
 
 				cache.Playlist.update({ $set: { holdState: RundownHoldState.PENDING } })

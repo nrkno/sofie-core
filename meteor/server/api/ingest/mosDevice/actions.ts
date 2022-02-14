@@ -73,7 +73,7 @@ export namespace MOSDeviceActions {
 						)
 					)
 				} catch (error) {
-					logger.error('Error in setStoryStatus PLAY', error)
+					logger.error(`Error in setStoryStatus PLAY: ${stringifyError(error)}`)
 				}
 			}
 			if (oldPlayingPartExternalId) {
@@ -87,7 +87,7 @@ export namespace MOSDeviceActions {
 						)
 					)
 				} catch (error) {
-					logger.error('Error in setStoryStatus STOP', error)
+					logger.error(`Error in setStoryStatus STOP: ${stringifyError(error)}`)
 				}
 			}
 		}
