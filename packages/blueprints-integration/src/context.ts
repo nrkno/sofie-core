@@ -122,6 +122,7 @@ export interface IGetRundownContext extends IShowStyleUserContext {
 	/** Returns a list of the Playlists in the studio */
 	getPlaylists: () => Promise<Readonly<IBlueprintRundownPlaylist[]>>
 	getCurrentPlaylist: () => Promise<Readonly<IBlueprintRundownPlaylist> | undefined>
+	getRandomId: () => string
 }
 
 /** Rundown */

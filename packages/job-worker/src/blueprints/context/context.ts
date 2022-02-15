@@ -338,6 +338,9 @@ export class GetRundownContext extends ShowStyleUserContext implements IGetRundo
 		const playlists = await this._getPlaylistsInStudio()
 		return playlists.find((playlist) => playlist._id === rundownPlaylistId)
 	}
+	public getRandomId(): string {
+		return getRandomString()
+	}
 	private stripPlaylist(playlist: DBRundownPlaylist, rundownsInStudio: Rundown[]): IBlueprintRundownPlaylist {
 		return {
 			name: playlist.name,
