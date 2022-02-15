@@ -303,76 +303,75 @@ describe('Migrations', () => {
 			getShowStyleId: () => null,
 		})
 
-		const showStyleManifest = () =>
-			literal<ShowStyleBlueprintManifest>({
-				blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
-				blueprintVersion: '1.0.0',
-				integrationVersion: '0.0.0',
-				TSRVersion: '0.0.0',
+		const showStyleManifest = (): ShowStyleBlueprintManifest => ({
+			blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
+			blueprintVersion: '1.0.0',
+			integrationVersion: '0.0.0',
+			TSRVersion: '0.0.0',
 
-				showStyleConfigManifest: [],
-				showStyleMigrations: [
-					{
-						version: '0.2.0',
-						id: 'myShowStyleMockStep2',
-						validate: (context: MigrationContextShowStyle) => {
-							if (!context.getBaseConfig('mocktest2')) return `mocktest2 config not set`
-							return false
-						},
-						canBeRunAutomatically: true,
-						migrate: (context: MigrationContextShowStyle) => {
-							if (!context.getBaseConfig('mocktest2')) {
-								context.setBaseConfig('mocktest2', true)
-							}
-						},
+			showStyleConfigManifest: [],
+			showStyleMigrations: [
+				{
+					version: '0.2.0',
+					id: 'myShowStyleMockStep2',
+					validate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest2')) return `mocktest2 config not set`
+						return false
 					},
-					{
-						version: '0.3.0',
-						id: 'myShowStyleMockStep3',
-						validate: (context: MigrationContextShowStyle) => {
-							if (!context.getBaseConfig('mocktest3')) return `mocktest3 config not set`
-							return false
-						},
-						canBeRunAutomatically: true,
-						migrate: (context: MigrationContextShowStyle) => {
-							if (!context.getBaseConfig('mocktest3')) {
-								context.setBaseConfig('mocktest3', true)
-							}
-						},
+					canBeRunAutomatically: true,
+					migrate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest2')) {
+							context.setBaseConfig('mocktest2', true)
+						}
 					},
-					{
-						version: '0.1.0',
-						id: 'myShowStyleMockStep1',
-						validate: (context: MigrationContextShowStyle) => {
-							if (!context.getBaseConfig('mocktest1')) return `mocktest1 config not set`
-							return false
-						},
-						canBeRunAutomatically: true,
-						migrate: (context: MigrationContextShowStyle) => {
-							if (!context.getBaseConfig('mocktest1')) {
-								context.setBaseConfig('mocktest1', true)
-							}
-						},
+				},
+				{
+					version: '0.3.0',
+					id: 'myShowStyleMockStep3',
+					validate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest3')) return `mocktest3 config not set`
+						return false
 					},
-				],
-				getShowStyleVariantId: () => null,
-				getRundown: () => ({
-					rundown: {
-						externalId: '',
-						name: '',
-						timing: literal<PlaylistTimingNone>({
-							type: PlaylistTimingType.None,
-						}),
+					canBeRunAutomatically: true,
+					migrate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest3')) {
+							context.setBaseConfig('mocktest3', true)
+						}
 					},
-					globalAdLibPieces: [],
-					globalActions: [],
-					baseline: { timelineObjects: [] },
-				}),
-				getSegment: () => ({
-					segment: { name: '' },
-					parts: [],
-				}),
-			})
+				},
+				{
+					version: '0.1.0',
+					id: 'myShowStyleMockStep1',
+					validate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest1')) return `mocktest1 config not set`
+						return false
+					},
+					canBeRunAutomatically: true,
+					migrate: (context: MigrationContextShowStyle) => {
+						if (!context.getBaseConfig('mocktest1')) {
+							context.setBaseConfig('mocktest1', true)
+						}
+					},
+				},
+			],
+			getShowStyleVariantId: () => null,
+			getRundown: () => ({
+				rundown: {
+					externalId: '',
+					name: '',
+					timing: literal<PlaylistTimingNone>({
+						type: PlaylistTimingType.None,
+					}),
+				},
+				globalAdLibPieces: [],
+				globalActions: [],
+				baseline: { timelineObjects: [] },
+			}),
+			getSegment: () => ({
+				segment: { name: '' },
+				parts: [],
+			}),
+		})
 
 		Blueprints.insert(generateFakeBlueprint('showStyle0', BlueprintManifestType.SHOWSTYLE, showStyleManifest))
 
