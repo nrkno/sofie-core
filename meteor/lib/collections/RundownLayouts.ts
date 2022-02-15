@@ -135,6 +135,11 @@ export interface RundownLayoutNextInfo extends RundownLayoutElementBase {
 	hideForDynamicallyInsertedParts: boolean
 }
 
+export interface RundownLayoutMiniRundown extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.MINI_RUNDOWN
+	hideForDynamicallyInsertedParts: boolean
+}
+
 export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.PLAYLIST_START_TIMER
 	plannedStartText: string
@@ -297,6 +302,7 @@ export type DashboardLayoutSegmentName = DashboardPanel<RundownLayoutSegmentName
 export type DashboardLayoutPartName = DashboardPanel<RundownLayoutPartName>
 export type DashboardLayoutColoredBox = DashboardPanel<RundownLayoutColoredBox>
 export type DashboardLayoutKeyboardPreview = DashboardPanel<RundownLayoutKeyboardPreview>
+export type DashboardLayoutMiniRundown = DashboardPanel<RundownLayoutMiniRundown>
 export type DashboardLayoutFilter = DashboardPanel<
 	RundownLayoutFilterBase & {
 		enableSearch: boolean

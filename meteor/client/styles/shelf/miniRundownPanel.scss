@@ -1,0 +1,38 @@
+@import '../colorScheme';
+
+.mini-rundown-panel {
+  position: absolute;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0.625rem;
+
+  .mini-rundown-panel__segment {
+	font-weight: 500;
+  }
+
+  .mini-rundown-panel__part {
+	&:before {
+	  content: ' (';
+	  display: inline;
+	}
+	&:after {
+	  content: ')';
+	  display: inline;
+	}
+  }
+
+  .mini-rundown-panel__rank {
+	margin-right: 2px;
+  }
+
+  .current-part {
+	background-color: red;
+  }
+
+  .next-part {
+	background-color: green;
+  }
+}
+
