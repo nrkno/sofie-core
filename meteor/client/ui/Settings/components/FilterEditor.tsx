@@ -34,7 +34,8 @@ import {
 	RundownLayoutTextLabel,
 	RundownLayoutTimeOfDay,
 	DashboardPanelUnit,
-	DashboardPanelBase, RundownLayoutMiniRundown,
+	DashboardPanelBase,
+	RundownLayoutMiniRundown,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -1994,13 +1995,13 @@ export default withTranslation()(
 								isDashboardLayout
 						  )
 						: RundownLayoutsAPI.isMiniRundown(this.props.filter)
-							? this.renderMiniRundown(
+						? this.renderMiniRundown(
 								this.props.item,
 								this.props.filter,
 								this.props.index,
 								isRundownLayout,
 								isDashboardLayout
-							)
+						  )
 						: undefined}
 				</div>
 			)

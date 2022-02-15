@@ -31,7 +31,7 @@ import { SegmentNamePanel } from './SegmentNamePanel'
 import { PartNamePanel } from './PartNamePanel'
 import { ColoredBoxPanel } from './ColoredBoxPanel'
 import { AdLibPieceUi } from '../../lib/shelf'
-import {MiniRundownPanel} from './MiniRundownPanel';
+import { MiniRundownPanel } from './MiniRundownPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout

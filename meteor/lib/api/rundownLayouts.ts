@@ -34,7 +34,8 @@ import {
 	RundownLayoutStudioName,
 	RundownLayoutSegmentName,
 	RundownLayoutPartName,
-	RundownLayoutColoredBox, RundownLayoutMiniRundown,
+	RundownLayoutColoredBox,
+	RundownLayoutMiniRundown,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
