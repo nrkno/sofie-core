@@ -52,7 +52,6 @@ interface IState {
 
 export interface IDashboardPanelProps {
 	shouldQueue: boolean
-	hotkeyGroup: string
 }
 
 export interface IDashboardPanelTrackedProps {
