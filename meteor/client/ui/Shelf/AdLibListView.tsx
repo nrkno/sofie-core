@@ -185,28 +185,32 @@ export function AdLibListView(props: IListViewPropsHeader) {
 		return segmentMap
 	}, [filteredSegments, props.showStyleBase, props.filter, props.searchFilter, rundownAdLibsUniqueIds])
 
+	function renderAdLibListViewItem(adLibPiece: AdLibPieceUi) {
+		return (
+			<AdLibListItem
+				key={unprotectString(adLibPiece._id)}
+				piece={adLibPiece}
+				layer={adLibPiece.sourceLayer}
+				studio={props.studio}
+				selected={
+					(props.selectedPiece &&
+						RundownUtils.isAdLibPiece(props.selectedPiece) &&
+						props.selectedPiece._id === adLibPiece._id) ||
+					false
+				}
+				disabled={adLibPiece.disabled ?? false}
+				onToggleAdLib={props.onToggleAdLib}
+				onSelectAdLib={props.onSelectAdLib}
+				playlist={props.playlist}
+			/>
+		)
+	}
+
 	function renderRundownAdLibs() {
 		if (!props.filter || (props.filter && props.filter.rundownBaseline === false)) return null
 		return (
 			<tbody className="adlib-panel__list-view__list__segment adlib-panel__list-view__item__rundown-baseline">
-				{rundownAdLibs.map((adLibPiece: AdLibPieceUi) => (
-					<AdLibListItem
-						key={unprotectString(adLibPiece._id)}
-						piece={adLibPiece}
-						layer={adLibPiece.sourceLayer!}
-						studio={props.studio}
-						selected={
-							(props.selectedPiece &&
-								RundownUtils.isAdLibPiece(props.selectedPiece) &&
-								props.selectedPiece._id === adLibPiece._id) ||
-							false
-						}
-						disabled={adLibPiece.disabled ?? false}
-						onToggleAdLib={props.onToggleAdLib}
-						onSelectAdLib={props.onSelectAdLib}
-						playlist={props.playlist}
-					/>
-				))}
+				{rundownAdLibs.map((adLibPiece: AdLibPieceUi) => renderAdLibListViewItem(adLibPiece))}
 			</tbody>
 		)
 	}
@@ -234,24 +238,9 @@ export function AdLibListView(props: IListViewPropsHeader) {
 					<tr className="adlib-panel__list-view__list__seg-header">
 						<td colSpan={4}>{segment.name}</td>
 					</tr>
-					{filteredAdLibs[unprotectString(segment._id)].map((adLibPiece: AdLibPieceUi) => (
-						<AdLibListItem
-							key={unprotectString(adLibPiece._id)}
-							piece={adLibPiece}
-							layer={adLibPiece.sourceLayer!}
-							studio={props.studio}
-							selected={
-								(props.selectedPiece &&
-									RundownUtils.isAdLibPiece(props.selectedPiece) &&
-									props.selectedPiece._id === adLibPiece._id) ||
-								false
-							}
-							disabled={adLibPiece.disabled ?? false}
-							onToggleAdLib={props.onToggleAdLib}
-							onSelectAdLib={props.onSelectAdLib}
-							playlist={props.playlist}
-						/>
-					))}
+					{filteredAdLibs[unprotectString(segment._id)].map((adLibPiece: AdLibPieceUi) =>
+						renderAdLibListViewItem(adLibPiece)
+					)}
 				</tbody>
 			)
 		})
