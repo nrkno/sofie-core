@@ -56,15 +56,12 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const style = getElementStyle(this.props, isDashboardLayout)
-		const showAny = isShowAnyValues(this.props)
 
 		const current = getMiniRundownPart(
-			this.props,
-			showAny,
 			this.props.currentSegment,
 			this.props.currentPartInstance?.part
 		)
-		const next = getMiniRundownPart(this.props, showAny, this.props.nextSegment, this.props.nextPartInstance?.part)
+		const next = getMiniRundownPart(this.props.nextSegment, this.props.nextPartInstance?.part)
 
 		const allParts: Part[] = this.props.playlist.getAllOrderedParts()
 		const allSegments: Segment[] = this.props.playlist.getSegments()
@@ -72,13 +69,12 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 		const secondSegmentAndPart = getNextSegmentAndPart(
 			allParts,
 			allSegments,
-			showAny,
 			this.props.nextPartInstance?.part
 		)
-		const second = getMiniRundownPart(this.props, showAny, secondSegmentAndPart.segment, secondSegmentAndPart.part)
+		const second = getMiniRundownPart(secondSegmentAndPart.segment, secondSegmentAndPart.part)
 
-		const thirdSegmentAndPart = getNextSegmentAndPart(allParts, allSegments, showAny, secondSegmentAndPart.part)
-		const third = getMiniRundownPart(this.props, showAny, thirdSegmentAndPart.segment, thirdSegmentAndPart.part)
+		const thirdSegmentAndPart = getNextSegmentAndPart(allParts, allSegments, secondSegmentAndPart.part)
+		const third = getMiniRundownPart(thirdSegmentAndPart.segment, thirdSegmentAndPart.part)
 
 		return (
 			<div
@@ -86,7 +82,7 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 				style={getContainerStyle(this.props, isDashboardLayout)}
 			>
 				<span className="mini-rundown-panel__name" style={style}>
-					{showAny && this.props.panel.name}{' '}
+					{this.props.panel.name}{' '}
 				</span>
 				<div className="current-part">
 					<span className="mini-rundown-panel__rank">{current.identifier}</span>
@@ -178,14 +174,13 @@ function getElementStyle(props, isDashboardLayout: boolean) {
 	}
 }
 
-function isShowAnyValues(props): boolean {
-	return !props.panel.hideForDynamicallyInsertedParts || props.nextPartInstance?.orphaned !== 'adlib-part'
+function isShowAnyValues(props, partInstance: PartInstance): boolean {
+	return !props.panel.hideForDynamicallyInsertedParts || partInstance?.orphaned !== 'adlib-part'
 }
 
 function getNextSegmentAndPart(
 	allParts: Part[],
 	allSegments: Segment[],
-	showAny: boolean,
 	previousPart?: Part
 ): NextSegmentAndPart {
 	let getNext: boolean = false
@@ -216,26 +211,24 @@ function getNextSegmentAndPart(
 }
 
 function getMiniRundownPart(
-	props,
-	showAny: boolean,
 	segment: Segment | undefined,
 	part: Part | undefined
 ): MiniRundownPart {
 	return {
-		identifier: getSegmentIdentifier(showAny, segment),
-		segmentName: getSegmentName(props, showAny, segment),
-		partName: getPartTitle(props, showAny, part),
+		identifier: getSegmentIdentifier(segment),
+		segmentName: getSegmentName(segment),
+		partName: getPartTitle(part),
 	}
 }
 
-function getSegmentName(props, showAny: boolean, segment: Segment | undefined): string {
-	return showAny && segment?.name
+function getSegmentName(segment: Segment | undefined): string {
+	return segment?.name !== undefined ? segment?.name : ''
 }
 
-function getPartTitle(props, showAny: boolean, part: Part | undefined): string {
-	return showAny && part?.title !== undefined ? part?.title : ''
+function getPartTitle(part: Part | undefined): string {
+	return part?.title !== undefined ? part?.title : ''
 }
 
-function getSegmentIdentifier(showAny: boolean, segment: Segment | undefined): any {
-	return showAny && segment?.identifier
+function getSegmentIdentifier(segment: Segment | undefined): any {
+	return segment?.identifier !== undefined ? segment?.identifier : ''
 }
