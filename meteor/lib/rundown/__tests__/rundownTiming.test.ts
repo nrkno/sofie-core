@@ -604,9 +604,9 @@ describe('rundown Timing Calculator', () => {
 				},
 				partCountdown: {
 					part1: 0,
-					part2: 1000,
-					part3: 5000,
-					part4: 6000,
+					part2: 5000,
+					part3: 10000,
+					part4: 13000,
 				},
 				partDisplayDurations: {
 					part1: 1000,
@@ -645,7 +645,9 @@ describe('rundown Timing Calculator', () => {
 					part4: 3000,
 				},
 				remainingPlaylistDuration: 8000,
+				remainingTimeOnCurrentPart: undefined,
 				totalPlaylistDuration: 8000,
+				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {
 					segment1: 5000,
 					segment2: 3000,
