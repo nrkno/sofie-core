@@ -28,11 +28,11 @@
   }
 
   .current-part {
-	background-color: red;
+	background-color: var(--general-live-color);
   }
 
   .next-part {
-	background-color: green;
+	background-color: var(--general-next-color);
   }
 }
 
