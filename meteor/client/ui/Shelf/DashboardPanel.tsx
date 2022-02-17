@@ -11,14 +11,9 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { unprotectString } from '../../../lib/lib'
-import {
-	IAdLibPanelProps,
-	AdLibFetchAndFilterProps,
-	fetchAndFilter,
-	AdLibPieceUi,
-	matchFilter,
-	AdLibPanelToolbar,
-} from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, AdLibPieceUi } from './AdLibPanel'
+import { AdLibPanelToolbar } from './AdLibPanelToolbar'
+import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import {
 	ensureHasTrailingSlash,
@@ -52,7 +47,6 @@ interface IState {
 
 export interface IDashboardPanelProps {
 	shouldQueue: boolean
-	hotkeyGroup: string
 }
 
 export interface IDashboardPanelTrackedProps {

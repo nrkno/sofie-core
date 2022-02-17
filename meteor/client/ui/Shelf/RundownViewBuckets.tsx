@@ -604,7 +604,6 @@ export const RundownViewBuckets = withTranslation()(
 												onAdLibContext={this.onAdLibContext}
 												onSelectAdlib={this.props.onSelectPiece}
 												selectedPiece={this.props.selectedPiece}
-												hotkeyGroup={bucket.name.replace(/\W/, '_') + 'BucketPanel'}
 											/>
 										)}
 									</ContextMenuTrigger>

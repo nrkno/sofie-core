@@ -5,14 +5,9 @@ import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
 import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
-import {
-	IAdLibPanelProps,
-	AdLibFetchAndFilterProps,
-	fetchAndFilter,
-	AdLibPieceUi,
-	matchFilter,
-	AdLibPanelToolbar,
-} from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, AdLibPieceUi } from './AdLibPanel'
+import { AdLibPanelToolbar } from './AdLibPanelToolbar'
+import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import {
