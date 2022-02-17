@@ -137,7 +137,6 @@ export interface RundownLayoutNextInfo extends RundownLayoutElementBase {
 
 export interface RundownLayoutMiniRundown extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.MINI_RUNDOWN
-	hideForDynamicallyInsertedParts: boolean
 }
 
 export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBase {

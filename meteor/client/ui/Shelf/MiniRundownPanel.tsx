@@ -16,6 +16,8 @@ import { Segment, Segments } from '../../../lib/collections/Segments'
 import { dashboardElementPosition } from './DashboardPanel'
 import { Part } from '../../../lib/collections/Parts'
 import { unprotectString } from '../../../lib/lib'
+import { Meteor } from 'meteor/meteor'
+
 interface IMiniRundownPanelProps {
 	key: string
 	visible?: boolean
@@ -29,6 +31,8 @@ interface IMiniRundownPanelTrackedProps {
 	currentPartInstance?: PartInstance
 	nextPartInstance?: PartInstance
 	nextSegment?: Segment
+	allParts?: Part[]
+	allSegments?: Segment[]
 }
 
 interface IState {}
@@ -37,92 +41,81 @@ interface MiniRundownPart {
 	identifier: any
 	segmentName: string
 	partName: string
-}
-
-interface NextSegmentAndPart {
-	segment: Segment | undefined
-	part: Part | undefined
+	cssClass: string
 }
 
 export class MiniRundownPanelInner extends MeteorReactComponent<
 	IMiniRundownPanelProps & IMiniRundownPanelTrackedProps,
 	IState
 > {
+	private readonly currentPartReference: React.RefObject<HTMLDivElement>
+
 	constructor(props) {
 		super(props)
 		this.state = {}
+		this.currentPartReference = React.createRef()
+	}
+
+	componentDidUpdate() {
+		Meteor.setTimeout(() => {
+			const el = document.getElementById(getCurrentPartIdName())
+			if (el) {
+				el.scrollIntoView({
+					behavior: 'smooth',
+				})
+			}
+		}, 1000)
 	}
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const style = getElementStyle(this.props, isDashboardLayout)
 
-		const current = getMiniRundownPart(
-			this.props.currentSegment,
-			this.props.currentPartInstance?.part
+		const miniRundowns: MiniRundownPart[] = getMiniRundownList(
+			this.props.allParts,
+			this.props.allSegments,
+			this.props.currentPartInstance,
+			this.props.nextPartInstance
 		)
-		const next = getMiniRundownPart(this.props.nextSegment, this.props.nextPartInstance?.part)
-
-		const allParts: Part[] = this.props.playlist.getAllOrderedParts()
-		const allSegments: Segment[] = this.props.playlist.getSegments()
-
-		const secondSegmentAndPart = getNextSegmentAndPart(
-			allParts,
-			allSegments,
-			this.props.nextPartInstance?.part
-		)
-		const second = getMiniRundownPart(secondSegmentAndPart.segment, secondSegmentAndPart.part)
-
-		const thirdSegmentAndPart = getNextSegmentAndPart(allParts, allSegments, secondSegmentAndPart.part)
-		const third = getMiniRundownPart(thirdSegmentAndPart.segment, thirdSegmentAndPart.part)
 
 		return (
 			<div
+				key={'miniRundownContainer'}
 				className={ClassNames('dashboard-panel mini-rundown-panel', getContainerClass(this.props, isDashboardLayout))}
 				style={getContainerStyle(this.props, isDashboardLayout)}
 			>
-				<span className="mini-rundown-panel__name" style={style}>
+				<span className="mini-rundown-panel__name" style={style} key={'miniRundownHeader'}>
 					{this.props.panel.name}{' '}
 				</span>
-				<div className="current-part">
-					<span className="mini-rundown-panel__rank">{current.identifier}</span>
-					<span className="mini-rundown-panel__segment" style={style}>
-						{current.segmentName}
-					</span>
-					<span className="mini-rundown-panel__part" style={style}>
-						{current.partName}
-					</span>
-				</div>
 
-				<div className="next-part">
-					<span className="mini-rundown-panel__rank">{next.identifier}</span>
-					<span className="mini-rundown-panel__segment" style={style}>
-						{next.segmentName}
-					</span>
-					<span className="mini-rundown-panel__part" style={style}>
-						{next.partName}
-					</span>
-				</div>
-
-				<div className="second-part">
-					<span className="mini-rundown-panel__rank">{second.identifier}</span>
-					<span className="mini-rundown-panel__segment" style={style}>
-						{second.segmentName}
-					</span>
-					<span className="mini-rundown-panel__part" style={style}>
-						{second.partName}
-					</span>
-				</div>
-
-				<div className="third-part">
-					<span className="mini-rundown-panel__rank">{third.identifier}</span>
-					<span className="mini-rundown-panel__segment" style={style}>
-						{third.segmentName}
-					</span>
-					<span className="mini-rundown-panel__part" style={style}>
-						{third.partName}
-					</span>
-				</div>
+				{miniRundowns.map((miniRundown: MiniRundownPart, index: number) => (
+					<div
+						className={miniRundown.cssClass}
+						{...getCurrentPartId(miniRundown.cssClass)}
+						key={getElementKey('miniRundownElement', miniRundown.identifier, index)}
+					>
+						<span
+							className="mini-rundown-panel__rank"
+							key={getElementKey('miniRundownIdentifier', miniRundown.identifier, index)}
+						>
+							{miniRundown.identifier}
+						</span>
+						<span
+							className="mini-rundown-panel__segment"
+							style={style}
+							key={getElementKey('miniRundownSegment', miniRundown.identifier, index)}
+						>
+							{miniRundown.segmentName}
+						</span>
+						<span
+							className="mini-rundown-panel__part"
+							style={style}
+							key={getElementKey('miniRundownPart', miniRundown.identifier, index)}
+						>
+							{miniRundown.partName}
+						</span>
+					</div>
+				))}
 			</div>
 		)
 	}
@@ -151,12 +144,60 @@ export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMin
 		if (nextPartInstance) {
 			nextSegment = Segments.findOne(nextPartInstance.segmentId)
 		}
-		return { currentSegment, currentPartInstance, nextPartInstance, nextSegment }
+
+		const allParts: Part[] = props.playlist.getAllOrderedParts()
+		const allSegments: Segment[] = props.playlist.getSegments()
+
+		return { currentSegment, currentPartInstance, nextPartInstance, nextSegment, allParts, allSegments }
 	},
 	(_data, props: IMiniRundownPanelProps, nextProps: IMiniRundownPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(MiniRundownPanelInner)
+
+function getMiniRundownList(
+	allParts?: Part[],
+	allSegments?: Segment[],
+	currentPart?: PartInstance,
+	nextPart?: PartInstance
+): MiniRundownPart[] {
+	const miniRundownParts: MiniRundownPart[] = []
+
+	allParts?.forEach((part: Part) => {
+		const segment = getSegment(allSegments, part)
+
+		miniRundownParts.push({
+			identifier: getSegmentIdentifier(segment),
+			segmentName: getSegmentName(segment),
+			partName: getPartTitle(part),
+			cssClass: getRowCssClass(part, currentPart, nextPart),
+		})
+	})
+
+	return miniRundownParts
+}
+
+function getSegment(allSegments?: Segment[], part?: Part): Segment | undefined {
+	let foundSegment: Segment | undefined = undefined
+	allSegments?.every((segment: Segment) => {
+		if (unprotectString(segment._id) === unprotectString(part?.segmentId)) {
+			foundSegment = segment
+			return false
+		}
+		return true
+	})
+	return foundSegment
+}
+
+function getRowCssClass(part: Part, currentPart?: PartInstance, nextPart?: PartInstance): string {
+	if (part._id === currentPart?.part._id) {
+		return 'current-part'
+	}
+	if (part._id === nextPart?.part._id) {
+		return 'next-part'
+	}
+	return 'part'
+}
 
 function getContainerClass(props, isDashboardLayout: boolean): string[] | undefined {
 	return isDashboardLayout ? (props.panel as DashboardLayoutMiniRundown).customClasses : undefined
@@ -174,53 +215,6 @@ function getElementStyle(props, isDashboardLayout: boolean) {
 	}
 }
 
-function isShowAnyValues(props, partInstance: PartInstance): boolean {
-	return !props.panel.hideForDynamicallyInsertedParts || partInstance?.orphaned !== 'adlib-part'
-}
-
-function getNextSegmentAndPart(
-	allParts: Part[],
-	allSegments: Segment[],
-	previousPart?: Part
-): NextSegmentAndPart {
-	let getNext: boolean = false
-	let nextPart: Part | undefined = undefined
-	allParts.every((part: Part) => {
-		if (getNext) {
-			nextPart = part
-			return false
-		}
-
-		if (part._id === previousPart?._id) {
-			getNext = true
-		}
-
-		return true
-	})
-
-	let nextSegment: Segment | undefined = undefined
-	allSegments.every((segment: Segment) => {
-		if (unprotectString(segment._id) === unprotectString(nextPart?.segmentId)) {
-			nextSegment = segment
-			return false
-		}
-		return true
-	})
-
-	return { segment: nextSegment, part: nextPart }
-}
-
-function getMiniRundownPart(
-	segment: Segment | undefined,
-	part: Part | undefined
-): MiniRundownPart {
-	return {
-		identifier: getSegmentIdentifier(segment),
-		segmentName: getSegmentName(segment),
-		partName: getPartTitle(part),
-	}
-}
-
 function getSegmentName(segment: Segment | undefined): string {
 	return segment?.name !== undefined ? segment?.name : ''
 }
@@ -231,4 +225,16 @@ function getPartTitle(part: Part | undefined): string {
 
 function getSegmentIdentifier(segment: Segment | undefined): any {
 	return segment?.identifier !== undefined ? segment?.identifier : ''
+}
+
+function getElementKey(prefix: string, identifier: string, index: number): string {
+	return prefix + identifier + 'index' + index
+}
+
+function getCurrentPartId(cssClass: string) {
+	return cssClass === 'current-part' ? { id: getCurrentPartIdName() } : {}
+}
+
+function getCurrentPartIdName(): string {
+	return 'mini-rundown__current-part'
 }

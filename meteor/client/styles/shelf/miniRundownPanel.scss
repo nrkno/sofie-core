@@ -4,9 +4,10 @@
   position: absolute;
   user-select: none;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
   margin: 0.625rem;
+  overflow-x: hidden;
+  overflow-y: auto;
 
   .mini-rundown-panel__segment {
 	font-weight: 500;

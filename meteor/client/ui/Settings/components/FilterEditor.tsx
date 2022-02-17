@@ -1775,19 +1775,6 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Hide for dynamically inserted parts')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.hideForDynamicallyInsertedParts`}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-						</label>
-					</div>
 					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 				</React.Fragment>
 			)
