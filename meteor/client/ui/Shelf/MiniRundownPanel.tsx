@@ -48,12 +48,9 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 	IMiniRundownPanelProps & IMiniRundownPanelTrackedProps,
 	IState
 > {
-	private readonly currentPartReference: React.RefObject<HTMLDivElement>
-
 	constructor(props) {
 		super(props)
 		this.state = {}
-		this.currentPartReference = React.createRef()
 	}
 
 	componentDidUpdate() {
