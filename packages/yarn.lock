@@ -1558,13 +1558,6 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@tv2media/timeline-state-resolver-types@1.0.0-release37.5":
-  version "1.0.0-release37.5"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.0.0-release37.5.tgz#6d8c9d2b9fc5f48bce88fd8a2da3dec49b29fca6"
-  integrity sha512-LZHzJm/Ss6Xd/H1xvsPRvZ98ou33szscyD0hzs8gtFcU7B15nzyD5ImgMRrgJl6+tlcIIhfHq6oc83/HqHBLZw==
-  dependencies:
-    tslib "^2.3.1"
-
 "@tv2media/v-connection@^5.1.2":
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-5.1.2.tgz#fb6b839fd129e496af4fa968857b632a883b91d3"
@@ -8539,12 +8532,18 @@ timeline-state-resolver-types@6.2.0-release37.4:
   dependencies:
     tslib "^2.1.0"
 
-"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@1.0.0-release37.5":
-  version "1.0.0-release37.5"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-1.0.0-release37.5.tgz#757eacf2ce3ec337766c30a25f2b0780acc5c3c9"
-  integrity sha512-tW1ihMEWr0DgUq7ob9m70zIAz/cF/0Zb/JAdlA+2vsGJSmXkMg21Q91rRJefus6zzuNZtN5+eROcQbxcP3A6JA==
+"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.0.0-release37.6":
+  version "1.0.0-release37.6"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.0.0-release37.6.tgz#48eca1760f254e38564b5901fead16ba02022e13"
+  integrity sha512-+Gd5fTSWyP4Z9l2CUC/gABJhCOKGD4gn5oR5VmnaL33U4KvGEgJE3X0SsW9Gn80O6y+2NBb/YcbDavRmlIG0TA==
   dependencies:
-    "@tv2media/timeline-state-resolver-types" "1.0.0-release37.5"
+    tslib "^2.3.1"
+
+"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@1.0.0-release37.6":
+  version "1.0.0-release37.6"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-1.0.0-release37.6.tgz#8fbbafce3573bb690480a14d4e30e53048f03f6d"
+  integrity sha512-xtejw6knhx/bEGzHpZJGTvj/1Zxs6dyONIuVUzSJjxP5Fhux2kloWQdwSbsKKJJtaKpJ+jqgyZ2dD+FziJJfTA==
+  dependencies:
     "@tv2media/v-connection" "^5.1.2"
     atem-connection "^2.3.0"
     atem-state "0.12.2-nightly-latest-20211007-163338-78e7dca.0"
@@ -8565,6 +8564,7 @@ timeline-state-resolver-types@6.2.0-release37.4:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.1"
     threadedclass "0.8.3"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37.6"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
