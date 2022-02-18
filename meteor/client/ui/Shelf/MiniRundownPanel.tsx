@@ -55,11 +55,11 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 
 	componentDidUpdate() {
 		Meteor.setTimeout(() => {
-			const el = document.getElementById(getCurrentPartIdName())
-			if (el) {
-				el.scrollIntoView({
-					behavior: 'smooth',
-				})
+			const container = document.getElementById('mini-rundown-panel__container')
+			const element = document.getElementById(getCurrentPartIdName())
+			if (container && element) {
+				const magicLineHeight: number = 30
+				container.scrollTop = element.offsetTop - magicLineHeight
 			}
 		}, 1000)
 	}
@@ -85,34 +85,36 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 					{this.props.panel.name}{' '}
 				</span>
 
-				{miniRundowns.map((miniRundown: MiniRundownPart, index: number) => (
-					<div
-						className={miniRundown.cssClass}
-						{...getCurrentPartId(miniRundown.cssClass)}
-						key={getElementKey('miniRundownElement', miniRundown.identifier, index)}
-					>
-						<span
-							className="mini-rundown-panel__rank"
-							key={getElementKey('miniRundownIdentifier', miniRundown.identifier, index)}
+				<div className="mini-rundown-panel__container" id={'mini-rundown-panel__container'}>
+					{miniRundowns.map((miniRundown: MiniRundownPart, index: number) => (
+						<div
+							className={miniRundown.cssClass}
+							{...getCurrentPartId(miniRundown.cssClass)}
+							key={getElementKey('miniRundownElement', miniRundown.identifier, index)}
 						>
-							{miniRundown.identifier}
-						</span>
-						<span
-							className="mini-rundown-panel__segment"
-							style={style}
-							key={getElementKey('miniRundownSegment', miniRundown.identifier, index)}
-						>
-							{miniRundown.segmentName}
-						</span>
-						<span
-							className="mini-rundown-panel__part"
-							style={style}
-							key={getElementKey('miniRundownPart', miniRundown.identifier, index)}
-						>
-							{miniRundown.partName}
-						</span>
-					</div>
-				))}
+							<span
+								className="mini-rundown-panel__rank"
+								key={getElementKey('miniRundownIdentifier', miniRundown.identifier, index)}
+							>
+								{miniRundown.identifier}
+							</span>
+							<span
+								className="mini-rundown-panel__segment"
+								style={style}
+								key={getElementKey('miniRundownSegment', miniRundown.identifier, index)}
+							>
+								{miniRundown.segmentName}
+							</span>
+							<span
+								className="mini-rundown-panel__part"
+								style={style}
+								key={getElementKey('miniRundownPart', miniRundown.identifier, index)}
+							>
+								{miniRundown.partName}
+							</span>
+						</div>
+					))}
+				</div>
 			</div>
 		)
 	}
