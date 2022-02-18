@@ -154,7 +154,7 @@
 		"meteor-babel": "^7.10.7",
 		"meteor-promise": "0.8.7",
 		"mock-http": "^1.1.0",
-		"open-cli": "^6.0.1",
+		"open-cli": "^7.0.1",
 		"simple-git": "^2.48.0",
 		"sinon": "^9.2.4",
 		"standard-version": "^9.3.2",
