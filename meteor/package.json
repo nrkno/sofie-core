@@ -114,7 +114,7 @@
 	"devDependencies": {
 		"@babel/core": "^7.17.0",
 		"@babel/plugin-transform-modules-commonjs": "^7.16.8",
-		"@sofie-automation/code-standard-preset": "~1.1.0",
+		"@sofie-automation/code-standard-preset": "~2.0.0",
 		"@types/amqplib": "^0.5.17",
 		"@types/app-root-path": "^1.2.4",
 		"@types/body-parser": "^1.19.2",
@@ -182,9 +182,5 @@
 		"scripts": {
 			"postbump": "yarn libs:syncVersionsAndChangelogs"
 		}
-	},
-	"resolutions": {
-		"@babel/core": "7.16.7",
-		"@babel/generator": "7.16.7"
 	}
 }

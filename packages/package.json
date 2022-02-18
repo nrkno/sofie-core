@@ -37,7 +37,7 @@
 	"devDependencies": {
 		"@babel/core": "^7.17.0",
 		"@babel/plugin-transform-modules-commonjs": "^7.16.8",
-		"@sofie-automation/code-standard-preset": "~1.1.0",
+		"@sofie-automation/code-standard-preset": "~2.0.0",
 		"@types/ejson": "^2.1.3",
 		"@types/got": "^9.6.12",
 		"@types/jest": "^27.4.0",
