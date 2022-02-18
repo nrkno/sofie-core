@@ -33,7 +33,7 @@
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^12.22.0 || >=14.17"
+		"node": "^14.18 || ^16.14"
 	},
 	"files": [
 		"/dist",

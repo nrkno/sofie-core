@@ -47,7 +47,7 @@
 		"license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-2-Clause BSD-3-Clause 0BSD ISC Apache Apache-2.0 Unlicense"
 	},
 	"engines": {
-		"node": ">=12.20"
+		"node": "^14.18 || ^16.14"
 	},
 	"files": [
 		"/dist",

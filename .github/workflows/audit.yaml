@@ -12,10 +12,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 14.x
+          node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
@@ -38,10 +38,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 14.x
+          node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
@@ -76,10 +76,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
       - name: Prepare Environment
         run: |
           cd packages
@@ -105,10 +105,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
       - name: Prepare Environment
         run: |
           cd packages

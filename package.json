@@ -4,7 +4,7 @@
 	"license": "MIT",
 	"private": true,
 	"engines": {
-		"node": "^12.22.0 || 14"
+		"node": "^14.18 || ^16.14"
 	},
 	"scripts": {
 		"postinstall": "yarn install:packages && yarn install:meteor",
