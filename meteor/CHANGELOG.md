@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
 
-
 ### Features
 
 * 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/tv-automation-server-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
@@ -82,6 +81,20 @@ All notable changes to this project will be documented in this file. See [standa
 * worker unit tests ([d5d3f10](https://github.com/nrkno/tv-automation-server-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
 * workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/tv-automation-server-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
 * yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/tv-automation-server-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
+
+## [1.39.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
+
+
+### Bug Fixes
+
+* **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([905510c](https://github.com/nrkno/sofie-core/commit/905510cad05c48dcb17908822e9c1757576a42f7))
+* add Tab key to be default-disabled when keyboard Triggers are registered ([f5d61b2](https://github.com/nrkno/sofie-core/commit/f5d61b29f33ac19e3ba13e3e931c29bca78ac726))
+* add Tab key to be default-disabled when keyboard Triggers are registered ([d8efbb1](https://github.com/nrkno/sofie-core/commit/d8efbb1d775069f51ac0a5484cc033b832b467fa))
+* ignore infinite continuations when checking if hold is allowed ([dffb2af](https://github.com/nrkno/sofie-core/commit/dffb2aff83deb7c061b2006f3a082c09ef5ea95c))
+* **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/sofie-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
+* **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/sofie-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
+* **Storyboard:** LiveSpeak Storyboard thumbnail looks like a Camera with a Thumbnail ([f68c9d4](https://github.com/nrkno/sofie-core/commit/f68c9d40f7b529ae9617392642cea4d6d237c102))
+
 
 ## [1.39.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
 
