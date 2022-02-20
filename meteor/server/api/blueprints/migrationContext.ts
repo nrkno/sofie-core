@@ -122,7 +122,7 @@ class AbstractMigrationContextWithTriggeredActions {
 		if (currentTriggeredAction) {
 			TriggeredActions.remove({
 				_id: currentTriggeredAction._id,
-				showStyleBaseId: null,
+				showStyleBaseId: this.showStyleBaseId,
 			})
 		}
 	}
