@@ -348,7 +348,10 @@ export interface IBlueprintDirectPlayAdLibAction extends IBlueprintDirectPlayBas
 export type IBlueprintDirectPlay = IBlueprintDirectPlayAdLibPiece | IBlueprintDirectPlayAdLibAction
 
 export interface IBlueprintPieceGeneric<TMetadata = unknown> {
-	/** ID of the source object in the gateway */
+	/**
+	 * An identifier for this Piece
+	 * It should be unique within the part it belongs to, and consistent across ingest updates
+	 */
 	externalId: string
 	/** User-presentable name for the timeline item */
 	name: string
