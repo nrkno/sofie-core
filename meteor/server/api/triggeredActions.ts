@@ -172,8 +172,8 @@ class ServerTriggeredActionsAPI extends MethodContextAPI implements NewTriggered
 	) {
 		return makePromise(() => apiCreateTriggeredActions(this, showStyleBaseId, base))
 	}
-	async removeTriggeredActions(triggeredActionsId: TriggeredActionId) {
-		return makePromise(() => apiRemoveTriggeredActions(this, triggeredActionsId))
+	async removeTriggeredActions(triggeredActionId: TriggeredActionId) {
+		return makePromise(() => apiRemoveTriggeredActions(this, triggeredActionId))
 	}
 }
 registerClassToMeteorMethods(
