@@ -220,8 +220,15 @@ $part-right-padding: 5px;
 			}
 
 			&.segment-storyboard__part__next-line--next {
-				&::before {
-					display: none;
+				&:not(.segment-storyboard__part__next-line--opposite) {
+					&::before {
+						display: none;
+					}
+				}
+				&.segment-storyboard__part__next-line--opposite {
+					&::before {
+						border-color: transparent transparent transparent $general-next-color;
+					}
 				}
 				&::after {
 					border-color: transparent transparent transparent $general-next-color;
@@ -253,7 +260,7 @@ $part-right-padding: 5px;
 			border-radius: 4px 4px 0 0;
 		}
 
-		&.segment-storyboard__part__next-line-label--next {
+		&:not(.segment-storyboard__part__next-line-label--opposite).segment-storyboard__part__next-line-label--next {
 			background: $general-next-color;
 			color: #000;
 			right: auto;
@@ -284,11 +291,29 @@ $part-right-padding: 5px;
 			}
 		}
 
-		&:not(.segment-storyboard__part__next-line-label--next):not(.segment-storyboard__part__next-line-label--live).segment-storyboard__part__next-line-label--autonext {
+		&:not(.segment-storyboard__part__next-line-label--next):not(.segment-storyboard__part__next-line-label--live).segment-storyboard__part__next-line-label--autonext,
+		&.segment-storyboard__part__next-line-label--opposite {
 			font-weight: 400;
 			top: 5px;
 			left: -1px;
 			font-size: 0.9em;
+		}
+
+		&.segment-storyboard__part__next-line-label--opposite {
+			left: 100% !important;
+
+			&.segment-storyboard__part__next-line-label--next {
+				color: $general-next-color;
+				font-weight: 500;
+
+				&:not(.segment-storyboard__part__next-line-label--autonext) {
+					top: 3px;
+				}
+			}
+
+			&:not(.segment-storyboard__part__next-line-label--autonext) {
+				padding-left: 10px;
+			}
 		}
 	}
 

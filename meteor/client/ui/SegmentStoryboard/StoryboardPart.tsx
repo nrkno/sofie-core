@@ -171,15 +171,30 @@ export function StoryboardPart({
 				{isLivePart ? t('On Air') : willBeAutoNextedInto ? t('Auto') : isNextPart ? t('Next') : null}
 			</div>
 			{isLastPartInSegment && (
-				<div
-					className={classNames(
-						'segment-storyboard__part__next-line',
-						'segment-storyboard__part__next-line--opposite',
-						{
-							'segment-storyboard__part__next-line--autonext': part.instance.part.autoNext,
-						}
-					)}
-				></div>
+				<>
+					<div
+						className={classNames(
+							'segment-storyboard__part__next-line',
+							'segment-storyboard__part__next-line--opposite',
+							{
+								'segment-storyboard__part__next-line--autonext': part.instance.part.autoNext,
+								'segment-storyboard__part__next-line--next': isLivePart,
+							}
+						)}
+					></div>
+					<div
+						className={classNames(
+							'segment-storyboard__part__next-line-label',
+							'segment-storyboard__part__next-line-label--opposite',
+							{
+								'segment-storyboard__part__next-line-label--autonext': part.instance.part.autoNext,
+								'segment-storyboard__part__next-line-label--next': isLivePart,
+							}
+						)}
+					>
+						{part.instance.part.autoNext ? t('Auto') : isLivePart ? t('Next') : null}
+					</div>
+				</>
 			)}
 			{isLivePart && displayLiveLineCounter ? (
 				<div className="segment-storyboard__part-timer segment-storyboard__part-timer--live">
