@@ -493,8 +493,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								'segment-timeline__part__nextline__label--thin': innerPart.autoNext && !this.state.isLive,
 							})}
 						>
-							{innerPart.autoNext && t('Auto') + ' '}
-							{this.state.isLive && t('Next')}
+							{innerPart.autoNext ? t('Auto') : this.state.isLive ? t('Next') : null}
 							{isEndOfLoopingShow && <LoopingIcon />}
 						</div>
 					</div>
