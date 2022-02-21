@@ -13,6 +13,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { unprotectObject, unprotectObjectArray, literal, clone, stringifyError } from '../../../lib/lib'
 import { ReadOnlyCache } from '../../cache/CacheBase'
+import { saveIntoCache } from '../../cache/lib'
 import { logger } from '../../logging'
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
@@ -38,34 +39,38 @@ export async function syncChangesToPartInstances(
 				existingPartInstance: PartInstance
 				previousPartInstance: PartInstance | undefined
 				playStatus: 'current' | 'next'
-				newPart: Part
+				newPart: Part | undefined
 				piecesThatMayBeActive: Promise<Piece[]>
 			}> = []
 			if (playlistPartInstances.currentPartInstance) {
 				const newPart = cache.Parts.findOne(playlistPartInstances.currentPartInstance.part._id)
-				if (newPart) {
-					instances.push({
-						existingPartInstance: playlistPartInstances.currentPartInstance,
-						previousPartInstance: playlistPartInstances.previousPartInstance,
-						playStatus: 'current',
-						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, newPart),
-					})
-				}
+				instances.push({
+					existingPartInstance: playlistPartInstances.currentPartInstance,
+					previousPartInstance: playlistPartInstances.previousPartInstance,
+					playStatus: 'current',
+					newPart: newPart,
+					piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(
+						cache,
+						ingestCache,
+						newPart ?? playlistPartInstances.currentPartInstance.part
+					),
+				})
 			}
 			if (playlistPartInstances.nextPartInstance) {
 				const newPart = cache.Parts.findOne(playlistPartInstances.nextPartInstance.part._id)
-				if (newPart) {
-					instances.push({
-						existingPartInstance: playlistPartInstances.nextPartInstance,
-						previousPartInstance: playlistPartInstances.currentPartInstance,
-						playStatus: isTooCloseToAutonext(playlistPartInstances.currentPartInstance, false)
-							? 'current'
-							: 'next',
-						newPart: newPart,
-						piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(cache, ingestCache, newPart),
-					})
-				}
+				instances.push({
+					existingPartInstance: playlistPartInstances.nextPartInstance,
+					previousPartInstance: playlistPartInstances.currentPartInstance,
+					playStatus: isTooCloseToAutonext(playlistPartInstances.currentPartInstance, false)
+						? 'current'
+						: 'next',
+					newPart: newPart,
+					piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(
+						cache,
+						ingestCache,
+						newPart ?? playlistPartInstances.nextPartInstance.part
+					),
+				})
 			}
 
 			for (const {
@@ -95,74 +100,98 @@ export async function syncChangesToPartInstances(
 					cache,
 					previousPartInstance,
 					rundown,
-					newPart,
+					newPart ?? existingPartInstance.part,
 					await piecesThatMayBeActive,
 					existingPartInstance._id,
 					false
 				)
 
-				const newResultData: BlueprintSyncIngestNewData = {
-					part: unprotectObject(newPart),
-					pieceInstances: unprotectObjectArray(proposedPieceInstances),
-					adLibPieces: unprotectObjectArray(adlibPieces),
-					actions: unprotectObjectArray(adlibActions),
-					referencedAdlibs: unprotectObjectArray(referencedAdlibs),
-				}
+				// If we have a new part to sync from, then do a proper sync
+				if (newPart) {
+					logger.info(`Syncing ingest changes for part: ${newPart._id}`)
 
-				const syncContext = new SyncIngestUpdateToPartInstanceContext(
-					{
-						name: `Update to ${newPart.externalId}`,
-						identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
-					},
-					cache.Playlist.doc.activationId,
-					cache.Studio.doc,
-					showStyle,
-					rundown,
-					existingPartInstance,
-					pieceInstancesInPart,
-					proposedPieceInstances,
-					playStatus
-				)
-				// TODO - how can we limit the frequency we run this? (ie, how do we know nothing affecting this has changed)
-				try {
-					// The blueprint handles what in the updated part is going to be synced into the partInstance:
-					blueprint.syncIngestUpdateToPartInstance(
-						syncContext,
-						existingResultPartInstance,
-						clone(newResultData),
+					const newResultData: BlueprintSyncIngestNewData = {
+						part: unprotectObject(newPart),
+						pieceInstances: unprotectObjectArray(proposedPieceInstances),
+						adLibPieces: unprotectObjectArray(adlibPieces),
+						actions: unprotectObjectArray(adlibActions),
+						referencedAdlibs: unprotectObjectArray(referencedAdlibs),
+					}
+
+					const syncContext = new SyncIngestUpdateToPartInstanceContext(
+						{
+							name: `Update to ${newPart.externalId}`,
+							identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
+						},
+						cache.Playlist.doc.activationId,
+						cache.Studio.doc,
+						showStyle,
+						rundown,
+						existingPartInstance,
+						pieceInstancesInPart,
+						proposedPieceInstances,
 						playStatus
 					)
+					// TODO - how can we limit the frequency we run this? (ie, how do we know nothing affecting this has changed)
+					try {
+						// The blueprint handles what in the updated part is going to be synced into the partInstance:
+						blueprint.syncIngestUpdateToPartInstance(
+							syncContext,
+							existingResultPartInstance,
+							clone(newResultData),
+							playStatus
+						)
 
-					// If the blueprint function throws, no changes will be synced to the cache:
-					syncContext.applyChangesToCache(cache)
-				} catch (err) {
-					logger.error(`Error in showStyleBlueprint.syncIngestUpdateToPartInstance: ${stringifyError(err)}`)
-				}
+						// If the blueprint function throws, no changes will be synced to the cache:
+						syncContext.applyChangesToCache(cache)
+					} catch (err) {
+						logger.error(
+							`Error in showStyleBlueprint.syncIngestUpdateToPartInstance: ${stringifyError(err)}`
+						)
+					}
 
-				// Save notes:
-				if (!existingPartInstance.part.notes) existingPartInstance.part.notes = []
-				const notes: PartNote[] = existingPartInstance.part.notes
-				let changed = false
-				for (const note of syncContext.notes) {
-					changed = true
-					notes.push(
-						literal<SegmentNote>({
-							type: note.type,
-							message: note.message,
-							origin: {
-								name: '', // TODO
+					// Save notes:
+					if (!existingPartInstance.part.notes) existingPartInstance.part.notes = []
+					const notes: PartNote[] = existingPartInstance.part.notes
+					let changed = false
+					for (const note of syncContext.notes) {
+						changed = true
+						notes.push(
+							literal<SegmentNote>({
+								type: note.type,
+								message: note.message,
+								origin: {
+									name: '', // TODO
+								},
+							})
+						)
+					}
+					if (changed) {
+						// TODO - these dont get shown to the user currently
+						// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?
+						cache.PartInstances.update(existingPartInstance._id, {
+							$set: {
+								'part.notes': notes,
 							},
 						})
+					}
+				} else {
+					logger.info(`Syncing onEnd infinites for part: ${existingPartInstance._id}`)
+
+					// Otherwise, we want to sync just the fromPreviousPart infinites
+					const infinitePieces = proposedPieceInstances.filter(
+						(p) => p.infinite?.fromPreviousPart && !p.infinite.fromPreviousPlayhead
 					)
-				}
-				if (changed) {
-					// TODO - these dont get shown to the user currently
-					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?
-					cache.PartInstances.update(existingPartInstance._id, {
-						$set: {
-							'part.notes': notes,
+
+					saveIntoCache(
+						cache.PieceInstances,
+						{
+							partInstanceId: existingPartInstance._id,
+							'infinite.fromPreviousPart': true,
+							'infinite.fromPreviousPlayhead': { $ne: true },
 						},
-					})
+						infinitePieces
+					)
 				}
 
 				if (existingPartInstance._id === cache.Playlist.doc.currentPartInstanceId) {
