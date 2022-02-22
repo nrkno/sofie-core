@@ -1,5 +1,6 @@
 ---
 title: Sofie TV Automation System
+hide_table_of_contents: true
 ---
 
 # NRK Sofie TV Automation System
