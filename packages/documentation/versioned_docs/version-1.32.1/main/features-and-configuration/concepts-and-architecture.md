@@ -6,13 +6,13 @@
 
 ### **Sofie Core**
 
-[**Sofie Core**](../dictionary.md#sofie-core) is a web-server which handle business logic and serves the Web-GUI.  
+[**Sofie Core**](user-guide/dictionary.md#sofie-core) is a web-server which handle business logic and serves the Web-GUI.  
 It is a [NodeJS](https://nodejs.org) process backed up by a [MongoDB](https://www.mongodb.com/) database and based on the framework [Meteor](http://meteor.com).  
 Read more: [_System architecture_](concepts-and-architecture.md#system-architecture)_,_ [_Getting Started_](../getting-started/)
 
 ### Gateways
 
-Gateways are applications that connect to Sofie Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline ](../dictionary.md#timeline)for play-out.
+Gateways are applications that connect to Sofie Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline ](user-guide/dictionary.md#timeline)for play-out.
 
 Examples of Gateways are the [MOS Gateway](https://github.com/nrkno/tv-automation-mos-gateway), the [Spreadsheet Gateway](https://github.com/SuperFlyTV/spreadsheet-gateway) and the [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway).  
 All gateways use the [Core-integration library](https://github.com/nrkno/tv-automation-server-core-integration) to communicate with Core.
@@ -42,35 +42,35 @@ It contains one or several Rundowns inside, which are playout out in order.
 In some \(most?\) studios, there are only ever one rundown in a playlist. In those cases, we sometimes lazily refer to playlists and rundowns as "being the same thing".
 :::
 
-A Playlist is played out in the context of it's [Studio](../dictionary.md#studio), thereby only a single Playlist can be active at a time within each Studio.
+A Playlist is played out in the context of it's [Studio](user-guide/dictionary.md#studio), thereby only a single Playlist can be active at a time within each Studio.
 
 A playlist is normally played through and then ends but it is also possible to make looping playlists in which case the playlist will start over from the top after the last part has been played.
 
 ### Rundown
 
 The Rundown contains the content for a show. It contains Segments and Parts, which can be selected by the user to be played out.  
-A Rundown always has a [showstyle](../dictionary.md#showstyle) and is played out in the context of the [Studio](../dictionary.md#studio) of its Playlist.
+A Rundown always has a [showstyle](user-guide/dictionary.md#showstyle) and is played out in the context of the [Studio](user-guide/dictionary.md#studio) of its Playlist.
 
 ### Segment
 
-The Segment is the horizontal line in the GUI. It is intended to be used as a "chapter" or "subject" in a rundown, where each individual playable element in the Segment is called a [Part](../dictionary.md#part).
+The Segment is the horizontal line in the GUI. It is intended to be used as a "chapter" or "subject" in a rundown, where each individual playable element in the Segment is called a [Part](user-guide/dictionary.md#part).
 
 ### Part
 
-The Part is the playable element inside of a [Segment](../dictionary.md#segment). This is the thing that starts playing when the user does a [TAKE](../dictionary.md#take-point).  
-The Part in itself doesn't determine what's going to happen, that's handled by the [Pieces](../dictionary.md#piece) in it.
+The Part is the playable element inside of a [Segment](user-guide/dictionary.md#segment). This is the thing that starts playing when the user does a [TAKE](user-guide/dictionary.md#take-point).  
+The Part in itself doesn't determine what's going to happen, that's handled by the [Pieces](user-guide/dictionary.md#piece) in it.
 
 ### Piece
 
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
 
-Inside of the pieces are the [timeline-objects](../dictionary.md#timeline-object) which controls the play-out on a technical level.
+Inside of the pieces are the [timeline-objects](user-guide/dictionary.md#timeline-object) which controls the play-out on a technical level.
 
 :::info
-Tip! If you want to manually play a certain piece \(for example a graphics overlay\), you can at any time double-click it in the GUI, and it will be copied and played at your play head, just like an [AdLib](../dictionary.md#adlib-pieces) would!
+Tip! If you want to manually play a certain piece \(for example a graphics overlay\), you can at any time double-click it in the GUI, and it will be copied and played at your play head, just like an [AdLib](user-guide/dictionary.md#adlib-pieces) would!
 :::
 
-See also: [Showstyle](../dictionary.md#showstyle)
+See also: [Showstyle](user-guide/dictionary.md#showstyle)
 
 ### AdLib Piece
 
@@ -78,7 +78,7 @@ The AdLib pieces are Pieces that isn't programmed to fire at a specific time, bu
 
 The AdLib pieces can either come from the currently playing Part, or it could be _global AdLibs_ that are available throughout the show.
 
-An AdLib isn't added to the Part in the GUI until it starts playing, instead you find it in the [Shelf](../dictionary.md#shelf).
+An AdLib isn't added to the Part in the GUI until it starts playing, instead you find it in the [Shelf](user-guide/dictionary.md#shelf).
 
 ## Blueprints
 
@@ -86,7 +86,7 @@ Blueprints are plug-ins that run in Sofie Core. They interpret the data coming i
 
 The blueprints are webpacked javascript bundles which are uploaded into Sofie via the GUI. They are custom-made and changes depending on the show style, type of input data \(NRCS\) and the types of controlled devices. A generic [blueprint that works with spreadsheets is available here](https://github.com/SuperFlyTV/sofie-demo-blueprints).
 
-When [Sofie Core](../dictionary.md#sofie-core) calls upon a Blueprint, it returns a JavaScript object containing methods callable by Sofie Core. These methods will be called by Sofie Core in different situations, depending on the method.  
+When [Sofie Core](user-guide/dictionary.md#sofie-core) calls upon a Blueprint, it returns a JavaScript object containing methods callable by Sofie Core. These methods will be called by Sofie Core in different situations, depending on the method.  
 Documentation on these interfaces are available in the [Blueprints integration](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) library.
 
 There are 3 types of Blueprints, and all 3 must be uploaded into Sofie before the system works.
@@ -105,7 +105,7 @@ Documentation on the interface to be exposed by the Blueprint:
 
 ### **Showstyle Blueprints**
 
-Handle things on the _Showstyle level_, like generating [_Baseline_](../dictionary.md#baseline), _Segments_, _Parts, Pieces_ and _Timelines_ in a rundown.  
+Handle things on the _Showstyle level_, like generating [_Baseline_](user-guide/dictionary.md#baseline), _Segments_, _Parts, Pieces_ and _Timelines_ in a rundown.  
 Documentation on the interface to be exposed by the Blueprint:  
 [https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts\#L72](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts#L72)
 
@@ -140,15 +140,15 @@ Fun tip! The timeline in itself is a [separate library available on github](http
 You can play around with the timeline in the browser using [JSFiddle and the timeline-visualizer](https://jsfiddle.net/nytamin/rztp517u/)!
 :::
 
-The Timeline is stored by Sofie Core in a MongoDB collection. It is generated whenever a user does a [TAKE](../dictionary.md#take-point), changes the [Next-point](../dictionary.md#next-point-and-lookahead) or anything else that might affect the play-out.
+The Timeline is stored by Sofie Core in a MongoDB collection. It is generated whenever a user does a [TAKE](user-guide/dictionary.md#take-point), changes the [Next-point](user-guide/dictionary.md#next-point-and-lookahead) or anything else that might affect the play-out.
 
-[Sofie Core](../dictionary.md#sofie-core) generates the timeline using:
+[Sofie Core](user-guide/dictionary.md#sofie-core) generates the timeline using:
 
-- The [Studio Baseline](../dictionary.md#baseline) \(only if no rundown is currently active\)
-- The [Showstyle Baseline](../dictionary.md#baseline), of the currently active rundown.
-- The [currently playing Part](../dictionary.md#take-point)
-- The [Next:ed Part](../dictionary.md#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](../dictionary.md#lookahead)\)
-- Any [AdLibs ](../dictionary.md#adlib-pieces)the user has manually selected to play
+- The [Studio Baseline](user-guide/dictionary.md#baseline) \(only if no rundown is currently active\)
+- The [Showstyle Baseline](user-guide/dictionary.md#baseline), of the currently active rundown.
+- The [currently playing Part](user-guide/dictionary.md#take-point)
+- The [Next:ed Part](user-guide/dictionary.md#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](user-guide/dictionary.md#lookahead)\)
+- Any [AdLibs ](user-guide/dictionary.md#adlib-pieces)the user has manually selected to play
 
 The [**Playout Gateway**](../for-developers/libraries.md#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)-library \(TSR\).
 
