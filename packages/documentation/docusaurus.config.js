@@ -23,6 +23,11 @@ module.exports = {
 				{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
 				{ to: '/releases', label: 'Releases', position: 'left' },
+				{
+					label: 'Releases (on Github)',
+					href: 'https://github.com/nrkno/Sofie-TV-automation/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3ARelease',
+					position: 'left',
+				},
 
 				{
 					type: 'docsVersionDropdown',
