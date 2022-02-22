@@ -18,7 +18,7 @@ sidebar_position: 1
 ![The prompter view](/img/docs/prompter-view.png)
 
 :::info
-Tip: The different web views \(such as the host view and the prompter\) can easily be transmitted over an SDI signal using the HTML producer in [CasparCG](getting-started/installation/installing-connections-and-additional-hardware/casparcg-server-installation.md).
+Tip: The different web views \(such as the host view and the prompter\) can easily be transmitted over an SDI signal using the HTML producer in [CasparCG](installation/installing-connections-and-additional-hardware/casparcg-server-installation.md).
 :::
 
 ### Modular Device Control
@@ -33,7 +33,7 @@ This allows the producer to skip ahead or move backwards in a show, without the 
 
 ### Modular Data Ingest
 
-Sofie features a modular ingest data-flow, allowing multiple types of input data to base rundowns on. Currently there is support for [MOS-based](http://mosprotocol.com) systems, iNews, and [Google Spreadsheets](getting-started/installation/installing-a-gateway/rundown-or-newsroom-system-connection/installing-sofie-with-google-spreadsheet-support.md), and more is in development.
+Sofie features a modular ingest data-flow, allowing multiple types of input data to base rundowns on. Currently there is support for [MOS-based](http://mosprotocol.com) systems, iNews, and [Google Spreadsheets](installation/installing-a-gateway/rundown-or-newsroom-system-connection/installing-sofie-with-google-spreadsheet-support.md), and more is in development.
 
 ### Blueprints
 

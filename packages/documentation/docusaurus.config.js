@@ -3,7 +3,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
-	title: 'Sofie Automation',
+	title: 'Sofie TV Automation Documentation',
 	tagline: '',
 	url: 'https://nrkno.github.io',
 	baseUrl: '/sofie-core/',

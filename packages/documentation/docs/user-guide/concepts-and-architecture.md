@@ -84,6 +84,28 @@ The AdLib pieces can either come from the currently playing Part, or it could be
 
 An AdLib isn't added to the Part in the GUI until it starts playing, instead you find it in the [Shelf](../dictionary#shelf).
 
+## Views
+
+### Rundown View ###
+
+### Prompter View ###
+
+### Presenter View ###
+
+### Active Rundown View ###
+
+### Active Rundown – Shelf ### 
+
+### Specific Rundown - Shelf ###
+
+### Screensaver View ###
+
+### Lobby View ###
+
+### Settings View ###
+
+
+
 ## Blueprints
 
 Blueprints are plug-ins that run in Sofie Core. They interpret the data coming in from the rundowns and transform them into a rich set of playable elements \(Segments, Parts, AdLibs etc\).

@@ -11,7 +11,7 @@
 
 This docker-compose file automates the basic setup of the [Sofie-Core application](../../for-developers/libraries#main-application), the backend database and different Gateway options.
 
-[Docker Compose File](/attachments/docs/getting-started/installation/docker-compose.yaml)
+[Docker Compose File](/attachments/docs/installation/docker-compose.yaml)
 
 After you've downloaded the file, open it in a text editor and navigate to the _ingest-gateway_ section, and select which type of _ingest-gateway_ you'd like installed by commenting out the others.
 

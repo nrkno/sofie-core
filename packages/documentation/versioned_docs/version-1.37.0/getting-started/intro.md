@@ -36,7 +36,7 @@ Blueprints can be described as the logic that determines how a studio and show s
 
 ## Further Reading
 
-* [Installation & Setup](/getting-started/installation/README)
+* [Installation & Setup](/installation/README)
 * [Under the Hood \(for developers\)](/for-developers/intro)
 
 
