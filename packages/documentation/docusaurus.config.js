@@ -62,7 +62,11 @@ module.exports = {
 						},
 					],
 				},
-/* 				{
+				{
+					title: 'About Sofie',
+					items: [{ to: '/docs/about-sofie', label: 'About Sofie', position: 'right' }],
+				},
+				/* 				{
 					title: 'More',
 					items: [
 						// {
@@ -75,7 +79,8 @@ module.exports = {
 						},
 					],
 				},
- */			],
+ */
+			],
 			copyright: `Copyright © ${new Date().getFullYear()} Norsk rikskringkasting AS and Contributors`,
 		},
 		prism: {
@@ -122,7 +127,7 @@ module.exports = {
 				sidebarPath: require.resolve('./sidebarsReleases.js'),
 				// ... other options
 			},
-		]
+		],
 		// [
 		//   '@docusaurus/plugin-content-docs',
 		//   {
