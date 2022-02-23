@@ -25,6 +25,11 @@
 	--ifm-footer-background-color: #252627;
 }
 
+.footer__copyright {
+	//font-size: 0.8em;
+	font-weight: 200;
+}
+
 .docusaurus-highlight-code-line {
 	background-color: rgba(0, 0, 0, 0.1);
 	display: block;
@@ -35,3 +40,28 @@
 html[data-theme='dark'] .docusaurus-highlight-code-line {
 	background-color: rgba(0, 0, 0, 0.3);
 }
+
+
+h1 {
+	margin-block-end: 1px;
+  }
+
+h2 {
+	margin-block-end: 1px;
+  }
+
+h3 {
+	margin-block-end: 1px;
+  }
+
+h4 {
+	margin-block-end: 1px;
+  }
+
+h5 {
+	margin-block-end: 1px;
+  }
+
+h6 {
+	margin-block-end: 1px;
+  }

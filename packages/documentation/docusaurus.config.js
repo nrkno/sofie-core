@@ -22,12 +22,7 @@ module.exports = {
 			items: [
 				{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-				{ to: '/releases', label: 'Releases', position: 'left' },
-				{
-					label: 'Releases (on Github)',
-					href: 'https://github.com/nrkno/Sofie-TV-automation/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3ARelease',
-					position: 'left',
-				},
+				{ to: '/docs/releases', label: 'Releases', position: 'left' },
 
 				{
 					type: 'docsVersionDropdown',
@@ -51,24 +46,24 @@ module.exports = {
 			style: 'dark',
 			links: [
 				{
-					title: 'Documentation',
+					//title: 'Documentation',
 					items: [
 						{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 						{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-						{ to: '/releases', label: 'Releases', position: 'left' },
+						{ to: '/docs/releases', label: 'Releases', position: 'left' },
 					],
 				},
 				{
-					title: 'Community',
+					//title: 'Community',
 					items: [
 						{
-							label: 'Slack',
+							label: 'Sofie Slack Community',
 							href: 'https://join.slack.com/t/sofietv/shared_invite/enQtNTk2Mzc3MTQ1NzAzLTJkZjMyMDg3OGM0YWU3MmU4YzBhZDAyZWI1YmJmNmRiYWQ1OTZjYTkzOTkzMTA2YTE1YjgxMmVkM2U1OGZlNWI',
 						},
 					],
 				},
 				{
-					title: 'About Sofie',
+					//title: 'About Sofie',
 					items: [{ to: '/docs/about-sofie', label: 'About Sofie', position: 'right' }],
 				},
 				/* 				{
@@ -86,7 +81,7 @@ module.exports = {
 				},
  */
 			],
-			copyright: `Copyright © ${new Date().getFullYear()} Norsk rikskringkasting AS and Contributors`,
+			copyright: `Copyright ©${new Date().getFullYear()} Norsk rikskringkasting AS and Contributors`,
 		},
 		prism: {
 			theme: lightCodeTheme,
@@ -123,16 +118,16 @@ module.exports = {
 		],
 	],
 	plugins: [
-		[
-			'@docusaurus/plugin-content-docs',
-			{
-				id: 'releases',
-				path: 'releases',
-				routeBasePath: 'releases',
-				sidebarPath: require.resolve('./sidebarsReleases.js'),
-				// ... other options
-			},
-		],
+		// [
+		// 	'@docusaurus/plugin-content-docs',
+		// 	{
+		// 		id: 'releases',
+		// 		path: 'releases',
+		// 		routeBasePath: 'releases',
+		// 		sidebarPath: require.resolve('./sidebarsReleases.js'),
+		// 		// ... other options
+		// 	},
+		// ],
 		// [
 		//   '@docusaurus/plugin-content-docs',
 		//   {
