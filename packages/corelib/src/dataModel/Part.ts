@@ -35,6 +35,6 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	expectedDurationWithPreroll: number | undefined
 }
 
-export function isPartPlayable(part: DBPart) {
+export function isPartPlayable(part: DBPart): boolean {
 	return !part.invalid && !part.floated
 }

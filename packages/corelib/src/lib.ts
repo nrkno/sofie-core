@@ -213,12 +213,14 @@ export function applyToArray<T>(arr: T | T[], func: (val: T) => void): void {
 	}
 }
 
-export function objectPathGet(obj: any, path: string, defaultValue?: any) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function objectPathGet(obj: any, path: string, defaultValue?: any): any {
 	const v = objectPath.get(obj, path)
 	if (v === undefined && defaultValue !== undefined) return defaultValue
 	return v
 }
-export function objectPathSet(obj: any, path: string, value: any) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function objectPathSet(obj: any, path: string, value: any): any {
 	objectPath.set(obj, path, value)
 	return obj
 }
@@ -267,6 +269,7 @@ export interface ManualPromise<T> extends Promise<T> {
 	manualResolve(res: T): void
 	manualReject(e: Error): void
 }
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function createManualPromise<T>(): ManualPromise<T> {
 	let resolve: (val: T) => void = () => null
 	let reject: (err: Error) => void = () => null
@@ -358,4 +361,12 @@ export function stringifyError(error: unknown, noStack = false): string {
 		}
 	}
 	return str
+}
+
+/**
+ * 'Defer' the execution of an async function.
+ * Pass an async function, and a catch block
+ */
+export function deferAsync(fn: () => Promise<void>, catcher: (e: unknown) => void): void {
+	fn().catch(catcher)
 }

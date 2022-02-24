@@ -4,7 +4,7 @@
 	"license": "MIT",
 	"private": true,
 	"engines": {
-		"node": "^12.22.0 || 14"
+		"node": "^14.18 || ^16.14"
 	},
 	"scripts": {
 		"postinstall": "yarn install:packages && yarn install:meteor",
@@ -17,8 +17,9 @@
 		"lint:packages": "cd packages && yarn lint",
 		"check-types:meteor": "cd meteor && yarn check-types",
 		"test:meteor": "cd meteor && yarn test",
-		"lint:meteor": "cd meteor && yarn test",
+		"lint:meteor": "cd meteor && yarn lint",
 		"meteor:run": "cd meteor && meteor yarn start",
+		"lint": "yarn lint:meteor && yarn lint:packages",
 		"validate:release": "yarn install && yarn build:packages && yarn validate:release:packages && yarn validate:release:meteor",
 		"validate:release:meteor": "cd meteor && meteor yarn validate:prod-dependencies && meteor yarn license-validate && meteor yarn lint && meteor yarn test",
 		"validate:release:packages": "cd packages && yarn validate:dependencies && yarn test",

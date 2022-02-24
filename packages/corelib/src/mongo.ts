@@ -59,7 +59,7 @@ export function mongoWhere<T>(o: Record<string, any>, selector: MongoQuery<T>): 
 	}
 
 	let ok = true
-	_.each(selector as any, (s: any, key: string) => {
+	_.each(selector, (s: any, key: string) => {
 		if (!ok) return
 
 		try {
@@ -234,7 +234,7 @@ export function mongoModify<TDoc extends { _id: ProtectedString<any> }>(
 		}
 	}
 	if (replace) {
-		const newDoc = modifier as any
+		const newDoc = modifier
 		if (!newDoc._id) newDoc._id = doc._id
 		return newDoc
 	} else {
@@ -326,12 +326,12 @@ export function mutatePath<T>(
 			throw new Error('Object at "' + currentPath + '" is not an array ("' + o + '") (in path "' + path + '")')
 
 		const info = generateWildcardAttrInfo()
-		for (const childPath in o) {
+		o.forEach((val, i) => {
 			// mutate any objects which match
-			if (_.isMatch(o[childPath], info.query)) {
-				mutator(o as any, childPath)
+			if (_.isMatch(val, info.query)) {
+				mutator(o, i + '')
 			}
-		}
+		})
 	} else {
 		mutator(o, lastAttr)
 	}

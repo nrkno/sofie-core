@@ -46,7 +46,7 @@ export class LocksManager {
 				)
 
 				this.#lockChanged(nextWorker[0], nextWorker[1], true)
-					.catch((e) => {
+					.catch(async (e) => {
 						logger.error(`Failed to report lock to worker: ${e}`)
 
 						// It failed, so next worker should be attempted

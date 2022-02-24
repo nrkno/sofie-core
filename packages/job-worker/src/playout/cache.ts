@@ -324,7 +324,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	 * The cache is cleared of any documents, and any deferred functions are discarded
 	 * Note: any deferred functions that get added after this will be ignoted
 	 */
-	removePlaylist() {
+	removePlaylist(): void {
 		if (this.Playlist.doc.activationId) {
 			throw new Error('Cannot remove the active RundownPlaylist')
 		}
@@ -333,7 +333,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		super.markCollectionsForRemoval()
 	}
 
-	discardChanges() {
+	discardChanges(): void {
 		this.toBeRemoved = false
 		super.discardChanges()
 
@@ -344,7 +344,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		this.assertNoChanges()
 	}
 
-	async saveAllToDatabase() {
+	async saveAllToDatabase(): Promise<void> {
 		// TODO - ideally we should make sure to preserve the lock during this operation
 		if (!this.PlaylistLock.isLocked) {
 			throw new Error('Cannot save changes with released playlist lock')
@@ -387,7 +387,7 @@ export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayou
 	)
 	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, rundowns)
 }
-export function getRundownIDsFromCache(cache: CacheForPlayout) {
+export function getRundownIDsFromCache(cache: CacheForPlayout): RundownId[] {
 	return cache.Rundowns.findFetch({}).map((r) => r._id)
 }
 export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {

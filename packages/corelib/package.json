@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.39.0-in-development",
+	"version": "1.41.0-in-development",
 	"private": true,
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
@@ -32,7 +32,7 @@
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": ">=12.20"
+		"node": "^14.18 || ^16.14"
 	},
 	"files": [
 		"/dist",
@@ -45,11 +45,11 @@
 		"fast-clone": "^1.5.13",
 		"i18next": "^19.9.2",
 		"influx": "^5.9.2",
-		"mos-connection": "1.0.5-nightly-latest-20211118-081133-434af7d.0",
+		"mos-connection": "^1.0.5",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
 		"tslib": "^2.1.0",
-		"type-fest": "^2.9.0",
+		"type-fest": "^2.11.1",
 		"underscore": "^1.13.2"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",

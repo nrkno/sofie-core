@@ -32,6 +32,7 @@ import {
 	BlueprintResultRundown,
 	BlueprintResultSegment,
 	ExtendedIngestRundown,
+	IBlueprintActionManifest,
 	IBlueprintAdLibPiece,
 	IBlueprintPart,
 	IBlueprintPiece,
@@ -264,6 +265,7 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 		return {
 			rundown,
 			globalAdLibPieces: [],
+			globalActions: [],
 			baseline: { timelineObjects: [] },
 		}
 	},
@@ -298,10 +300,12 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 			}
 			const pieces: IBlueprintPiece[] = ingestPart.payload?.pieces ?? []
 			const adLibPieces: IBlueprintAdLibPiece[] = []
+			const actions: IBlueprintActionManifest[] = []
 			parts.push({
 				part,
 				pieces,
 				adLibPieces,
+				actions,
 			})
 		}
 

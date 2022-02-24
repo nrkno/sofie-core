@@ -214,7 +214,6 @@ export interface IBucketPanelProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
-	hotkeyGroup: string
 	editableName?: boolean
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	editedPiece: PieceId | undefined

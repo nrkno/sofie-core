@@ -3,9 +3,9 @@ const process = require('process')
 const fs = require('fs')
 var path = require('path')
 
-function mkdirSyncIfNotExists(path) {
-	if (fs.existsSync(path)) return
-	fs.mkdirSync(path)
+function mkdirSyncIfNotExists(p) {
+	if (fs.existsSync(p)) return
+	fs.mkdirSync(p)
 }
 
 function copyFileSyncIfNotExists(source, target) {
@@ -28,8 +28,6 @@ function copyFileSync(source, target) {
 }
 
 function copyFolderRecursiveSync(source, target) {
-	var files = [];
-
 	// Check if folder needs to be created or integrated
 	var targetFolder = path.join(target, path.basename(source));
 	if (!fs.existsSync(targetFolder)) {
@@ -38,8 +36,8 @@ function copyFolderRecursiveSync(source, target) {
 
 	// Copy
 	if (fs.lstatSync(source).isDirectory()) {
-		files = fs.readdirSync(source);
-		files.forEach(function (file) {
+		const filesToCopy = fs.readdirSync(source);
+		filesToCopy.forEach(function (file) {
 			var curSource = path.join(source, file);
 			if (fs.lstatSync(curSource).isDirectory()) {
 				copyFolderRecursiveSync(curSource, targetFolder)

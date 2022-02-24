@@ -244,8 +244,8 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('getTimeDiff', async () => {
-		const now = getCurrentTime()
 		const response = await MeteorCall.peripheralDevice.getTimeDiff()
+		const now = getCurrentTime()
 		expect(response).toBeTruthy()
 		expect(response.currentTime).toBeGreaterThan(now - 30)
 		expect(response.currentTime).toBeLessThan(now + 30)
@@ -256,8 +256,8 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('getTime', async () => {
-		const now = getCurrentTime()
 		const response = await MeteorCall.peripheralDevice.getTime()
+		const now = getCurrentTime()
 		expect(response).toBeGreaterThan(now - 30)
 		expect(response).toBeLessThan(now + 30)
 	})

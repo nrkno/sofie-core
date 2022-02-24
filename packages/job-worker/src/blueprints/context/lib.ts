@@ -238,6 +238,7 @@ export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLi
 }
 export function convertAdLibActionToBlueprints(action: AdLibAction): IBlueprintActionManifest {
 	const obj: Complete<IBlueprintActionManifest> = {
+		externalId: action.externalId,
 		actionId: action.actionId,
 		userData: clone(action.userData),
 		partId: unprotectString(action.partId),

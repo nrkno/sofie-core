@@ -11,7 +11,7 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: Package
 
 	const pkg = ExpectedPackages.findOne(packageId)
 	if (!pkg) {
-		logger.error(`onUpdatedPackageInfo: Received update for missing package: "${packageId}"`)
+		logger.warn(`onUpdatedPackageInfo: Received update for missing package: "${packageId}"`)
 		return
 	}
 

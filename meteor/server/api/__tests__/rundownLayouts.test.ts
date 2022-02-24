@@ -68,7 +68,7 @@ describe('Rundown Layouts', () => {
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}
 
-		testInFiber('download shelf layout', () => {
+		testInFiber('download shelf layout', async () => {
 			const { rundownLayout: mockLayout, rundownLayoutId } = makeMockLayout(env)
 			RundownLayouts.insert(mockLayout)
 
@@ -84,7 +84,7 @@ describe('Rundown Layouts', () => {
 					url: `/shelfLayouts/download/${fakeId}`,
 				})
 
-				route.handler({ id: fakeId }, req, res, jest.fn())
+				await route.handler({ id: fakeId }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
 				expect(resStr).toMatchObject(
@@ -104,7 +104,7 @@ describe('Rundown Layouts', () => {
 					url: `/shelfLayouts/download/${rundownLayoutId}`,
 				})
 
-				route.handler({ id: rundownLayoutId }, req, res, jest.fn())
+				await route.handler({ id: rundownLayoutId }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
 				expect(resStr).toMatchObject(
@@ -123,7 +123,7 @@ describe('Rundown Layouts', () => {
 			}
 		})
 
-		testInFiber('upload shelf layout', () => {
+		testInFiber('upload shelf layout', async () => {
 			const { rundownLayout: mockLayout } = makeMockLayout(env)
 			const routeName = '/shelfLayouts/upload/:showStyleBaseId'
 			const route = PickerMock.mockRoutes[routeName]
@@ -139,7 +139,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = JSON.stringify(mockLayout)
 
-				route.handler({ showStyleBaseId: fakeId }, req, res, jest.fn())
+				await route.handler({ showStyleBaseId: fakeId }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
 				expect(resStr).toMatchObject(
@@ -160,7 +160,7 @@ describe('Rundown Layouts', () => {
 					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
 				})
 
-				route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
 				expect(resStr).toMatchObject(
@@ -182,7 +182,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = 'sdf'
 
-				route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
 				expect(resStr).toMatchObject(
@@ -204,7 +204,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = '{ type: dsfgsdfgsdf gsdfgsdfg sdfgsdfg sdf gsdfgsdfg sdfg }'
 
-				route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
 				expect(resStr).toMatchObject(
@@ -225,7 +225,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = JSON.stringify(mockLayout)
 
-				route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
 				expect(resStr).toMatchObject(

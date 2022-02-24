@@ -17,6 +17,7 @@ export function adjustFakeTime(offset: number): number {
 	return currentTime
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function setup() {
 	return {
 		getCurrentTime: getCurrentTime,

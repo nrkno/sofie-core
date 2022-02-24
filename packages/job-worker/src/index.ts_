@@ -1,3 +1,10 @@
+/**
+ * This is a very incomplete basis for running the worker as a standalone process
+ * Bits of code that were removed from elsewhere but will be useful for a standalone process have been added here for future reference
+**/
+
+
+
 import { RedisOptions } from 'bullmq'
 import { createManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { parseRedisEnvVariables } from '@sofie-automation/corelib/dist/redis'
@@ -15,6 +22,7 @@ const worker = new JobWorker(() => {
 
 const shutdownPromise = createManualPromise<void>() // Future: this should be .resolve/.reject in some places
 
+
 void (async () => {
 	await worker.run(mongoUri, dbName, connection)
 
@@ -25,3 +33,16 @@ void (async () => {
 		await worker.stop()
 	}
 })()
+
+
+/** The unique id for this worker, used by the queue to track job ownership */
+function getWorkerId(): string {
+	if (process.env.WORKER_ID) {
+		logger.info(`Running with id "${process.env.WORKER_ID}"`)
+		return process.env.WORKER_ID
+	} else {
+		const id = getRandomString(10)
+		logger.info(`Running with generated id "${id}"`)
+		return id
+	}
+}

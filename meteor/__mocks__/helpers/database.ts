@@ -32,6 +32,7 @@ import {
 	PlayoutActions,
 	StatusCode,
 	IBlueprintPieceType,
+	IBlueprintActionManifest,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -43,7 +44,7 @@ import {
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
-import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
+import { literal, getCurrentTime, protectString, unprotectString, getRandomId, getRandomString } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
@@ -65,6 +66,9 @@ import {
 import { OrganizationId } from '../../lib/collections/Organization'
 import { PackageInfo } from '../../server/coreSystem'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { Workers, WorkerStatus } from '../../lib/collections/Workers'
+import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -389,6 +393,7 @@ export async function setupMockShowStyleBlueprint(
 					return {
 						rundown,
 						globalAdLibPieces: [],
+						globalActions: [],
 						baseline: { timelineObjects: [] },
 					}
 				},
@@ -423,10 +428,12 @@ export async function setupMockShowStyleBlueprint(
 						}
 						const pieces: IBlueprintPiece[] = ingestPart.payload?.pieces ?? []
 						const adLibPieces: IBlueprintAdLibPiece[] = []
+						const actions: IBlueprintActionManifest[] = []
 						parts.push({
 							part,
 							pieces,
 							adLibPieces,
+							actions,
 						})
 					})
 					return {
@@ -462,6 +469,9 @@ export interface DefaultEnvironment {
 	core: ICoreSystem
 	systemTriggeredActions: DBTriggeredActions[]
 
+	workers: WorkerStatus[]
+	workerThreadStatuses: WorkerThreadStatus[]
+
 	ingestDevice: PeripheralDevice
 }
 export async function setupDefaultStudioEnvironment(
@@ -495,6 +505,7 @@ export async function setupDefaultStudioEnvironment(
 		studio,
 		{ organizationId: organizationId }
 	)
+	const { worker, workerThreadStatuses } = setupMockWorker()
 
 	return {
 		showStyleBaseId,
@@ -508,6 +519,8 @@ export async function setupDefaultStudioEnvironment(
 		core,
 		systemTriggeredActions: systemTriggeredActions,
 		ingestDevice,
+		workers: [worker],
+		workerThreadStatuses,
 	}
 }
 export function setupDefaultRundownPlaylist(
@@ -924,6 +937,48 @@ export function setupRundownWithAutoplayPart0(
 	RundownBaselineAdLibPieces.insert(globalAdLib1)
 
 	return rundownId
+}
+
+export function setupMockWorker(doc?: Partial<WorkerStatus>): {
+	worker: WorkerStatus
+	workerThreadStatuses: WorkerThreadStatus[]
+} {
+	doc = doc || {}
+
+	const worker: WorkerStatus = {
+		_id: getRandomId(),
+		name: 'Mock Worker',
+		instanceId: getRandomString(),
+		createdTime: Date.now(),
+		startTime: Date.now(),
+		lastUpdatedTime: Date.now(),
+		connected: true,
+		status: 'OK',
+
+		...doc,
+	}
+	Workers.insert(worker)
+
+	const workerThreadStatus0: WorkerThreadStatus = {
+		_id: getRandomId(),
+		workerId: worker._id,
+		instanceId: getRandomString(),
+		name: 'thread 0',
+		statusCode: StatusCode.GOOD,
+		reason: 'OK',
+	}
+	WorkerThreadStatuses.insert(workerThreadStatus0)
+	const workerThreadStatus1: WorkerThreadStatus = {
+		_id: getRandomId(),
+		workerId: worker._id,
+		instanceId: getRandomString(),
+		name: 'thread 1',
+		statusCode: StatusCode.GOOD,
+		reason: 'OK',
+	}
+	WorkerThreadStatuses.insert(workerThreadStatus1)
+
+	return { worker, workerThreadStatuses: [workerThreadStatus0, workerThreadStatus1] }
 }
 
 // const studioBlueprint

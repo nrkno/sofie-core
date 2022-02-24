@@ -40,6 +40,20 @@ import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { processAdLibActionITranslatableMessages } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
+import { logger } from '../logging'
+
+function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: string): string {
+	const count = usedIds.get(uniqueId)
+	if (count === undefined) {
+		usedIds.set(uniqueId, 0)
+
+		return getHash(uniqueId)
+	} else {
+		logger.debug(`Duplicate ${docType} uniqueId "${uniqueId}"`)
+		usedIds.set(uniqueId, count + 1)
+		return getHash(`${uniqueId}_${count}`)
+	}
+}
 
 /**
  *
@@ -58,12 +72,20 @@ export function postProcessPieces(
 ): Piece[] {
 	const span = context.startSpan('blueprints.postProcess.postProcessPieces')
 
-	const externalIds = new Map<string, number>()
+	const uniqueIds = new Map<string, number>()
 	const timelineUniqueIds = new Set<string>()
 
-	const processedPieces = pieces.map((orgPiece) => {
-		const i = externalIds.get(orgPiece.externalId) ?? 0
-		externalIds.set(orgPiece.externalId, i + 1)
+	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
+		if (!orgPiece.externalId)
+			throw new Error(
+				`Error in blueprint "${blueprintId}" externalId not set for adlib piece in ${partId}! ("${orgPiece.name}")`
+			)
+
+		const docId = getIdHash(
+			'Piece',
+			uniqueIds,
+			`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.sourceLayerId}_${orgPiece.externalId}`
+		)
 
 		const piece: Piece = {
 			pieceType: IBlueprintPieceType.Normal,
@@ -71,11 +93,7 @@ export function postProcessPieces(
 			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
 			content: omit(orgPiece.content, 'timelineObjects'),
 
-			_id: protectString(
-				getHash(
-					`${rundownId}_${blueprintId}_${partId}_piece_${orgPiece.sourceLayerId}_${orgPiece.externalId}_${i}`
-				)
-			),
+			_id: protectString(docId),
 			continuesRefId: protectString(orgPiece.continuesRefId),
 			startRundownId: rundownId,
 			startSegmentId: segmentId,
@@ -94,10 +112,6 @@ export function postProcessPieces(
 			piece.lifespan = PieceLifespan.WithinPart
 		}
 
-		if (!piece.externalId && piece.pieceType === IBlueprintPieceType.Normal)
-			throw new Error(
-				`Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${piece.name}")`
-			)
 		if (!allowNowForPiece && piece.enable.start === 'now')
 			throw new Error(
 				`Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${piece.name}")`
@@ -165,21 +179,25 @@ export function postProcessAdLibPieces(
 ): AdLibPiece[] {
 	const span = context.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
-	const externalIds = new Map<string, number>()
+	const uniqueIds = new Map<string, number>()
 	const timelineUniqueIds = new Set<string>()
 
 	const processedPieces = adLibPieces.map((orgAdlib) => {
-		const i = externalIds.get(orgAdlib.externalId) ?? 0
-		externalIds.set(orgAdlib.externalId, i + 1)
+		if (!orgAdlib.externalId)
+			throw new Error(
+				`Error in blueprint "${blueprintId}" externalId not set for adlib piece in ${partId}! ("${orgAdlib.name}")`
+			)
+
+		const docId = getIdHash(
+			'AdlibPiece',
+			uniqueIds,
+			`${rundownId}_${blueprintId}_${partId}_adlib_piece_${orgAdlib.sourceLayerId}_${orgAdlib.externalId}`
+		)
 
 		const piece: AdLibPiece = {
 			...orgAdlib,
 			content: omit(orgAdlib.content, 'timelineObjects'),
-			_id: protectString(
-				getHash(
-					`${rundownId}_${blueprintId}_${partId}_adlib_piece_${orgAdlib.sourceLayerId}_${orgAdlib.externalId}_${i}`
-				)
-			),
+			_id: protectString(docId),
 			rundownId: rundownId,
 			partId: partId,
 			status: PieceStatusCode.UNKNOWN,
@@ -214,14 +232,27 @@ export function postProcessGlobalAdLibActions(
 	rundownId: RundownId,
 	adlibActions: IBlueprintActionManifest[]
 ): RundownBaselineAdLibAction[] {
-	return adlibActions.map((action, i) => {
+	const uniqueIds = new Map<string, number>()
+
+	return adlibActions.map((action) => {
+		if (!action.externalId)
+			throw new Error(
+				`Error in blueprint "${blueprintId}" externalId not set for baseline adlib action! ("${action.display.label}")`
+			)
+
+		const docId = getIdHash(
+			'RundownAdlibAction',
+			uniqueIds,
+			`${rundownId}_${blueprintId}_global_adlib_action_${action.externalId}`
+		)
+
 		// Fill in ids of unnamed expectedPackages
 		setDefaultIdOnExpectedPackages(action.expectedPackages)
 
 		return literal<RundownBaselineAdLibAction>({
 			...action,
 			actionId: action.actionId,
-			_id: protectString(getHash(`${rundownId}_${blueprintId}_global_adlib_action_${i}`)),
+			_id: protectString(docId),
 			rundownId: rundownId,
 			partId: undefined,
 			...processAdLibActionITranslatableMessages(action, blueprintId),
@@ -235,14 +266,27 @@ export function postProcessAdLibActions(
 	partId: PartId,
 	adlibActions: IBlueprintActionManifest[]
 ): AdLibAction[] {
-	return adlibActions.map((action, i) => {
+	const uniqueIds = new Map<string, number>()
+
+	return adlibActions.map((action) => {
+		if (!action.externalId)
+			throw new Error(
+				`Error in blueprint "${blueprintId}" externalId not set for adlib action in ${partId}! ("${action.display.label}")`
+			)
+
+		const docId = getIdHash(
+			'AdlibAction',
+			uniqueIds,
+			`${rundownId}_${blueprintId}_${partId}_adlib_action_${action.externalId}`
+		)
+
 		// Fill in ids of unnamed expectedPackages
 		setDefaultIdOnExpectedPackages(action.expectedPackages)
 
 		return literal<AdLibAction>({
 			...action,
 			actionId: action.actionId,
-			_id: protectString(getHash(`${rundownId}_${blueprintId}_${partId}_adlib_action_${i}`)),
+			_id: protectString(docId),
 			rundownId: rundownId,
 			partId: partId,
 			...processAdLibActionITranslatableMessages(action, blueprintId),

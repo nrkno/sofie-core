@@ -16,17 +16,17 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 14.x
+          node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
         with:
           path: |
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
           yarn
@@ -45,17 +45,17 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 14.x
+          node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
         with:
           path: |
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
           yarn
@@ -110,11 +110,11 @@ jobs:
           else
             echo "Skipping docker build"
           fi
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         if: ${{ steps.image-tags.outputs.images }}
         with:
-          node-version: 14.x
+          node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
         if: ${{ steps.image-tags.outputs.images }}
       - name: Prepare Environment
@@ -203,11 +203,11 @@ jobs:
           else
             echo "Skipping docker build"
           fi
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         if: ${{ steps.image-tags.outputs.images }}
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
       - name: Build
         if: ${{ steps.image-tags.outputs.images }}
         run: |
@@ -261,10 +261,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
       - name: Prepare Environment
         run: |
           cd packages
@@ -288,7 +288,7 @@ jobs:
       fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [14.x, 16.x]
         include:
           # include additional configs, to run certain packages in a single version of node
           - node-version: 14.x
@@ -306,7 +306,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
@@ -323,7 +323,7 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        if: matrix.node-version == '12.x' || matrix.send-coverage == true
+        if: matrix.node-version == '16.x' || matrix.send-coverage == true
         uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true
@@ -337,10 +337,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 14.x
+          node-version-file: ".node-version"
       - name: Prepare Environment
         run: |
           cd packages 
@@ -388,10 +388,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
         run: |
           cd packages
@@ -440,17 +440,17 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 14.x
+          node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
         with:
           path: |
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
           yarn
