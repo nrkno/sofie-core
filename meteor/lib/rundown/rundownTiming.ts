@@ -122,6 +122,7 @@ export class RundownTimingCalculator {
 		let currentRemaining = 0
 		let startsAtAccumulator = 0
 		let displayStartsAtAccumulator = 0
+		let segmentDisplayDuration = 0
 		let segmentBudgetDurationLeft = 0
 
 		const rundownExpectedDurations: Record<string, number> = {}
@@ -174,17 +175,24 @@ export class RundownTimingCalculator {
 						partInstance.timings?.startedPlayback
 			})
 
+			const segmentsStartedPlayback: Record<string, number> = {}
 			parts.forEach((origPart, itIndex) => {
 				const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
+
+				const segmentId = unprotectString(partInstance.segmentId)
+				if (segmentsStartedPlayback[segmentId] === undefined && partInstance.timings?.startedPlayback) {
+					segmentsStartedPlayback[segmentId] = partInstance.timings?.startedPlayback
+				}
 
 				if (partInstance.segmentId !== lastSegmentId) {
 					this.untimedSegments.add(partInstance.segmentId)
 					lastSegmentId = partInstance.segmentId
+					segmentDisplayDuration = 0
+					if (segmentBudgetDurationLeft > 0) {
+						waitAccumulator += segmentBudgetDurationLeft
+					}
+					segmentBudgetDurationLeft = this.segmentBudgetDurations[unprotectString(partInstance.segmentId)]
 				}
-				if (segmentBudgetDurationLeft > 0) {
-					waitAccumulator += segmentBudgetDurationLeft
-				}
-				segmentBudgetDurationLeft = this.segmentBudgetDurations[unprotectString(partInstance.segmentId)]
 
 				// add piece to accumulator
 				const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1
@@ -297,11 +305,13 @@ export class RundownTimingCalculator {
 						Settings.defaultDisplayDuration
 					partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 					this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
+					const segmentStartedPlayback = segmentsStartedPlayback[segmentId] || lastStartedPlayback
 					if (segmentUsesBudget) {
 						currentRemaining = Math.max(
 							0,
 							this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] -
-								(now - lastStartedPlayback)
+								segmentDisplayDuration -
+								(now - segmentStartedPlayback)
 						)
 						segmentBudgetDurationLeft = 0
 					} else {
