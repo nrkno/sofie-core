@@ -15,7 +15,7 @@ import {
 	defaultAdLibPiece,
 } from '../../__mocks__/defaultCollectionObjects'
 import { LAYER_IDS, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
-import { ExpectedPackage, PieceLifespan, WithTimeline, VTContent } from '@sofie-automation/blueprints-integration'
+import { ExpectedPackage, PieceLifespan, VTContent } from '@sofie-automation/blueprints-integration'
 import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 import { runIngestJob, UpdateIngestRundownAction } from '../lock'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
@@ -120,12 +120,11 @@ describe('Expected Media Items', () => {
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
-				content: literal<WithTimeline<VTContent>>({
+				content: literal<VTContent>({
 					fileName: mockFileName0,
 					path: mockPath0,
 					mediaFlowIds: [mockFlow0, mockFlow1],
 					sourceDuration: 0,
-					timelineObjects: [],
 				}),
 				expectedPackages: [getExpectedPackage('id0', mockPath0), getExpectedPackage('id1', mockPath0)],
 			})
@@ -151,12 +150,11 @@ describe('Expected Media Items', () => {
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
-				content: literal<WithTimeline<VTContent>>({
+				content: literal<VTContent>({
 					fileName: mockFileName1,
 					path: mockPath1,
 					mediaFlowIds: [mockFlow0],
 					sourceDuration: 0,
-					timelineObjects: [],
 				}),
 				expectedPackages: [getExpectedPackage('id0', mockPath1)],
 			})
@@ -175,12 +173,11 @@ describe('Expected Media Items', () => {
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: PieceStatusCode.UNKNOWN,
-				content: literal<WithTimeline<VTContent>>({
+				content: literal<VTContent>({
 					fileName: mockFileName1,
 					path: mockPath1,
 					mediaFlowIds: [mockFlow0],
 					sourceDuration: 0,
-					timelineObjects: [],
 				}),
 				expectedPackages: [getExpectedPackage('id0', mockPath1)],
 			})

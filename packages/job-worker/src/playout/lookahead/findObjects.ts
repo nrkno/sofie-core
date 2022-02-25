@@ -15,6 +15,8 @@ import {
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../../jobs'
 import { PartAndPieces, PieceInstanceWithObjectMap } from './util'
+import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { SetRequired } from 'type-fest'
 
 function getBestPieceInstanceId(piece: PieceInstance): string {
 	if (!piece.isTemporary || piece.partInstanceId) {
@@ -57,7 +59,8 @@ function getObjectMapForPiece(piece: PieceInstanceWithObjectMap): NonNullable<Pi
 	if (!piece.objectMap) {
 		piece.objectMap = new Map()
 
-		for (const obj of piece.piece.content?.timelineObjects ?? []) {
+		const objects = deserializePieceTimelineObjectsBlob(piece.piece.timelineObjectsString)
+		for (const obj of objects) {
 			// Note: This is assuming that there is only one use of a layer in each piece.
 			if (typeof obj.layer === 'string' && !piece.objectMap.has(obj.layer)) {
 				piece.objectMap.set(obj.layer, obj)
@@ -67,6 +70,9 @@ function getObjectMapForPiece(piece: PieceInstanceWithObjectMap): NonNullable<Pi
 	return piece.objectMap
 }
 
+export type LookaheadTimelineObject = TimelineObjRundown &
+	SetRequired<OnGenerateTimelineObjExt, 'pieceInstanceId' | 'partInstanceId'>
+
 export function findLookaheadObjectsForPart(
 	_context: JobContext,
 	currentPartInstanceId: PartInstanceId | null,
@@ -74,18 +80,18 @@ export function findLookaheadObjectsForPart(
 	previousPart: DBPart | undefined,
 	partInfo: PartAndPieces,
 	partInstanceId: PartInstanceId | null
-): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
+): Array<LookaheadTimelineObject> {
 	// Sanity check, if no part to search, then abort
 	if (!partInfo || partInfo.pieces.length === 0) {
 		return []
 	}
 
-	const allObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+	const allObjs: Array<LookaheadTimelineObject> = []
 	for (const rawPiece of partInfo.pieces) {
 		const obj = getObjectMapForPiece(rawPiece).get(layer)
 		if (obj) {
 			allObjs.push(
-				literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
+				literal<LookaheadTimelineObject>({
 					...obj,
 					objectType: TimelineObjType.RUNDOWN,
 					pieceInstanceId: getBestPieceInstanceId(rawPiece),
@@ -127,7 +133,7 @@ export function findLookaheadObjectsForPart(
 	} else {
 		const hasTransitionObj = transitionPiece && getObjectMapForPiece(transitionPiece).get(layer)
 
-		const res: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+		const res: Array<LookaheadTimelineObject> = []
 		partInfo.pieces.forEach((piece) => {
 			if (!allowTransition && piece.piece.pieceType === IBlueprintPieceType.InTransition) {
 				return
@@ -148,7 +154,7 @@ export function findLookaheadObjectsForPart(
 				const patchedContent = tryActivateKeyframesForObject(obj, !!transitionPiece, classesFromPreviousPart)
 
 				res.push(
-					literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
+					literal<LookaheadTimelineObject>({
 						...obj,
 						objectType: TimelineObjType.RUNDOWN,
 						pieceInstanceId: getBestPieceInstanceId(piece),

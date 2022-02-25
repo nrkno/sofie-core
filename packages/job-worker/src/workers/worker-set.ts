@@ -115,9 +115,7 @@ export class StudioWorkerSet {
 			stream.on('change', (change) => {
 				// we have a change to flag
 				for (const thread of this.#threads) {
-					thread.queueCacheInvalidation((invalidations) =>
-						fcn(invalidations, change as ChangeStreamDocument<T>)
-					)
+					thread.queueCacheInvalidation((invalidations) => fcn(invalidations, change))
 				}
 			})
 			stream.on('end', () => {

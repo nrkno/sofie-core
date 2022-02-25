@@ -15,6 +15,14 @@ export type TimeDuration = number
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
+/**
+ * Make all optional properties be required and `| undefined`
+ * This is useful to ensure that no property is missed, when manually converting between types, but allowing fields to be undefined
+ */
+export type Complete<T> = {
+	[P in keyof Required<T>]: Pick<T, P> extends Required<Pick<T, P>> ? T[P] : T[P] | undefined
+}
+
 export type ArrayElement<A> = A extends readonly (infer T)[] ? T : never
 
 export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {

@@ -42,7 +42,6 @@ import {
 	PieceGroupMetadata,
 	PieceTimelineMetadata,
 } from '@sofie-automation/corelib/dist/playout/pieces'
-import { prefixAllObjectIds } from './lib'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	if (a.pieceType === IBlueprintPieceType.OutTransition && b.pieceType !== IBlueprintPieceType.OutTransition) {
@@ -361,18 +360,6 @@ export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstan
 		rundownId: protectString(''),
 	})
 
-	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {
-		const contentObjects = _.compact(newAdLibPiece.content.timelineObjects)
-		const objs = prefixAllObjectIds(
-			contentObjects.map((obj) => ({
-				...obj,
-				objectType: TimelineObjType.RUNDOWN,
-			})),
-			newAdLibPiece._id + '_'
-		)
-		newAdLibPiece.content.timelineObjects = objs
-	}
-
 	if (span) span.end()
 	return newAdLibPiece
 }
@@ -413,18 +400,6 @@ export function convertAdLibToPieceInstance(
 	})
 
 	setupPieceInstanceInfiniteProperties(newPieceInstance)
-
-	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-		const contentObjects = _.compact(newPieceInstance.piece.content.timelineObjects)
-		const objs = prefixAllObjectIds(
-			contentObjects.map((obj) => ({
-				...obj,
-				objectType: TimelineObjType.RUNDOWN,
-			})),
-			newPieceId + '_'
-		)
-		newPieceInstance.piece.content.timelineObjects = objs
-	}
 
 	if (span) span.end()
 	return newPieceInstance

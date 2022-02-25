@@ -12,7 +12,6 @@ import { setupDefaultJobEnvironment, MockJobContext } from '../../../__mocks__/c
 import { runJobWithPlayoutCache } from '../../../playout/lock'
 import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObjects'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { TimelineObjRundown, OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 jest.mock('../findForLayer')
 type TfindLookaheadForLayer = jest.MockedFunction<typeof findLookaheadForLayer>
@@ -22,6 +21,7 @@ const findLookaheadForLayerMock = findLookaheadForLayer as TfindLookaheadForLaye
 jest.mock('../util')
 type TgetOrderedPartsAfterPlayhead = jest.MockedFunction<typeof getOrderedPartsAfterPlayhead>
 import { getOrderedPartsAfterPlayhead, PartAndPieces, PartInstanceAndPieceInstances } from '../util'
+import { LookaheadTimelineObject } from '../findObjects'
 const getOrderedPartsAfterPlayheadMock = getOrderedPartsAfterPlayhead as TgetOrderedPartsAfterPlayhead
 
 describe('Lookahead', () => {
@@ -172,7 +172,7 @@ describe('Lookahead', () => {
 		await expectLookaheadForLayerMock(playlistId, [], undefined, fakeParts)
 	})
 
-	function fakeResultObj(id: string, pieceId: string, layer: string): TimelineObjRundown & OnGenerateTimelineObjExt {
+	function fakeResultObj(id: string, pieceId: string, layer: string): LookaheadTimelineObject {
 		return {
 			id: id,
 			pieceInstanceId: pieceId,

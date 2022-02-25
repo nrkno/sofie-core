@@ -59,7 +59,7 @@ import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ReadonlyDeep } from 'type-fest'
 import { innerStartOrQueueAdLibPiece } from '../adlib'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 import { restartRandomId } from '../../__mocks__/random'
 
@@ -903,9 +903,8 @@ describe('Timeline', () => {
 							lifespan: PieceLifespan.WithinPart,
 							sourceLayerId: showStyle.sourceLayers[0]._id,
 							outputLayerId: showStyle.outputLayers[0]._id,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 							_rank: 0,
 						})
 					)
@@ -1009,9 +1008,8 @@ describe('Timeline', () => {
 							lifespan: PieceLifespan.WithinPart,
 							sourceLayerId: showStyle.sourceLayers[0]._id,
 							outputLayerId: showStyle.outputLayers[0]._id,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 							_rank: 0,
 							prerollDuration: 340,
 						})

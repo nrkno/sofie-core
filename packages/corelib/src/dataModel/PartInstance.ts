@@ -1,6 +1,5 @@
 import { IBlueprintPartInstance, IBlueprintPartInstanceTimings, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '../playout/timings'
-import { PartialDeep } from 'type-fest'
 import { ProtectedStringProperties } from '../protectedString'
 import { PartInstanceId, RundownId, RundownPlaylistActivationId, SegmentId, SegmentPlayoutId } from './Ids'
 import { DBPart } from './Part'
@@ -8,18 +7,6 @@ import { DBPart } from './Part'
 export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
 	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
-}
-
-export function unprotectPartInstance(partInstance: DBPartInstance): IBlueprintPartInstance
-export function unprotectPartInstance(partInstance: DBPartInstance | undefined): IBlueprintPartInstance | undefined
-export function unprotectPartInstance(partInstance: DBPartInstance | undefined): IBlueprintPartInstance | undefined {
-	return partInstance as any
-}
-export function unprotectPartInstanceArray(partInstances: DBPartInstance[]): IBlueprintPartInstance[] {
-	return partInstances as any
-}
-export function protectPartInstance(partInstance: IBlueprintPartInstance): PartialDeep<DBPartInstance> {
-	return partInstance as any
 }
 
 export interface DBPartInstance extends InternalIBlueprintPartInstance {

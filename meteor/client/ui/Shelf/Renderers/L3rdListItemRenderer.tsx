@@ -108,7 +108,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 
 	const handleOnMouseLeave = () => setShowMiniInspector(false)
 
-	const virtualPiece: PieceInstancePiece = useMemo(
+	const virtualPiece: Omit<PieceInstancePiece, 'timelineObjectsString'> = useMemo(
 		() => ({
 			...props.adLibListItem,
 			enable: {

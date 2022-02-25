@@ -1,9 +1,10 @@
-import { IBlueprintPieceGeneric, NoraContent } from '@sofie-automation/blueprints-integration'
+import { NoraContent } from '@sofie-automation/blueprints-integration'
+import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { objectToXML } from '../util/object-to-xml'
 
 export { createMosObjectXmlStringNoraBluePrintPiece }
 
-function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneric): string {
+function createMosObjectXmlStringNoraBluePrintPiece(piece: Pick<PieceGeneric, 'content' | 'externalId'>): string {
 	const noraContent = piece.content as NoraContent | undefined
 	const noraPayload = noraContent?.payload
 	if (!noraContent || !noraPayload) {

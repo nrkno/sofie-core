@@ -11,7 +11,6 @@ import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { clone, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { unprotectObject, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -22,6 +21,13 @@ import { isTooCloseToAutonext, updateExpectedDurationWithPrerollForPartInstance 
 import _ = require('underscore')
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context/syncIngestUpdateToPartInstance'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
+import {
+	convertAdLibActionToBlueprints,
+	convertAdLibPieceToBlueprints,
+	convertPartInstanceToBlueprints,
+	convertPartToBlueprints,
+	convertPieceInstanceToBlueprints,
+} from '../blueprints/context/lib'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type ReadOnlyIngestCacheWithoutRundown = Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'>
@@ -105,8 +111,8 @@ export async function syncChangesToPartInstances(
 
 				const partId = existingPartInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
-					partInstance: unprotectObject(existingPartInstance),
-					pieceInstances: unprotectObjectArray(pieceInstancesInPart),
+					partInstance: convertPartInstanceToBlueprints(existingPartInstance),
+					pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprints),
 				}
 
 				const referencedAdlibIds = _.compact(pieceInstancesInPart.map((p) => p.adLibSourceId))
@@ -127,11 +133,11 @@ export async function syncChangesToPartInstances(
 				)
 
 				const newResultData: BlueprintSyncIngestNewData = {
-					part: unprotectObject(newPart),
-					pieceInstances: unprotectObjectArray(proposedPieceInstances),
-					adLibPieces: unprotectObjectArray(adlibPieces),
-					actions: unprotectObjectArray(adlibActions),
-					referencedAdlibs: unprotectObjectArray(referencedAdlibs),
+					part: convertPartToBlueprints(newPart),
+					pieceInstances: proposedPieceInstances.map(convertPieceInstanceToBlueprints),
+					adLibPieces: adlibPieces.map(convertAdLibPieceToBlueprints),
+					actions: adlibActions.map(convertAdLibActionToBlueprints),
+					referencedAdlibs: referencedAdlibs.map(convertAdLibPieceToBlueprints),
 				}
 
 				const syncContext = new SyncIngestUpdateToPartInstanceContext(

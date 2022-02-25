@@ -1,7 +1,7 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
 import { ExpectedPackage } from './package'
-import { SomeTimelineContent } from './content'
+import { SomeContent, WithTimeline } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
 import { ActionUserData } from './action'
@@ -366,7 +366,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content: SomeTimelineContent
+	content: WithTimeline<SomeContent>
 
 	/** The transition used by this piece to transition to and from the piece */
 	/** @deprecated */
