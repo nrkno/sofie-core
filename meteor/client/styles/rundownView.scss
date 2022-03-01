@@ -597,10 +597,11 @@ svg.icon {
 
 			.segment-timeline__part-identifiers__identifier {
 				margin: 2.5px;
-				padding: 0 10px 0 10px;
+				padding: 0 4px;
 				background-color: $part-identifier;
 				color: $part-identifier-text;
-				border-radius: 10px;
+				border-radius: 0 10px 10px 0;
+				font-size: 0.85rem;
 			}
 		}
 	}
@@ -1409,8 +1410,8 @@ svg.icon {
 				}
 
 				&::before {
-					bottom: 0;
-					left: -1px;
+					bottom: -1px;
+					left: -2px;
 					@include take-arrow();
 				}
 			}
@@ -2182,11 +2183,12 @@ svg.icon {
 				position: absolute;
 				bottom: 0;
 				z-index: -1;
-				padding: 0 10px 0 10px;
+				padding: 0 4px 0 10px;
 				box-sizing: border-box;
 				background-color: $part-identifier;
-				border-radius: 0 10px 10px 0;
+				border-radius: 0 8px 8px 0;
 				color: $part-identifier-text;
+				font-size: 0.85rem;
 			}
 
 			&.gap {
