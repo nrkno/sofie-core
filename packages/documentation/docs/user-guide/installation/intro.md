@@ -1,12 +1,13 @@
 ---
-sidebar_label: Introduction
 sidebar_position: 1
-title: Getting Started
 ---
-
 # Getting Started
 
-_Sofie_ can be installed in many different ways, depending on which platforms, needs, and features you desire. If this is your first time working with _Sofie_, we recommend you start with the [Installation and Setup](installation/README) portion of this guide. It will walk you through all the required steps to get _Sofie_ running on your local machine as well as provide the resources to attach additional hardware \(vision mixers, audio mixes, etcetera\) if necessary.
+_Sofie_ can be installed in many different ways, depending on which platforms, needs, and features you desire. The _Sofie_ system consists of several applications that work together to provide complete broadcast automation system. Each of these components' installation will be covered in this guide. Additional information about the products or services mentioned alongside the Sofie Installation can be found on the [Further Reading page](../resources.md).
+
+There are four minimum required components to get a Sofie system up and running. First you need the [_Sofie Core_](installing-sofie-server-core.md), which is the brains of the operation. Then a set of [_Blueprints_](installing-blueprints.md) __to handle and interpret incoming and outgoing data. Next, an [_Ingest Gateway_](installing-a-gateway/rundown-or-newsroom-system-connection/README) __to fetch the data for the Blueprints. Then finally, a [_Playout Gateway_](installing-a-gateway/playout-gateway.md) to send the data to your playout device of choice.
+
+
 
 ## Sofie Core Pages
 
@@ -28,16 +29,9 @@ The _Sofie_ _Core_ is the primary application for managing the broadcast but, it
 
 ### Gateways
 
-Gateways are separate applications that bridge the gap between the _Sofie Core_ and other pieces of hardware or services. At minimum, you will need a _Playout Gateway_ so your timeline can interact with your playout system of choice. To install the _Playout Gateway_, visit the [Installing a Gateway](installation/installing-a-gateway/) section of this guide and for a more in-depth look, please visit the [Under the Hood section – Gateways](../dictionary#gateways). 
+Gateways are separate applications that bridge the gap between the _Sofie Core_ and other pieces of hardware or services. At minimum, you will need a _Playout Gateway_ so your timeline can interact with your playout system of choice. To install the _Playout Gateway_, visit the [Installing a Gateway](installing-a-gateway/intro) section of this guide and for a more in-depth look, please visit the [Under the Hood section – Gateways](../dictionary#gateways). 
 
 ### Blueprints
 
 Blueprints can be described as the logic that determines how a studio and show should interact with one another. They interpret the data coming in from the rundowns and transform them into a rich set of playable elements \(_Segments_, _Parts_, _AdLibs,_ etcetera\). The _Sofie Core_ has three main blueprint types, _System Blueprints_, _Studio Blueprints_, and _Showstyle Blueprints_. Installing _Sofie_ does not require you understand what these blueprints do, just that they are required for the _Core_ to work. If you would like to gain a deeper understand of how _Blueprints_ work, please visit the [Under The Hood – Blueprints](../dictionary#blueprints) section.
-
-## Further Reading
-
-* [Installation & Setup](/installation/README)
-* [Under the Hood \(for developers\)](/for-developers/intro)
-
-
 

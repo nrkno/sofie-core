@@ -1,4 +1,4 @@
-x# Google Spreadsheet Gateway
+# Google Spreadsheet Gateway
 
 The Spreadsheet Gateway is an application for piping data between Sofie Core and Spreadsheets on Google Drive.
 

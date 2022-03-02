@@ -1,4 +1,4 @@
-# FAQ, Progress, and Known Issues
+# FAQ
 
 ## What software license does the system use?
 
@@ -9,7 +9,7 @@ All core components are using the [MIT license](https://opensource.org/licenses/
 Everything needed to install and configure a fully functioning Sofie system is publicly available, with the following exceptions:
 
 * A rundown data set describing the actual TV show and of media assets.
-* Blueprints for your specific show. __
+* Blueprints for your specific show. 
 
 ## When will feature _y_ become available?
 

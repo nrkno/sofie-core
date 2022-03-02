@@ -86,23 +86,7 @@ An AdLib isn't added to the Part in the GUI until it starts playing, instead you
 
 ## Views
 
-### Rundown View ###
-
-### Prompter View ###
-
-### Presenter View ###
-
-### Active Rundown View ###
-
-### Active Rundown – Shelf ### 
-
-### Specific Rundown - Shelf ###
-
-### Screensaver View ###
-
-### Lobby View ###
-
-### Settings View ###
+Being a web-based system, Sofie has a number of customisable, user-facing web [views](/docs/user-guide/features/sofie-pages) used for control and monitoring.
 
 
 
