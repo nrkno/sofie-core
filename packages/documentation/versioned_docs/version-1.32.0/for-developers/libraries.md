@@ -6,14 +6,14 @@ description: List of all repositories related to Sofie
 
 ## Main Application
 
-The Sofie TV Automation system consists of the [**Sofie Server Core**](https://github.com/nrkno/tv-automation-server-core) which is the core application that serves the web GUI and handles the core logic.
+The Sofie TV Automation system consists of the [**Sofie Server Core**](https://github.com/nrkno/sofie-core) which is the core application that serves the web GUI and handles the core logic.
 
 ## Gateways
 
 Together with the _Server Core_ there are several _gateways_ which are separate applications, but which connect to _Server Core_ and are managed from within the Core's web UI.
 
 * [**Input Gateway**](https://github.com/nrkno/tv-automation-input-gateway) **\(Work in progress\)** 
-* [**MOS Gateway**](https://github.com/nrkno/tv-automation-mos-gateway) Connects Sofie to a newsroom system and ingests rundowns via the [MOS protocol](http://mosprotocol.com/).
+* [**MOS Gateway**](https://github.com/nrkno/sofie-mos-gateway) Connects Sofie to a newsroom system and ingests rundowns via the [MOS protocol](http://mosprotocol.com/).
 * [**Spreadsheet Gateway**](https://github.com/SuperFlyTV/spreadsheet-gateway) Connects Sofie to a Google-Drive folder and ingests rundowns from spreadsheets.
 * [**Playout Gateway**](https://github.com/nrkno/tv-automation-playout-gateway) Handles the playout from Sofie. Connects to and controls a multitude of devices, such as vision mixers, graphics, light controllers, audio mixers etc..
 * [**Quantel Gateway**](https://github.com/nrkno/tv-automation-quantel-gateway) CORBA to REST gateway for Quantel/ISA playback. 
@@ -30,11 +30,11 @@ There are a number of libraries used in the Sofie ecosystem:
 * [**HyperDeck Connection**](https://github.com/nrkno/tv-automation-hyperdeck-connection) Library for connecting to Blackmagic Design Hyperdeck recorders.
 * [**MOS Connection**](https://github.com/nrkno/tv-automation-mos-connection/) A [_MOS protocol_](http://mosprotocol.com/) library for acting as a MOS device and connecting to an newsroom control system.
 * [**Quantel Gateway Client**](https://github.com/nrkno/tv-automation-quantel-gateway-client) An interface that talks to the Quantel-Gateway application.
-* [**Server Core Integration**](https://github.com/nrkno/tv-automation-server-core-integration) Used to connect to the [Sofie Server Core](https://github.com/nrkno/tv-automation-server-core) by the Gateways.
+* [**Server Core Integration**](https://github.com/nrkno/sofie-core-integration) Used to connect to the [Sofie Server Core](https://github.com/nrkno/sofie-core) by the Gateways.
 * [**Sofie Blueprints Integration**](https://github.com/nrkno/tv-automation-sofie-blueprints-integration) Common types and interfaces used by both Sofie Server Core and the user-defined blueprints.
 * [**SuperFly-Timeline**](https://github.com/SuperFlyTV/supertimeline) developed by **[_SuperFly.tv_](https://github.com/SuperFlyTV)** Resolver and rules for placing objects on a virtual timeline.
 * [**ThreadedClass** ](https://github.com/nytamin/threadedClass) developed by **[_Nytamin_](https://github.com/nytamin)** Used in TSR to spawn device controllers in separate processes.
-* [**Timeline State Resolver**](https://github.com/nrkno/tv-automation-state-timeline-resolver) \(TSR\) The main driver in **Playout Gateway,** handles connections to playout-devices and sends commands based on a **Timeline** received from **Core**.
+* [**Timeline State Resolver**](https://github.com/nrkno/sofie-timeline-state-resolver) \(TSR\) The main driver in **Playout Gateway,** handles connections to playout-devices and sends commands based on a **Timeline** received from **Core**.
 
 
 

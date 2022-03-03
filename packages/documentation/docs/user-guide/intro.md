@@ -3,7 +3,7 @@ sidebar_label: Introduction
 sidebar_position: 0
 ---
 
-# Sofie Documentation
+# Sofie User Guide
 
 ## Key Features
 

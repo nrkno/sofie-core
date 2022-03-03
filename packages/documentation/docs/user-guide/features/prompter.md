@@ -88,8 +88,8 @@ From Release 30, the speedMap has a prefix: **shuttle\_** \(i.e. shuttle\_speedM
 
 Configuration files that can be used in their respective driver software:
 
-* [Contour ShuttleXpress](https://github.com/nrkno/tv-automation-server-core/blob/release26/resources/prompter_layout_shuttlexpress.pref)
-* [X-keys](https://github.com/nrkno/tv-automation-server-core/blob/release26/resources/prompter_layout_xkeys.mw3)
+* [Contour ShuttleXpress](https://github.com/nrkno/sofie-core/blob/release26/resources/prompter_layout_shuttlexpress.pref)
+* [X-keys](https://github.com/nrkno/sofie-core/blob/release26/resources/prompter_layout_xkeys.mw3)
 
 #### 
 

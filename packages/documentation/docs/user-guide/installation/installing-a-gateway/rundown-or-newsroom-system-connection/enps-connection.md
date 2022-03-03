@@ -6,7 +6,4 @@ The setup for the MOS Gateway is handled in the Docker Compose in the [Quick Ins
 
 One thing to note if managing the mos-gateway manually: It needs a few ports open \(10540, 10541\) for MOS-messages to be pushed to it from the NCS.
 
-### Further Reading
-
-* [MOS Gateway](https://github.com/nrkno/sofie-mos-gateway) GitHub repository (for developers)
 

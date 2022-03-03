@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Concepts & Architecture
 
-## System architecture
+## System Architecture
 
 ![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](/img/docs/main/features-and-configuration/playout-and-spreadsheet-example.png)
 
@@ -18,8 +18,8 @@ Read more: [_System architecture_](concepts-and-architecture.md#system-architect
 
 Gateways are applications that connect to Sofie Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline ](../dictionary#timeline)for play-out.
 
-Examples of Gateways are the [MOS Gateway](https://github.com/nrkno/tv-automation-mos-gateway), the [Spreadsheet Gateway](https://github.com/SuperFlyTV/spreadsheet-gateway) and the [Playout Gateway](https://github.com/nrkno/tv-automation-playout-gateway).  
-All gateways use the [Core-integration library](https://github.com/nrkno/tv-automation-server-core-integration) to communicate with Core.
+An examples of a gateways is the [Spreadsheet Gateway](https://github.com/SuperFlyTV/spreadsheet-gateway).  
+All gateways use the [Core-integration library](https://github.com/nrkno/sofie-core/tree/master/packages/server-core-integration) to communicate with Core.
 
 ## System, \(Organization\), Studio & Show Style
 
@@ -43,7 +43,7 @@ A Playlist \(or "Rundown Playlist"\) is the entity that "goes on air" and contro
 It contains one or several Rundowns inside, which are playout out in order.
 
 :::info
-In some \(most?\) studios, there are only ever one rundown in a playlist. In those cases, we sometimes lazily refer to playlists and rundowns as "being the same thing".
+In some many studios, there is only ever one rundown in a playlist. In those cases, we sometimes lazily refer to playlists and rundowns as "being the same thing".
 :::
 
 A Playlist is played out in the context of it's [Studio](../dictionary#studio), thereby only a single Playlist can be active at a time within each Studio.
@@ -127,7 +127,7 @@ The Timeline is a collection of timeline-objects, that together form a "target s
 
 The timeline-objects can be programmed to contain relative references to each other, so programming things like _"play this thing right after this other thing"_ is as easy as `{start: { #otherThing.end }}`
 
-The [Playout Gateway](../../for-developers/libraries) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)\) controls the play-out devices to make sure that they actually play what is intended.
+The [Playout Gateway](../../for-developers/libraries) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver)\) controls the play-out devices to make sure that they actually play what is intended.
 
 ![Example of 2 objects in a timeline: The #video object, destined to play at a certain time, and #gfx0, destined to start 15 seconds into the video.](/img/docs/main/features-and-configuration/timeline.png)
 
@@ -160,7 +160,7 @@ The Timeline is stored by Sofie Core in a MongoDB collection. It is generated wh
 - The [Next:ed Part](../dictionary#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](../dictionary#lookahead)\)
 - Any [AdLibs ](../dictionary#adlib-pieces)the user has manually selected to play
 
-The [**Playout Gateway**](../for-developers/libraries#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)-library \(TSR\).
+The [**Playout Gateway**](../for-developers/libraries#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver)-library \(TSR\).
 
 The TSR then...
 
@@ -172,7 +172,7 @@ The TSR then...
 - The commands are then put on queue and sent to the devices at the correct time.
 
 :::info
-For more information about what play-out devices the TSR supports, and examples of the timeline-objects, see the [README of TSR](https://github.com/nrkno/tv-automation-state-timeline-resolver#timeline-state-resolver)
+For more information about what play-out devices the TSR supports, and examples of the timeline-objects, see the [README of TSR](https://github.com/nrkno/sofie-timeline-state-resolver#timeline-state-resolver)
 :::
 
 :::info

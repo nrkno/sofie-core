@@ -46,5 +46,5 @@ A set of testing tools can be found by adding ?testing=1 to the URL and navigati
 
 ### Additional Modes & More Details
 
-For more information: [https://github.com/nrkno/tv-automation-server-core\#studio-mode](https://github.com/nrkno/tv-automation-server-core#studio-mode)
+For more information: [https://github.com/nrkno/sofie-core\#studio-mode](https://github.com/nrkno/sofie-core#studio-mode)
 
