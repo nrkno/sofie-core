@@ -52,7 +52,7 @@ Sofie also has pages for status monitoring and configuration. The status page gi
 
 ## During the show 
 
-While producing the show, we give the producer what we call the “next” screen on the multiviewer. This essentially always shows the producer what source they are going to switch to next. But it is not limited to just the mixer: for example, it can also show the next item for playback. And in theory, this could be extended to any part of the show, for example scripts or camera robotics. Another tool the producer has available are _Ad-Libs_, from the latin ad libitum. _Global Ad-Libs_ are available throughout the entire show, this could be cameras and remote inputs. Other _Ad-Libs_ are context aware and may only become available when the producer is in a _Part_ where they can be used. During the whole show Sofie can send metadata to external systems, such as indexing and timing information.
+While producing the show, we give the producer what we call the “next” screen on the multiviewer. This essentially always shows the producer what source they are going to switch to next. But it is not limited to just the mixer: for example, it can also show the next item for playback. And in theory, this could be extended to any part of the show, for example scripts or camera robotics. Another tool the producer has available are _AdLibs_, from the latin ad libitum. _Global AdLibs_ are available throughout the entire show, this could be cameras and remote inputs. Other _AdLibs_ are context aware and may only become available when the producer is in a _Part_ where they can be used. During the whole show Sofie can send metadata to external systems, such as indexing and timing information.
 
 
 
