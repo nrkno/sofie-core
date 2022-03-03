@@ -3,15 +3,4 @@ sidebar_position: 3
 ---
 # Playout Gateway
 
-The Playout Gateway handles interacting external pieces of hardware or software by sending commands that will playout rundown content.
-
-### Installation
-
-If you are using the Docker version of Sofie, then the Playout Gateway will come preinstalled. For those who are not, please follow the [instructions listed on the GitHub page](https://github.com/nrkno/sofie-playout-gateway) labeled _Usage._
-
-### Further Reading
-
-* [Playout Gateway](https://github.com/nrkno/sofie-playout-gateway) GitHub Page for Developers
-
-## 
-
+The _Playout Gateway_ handles interacting external pieces of hardware or software by sending commands that will playout rundown content. This gateway used to be a separate installation but it has since been moved into the main _Sofie Core_ component.

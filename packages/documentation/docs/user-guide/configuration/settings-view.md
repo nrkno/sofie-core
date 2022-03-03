@@ -20,7 +20,7 @@ Documentation for this section is yet to be written.
 ## Studio
 
 A _Studio_ in Sofie-terms is a physical location, with a specific set of devices and equipment. Only one show can be on air in a studio at the same time.  
-The _studio_ settings are settings for that specific studio, and contains settings related to hardware and play-out, such as:
+The _studio_ settings are settings for that specific studio, and contains settings related to hardware and playout, such as:
 
 * **Attached devices** - the Gateways related to this studio
 * **Blueprint configuration** - custom config option defined by the blueprints
@@ -94,7 +94,7 @@ Please note the difference between _Source Layers_ and _timeline-layers_:
 [Pieces ](../dictionary#piece)are put onto _Source layers_, to group different types of content \(such as a VT or Camera\), they are therefore intended only as something to indicate to the user what is going to be played, not what is actually going to happen on the technical level.
 
 [Timeline-objects](../dictionary#timeline-object) \(inside of the [Pieces](../dictionary#piece)\) are put onto timeline-layers, which are \(through the Mappings in the studio\) mapped to physical devices and outputs.  
-The exact timeline-layer is never exposed to the user, but instead used on the technical level to control play-out.
+The exact timeline-layer is never exposed to the user, but instead used on the technical level to control playout.
 
 An example of the difference could be when playing a VT \(that's a Source Layer\), which could involve all of the timeline-layers _video\_player0_, _audio\_fader\_video_, _audio\_fader\_host_ and _mixer\_pgm._
 :::

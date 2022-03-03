@@ -16,7 +16,7 @@ Read more: [_System architecture_](concepts-and-architecture.md#system-architect
 
 ### Gateways
 
-Gateways are applications that connect to Sofie Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline ](../dictionary#timeline)for play-out.
+Gateways are applications that connect to Sofie Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline ](../dictionary#timeline)for playout.
 
 An examples of a gateways is the [Spreadsheet Gateway](https://github.com/SuperFlyTV/spreadsheet-gateway).  
 All gateways use the [Core-integration library](https://github.com/nrkno/sofie-core/tree/master/packages/server-core-integration) to communicate with Core.
@@ -68,7 +68,7 @@ The Part in itself doesn't determine what's going to happen, that's handled by t
 
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
 
-Inside of the pieces are the [timeline-objects](../dictionary#timeline-object) which controls the play-out on a technical level.
+Inside of the pieces are the [timeline-objects](../dictionary#timeline-object) which controls the playout on a technical level.
 
 :::tip
 Tip! If you want to manually play a certain piece \(for example a graphics overlay\), you can at any time double-click it in the GUI, and it will be copied and played at your play head, just like an [AdLib](../dictionary#adlib-pieces) would!
@@ -127,7 +127,7 @@ The Timeline is a collection of timeline-objects, that together form a "target s
 
 The timeline-objects can be programmed to contain relative references to each other, so programming things like _"play this thing right after this other thing"_ is as easy as `{start: { #otherThing.end }}`
 
-The [Playout Gateway](../../for-developers/libraries) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver)\) controls the play-out devices to make sure that they actually play what is intended.
+The [Playout Gateway](../../for-developers/libraries) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver)\) controls the playout devices to make sure that they actually play what is intended.
 
 ![Example of 2 objects in a timeline: The #video object, destined to play at a certain time, and #gfx0, destined to start 15 seconds into the video.](/img/docs/main/features-and-configuration/timeline.png)
 
@@ -137,10 +137,10 @@ The Sofie system is made to work with a modern web- and IT-based approach in min
 
 ![Sofie Core can run in the cloud](/img/docs/main/features-and-configuration/sofie-web-architecture.png)
 
-One drawback of running in a cloud over the public internet is the - sometimes unpredictable - latency. The Timeline overcomes this by moving all the immediate control of the play-out devices to the Playout Gateway, which is intended to run on a local network, close to the hardware it controls.  
-This also gives the system a simple way of load-balancing - since the number of web-clients or load on Sofie Core won't affect the play-out.
+One drawback of running in a cloud over the public internet is the - sometimes unpredictable - latency. The Timeline overcomes this by moving all the immediate control of the playout devices to the Playout Gateway, which is intended to run on a local network, close to the hardware it controls.  
+This also gives the system a simple way of load-balancing - since the number of web-clients or load on Sofie Core won't affect the playout.
 
-Another benefit of basing the play-out on a timeline is that when programming the show \(the blueprints\), you only have to care about "what you want to be on screen", you don't have to care about cleaning up previously played things, or what was actually played out before. Those are things that are handled by the Playout Gateway automatically. This also allows the user to jump around in a rundown freely, without the risk of things going wrong on air.
+Another benefit of basing the playout on a timeline is that when programming the show \(the blueprints\), you only have to care about "what you want to be on screen", you don't have to care about cleaning up previously played things, or what was actually played out before. Those are things that are handled by the Playout Gateway automatically. This also allows the user to jump around in a rundown freely, without the risk of things going wrong on air.
 
 ### How does it work?
 
@@ -150,7 +150,7 @@ Fun tip! The timeline in itself is a [separate library available on github](http
 You can play around with the timeline in the browser using [JSFiddle and the timeline-visualizer](https://jsfiddle.net/nytamin/rztp517u/)!
 :::
 
-The Timeline is stored by Sofie Core in a MongoDB collection. It is generated whenever a user does a [TAKE](../dictionary#take-point), changes the [Next-point](../dictionary#next-point-and-lookahead) or anything else that might affect the play-out.
+The Timeline is stored by Sofie Core in a MongoDB collection. It is generated whenever a user does a [TAKE](../dictionary#take-point), changes the [Next-point](../dictionary#next-point-and-lookahead) or anything else that might affect the playout.
 
 [Sofie Core](../dictionary#sofie-core) generates the timeline using:
 
@@ -166,13 +166,13 @@ The TSR then...
 
 - Resolves the timeline, using the [timeline-library](https://github.com/SuperFlyTV/supertimeline)
 - Calculates new target-states for each relevant point in time
-- Maps the target-state to each play-out device.
+- Maps the target-state to each playout device.
 - Compares the target-states for each device with the currently-tracked-state and..
 - ..generates commands to send to each device to account for the change.
 - The commands are then put on queue and sent to the devices at the correct time.
 
 :::info
-For more information about what play-out devices the TSR supports, and examples of the timeline-objects, see the [README of TSR](https://github.com/nrkno/sofie-timeline-state-resolver#timeline-state-resolver)
+For more information about what playout devices the TSR supports, and examples of the timeline-objects, see the [README of TSR](https://github.com/nrkno/sofie-timeline-state-resolver#timeline-state-resolver)
 :::
 
 :::info

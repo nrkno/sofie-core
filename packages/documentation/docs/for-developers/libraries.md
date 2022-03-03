@@ -13,10 +13,10 @@ The Sofie TV Automation system consists of the [**Sofie Core**](https://github.c
 Together with the _Sofie Core_ there are several _gateways_ which are separate applications, but which connect to _Sofie Core_ and are managed from within the Core's web UI.
 
 * [**Input Gateway**](https://github.com/nrkno/sofie-input-gateway) **\(Work in progress\)** 
-* [**MOS Gateway**](https://github.com/nrkno/sofie-mos-gateway) Connects Sofie to a newsroom system and ingests rundowns via the [MOS protocol](http://mosprotocol.com/).
-* [**Spreadsheet Gateway**](https://github.com/SuperFlyTV/spreadsheet-gateway) Connects Sofie to a Google-Drive folder and ingests rundowns from spreadsheets.
-* [**Playout Gateway**](https://github.com/nrkno/sofie-playout-gateway) Handles the playout from Sofie. Connects to and controls a multitude of devices, such as vision mixers, graphics, light controllers, audio mixers etc..
-* [**Quantel Gateway**](https://github.com/nrkno/sofie-quantel-gateway) CORBA to REST gateway for Quantel/ISA playback. 
+* [**MOS Gateway**](https://github.com/nrkno/sofie-mos-gateway) Connects _Sofie_ to a newsroom system \(NRCS\) and ingests rundowns via the [MOS protocol](http://mosprotocol.com/).
+* [**Spreadsheet Gateway**](https://github.com/SuperFlyTV/spreadsheet-gateway) Connects _Sofie_ to a _Google Drive_ folder and ingests rundowns from _Google Sheets_.
+* [**Playout Gateway**](https://github.com/nrkno/sofie-playout-gateway) Handles the playout from _Sofie_. Connects to and controls a multitude of devices, such as vision mixers, graphics, light controllers, audio mixers etc..
+* [**Quantel Gateway**](https://github.com/nrkno/sofie-quantel-gateway) CORBA to REST gateway for _Quantel/ISA_ playback. 
 
 
 ## Libraries

@@ -122,7 +122,7 @@ If a Piece has more or less content than the Part's expected duration allows, an
 
 #### Lookahead
 
-Elements in the [Next point](dictionary#next-point) \(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and play-out devices used. This feature is called "Lookahead".
+Elements in the [Next point](dictionary#next-point) \(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and playout devices used. This feature is called "Lookahead".
 
 ### Storyboard Mode
 

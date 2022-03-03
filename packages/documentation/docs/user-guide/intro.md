@@ -23,19 +23,19 @@ Tip: The different web views \(such as the host view and the prompter\) can easi
 
 ### Modular Device Control
 
-Sofie controls play-out devices \(such as vision and audio mixers, graphics and video playback\) via the Playout Gateway, using the [timeline](dictionary#timeline).  
+Sofie controls playout devices \(such as vision and audio mixers, graphics and video playback\) via the Playout Gateway, using the [timeline](dictionary#timeline).  
 The Playout Gateway controls the devices and keeps track of their state and statuses, and lets the user know via the GUI if something's wrong that can affect the show.
 
-### _State-based Play-out_
+### _State-based Playout_
 
-Sofie is using a state-based architecture to control play-out. This means that each element in the show can be programmed independently - there's no need to take into account what has happened previously in the show; Sofie will make sure that the video is loaded and that the audio fader is tuned to the correct position, no matter what was played out previously.  
+Sofie is using a state-based architecture to control playout. This means that each element in the show can be programmed independently - there's no need to take into account what has happened previously in the show; Sofie will make sure that the video is loaded and that the audio fader is tuned to the correct position, no matter what was played out previously.  
 This allows the producer to skip ahead or move backwards in a show, without the fear of things going wrong on air.
 
 ### Modular Data Ingest
 
-Sofie features a modular ingest data-flow, allowing multiple types of input data to base rundowns on. Currently there is support for [MOS-based](http://mosprotocol.com) systems, iNEWS, and [Google Spreadsheets](installation/installing-a-gateway/rundown-or-newsroom-system-connection/installing-sofie-with-google-spreadsheet-support.md), and more is in development.
+Sofie features a modular ingest data-flow, allowing multiple types of input data to base rundowns on. Currently there is support for [MOS-based](http://mosprotocol.com) systems such as ENPS and iNEWS, as well as [Google Spreadsheets](installation/installing-a-gateway/rundown-or-newsroom-system-connection/installing-sofie-with-google-spreadsheet-support.md), and more is in development.
 
 ### Blueprints
 
-The [Blueprints](user-guide/concepts-and-architecture.md#blueprints) are plugins to Sofie, which allows for customization and tailor-made show designs.
+The [Blueprints](user-guide/concepts-and-architecture.md#blueprints) are plugins to _Sofie_, which allows for customization and tailor-made show designs.
 The blueprints are made different depending on how the input data \(rundowns\) look like, how the show-design look like, and what devices to control.
