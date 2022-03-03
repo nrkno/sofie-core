@@ -82,7 +82,7 @@ The objects on the _Timeline_ are put there by server-core and based on the rund
 
 ### Timeline Object
 
-The timeline-objects are stored inside of the [Pieces](dictionary#piece) and they control what's going to be played out on a technical level. When a [Part](dictionary#part) starts playing, all the timeline-objects from it's [Pieces ](dictionary#piece)are added to the [Timeline](dictionary#timeline) and played out by the Playout Gateway.
+The timeline-objects are stored inside of the [Pieces](dictionary#piece) and they control what's going to be played out on a technical level. When a [Part](dictionary#part) starts playing, all the timeline-objects from it's [Pieces] (dictionary#piece)are added to the [Timeline](dictionary#timeline) and played out by the Playout Gateway.
 
 ### Baseline
 

@@ -16,7 +16,7 @@ Read more: [_System architecture_](concepts-and-architecture.md#system-architect
 
 ### Gateways
 
-Gateways are applications that connect to Sofie Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline ](../dictionary#timeline)for playout.
+Gateways are applications that connect to Sofie Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline](../dictionary#timeline) for playout.
 
 An examples of a gateways is the [Spreadsheet Gateway](https://github.com/SuperFlyTV/spreadsheet-gateway).  
 All gateways use the [Core-integration library](https://github.com/nrkno/sofie-core/tree/master/packages/server-core-integration) to communicate with Core.
@@ -158,7 +158,7 @@ The Timeline is stored by Sofie Core in a MongoDB collection. It is generated wh
 - The [Showstyle Baseline](../dictionary#baseline), of the currently active rundown.
 - The [currently playing Part](../dictionary#take-point)
 - The [Next:ed Part](../dictionary#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](../dictionary#lookahead)\)
-- Any [AdLibs ](../dictionary#adlib-pieces)the user has manually selected to play
+- Any [AdLibs](../dictionary#adlib-pieces) the user has manually selected to play
 
 The [**Playout Gateway**](../for-developers/libraries#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver)-library \(TSR\).
 

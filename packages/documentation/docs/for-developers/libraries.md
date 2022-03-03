@@ -34,7 +34,7 @@ There are a number of libraries used in the Sofie ecosystem:
 * [**Sofie Core Integration**](https://github.com/nrkno/sofie-core-integration) Used to connect to the [Sofie Core](https://github.com/nrkno/sofie-core) by the Gateways.
 * [**Sofie Blueprints Integration**](https://github.com/nrkno/sofie-sofie-blueprints-integration) Common types and interfaces used by both Sofie Core and the user-defined blueprints.
 * [**SuperFly-Timeline**](https://github.com/SuperFlyTV/supertimeline) developed by **[_SuperFly.tv_](https://github.com/SuperFlyTV)** Resolver and rules for placing objects on a virtual timeline.
-* [**ThreadedClass** ](https://github.com/nytamin/threadedClass) developed by **[_Nytamin_](https://github.com/nytamin)** Used in TSR to spawn device controllers in separate processes.
+* [**ThreadedClass**](https://github.com/nytamin/threadedClass) developed by **[_Nytamin_](https://github.com/nytamin)** Used in TSR to spawn device controllers in separate processes.
 * [**Timeline State Resolver**](https://github.com/nrkno/sofie-timeline-state-resolver) \(TSR\) The main driver in **Playout Gateway,** handles connections to playout-devices and sends commands based on a **Timeline** received from **Core**.
 
 

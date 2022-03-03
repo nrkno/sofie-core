@@ -48,7 +48,7 @@ These mappings allow the System Administrator to reconfigure what devices the Bl
 
 #### Route Sets
 
-In order to allow the Producer to reconfigure the automation from the Switchboard in the [Rundown View](../dictionary#rundown-view), as well as have some pre-set automation control available for the System Administrator, Sofie has a concept of Route Sets. Route Sets work on top of the Layer Mappings, by configuring sets of [Layer Mappings](settings-view.md#layer-mappings) that will re-route the control from one device to another, or to disable the automation altogether. These Route Sets are presented to the Producer in the [Switchboard ](../dictionary#switchboard)panel.
+In order to allow the Producer to reconfigure the automation from the Switchboard in the [Rundown View](../dictionary#rundown-view), as well as have some pre-set automation control available for the System Administrator, Sofie has a concept of Route Sets. Route Sets work on top of the Layer Mappings, by configuring sets of [Layer Mappings](settings-view.md#layer-mappings) that will re-route the control from one device to another, or to disable the automation altogether. These Route Sets are presented to the Producer in the [Switchboard](../dictionary#switchboard) panel.
 
 A Route Set is essentially a distinct set of Layer Mappings, which can modify the settings already configured by the Layer Mappings, but can be turned On and Off. Called Routes, these can change:
 
@@ -70,7 +70,7 @@ A Route Set has a Behavior property which will dictate what happens how the Rout
 
 ![An active RouteSet with a single Layer Mapping being re-configured](/img/docs/main/features-and-configuration/route-set-remap.png)
 
-Route Sets can also be configured with a _Default State_. This can be used to contrast a normal, day-to-day configuration with an exceptional one \(like using a backup device\) in the [Switchboard ](../dictionary#switchboard)panel.
+Route Sets can also be configured with a _Default State_. This can be used to contrast a normal, day-to-day configuration with an exceptional one \(like using a backup device\) in the [Switchboard](../dictionary#switchboard) panel.
 
 | Default State | Behavior                                                      |
 | :------------ | :------------------------------------------------------------ |
@@ -91,7 +91,7 @@ The Showstyle contains settings like
 :::caution
 Please note the difference between _Source Layers_ and _timeline-layers_:
 
-[Pieces ](../dictionary#piece)are put onto _Source layers_, to group different types of content \(such as a VT or Camera\), they are therefore intended only as something to indicate to the user what is going to be played, not what is actually going to happen on the technical level.
+[Pieces](../dictionary#piece) are put onto _Source layers_, to group different types of content \(such as a VT or Camera\), they are therefore intended only as something to indicate to the user what is going to be played, not what is actually going to happen on the technical level.
 
 [Timeline-objects](../dictionary#timeline-object) \(inside of the [Pieces](../dictionary#piece)\) are put onto timeline-layers, which are \(through the Mappings in the studio\) mapped to physical devices and outputs.  
 The exact timeline-layer is never exposed to the user, but instead used on the technical level to control playout.

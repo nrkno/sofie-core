@@ -124,7 +124,7 @@ Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom S
 
 There are some things not covered in this guide needed to run Sofie in a production environment:
 
-- Logging: Collect, store and track error messages. [Kibana ](https://www.elastic.co/kibana)and [logstash](https://www.elastic.co/logstash) is one way to do it.
+- Logging: Collect, store and track error messages. [Kibana](https://www.elastic.co/kibana) and [logstash](https://www.elastic.co/logstash) is one way to do it.
 - NGINX: It is customary to put a load-balancer in front of _Sofie Core_.
 - Memory and CPU usage monitoring.
 

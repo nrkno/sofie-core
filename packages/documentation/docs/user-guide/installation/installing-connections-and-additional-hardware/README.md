@@ -11,12 +11,12 @@ The following pages are broken up by equipment type that is supported by Sofie's
 ## Playout & Recording
 * [CasparCG Graphics and Video Server](casparcg-server-installation.md) - _Graphics / Playout / Recording_
 * [Blackmagic's Hyperdeck](https://www.blackmagicdesign.com/products/hyperdeckstudio) - _Recording_ 
-* [Quantel ](http://www.quantel.com)Solutions - _Playout_
+* [Quantel](http://www.quantel.com) Solutions - _Playout_
 * [Vizrt](https://www.vizrt.com/) Graphics Solutions - _Graphics / Playout_
 
 ## Vision Mixers
 * [Blackmagic's ATEM](https://www.blackmagicdesign.com/products/atem) hardware vision mixers
-* [vMix ](https://www.vmix.com/)software vision mixer \(coming soon\)
+* [vMix](https://www.vmix.com/) software vision mixer \(coming soon\)
 
 ## Audio Mixers
 * [Sisyfos](https://github.com/olzzon/sisyfos-audio-controller) audio controller
