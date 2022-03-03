@@ -12,7 +12,7 @@ import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { Segment, Segments } from '../../../lib/collections/Segments'
+import { Segment } from '../../../lib/collections/Segments'
 import { dashboardElementPosition } from './DashboardPanel'
 import { Meteor } from 'meteor/meteor'
 
@@ -25,17 +25,15 @@ interface IMiniRundownPanelProps {
 }
 
 interface IMiniRundownPanelTrackedProps {
-	currentSegment?: Segment
 	currentPartInstance?: PartInstance
 	nextPartInstance?: PartInstance
-	nextSegment?: Segment
 	allSegments?: Segment[]
 }
 
 interface IState {}
 
-interface MiniRundownPart {
-	identifier: any
+interface MiniRundownSegment {
+	identifier: string
 	segmentName: string
 	cssClass: string
 }
@@ -69,7 +67,7 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const style = getElementStyle(this.props, isDashboardLayout)
 
-		const miniRundowns: MiniRundownPart[] = getMiniRundownList(
+		const miniRundowns: MiniRundownSegment[] = getMiniRundownList(
 			this.props.allSegments,
 			this.props.currentPartInstance,
 			this.props.nextPartInstance
@@ -86,7 +84,7 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 				</span>
 
 				<div className={MiniRundownPanelInner.panelContainerId} id={MiniRundownPanelInner.panelContainerId}>
-					{miniRundowns.map((miniRundown: MiniRundownPart, index: number) => (
+					{miniRundowns.map((miniRundown: MiniRundownSegment, index: number) => (
 						<div
 							className={miniRundown.cssClass}
 							{...getCurrentPartId(miniRundown.cssClass)}
@@ -116,30 +114,20 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMiniRundownPanelTrackedProps>(
 	(props: IMiniRundownPanelProps & IMiniRundownPanelTrackedProps) => {
 		let currentPartInstance: PartInstance | undefined = undefined
-		let currentSegment: Segment | undefined = undefined
 		let nextPartInstance: PartInstance | undefined = undefined
-		let nextSegment: Segment | undefined = undefined
 
 		const currentPartInstanceId: PartInstanceId | null = props.playlist.currentPartInstanceId
 		if (currentPartInstanceId) {
 			currentPartInstance = PartInstances.findOne(currentPartInstanceId)
 		}
 
-		if (currentPartInstance) {
-			currentSegment = Segments.findOne(currentPartInstance.segmentId)
-		}
-
 		if (props.playlist.nextPartInstanceId) {
 			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInstanceId)
 		}
 
-		if (nextPartInstance) {
-			nextSegment = Segments.findOne(nextPartInstance.segmentId)
-		}
-
 		const allSegments: Segment[] = props.playlist.getSegments()
 
-		return { currentSegment, currentPartInstance, nextPartInstance, nextSegment, allSegments }
+		return { currentPartInstance, nextPartInstance, allSegments }
 	},
 	(_data, props: IMiniRundownPanelProps, nextProps: IMiniRundownPanelProps) => {
 		return !_.isEqual(props, nextProps)
@@ -150,8 +138,8 @@ function getMiniRundownList(
 	allSegments?: Segment[],
 	currentPart?: PartInstance,
 	nextPart?: PartInstance
-): MiniRundownPart[] {
-	const miniRundownParts: MiniRundownPart[] = []
+): MiniRundownSegment[] {
+	const miniRundownParts: MiniRundownSegment[] = []
 
 	allSegments?.forEach((segment: Segment) => {
 		miniRundownParts.push({
@@ -160,7 +148,6 @@ function getMiniRundownList(
 			cssClass: getSegmentCssClass(segment, currentPart, nextPart),
 		})
 	})
-
 
 	return miniRundownParts
 }
@@ -197,7 +184,7 @@ function getSegmentName(segment: Segment | undefined): string {
 	return segment?.name !== undefined ? segment?.name : ''
 }
 
-function getSegmentIdentifier(segment: Segment | undefined): any {
+function getSegmentIdentifier(segment: Segment | undefined): string {
 	return segment?.identifier !== undefined ? segment?.identifier : ''
 }
 
