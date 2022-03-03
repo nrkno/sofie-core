@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { registerCollection, unprotectString } from '../lib'
-import { UserRoles, Organizations, Organization } from './Organization'
+import { UserRoles, Organizations, DBOrganization } from './Organization'
 import { registerIndex } from '../database'
 import { UserId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { wrapMongoCollection } from './lib'
@@ -51,7 +51,7 @@ export function getUser(): User | null {
 export function getUserId(): UserId | null {
 	return (Meteor.userId() as any) || null
 }
-export function getUserRoles(user?: User | null, organization?: Organization | null): UserRoles {
+export function getUserRoles(user?: User | null, organization?: DBOrganization | null): UserRoles {
 	if (user === undefined) user = getUser()
 	if (!user) {
 		return {}

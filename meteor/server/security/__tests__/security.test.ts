@@ -1,6 +1,6 @@
 import { MethodContext } from '../../../lib/api/methods'
 import { setCoreSystemStorePath } from '../../../lib/collections/CoreSystem'
-import { DBOrganization, Organization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
+import { DBOrganization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
 import { User, Users } from '../../../lib/collections/Users'
 import { protectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
@@ -94,9 +94,9 @@ describe('Security', () => {
 
 	const unknownId = protectString('unknown')
 
-	const org0: Organization = getOrg('org0')
-	const org1: Organization = getOrg('org1')
-	const org2: Organization = getOrg('org2')
+	const org0: DBOrganization = getOrg('org0')
+	const org1: DBOrganization = getOrg('org1')
+	const org2: DBOrganization = getOrg('org2')
 
 	function expectReadNotAllowed(fcn: () => boolean) {
 		if (Settings.enableUserAccounts === false) return expectReadAllowed(fcn)
