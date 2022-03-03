@@ -5,14 +5,6 @@ import * as Winston from 'winston'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
-declare module 'winston' {
-	// TODO: workaround from https://github.com/winstonjs/winston/pull/2021
-	// To be removed once winston 3.4.1 or 3.5.0 is published
-	export interface LoggerOptions {
-		handleRejections?: boolean
-	}
-}
-
 // Setup logging --------------------------------------
 let logger: Winston.Logger
 if (logPath) {

@@ -133,7 +133,7 @@ export function setupMockPeripheralDevice(
 			'@sofie-automation/server-core-integration': stripVersion(PackageInfo.version),
 		},
 	}
-	const device = _.extend(defaultDevice, doc) as PeripheralDevice
+	const device: PeripheralDevice = _.extend(defaultDevice, doc)
 	PeripheralDevices.insert(device)
 	return device
 }

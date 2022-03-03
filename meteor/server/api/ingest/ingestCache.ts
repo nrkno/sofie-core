@@ -24,9 +24,7 @@ export class RundownIngestDataCache {
 	static async create(rundownId: RundownId): Promise<RundownIngestDataCache> {
 		const docs = await IngestDataCache.findFetchAsync({ rundownId })
 
-		const ingestObjCache = new RundownIngestDataCache(rundownId, docs)
-
-		return ingestObjCache
+		return new RundownIngestDataCache(rundownId, docs)
 	}
 
 	fetchRundown(): LocalIngestRundown | undefined {

@@ -56,9 +56,6 @@ import {
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { MeteorCall } from '../../../lib/api/methods'
 
-// import * as Workers from '../../worker/worker'
-// const queueStudioJobSpy = jest.spyOn(Workers, 'QueueStudioJob')
-
 const DEBUG = false
 
 describe('test peripheralDevice general API methods', () => {
