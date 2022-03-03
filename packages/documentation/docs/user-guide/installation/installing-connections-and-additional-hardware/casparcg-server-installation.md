@@ -8,7 +8,7 @@ Although CasparCG is an open source program that is free to use for both persona
 
 ## Installing the CasparCG Server
 
-To begin, download the latest release of [CasparCG Server from GitHub](https://github.com/nrkno/tv-automation-casparcg-server/releases). There are multiple versions of CasparCG available to the public for download but, you specifically want the latest NRK version.
+To begin, download the latest release of [CasparCG Server from GitHub](https://github.com/nrkno/sofie-casparcg-server/releases). There are multiple versions of CasparCG available to the public for download but, you specifically want the latest NRK version.
 
 Once downloaded, extract the files and navigate down the folders, _CasparCG Server_ then _Server_. This folder contains your CasparCG Configuration file, `casparcg.config`, and your CasparCG executable, `casparcg.exe`.
 
@@ -52,13 +52,13 @@ One additional note, the Server does require the configuration file be named `ca
 
 ### Installing CasparCG Media Scanner
 
-You can use the CasparCG Media Scanner to locate and add all of your media to the _Core_. To install the Media Scanner, you will go to the [project's Release page](https://github.com/nrkno/tv-automation-media-scanner/releases) and download the `.zip` file under the latest release. Similar to the CasparCG Server, you want to use the NRK version.
+You can use the CasparCG Media Scanner to locate and add all of your media to the _Core_. To install the Media Scanner, you will go to the [project's Release page](https://github.com/nrkno/sofie-media-scanner/releases) and download the `.zip` file under the latest release. Similar to the CasparCG Server, you want to use the NRK version.
 
 Once downloaded and extracted, move the `scanner.exe` file to the same folder as your `casparcg.exe` file.
 
 ### Installing the CasparCG Launcher
 
-You can launch both of your CasparCG applications with the[ CasparCG Launcher.](https://github.com/nrkno/tv-automation-casparcg-launcher) Download the `.exe` file in the latest release and once complete, move the file to the same folder as your `casparcg.exe` file.
+You can launch both of your CasparCG applications with the[ CasparCG Launcher.](https://github.com/nrkno/sofie-casparcg-launcher) Download the `.exe` file in the latest release and once complete, move the file to the same folder as your `casparcg.exe` file.
 
 ## Configuring Windows
 
@@ -222,9 +222,9 @@ In the _Attached Sub Devices_ section, you should now see the status of the Casp
 
 ## Further Reading
 
-- [CasparCG Server Releases](https://github.com/nrkno/tv-automation-casparcg-server/releases) on GitHub.
-- [Media Scanner Releases](https://github.com/nrkno/tv-automation-media-scanner/releases) on GitHub.
-- [CasparCG Launcher](https://github.com/nrkno/tv-automation-casparcg-launcher) on GitHub.
+- [CasparCG Server Releases](https://github.com/nrkno/sofie-casparcg-server/releases) on GitHub.
+- [Media Scanner Releases](https://github.com/nrkno/sofie-media-scanner/releases) on GitHub.
+- [CasparCG Launcher](https://github.com/nrkno/sofie-casparcg-launcher) on GitHub.
 - [Microsoft Visual C++ 2015 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=52685) on Microsoft's website.
 - [Blackmagic Decklink Cards](https://www.blackmagicdesign.com/products/decklink/models) on Blackmagic's website. Check the [Decklink cards](casparcg-server-installation.md#decklink-cards) section for compatibility.
 - [Installing a Decklink Card](https://documents.blackmagicdesign.com/UserManuals/DesktopVideoManual.pdf) as a PDF.

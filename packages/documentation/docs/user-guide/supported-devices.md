@@ -17,7 +17,7 @@ We support almost all features of these devices except fairlight audio, camera c
 
 ## CasparCG <a id="casparcg"></a>
 
-Tested and developed against [a fork of version 2.1](https://github.com/nrkno/tv-automation-casparcg-server) with more support for 2.3 being added in the future.
+Tested and developed against [a fork of version 2.1](https://github.com/nrkno/sofie-casparcg-server) with more support for 2.3 being added in the future.
 
 * Video playback
 * Graphics playback

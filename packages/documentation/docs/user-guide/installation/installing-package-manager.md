@@ -27,7 +27,7 @@ At this time, the Package Manager worker process is Windows-only. Therefore, the
 Package Manager is a suite of standalone applications, separate from Sofie Core. This guide assumes that Package Manager will be running on the same computer as CasparCG and Sofie Core, as that is the fastest way to set up a demo. To get all parts of Package Manager up and running quickly, execute these commands:
 
 ```bash
-git clone https://github.com/nrkno/tv-automation-package-manager.git
+git clone https://github.com/nrkno/sofie-package-manager.git
 cd tv-automation-package-manager
 yarn install
 yarn start:single-app -- -- --basePath "C:\Your\Path\To\CasparCG Server\media-folder (i.e. sofie-demo-media)"
@@ -70,4 +70,4 @@ If all is good, head to the [Rundowns page](http://localhost:3000/rundowns) and 
 
 ### Further Reading
 
-- [Package Manager](https://github.com/nrkno/tv-automation-package-manager) on GitHub.
+- [Package Manager](https://github.com/nrkno/sofie-package-manager) on GitHub.

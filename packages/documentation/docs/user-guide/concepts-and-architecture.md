@@ -105,19 +105,19 @@ There are 3 types of Blueprints, and all 3 must be uploaded into Sofie before th
 
 Handle things on the _System level_.  
 Documentation on the interface to be exposed by the Blueprint:  
-[https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts\#L52](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts#L52)
+[https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts\#L52](https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts#L52)
 
 ### Studio Blueprints
 
 Handle things on the _Studio level_, like "which showstyle to use for this rundown".  
 Documentation on the interface to be exposed by the Blueprint:  
-[https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts\#L57](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts#L57)
+[https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts\#L57](https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts#L57)
 
 ### Showstyle Blueprints
 
 Handle things on the _Showstyle level_, like generating [_Baseline_](../dictionary#baseline), _Segments_, _Parts, Pieces_ and _Timelines_ in a rundown.  
 Documentation on the interface to be exposed by the Blueprint:  
-[https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts\#L72](https://github.com/nrkno/tv-automation-sofie-blueprints-integration/blob/master/src/api.ts#L72)
+[https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts\#L72](https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts#L72)
 
 ## Timeline
 
