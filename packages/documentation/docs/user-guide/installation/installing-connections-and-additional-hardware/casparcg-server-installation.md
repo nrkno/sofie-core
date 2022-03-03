@@ -52,7 +52,7 @@ One additional note, the Server does require the configuration file be named `ca
 
 ### Installing CasparCG Media Scanner
 
-You can use the CasparCG Media Scanner to locate and add all of your media to the _Core_. To install the Media Scanner, you will go to the [project's Release page](https://github.com/nrkno/sofie-media-scanner/releases) and download the `.zip` file under the latest release. Similar to the CasparCG Server, you want to use the NRK version.
+You can use the CasparCG Media Scanner to locate and add all of your media to the _Sofie Core_. To install the Media Scanner, you will go to the [project's Release page](https://github.com/nrkno/sofie-media-scanner/releases) and download the `.zip` file under the latest release. Similar to the CasparCG Server, you want to use the NRK version.
 
 Once downloaded and extracted, move the `scanner.exe` file to the same folder as your `casparcg.exe` file.
 

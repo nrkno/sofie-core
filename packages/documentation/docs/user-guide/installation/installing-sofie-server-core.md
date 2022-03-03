@@ -125,7 +125,7 @@ Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom S
 There are some things not covered in this guide needed to run Sofie in a production environment:
 
 - Logging: Collect, store and track error messages. [Kibana ](https://www.elastic.co/kibana)and [logstash](https://www.elastic.co/logstash) is one way to do it.
-- NGINX: It is customary to put a load-balancer in front of Sofie-Core.
+- NGINX: It is customary to put a load-balancer in front of _Sofie Core_.
 - Memory and CPU usage monitoring.
 
 ## Installing for Development
@@ -135,4 +135,4 @@ Installation instructions for installing Sofie-Core or the various gateways are 
 Common prerequisites are [Node.js](https://nodejs.org/) and [Yarn](https://yarnpkg.com/).  
 Links to the repos are listed at [Applications & Libraries](../../for-developers/libraries).
 
-[Sofie Core GitHub Page for Developers](https://github.com/nrkno/sofie-core)
+[_Sofie Core_ GitHub Page for Developers](https://github.com/nrkno/sofie-core)

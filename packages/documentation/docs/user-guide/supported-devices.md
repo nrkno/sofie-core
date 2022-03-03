@@ -2,7 +2,7 @@
 
 ## Supported playout devices
 
-All playout devices are essentially driven through the timeline, which passes through core into the playout-gateway where it is processed by the timeline-state-resolver. This page details which devices and what parts of the devices can be controlled through the timeline-state-resolver library. In general a blueprints developer can use the [timeline-state-resolver-types package](https://www.npmjs.com/package/timeline-state-resolver-types) to see the interfaces for the timeline objects used to control the devices.
+All playout devices are essentially driven through the timeline, which passes through _Sofie Core_ into the playout-gateway where it is processed by the timeline-state-resolver. This page details which devices and what parts of the devices can be controlled through the timeline-state-resolver library. In general a blueprints developer can use the [timeline-state-resolver-types package](https://www.npmjs.com/package/timeline-state-resolver-types) to see the interfaces for the timeline objects used to control the devices.
 
 ## Blackmagic design ATEM vision mixers <a id="blackmagic-design-atem-vision-mixers"></a>
 

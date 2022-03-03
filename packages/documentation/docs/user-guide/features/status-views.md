@@ -36,7 +36,7 @@ This page displays media transfer statuses.
 Documentation for this feature is yet to be written.
 :::
 
-Sofie Core can send messages to external systems \(such as metadata, as-run-logs\) while on air.
+_Sofie Core_ can send messages to external systems \(such as metadata, as-run-logs\) while on air.
 
 These messages are retained for a period of time, and can be reviewed in this list.
 
@@ -69,7 +69,7 @@ Describes what action the user did; e g pressed a key, clicked a button, or sele
 
 #### Method
 
-The internal name in core of what function was called
+The internal name in _Sofie Core_ of what function was called
 
 #### Status
 

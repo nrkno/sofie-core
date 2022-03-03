@@ -24,7 +24,7 @@ At this time, the Package Manager worker process is Windows-only. Therefore, the
 
 ### Installation (Quick Start)
 
-Package Manager is a suite of standalone applications, separate from Sofie Core. This guide assumes that Package Manager will be running on the same computer as CasparCG and Sofie Core, as that is the fastest way to set up a demo. To get all parts of Package Manager up and running quickly, execute these commands:
+Package Manager is a suite of standalone applications, separate from _Sofie Core_. This guide assumes that Package Manager will be running on the same computer as CasparCG and _Sofie Core_, as that is the fastest way to set up a demo. To get all parts of _Package Manager_ up and running quickly, execute these commands:
 
 ```bash
 git clone https://github.com/nrkno/sofie-package-manager.git
@@ -40,11 +40,11 @@ Not setup yet, exiting process!
 To setup, go into Core and add this device to a Studio
 ```
 
-This first run is necessary to get the Package Manager device registered with Sofie Core. We'll restart Package Manager later on in the [Configuration](#configuration) instructions.
+This first run is necessary to get the Package Manager device registered with _Sofie Core_. We'll restart Package Manager later on in the [Configuration](#configuration) instructions.
 
 ### Configuration
 
-1. Open the Sofie Core Settings page ([http://localhost:3000/settings?admin=1](http://localhost:3000/settings?admin=1)), click on your Studio, and scroll down to the Attached Devices section.
+1. Open the _Sofie Core_ Settings page ([http://localhost:3000/settings?admin=1](http://localhost:3000/settings?admin=1)), click on your Studio, and scroll down to the Attached Devices section.
 1. Click the plus button (`+`) and select Package Manager to add the Package Manager device to your Studio.
 1. On this same settings page, scroll down to the Package Manager section.
 1. Click the plus button under the Package Containers heading, then click the edit icon (pencil) to the right of the newly-created package container.

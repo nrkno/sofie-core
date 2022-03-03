@@ -2,7 +2,7 @@
 
 ## What software license does the system use?
 
-All core components are using the [MIT license](https://opensource.org/licenses/MIT).
+All main components are using the [MIT license](https://opensource.org/licenses/MIT).
 
 ## Is there anything missing in the public repositories?
 

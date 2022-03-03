@@ -52,10 +52,10 @@ description: This guide has a lot of links. Here they are all listed by section.
 
 **Additional resources**
 
-- Viz graphics through MSE, info on [Vizrt's](https://www.vizrt.com/) website.
-- Information about [Blackmagic's Hyperdeck](https://www.blackmagicdesign.com/products/hyperdeckstudio)
+- Viz graphics through MSE, info on the [Vizrt](https://www.vizrt.com/) website.
+- Information about the [Blackmagic Design Hyperdeck](https://www.blackmagicdesign.com/products/hyperdeckstudio)
 
 ## FAQ, Progress, and Issues
 
 - [MIT Licence](https://opensource.org/licenses/MIT)
-- [Road map and Issues page on GitHub](https://github.com/nrkno/Sofie-TV-automation/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3ARelease)
+- [Releases and Issues page on GitHub](https://github.com/nrkno/Sofie-TV-automation/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3ARelease)
