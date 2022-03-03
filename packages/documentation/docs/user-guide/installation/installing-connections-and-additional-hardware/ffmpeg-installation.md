@@ -1,12 +1,12 @@
-# Adding ffmpeg and ffprobe to your PATH on Windows
+# Adding FFmpeg and ffprobe to your PATH on Windows
 
-Some parts of Sofie (specifically the Package Manager) require that [`ffmpeg`](https://www.ffmpeg.org/) and [`ffprobe`](https://ffmpeg.org/ffprobe.html) be available in your `PATH` environment variable. This guide will go over how to download these executables and add them to your `PATH`.
+Some parts of Sofie (specifically the Package Manager) require that [`FFmpeg`](https://www.ffmpeg.org/) and [`FFprobe`](https://ffmpeg.org/ffprobe.html) be available in your `PATH` environment variable. This guide will go over how to download these executables and add them to your `PATH`.
 
 ### Installation
 
-1. `ffmpeg` and `ffprobe` can be downloaded from the [FFmpeg Downloads page](https://ffmpeg.org/download.html) under the "Get packages & executable files" heading. At the time of writing, there are two sources of Windows builds: `gyan.dev` and `BtbN` -- either one will work.
-2. Once downloaded, extract the archive to some place permanent such as `C:\Program Files\ffmpeg`.
-   - You should end up with a `bin` folder inside of `C:\Program Files\ffmpeg` and in that `bin` folder should be three executables: `ffmpeg.exe`, `ffprobe.exe`, and `ffplay.exe`.
+1. `FFmpeg` and `FFprobe` can be downloaded from the [FFmpeg Downloads page](https://ffmpeg.org/download.html) under the "Get packages & executable files" heading. At the time of writing, there are two sources of Windows builds: `gyan.dev` and `BtbN` -- either one will work.
+2. Once downloaded, extract the archive to some place permanent such as `C:\Program Files\FFmpeg`.
+   - You should end up with a `bin` folder inside of `C:\Program Files\FFmpeg` and in that `bin` folder should be three executables: `ffmpeg.exe`, `ffprobe.exe`, and `ffplay.exe`.
 3. Open your Start Menu and type `path`. An option named "Edit the system environment variables" should come up. Click on that option to open the System Properties menu.
 
    ![Start Menu screenshot](/img/docs/edit_system_environment_variables.jpg)
@@ -15,7 +15,7 @@ Some parts of Sofie (specifically the Package Manager) require that [`ffmpeg`](h
 
    ![System Properties screenshot](/img/docs/system_properties.png)
 
-5. If you installed `ffmpeg` and `ffprobe` to a system-wide location such as `C:\Program Files\ffmpeg`, select and edit the `Path` variable under the "System variables" heading. Else, if you installed them to some place specific to your user account, edit the `Path` variable under the "User variables for <YOUR ACCOUNT NAME\>" heading.
+5. If you installed `FFmpeg` and `FFprobe` to a system-wide location such as `C:\Program Files\FFmpeg`, select and edit the `Path` variable under the "System variables" heading. Else, if you installed them to some place specific to your user account, edit the `Path` variable under the "User variables for <YOUR ACCOUNT NAME\>" heading.
 
    ![Environment Variables screenshot](/img/docs/environment_variables.png)
 
