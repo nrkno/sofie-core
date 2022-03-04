@@ -1,5 +1,5 @@
 import { IBlueprintAdLibPiece, SomeContent } from '@sofie-automation/blueprints-integration'
-import { BucketAdLibId, BucketId, StudioId, ShowStyleVariantId } from './Ids'
+import { BucketAdLibId, BucketId, StudioId, ShowStyleVariantId, ShowStyleBaseId, BucketAdLibGroupId } from './Ids'
 import { PieceTimelineObjectsBlob } from './Piece'
 import { RundownImportVersions } from './Rundown'
 
@@ -14,8 +14,14 @@ export interface BucketAdLib extends Omit<IBlueprintAdLibPiece, 'content'> {
 	 * the adLib will be shown as disabled
 	 */
 	studioId: StudioId
-	showStyleVariantId: ShowStyleVariantId
+	/** Which ShowStyleBase the adlib action is valid for */
+	showStyleBaseId: ShowStyleBaseId
+	/** if showStyleVariantId is null, the adlibAction can be used with any variant */
+	showStyleVariantId: ShowStyleVariantId | null
+
 	importVersions: RundownImportVersions // TODO - is this good?
+
+	groupId: BucketAdLibGroupId
 
 	/** Stringified timelineObjects */
 	timelineObjectsString: PieceTimelineObjectsBlob

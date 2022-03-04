@@ -73,6 +73,12 @@ export interface IBlueprintActionManifest {
 	/** Set if ad-lib action should be limited in context to the current part/segment */
 	partId?: string
 
+	/**
+	 * Set to true if ad-lib action should can be used in any showstyle-variant. Default: false = only used by the current variant.
+	 * This is useful for actions in Buckets, so that they can be easily shared between rundowns.
+	 */
+	allVariants?: boolean
+
 	userDataManifest: {
 		/** List of editable fields in userData, to allow for customising */
 		editableFields?: ConfigManifestEntry[]
