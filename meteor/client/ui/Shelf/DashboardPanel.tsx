@@ -25,7 +25,6 @@ import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
@@ -389,7 +388,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
 			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
-			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			if (this.props.playlist && currentPartInstanceId) {
 				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.isClearable)) {
 					if (piece.isAction && piece.adlibAction) {
 						const action = piece.adlibAction
@@ -407,7 +407,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							MeteorCall.userAction.segmentAdLibPieceStart(
 								e,
 								this.props.playlist._id,
-								this.props.playlist.currentPartInstanceId as PartInstanceId,
+								currentPartInstanceId,
 								piece._id,
 								false
 							)
@@ -417,7 +417,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							MeteorCall.userAction.baselineAdLibPieceStart(
 								e,
 								this.props.playlist._id,
-								this.props.playlist.currentPartInstanceId as PartInstanceId,
+								currentPartInstanceId,
 								piece._id,
 								false
 							)

@@ -40,9 +40,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
-import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)

@@ -47,7 +47,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, index, ..
 	const onFocus = useCallback(() => props.onFocus(index), [index])
 	const onRemove = useCallback(() => props.onRemove(index), [index])
 	const onChangeTrigger = useCallback(
-		(localTrigger: DBBlueprintTrigger) => props.onChangeTrigger(index, localTrigger),
+		(changeLocalTrigger: DBBlueprintTrigger) => props.onChangeTrigger(index, changeLocalTrigger),
 		[index]
 	)
 

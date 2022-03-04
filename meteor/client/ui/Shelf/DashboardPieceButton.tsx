@@ -15,7 +15,7 @@ import {
 import { AdLibPieceUi } from './AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from './AdLibListItem'
-import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
+import SplitInputIcon from '../PieceIcons/Renderers/SplitInputIcon'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 import { StyledTimecode } from '../../lib/StyledTimecode'

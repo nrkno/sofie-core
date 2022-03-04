@@ -25,12 +25,12 @@ import { IndexSpecification } from 'mongodb'
 
 async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
-	const targetIndexes = getTargetRegisteredIndexes()
+	const registeredIndexes = getTargetRegisteredIndexes()
 	if (!Meteor.isServer) throw new Meteor.Error(500, `setupIndexes() can only be run server-side`)
 
 	const removeIndexes: IndexSpecification[] = []
 	await Promise.all(
-		Object.entries(targetIndexes).map(async ([collectionName, targetInfo]) => {
+		Object.entries(registeredIndexes).map(async ([collectionName, targetInfo]) => {
 			const rawCollection = targetInfo.collection.rawCollection()
 			const existingIndexes = (await rawCollection.indexes()) as any[]
 

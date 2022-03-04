@@ -384,7 +384,7 @@ class ServerUserActionAPI
 			() => {
 				check(rundownPlaylistId, String)
 				check(partInstanceId, String)
-				check(sourceLayerIds, Array) // TODO - can we verify these are strings?
+				check(sourceLayerIds, [String])
 			},
 			StudioJobs.StopPiecesOnSourceLayers,
 			{

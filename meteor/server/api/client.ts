@@ -263,9 +263,9 @@ export namespace ServerClientAPI {
 								},
 							})
 						)
-						.catch((e) => {
+						.catch((err) => {
 							// If this fails make sure it is handled
-							logger.warn(`Failed to update UserActionsLog: ${stringifyError(e)}`)
+							logger.warn(`Failed to update UserActionsLog: ${stringifyError(err)}`)
 						})
 
 					return wrappedError

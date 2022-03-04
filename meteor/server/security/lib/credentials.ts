@@ -1,5 +1,5 @@
 import { UserId, User, Users, DBUser } from '../../../lib/collections/Users'
-import { Organization, Organizations } from '../../../lib/collections/Organization'
+import { DBOrganization, Organizations } from '../../../lib/collections/Organization'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
 import { LIMIT_CACHE_TIME } from './security'
@@ -11,12 +11,12 @@ export interface Credentials {
 }
 export interface ResolvedCredentials {
 	user?: User
-	organization?: Organization
+	organization?: DBOrganization
 	device?: PeripheralDevice
 }
 export interface ResolvedCredentialsWithUserAndOrganization {
 	user: User
-	organization: Organization
+	organization: DBOrganization
 	device?: PeripheralDevice
 }
 export function resolveCredentials(cred: Credentials | ResolvedCredentials): ResolvedCredentials {
