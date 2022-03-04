@@ -9,20 +9,7 @@ import {
 	PieceId,
 } from './Ids'
 import { Piece } from './Piece'
-import { PartialDeep } from 'type-fest'
 import { omit } from '../lib'
-
-export function unprotectPieceInstance(pieceInstance: PieceInstance): IBlueprintPieceInstance
-export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined
-export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined {
-	return pieceInstance as any
-}
-export function unprotectPieceInstanceArray(pieceInstances: PieceInstance[]): IBlueprintPieceInstance[] {
-	return pieceInstances as any
-}
-export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): PartialDeep<PieceInstance> {
-	return pieceInstance as any
-}
 
 export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 

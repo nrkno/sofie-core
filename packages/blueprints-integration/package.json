@@ -30,7 +30,7 @@
 		"precommit": "lint-staged"
 	},
 	"engines": {
-		"node": ">=12.20"
+		"node": "^14.18 || ^16.14"
 	},
 	"files": [
 		"/dist",
@@ -40,7 +40,7 @@
 	],
 	"dependencies": {
 		"moment": "2.29.1",
-		"timeline-state-resolver-types": "6.4.0-release39.1",
+		"timeline-state-resolver-types": "7.0.0-nightly-release41-20220218-125111-9691037c3.0",
 		"tslib": "^2.3.1",
 		"type-fest": "^2.11.1"
 	},

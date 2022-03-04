@@ -8,7 +8,7 @@ import { DBRundown, RundownId } from '../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../lib/collections/Segments'
 import { PartId, DBPart } from '../lib/collections/Parts'
 import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PieceId, Piece, PieceStatusCode } from '../lib/collections/Pieces'
+import { PieceId, Piece, PieceStatusCode, EmptyPieceTimelineObjectsBlob } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
 
@@ -136,7 +136,8 @@ export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: Segm
 		},
 		sourceLayerId: '',
 		outputLayerId: '',
-		content: { timelineObjects: [] },
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 }
 export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: PartId): AdLibPiece {
@@ -151,6 +152,7 @@ export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: Pa
 		lifespan: PieceLifespan.WithinPart,
 		sourceLayerId: '',
 		outputLayerId: '',
-		content: { timelineObjects: [] },
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 }

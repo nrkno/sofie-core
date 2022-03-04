@@ -14,11 +14,15 @@ import {
 	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { clone, literal } from '@sofie-automation/corelib/dist/lib'
+import { clone, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	deserializePieceTimelineObjectsBlob,
+	EmptyPieceTimelineObjectsBlob,
+	Piece,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 // Setup the mocks
 import * as hashlib from '@sofie-automation/corelib/dist/hash'
@@ -296,14 +300,16 @@ describe('Test blueprint post-process', () => {
 			const blueprintId = protectString('blueprint9')
 			const rundownId = protectString('rundown1')
 
-			const pieces = literal<IBlueprintAdLibPiece[]>([
+			const pieces = literal<Array<IBlueprintAdLibPiece>>([
 				{
 					_rank: 2,
 					name: 'test',
 					externalId: 'eid1',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {} as any,
+					content: {
+						timelineObjects: [],
+					},
 					lifespan: PieceLifespan.WithinPart,
 				},
 				{
@@ -337,7 +343,14 @@ describe('Test blueprint post-process', () => {
 
 			const res = postProcessAdLibPieces(jobContext, blueprintId, rundownId, undefined, pieces)
 			// expect(res).toHaveLength(3)
-			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
+			expect(res).toMatchObject(
+				pieces.map((p) => ({
+					...p,
+					content: {
+						...omit(p.content, 'timelineObjects'),
+					},
+				}))
+			)
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<AdLibPiece>({
@@ -349,18 +362,17 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: '',
 				rundownId: protectString(''),
 				status: 0,
-				content: {
-					timelineObjects: [],
-				},
+				content: {},
+				timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 				lifespan: PieceLifespan.WithinPart,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
 			// Ensure getHash was called as expected
 			expect(getHashMock).toHaveBeenCalledTimes(3)
-			expect(getHashMock).toHaveBeenNthCalledWith(1, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid1_0')
-			expect(getHashMock).toHaveBeenNthCalledWith(2, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid2_0')
-			expect(getHashMock).toHaveBeenNthCalledWith(3, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid2_1')
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid1')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid2')
+			expect(getHashMock).toHaveBeenNthCalledWith(3, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid2_0')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
@@ -396,10 +408,15 @@ describe('Test blueprint post-process', () => {
 
 			const res = postProcessAdLibPieces(jobContext, blueprintId, rundownId, undefined, [piece])
 			expect(res).toHaveLength(1)
-			expect(res).toMatchObject([piece])
+			expect(res).toMatchObject([
+				{
+					...piece,
+					content: omit(piece.content, 'timelineObjects'),
+				},
+			])
 
-			const tlObjId = res[0].content.timelineObjects[0].id
-			expect(tlObjId).not.toEqual('')
+			const resObjects = deserializePieceTimelineObjectsBlob(res[0].timelineObjectsString)
+			expect(resObjects[0].id).not.toEqual('')
 		})
 	})
 
@@ -414,7 +431,8 @@ describe('Test blueprint post-process', () => {
 				protectString('blueprint9'),
 				protectString('fakeRo'),
 				protectString('segment5'),
-				protectString('part8')
+				protectString('part8'),
+				false
 			)
 			expect(res).toHaveLength(0)
 		})
@@ -422,14 +440,16 @@ describe('Test blueprint post-process', () => {
 		test('various pieces', () => {
 			const jobContext = setupDefaultJobEnvironment()
 
-			const pieces = literal<IBlueprintPiece[]>([
+			const pieces = literal<Array<IBlueprintPiece>>([
 				{
 					name: 'test',
 					externalId: 'eid1',
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {} as any,
+					content: {
+						timelineObjects: [],
+					},
 					lifespan: PieceLifespan.OutOnSegmentEnd,
 				},
 				{
@@ -456,9 +476,17 @@ describe('Test blueprint post-process', () => {
 				protectString('blueprint9'),
 				protectString('fakeRo'),
 				protectString('segment5'),
-				protectString('part8')
+				protectString('part8'),
+				false
 			)
-			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
+			expect(res).toMatchObject(
+				pieces.map((p) => ({
+					...p,
+					content: {
+						...omit(p.content, 'timelineObjects'),
+					},
+				}))
+			)
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<Piece>({
@@ -474,17 +502,16 @@ describe('Test blueprint post-process', () => {
 				status: 0,
 				lifespan: PieceLifespan.WithinPart,
 				pieceType: IBlueprintPieceType.Normal,
-				content: {
-					timelineObjects: [],
-				},
+				content: {},
+				timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 				invalid: false,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
 			// Ensure getHash was called as expected
 			expect(getHashMock).toHaveBeenCalledTimes(2)
-			expect(getHashMock).toHaveBeenNthCalledWith(1, 'fakeRo_blueprint9_part8_piece_sl0_eid1_0')
-			expect(getHashMock).toHaveBeenNthCalledWith(2, 'fakeRo_blueprint9_part8_piece_sl0_eid2_0')
+			expect(getHashMock).toHaveBeenNthCalledWith(1, 'fakeRo_blueprint9_part8_piece_sl0_eid1')
+			expect(getHashMock).toHaveBeenNthCalledWith(2, 'fakeRo_blueprint9_part8_piece_sl0_eid2')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
@@ -521,13 +548,19 @@ describe('Test blueprint post-process', () => {
 				protectString('blueprint9'),
 				protectString('fakeRo'),
 				protectString('segment8'),
-				protectString('part6')
+				protectString('part6'),
+				false
 			)
 			expect(res).toHaveLength(1)
-			expect(res).toMatchObject([_.omit(piece, '_id')])
+			expect(res).toMatchObject([
+				{
+					...piece,
+					content: omit(piece.content, 'timelineObjects'),
+				},
+			])
 
-			const tlObjId = res[0].content.timelineObjects[0].id
-			expect(tlObjId).not.toEqual('')
+			const resObjs = deserializePieceTimelineObjectsBlob(res[0].timelineObjectsString)
+			expect(resObjs[0].id).not.toEqual('')
 		})
 	})
 })

@@ -71,7 +71,7 @@ function getIdsBeforeThisPart(context: JobContext, cache: CacheForPlayout, nextP
 	)
 	// Find any orphaned parts
 	const partInstancesBeforeThisInSegment = cache.PartInstances.findFetch(
-		(p) => p.segmentId === nextPart.segmentId && p.orphaned && p.part._rank < nextPart._rank
+		(p) => p.segmentId === nextPart.segmentId && !!p.orphaned && p.part._rank < nextPart._rank
 	)
 	partsBeforeThisInSegment.push(...partInstancesBeforeThisInSegment.map((p) => p.part))
 

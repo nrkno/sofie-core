@@ -597,10 +597,17 @@ svg.icon {
 
 			.segment-timeline__part-identifiers__identifier {
 				margin: 2.5px;
-				padding: 0 10px 0 10px;
+				padding: 0 4px;
 				background-color: $part-identifier;
 				color: $part-identifier-text;
-				border-radius: 10px;
+				border-radius: 0 10px 10px 0;
+				font-size: 0.85rem;
+
+				&:hover {
+					background-color: #8c8c8c;
+					color: #fff;
+				}	
+		
 			}
 		}
 	}
@@ -1409,8 +1416,8 @@ svg.icon {
 				}
 
 				&::before {
-					bottom: 0;
-					left: -1px;
+					bottom: -1px;
+					left: -2px;
 					@include take-arrow();
 				}
 			}
@@ -1521,15 +1528,17 @@ svg.icon {
 
 			.segment-timeline__part__nextline.auto-next.segment-timeline__part__nextline--endline {
 				border-left-width: 1px;
+				top: -12px;
 
 				&::before,
 				&::after {
-					left: -1px;
+					display: none;
 				}
 
 				.segment-timeline__part__nextline__label {
 					display: block;
-					left: 10px;
+					top: -1px;
+					left: 2px;
 				}
 			}
 
@@ -1687,7 +1696,6 @@ svg.icon {
 				}
 
 				.segment-timeline__part__nextline__label {
-					padding: 0 0 0 7px;
 					color: $general-next-color;
 					display: block;
 
@@ -1695,6 +1703,12 @@ svg.icon {
 						> svg {
 							fill: $general-next-color;
 						}
+					}
+				}
+
+				&:not(.auto-next) {
+					.segment-timeline__part__nextline__label {
+						padding: 0 0 0 7px;
 					}
 				}
 			}
@@ -2175,11 +2189,12 @@ svg.icon {
 				position: absolute;
 				bottom: 0;
 				z-index: -1;
-				padding: 0 10px 0 10px;
+				padding: 0 4px 0 10px;
 				box-sizing: border-box;
 				background-color: $part-identifier;
-				border-radius: 0 10px 10px 0;
+				border-radius: 0 8px 8px 0;
 				color: $part-identifier-text;
+				font-size: 0.85rem;
 			}
 
 			&.gap {

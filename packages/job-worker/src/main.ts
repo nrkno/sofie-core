@@ -1,5 +1,5 @@
 import { logger } from './logging'
-import { protectString, protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
+import { protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { StudioId, WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupApmAgent } from './profiler'
 import { createMongoConnection } from './db'
@@ -8,6 +8,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { Db as MongoDb, MongoClient } from 'mongodb'
 import { JobManager } from './manager'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { setupInfluxDb } from './influx'
 import { LogEntry } from 'winston'
 
@@ -118,7 +119,7 @@ async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 	} else {
 		// Or find the current studios, and run for everything
 		const studios = await db
-			.collection(CollectionName.Studios)
+			.collection<DBStudio>(CollectionName.Studios)
 			.find({}, { projection: { _id: 1 } })
 			.toArray()
 
@@ -146,7 +147,7 @@ async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 				process.exit(1)
 			})
 
-		const ids = studios.map((s) => protectString(s._id))
+		const ids = studios.map((s) => s._id)
 		logger.warn(`Running for all studios: ${JSON.stringify(ids)}. Make sure there is only one worker running!`)
 		return ids
 	}

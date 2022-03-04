@@ -7,7 +7,7 @@ import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../l
 import { RundownId, Rundowns, Rundown, RundownCollectionUtil } from '../../../lib/collections/Rundowns'
 import { StudioId } from '../../../lib/collections/Studios'
 import { isProtectedString } from '../../../lib/lib'
-import { OrganizationId, Organizations, Organization } from '../../../lib/collections/Organization'
+import { OrganizationId, Organizations, DBOrganization } from '../../../lib/collections/Organization'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { UserId } from '../../../lib/collections/Users'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
@@ -65,7 +65,7 @@ export function allowAccessToSystemStatus(cred0: Credentials | ResolvedCredentia
 export function allowAccessToOrganization(
 	cred0: Credentials | ResolvedCredentials,
 	organizationId: MongoQueryKey<OrganizationId | null>
-): Access<Organization | null> {
+): Access<DBOrganization | null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!organizationId) return noAccess('organizationId not set')
 	if (!isProtectedString(organizationId)) return noAccess('organizationId is not a string')
@@ -258,7 +258,10 @@ namespace AccessRules {
 	// 		return allAccess()
 	// 	} else return noAccess('User is not in the same organization as requested user')
 	// }
-	export function accessOrganization(organization: Organization, cred: ResolvedCredentials): Access<Organization> {
+	export function accessOrganization(
+		organization: DBOrganization,
+		cred: ResolvedCredentials
+	): Access<DBOrganization> {
 		if (!cred.organization) return noAccess('No organization in credentials')
 		if (organization._id === cred.organization._id) {
 			// TODO: user role access

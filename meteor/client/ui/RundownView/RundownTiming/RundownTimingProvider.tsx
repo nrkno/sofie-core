@@ -64,7 +64,7 @@ export const RundownTimingProvider = withTracker<
 		parts = incomingParts
 		const partInstances = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist)
 
-		const currentPartInstance = partInstances.find((p) => p._id === props.playlist!.currentPartInstanceId)
+		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInstanceId)
 		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
 
 		partInstances.forEach((partInstance) => {

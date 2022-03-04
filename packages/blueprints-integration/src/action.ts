@@ -59,6 +59,12 @@ export interface IBlueprintActionTriggerMode {
 }
 
 export interface IBlueprintActionManifest {
+	/**
+	 * An identifier for this Action
+	 * It should be unique within the part it belongs to, and consistent across ingest updates
+	 */
+	externalId: string
+
 	/** Id of the action */
 	actionId: string
 	/** Properties defining the action behaviour */

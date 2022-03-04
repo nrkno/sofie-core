@@ -42,7 +42,6 @@ export interface TSRSettings {
 	devices: {
 		[deviceId: string]: DeviceOptionsAny
 	}
-	initializeAsClear: boolean
 	mappings: Mappings
 	errorReporting?: boolean
 	multiThreading?: boolean
@@ -146,7 +145,6 @@ export class TSRHandler {
 			getCurrentTime: (): number => {
 				return this._coreHandler.core.getCurrentTime()
 			},
-			initializeAsClear: settings.initializeAsClear !== false,
 			multiThreadedResolver: settings.multiThreadedResolver === true,
 			useCacheWhenResolving: settings.useCacheWhenResolving === true,
 			proActiveResolve: true,

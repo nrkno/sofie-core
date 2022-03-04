@@ -45,7 +45,7 @@ export interface BucketAdLibUi extends BucketAdLib {
 	status: PieceStatusCode
 }
 
-export interface BucketAdLibActionUi extends AdLibPiece {
+export interface BucketAdLibActionUi extends Omit<AdLibPiece, 'timelineObjectsString'> {
 	bucketId: BucketId
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
@@ -604,7 +604,6 @@ export const RundownViewBuckets = withTranslation()(
 												onAdLibContext={this.onAdLibContext}
 												onSelectAdlib={this.props.onSelectPiece}
 												selectedPiece={this.props.selectedPiece}
-												hotkeyGroup={bucket.name.replace(/\W/, '_') + 'BucketPanel'}
 											/>
 										)}
 									</ContextMenuTrigger>

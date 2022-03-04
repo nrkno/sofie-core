@@ -300,11 +300,6 @@ const TimingDisplay = withTranslation()(
 	)
 )
 
-interface HotkeyDefinition {
-	key: string
-	label: string
-}
-
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
@@ -314,7 +309,6 @@ interface IRundownHeaderProps {
 	rundownIds: RundownId[]
 	firstRundown: Rundown | undefined
 	onActivate?: (isRehearsal: boolean) => void
-	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
 	inActiveRundownView?: boolean
 	layout: RundownLayoutRundownHeader | undefined
@@ -347,10 +341,6 @@ const RundownHeader = withTranslation()(
 			}
 		}
 		componentDidMount() {
-			if (typeof this.props.onRegisterHotkeys === 'function') {
-				this.props.onRegisterHotkeys(this.bindKeys)
-			}
-
 			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
@@ -1092,7 +1082,6 @@ interface IState {
 	followLiveSegments: boolean
 	manualSetAsNext: boolean
 	subsReady: boolean
-	usedHotkeys: Array<HotkeyDefinition>
 	isNotificationsCenterOpen: NoticeLevel | undefined
 	isSupportPanelOpen: boolean
 	isInspectorShelfExpanded: boolean
@@ -1288,8 +1277,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 
-			const { t } = this.props
-
 			const shelfLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.shelfLayoutId)
 			let isInspectorShelfExpanded = false
 
@@ -1305,17 +1292,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				followLiveSegments: true,
 				manualSetAsNext: false,
 				subsReady: false,
-				usedHotkeys: [
-					// Register additional hotkeys or legend entries
-					{
-						key: 'Escape',
-						label: t('Cancel currently pressed hotkey'),
-					},
-					{
-						key: 'F11',
-						label: t('Change to fullscreen mode'),
-					},
-				],
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
 				isInspectorShelfExpanded,
@@ -2214,14 +2190,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
-		onRegisterHotkeys = (hotkeys: Array<HotkeyDefinition>) => {
-			// @ts-ignore
-			this.state.usedHotkeys = this.state.usedHotkeys.concat(hotkeys) // we concat directly to the state object member, because we need to
-			this.setState({
-				usedHotkeys: this.state.usedHotkeys,
-			})
-		}
-
 		onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
 			if (!getAllowDeveloper()) {
 				e.preventDefault()
@@ -2418,6 +2386,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			return true
 		}
 
+		defaultHotkeys(t: i18next.TFunction) {
+			return [
+				// Register additional hotkeys or legend entries
+				{
+					key: 'Escape',
+					label: t('Cancel currently pressed hotkey'),
+				},
+				{
+					key: 'F11',
+					label: t('Change to fullscreen mode'),
+				},
+			]
+		}
+
 		renderRundownView(
 			studio: DBStudio,
 			playlist: RundownPlaylist,
@@ -2459,7 +2441,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									firstRundown={this.props.rundowns[0]}
 									onActivate={this.onActivate}
 									studioMode={this.state.studioMode}
-									onRegisterHotkeys={this.onRegisterHotkeys}
 									inActiveRundownView={this.props.inActiveRundownView}
 									currentRundown={this.state.currentRundown || this.props.rundowns[0]}
 									layout={this.state.rundownHeaderLayout}
@@ -2639,13 +2620,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										(!this.state.wasShelfResizedByUser && this.state.shelfLayout?.openByDefault)
 									}
 									onChangeExpanded={this.onShelfChangeExpanded}
-									hotkeys={this.state.usedHotkeys}
+									hotkeys={this.defaultHotkeys(t)}
 									playlist={this.props.playlist}
 									showStyleBase={this.props.showStyleBase}
 									showStyleVariant={this.props.showStyleVariant}
 									studioMode={this.state.studioMode}
 									onChangeBottomMargin={this.onChangeBottomMargin}
-									onRegisterHotkeys={this.onRegisterHotkeys}
 									rundownLayout={this.state.shelfLayout}
 									shelfDisplayOptions={this.props.shelfDisplayOptions}
 									bucketDisplayFilter={this.props.bucketDisplayFilter}
@@ -2691,13 +2671,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							buckets={this.props.buckets}
 							isExpanded={this.state.isInspectorShelfExpanded}
 							onChangeExpanded={this.onShelfChangeExpanded}
-							hotkeys={this.state.usedHotkeys}
+							hotkeys={this.defaultHotkeys(this.props.t)}
 							playlist={this.props.playlist}
 							showStyleBase={this.props.showStyleBase}
 							showStyleVariant={this.props.showStyleVariant}
 							studioMode={this.state.studioMode}
 							onChangeBottomMargin={this.onChangeBottomMargin}
-							onRegisterHotkeys={this.onRegisterHotkeys}
 							rundownLayout={this.state.shelfLayout}
 							studio={this.props.studio}
 							fullViewport={true}

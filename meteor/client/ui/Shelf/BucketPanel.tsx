@@ -23,7 +23,7 @@ import {
 	ISourceLayer,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
-	SomeTimelineContent,
+	SomeContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -171,12 +171,11 @@ export function actionToAdLibPieceUi(
 ): BucketAdLibActionUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: SomeTimelineContent = { timelineObjects: [] }
+	let content: SomeContent = {}
 	if (RundownUtils.isAdlibActionContent(action.display)) {
 		sourceLayerId = action.display.sourceLayerId
 		outputLayerId = action.display.outputLayerId
 		content = {
-			timelineObjects: [],
 			...action.display.content,
 		}
 	}
@@ -215,7 +214,6 @@ export interface IBucketPanelProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
-	hotkeyGroup: string
 	editableName?: boolean
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	editedPiece: PieceId | undefined

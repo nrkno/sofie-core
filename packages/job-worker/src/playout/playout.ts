@@ -255,7 +255,8 @@ export async function takeNextPart(context: JobContext, data: TakeNextPartProps)
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
-			if (!playlist.nextPartInstanceId) throw UserError.create(UserErrorMessage.TakeNoNextPart)
+			if (!playlist.nextPartInstanceId && playlist.holdState !== RundownHoldState.ACTIVE)
+				throw UserError.create(UserErrorMessage.TakeNoNextPart)
 
 			if (playlist.currentPartInstanceId !== data.fromPartInstanceId)
 				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart)
@@ -550,7 +551,12 @@ export async function activateHold(context: JobContext, data: ActivateHoldProps)
 			}
 
 			const hasDynamicallyInserted = cache.PieceInstances.findOne(
-				(p) => p.partInstanceId === currentPartInstance._id && p.dynamicallyInserted
+				(p) =>
+					p.partInstanceId === currentPartInstance._id &&
+					!!p.dynamicallyInserted &&
+					// If its a continuation of an infinite adlib it is probably a graphic, so is 'fine'
+					!p.infinite?.fromPreviousPart &&
+					!p.infinite?.fromPreviousPlayhead
 			)
 			if (hasDynamicallyInserted) throw UserError.create(UserErrorMessage.HoldAfterAdlib)
 

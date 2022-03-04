@@ -63,12 +63,6 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	bucketDisplayFilter: number[] | undefined
 
 	onChangeExpanded: (value: boolean) => void
-	onRegisterHotkeys: (
-		hotkeys: Array<{
-			key: string
-			label: string
-		}>
-	) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
 }
 

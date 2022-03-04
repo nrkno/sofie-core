@@ -14,7 +14,7 @@ import { setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../playout/lock'
 import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomId, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import {
 	PartInstanceId,
 	PieceInstanceId,
@@ -29,6 +29,10 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { getCurrentTime } from '../../lib'
+import {
+	EmptyPieceTimelineObjectsBlob,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 import * as PlayoutAdlib from '../../playout/adlib'
 type TinnerStopPieces = jest.MockedFunction<typeof PlayoutAdlib.innerStopPieces>
@@ -48,12 +52,19 @@ type TgetResolvedPieces = jest.MockedFunction<typeof getResolvedPieces>
 const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
-import { postProcessPieces } from '../postProcess'
+import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
+import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from '../context/lib'
+import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+const { postProcessPieces: postProcessPiecesOrig, postProcessTimelineObjects: postProcessTimelineObjectsOrig } =
+	jest.requireActual('../postProcess')
 
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])
-const { postProcessPieces: postProcessPiecesOrig } = jest.requireActual('../postProcess')
+
+type TpostProcessTimelineObjects = jest.MockedFunction<typeof postProcessTimelineObjects>
+const postProcessTimelineObjectsMock = postProcessTimelineObjects as TpostProcessTimelineObjects
+postProcessTimelineObjectsMock.mockImplementation(postProcessTimelineObjectsOrig)
 
 describe('Test blueprint api context', () => {
 	async function generateSparsePieceInstances(
@@ -110,6 +121,7 @@ describe('Test blueprint api context', () => {
 						content: {
 							index: o,
 						} as any,
+						timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						lifespan: PieceLifespan.WithinPart,
 						pieceType: IBlueprintPieceType.Normal,
 						invalid: false,
@@ -310,14 +322,23 @@ describe('Test blueprint api context', () => {
 							expect(cache2).toBe(cache)
 							expect(showStyleBase).toBeTruthy()
 							mockCalledIds.push(partInstance._id)
-							return ['abc'] as any as ResolvedPieceInstance[]
+							return [
+								{
+									_id: 'abc',
+									piece: {
+										timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+									},
+								},
+							] as any as ResolvedPieceInstance[]
 						}
 					)
 
 					// Check the current part
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstanceIds[1] } })
 					await expect(context.getResolvedPieceInstances('next')).resolves.toHaveLength(0)
-					await expect(context.getResolvedPieceInstances('current')).resolves.toEqual(['abc'])
+					await expect(
+						context.getResolvedPieceInstances('current').then((res) => res.map((p) => p._id))
+					).resolves.toEqual(['abc'])
 					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(1)
 					expect(mockCalledIds).toEqual([partInstanceIds[1]])
 
@@ -327,7 +348,9 @@ describe('Test blueprint api context', () => {
 					// Now the next part
 					cache.Playlist.update({ $set: { currentPartInstanceId: null } })
 					cache.Playlist.update({ $set: { nextPartInstanceId: partInstanceIds[2] } })
-					await expect(context.getResolvedPieceInstances('next')).resolves.toEqual(['abc'])
+					await expect(
+						context.getResolvedPieceInstances('next').then((res) => res.map((p) => p._id))
+					).resolves.toEqual(['abc'])
 					await expect(context.getResolvedPieceInstances('current')).resolves.toHaveLength(0)
 					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(1)
 					expect(mockCalledIds).toEqual([partInstanceIds[2]])
@@ -386,9 +409,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 1000,
 					})
@@ -422,9 +444,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 2000,
 					})
@@ -479,9 +500,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 1000,
 					})
@@ -504,9 +524,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 2000,
 					})
@@ -563,9 +582,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 1000,
 					})
@@ -591,9 +609,8 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
 							invalid: false,
-							content: {
-								timelineObjects: [],
-							},
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
 						startedPlayback: 2000,
 					})
@@ -947,6 +964,7 @@ describe('Test blueprint api context', () => {
 					postProcessPiecesMock.mockImplementationOnce(() => [
 						{
 							_id: 'fake4', // Should be ignored
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						} as any,
 					])
 					innerStartAdLibPieceMock.mockImplementationOnce(innerStartAdLibPieceOrig)
@@ -962,7 +980,6 @@ describe('Test blueprint api context', () => {
 						partInstance.rundownId,
 						partInstance.segmentId,
 						partInstance.part._id,
-						true,
 						true
 					)
 					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(1)
@@ -1056,11 +1073,22 @@ describe('Test blueprint api context', () => {
 
 					// Update it and expect it to match
 					const pieceInstance0Before = clone(pieceInstance0)
-					const pieceInstance0Delta = {
+					const pieceInstance0Delta: any = {
 						_id: 'sdf', // This will be dropped
 						sourceLayerId: 'new',
 						enable: { start: 99, end: 123 },
 						badProperty: 9, // This will be dropped
+						content: {
+							timelineObjects: [
+								literal<TimelineObjRundown>({
+									id: 'a',
+									enable: { start: 0 },
+									content: {} as any,
+									layer: 1,
+									objectType: TimelineObjType.RUNDOWN,
+								}),
+							],
+						},
 					}
 					const resultPiece = await context.updatePieceInstance(
 						unprotectString(pieceInstance0._id),
@@ -1069,12 +1097,18 @@ describe('Test blueprint api context', () => {
 					const pieceInstance1 = cache.PieceInstances.findOne(pieceInstance0._id) as PieceInstance
 					expect(pieceInstance1).toBeTruthy()
 
-					expect(resultPiece).toEqual(pieceInstance1)
+					expect(resultPiece).toEqual(convertPieceInstanceToBlueprints(pieceInstance1))
 					const pieceInstance0After = {
 						...pieceInstance0Before,
 						piece: {
 							...pieceInstance0Before.piece,
-							..._.omit(pieceInstance0Delta, 'badProperty', '_id'),
+							...omit(pieceInstance0Delta, 'badProperty', '_id'),
+							content: {
+								...omit(pieceInstance0Delta.content, 'timelineObjects'),
+							},
+							timelineObjectsString: serializePieceTimelineObjectsBlob(
+								pieceInstance0Delta.content.timelineObjects
+							),
 						},
 					}
 					expect(pieceInstance1).toEqual(pieceInstance0After)
@@ -1459,7 +1493,7 @@ describe('Test blueprint api context', () => {
 					const partInstance1 = cache.PartInstances.findOne({}) as DBPartInstance
 					expect(partInstance1).toBeTruthy()
 
-					expect(resultPiece).toEqual(partInstance1)
+					expect(resultPiece).toEqual(convertPartInstanceToBlueprints(partInstance1))
 
 					const pieceInstance0After = {
 						...partInstance0Before,

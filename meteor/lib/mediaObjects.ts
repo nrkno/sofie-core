@@ -4,7 +4,6 @@ import {
 	GraphicsContent,
 	SourceLayerType,
 	ISourceLayer,
-	IBlueprintPieceGeneric,
 	ExpectedPackageStatusAPI,
 	PackageInfo,
 	NoteSeverity,
@@ -140,7 +139,7 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 	)
 }
 
-export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'content'>, sourceLayer: ISourceLayer) {
+export function getMediaObjectMediaId(piece: Pick<PieceGeneric, 'content'>, sourceLayer: ISourceLayer) {
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:

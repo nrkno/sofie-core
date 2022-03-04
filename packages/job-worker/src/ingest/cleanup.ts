@@ -16,7 +16,7 @@ export function removeSegmentContents(cache: CacheForIngest, segmentIds: Set<Seg
 			const removedPartIds2 = new Set(removedPartIds)
 
 			const removedPieceIds = cache.Pieces.remove((p) => removedPartIds2.has(p.startPartId))
-			const removedAdlibIds = cache.AdLibPieces.remove((e) => e.partId && removedPartIds2.has(e.partId))
+			const removedAdlibIds = cache.AdLibPieces.remove((e) => !!e.partId && removedPartIds2.has(e.partId))
 			const removedActionIds = cache.AdLibActions.remove((e) => removedPartIds2.has(e.partId))
 			const allRemovedPieceIds: Set<NonNullable<ExpectedPackageDB['pieceId']>> = new Set([
 				...removedPieceIds,
@@ -24,9 +24,9 @@ export function removeSegmentContents(cache: CacheForIngest, segmentIds: Set<Seg
 				...removedActionIds,
 			])
 
-			cache.ExpectedPackages.remove((e) => e.pieceId && allRemovedPieceIds.has(e.pieceId))
-			cache.ExpectedPlayoutItems.remove((e) => 'partId' in e && e.partId && removedPartIds2.has(e.partId))
-			cache.ExpectedMediaItems.remove((e) => 'partId' in e && e.partId && removedPartIds2.has(e.partId))
+			cache.ExpectedPackages.remove((e) => !!e.pieceId && allRemovedPieceIds.has(e.pieceId))
+			cache.ExpectedPlayoutItems.remove((e) => 'partId' in e && !!e.partId && removedPartIds2.has(e.partId))
+			cache.ExpectedMediaItems.remove((e) => 'partId' in e && !!e.partId && removedPartIds2.has(e.partId))
 		}
 	}
 }

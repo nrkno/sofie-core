@@ -435,7 +435,6 @@ function updateLoggerLevel(startup: boolean) {
 }
 
 Meteor.startup(() => {
-	console.log('startup')
 	if (Meteor.isServer) {
 		startupMessage()
 		updateLoggerLevel(true)

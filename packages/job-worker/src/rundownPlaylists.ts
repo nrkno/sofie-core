@@ -2,7 +2,7 @@ import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/coreli
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { clone, getHash, getRandomString, getRank, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { protectString, unprotectObjectArray, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import {
 	OrderMoveRundownToPlaylistProps,
@@ -33,6 +33,7 @@ import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTi
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { RundownLock } from './jobs/lock'
 import { runWithRundownLock } from './ingest/lock'
+import { convertRundownToBlueprints } from './blueprints/context/lib'
 
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
 	const removed = await runJobWithPlaylistLock(context, data, async (playlist) => {
@@ -183,7 +184,7 @@ export function produceRundownPlaylistInfoFromRundown(
 					context.studio,
 					context.getStudioBlueprintConfig()
 				),
-				unprotectObjectArray(clone<Array<DBRundown>>(rundowns)),
+				rundowns.map(convertRundownToBlueprints),
 				playlistExternalId
 			)
 		}
