@@ -1,4 +1,4 @@
-# Adding FFmpeg and ffprobe to your PATH on Windows
+# Adding FFmpeg and FFprobe to your PATH on Windows
 
 Some parts of Sofie (specifically the Package Manager) require that [`FFmpeg`](https://www.ffmpeg.org/) and [`FFprobe`](https://ffmpeg.org/ffprobe.html) be available in your `PATH` environment variable. This guide will go over how to download these executables and add them to your `PATH`.
 

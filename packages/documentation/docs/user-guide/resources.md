@@ -45,15 +45,15 @@ description: This guide has a lot of links. Here they are all listed by section.
 - [Media Scanner](https://github.com/nrkno/sofie-casparcg-launcher/releases) on GitHub.
 - [CasparCG Launcher](https://github.com/nrkno/sofie-casparcg-launcher) on GitHub.
 - [Microsoft Visual C++ 2015 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=52685) on Microsoft's website.
-- [Blackmagic Decklink Cards](https://www.blackmagicdesign.com/products/decklink/models) on Blackmagic's website. Check the [Decklink cards](installation/installing-connections-and-additional-hardware/casparcg-server-installation.md#decklink-cards) section for compatibility.
+- [Blackmagic Design's Decklink Cards](https://www.blackmagicdesign.com/products/decklink/models) on Blackmagic's website. Check the [Decklink cards](installation/installing-connections-and-additional-hardware/casparcg-server-installation.md#decklink-cards) section for compatibility.
 - [Installing a Decklink Card](https://documents.blackmagicdesign.com/UserManuals/DesktopVideoManual.pdf) as a PDF.
-- [Desktop Video Download Page](https://www.blackmagicdesign.com/support/family/capture-and-playback) on Blackmagic's website.
-- [CasparCG Configuration Validator](https://casparcg.net/validator/)
+- [Desktop Video Download Page](https://www.blackmagicdesign.com/support/family/capture-and-playback) on Blackmagic Design's website.
+- [CasparCG Server Configuration Validator](https://casparcg.net/validator/)
 
 **Additional resources**
 
 - Viz graphics through MSE, info on the [Vizrt](https://www.vizrt.com/) website.
-- Information about the [Blackmagic Design Hyperdeck](https://www.blackmagicdesign.com/products/hyperdeckstudio)
+- Information about the [Blackmagic Design's HyperDeck](https://www.blackmagicdesign.com/products/hyperdeckstudio)
 
 ## FAQ, Progress, and Issues
 

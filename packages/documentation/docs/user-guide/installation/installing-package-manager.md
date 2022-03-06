@@ -14,7 +14,7 @@ sidebar_position: 7
 
 Package Manager is used by Sofie to copy, analyze, and process media files. It is what powers Sofie's ability to copy media files to playout devices, to know when a media file is ready for playout, and to display details about media files in the rundown view such as scene changes, black frames, freeze frames, and more.
 
-Although Package Manager can be used to copy any kind of file to/from a wide array of devices, we'll be focusing on a basic CasparCG setup for this guide.
+Although Package Manager can be used to copy any kind of file to/from a wide array of devices, we'll be focusing on a basic CasparCG Server Server setup for this guide.
 
 :::caution
 
@@ -24,7 +24,7 @@ At this time, the Package Manager worker process is Windows-only. Therefore, the
 
 ### Installation (Quick Start)
 
-Package Manager is a suite of standalone applications, separate from _Sofie Core_. This guide assumes that Package Manager will be running on the same computer as CasparCG and _Sofie Core_, as that is the fastest way to set up a demo. To get all parts of _Package Manager_ up and running quickly, execute these commands:
+Package Manager is a suite of standalone applications, separate from _Sofie Core_. This guide assumes that Package Manager will be running on the same computer as _CasparCG Server_ and _Sofie Core_, as that is the fastest way to set up a demo. To get all parts of _Package Manager_ up and running quickly, execute these commands:
 
 ```bash
 git clone https://github.com/nrkno/sofie-package-manager.git
@@ -60,7 +60,7 @@ This first run is necessary to get the Package Manager device registered with _S
 
 ### Usage
 
-In this basic configuration, Package Manager won't be copying any packages into your CasparCG media folder. Instead, it will simply check that the files in the rundown are present in your CasparCG media folder, and you'll have to manually place those files in the correct directory. However, thumbnail and preview generation will still function, as will status reporting.
+In this basic configuration, Package Manager won't be copying any packages into your CasparCG Server media folder. Instead, it will simply check that the files in the rundown are present in your CasparCG Server media folder, and you'll have to manually place those files in the correct directory. However, thumbnail and preview generation will still function, as will status reporting.
 
 If you're using the demo rundown provided by the [Rundown Editor](installing-a-gateway/rundown-or-newsroom-system-connection/rundown-editor), you should already see work statuses on the Package Status page ([Status > Packages](http://localhost:3000/status/expected-packages)).
 

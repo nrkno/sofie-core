@@ -22,12 +22,12 @@ Together with the _Server Core_ there are several _gateways_ which are separate 
 
 There are a number of libraries used in the Sofie ecosystem:
 
-* [**ATEM Connection**](https://github.com/nrkno/tv-automation-atem-connection) Library for communicating with Blackmagic Design ATEM mixers
+* [**ATEM Connection**](https://github.com/nrkno/tv-automation-atem-connection) Library for communicating with Blackmagic Design's ATEM mixers
 * [**ATEM State**](https://github.com/nrkno/tv-automation-atem-state)  Used in TSR to tracks the state of ATEM:s and generate commands to control them.
 * [**CasparCG Connection**](https://github.com/SuperFlyTV/casparcg-connection) developed by **[_SuperFly.tv_](https://github.com/SuperFlyTV)** Library to connect and interact with CasparCG Servers.
 * [**CasparCG State**](https://github.com/superflytv/casparcg-state) developed by **[_SuperFly.tv_](https://github.com/SuperFlyTV)** Used in TSR to tracks the state of CasparCG Servers and generate commands to control them.
 * [**Ember+ Connection**](https://github.com/nrkno/tv-automation-emberplus-connection) Library to communicate with _Ember+_ control protocol 
-* [**HyperDeck Connection**](https://github.com/nrkno/tv-automation-hyperdeck-connection) Library for connecting to Blackmagic Design Hyperdeck recorders.
+* [**HyperDeck Connection**](https://github.com/nrkno/tv-automation-hyperdeck-connection) Library for connecting to Blackmagic Design's Hyperdeck recorders.
 * [**MOS Connection**](https://github.com/nrkno/tv-automation-mos-connection/) A [_MOS protocol_](http://mosprotocol.com/) library for acting as a MOS device and connecting to an newsroom control system.
 * [**Quantel Gateway Client**](https://github.com/nrkno/tv-automation-quantel-gateway-client) An interface that talks to the Quantel-Gateway application.
 * [**Server Core Integration**](https://github.com/nrkno/sofie-core-integration) Used to connect to the [Sofie Server Core](https://github.com/nrkno/sofie-core) by the Gateways.
