@@ -612,6 +612,13 @@ export async function makePromise<T>(fcn: () => T): Promise<T> {
 	})
 }
 
+export function mongoWhereFilter<T, R>(items: R[], selector: MongoQuery<T>): R[] {
+	const results: R[] = []
+	for (const item of items) {
+		if (mongoWhere(item, selector)) results.push(item)
+	}
+	return results
+}
 export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 	if (typeof selector !== 'object') {
 		// selector must be an object
@@ -619,8 +626,8 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 	}
 
 	let ok = true
-	_.each(selector, (s: any, key: string) => {
-		if (!ok) return
+	for (const [key, s] of Object.entries(selector)) {
+		if (!ok) break
 
 		try {
 			const keyWords = key.split('.')
@@ -636,9 +643,9 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 			} else if (key === '$or') {
 				if (_.isArray(s)) {
 					let ok2 = false
-					_.each(s, (innerSelector) => {
+					for (const innerSelector of s) {
 						ok2 = ok2 || mongoWhere(o, innerSelector)
-					})
+					}
 					ok = ok2
 				} else {
 					throw new Error('An $or filter must be an array')
@@ -686,7 +693,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 			logger.warn(e || (e as any).reason || (e as any).toString()) // todo: why this logs empty message for TypeError (or any Error)?
 			ok = false
 		}
-	})
+	}
 	return ok
 }
 export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id?: ProtectedString<any> }>(
