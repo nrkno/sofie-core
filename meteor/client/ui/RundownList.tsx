@@ -98,7 +98,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
 	const rundownLayouts = RundownLayouts.find({
-		$or: [{ exposeAsSelectableLayout: true }, { exposeAsShelf: true }],
+		$or: [{ exposeAsSelectableLayout: true }, { exposeAsStandalone: true }],
 	}).fetch()
 
 	return {

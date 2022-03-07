@@ -2,7 +2,7 @@ name: automerge
 
 on:
   schedule:
-    - cron: '45 23 * * *' # every night
+    - cron: '30 0 * * *' # every night
   workflow_dispatch: # on button click
 
 jobs:
@@ -14,10 +14,10 @@ jobs:
         run: |
           git config --local user.email "${GITHUB_ACTOR}"
           git config --local user.name "${GITHUB_ACTOR}@users.noreply.github.com"
-      - name: Merge master to staging
+      - name: Merge staging to develop
         run: |
           git fetch --unshallow
-          git checkout staging
+          git checkout develop
           git pull
-          git merge --no-ff origin/master -m "Auto-merge master to staging"
+          git merge --no-ff origin/staging -m "Auto-merge staging to develop"
           git push

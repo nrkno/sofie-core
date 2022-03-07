@@ -60,7 +60,7 @@
 		"@sofie-automation/server-core-integration": "1.37.0-in-testing.13",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
-		"timeline-state-resolver": "npm:@tv2media/timeline-state-resolver@1.0.0-release37.4",
+		"timeline-state-resolver": "npm:@tv2media/timeline-state-resolver@1.0.0-release37.6",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
 		"winston": "^2.4.2"
