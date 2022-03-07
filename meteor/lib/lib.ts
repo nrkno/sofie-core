@@ -57,10 +57,14 @@ export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefin
 	}
 }
 
+let randomIdFunction = randomFastId
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
-	// return Random.id(numberOfChars) as any
+	return randomIdFunction(numberOfChars) as any
+}
 
-	return randomFastId(numberOfChars) as any
+export function setMockRandomId(mockFunction: (numberOfChars?: number) => string) {
+	// Used in unit tests only!
+	randomIdFunction = mockFunction
 }
 
 const randomChars = 'abcdefghifklmnopqrstuvxyzABCDEFGHIFKLMNOPQRSTUVXYZ0123456789'
