@@ -12,7 +12,7 @@ To begin, download the latest release of [CasparCG Server from GitHub](https://g
 
 Once downloaded, extract the files and navigate down the folders, _CasparCG Server_ then _Server_. This folder contains your CasparCG Server Configuration file, `casparcg.config`, and your CasparCG Server executable, `casparcg.exe`.
 
-How you will configure the CasparCG Server will depend on the number of Decklink cards your machine contains. The first subsection for each CasparCG Server setup, labeled _Channels_, will contain the unique portion of the configuration. The following is the majority of the configuration file that will be consistent between setups.
+How you will configure the CasparCG Server will depend on the number of DeckLink cards your machine contains. The first subsection for each CasparCG Server setup, labeled _Channels_, will contain the unique portion of the configuration. The following is the majority of the configuration file that will be consistent between setups.
 
 ```markup
 <?xml version="1.0" encoding="utf-8"?>
@@ -80,31 +80,31 @@ Although CasparCG Server can be run on some lower end hardware, it is only recom
 
 For _dual drives_, it is recommended to use a smaller 250gb NVMe SSD for the operating system. Then a faster 1tb NVMe SSD for the CasparCG Server and media. It is also recommended to buy a drive with about 40% storage overhead. This is for SSD p~~e~~rformance reasons and Sofie will warn you about this if your drive usage exceeds 60%.
 
-### Decklink Cards
+### DeckLink Cards
 
 There are a few SDI cards made by Blackmagic Design that are supported by CasparCG. The base model, with four bi-directional input and outputs, is the [Duo 2](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-31). If you need additional channels, use the[ Quad 4](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-30) which supports eight bi-directional inputs and outputs. Be aware the BNC connections are not the standard BNC type. B&H offers [Mini BNC to BNC connecters](https://www.bhphotovideo.com/c/product/1462647-REG/canare_cal33mb018_mini_rg59_12g_sdi_4k.html). Finally, for 4k support, use the [8K Pro](https://www.blackmagicdesign.com/products/decklink/techspecs/W-DLK-34) which has four bi-directional BNC connections and one reference connection.
 
-Here is the Blackmagic Design PDF for [installing your Decklink card \( Desktop Video Device \).](https://documents.blackmagicdesign.com/UserManuals/DesktopVideoManual.pdf)
+Here is the Blackmagic Design PDF for [installing your DeckLink card \( Desktop Video Device \).](https://documents.blackmagicdesign.com/UserManuals/DesktopVideoManual.pdf)
 
 Once the card in installed in your machine, you will need to download the controller from Blackmagic's website. Navigate to [this support page](https://www.blackmagicdesign.com/support/family/capture-and-playback), it will only display Desktop Video Support, and in the _Latest Downloads_ column download the most recent version of _Desktop Video_. Before installing, save your work because Blackmagic's installers will force you to restart your machine.
 
-Once booted back up, you should be able to launch the Desktop Video application and see your Decklink Card.
+Once booted back up, you should be able to launch the Desktop Video application and see your DeckLink card.
 
-![Desktop Video Application](/img/docs/installation/installing-connections-and-additional-hardware/desktop-video.png)
+![Blackmagic Design's Desktop Video Application](/img/docs/installation/installing-connections-and-additional-hardware/desktop-video.png)
 
 Click the icon in the center of the screen to open the setup window. Each production situation will very in frame rate and resolution so go through the settings and set what you know. Most things are set to standards based on your region so the default option will most likely be correct.
 
 ![Desktop Video Settings](/img/docs/installation/installing-connections-and-additional-hardware/desktop-video-settings.png)
 
-If you chose a Decklink Duo, then you will also need to set SDI connectors one and two to be your outputs.
+If you chose a DeckLink Duo, then you will also need to set SDI connectors one and two to be your outputs.
 
-![Decklink Dou SDI Output Settings](/img/docs/installation/installing-connections-and-additional-hardware/decklink_dou_card.png)
+![DeckLink Duo SDI Output Settings](/img/docs/installation/installing-connections-and-additional-hardware/decklink_duo_card.png)
 
-## Hardware Specific Configurations
+## Hardware-specific Configurations
 
-### Preview Only \( Basic \)
+### Preview Only \(Basic\)
 
-A preview only version of CasparCG Server does not lack any of the features of a production version. It is called a _preview only_ version because the standard outputs on a computer, without a Decklink card, do not meet the requirements of a high quality broadcast graphics machine. It is perfectly suitable for development though.
+A preview only version of CasparCG Server does not lack any of the features of a production version. It is called a _preview only_ version because the standard outputs on a computer, without a DeckLink card, do not meet the requirements of a high quality broadcast graphics machine. It is perfectly suitable for development though.
 
 #### Required Hardware
 
@@ -114,15 +114,15 @@ No additional hardware is required, just the computer you have been using to fol
 
 The default configuration will give you one preview window. No additional changes need to be made.
 
-### Single Decklink Card \( Production Minimum \)
+### Single DeckLink Card \(Production Minimum\)
 
 #### Required Hardware
 
-To be production ready, you will need to output an SDI or HDMI signal from your production machine. CasparCG Server supports Blackmagic Design's Decklink cards because they provide a key generator which will aid in keeping the alpha and fill channels of your graphics in sync. Please review the [Decklink Cards](casparcg-server-installation.md#decklink-cards) section of this page to choose which card will best fit your production needs.
+To be production ready, you will need to output an SDI or HDMI signal from your production machine. CasparCG Server supports Blackmagic Design's DeckLink cards because they provide a key generator which will aid in keeping the alpha and fill channels of your graphics in sync. Please review the [DeckLink Cards](casparcg-server-installation.md#decklink-cards) section of this page to choose which card will best fit your production needs.
 
 #### Configuration
 
-You will need to add an additional consumer to your`caspar.config` file to output from your Decklink card. After the screen consumer, add your new Decklink consumer like so.
+You will need to add an additional consumer to your`caspar.config` file to output from your DeckLink card. After the screen consumer, add your new DeckLink consumer like so.
 
 ```markup
 <channels>
@@ -135,7 +135,7 @@ You will need to add an additional consumer to your`caspar.config` file to outpu
         <windowed>true</windowed>
       </screen>
       <system-audio></system-audio>
-      <!-- New Decklink Consumer Start -->
+      <!-- New DeckLink Consumer Start -->
       <decklink>
         <device>1</device>
         <key-device>1</key-device>
@@ -146,7 +146,7 @@ You will need to add an additional consumer to your`caspar.config` file to outpu
         <key-only>false</key-only>
         <buffer-depth>3</buffer-depth>
       </decklink>
-      <!-- Decklink Consumer End -->
+      <!-- DeckLink Consumer End -->
     </consumers>
   </channel>
 </channels>
@@ -154,11 +154,11 @@ You will need to add an additional consumer to your`caspar.config` file to outpu
 
 You may no longer need the screen consumer. If so, you can remove it and all of it's contents. This will dramatically improve overall performance.
 
-### Multiple Decklink Cards \( Recommended Production Setup \)
+### Multiple DeckLink Cards \(Recommended Production Setup\)
 
 #### Required Hardware
 
-For a preferred production setup you want a minimum of two Decklink Duo 2 cards. This is so you can use one card to preview your media, while your second card will support the program video and audio feeds. For CasparCG Server to recognize both cards, you need to add two additional channels to the `caspar.config` file.
+For a preferred production setup you want a minimum of two DeckLink Duo 2 cards. This is so you can use one card to preview your media, while your second card will support the program video and audio feeds. For CasparCG Server to recognize both cards, you need to add two additional channels to the `caspar.config` file.
 
 ```markup
 <channels>
@@ -171,7 +171,7 @@ For a preferred production setup you want a minimum of two Decklink Duo 2 cards.
         <windowed>true</windowed>
       </screen>
       <system-audio></system-audio>
-      <!-- New Preview Decklink Consumer Start -->
+      <!-- New Preview DeckLink Consumer Start -->
       <decklink>
         <device>1</device>
         <key-device>1</key-device>
@@ -182,8 +182,8 @@ For a preferred production setup you want a minimum of two Decklink Duo 2 cards.
         <key-only>false</key-only>
         <buffer-depth>3</buffer-depth>
       </decklink>
-      <!-- Preview Decklink Consumer End -->
-      <!-- New Program Decklink Consumer Start -->
+      <!-- Preview DeckLink Consumer End -->
+      <!-- New Program DeckLink Consumer Start -->
       <decklink>
         <device>2</device>
         <key-device>2</key-device>
@@ -194,7 +194,7 @@ For a preferred production setup you want a minimum of two Decklink Duo 2 cards.
         <key-only>false</key-only>
         <buffer-depth>3</buffer-depth>
       </decklink>
-      <!-- Program Decklink Consumer End -->
+      <!-- Program DeckLink Consumer End -->
     </consumers>
   </channel>
 </channels>
@@ -208,7 +208,7 @@ Once you have setup the configuration file, you can use an online validator to c
 
 Launching the Server is the same for each hardware setup. This means you can run`casparcg-launcher.exe` and the server and media scanner will start. There will be two additional warning from Windows. The first is about the EXE file and can be bypassed by selecting _Advanced_ and then _Run Anyways_. The second menu will be about CasparCG Server attempting to access your firewall. You will need to allow access.
 
-A window will open and display the status for the server and scanner. You can start, stop, and/or restart the server from here if needed. An additional window should have opened as well. This is the main output of your CasparCG Server and will contain nothing but a black background for now. If you have a Decklink card installed, its output will also be black.
+A window will open and display the status for the server and scanner. You can start, stop, and/or restart the server from here if needed. An additional window should have opened as well. This is the main output of your CasparCG Server and will contain nothing but a black background for now. If you have a DeckLink card installed, its output will also be black.
 
 ## Connecting Sofie to the CasparCG Server
 
@@ -226,7 +226,7 @@ In the _Attached Sub Devices_ section, you should now see the status of the Casp
 - [Media Scanner Releases](https://github.com/nrkno/sofie-media-scanner/releases) on GitHub.
 - [CasparCG Launcher](https://github.com/nrkno/sofie-casparcg-launcher) on GitHub.
 - [Microsoft Visual C++ 2015 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=52685) on Microsoft's website.
-- [Blackmagic Design's Decklink Cards](https://www.blackmagicdesign.com/products/decklink/models) on Blackmagic's website. Check the [Decklink cards](casparcg-server-installation.md#decklink-cards) section for compatibility.
-- [Installing a Decklink Card](https://documents.blackmagicdesign.com/UserManuals/DesktopVideoManual.pdf) as a PDF.
+- [Blackmagic Design's DeckLink Cards](https://www.blackmagicdesign.com/products/decklink/models) on Blackmagic's website. Check the [DeckLink cards](casparcg-server-installation.md#decklink-cards) section for compatibility.
+- [Installing a DeckLink Card](https://documents.blackmagicdesign.com/UserManuals/DesktopVideoManual.pdf) as a PDF.
 - [Desktop Video Download Page](https://www.blackmagicdesign.com/support/family/capture-and-playback) on Blackmagic's website.
 - [CasparCG Configuration Validator](https://casparcg.net/validator/)
