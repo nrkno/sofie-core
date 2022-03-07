@@ -5,7 +5,7 @@ import { ISourceLayer, ScriptContent, SourceLayerType } from '@sofie-automation/
 import { RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
 import { getRandomId, normalizeArray, normalizeArrayToMap } from '../lib'
 import { SegmentId } from '../collections/Segments'
-import { PieceId } from '../collections/Pieces'
+import { Piece, PieceId, Pieces } from '../collections/Pieces'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PartId } from '../collections/Parts'
@@ -121,6 +121,18 @@ export namespace PrompterAPI {
 		let previousRundown: Rundown | null = null
 		const rundownIds = rundowns.map((rundown) => rundown._id)
 
+		const allPieces = Pieces.find({
+			startRundownId: { $in: rundownIds },
+		}).fetch()
+		const allPiecesCache = new Map<PartId, Piece[]>()
+		for (const piece of allPieces) {
+			let pieces = allPiecesCache.get(piece.startPartId)
+			if (!pieces) {
+				pieces = []
+				allPiecesCache.set(piece.startPartId, pieces)
+			}
+			pieces?.push(piece)
+		}
 		groupedParts.forEach(({ segment, partInstances }, segmentIndex) => {
 			const segmentId = segment._id
 			const rundown = rundownMap.get(segment.rundownId)
@@ -176,6 +188,7 @@ export namespace PrompterAPI {
 								pieceInstanceFieldOptions
 						  ).fetch()
 						: undefined,
+					allPiecesCache,
 					pieceInstanceFieldOptions,
 					true
 				)
