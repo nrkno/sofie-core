@@ -21,6 +21,7 @@ import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
 import { Rundowns } from '../../../lib/collections/Rundowns'
+import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -570,7 +571,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 	const playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
 
 	if (playlist) {
-		const prompterData = PrompterAPI.getPrompterData(props.rundownPlaylistId)
+		const prompterData = slowDownReactivity(() => PrompterAPI.getPrompterData(props.rundownPlaylistId), 100)
 		return {
 			prompterData,
 		}
@@ -678,10 +679,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		}
 
 		getSnapshotBeforeUpdate() {
-			return this.getScrollAnchor() as any
+			return this.getScrollAnchor()
 		}
 
-		componentDidUpdate(prevProps, prevState, snapshot) {
+		componentDidUpdate(prevProps, prevState, snapshot: ScrollAnchor) {
 			this.restoreScrollAnchor(snapshot)
 		}
 

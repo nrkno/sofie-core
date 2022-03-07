@@ -112,7 +112,7 @@ export function fetchPiecesThatMayBeActiveForPart(
 		infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
 	}
 
-	return [...piecesStartingInPart, ...infinitePieces]
+	return piecesStartingInPart.concat(infinitePieces) // replace spread with concat, as 3x is faster (https://stackoverflow.com/questions/48865710/spread-operator-vs-array-concat)
 }
 
 const SIMULATION_INVALIDATION = 3000

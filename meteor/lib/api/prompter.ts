@@ -121,18 +121,17 @@ export namespace PrompterAPI {
 		let previousRundown: Rundown | null = null
 		const rundownIds = rundowns.map((rundown) => rundown._id)
 
-		const allPieces = Pieces.find({
-			startRundownId: { $in: rundownIds },
-		}).fetch()
 		const allPiecesCache = new Map<PartId, Piece[]>()
-		for (const piece of allPieces) {
+		Pieces.find({
+			startRundownId: { $in: rundownIds },
+		}).forEach((piece) => {
 			let pieces = allPiecesCache.get(piece.startPartId)
 			if (!pieces) {
 				pieces = []
 				allPiecesCache.set(piece.startPartId, pieces)
 			}
 			pieces?.push(piece)
-		}
+		})
 
 		const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
 			fields: {
