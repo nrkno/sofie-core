@@ -45,11 +45,13 @@ export interface PrompterData {
 
 export namespace PrompterAPI {
 	// TODO: discuss: move this implementation to server-side?
-	export function getPrompterData(playlistId: RundownPlaylistId): PrompterData {
+	export function getPrompterData(playlistId: RundownPlaylistId): PrompterData | null {
 		check(playlistId, String)
 
 		const playlist = RundownPlaylists.findOne(playlistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+		if (!playlist) {
+			return null
+		}
 		const rundowns = playlist.getRundowns()
 		const rundownIdsToShowStyleBaseIds: Map<RundownId, ShowStyleBaseId> = new Map()
 		const rundownIdsToShowStyleBase: Map<RundownId, [ShowStyleBase, Record<string, ISourceLayer>] | undefined> =

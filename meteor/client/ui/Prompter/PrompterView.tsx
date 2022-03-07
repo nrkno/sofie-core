@@ -21,7 +21,6 @@ import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
 import { Rundowns } from '../../../lib/collections/Rundowns'
-import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -562,25 +561,18 @@ interface IPrompterProps {
 	config: PrompterConfig
 }
 interface IPrompterTrackedProps {
-	prompterData: PrompterData | undefined
+	prompterData: PrompterData | null
 }
 
 type ScrollAnchor = [number, string] | null
 
-export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
-	const playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
-
-	if (playlist) {
-		const prompterData = slowDownReactivity(() => PrompterAPI.getPrompterData(props.rundownPlaylistId), 100)
-		return {
-			prompterData,
-		}
-	} else {
-		return {
-			prompterData: undefined,
-		}
-	}
-})(
+export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>(
+	(props: IPrompterProps) => ({
+		prompterData: PrompterAPI.getPrompterData(props.rundownPlaylistId),
+	}),
+	undefined,
+	true
+)(
 	class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, {}> {
 		private _debounceUpdate: NodeJS.Timer
 
