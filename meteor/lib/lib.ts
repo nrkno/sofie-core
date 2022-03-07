@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { MongoQuery, MongoModifier, FindOptions } from './typings/meteor'
 import { logger } from './logging'
@@ -59,7 +58,22 @@ export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefin
 }
 
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
-	return Random.id(numberOfChars) as any
+	// return Random.id(numberOfChars) as any
+
+	return randomFastId(numberOfChars) as any
+}
+
+const randomChars = 'abcdefghifklmnopqrstuvxyzABCDEFGHIFKLMNOPQRSTUVXYZ0123456789'
+const randomCharsCount = randomChars.length - 1
+function randomChar(): string {
+	return randomChars[Math.floor(Math.random() * randomCharsCount)]
+}
+function randomFastId(numberOfChars: number = 17): string {
+	let str = ''
+	for (let i = 0; i < numberOfChars; i++) {
+		str += randomChar()
+	}
+	return str
 }
 
 export function applyToArray<T>(arr: T | T[], func: (val: T) => void) {
