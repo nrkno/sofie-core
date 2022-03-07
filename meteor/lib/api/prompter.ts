@@ -133,6 +133,24 @@ export namespace PrompterAPI {
 			}
 			pieces?.push(piece)
 		}
+
+		const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
+			fields: {
+				startedPlayback: 0,
+				stoppedPlayback: 0,
+				userDuration: 0,
+			},
+		}
+
+		const currentPartInstancePieceInstances = currentPartInstance
+			? PieceInstances.find(
+					{
+						partInstanceId: currentPartInstance._id,
+					},
+					pieceInstanceFieldOptions
+			  ).fetch()
+			: undefined
+
 		groupedParts.forEach(({ segment, partInstances }, segmentIndex) => {
 			const segmentId = segment._id
 			const rundown = rundownMap.get(segment.rundownId)
@@ -161,14 +179,6 @@ export namespace PrompterAPI {
 					pieces: [],
 				}
 
-				const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
-					fields: {
-						startedPlayback: 0,
-						stoppedPlayback: 0,
-						userDuration: 0,
-					},
-				}
-
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
 					rundown,
@@ -180,14 +190,7 @@ export namespace PrompterAPI {
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,
-					currentPartInstance
-						? PieceInstances.find(
-								{
-									partInstanceId: currentPartInstance._id,
-								},
-								pieceInstanceFieldOptions
-						  ).fetch()
-						: undefined,
+					currentPartInstancePieceInstances,
 					allPiecesCache,
 					pieceInstanceFieldOptions,
 					true
@@ -202,7 +205,7 @@ export namespace PrompterAPI {
 						true
 					)
 
-					preprocessedPieces.forEach((pieceInstance) => {
+					for (const pieceInstance of preprocessedPieces) {
 						const piece = pieceInstance.piece
 						const sourceLayer = showStyleBaseAndSLayers[1][piece.sourceLayerId] as ISourceLayer | undefined
 
@@ -219,7 +222,7 @@ export namespace PrompterAPI {
 								})
 							}
 						}
-					})
+					}
 				}
 
 				if (partData.pieces.length === 0) {
