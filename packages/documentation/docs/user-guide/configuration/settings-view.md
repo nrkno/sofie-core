@@ -4,7 +4,7 @@ sidebar_position: 4
 # Settings
 
 :::caution
-The settings pages are only visible to users with the right [access level](../features/sofie-navigation.md)!
+The settings pages are only visible to users with the right [access level](../features/access-levels.md)!
 :::
 
 Recommended read before diving into the settings: [System, \(Organization\), Studio & Show Style](../concepts-and-architecture.md#system-organization-studio-and-show-style).

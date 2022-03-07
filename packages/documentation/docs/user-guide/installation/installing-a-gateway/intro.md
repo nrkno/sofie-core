@@ -1,7 +1,8 @@
 ---
+sidebar_label: Introduction
 sidebar_position: 1
 ---
-# Installing a Gateway
+# Introduction: Installing a Gateway
 
 #### Prerequisites
 
