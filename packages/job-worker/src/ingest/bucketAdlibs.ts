@@ -93,19 +93,38 @@ async function emptyBucketInner(context: JobContext, id: BucketId): Promise<void
 export async function handleBucketItemImport(context: JobContext, data: BucketItemImportProps): Promise<void> {
 	const studio = context.studio
 
-	const showStyleBase = await context.getShowStyleBase(data.showStyleBaseId)
+	const [showStyleBase, allShowStyleVariants, allOldAdLibPieces, allOldAdLibActions, blueprint] = await Promise.all([
+		context.getShowStyleBase(data.showStyleBaseId),
+		context.getShowStyleVariants(data.showStyleBaseId),
+		context.directCollections.BucketAdLibPieces.findFetch({
+			externalId: data.payload.externalId,
+			showStyleBaseId: data.showStyleBaseId,
+			studioId: studio._id,
+			bucketId: data.bucketId,
+		}),
+		context.directCollections.BucketAdLibActions.findFetch({
+			externalId: data.payload.externalId,
+			showStyleBaseId: data.showStyleBaseId,
+			studioId: studio._id,
+			bucketId: data.bucketId,
+		}),
+		context.getShowStyleBlueprint(data.showStyleBaseId),
+	])
 
-	const showStyleVariants = (await context.getShowStyleVariants(showStyleBase._id)).filter((v) => {
+	if (!showStyleBase) throw new Error(`ShowStyleBase "${data.showStyleBaseId}" not found`)
+
+	const showStyleVariants = allShowStyleVariants.filter((v) => {
 		if (data.showStyleVariantIds) return data.showStyleVariantIds.includes(v._id)
 		else return true
 	})
-
 	if (showStyleVariants.length === 0) throw new Error(`No ShowStyleVariants found for ${data.showStyleBaseId}`)
-	// const showStyle = await context.getShowStyleCompound(data.showStyleVariantId)
-	// if (!showStyle) throw new Error(`ShowStyleVariant not found: ${data.showStyleVariantId}`)
 
-	const blueprint = await context.getShowStyleBlueprint(showStyleBase._id)
+	let adlibIdsToRemove = allOldAdLibPieces.map((p) => p._id)
+	let actionIdsToRemove = allOldAdLibActions.map((p) => p._id)
+
 	let newRank: number | undefined = undefined
+	// This is used to give all the adlibs the same uniquenessId, so that only one of them is shown
+	let bucketItemUniquenessId: string | undefined = undefined
 	let onlyGenerateOneItem = false
 
 	for (const showStyleVariant of showStyleVariants) {
@@ -146,55 +165,8 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 			blueprint: blueprint.blueprint.blueprintVersion,
 			core: getSystemVersion(),
 		}
-		const [oldAdLibPieces, oldAdLibActions] = await Promise.all([
-			context.directCollections.BucketAdLibPieces.findFetch({
-				externalId: data.payload.externalId,
-				showStyleVariantId: showStyleCompound.showStyleVariantId,
-				studioId: studio._id,
-				bucketId: data.bucketId,
-			}),
-			context.directCollections.BucketAdLibActions.findFetch({
-				externalId: data.payload.externalId,
-				showStyleVariantId: showStyleCompound.showStyleVariantId,
-				studioId: studio._id,
-				bucketId: data.bucketId,
-			}),
-		])
-		if (!rawAdlib) {
-			// Cleanup any old copied
-			await Promise.all([
-				cleanUpExpectedMediaItemForBucketAdLibPiece(
-					context,
-					oldAdLibPieces.map((adlib) => adlib._id)
-				),
-				cleanUpExpectedMediaItemForBucketAdLibActions(
-					context,
-					oldAdLibActions.map((adlib) => adlib._id)
-				),
-				cleanUpExpectedPackagesForBucketAdLibs(
-					context,
-					oldAdLibPieces.map((adlib) => adlib._id)
-				),
-				cleanUpExpectedPackagesForBucketAdLibsActions(
-					context,
-					oldAdLibActions.map((adlib) => adlib._id)
-				),
-				oldAdLibPieces.length > 0
-					? context.directCollections.BucketAdLibPieces.remove({
-							_id: {
-								$in: oldAdLibPieces.map((adlib) => adlib._id),
-							},
-					  })
-					: undefined,
-				oldAdLibActions.length > 0
-					? context.directCollections.BucketAdLibActions.remove({
-							_id: {
-								$in: oldAdLibActions.map((adlib) => adlib._id),
-							},
-					  })
-					: undefined,
-			])
-		} else {
+
+		if (rawAdlib) {
 			// Cache the newRank, so we only have to calculate it once:
 			if (newRank === undefined) {
 				const [highestAdlib, highestAction] = await Promise.all([
@@ -232,9 +204,6 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 				newRank++
 			}
 
-			let adlibIdsToRemove = oldAdLibPieces.map((p) => p._id)
-			let actionIdsToRemove = oldAdLibActions.map((p) => p._id)
-
 			if (isAdlibAction(rawAdlib)) {
 				if (rawAdlib.allVariants) {
 					// If the adlib can be used by all variants, we only should only generate it once.
@@ -247,8 +216,11 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 					blueprint.blueprintId,
 					data.bucketId,
 					newRank,
-					importVersions
+					importVersions,
+					bucketItemUniquenessId
 				)
+				if (!bucketItemUniquenessId) bucketItemUniquenessId = action.uniquenessId
+
 				await context.directCollections.BucketAdLibActions.replace(action)
 
 				await Promise.all([
@@ -266,8 +238,11 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 					blueprint.blueprintId,
 					data.bucketId,
 					newRank,
-					importVersions
+					importVersions,
+					bucketItemUniquenessId
 				)
+				if (!bucketItemUniquenessId) bucketItemUniquenessId = adlib.uniquenessId
+
 				await context.directCollections.BucketAdLibPieces.replace(adlib)
 
 				await Promise.all([
@@ -279,22 +254,26 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 				adlibIdsToRemove = adlibIdsToRemove.filter((id) => id !== adlib._id)
 			}
 
-			// Cleanup the old items
-			await Promise.all([
-				cleanUpExpectedMediaItemForBucketAdLibPiece(context, adlibIdsToRemove),
-				cleanUpExpectedMediaItemForBucketAdLibActions(context, actionIdsToRemove),
-				cleanUpExpectedPackagesForBucketAdLibs(context, adlibIdsToRemove),
-				cleanUpExpectedPackagesForBucketAdLibsActions(context, actionIdsToRemove),
-				context.directCollections.BucketAdLibPieces.remove({ _id: { $in: adlibIdsToRemove } }),
-				context.directCollections.BucketAdLibActions.remove({ _id: { $in: actionIdsToRemove } }),
-			])
-
 			if (onlyGenerateOneItem) {
 				// We only need to generate one variant, so we can stop here
 				break
 			}
 		}
 	}
+
+	// Cleanup old items:
+	await Promise.all([
+		cleanUpExpectedMediaItemForBucketAdLibPiece(context, adlibIdsToRemove),
+		cleanUpExpectedMediaItemForBucketAdLibActions(context, actionIdsToRemove),
+		cleanUpExpectedPackagesForBucketAdLibs(context, adlibIdsToRemove),
+		cleanUpExpectedPackagesForBucketAdLibsActions(context, actionIdsToRemove),
+		adlibIdsToRemove.length
+			? context.directCollections.BucketAdLibPieces.remove({ _id: { $in: adlibIdsToRemove } })
+			: undefined,
+		actionIdsToRemove.length
+			? context.directCollections.BucketAdLibActions.remove({ _id: { $in: actionIdsToRemove } })
+			: undefined,
+	])
 }
 
 export async function handleBucketActionRegenerateExpectedPackages(

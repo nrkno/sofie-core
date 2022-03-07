@@ -4,7 +4,7 @@ import {
 	TimelineObjRundown,
 	TimelineObjType,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	IBlueprintActionManifest,
@@ -17,6 +17,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleContext } from './context'
 import {
+	AdLibActionId,
 	BlueprintId,
 	BucketId,
 	PartId,
@@ -315,22 +316,25 @@ export function postProcessBucketAdLib(
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
-	importVersions: RundownImportVersions
+	importVersions: RundownImportVersions,
+	uniquenessId: string | undefined
 ): BucketAdLib {
+	const id: PieceId = protectString(
+		getHash(
+			`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
+		)
+	)
 	const piece: BucketAdLib = {
 		...itemOrig,
 		content: omit(itemOrig.content, 'timelineObjects'),
-		_id: protectString(
-			getHash(
-				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
-			)
-		),
+		_id: id,
 		externalId,
 		studioId: innerContext.studioIdProtected,
 		showStyleBaseId: innerContext.showStyleCompound._id,
 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
+		uniquenessId: uniquenessId ?? unprotectString(id),
 		_rank: rank || itemOrig._rank,
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -350,21 +354,24 @@ export function postProcessBucketAction(
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
-	importVersions: RundownImportVersions
+	importVersions: RundownImportVersions,
+	uniquenessId: string | undefined
 ): BucketAdLibAction {
+	const id: AdLibActionId = protectString(
+		getHash(
+			`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
+		)
+	)
 	const action: BucketAdLibAction = {
 		...omit(itemOrig, 'partId'),
-		_id: protectString(
-			getHash(
-				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
-			)
-		),
+		_id: id,
 		externalId,
 		studioId: innerContext.studioIdProtected,
 		showStyleBaseId: innerContext.showStyleCompound._id,
 		showStyleVariantId: itemOrig.allVariants ? null : innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
+		uniquenessId: uniquenessId ?? unprotectString(id),
 		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
 	}
 

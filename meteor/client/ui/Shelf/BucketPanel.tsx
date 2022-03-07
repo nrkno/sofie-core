@@ -750,11 +750,34 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						}
 					}
 				}
+				private adLibIsDisabled = (adlib: BucketAdLibItem) => {
+					return (
+						adlib.showStyleBaseId !== this.props.showStyleBaseId ||
+						(!!adlib.showStyleVariantId && adlib.showStyleVariantId !== this.props.showStyleVariantId)
+					)
+				}
 
 				render() {
 					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
 					if (this.props.showStyleBase) {
+						// Hide duplicates;
+						// only the first adLib found with a given uniquenessId will be displayed
+						const uniqueAdlibs = new Map<string, BucketAdLibItem>()
+						for (const adLibPiece of this.state.adLibPieces) {
+							const uniquenessId = adLibPiece.uniquenessId || unprotectString(adLibPiece._id)
+
+							const existingAdlib = uniqueAdlibs.get(uniquenessId)
+							if (
+								!existingAdlib ||
+								// If the existing is disabled and we're not, we should use our one:
+								(this.adLibIsDisabled(existingAdlib) && !this.adLibIsDisabled(adLibPiece))
+							) {
+								uniqueAdlibs.set(uniquenessId, adLibPiece)
+							}
+						}
+						const adLibPieces: BucketAdLibItem[] = Array.from(uniqueAdlibs.values())
+
 						return connectDragPreview(
 							connectDropTarget(
 								<div
@@ -792,7 +815,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								onFilterChange={this.onFilterChange} />
 						} */}
 									<div className="dashboard-panel__panel">
-										{this.state.adLibPieces.map((adlib: BucketAdLibItem) => (
+										{adLibPieces.map((adlib: BucketAdLibItem) => (
 											<ContextMenuTrigger
 												id="shelf-context-menu"
 												collect={() =>
@@ -824,10 +847,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 															: ''
 													}
-													disabled={
-														adlib.showStyleBaseId !== this.props.showStyleBaseId ||
-														(!!adlib.showStyleVariantId && adlib.showStyleVariantId !== this.props.showStyleVariantId)
-													}
+													disabled={this.adLibIsDisabled(adlib)}
 													findAdLib={this.findAdLib}
 													moveAdLib={this.moveAdLib}
 													editableName={this.props.editedPiece === adlib._id}

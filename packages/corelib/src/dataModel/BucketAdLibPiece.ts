@@ -1,5 +1,5 @@
 import { IBlueprintAdLibPiece, SomeContent } from '@sofie-automation/blueprints-integration'
-import { BucketAdLibId, BucketId, StudioId, ShowStyleVariantId, ShowStyleBaseId, BucketAdLibGroupId } from './Ids'
+import { BucketAdLibId, BucketId, StudioId, ShowStyleVariantId, ShowStyleBaseId } from './Ids'
 import { PieceTimelineObjectsBlob } from './Piece'
 import { RundownImportVersions } from './Rundown'
 
@@ -20,8 +20,6 @@ export interface BucketAdLib extends Omit<IBlueprintAdLibPiece, 'content'> {
 	showStyleVariantId: ShowStyleVariantId | null
 
 	importVersions: RundownImportVersions // TODO - is this good?
-
-	groupId: BucketAdLibGroupId
 
 	/** Stringified timelineObjects */
 	timelineObjectsString: PieceTimelineObjectsBlob
