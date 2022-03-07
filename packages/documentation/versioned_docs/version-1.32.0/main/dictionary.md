@@ -1,7 +1,7 @@
 # Features
 
 :::info
-Reading tip: [Concepts & Architecture](features-and-configuration/concepts-and-architecture.md)
+Reading tip: [Concepts & Architecture](/user-guide/concepts-and-architecture.md)
 :::
 
 ## Lobby

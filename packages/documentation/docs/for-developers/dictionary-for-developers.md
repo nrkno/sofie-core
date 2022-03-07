@@ -122,6 +122,6 @@ Elements in the [Next point](dictionary.md#next-point) \(or beyond\) might be pr
 
 ## Additional views
 
-Sofie features a few separate views, such as the prompter, [read about them here](features-and-configuration/sofie-views.md).
+Sofie features a few separate views, such as the prompter, [read about them here](features/sofie-views.md).
 
 ![Prompter View](/img/docs/main/prompter-view.png)
