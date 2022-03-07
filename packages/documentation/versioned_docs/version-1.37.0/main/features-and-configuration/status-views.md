@@ -44,7 +44,7 @@ Messages that was not successfully sent can be inspected and re-sent here.
 
 The user activity log contains a list of the user-actions that users have previously done. This is used in troubleshooting issues on-air.
 
-![User Log](/img/docs/main/features-and-configuration/user-log.png)
+![User Log](/img/docs/main/features/user-log.png)
 
 ### Columns, explained
 

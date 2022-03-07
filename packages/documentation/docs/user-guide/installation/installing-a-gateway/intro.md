@@ -15,11 +15,11 @@ Installing a gateway is a two part process. To begin, you will [add the required
 ### Rundown & Newsroom Gateways
 
 * [Google Spreadsheet Gateway](rundown-or-newsroom-system-connection/installing-sofie-with-google-spreadsheet-support.md)
-* [iNEWS Gateway](rundown-or-newsroom-system-connection/inews-connection.md)
-* [MOS Gateway](rundown-or-newsroom-system-connection/enps-connection.md)
+* [iNEWS Gateway](rundown-or-newsroom-system-connection/inews-gateway.md)
+* [MOS Gateway](rundown-or-newsroom-system-connection/mos-gateway.md)
 
 ### Playout & Media Manager Gateways
 
 * [Playout Gateway](playout-gateway.md)
-* [Media Manager Gateway](media-manager.md)
+* [Media Manager](../media-manager.md)
 

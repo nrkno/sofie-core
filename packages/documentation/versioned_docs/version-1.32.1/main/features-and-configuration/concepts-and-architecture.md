@@ -2,7 +2,7 @@
 
 ## System architecture
 
-![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](/img/docs/main/features-and-configuration/playout-and-spreadsheet-example.png)
+![Example of a Sofie setup with a Playout Gateway and a Spreadsheet Gateway](/img/docs/main/features/playout-and-spreadsheet-example.png)
 
 ### **Sofie Core**
 
@@ -26,11 +26,11 @@ To be able to facilitate various work-flows and to Here's a short explanation ab
 - The **Studio** contains things that are related to the "hardware" or "rig". Technically, a Studio is defined as an entity that can have one \(or none\) rundown active at any given time. In most cases, this will be a representation of your gallery, with cameras, video playback and graphics systems, external inputs, sound mixers, lighting controls and so on. A single System can easily control multiple Studios.
 - The **Show Style** contains settings for the "show", for example if there's a "Morning Show" and an "Afternoon Show" - produced in the same gallery - they might be two different Show Styles \(played in the same Studio\).
 
-![Sofie Architecture Venn Diagram](/img/docs/main/features-and-configuration/sofie-venn-diagram.png)
+![Sofie Architecture Venn Diagram](/img/docs/main/features/sofie-venn-diagram.png)
 
 ## Playlists, Rundowns, Parts, Pieces
 
-![Playlists, Rundowns, Segments, Parts, Pieces](/img/docs/main/features-and-configuration/playlist-rundown-segment-part-piece.png)
+![Playlists, Rundowns, Segments, Parts, Pieces](/img/docs/main/features/playlist-rundown-segment-part-piece.png)
 
 ### Playlist
 
@@ -119,13 +119,13 @@ The timeline-objects can be programmed to contain relative references to each ot
 
 The [Playout Gateway](../for-developers/libraries.md#gateways) picks up the timeline from Sofie Core and \(using the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)\) controls the play-out devices to make sure that they actually play what is intended.
 
-![Example of 2 objects in a timeline: The #video object, destined to play at a certain time, and #gfx0, destined to start 15 seconds into the video.](/img/docs/main/features-and-configuration/timeline.png)
+![Example of 2 objects in a timeline: The #video object, destined to play at a certain time, and #gfx0, destined to start 15 seconds into the video.](/img/docs/main/features/timeline.png)
 
 ### Why a timeline?
 
 The Sofie system is made to work with a modern web- and IT-based approach in mind. Therefore, the Sofie Core can be run either on-site, or in an off-site cloud.
 
-![Sofie Core can run in the cloud](/img/docs/main/features-and-configuration/sofie-web-architecture.png)
+![Sofie Core can run in the cloud](/img/docs/main/features/sofie-web-architecture.png)
 
 One drawback of running in a cloud over the public internet is the - sometimes unpredictable - latency. The Timeline overcomes this by moving all the immediate control of the play-out devices to the Playout Gateway, which is intended to run on a local network, close to the hardware it controls.  
 This also gives the system a simple way of load-balancing - since the number of web-clients or load on Sofie Core won't affect the play-out.

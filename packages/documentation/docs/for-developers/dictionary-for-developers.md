@@ -4,7 +4,7 @@ import TabItem from '@theme/TabItem';
 # Dictionary for Developers
 
 :::info
-Reading tip: [Concepts & Architecture](features-and-configuration/concepts-and-architecture.md)
+Reading tip: [Concepts & Architecture](/user-guide/concepts-and-architecture.md)
 :::
 
 ## Lobby
@@ -79,12 +79,12 @@ Documentation for this section is yet to be written.
 
 ![Switchboard](/img/docs/main/switchboard.png)
 
-The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](features-and-configuration/concepts-and-architecture.md#system-organization-studio-and-show-style).
+The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](/user-guide/concepts-and-architecture.md#system-organization-studio-and-show-style).
 
 The Switchboard panel can be accessed from the Rundown View's right-hand Toolbar, by clicking on the Switchboard button, next to the Support panel button.
 
 :::info
-Technically, the switchboard activates and deactivates Route Sets. The Route Sets are grouped by Exclusivity Group. If an Exclusivity Group contains exactly two elements with the `ACTIVATE_ONLY` mode, the Route Sets will be displayed on either side of the switch. Otherwise, they will be displayed separately in a list next to an _Off_ position. See also [Settings ● Route sets](features-and-configuration/settings-view.md#route-sets).
+Technically, the switchboard activates and deactivates Route Sets. The Route Sets are grouped by Exclusivity Group. If an Exclusivity Group contains exactly two elements with the `ACTIVATE_ONLY` mode, the Route Sets will be displayed on either side of the switch. Otherwise, they will be displayed separately in a list next to an _Off_ position. See also [Settings ● Route sets](/configuration/settings-view.md#route-sets).
 :::
 
 ### Playing things
@@ -122,6 +122,6 @@ Elements in the [Next point](dictionary.md#next-point) \(or beyond\) might be pr
 
 ## Additional views
 
-Sofie features a few separate views, such as the prompter, [read about them here](features-and-configuration/sofie-pages.md).
+Sofie features a few separate views, such as the prompter, [read about them here](features-and-configuration/sofie-views.md).
 
 ![Prompter View](/img/docs/main/prompter-view.png)

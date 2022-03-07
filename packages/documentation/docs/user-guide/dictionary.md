@@ -4,13 +4,10 @@ import TabItem from '@theme/TabItem';
 # Dictionary
 
 :::info
-Reading tip: [Concepts & Architecture](features-and-configuration/concepts-and-architecture.md)
+Reading tip: [Concepts & Architecture](concepts-and-architecture.md)
 :::
 
 ## Lobby
-
-
-
 :::caution
 Documentation for this section is yet to be written.
 :::
@@ -33,7 +30,7 @@ Things that should be covered:
 
 ![The Rundown view and naming conventions of components](/img/docs/main/sofie-naming-conventions.png)
 
-### Segment Header countdowns
+### Segment Header Countdowns
 
 ![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/img/docs/main/segment-budget-and-countdown.png)
 
@@ -51,9 +48,9 @@ In the illustration above, the first Segment \(_Ny Sak_\) has been playing for 4
 
 If you click on the Segment header countdowns, you can switch the _Segment Countdown_ to a _Segment OnAir Clock_ where this will show the time-of-day when a given Segment is expected to air.
 
-![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/img/docs/main/features-and-configuration/segment-header-2.png)
+![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/img/docs/main/features/segment-header-2.png)
 
-### Rundown dividers
+### Rundown Dividers
 
 When using a workflow and blueprints that combine multiple NRCS Rundowns into a single Sofie Rundown \(such as when using the "Ready To Air" functionality in AP ENPS\), information about these individual NRCS Rundowns will be inserted into the Rundown View at the point where each of these incoming Rundowns start.
 
@@ -71,7 +68,7 @@ The shelf contains lists of AdLibs that can be played out.
 The Shelf can be opened by clicking the handle at the bottom of the screen, or by pressing the TAB key
 :::
 
-### Side panel
+### Sidebar Panel
 
 #### Notification center
 
@@ -83,7 +80,7 @@ Documentation for this section is yet to be written.
 
 ![Switchboard](/img/docs/main/switchboard.png)
 
-The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](features-and-configuration/concepts-and-architecture.md#system-organization-studio-and-show-style).
+The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](concepts-and-architecture.md#system-organization-studio-and-show-style).
 
 The Switchboard panel can be accessed from the Rundown View's right-hand Toolbar, by clicking on the Switchboard button, next to the Support panel button.
 
@@ -91,7 +88,7 @@ The Switchboard panel can be accessed from the Rundown View's right-hand Toolbar
 Technically, the switchboard activates and deactivates Route Sets. The Route Sets are grouped by Exclusivity Group. If an Exclusivity Group contains exactly two elements with the `ACTIVATE_ONLY` mode, the Route Sets will be displayed on either side of the switch. Otherwise, they will be displayed separately in a list next to an _Off_ position. See also [Settings ● Route sets](features-and-configuration/settings-view.md#route-sets).
 :::
 
-### Playing things
+### Playing Things
 
 ![Take Next](/img/docs/main/take-next.png)
 
@@ -114,7 +111,7 @@ The Next point is the next queued Part in the rundown. When the user clicks _Tak
 Change the Next point by right-clicking in the GUI, or by pressing \(Shift +\) F9 & F10.
 :::
 
-#### Freeze-frame countdown
+#### Freeze-frame Countdown
 
 ![Part is 1 second heavy, LiveSpeak piece has 7 seconds of playback until it freezes](/img/docs/main/freeze-frame-countdown.png)
 
@@ -140,8 +137,8 @@ If no more Parts can be displayed in a given Segment, they are stacked in order 
 
 All user interactions work in the Storyboard mode the same as in Timeline mode: Takes, AdLibs, Holds and moving the [Next Point](#next-point) around the Rundown.
 
-## Additional views
+## Additional Views
 
-Sofie features a few separate views, such as the prompter, [read about them here](features-and-configuration/sofie-pages.md).
+Sofie features several separate views, such as the prompter, [read about them here](features/sofie-views.md).
 
 ![Prompter View](/img/docs/main/prompter-view.png)
