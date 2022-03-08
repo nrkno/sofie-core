@@ -507,51 +507,7 @@ export function processAndPrunePieceInstanceTimings(
 	keepDisabledPieces?: boolean,
 	includeVirtual?: boolean
 ): PieceInstanceWithTimings[] {
-	const result: PieceInstanceWithTimings[] = []
-
-	const isClear = (piece?: PieceInstance): boolean => !!piece?.piece.virtual
-
-	const updateWithNewPieces = (
-		activePieces: PieceInstanceOnInfiniteLayers,
-		newPieces: PieceInstanceOnInfiniteLayers,
-		key: keyof PieceInstanceOnInfiniteLayers,
-		start: number | 'now'
-	): void => {
-		const newPiece = newPieces[key]
-		if (newPiece) {
-			const activePiece = activePieces[key]
-			if (activePiece) {
-				activePiece.resolvedEndCap = offsetFromStart(start, newPiece)
-			}
-
-			// We don't want to include virtual pieces in the output (most of the time)
-			// TODO - do we want to always output virtual pieces from the 'other' group?
-			if (!isClear(newPiece) || key === 'other' || includeVirtual) {
-				// track the new piece
-				activePieces[key] = newPiece
-				result.push(newPiece)
-
-				if (
-					key === 'onSegmentEnd' ||
-					(key === 'onRundownEnd' && !activePieces.onSegmentEnd) ||
-					(key === 'onShowStyleEnd' && !activePieces.onSegmentEnd && !activePieces.onRundownEnd)
-				) {
-					// when start === 0, we are likely to have multiple infinite continuations. Only stop the 'other' if it should not be considered for being on air
-					if (
-						activePieces.other &&
-						(start !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
-					) {
-						// These modes should stop the 'other' when they start if not hidden behind a higher priority onEnd
-						activePieces.other.resolvedEndCap = offsetFromStart(start, newPiece)
-						activePieces.other = undefined
-					}
-				}
-			} else {
-				// the piece has stopped with no replacement, so clear the tracking state
-				activePieces[key] = undefined
-			}
-		}
-	}
+	const results: PieceInstanceWithTimings[] = []
 
 	// We want to group by exclusive groups, to let them be resolved
 	const exclusiveGroupMap = new Map<string, string>()
@@ -586,15 +542,58 @@ export function processAndPrunePieceInstanceTimings(
 
 			// Apply the updates
 			// Note: order is important, the higher layers must be done first
-			updateWithNewPieces(activePieces, newPieces, 'other', start)
-			updateWithNewPieces(activePieces, newPieces, 'onSegmentEnd', start)
-			updateWithNewPieces(activePieces, newPieces, 'onRundownEnd', start)
-			updateWithNewPieces(activePieces, newPieces, 'onShowStyleEnd', start)
+			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'other')
+			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'onSegmentEnd')
+			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'onRundownEnd')
+			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'onShowStyleEnd')
 		}
 	}
 
 	// Strip out any pieces that start and end at the same point
-	return result.filter((p) => p.resolvedEndCap === undefined || p.resolvedEndCap !== p.piece.enable.start)
+	return results.filter((p) => p.resolvedEndCap === undefined || p.resolvedEndCap !== p.piece.enable.start)
+}
+function updateWithNewPieces(
+	results: PieceInstanceWithTimings[],
+	activePieces: PieceInstanceOnInfiniteLayers,
+	newPieces: PieceInstanceOnInfiniteLayers,
+	start: number | 'now',
+	includeVirtual: boolean | undefined,
+	key: keyof PieceInstanceOnInfiniteLayers
+): void {
+	const newPiece = newPieces[key]
+	if (newPiece) {
+		const activePiece = activePieces[key]
+		if (activePiece) {
+			activePiece.resolvedEndCap = offsetFromStart(start, newPiece)
+		}
+
+		// We don't want to include virtual pieces in the output (most of the time)
+		// TODO - do we want to always output virtual pieces from the 'other' group?
+		if (!newPiece.piece.virtual || key === 'other' || includeVirtual) {
+			// track the new piece
+			activePieces[key] = newPiece
+			results.push(newPiece)
+
+			if (
+				key === 'onSegmentEnd' ||
+				(key === 'onRundownEnd' && !activePieces.onSegmentEnd) ||
+				(key === 'onShowStyleEnd' && !activePieces.onSegmentEnd && !activePieces.onRundownEnd)
+			) {
+				// when start === 0, we are likely to have multiple infinite continuations. Only stop the 'other' if it should not be considered for being on air
+				if (
+					activePieces.other &&
+					(start !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
+				) {
+					// These modes should stop the 'other' when they start if not hidden behind a higher priority onEnd
+					activePieces.other.resolvedEndCap = offsetFromStart(start, newPiece)
+					activePieces.other = undefined
+				}
+			}
+		} else {
+			// the piece has stopped with no replacement, so clear the tracking state
+			activePieces[key] = undefined
+		}
+	}
 }
 
 function isCandidateBetterToBeContinued(best: PieceInstance, candidate: PieceInstance): boolean {
