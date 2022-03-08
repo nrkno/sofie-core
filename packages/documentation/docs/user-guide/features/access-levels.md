@@ -5,7 +5,7 @@ sidebar_position: 3
 
 A variety of access levels can be set via the URL. By default, a user cannot edit settings, nor play out anything. Some of the access levels provide additional administrative pages or helpful tool tips for new users. These modes are persistent between sessions and will need to be manually disabled by replacing the _1_ with a _0_ in the URL. Below is a quick reference to the modes and what they have access to.
 
-If user accounts are enabled \(`enableUserAccounts` in [_Sofie Core_ settings](../configuration/sofie-core-settings.md#settings-file)\), the access levels are set under the user settings. If no user accounts are set, the access level for a browser is set by adding `?theaccessmode=1` to the URL as described below.
+If user accounts are enabled \(`enableUserAccounts` in [_Sofie&nbsp;Core_ settings](../configuration/sofie-core-settings.md#settings-file)\), the access levels are set under the user settings. If no user accounts are set, the access level for a browser is set by adding `?theaccessmode=1` to the URL as described below.
 
 The access level is persisted in browser's Local Storage. To disable, visit`?theaccessmode=0`.
 

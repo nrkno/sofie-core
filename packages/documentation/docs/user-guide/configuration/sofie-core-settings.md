@@ -1,6 +1,6 @@
-# Sofie Core: System configuration
+# Sofie&nbsp;Core: System configuration
 
-_Sofie Core_ is configured at it's most basic level using a settings file and environment variables.
+_Sofie&nbsp;Core_ is configured at it's most basic level using a settings file and environment variables.
 
 ### Environment variables
 
@@ -76,7 +76,7 @@ _Sofie Core_ is configured at it's most basic level using a settings file and en
 
 ### Settings file
 
-The settings file is an optional JSON file that contains some configuration settings for how the _Sofie Core_ works and behaves.
+The settings file is an optional JSON file that contains some configuration settings for how the _Sofie&nbsp;Core_ works and behaves.
 
 To use a settings file:
 

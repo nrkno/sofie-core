@@ -65,7 +65,6 @@ A Route Set has a Behavior property which will dictate what happens how the Rout
 | `TOGGLE` | The RouteSet can be activated and deactivated. As a result, it's possible for the Exclusivity Group to have no Route Set active |
 | `HIDDEN` | The RouteSet can be activated and deactivated, but it will not be presented to the user in the Switchboard panel |
 
-![An active RouteSet with a single Layer Mapping being re-configured](/img/docs/main/features/g)
 
 Route Sets can also be configured with a _Default State_. This can be used to contrast a normal, day-to-day configuration with an exceptional one \(like using a backup device\) in the [Switchboard ](user-guide/dictionary.md#switchboard)panel.
 

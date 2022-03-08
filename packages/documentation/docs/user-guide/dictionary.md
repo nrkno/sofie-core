@@ -8,23 +8,12 @@ Reading tip: [Concepts & Architecture](concepts-and-architecture.md)
 :::
 
 ## Lobby
-:::caution
-Documentation for this section is yet to be written.
-:::
 
 In the lobby, all existing rundowns are listed.
 
 ## Rundown View
 
-:::caution
-Documentation for this section is yet to be written.
-:::
-
-The Rundown View is the main view that the producer is working in.
-
-Things that should be covered: 
-
-* What are all the labels, countdowns, colors, signs etc?
+The _Rundown View_ is the main view that the producer is working in.
 
 
 
@@ -70,7 +59,7 @@ The Shelf can be opened by clicking the handle at the bottom of the screen, or b
 
 ### Sidebar Panel
 
-#### Notification center
+#### Notification Center
 
 :::caution
 Documentation for this section is yet to be written.
@@ -100,7 +89,7 @@ What's played on air is calculated from the timeline objects in the Pieces in th
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
 
 :::info
-You can TAKE the next [Part](/user-guide/dictionary.md#part) by pressing F12 or the Numpad Enter key.
+You can TAKE the next part by pressing _F12_ or the _Numpad Enter_ key.
 :::
 
 #### Next Point
@@ -131,7 +120,7 @@ a different mode at any time.
 
 The **_Storyboard_** mode is an alternative to the default **_Timeline_** mode. In Storyboard mode, the accurate placement in time of each Piece is not visualized, so that more Parts can be visualized at once. This can be particularly useful in Shows without very strict timing planning or where timing is not driven by the User, but rather some external factor; or in Shows where very long Parts are joined with very short ones: sports, events and debates. This mode also does not visualize the history of the playback: rather, it only shows what is currently On Air or is planned to go On Air.
 
-Storyboard mode selects a "main" Piece of the Part, using the same logic as the [Presenter's screen](/user-guide/features/sofie-views.md#presenter-screen), and presents it with a big, hover-scrub-enabled thumbnail for easy preview. The countdown to freeze-frame is displayed in the top-right hand corner of the Thumbnail, once less than 10 seconds remain to freeze-frame. The Transition Piece is displayed on top of the thumbnail. Other Pieces are placed below the thumbnail, stacked in order of playback. After a Piece goes off-air, it will dissapear from the view.
+Storyboard mode selects a "main" Piece of the Part, using the same logic as the [Presenter View](/user-guide/features/sofie-views.md#presenter-view), and presents it with a big, hover-scrub-enabled thumbnail for easy preview. The countdown to freeze-frame is displayed in the top-right hand corner of the Thumbnail, once less than 10 seconds remain to freeze-frame. The Transition Piece is displayed on top of the thumbnail. Other Pieces are placed below the thumbnail, stacked in order of playback. After a Piece goes off-air, it will dissapear from the view.
 
 If no more Parts can be displayed in a given Segment, they are stacked in order on the right side of the Segment. The User can scroll through thse Parts by click-and-dragging the Storyboard area, or using the mouse wheel - `Alt`+Wheel, if only a vertical wheel is present in the mouse.
 

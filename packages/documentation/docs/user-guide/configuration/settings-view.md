@@ -101,7 +101,7 @@ An example of the difference could be when playing a VT \(that's a Source Layer\
 
 ### Action Triggers
 
-This is a way to set up how - outside of the Point-and-Click Graphical User Interface - actions can be performed in the User Interface. Commonly, these are the *hotkey combinations* that can be used to either trigger AdLib content or other actions in the larger system. This is done by creating sets of Triggers and Actions to be triggered by them. These pairs can be set at the Show Style level or at the _Sofie Core_ (System) level, for common actions such as doing a Take or activating a Rundown, where you want a shared method of operation. _Sofie Core_ migrations will set up a base set of basic, system-wide Action Triggers for interacting with rundowns, but they can be changed by the System blueprint.
+This is a way to set up how - outside of the Point-and-Click Graphical User Interface - actions can be performed in the User Interface. Commonly, these are the *hotkey combinations* that can be used to either trigger AdLib content or other actions in the larger system. This is done by creating sets of Triggers and Actions to be triggered by them. These pairs can be set at the Show Style level or at the _Sofie&nbsp;Core_ (System) level, for common actions such as doing a Take or activating a Rundown, where you want a shared method of operation. _Sofie&nbsp;Core_ migrations will set up a base set of basic, system-wide Action Triggers for interacting with rundowns, but they can be changed by the System blueprint.
 
 ![Action triggers define modes of interacting with a Rundown](/img/docs/main/features/action_triggers_3.png)
 
@@ -132,7 +132,7 @@ Clicking on the action and filter pills allows you to edit the action parameters
 
 The migrations are automatic setup-scripts that help you during initial setup and system upgrades.
 
-There are system-migrations that comes directly from the version of _Sofie Core_ you're running, and there are also migrations added by the different blueprints.
+There are system-migrations that comes directly from the version of _Sofie&nbsp;Core_ you're running, and there are also migrations added by the different blueprints.
 
-It is mandatory to run migrations when you've upgraded _Sofie Core_ to a new version, or upgraded your blueprints.
+It is mandatory to run migrations when you've upgraded _Sofie&nbsp;Core_ to a new version, or upgraded your blueprints.
 

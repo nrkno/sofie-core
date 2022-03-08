@@ -54,7 +54,7 @@ Displays the shelf in fullscreen for a rundown
 
 When big screen displays \(like Prompter and the Presenter screen\) do not have any meaningful content to show, an animated screensaver showing the current time and the next planned show will be displayed. If no Rundown is upcoming, the Studio name will be displayed.
 
-![A screensaver showing the next scheduled show](/img/docs/main/features/w-example.png)
+![A screensaver showing the next scheduled show](/img/docs/main/features/screensaver-example.png)
 
 
 

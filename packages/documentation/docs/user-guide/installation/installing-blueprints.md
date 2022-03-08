@@ -6,8 +6,8 @@ sidebar_position: 4
 
 #### Prerequisites
 
-- [Installed and running Sofie Core](installing-sofie-server-core.md)
-- [Initial Sofie Core Setup](initial-sofie-core-setup.md)
+- [Installed and running Sofie&nbsp;Core](installing-sofie-server-core.md)
+- [Initial Sofie&nbsp;Core Setup](initial-sofie-core-setup.md)
 
 Blueprints are little plug-in programs that runs inside _Sofie_. They are the logic that determines how _Sofie_ interacts with rundowns, hardware, and media.
 

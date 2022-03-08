@@ -4,9 +4,9 @@
 
 There is a preliminary REST API available that can be used to fetch data and trigger actions.
 
-The documentation is minimal at the moment, but the API endpoints are listed by _Sofie Core_ using the endpoint: `/api/0`
+The documentation is minimal at the moment, but the API endpoints are listed by _Sofie&nbsp;Core_ using the endpoint: `/api/0`
 
 ## DDP - Core-integration
 
-If you're planning to build NodeJS applications that talk to _Sofie Core_, we recommend using the [core-integration](https://github.com/nrkno/sofie-core/tree/master/packages/server-core-integration) library, which exposes a number of callable methods and allows for subscribing to data the same way the [Gateways](concepts-and-architecture#gateways) do it.
+If you're planning to build NodeJS applications that talk to _Sofie&nbsp;Core_, we recommend using the [core-integration](https://github.com/nrkno/sofie-core/tree/master/packages/server-core-integration) library, which exposes a number of callable methods and allows for subscribing to data the same way the [Gateways](concepts-and-architecture#gateways) do it.
 

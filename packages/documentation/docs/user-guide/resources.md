@@ -6,8 +6,8 @@ description: This guide has a lot of links. Here they are all listed by section.
 
 ## Getting Started
 
-- [Sofie Core Layout](getting-started/#sofie-core-layout)
-- [Sofie Core Overview](getting-started/#sofie-core-overview)
+- [Sofie&nbsp;Core Layout](getting-started/#sofie-core-layout)
+- [Sofie&nbsp;Core Overview](getting-started/#sofie-core-overview)
 
   - [Gateways](getting-started/#gateways)
   - [Blueprints](getting-started/#blueprints)
@@ -16,12 +16,12 @@ description: This guide has a lot of links. Here they are all listed by section.
 
 ## Installation & Setup
 
-### Installing Sofie Core
+### Installing Sofie&nbsp;Core
 
 - [Windows install for Docker](https://hub.docker.com/editions/community/docker-ce-desktop-windows)
 - [Linux install instructions for Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
 - [Linux install instructions for Docker Compose](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-18-04)
-- [Sofie Core Docker File Download](https://firebasestorage.googleapis.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-LWRCgfY_-kYo9iX6UNy%2F-Lo5eWjgoVlRRDeFzLuO%2F-Lo5fLSSyM1eO6OXScew%2Fdocker-compose.yaml?alt=media&token=fc2fbe79-365c-4817-b270-e507c6a6e3c6)
+- [Sofie&nbsp;Core Docker File Download](https://firebasestorage.googleapis.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-LWRCgfY_-kYo9iX6UNy%2F-Lo5eWjgoVlRRDeFzLuO%2F-Lo5fLSSyM1eO6OXScew%2Fdocker-compose.yaml?alt=media&token=fc2fbe79-365c-4817-b270-e507c6a6e3c6)
 
 ### Installing a Gateway
 
@@ -39,16 +39,16 @@ description: This guide has a lot of links. Here they are all listed by section.
 
 ### Additional Software & Hardware
 
-#### Installing CasparCG Server for Sofie
+#### Installing CasparCG&nbsp;Server for Sofie
 
-- NRK's version of [CasparCG Server](https://github.com/nrkno/sofie-casparcg-server/releases) on GitHub.
+- NRK's version of [CasparCG&nbsp;Server](https://github.com/nrkno/sofie-casparcg-server/releases) on GitHub.
 - [Media Scanner](https://github.com/nrkno/sofie-casparcg-launcher/releases) on GitHub.
 - [CasparCG Launcher](https://github.com/nrkno/sofie-casparcg-launcher) on GitHub.
 - [Microsoft Visual C++ 2015 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=52685) on Microsoft's website.
 - [Blackmagic Design's DeckLink Cards](https://www.blackmagicdesign.com/products/decklink/models) on Blackmagic Design's website. Check the [DeckLink cards](installation/installing-connections-and-additional-hardware/casparcg-server-installation.md#decklink-cards) section for compatibility.
 - [Installing a DeckLink Card](https://documents.blackmagicdesign.com/UserManuals/DesktopVideoManual.pdf) as a PDF.
 - [Desktop Video Download Page](https://www.blackmagicdesign.com/support/family/capture-and-playback) on Blackmagic Design's website.
-- [CasparCG Server Configuration Validator](https://casparcg.net/validator/)
+- [CasparCG&nbsp;Server Configuration Validator](https://casparcg.net/validator/)
 
 **Additional resources**
 

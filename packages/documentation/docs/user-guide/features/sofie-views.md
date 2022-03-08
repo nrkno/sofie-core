@@ -60,7 +60,7 @@ A full-screen page, intended to be shown to the studio presenter. It displays co
 
 ![Presenter View Overlay](/img/docs/main/features/presenter-screen-overlay-example.png)
 
-A fullscreen view with transparent background, intended to be shown to the studio presenter as an overlay on top of the produced PGM signal. It displays a reduced amount of the information from the regular [Presenter screen](sofie-views.md#presenter-screen): the countdown to the end of the current Part, a summary preview \(type and name\) of the next item in the Rundown and the current time of day. If no Rundown is active it will show the name of the Studio.
+A fullscreen view with transparent background, intended to be shown to the studio presenter as an overlay on top of the produced PGM signal. It displays a reduced amount of the information from the regular [Presenter screen](sofie-views.md#presenter-view): the countdown to the end of the current Part, a summary preview \(type and name\) of the next item in the Rundown and the current time of day. If no Rundown is active it will show the name of the Studio.
 
 ## Active Rundown View
 
@@ -122,7 +122,7 @@ This page displays media transfer statuses.
 Documentation for this feature is yet to be written.
 :::
 
-_Sofie Core_ can send messages to external systems \(such as metadata, as-run-logs\) while on air.
+_Sofie&nbsp;Core_ can send messages to external systems \(such as metadata, as-run-logs\) while on air.
 
 These messages are retained for a period of time, and can be reviewed in this list.
 
@@ -155,7 +155,7 @@ Describes what action the user did; e g pressed a key, clicked a button, or sele
 
 #### Method
 
-The internal name in _Sofie Core_ of what function was called
+The internal name in _Sofie&nbsp;Core_ of what function was called
 
 #### Status
 

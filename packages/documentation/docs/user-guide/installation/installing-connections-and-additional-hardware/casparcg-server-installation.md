@@ -1,18 +1,18 @@
 ---
-description: Sofie specific fork of CasparCG Server 2.1
+description: Sofie specific fork of CasparCG&nbsp;Server 2.1
 ---
 
-# Installing CasparCG Server for Sofie
+# Installing CasparCG&nbsp;Server for Sofie
 
-Although CasparCG Server is an open source program that is free to use for both personal and cooperate applications, the hardware needed to create and execute high quality graphics is not. You can get a preview running without any additional hardware but, it is not recommended to use CasparCG Server for production in this manner. To begin, you will install the CasparCG Server on your machine then add the additional configuration needed for your setup of choice.
+Although CasparCG&nbsp;Server is an open source program that is free to use for both personal and cooperate applications, the hardware needed to create and execute high quality graphics is not. You can get a preview running without any additional hardware but, it is not recommended to use CasparCG&nbsp;Server for production in this manner. To begin, you will install the CasparCG&nbsp;Server on your machine then add the additional configuration needed for your setup of choice.
 
-## Installing the CasparCG Server
+## Installing the CasparCG&nbsp;Server
 
-To begin, download the latest release of [CasparCG Server from GitHub](https://github.com/nrkno/sofie-casparcg-server/releases). There are multiple versions of CasparCG Server available to the public for download but, you specifically want the latest NRK version.
+To begin, download the latest release of [CasparCG&nbsp;Server from GitHub](https://github.com/nrkno/sofie-casparcg-server/releases). There are multiple versions of CasparCG&nbsp;Server available to the public for download but, you specifically want the latest NRK version.
 
-Once downloaded, extract the files and navigate down the folders, _CasparCG Server_ then _Server_. This folder contains your CasparCG Server Configuration file, `casparcg.config`, and your CasparCG Server executable, `casparcg.exe`.
+Once downloaded, extract the files and navigate down the folders, _CasparCG&nbsp;Server_ then _Server_. This folder contains your CasparCG&nbsp;Server Configuration file, `casparcg.config`, and your CasparCG&nbsp;Server executable, `casparcg.exe`.
 
-How you will configure the CasparCG Server will depend on the number of DeckLink cards your machine contains. The first subsection for each CasparCG Server setup, labeled _Channels_, will contain the unique portion of the configuration. The following is the majority of the configuration file that will be consistent between setups.
+How you will configure the CasparCG&nbsp;Server will depend on the number of DeckLink cards your machine contains. The first subsection for each CasparCG&nbsp;Server setup, labeled _Channels_, will contain the unique portion of the configuration. The following is the majority of the configuration file that will be consistent between setups.
 
 ```markup
 <?xml version="1.0" encoding="utf-8"?>
@@ -52,7 +52,7 @@ One additional note, the Server does require the configuration file be named `ca
 
 ### Installing CasparCG Media Scanner
 
-You can use the CasparCG Media Scanner to locate and add all of your media to the _Sofie Core_. To install the Media Scanner, you will go to the [project's Release page](https://github.com/nrkno/sofie-media-scanner/releases) and download the `.zip` file under the latest release. Similar to the CasparCG Server, you want to use the NRK version.
+You can use the CasparCG Media Scanner to locate and add all of your media to the _Sofie&nbsp;Core_. To install the Media Scanner, you will go to the [project's Release page](https://github.com/nrkno/sofie-media-scanner/releases) and download the `.zip` file under the latest release. Similar to the CasparCG&nbsp;Server, you want to use the NRK version.
 
 Once downloaded and extracted, move the `scanner.exe` file to the same folder as your `casparcg.exe` file.
 
@@ -64,13 +64,13 @@ You can launch both of your CasparCG applications with the[ CasparCG Launcher.](
 
 ### Required Software
 
-Windows will require you install [Microsoft's Visual C++ 2015 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=52685) to run the CasparCG Server properly. Before downloading the redistributable, please ensure it is not already installed on your system. Open your programs list and in the popup window, you can search for _C++_ in the search field. If _Visual C++ 2015_ appears, you do not need install the redistributable.
+Windows will require you install [Microsoft's Visual C++ 2015 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=52685) to run the CasparCG&nbsp;Server properly. Before downloading the redistributable, please ensure it is not already installed on your system. Open your programs list and in the popup window, you can search for _C++_ in the search field. If _Visual C++ 2015_ appears, you do not need install the redistributable.
 
 If you need to install redistributable then, navigate to [Microsoft's website](https://www.microsoft.com/en-us/download/details.aspx?id=52685) and download it from there. Once downloaded, you can run the `.exe` file and follow the prompts.
 
 ## Hardware Recommendations
 
-Although CasparCG Server can be run on some lower end hardware, it is only recommended to do so for non-production uses. Below is a table of the minimum and preferred specs depending on what type of system you are using.
+Although CasparCG&nbsp;Server can be run on some lower end hardware, it is only recommended to do so for non-production uses. Below is a table of the minimum and preferred specs depending on what type of system you are using.
 
 | System Type   | Min CPU          | Pref CPU                  | Min GPU  | Pref GPU     | Min Storage    | Pref Storage   |
 | :------------ | :--------------- | :------------------------ | :------- | :----------- | :------------- | :------------- |
@@ -78,7 +78,7 @@ Although CasparCG Server can be run on some lower end hardware, it is only recom
 | Prod, 1 Card  | i7 Gen 6         | i7 Gen 7                  | GTX 1060 | GTX 1070     | NVMe SSD 500gb | NVMe SSD 500gb |
 | Prod, 2 Cards | i9 Gen 8         | i9 Gen 10 Extreme Edition | RTX 2070 | Quadro P4000 | Dual Drives    | Dual Drives    |
 
-For _dual drives_, it is recommended to use a smaller 250gb NVMe SSD for the operating system. Then a faster 1tb NVMe SSD for the CasparCG Server and media. It is also recommended to buy a drive with about 40% storage overhead. This is for SSD p~~e~~rformance reasons and Sofie will warn you about this if your drive usage exceeds 60%.
+For _dual drives_, it is recommended to use a smaller 250gb NVMe SSD for the operating system. Then a faster 1tb NVMe SSD for the CasparCG&nbsp;Server and media. It is also recommended to buy a drive with about 40% storage overhead. This is for SSD p~~e~~rformance reasons and Sofie will warn you about this if your drive usage exceeds 60%.
 
 ### DeckLink Cards
 
@@ -104,7 +104,7 @@ If you chose a DeckLink Duo, then you will also need to set SDI connectors one a
 
 ### Preview Only \(Basic\)
 
-A preview only version of CasparCG Server does not lack any of the features of a production version. It is called a _preview only_ version because the standard outputs on a computer, without a DeckLink card, do not meet the requirements of a high quality broadcast graphics machine. It is perfectly suitable for development though.
+A preview only version of CasparCG&nbsp;Server does not lack any of the features of a production version. It is called a _preview only_ version because the standard outputs on a computer, without a DeckLink card, do not meet the requirements of a high quality broadcast graphics machine. It is perfectly suitable for development though.
 
 #### Required Hardware
 
@@ -118,7 +118,7 @@ The default configuration will give you one preview window. No additional change
 
 #### Required Hardware
 
-To be production ready, you will need to output an SDI or HDMI signal from your production machine. CasparCG Server supports Blackmagic Design's DeckLink cards because they provide a key generator which will aid in keeping the alpha and fill channels of your graphics in sync. Please review the [DeckLink Cards](casparcg-server-installation.md#decklink-cards) section of this page to choose which card will best fit your production needs.
+To be production ready, you will need to output an SDI or HDMI signal from your production machine. CasparCG&nbsp;Server supports Blackmagic Design's DeckLink cards because they provide a key generator which will aid in keeping the alpha and fill channels of your graphics in sync. Please review the [DeckLink Cards](casparcg-server-installation.md#decklink-cards) section of this page to choose which card will best fit your production needs.
 
 #### Configuration
 
@@ -158,7 +158,7 @@ You may no longer need the screen consumer. If so, you can remove it and all of 
 
 #### Required Hardware
 
-For a preferred production setup you want a minimum of two DeckLink Duo 2 cards. This is so you can use one card to preview your media, while your second card will support the program video and audio feeds. For CasparCG Server to recognize both cards, you need to add two additional channels to the `caspar.config` file.
+For a preferred production setup you want a minimum of two DeckLink Duo 2 cards. This is so you can use one card to preview your media, while your second card will support the program video and audio feeds. For CasparCG&nbsp;Server to recognize both cards, you need to add two additional channels to the `caspar.config` file.
 
 ```markup
 <channels>
@@ -202,27 +202,27 @@ For a preferred production setup you want a minimum of two DeckLink Duo 2 cards.
 
 ### Validating the Configuration File
 
-Once you have setup the configuration file, you can use an online validator to check and make sure it is setup correctly. Navigate to the [CasparCG Server Config Validator](https://casparcg.net/validator/) and paste in your entire configuration file. If there are any errors, they will be displayed at the bottom of the page.
+Once you have setup the configuration file, you can use an online validator to check and make sure it is setup correctly. Navigate to the [CasparCG&nbsp;Server Config Validator](https://casparcg.net/validator/) and paste in your entire configuration file. If there are any errors, they will be displayed at the bottom of the page.
 
 ### Launching the Server
 
-Launching the Server is the same for each hardware setup. This means you can run`casparcg-launcher.exe` and the server and media scanner will start. There will be two additional warning from Windows. The first is about the EXE file and can be bypassed by selecting _Advanced_ and then _Run Anyways_. The second menu will be about CasparCG Server attempting to access your firewall. You will need to allow access.
+Launching the Server is the same for each hardware setup. This means you can run`casparcg-launcher.exe` and the server and media scanner will start. There will be two additional warning from Windows. The first is about the EXE file and can be bypassed by selecting _Advanced_ and then _Run Anyways_. The second menu will be about CasparCG&nbsp;Server attempting to access your firewall. You will need to allow access.
 
-A window will open and display the status for the server and scanner. You can start, stop, and/or restart the server from here if needed. An additional window should have opened as well. This is the main output of your CasparCG Server and will contain nothing but a black background for now. If you have a DeckLink card installed, its output will also be black.
+A window will open and display the status for the server and scanner. You can start, stop, and/or restart the server from here if needed. An additional window should have opened as well. This is the main output of your CasparCG&nbsp;Server and will contain nothing but a black background for now. If you have a DeckLink card installed, its output will also be black.
 
-## Connecting Sofie to the CasparCG Server
+## Connecting Sofie to the CasparCG&nbsp;Server
 
-Now that your CasparCG Server software is running, you can connect it to the _Sofie Core_. Navigate back to the _Settings page_ and in the menu, select the _Playout Gateway_. If the _Playout Gateway's_ status does not read _Good_, then please review the [Installing and Setting up the Playout Gateway](../installing-a-gateway/playout-gateway.md) section of this guide.
+Now that your CasparCG&nbsp;Server software is running, you can connect it to the _Sofie&nbsp;Core_. Navigate back to the _Settings page_ and in the menu, select the _Playout Gateway_. If the _Playout Gateway's_ status does not read _Good_, then please review the [Installing and Setting up the Playout Gateway](../installing-a-gateway/playout-gateway.md) section of this guide.
 
 Under the Sub Devices section, you can add a new device with the _+_ button. Then select the pencil \( edit \) icon on the new device to open the sub device's settings. Select the _Device Type_ option and choose _CasparCG_ from the drop down menu. Some additional fields will be added to the form.
 
 The _Host_ and _Launcher Host_ fields will be _localhost_. The _Port_ will be CasparCG's TCP port responsible for handling the AMCP commands. It defaults to 5052 in the `casparcg.config` file. The _Launcher Port_ will be the CasparCG Launcher's port for handling HTTP requests. It will default to 8005 and can be changed in the _Launcher's settings page_. Once all four fields are filled out, you can click the check mark to save the device.
 
-In the _Attached Sub Devices_ section, you should now see the status of the CasparCG Server. You may need to restart the Playout Gateway if the status is _Bad_.
+In the _Attached Sub Devices_ section, you should now see the status of the CasparCG&nbsp;Server. You may need to restart the Playout Gateway if the status is _Bad_.
 
 ## Further Reading
 
-- [CasparCG Server Releases](https://github.com/nrkno/sofie-casparcg-server/releases) on GitHub.
+- [CasparCG&nbsp;Server Releases](https://github.com/nrkno/sofie-casparcg-server/releases) on GitHub.
 - [Media Scanner Releases](https://github.com/nrkno/sofie-media-scanner/releases) on GitHub.
 - [CasparCG Launcher](https://github.com/nrkno/sofie-casparcg-launcher) on GitHub.
 - [Microsoft Visual C++ 2015 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=52685) on Microsoft's website.
