@@ -12,14 +12,13 @@ sidebar_position: 1
 
 [**Sofie&nbsp;Core**](../dictionary#sofie-core) is a web server which handle business logic and serves the Web GUI.  
 It is a [NodeJS](https://nodejs.org) process backed up by a [MongoDB](https://www.mongodb.com/) database and based on the framework [Meteor](http://meteor.com).  
-Read more: [_System architecture_](concepts-and-architecture.md#system-architecture)_,_ [_Getting Started_](/docs/getting-started/intro)
 
 ### Gateways
 
-Gateways are applications that connect to Sofie&nbsp;Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline](../dictionary#timeline) for playout.
+Gateways are applications that connect to Sofie&nbsp;Core and and exchanges data; such as rundown-data from an NRCS or the [Timeline](/docs/user-guide/dictionary#timeline) for playout.
 
 An examples of a gateways is the [Spreadsheet Gateway](https://github.com/SuperFlyTV/spreadsheet-gateway).  
-All gateways use the [Core-integration library](https://github.com/nrkno/sofie-core/tree/master/packages/server-core-integration) to communicate with Core.
+All gateways use the [Core Integration Library](https://github.com/nrkno/sofie-core/tree/master/packages/server-core-integration) to communicate with Core.
 
 ## System, \(Organization\), Studio & Show Style
 

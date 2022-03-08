@@ -34,11 +34,11 @@ This section allows you to add and remove Gateways that are related to this _Stu
 
 ### Blueprint configuration
 
-Sofie allows the Blueprints to expose custom configuration fields that allow the System Administrator to reconfigure how these Blueprints work through the Sofie UI. Here you can change the configuration of the [Studio Blueprint](../concepts-and-architecture.md#studio-blueprints).
+Sofie allows the Blueprints to expose custom configuration fields that allow the System Administrator to reconfigure how these Blueprints work through the Sofie UI. Here you can change the configuration of the [Studio Blueprint](/docs/user-guide/concepts-and-architecture#studio-blueprints).
 
 ### Layer Mappings
 
-This section allows you to add, remove and configure how logical device-control will be translated to physical automation control. [Blueprints](../concepts-and-architecture.md#blueprints) control devices through objects placed on a [Timeline](../concepts-and-architecture.md#timeline) using logical device identifiers called _Layers_. A layer represents a single aspect of a device that can be controlled at a given time: a video switcher's M/E bus, an audio mixers's fader, an OSC control node, a video server's output channel. Layer Mappings translate these logical identifiers into physical device aspects, for example:
+This section allows you to add, remove and configure how logical device-control will be translated to physical automation control. [Blueprints](/docs/user-guide/concepts-and-architecture#blueprints) control devices through objects placed on a [Timeline](/docs/user-guide/concepts-and-architecture#timeline) using logical device identifiers called _Layers_. A layer represents a single aspect of a device that can be controlled at a given time: a video switcher's M/E bus, an audio mixers's fader, an OSC control node, a video server's output channel. Layer Mappings translate these logical identifiers into physical device aspects, for example:
 
 ![A sample configuration of a Layer Mapping for the M/E1 Bus of an ATEM switcher](/img/docs/main/features/atem-layer-mapping-example.png)
 

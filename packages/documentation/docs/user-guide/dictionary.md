@@ -19,6 +19,9 @@ The _Rundown View_ is the main view that the producer is working in.
 
 ![The Rundown view and naming conventions of components](/img/docs/main/sofie-naming-conventions.png)
 
+## Blueprints
+A fundamental concept of _Sofie_, described in the [Blueprints](/docs/user-guide/concepts-and-architecture#blueprints) section.
+
 ### Segment Header Countdowns
 
 ![Each Segment has two clocks - the Segment Time Budget and a Segment Countdown](/img/docs/main/segment-budget-and-countdown.png)
@@ -83,7 +86,7 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 #### Take Point
 
-The Take point is currently playing [Part](/user-guide/dictionary.md#part) in the rundown, indicated by the "On Air" line in the GUI.  
+The Take point is currently playing [Part](/docs/user-guide/dictionary#part) in the rundown, indicated by the "On Air" line in the GUI.  
 What's played on air is calculated from the timeline objects in the Pieces in the currently playing part.
 
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
@@ -108,7 +111,7 @@ If a Piece has more or less content than the Part's expected duration allows, an
 
 #### Lookahead
 
-Elements in the [Next point](/user-guide/dictionary.md#next-point) \(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and playout devices used. This feature is called "Lookahead".
+Elements in the [Next point](/docs/user-guide/dictionary#next-point) \(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and playout devices used. This feature is called "Lookahead".
 
 ### Storyboard Mode
 
