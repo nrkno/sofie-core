@@ -214,7 +214,7 @@ export namespace PrompterAPI {
 							const content = piece.content as ScriptContent
 							if (content.fullScript) {
 								if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) >= 0) {
-									return // piece already included in prompter script
+									break // piece already included in prompter script
 								}
 								piecesIncluded.push(piece.continuesRefId || piece._id)
 								partData.pieces.push({
