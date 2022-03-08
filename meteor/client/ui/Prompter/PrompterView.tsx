@@ -621,7 +621,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		}
 
 		getScrollAnchor = () => {
-			let readPosition = ((this.props.config.margin || 0) * window.innerHeight) / 100
+			let readPosition = ((this.props.config.margin || 0) / 100) * window.innerHeight
 			switch (this.props.config.marker) {
 				case 'top':
 				case 'hide':
@@ -639,10 +639,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 			Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach((anchor) => {
 				const { top } = anchor.getBoundingClientRect()
-				if (top + readPosition <= 10) foundPositions.push([top, '.' + anchor.className.replace(/\s/g, '.')])
+				if (top + readPosition <= window.innerHeight / 30) foundPositions.push([top, anchor.id])
 			})
 
-			foundPositions = _.sortBy(foundPositions, (v) => 1 * v[0])
+			foundPositions = _.sortBy(foundPositions, (topOffset) => Number(topOffset[0]))
 
 			if (foundPositions.length > 0) {
 				return foundPositions[foundPositions.length - 1]
@@ -650,17 +650,19 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			return null
 		}
 
-		restoreScrollAnchor = (scrollAnchor: ScrollAnchor) => {
+		private restoreScrollAnchor = (scrollAnchor: ScrollAnchor) => {
 			if (scrollAnchor === null) return
-			const anchor = document.querySelector(scrollAnchor[1])
+			const anchor = document.getElementById(scrollAnchor[1])
 			if (anchor) {
+				console.log(`Restoring anchor position: #${scrollAnchor[1]}`)
+
 				const { top } = anchor.getBoundingClientRect()
 
 				window.scrollBy({
 					top: top - scrollAnchor[0],
 				})
 			} else {
-				console.warn('Read anchor could not be found: ' + scrollAnchor[1])
+				console.warn(`Read anchor could not be found: #${scrollAnchor[1]}`)
 			}
 		}
 
@@ -678,17 +680,17 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			this.restoreScrollAnchor(snapshot)
 		}
 
-		renderPrompterData(prompterData: PrompterData) {
-			const getPartStatus = (part: PrompterDataPart) => {
-				if (prompterData.currentPartInstanceId === part.id) {
-					return 'live'
-				} else if (prompterData.nextPartInstanceId === part.id) {
-					return 'next'
-				} else {
-					return null
-				}
+		private getPartStatus(prompterData: PrompterData, part: PrompterDataPart) {
+			if (prompterData.currentPartInstanceId === part.id) {
+				return 'live'
+			} else if (prompterData.nextPartInstanceId === part.id) {
+				return 'next'
+			} else {
+				return null
 			}
+		}
 
+		private renderPrompterData(prompterData: PrompterData) {
 			const lines: React.ReactNode[] = []
 
 			prompterData.segments.forEach((segment) => {
@@ -697,10 +699,11 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				}
 
 				const firstPart = segment.parts[0]
-				const firstPartStatus = getPartStatus(firstPart)
+				const firstPartStatus = this.getPartStatus(prompterData, firstPart)
 
 				lines.push(
 					<div
+						id={`segment_${segment.id}`}
 						data-obj-id={segment.id}
 						key={'segment_' + segment.id}
 						className={ClassNames(
@@ -718,9 +721,15 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				segment.parts.forEach((part) => {
 					lines.push(
 						<div
+							id={`part_${part.id}`}
 							data-obj-id={segment.id + '_' + part.id}
 							key={'part_' + part.id}
-							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}
+							className={ClassNames(
+								'prompter-part',
+								'scroll-anchor',
+								'part-' + part.id,
+								this.getPartStatus(prompterData, part)
+							)}
 						>
 							{part.title || 'N/A'}
 						</div>
@@ -729,6 +738,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					part.pieces.forEach((line) => {
 						lines.push(
 							<div
+								id={`line_${line.id}`}
 								data-obj-id={segment.id + '_' + part.id + '_' + line.id}
 								key={'line_' + part.id + '_' + segment.id + '_' + line.id}
 								className={ClassNames(
