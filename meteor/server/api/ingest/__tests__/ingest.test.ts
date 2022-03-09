@@ -1,10 +1,10 @@
 import '../../../../__mocks__/_extendJest'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown, RundownCollectionUtil } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Segment, SegmentId, SegmentOrphanedReason, Segments } from '../../../../lib/collections/Segments'
+import { DBSegment, Segment, SegmentId, SegmentOrphanedReason, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts } from '../../../../lib/collections/Parts'
 import {
 	IngestRundown,
@@ -35,6 +35,7 @@ import { waitAllQueued } from '../../../codeControl'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../../playout/lockFunction'
 import { getSelectedPartInstancesFromCache } from '../../playout/cache'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
+import { Meteor } from 'meteor/meteor'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -2147,6 +2148,164 @@ describe('Test ingest actions for rundowns and segments', () => {
 				expect(segment0?.orphaned).toBeFalsy()
 
 				expect(parts2).toHaveLength(1)
+			}
+		} finally {
+			// forcefully 'deactivate' the playlist to allow for cleanup to happen
+			RundownPlaylists.update({}, { $unset: { activationId: 1 } }, { multi: true })
+		}
+	})
+
+	testInFiber('prevent hiding current segment', async () => {
+		try {
+			// Cleanup any rundowns / playlists
+			await Promise.all(
+				RundownPlaylists.find()
+					.fetch()
+					.map(async (p) => removeRundownPlaylistFromDb(p))
+			)
+
+			const rundownData: IngestRundown = {
+				externalId: externalId,
+				name: 'MyMockRundown',
+				type: 'mock',
+				segments: [
+					{
+						externalId: 'segment0',
+						name: 'Segment 0',
+						rank: 0,
+						payload: {},
+						parts: [
+							{
+								externalId: 'part0',
+								name: 'Part 0',
+								rank: 0,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece0',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+							{
+								externalId: 'part1',
+								name: 'Part 1',
+								rank: 1,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece1',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+						],
+					},
+					{
+						externalId: 'segment1',
+						name: 'Segment 1',
+						rank: 1,
+						payload: {},
+						parts: [
+							{
+								externalId: 'part2',
+								name: 'Part 2',
+								rank: 0,
+							},
+						],
+					},
+				],
+			}
+
+			// Preparation: set up rundown
+			expect(Rundowns.findOne()).toBeFalsy()
+			Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
+			const rundown = Rundowns.findOne() as Rundown
+			expect(rundown).toMatchObject({
+				externalId: rundownData.externalId,
+			})
+			const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
+			expect(playlist).toBeTruthy()
+
+			const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
+			const getPlaylist = () => RundownCollectionUtil.getRundownPlaylist(rundown) as RundownPlaylist
+
+			const segments = RundownCollectionUtil.getSegments(getRundown())
+			const parts = RundownCollectionUtil.getParts(getRundown())
+
+			expect(segments).toHaveLength(2)
+			expect(parts).toHaveLength(3)
+			expect(Pieces.find({ startRundownId: rundown._id }).fetch()).toHaveLength(2)
+
+			// Activate the rundown
+			await ServerPlayoutAPI.activateRundownPlaylist(PLAYLIST_ACCESS(playlist._id), playlist._id, true)
+			expect(getPlaylist().currentPartInstanceId).toBeNull()
+
+			// Take the first part
+			await ServerPlayoutAPI.takeNextPart(PLAYLIST_ACCESS(playlist._id), playlist._id, null)
+			expect(getPlaylist().currentPartInstanceId).not.toBeNull()
+
+			{
+				// Check which part is current
+				const selectedInstances = RundownPlaylistCollectionUtil.getSelectedPartInstances(getPlaylist())
+				const currentPartInstance = selectedInstances.currentPartInstance as PartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+				expect(currentPartInstance.segmentId).toBe(segments[0]._id)
+			}
+
+			// Delete segment 0, while on air
+			const segmentExternalId = rundownData.segments[0].externalId
+			// const updatedSegment1Data: IngestSegment = rundownData.segments[1]
+			// updatedSegment1Data.payload.hidden = true
+
+			Meteor.call(
+				PeripheralDeviceAPIMethods.dataSegmentDelete,
+				device2._id,
+				device2.token,
+				rundownData.externalId,
+				segmentExternalId
+			)
+			{
+				const { segments, parts } = RundownCollectionUtil.getSegmentsAndPartsSync(getRundown())
+				expect(segments).toHaveLength(2)
+
+				const segment0 = segments.find((s) => s.externalId === segmentExternalId) as DBSegment
+				expect(segment0).toBeTruthy()
+				expect(segment0.orphaned).toBe(SegmentOrphanedReason.DELETED)
+				expect(segment0.isHidden).toBeFalsy()
+
+				const parts0 = parts.filter((p) => p.segmentId === segment0._id)
+				expect(parts0).toHaveLength(0)
+			}
+
+			console.log('pre-updated')
+
+			// Trigger an 'resync' of the rundown
+			rundownData.segments.splice(0, 1)
+			Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device2._id, device2.token, rundownData)
+
+			// Make sure segment0 is still deleted
+			{
+				const segments = RundownCollectionUtil.getSegments(getRundown())
+				expect(segments).toHaveLength(2)
+
+				const segment0 = segments.find((s) => s.externalId === segmentExternalId) as DBSegment
+				expect(segment0).toBeTruthy()
+				expect(segment0.orphaned).toBe(SegmentOrphanedReason.DELETED)
+				expect(segment0.isHidden).toBeFalsy()
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen
