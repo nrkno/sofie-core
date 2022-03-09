@@ -14,7 +14,7 @@ import {
 } from './rundown/infinites'
 import { FindOptions } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
-import { getCurrentTime, ProtectedString, protectString, unprotectString } from './lib'
+import { getCurrentTime, mongoWhereFilter, ProtectedString, protectString, unprotectString } from './lib'
 import { RundownPlaylist, RundownPlaylistActivationId } from './collections/RundownPlaylists'
 import { Rundown, RundownId } from './collections/Rundowns'
 import { ShowStyleBaseId } from './collections/ShowStyleBases'
@@ -81,9 +81,19 @@ export function fetchPiecesThatMayBeActiveForPart(
 	part: DBPart,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylist: RundownId[]
+	rundownsBeforeThisInPlaylist: RundownId[],
+	/** Map of Pieces on Parts, passed through for performance */
+	allPiecesCache?: Map<PartId, Piece[]>
 ): Piece[] {
-	const piecesStartingInPart = Pieces.find(buildPiecesStartingInThisPartQuery(part)).fetch()
+	let piecesStartingInPart: Piece[]
+	const allPieces = allPiecesCache?.get(part._id)
+	const selector = buildPiecesStartingInThisPartQuery(part)
+	if (allPieces) {
+		// Fast-path: if we already have the pieces, we can use them directly:
+		piecesStartingInPart = mongoWhereFilter(allPieces, selector)
+	} else {
+		piecesStartingInPart = Pieces.find(selector).fetch()
+	}
 
 	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
 	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
@@ -94,9 +104,15 @@ export function fetchPiecesThatMayBeActiveForPart(
 		segmentsBeforeThisInRundown,
 		rundownsBeforeThisInPlaylist
 	)
-	const infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
+	let infinitePieces: Piece[]
+	if (allPieces) {
+		// Fast-path: if we already have the pieces, we can use them directly:
+		infinitePieces = infinitePieceQuery ? mongoWhereFilter(allPieces, infinitePieceQuery) : []
+	} else {
+		infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
+	}
 
-	return [...piecesStartingInPart, ...infinitePieces]
+	return piecesStartingInPart.concat(infinitePieces) // replace spread with concat, as 3x is faster (https://stackoverflow.com/questions/48865710/spread-operator-vs-array-concat)
 }
 
 const SIMULATION_INVALIDATION = 3000
@@ -131,6 +147,8 @@ export function getPieceInstancesForPartInstance(
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
 	currentPartInstancePieceInstances: PieceInstance[] | undefined,
+	/** Map of Pieces on Parts, passed through for performance */
+	allPiecesCache?: Map<PartId, Piece[]>,
 	options?: FindOptions<PieceInstance>,
 	pieceInstanceSimulation?: boolean
 ) {
@@ -149,7 +167,8 @@ export function getPieceInstancesForPartInstance(
 				partInstance.part,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylist
+				rundownsBeforeThisInPlaylist,
+				allPiecesCache
 			),
 			orderedAllParts,
 			partInstance._id,
@@ -192,7 +211,8 @@ export function getPieceInstancesForPartInstance(
 					partInstance.part,
 					partsBeforeThisInSegmentSet,
 					segmentsBeforeThisInRundownSet,
-					rundownsBeforeThisInPlaylist
+					rundownsBeforeThisInPlaylist,
+					allPiecesCache
 				),
 				orderedAllParts,
 				partInstance._id,

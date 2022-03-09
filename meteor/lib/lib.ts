@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { MongoQuery, MongoModifier, FindOptions } from './typings/meteor'
 import { logger } from './logging'
@@ -58,8 +57,27 @@ export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefin
 	}
 }
 
+let randomIdFunction = randomFastId
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
-	return Random.id(numberOfChars) as any
+	return randomIdFunction(numberOfChars) as any
+}
+
+export function setMockRandomId(mockFunction: (numberOfChars?: number) => string) {
+	// Used in unit tests only!
+	randomIdFunction = mockFunction
+}
+
+const randomChars = 'abcdefghifklmnopqrstuvxyzABCDEFGHIFKLMNOPQRSTUVXYZ0123456789'
+const randomCharsCount = randomChars.length - 1
+function randomChar(): string {
+	return randomChars[Math.floor(Math.random() * randomCharsCount)]
+}
+function randomFastId(numberOfChars: number = 17): string {
+	let str = ''
+	for (let i = 0; i < numberOfChars; i++) {
+		str += randomChar()
+	}
+	return str
 }
 
 export function applyToArray<T>(arr: T | T[], func: (val: T) => void) {
@@ -612,6 +630,13 @@ export async function makePromise<T>(fcn: () => T): Promise<T> {
 	})
 }
 
+export function mongoWhereFilter<T, R>(items: R[], selector: MongoQuery<T>): R[] {
+	const results: R[] = []
+	for (const item of items) {
+		if (mongoWhere(item, selector)) results.push(item)
+	}
+	return results
+}
 export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 	if (typeof selector !== 'object') {
 		// selector must be an object
@@ -619,8 +644,8 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 	}
 
 	let ok = true
-	_.each(selector, (s: any, key: string) => {
-		if (!ok) return
+	for (const [key, s] of Object.entries(selector)) {
+		if (!ok) break
 
 		try {
 			const keyWords = key.split('.')
@@ -636,9 +661,9 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 			} else if (key === '$or') {
 				if (_.isArray(s)) {
 					let ok2 = false
-					_.each(s, (innerSelector) => {
+					for (const innerSelector of s) {
 						ok2 = ok2 || mongoWhere(o, innerSelector)
-					})
+					}
 					ok = ok2
 				} else {
 					throw new Error('An $or filter must be an array')
@@ -686,7 +711,7 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 			logger.warn(e || (e as any).reason || (e as any).toString()) // todo: why this logs empty message for TypeError (or any Error)?
 			ok = false
 		}
-	})
+	}
 	return ok
 }
 export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id?: ProtectedString<any> }>(
