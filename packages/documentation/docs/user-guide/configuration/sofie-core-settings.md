@@ -1,3 +1,6 @@
+---
+sidebar_position: 1
+---
 # Sofie Core: System Configuration
 
 _Sofie&nbsp;Core_ is configured at it's most basic level using a settings file and environment variables.

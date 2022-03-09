@@ -6,11 +6,9 @@ description: This guide has a lot of links. Here they are all listed by section.
 
 ## Getting Started
 
-- [Sofie&nbsp;Core Layout](concepts-and-architecture#sofie-core-layout)
-- [Sofie&nbsp;Core Overview](concepts-and-architecture#sofie-core-overview)
-
-  - [Gateways](concepts-and-architecture#gateways)
-  - [Blueprints](concepts-and-architecture#blueprints)
+- [Sofie's Concepts & Architecture](concepts-and-architecture)
+- [Gateways](concepts-and-architecture#gateways)
+- [Blueprints](concepts-and-architecture#blueprints)
 
 - Ask questions in the [Sofie Slack Channel](https://join.slack.com/t/sofietv/shared_invite/enQtNTk2Mzc3MTQ1NzAzLTJkZjMyMDg3OGM0YWU3MmU4YzBhZDAyZWI1YmJmNmRiYWQ1OTZjYTkzOTkzMTA2YTE1YjgxMmVkM2U1OGZlNWI)
 

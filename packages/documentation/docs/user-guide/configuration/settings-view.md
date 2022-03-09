@@ -1,10 +1,10 @@
 ---
-sidebar_position: 4
+sidebar_position: 2
 ---
-# Settings
+# Settings View
 
 :::caution
-The settings views are only visible to users with the right [access level](../features/access-levels)!
+The settings views are only visible to users with the correct [access level](../features/access-levels)!
 :::
 
 Recommended read before diving into the settings: [System, \(Organization\), Studio & Show Style](../concepts-and-architecture#system-organization-studio-and-show-style).
@@ -28,11 +28,11 @@ The _studio_ settings are settings for that specific studio, and contains settin
 
 The Studio uses a studio-blueprint, which handles things like mapping up an incoming rundown to a Showstyle.
 
-### Attached devices
+### Attached Devices
 
 This section allows you to add and remove Gateways that are related to this _Studio_. When a Gateway is attached to a Studio, it will react to the changes happening within it, as well as feed the neccessary data into it.
 
-### Blueprint configuration
+### Blueprint Configuration
 
 Sofie allows the Blueprints to expose custom configuration fields that allow the System Administrator to reconfigure how these Blueprints work through the Sofie UI. Here you can change the configuration of the [Studio Blueprint](../concepts-and-architecture#studio-blueprints).
 

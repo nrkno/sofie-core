@@ -80,7 +80,7 @@ A view which automatically displays the currently active rundown, and shows the 
 
 A shelf layout can be selected by modifying the query string, see [Shelf Layouts](#shelf-layouts).
 
-## Specific Rundown - Shelf
+## Specific Rundown – Shelf
 
 `/rundown/:rundownId/shelf`
 
@@ -169,3 +169,7 @@ When a broadcast is done, users can input feedback about how the show went in an
 :::info
 Evaluations can be configured to be sent to Slack, by setting the "Slack Webhook URL" under Settings/Studio
 :::
+
+
+## Settings View
+The [Settings View](../configuration/settings-view) is only available to users with the [access level](../features/access-levels) set correctly.
