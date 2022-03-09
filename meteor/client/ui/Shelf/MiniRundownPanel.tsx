@@ -45,7 +45,7 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 	static currentSegmentCssClass: string = 'current-segment'
 	static nextSegmentCssClass: string = 'next-segment'
 	static panelContainerId: string = 'mini-rundown-panel__container'
-	static currentSegmentId: string = 'mini-rundown__current-segment'
+	static nextSegmentId: string = 'mini-rundown__next-segment'
 
 	constructor(props) {
 		super(props)
@@ -55,9 +55,9 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 	componentDidUpdate() {
 		Meteor.setTimeout(() => {
 			const container = document.getElementById(MiniRundownPanelInner.panelContainerId)
-			const element = document.getElementById(MiniRundownPanelInner.currentSegmentId)
+			const element = document.getElementById(MiniRundownPanelInner.nextSegmentId)
 			if (container && element) {
-				const magicLineHeight: number = 30
+				const magicLineHeight: number = 49
 				container.scrollTop = element.offsetTop - magicLineHeight
 			}
 		}, 500)
@@ -87,7 +87,7 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 					{miniRundowns.map((miniRundown: MiniRundownSegment, index: number) => (
 						<div
 							className={miniRundown.cssClass}
-							{...getCurrentPartId(miniRundown.cssClass)}
+							{...getIdAttributeForNextSegment(miniRundown.cssClass)}
 							key={getElementKey('miniRundownElement', miniRundown.identifier, index)}
 						>
 							<span
@@ -139,17 +139,17 @@ function getMiniRundownList(
 	currentPart?: PartInstance,
 	nextPart?: PartInstance
 ): MiniRundownSegment[] {
-	const miniRundownParts: MiniRundownSegment[] = []
+	const miniRundownSegments: MiniRundownSegment[] = []
 
 	allSegments?.forEach((segment: Segment) => {
-		miniRundownParts.push({
+		miniRundownSegments.push({
 			identifier: getSegmentIdentifier(segment),
 			segmentName: getSegmentName(segment),
 			cssClass: getSegmentCssClass(segment, currentPart, nextPart),
 		})
 	})
 
-	return miniRundownParts
+	return miniRundownSegments
 }
 
 function getSegmentCssClass(segment: Segment, currentPart?: PartInstance, nextPart?: PartInstance): string {
@@ -192,6 +192,6 @@ function getElementKey(prefix: string, identifier: string, index: number): strin
 	return prefix + identifier + 'index' + index
 }
 
-function getCurrentPartId(cssClass: string) {
-	return cssClass === MiniRundownPanelInner.currentSegmentCssClass ? { id: MiniRundownPanelInner.currentSegmentId } : {}
+function getIdAttributeForNextSegment(cssClass: string) {
+	return cssClass === MiniRundownPanelInner.nextSegmentCssClass ? { id: MiniRundownPanelInner.nextSegmentId } : {}
 }

@@ -19,18 +19,6 @@
 	padding: 2px;
   }
 
-  .mini-rundown-panel__part {
-	padding: 2px;
-	&:before {
-	  content: ' (';
-	  display: inline;
-	}
-	&:after {
-	  content: ')';
-	  display: inline;
-	}
-  }
-
   .mini-rundown-panel__rank {
 	margin-right: 2px;
 	padding: 2px;
