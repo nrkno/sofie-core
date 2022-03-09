@@ -637,10 +637,23 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			let foundPositions: [number, string][] = []
 			// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
-			Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach((anchor) => {
-				const { top } = anchor.getBoundingClientRect()
-				if (top + readPosition <= window.innerHeight / 30) foundPositions.push([top, anchor.id])
+			const windowInnerHeight = window.innerHeight
+			const margin = windowInnerHeight / 30
+
+			Array.from(document.querySelectorAll('.prompter .prompter-line:not(.empty)')).forEach((anchor) => {
+				const { top, bottom } = anchor.getBoundingClientRect()
+				// find a prompter line that is in the read area of the viewport
+				if (top <= window.innerHeight && bottom >= readPosition + margin) foundPositions.push([top, anchor.id])
 			})
+
+			// if we didn't find any text, let's use scroll-anchors instead (Segment and Part names)
+			if (foundPositions.length === 0) {
+				Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach((anchor) => {
+					const { top } = anchor.getBoundingClientRect()
+					// find a prompter scroll anchor that is just above the prompter read position
+					if (top <= readPosition + margin) foundPositions.push([top, anchor.id])
+				})
+			}
 
 			foundPositions = _.sortBy(foundPositions, (topOffset) => Number(topOffset[0]))
 
@@ -654,8 +667,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			if (scrollAnchor === null) return
 			const anchor = document.getElementById(scrollAnchor[1])
 			if (anchor) {
-				console.log(`Restoring anchor position: #${scrollAnchor[1]}`)
-
 				const { top } = anchor.getBoundingClientRect()
 
 				window.scrollBy({
