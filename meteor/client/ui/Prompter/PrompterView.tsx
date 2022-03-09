@@ -662,7 +662,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			Array.from(document.querySelectorAll('.prompter .prompter-line:not(.empty)')).forEach((anchor) => {
 				const { top, bottom } = anchor.getBoundingClientRect()
 				// find a prompter line that is in the read area of the viewport
-				if (top <= window.innerHeight && bottom >= readPosition) foundPositions.push([top, anchor.id])
+				if (top <= windowInnerHeight && bottom >= readPosition) foundPositions.push([top, anchor.id])
 			})
 
 			// if we didn't find any text, let's use scroll-anchors instead (Segment and Part names)
