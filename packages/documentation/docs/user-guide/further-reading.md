@@ -25,7 +25,7 @@ description: This guide has a lot of links. Here they are all listed by section.
 
 ### Installing a Gateway
 
-#### Ingest gateways and NRCS
+#### Ingest Gateways and NRCS
 
 - [MOS Protocol Overview & Documentation](http://mosprotocol.com/)
 - Information about ENPS on [The Associated Press' Website](https://www.ap.org/enps/support)
@@ -50,7 +50,7 @@ description: This guide has a lot of links. Here they are all listed by section.
 - [Desktop Video Download Page](https://www.blackmagicdesign.com/support/family/capture-and-playback) on Blackmagic Design's website.
 - [CasparCG&nbsp;Server Configuration Validator](https://casparcg.net/validator/)
 
-**Additional resources**
+**Additional Resources**
 
 - Viz graphics through MSE, info on the [Vizrt](https://www.vizrt.com/) website.
 - Information about the [Blackmagic Design's HyperDeck](https://www.blackmagicdesign.com/products/hyperdeckstudio)

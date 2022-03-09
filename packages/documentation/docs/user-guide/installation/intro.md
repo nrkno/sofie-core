@@ -3,25 +3,25 @@ sidebar_position: 1
 ---
 # Getting Started
 
-_Sofie_ can be installed in many different ways, depending on which platforms, needs, and features you desire. The _Sofie_ system consists of several applications that work together to provide complete broadcast automation system. Each of these components' installation will be covered in this guide. Additional information about the products or services mentioned alongside the Sofie Installation can be found on the [Further Reading page](../resources.md).
+_Sofie_ can be installed in many different ways, depending on which platforms, needs, and features you desire. The _Sofie_ system consists of several applications that work together to provide complete broadcast automation system. Each of these components' installation will be covered in this guide. Additional information about the products or services mentioned alongside the Sofie Installation can be found on the [Further Reading](../further-reading).
 
-There are four minimum required components to get a Sofie system up and running. First you need the [_Sofie Core_](installing-sofie-server-core.md), which is the brains of the operation. Then a set of [_Blueprints_](installing-blueprints.md) to handle and interpret incoming and outgoing data. Next, an [_Ingest Gateway_](installing-a-gateway/rundown-or-newsroom-system-connection/README) to fetch the data for the Blueprints. Then finally, a [_Playout Gateway_](installing-a-gateway/playout-gateway.md) to send the data to your playout device of choice.
+There are four minimum required components to get a Sofie system up and running. First you need the [_Sofie Core_](installing-sofie-server-core.md), which is the brains of the operation. Then a set of [_Blueprints_](installing-blueprints.md) to handle and interpret incoming and outgoing data. Next, an [_Ingest Gateway_](installing-a-gateway/rundown-or-newsroom-system-connection/intro) to fetch the data for the Blueprints. Then finally, a [_Playout Gateway_](installing-a-gateway/playout-gateway.md) to send the data to your playout device of choice.
 
 
 
-## Sofie&nbsp;Core Pages
+## Sofie&nbsp;Core View
 
-The _Rundowns_ page will display all the active rundowns that the _Sofie&nbsp;Core_ has access to. 
+The _Rundowns_ view will display all the active rundowns that the _Sofie&nbsp;Core_ has access to. 
 
-![Rundown Page](/img/docs/getting-started/rundowns-in-sofie.png)
+![Rundown View](/img/docs/getting-started/rundowns-in-sofie.png)
 
-The _Status_ pages displays the current status for the attached devices and gateways.
+The _Status_ views displays the current status for the attached devices and gateways.
 
-![Status Page &#x2013; Describes the state of _Sofie&nbsp;Core_](/img/docs/getting-started/status-page.jpg)
+![Status View &#x2013; Describes the state of _Sofie&nbsp;Core_](/img/docs/getting-started/status-page.jpg)
 
-The _Settings_ pages contains various settings for the studio, show styles, blueprints etc.. If the link to the settings page is not visible in your application, check your [Access Levels](/user-guide/features/access-levels.md). More info on specific parts of the _Settings_ page can be found in their corresponding guide sections. 
+The _Settings_ views contains various settings for the studio, show styles, blueprints etc.. If the link to the settings view is not visible in your application, check your [Access Levels](/user-guide/features/access-levels). More info on specific parts of the _Settings_ view can be found in their corresponding guide sections. 
 
-![Settings Page &#x2013; Describes how the _Sofie&nbsp;Core_ is configured](/img/docs/getting-started/settings-page.jpg)
+![Settings View &#x2013; Describes how the _Sofie&nbsp;Core_ is configured](/img/docs/getting-started/settings-page.jpg)
 
 ## Sofie&nbsp;Core Overview
 

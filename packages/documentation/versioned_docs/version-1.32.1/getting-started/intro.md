@@ -22,11 +22,11 @@ The _Sofie_ _Core_ is the primary application for managing the broadcast but, it
 
 ### Gateways
 
-Gateways are separate applications that bridge the gap between the _Sofie Core_ and other pieces of hardware or services. At minimum, you will need a _Playout Gateway_ so your timeline can interact with your playout system of choice. To install the _Playout Gateway_, visit the [Installing a Gateway](installation/installing-a-gateway/) section of this guide and for a more in-depth look, please visit the [Under the Hood section – Gateways](user-guide/dictionary.md#gateways). 
+Gateways are separate applications that bridge the gap between the _Sofie Core_ and other pieces of hardware or services. At minimum, you will need a _Playout Gateway_ so your timeline can interact with your playout system of choice. To install the _Playout Gateway_, visit the [Installing a Gateway](installation/installing-a-gateway/) section of this guide and for a more in-depth look, please visit the [Under the Hood section – Gateways](user-guide/dictionary#gateways). 
 
 ### Blueprints
 
-Blueprints can be described as the logic that determines how a studio and show should interact with one another. They interpret the data coming in from the rundowns and transform them into a rich set of playable elements \(_Segments_, _Parts_, _AdLibs,_ etcetera\). The _Sofie Core_ has three main blueprint types, _System Blueprints_, _Studio Blueprints_, and _Showstyle Blueprints_. Installing _Sofie_ does not require you understand what these blueprints do, just that they are required for the _Core_ to work. If you would like to gain a deeper understand of how _Blueprints_ work, please visit the [Under The Hood – Blueprints](user-guide/dictionary.md#blueprints) section.
+Blueprints can be described as the logic that determines how a studio and show should interact with one another. They interpret the data coming in from the rundowns and transform them into a rich set of playable elements \(_Segments_, _Parts_, _AdLibs,_ etcetera\). The _Sofie Core_ has three main blueprint types, _System Blueprints_, _Studio Blueprints_, and _Showstyle Blueprints_. Installing _Sofie_ does not require you understand what these blueprints do, just that they are required for the _Core_ to work. If you would like to gain a deeper understand of how _Blueprints_ work, please visit the [Under The Hood – Blueprints](user-guide/dictionary#blueprints) section.
 
 ## Further Reading
 

@@ -62,7 +62,7 @@ This first run is necessary to get the Package Manager device registered with _S
 
 In this basic configuration, Package Manager won't be copying any packages into your CasparCG&nbsp;Server media folder. Instead, it will simply check that the files in the rundown are present in your CasparCG&nbsp;Server media folder, and you'll have to manually place those files in the correct directory. However, thumbnail and preview generation will still function, as will status reporting.
 
-If you're using the demo rundown provided by the [Rundown Editor](installing-a-gateway/rundown-or-newsroom-system-connection/rundown-editor), you should already see work statuses on the Package Status page ([Status > Packages](http://localhost:3000/status/expected-packages)).
+If you're using the demo rundown provided by the [Rundown Editor](rundown-editor), you should already see work statuses on the Package Status page ([Status > Packages](http://localhost:3000/status/expected-packages)).
 
 ![Example Package Manager status display](/img/docs/Package_Manager_status_example.jpg)
 

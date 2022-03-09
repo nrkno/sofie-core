@@ -1,7 +1,7 @@
 # Settings
 
 :::caution
-The settings pages are only visible to users with the right [access level](/user-guide/features/access-levels.md)!
+The settings pages are only visible to users with the right [access level](sofie-navigation.md)!
 :::
 
 Recommended read before diving into the settings: [System, \(Organization\), Studio & Show Style](concepts-and-architecture.md#system-organization-studio-and-show-style).
@@ -45,7 +45,7 @@ These mappings allow the System Administrator to reconfigure what devices the Bl
 
 #### Route Sets
 
-In order to allow the Producer to reconfigure the automation from the Switchboard in the [Rundown View](user-guide/dictionary.md#rundown-view), as well as have some pre-set automation control available for the System Administrator, Sofie has a concept of Route Sets. Route Sets work on top of the Layer Mappings, by configuring sets of [Layer Mappings](settings-view.md#layer-mappings) that will re-route the control from one device to another, or to disable the automation altogether. These Route Sets are presented to the Producer in the [Switchboard ](user-guide/dictionary.md#switchboard)panel.
+In order to allow the Producer to reconfigure the automation from the Switchboard in the [Rundown View](user-guide/dictionary#rundown-view), as well as have some pre-set automation control available for the System Administrator, Sofie has a concept of Route Sets. Route Sets work on top of the Layer Mappings, by configuring sets of [Layer Mappings](settings-view.md#layer-mappings) that will re-route the control from one device to another, or to disable the automation altogether. These Route Sets are presented to the Producer in the [Switchboard ](user-guide/dictionary#switchboard)panel.
 
 A Route Set is essentially a distinct set of Layer Mappings, which can modify the settings already configured by the Layer Mappings, but can be turned On and Off. Called Routes, these can change:
 
@@ -66,7 +66,7 @@ A Route Set has a Behavior property which will dictate what happens how the Rout
 | `HIDDEN` | The RouteSet can be activated and deactivated, but it will not be presented to the user in the Switchboard panel |
 
 
-Route Sets can also be configured with a _Default State_. This can be used to contrast a normal, day-to-day configuration with an exceptional one \(like using a backup device\) in the [Switchboard ](user-guide/dictionary.md#switchboard)panel.
+Route Sets can also be configured with a _Default State_. This can be used to contrast a normal, day-to-day configuration with an exceptional one \(like using a backup device\) in the [Switchboard ](user-guide/dictionary#switchboard)panel.
 
 | Default State | Behavior |
 | :--- | :--- |
@@ -86,9 +86,9 @@ The Showstyle contains settings like
 :::caution
 Please note the difference between S_ource Layers_ and _timeline-layers:_
 
-[Pieces ](user-guide/dictionary.md#piece)are put onto _Source layers_, to group different types of content \(such as a VT or Camera\), they are therefore intended only as something to indicate to the user what is going to be played, not what is actually going to happen on the technical level.
+[Pieces ](user-guide/dictionary#piece)are put onto _Source layers_, to group different types of content \(such as a VT or Camera\), they are therefore intended only as something to indicate to the user what is going to be played, not what is actually going to happen on the technical level.
 
-[Timeline-objects](user-guide/dictionary.md#timeline-object) \(inside of the [Pieces](user-guide/dictionary.md#piece)\) are put onto timeline-layers, which are \(through the Mappings in the studio\) mapped to physical devices and outputs.  
+[Timeline-objects](user-guide/dictionary#timeline-object) \(inside of the [Pieces](user-guide/dictionary#piece)\) are put onto timeline-layers, which are \(through the Mappings in the studio\) mapped to physical devices and outputs.  
 The exact timeline-layer is never exposed to the user, but instead used on the technical level to control play-out.
 
 An example of the difference could be when playing a VT \(that's a Source Layer\), which could involve all of the timeline-layers _video\_player0_, _audio\_fader\_video_, _audio\_fader\_host_ and _mixer\_pgm._

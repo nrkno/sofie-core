@@ -112,17 +112,17 @@ volumes:
 
 Create a `Sofie` folder, copy the above content, and save it as `docker-compose.yaml` within the `Sofie` folder.
 
-Navigate to the _ingest-gateway_ section of `docker-compose.yaml` and select which type of _ingest-gateway_ you'd like installed by uncommenting it. Save your changes. If you are using the [Rundown Editor](installing-a-gateway/rundown-or-newsroom-system-connection/rundown-editor), then no ingest gateways need to be uncommented.
+Navigate to the _ingest-gateway_ section of `docker-compose.yaml` and select which type of _ingest-gateway_ you'd like installed by uncommenting it. Save your changes. If you are using the [Rundown Editor](rundown-editor), then no ingest gateways need to be uncommented.
 
-Then open a terminal, `cd your-sofie-folder` and `sudo docker-compose up` \(just `docker-compose up` on windows\).
+Then open a terminal, `cd your-sofie-folder` and `sudo docker-compose up` \(just `docker-compose up` on Windows\).
 
 Once the installation is done, Sofie should be running on [http://localhost:3000](http://localhost:3000)
 
-Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom Systems](installing-a-gateway/rundown-or-newsroom-system-connection/README) to see which _Rundown Gateway_ is best suited for _your_ production environment.
+Next, you will need to install a Rundown Gateway. Visit [Rundowns & Newsroom Systems](installing-a-gateway/rundown-or-newsroom-system-connection/intro) to see which _Rundown Gateway_ is best suited for _your_ production environment.
 
 ### Tips for running in production
 
-There are some things not covered in this guide needed to run Sofie in a production environment:
+There are some things not covered in this guide needed to run _Sofie_ in a production environment:
 
 - Logging: Collect, store and track error messages. [Kibana](https://www.elastic.co/kibana) and [logstash](https://www.elastic.co/logstash) is one way to do it.
 - NGINX: It is customary to put a load-balancer in front of _Sofie&nbsp;Core_.
@@ -130,7 +130,7 @@ There are some things not covered in this guide needed to run Sofie in a product
 
 ## Installing for Development
 
-Installation instructions for installing Sofie-Core or the various gateways are available in the README-file in their respective github-repos.
+Installation instructions for installing Sofie-Core or the various gateways are available in the README file in their respective github repos.
 
 Common prerequisites are [Node.js](https://nodejs.org/) and [Yarn](https://yarnpkg.com/).  
 Links to the repos are listed at [Applications & Libraries](../../for-developers/libraries).
