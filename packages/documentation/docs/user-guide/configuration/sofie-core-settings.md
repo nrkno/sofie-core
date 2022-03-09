@@ -1,8 +1,8 @@
-# Sofie&nbsp;Core: System configuration
+# Sofie Core: System Configuration
 
 _Sofie&nbsp;Core_ is configured at it's most basic level using a settings file and environment variables.
 
-### Environment variables
+### Environment Variables
 
 <table>
 	<thead>
@@ -74,7 +74,7 @@ _Sofie&nbsp;Core_ is configured at it's most basic level using a settings file a
 	</tbody>
 </table>
 
-### Settings file
+### Settings File
 
 The settings file is an optional JSON file that contains some configuration settings for how the _Sofie&nbsp;Core_ works and behaves.
 

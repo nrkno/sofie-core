@@ -8,7 +8,7 @@
 
 [**Sofie Core**](user-guide/dictionary#sofie-core) is a web-server which handle business logic and serves the Web-GUI.  
 It is a [NodeJS](https://nodejs.org) process backed up by a [MongoDB](https://www.mongodb.com/) database and based on the framework [Meteor](http://meteor.com).  
-Read more: [_System architecture_](concepts-and-architecture.md#system-architecture)_,_ [_Getting Started_](../getting-started/)
+Read more: [_System architecture_](concepts-and-architecture#system-architecture)_,_ [_Getting Started_](../getting-started/)
 
 ### Gateways
 

@@ -6,7 +6,7 @@ The Spreadsheet Gateway is an application for piping data between Sofie&nbsp;Cor
 
 To begin with, you will need to install a set of Blueprints that can handle the data being sent from the _Gateway_ to _Sofie&nbsp;Core_. Download the `demo-blueprints-r*.zip` file containing the blueprints you need from the [Demo Blueprints GitHub Repository](https://github.com/SuperFlyTV/sofie-demo-blueprints/releases). It is recommended to choose the newest release but, an older _Sofie&nbsp;Core_ version may require a different Blueprint version. The _Rundown page_ will warn you about any issue and display the desired versions.
 
-Instructions on how to install any Blueprint can be found in the [Installing Blueprints](../../installing-blueprints.md) section from earlier.
+Instructions on how to install any Blueprint can be found in the [Installing Blueprints](../../installing-blueprints) section from earlier.
 
 ### Spreadsheet Gateway Configuration
 

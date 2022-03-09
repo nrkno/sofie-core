@@ -6,11 +6,11 @@ sidebar_position: 7
 
 #### Prerequisites
 
-- [Installed and running Sofie Core](installing-sofie-server-core.md)
-- [Initial Sofie Core Setup](initial-sofie-core-setup.md)
+- [Installed and running Sofie Core](installing-sofie-server-core)
+- [Initial Sofie Core Setup](initial-sofie-core-setup)
 - [Installed and configured Demo Blueprints](https://github.com/SuperFlyTV/sofie-demo-blueprints)
-- [Installed, configured, and running CasparCG Server](installing-connections-and-additional-hardware/casparcg-server-installation.md)
-- [`ffmpeg` and `ffprobe` available in `PATH`](installing-connections-and-additional-hardware/ffmpeg-installation.md)
+- [Installed, configured, and running CasparCG Server](installing-connections-and-additional-hardware/casparcg-server-installation)
+- [`ffmpeg` and `ffprobe` available in `PATH`](installing-connections-and-additional-hardware/ffmpeg-installation)
 
 Package Manager is used by Sofie to copy, analyze, and process media files. It is what powers Sofie's ability to copy media files to playout devices, to know when a media file is ready for playout, and to display details about media files in the rundown view such as scene changes, black frames, freeze frames, and more.
 

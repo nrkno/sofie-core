@@ -2,14 +2,14 @@
 
 #### Prerequisites
 
-* [Installed and running Sofie&nbsp;Core](../installing-sofie-server-core.md)
-* [Installed Playout Gateway](../installing-a-gateway/playout-gateway.md)
-* [Installed and configured Studio Blueprints](../installing-blueprints.md#installing-a-studio-blueprint)
+* [Installed and running Sofie&nbsp;Core](../installing-sofie-server-core)
+* [Installed Playout Gateway](../installing-a-gateway/playout-gateway)
+* [Installed and configured Studio Blueprints](../installing-blueprints#installing-a-studio-blueprint)
 
 The following pages are broken up by equipment type that is supported by Sofie's Gateways.
 
 ## Playout & Recording
-* [CasparCG Graphics and Video Server](casparcg-server-installation.md) - _Graphics / Playout / Recording_
+* [CasparCG Graphics and Video Server](casparcg-server-installation) - _Graphics / Playout / Recording_
 * [Blackmagic Design's HyperDeck](https://www.blackmagicdesign.com/products/hyperdeckstudio) - _Recording_ 
 * [Quantel](http://www.quantel.com) Solutions - _Playout_
 * [Vizrt](https://www.vizrt.com/) Graphics Solutions - _Graphics / Playout_

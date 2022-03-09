@@ -41,8 +41,8 @@ There are a number of libraries used in the Sofie ecosystem:
 
 There are also a few typings-only libraries that define interfaces between applications:
 
-* [**Blueprints integration**](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) Defines the interface between [**Blueprints**](/docs/user-guide/concepts-and-architecture#blueprints) and **Sofie&nbsp;Core**.
-* [**Timeline State Resolver types**](https://www.npmjs.com/package/timeline-state-resolver-types) Defines the interface between [**Blueprints**](/docs/user-guide/concepts-and-architecture#blueprints) and the timeline that will be fed into **TSR** for playout.
+* [**Blueprints Integration**](https://www.npmjs.com/package/tv-automation-sofie-blueprints-integration) Defines the interface between [**Blueprints**](../user-guide/concepts-and-architecture#blueprints) and **Sofie&nbsp;Core**.
+* [**Timeline State Resolver types**](https://www.npmjs.com/package/timeline-state-resolver-types) Defines the interface between [**Blueprints**](../user-guide/concepts-and-architecture#blueprints) and the timeline that will be fed into **TSR** for playout.
 
 ## Other Sofie-related Repositories
 
@@ -51,7 +51,7 @@ There are also a few typings-only libraries that define interfaces between appli
 * [**CasparCG Media Scanner** \(NRK fork\)](https://github.com/nrkno/sofie-casparcg-server) Sofie-specific fork of CasparCG&nbsp;Server 2.2 Media&nbsp;Scanner.
 * [**Package Manager**](https://github.com/nrkno/sofie-package-manager) Handles media asset transfer and media file management for pulling new files and deleting expired files on playout devices in a more performant, and possibly distributed, way. Can smartly figure out how to get a file on storage A to playout server B.
 * [**Media Manager**](https://github.com/nrkno/sofie-media-management) *(deprecated)* Handles media transfer and media file management for pulling new files and deleting expired files on playout devices.
-* [**Quantel Browser plugin**](https://github.com/nrkno/sofie-quantel-browser-plugin) MOS-compatible Quantel video clip browser for use with Sofie.
+* [**Quantel Browser Plugin**](https://github.com/nrkno/sofie-quantel-browser-plugin) MOS-compatible Quantel video clip browser for use with Sofie.
 * [**Sisyfos Audio Controller**](https://github.com/nrkno/sofie-sisyfos-audio-controller) *developed by [_olzzon_](https://github.com/olzzon/)*
 
 

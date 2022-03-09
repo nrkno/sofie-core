@@ -7,18 +7,18 @@ hide_table_of_contents: false
 
 _**Sofie**_ is a web-based, open source TV automation system for studios and live shows,  
 used in daily live TV news productions by the Norwegian public&nbsp;service broadcaster  
-[**NRK**](/docs/about-sofie) since September 2018.
+[**NRK**](docs/about-sofie) since September 2018.
 
 
-#### [User Guide](/docs/user-guide/intro)
+#### [User Guide](docs/user-guide/intro)
 * General documentation describing functionality, installation, and operation of a _Sofie_ system.
 
 
-#### [For Developers](/docs/for-developers/intro)
+#### [For Developers](docs/for-developers/intro)
 * Specific documentation regarding development and contribution to the _Sofie_ code base.
 
 
-#### [Releases](/docs/releases)
+#### [Releases](docs/releases)
 * Current, past, and upcoming releases of the _Sofie_ system.
 
 

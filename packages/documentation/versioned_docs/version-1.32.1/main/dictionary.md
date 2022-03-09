@@ -1,7 +1,7 @@
 # Features
 
 :::info
-Reading tip: [Concepts & Architecture](features-and-configuration/concepts-and-architecture.md)
+Reading tip: [Concepts & Architecture](features-and-configuration/concepts-and-architecture)
 :::
 
 ## Lobby
@@ -76,12 +76,12 @@ Documentation for this section is yet to be written.
 
 ![Switchboard](/img/docs/main/switchboard.png)
 
-The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](features-and-configuration/concepts-and-architecture.md#system-organization-studio-and-show-style).
+The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](features-and-configuration/concepts-and-architecture#system-organization-studio-and-show-style).
 
 The Switchboard panel can be accessed from the Rundown View's right-hand Toolbar, by clicking on the Switchboard button, next to the Support panel button.
 
 :::info
-Technically, the switchboard activates and deactivates Route Sets. The Route Sets are grouped by Exclusivity Group. If an Exclusivity Group contains exactly two elements with the `ACTIVATE_ONLY` mode, the Route Sets will be displayed on either side of the switch. Otherwise, they will be displayed separately in a list next to an _Off_ position. See also [Settings ● Route sets](features-and-configuration/settings-view.md#route-sets).
+Technically, the switchboard activates and deactivates Route Sets. The Route Sets are grouped by Exclusivity Group. If an Exclusivity Group contains exactly two elements with the `ACTIVATE_ONLY` mode, the Route Sets will be displayed on either side of the switch. Otherwise, they will be displayed separately in a list next to an _Off_ position. See also [Settings ● Route sets](features-and-configuration/settings-view#route-sets).
 :::
 
 ### Playing things
@@ -90,13 +90,13 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 #### Take Point
 
-The Take point is currently playing [Part](dictionary.md#part) in the rundown, indicated by the "On Air" line in the GUI.  
+The Take point is currently playing [Part](dictionary#part) in the rundown, indicated by the "On Air" line in the GUI.  
 What's played on air is calculated from the timeline objects in the Pieces in the currently playing part.
 
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
 
 :::info
-You can TAKE the next [Part](dictionary.md#part) by pressing F12 or the Numpad Enter key.
+You can TAKE the next [Part](dictionary#part) by pressing F12 or the Numpad Enter key.
 :::
 
 #### Next Point
@@ -115,10 +115,10 @@ If a Piece has more or less content than the Part's expected duration allows, an
 
 #### Lookahead
 
-Elements in the [Next point ](dictionary.md#next-point)\(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and play-out devices used. This feature is called "Lookahead".
+Elements in the [Next point ](dictionary#next-point)\(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and play-out devices used. This feature is called "Lookahead".
 
 ## Additional views
 
-Sofie features a few separate views, such as the prompter, [read about them here](features-and-configuration/sofie-pages.md).
+Sofie features a few separate views, such as the prompter, [read about them here](features-and-configuration/sofie-pages).
 
 ![Prompter View](/img/docs/main/prompter-view.png)

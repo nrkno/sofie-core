@@ -1,10 +1,10 @@
 # Settings
 
 :::caution
-The settings pages are only visible to users with the right [access level](sofie-navigation.md)!
+The settings pages are only visible to users with the right [access level](sofie-navigation)!
 :::
 
-Recommended read before diving into the settings: [System, \(Organization\), Studio & Show Style](concepts-and-architecture.md#system-organization-studio-and-show-style).
+Recommended read before diving into the settings: [System, \(Organization\), Studio & Show Style](concepts-and-architecture#system-organization-studio-and-show-style).
 
 ## System
 
@@ -31,11 +31,11 @@ This section allows you to add and remove Gateways that are related to this _Stu
 
 ### Blueprint configuration
 
-Sofie allows the Blueprints to expose custom configuration fields that allow the System Administrator to reconfigure how these Blueprints work through the Sofie UI. Here you can change the configuration of the [Studio Blueprint](concepts-and-architecture.md#studio-blueprints).
+Sofie allows the Blueprints to expose custom configuration fields that allow the System Administrator to reconfigure how these Blueprints work through the Sofie UI. Here you can change the configuration of the [Studio Blueprint](concepts-and-architecture#studio-blueprints).
 
 ### Layer Mappings
 
-This section allows you to add, remove and configure how logical device-control will be translated to physical automation control. [Blueprints](concepts-and-architecture.md#blueprints) control devices through objects placed on a [Timeline](concepts-and-architecture.md#timeline) using logical device identifiers called _Layers_. A layer represents a single aspect of a device that can be controlled at a given time: a video switcher's M/E bus, an audio mixers's fader, an OSC control node, a video server's output channel. Layer Mappings translate these logical identifiers into physical device aspects, for example:
+This section allows you to add, remove and configure how logical device-control will be translated to physical automation control. [Blueprints](concepts-and-architecture#blueprints) control devices through objects placed on a [Timeline](concepts-and-architecture#timeline) using logical device identifiers called _Layers_. A layer represents a single aspect of a device that can be controlled at a given time: a video switcher's M/E bus, an audio mixers's fader, an OSC control node, a video server's output channel. Layer Mappings translate these logical identifiers into physical device aspects, for example:
 
 ![A sample configuration of a Layer Mapping for the M/E1 Bus of an ATEM switcher](/img/docs/main/features/atem-layer-mapping-example.png)
 
@@ -45,7 +45,7 @@ These mappings allow the System Administrator to reconfigure what devices the Bl
 
 #### Route Sets
 
-In order to allow the Producer to reconfigure the automation from the Switchboard in the [Rundown View](../dictionary#rundown-view), as well as have some pre-set automation control available for the System Administrator, Sofie has a concept of Route Sets. Route Sets work on top of the Layer Mappings, by configuring sets of [Layer Mappings](settings-view.md#layer-mappings) that will re-route the control from one device to another, or to disable the automation altogether. These Route Sets are presented to the Producer in the [Switchboard ](../dictionary#switchboard)panel.
+In order to allow the Producer to reconfigure the automation from the Switchboard in the [Rundown View](../dictionary#rundown-view), as well as have some pre-set automation control available for the System Administrator, Sofie has a concept of Route Sets. Route Sets work on top of the Layer Mappings, by configuring sets of [Layer Mappings](settings-view#layer-mappings) that will re-route the control from one device to another, or to disable the automation altogether. These Route Sets are presented to the Producer in the [Switchboard ](../dictionary#switchboard)panel.
 
 A Route Set is essentially a distinct set of Layer Mappings, which can modify the settings already configured by the Layer Mappings, but can be turned On and Off. Called Routes, these can change:
 

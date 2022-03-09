@@ -8,7 +8,7 @@ sidebar_position: 3
 
 * [Installed and running _Sofie&nbsp;Core_](installing-sofie-server-core)
 
-Once _Sofie&nbsp;Core_ has been installed and is running you can begin setting it up. The first step is to navigate to the _Settings page_. Please review the [Sofie Access Level](/sofie-core/user-guide/features/access-levels) page for assistance getting there.
+Once _Sofie&nbsp;Core_ has been installed and is running you can begin setting it up. The first step is to navigate to the _Settings page_. Please review the [Sofie Access Level](../features/access-levels) page for assistance getting there.
 
 To upgrade to a newer version or installation of new blueprints, Sofie needs to run its "Upgrade database" procedure to migrate data and pre-fill various settings. You can do this by clicking the _Upgrade Database_ button in the menu. 
 

@@ -2,7 +2,7 @@
 
 The pages below are intended for developers of any of the Sofie-related repos, or blueprints.
 
-A read-through of the [Concepts & Architectures](/user-guide/concepts-and-architecture.md) is recommended, before diving too deep into development.
+A read-through of the [Concepts & Architectures](../user-guide/concepts-and-architecture) is recommended, before diving too deep into development.
 
 * [Libraries](./libraries)
 * [Contribution Guidelines](./contribution-guidelines)

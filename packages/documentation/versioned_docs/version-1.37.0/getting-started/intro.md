@@ -18,7 +18,7 @@ The _Status_ pages displays the current status for the attached devices and gate
 
 ![Status Page &#x2013; Describes the state of Sofie Core](/img/docs/getting-started/status-page.jpg)
 
-The _Settings_ pages contains various settings for the studio, show styles, blueprints etc.. If the link to the settings page is not visible in your application, check your [Access Levels](./sofie-navigation.md). More info on specific parts of the _Settings_ page can be found in their corresponding guide sections. 
+The _Settings_ pages contains various settings for the studio, show styles, blueprints etc.. If the link to the settings page is not visible in your application, check your [Access Levels](./sofie-navigation). More info on specific parts of the _Settings_ page can be found in their corresponding guide sections. 
 
 ![Settings Page &#x2013; Describes how the Core is configured](/img/docs/getting-started/settings-page.jpg)
 

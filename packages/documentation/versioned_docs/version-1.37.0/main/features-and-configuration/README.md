@@ -1,7 +1,7 @@
 # Configuration
 
 :::caution
-If you can't see the settings menu, make sure you have the right [access level](sofie-navigation.md).
+If you can't see the settings menu, make sure you have the right [access level](sofie-navigation).
 :::
 
 * [Concepts And Architecture](./concepts-and-architecture)

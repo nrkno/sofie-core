@@ -118,7 +118,7 @@ The default configuration will give you one preview window. No additional change
 
 #### Required Hardware
 
-To be production ready, you will need to output an SDI or HDMI signal from your production machine. CasparCG&nbsp;Server supports Blackmagic Design's DeckLink cards because they provide a key generator which will aid in keeping the alpha and fill channels of your graphics in sync. Please review the [DeckLink Cards](casparcg-server-installation.md#decklink-cards) section of this page to choose which card will best fit your production needs.
+To be production ready, you will need to output an SDI or HDMI signal from your production machine. CasparCG&nbsp;Server supports Blackmagic Design's DeckLink cards because they provide a key generator which will aid in keeping the alpha and fill channels of your graphics in sync. Please review the [DeckLink Cards](casparcg-server-installation#decklink-cards) section of this page to choose which card will best fit your production needs.
 
 #### Configuration
 
@@ -212,7 +212,7 @@ A window will open and display the status for the server and scanner. You can st
 
 ## Connecting Sofie to the CasparCG&nbsp;Server
 
-Now that your CasparCG&nbsp;Server software is running, you can connect it to the _Sofie&nbsp;Core_. Navigate back to the _Settings page_ and in the menu, select the _Playout Gateway_. If the _Playout Gateway's_ status does not read _Good_, then please review the [Installing and Setting up the Playout Gateway](../installing-a-gateway/playout-gateway.md) section of this guide.
+Now that your CasparCG&nbsp;Server software is running, you can connect it to the _Sofie&nbsp;Core_. Navigate back to the _Settings page_ and in the menu, select the _Playout Gateway_. If the _Playout Gateway's_ status does not read _Good_, then please review the [Installing and Setting up the Playout Gateway](../installing-a-gateway/playout-gateway) section of this guide.
 
 Under the Sub Devices section, you can add a new device with the _+_ button. Then select the pencil \( edit \) icon on the new device to open the sub device's settings. Select the _Device Type_ option and choose _CasparCG_ from the drop down menu. Some additional fields will be added to the form.
 
@@ -226,7 +226,7 @@ In the _Attached Sub Devices_ section, you should now see the status of the Casp
 - [Media Scanner Releases](https://github.com/nrkno/sofie-media-scanner/releases) on GitHub.
 - [CasparCG Launcher](https://github.com/nrkno/sofie-casparcg-launcher) on GitHub.
 - [Microsoft Visual C++ 2015 Redistributable](https://www.microsoft.com/en-us/download/details.aspx?id=52685) on Microsoft's website.
-- [Blackmagic Design's DeckLink Cards](https://www.blackmagicdesign.com/products/decklink/models) on Blackmagic's website. Check the [DeckLink cards](casparcg-server-installation.md#decklink-cards) section for compatibility.
+- [Blackmagic Design's DeckLink Cards](https://www.blackmagicdesign.com/products/decklink/models) on Blackmagic's website. Check the [DeckLink cards](casparcg-server-installation#decklink-cards) section for compatibility.
 - [Installing a DeckLink Card](https://documents.blackmagicdesign.com/UserManuals/DesktopVideoManual.pdf) as a PDF.
 - [Desktop Video Download Page](https://www.blackmagicdesign.com/support/family/capture-and-playback) on Blackmagic's website.
 - [CasparCG Configuration Validator](https://casparcg.net/validator/)

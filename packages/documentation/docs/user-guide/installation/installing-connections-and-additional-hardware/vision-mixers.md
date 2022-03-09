@@ -2,7 +2,7 @@
 
 ## ATEM – Blackmagic Design 
 
-The [Playout Gateway](../installing-a-gateway/playout-gateway.md) supports communicating with the entire line up of Blackmagic Design's ATEM vision mixers.
+The [Playout Gateway](../installing-a-gateway/playout-gateway) supports communicating with the entire line up of Blackmagic Design's ATEM vision mixers.
 
 ### Connecting Sofie
 

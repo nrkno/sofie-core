@@ -8,7 +8,7 @@
 
 [**Sofie Core**](user-guide/dictionary#sofie-core) is a web-server which handle business logic and serves the Web-GUI.  
 It is a [NodeJS](https://nodejs.org) process backed up by a [MongoDB](https://www.mongodb.com/) database and based on the framework [Meteor](http://meteor.com).  
-Read more: [_System architecture_](concepts-and-architecture.md#system-architecture)_,_ [_Getting Started_](/docs/getting-started/intro)
+Read more: [_System architecture_](concepts-and-architecture#system-architecture)_,_ [_Getting Started_](/docs/getting-started/intro)
 
 ### Gateways
 
@@ -150,7 +150,7 @@ The Timeline is stored by Sofie Core in a MongoDB collection. It is generated wh
 - The [Next:ed Part](user-guide/dictionary#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](user-guide/dictionary#lookahead)\)
 - Any [AdLibs ](user-guide/dictionary#adlib-pieces)the user has manually selected to play
 
-The [**Playout Gateway**](../for-developers/libraries.md#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)-library \(TSR\).
+The [**Playout Gateway**](../for-developers/libraries#gateways) then picks up the new timeline, and pipes it into the [timeline-state-resolver](https://github.com/nrkno/tv-automation-state-timeline-resolver)-library \(TSR\).
 
 The TSR then...
 

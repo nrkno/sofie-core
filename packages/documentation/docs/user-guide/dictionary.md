@@ -4,7 +4,7 @@ import TabItem from '@theme/TabItem';
 # Dictionary
 
 :::info
-Reading tip: [Concepts & Architecture](concepts-and-architecture.md)
+Reading tip: [Concepts & Architecture](concepts-and-architecture)
 :::
 
 ## Lobby
@@ -20,7 +20,7 @@ The _Rundown View_ is the main view that the producer is working in.
 ![The Rundown view and naming conventions of components](/img/docs/main/sofie-naming-conventions.png)
 
 ## Blueprints
-A fundamental concept of _Sofie_, described in the [Blueprints](/docs/user-guide/concepts-and-architecture#blueprints) section.
+A fundamental concept of _Sofie_, described in the [Blueprints](concepts-and-architecture#blueprints) section.
 
 ### Segment Header Countdowns
 
@@ -72,12 +72,12 @@ Documentation for this section is yet to be written.
 
 ![Switchboard](/img/docs/main/switchboard.png)
 
-The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](/user-guide/concepts-and-architecture.md#system-organization-studio-and-show-style).
+The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](concepts-and-architecture#system-organization-studio-and-show-style).
 
 The Switchboard panel can be accessed from the Rundown View's right-hand Toolbar, by clicking on the Switchboard button, next to the Support panel button.
 
 :::info
-Technically, the switchboard activates and deactivates Route Sets. The Route Sets are grouped by Exclusivity Group. If an Exclusivity Group contains exactly two elements with the `ACTIVATE_ONLY` mode, the Route Sets will be displayed on either side of the switch. Otherwise, they will be displayed separately in a list next to an _Off_ position. See also [Settings ● Route sets](/user-guide/configuration/settings-view.md#route-sets).
+Technically, the switchboard activates and deactivates Route Sets. The Route Sets are grouped by Exclusivity Group. If an Exclusivity Group contains exactly two elements with the `ACTIVATE_ONLY` mode, the Route Sets will be displayed on either side of the switch. Otherwise, they will be displayed separately in a list next to an _Off_ position. See also [Settings ● Route sets](/user-guide/configuration/settings-view#route-sets).
 :::
 
 ### Playing Things
@@ -86,7 +86,7 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 #### Take Point
 
-The Take point is currently playing [Part](/docs/user-guide/dictionary#part) in the rundown, indicated by the "On Air" line in the GUI.  
+The Take point is currently playing [Part](#part) in the rundown, indicated by the "On Air" line in the GUI.  
 What's played on air is calculated from the timeline objects in the Pieces in the currently playing part.
 
 The Pieces inside of a Part determines what's going to happen, the could be indicating things like VT:s, cut to cameras, graphics, or what script the host is going to read.
@@ -111,19 +111,19 @@ If a Piece has more or less content than the Part's expected duration allows, an
 
 #### Lookahead
 
-Elements in the [Next point](/docs/user-guide/dictionary#next-point) \(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and playout devices used. This feature is called "Lookahead".
+Elements in the [Next point](#next-point) \(or beyond\) might be pre-loaded or "put on preview", depending on the blueprints and playout devices used. This feature is called "Lookahead".
 
 ### Storyboard Mode
 
 To the left side of the Zoom buttons, there's a button controlling the display style of a given Segment. The default display style of
-a Segment can be indicated by the [Blueprints](/user-guide/concepts-and-architecture.md#blueprints), but the User can switch to
+a Segment can be indicated by the [Blueprints](concepts-and-architecture#blueprints), but the User can switch to
 a different mode at any time.
 
 ![Storyboard Mode](/img/docs/main/storyboard.png)
 
 The **_Storyboard_** mode is an alternative to the default **_Timeline_** mode. In Storyboard mode, the accurate placement in time of each Piece is not visualized, so that more Parts can be visualized at once. This can be particularly useful in Shows without very strict timing planning or where timing is not driven by the User, but rather some external factor; or in Shows where very long Parts are joined with very short ones: sports, events and debates. This mode also does not visualize the history of the playback: rather, it only shows what is currently On Air or is planned to go On Air.
 
-Storyboard mode selects a "main" Piece of the Part, using the same logic as the [Presenter View](/user-guide/features/sofie-views.md#presenter-view), and presents it with a big, hover-scrub-enabled thumbnail for easy preview. The countdown to freeze-frame is displayed in the top-right hand corner of the Thumbnail, once less than 10 seconds remain to freeze-frame. The Transition Piece is displayed on top of the thumbnail. Other Pieces are placed below the thumbnail, stacked in order of playback. After a Piece goes off-air, it will dissapear from the view.
+Storyboard mode selects a "main" Piece of the Part, using the same logic as the [Presenter View](features/sofie-views#presenter-view), and presents it with a big, hover-scrub-enabled thumbnail for easy preview. The countdown to freeze-frame is displayed in the top-right hand corner of the Thumbnail, once less than 10 seconds remain to freeze-frame. The Transition Piece is displayed on top of the thumbnail. Other Pieces are placed below the thumbnail, stacked in order of playback. After a Piece goes off-air, it will dissapear from the view.
 
 If no more Parts can be displayed in a given Segment, they are stacked in order on the right side of the Segment. The User can scroll through thse Parts by click-and-dragging the Storyboard area, or using the mouse wheel - `Alt`+Wheel, if only a vertical wheel is present in the mouse.
 
@@ -131,6 +131,6 @@ All user interactions work in the Storyboard mode the same as in Timeline mode: 
 
 ## Additional Views
 
-Sofie features several separate views, such as the prompter, [read about them here](features/sofie-views.md).
+Sofie features several separate views, such as the prompter, [read about them here](features/sofie-views).
 
 ![Prompter View](/img/docs/main/prompter-view.png)
