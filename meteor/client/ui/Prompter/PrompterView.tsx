@@ -561,25 +561,18 @@ interface IPrompterProps {
 	config: PrompterConfig
 }
 interface IPrompterTrackedProps {
-	prompterData: PrompterData | undefined
+	prompterData: PrompterData | null
 }
 
 type ScrollAnchor = [number, string] | null
 
-export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
-	const playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
-
-	if (playlist) {
-		const prompterData = PrompterAPI.getPrompterData(props.rundownPlaylistId)
-		return {
-			prompterData,
-		}
-	} else {
-		return {
-			prompterData: undefined,
-		}
-	}
-})(
+export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>(
+	(props: IPrompterProps) => ({
+		prompterData: PrompterAPI.getPrompterData(props.rundownPlaylistId),
+	}),
+	undefined,
+	true
+)(
 	class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, {}> {
 		private _debounceUpdate: NodeJS.Timer
 
@@ -628,7 +621,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		}
 
 		getScrollAnchor = () => {
-			let readPosition = ((this.props.config.margin || 0) * window.innerHeight) / 100
+			let readPosition = ((this.props.config.margin || 0) / 100) * window.innerHeight
 			switch (this.props.config.marker) {
 				case 'top':
 				case 'hide':
@@ -644,12 +637,25 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			let foundPositions: [number, string][] = []
 			// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
-			Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach((anchor) => {
-				const { top } = anchor.getBoundingClientRect()
-				if (top + readPosition <= 10) foundPositions.push([top, '.' + anchor.className.replace(/\s/g, '.')])
+			const windowInnerHeight = window.innerHeight
+			const margin = windowInnerHeight / 30
+
+			Array.from(document.querySelectorAll('.prompter .prompter-line:not(.empty)')).forEach((anchor) => {
+				const { top, bottom } = anchor.getBoundingClientRect()
+				// find a prompter line that is in the read area of the viewport
+				if (top <= window.innerHeight && bottom >= readPosition) foundPositions.push([top, anchor.id])
 			})
 
-			foundPositions = _.sortBy(foundPositions, (v) => 1 * v[0])
+			// if we didn't find any text, let's use scroll-anchors instead (Segment and Part names)
+			if (foundPositions.length === 0) {
+				Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach((anchor) => {
+					const { top } = anchor.getBoundingClientRect()
+					// find a prompter scroll anchor that is just above the prompter read position
+					if (top <= readPosition + margin) foundPositions.push([top, anchor.id])
+				})
+			}
+
+			foundPositions = _.sortBy(foundPositions, (topOffset) => Number(topOffset[0]))
 
 			if (foundPositions.length > 0) {
 				return foundPositions[foundPositions.length - 1]
@@ -657,9 +663,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			return null
 		}
 
-		restoreScrollAnchor = (scrollAnchor: ScrollAnchor) => {
+		private restoreScrollAnchor = (scrollAnchor: ScrollAnchor) => {
 			if (scrollAnchor === null) return
-			const anchor = document.querySelector(scrollAnchor[1])
+			const anchor = document.getElementById(scrollAnchor[1])
 			if (anchor) {
 				const { top } = anchor.getBoundingClientRect()
 
@@ -667,7 +673,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					top: top - scrollAnchor[0],
 				})
 			} else {
-				console.warn('Read anchor could not be found: ' + scrollAnchor[1])
+				console.warn(`Read anchor could not be found: #${scrollAnchor[1]}`)
 			}
 		}
 
@@ -678,24 +684,24 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		}
 
 		getSnapshotBeforeUpdate() {
-			return this.getScrollAnchor() as any
+			return this.getScrollAnchor()
 		}
 
-		componentDidUpdate(prevProps, prevState, snapshot) {
+		componentDidUpdate(prevProps, prevState, snapshot: ScrollAnchor) {
 			this.restoreScrollAnchor(snapshot)
 		}
 
-		renderPrompterData(prompterData: PrompterData) {
-			const getPartStatus = (part: PrompterDataPart) => {
-				if (prompterData.currentPartInstanceId === part.id) {
-					return 'live'
-				} else if (prompterData.nextPartInstanceId === part.id) {
-					return 'next'
-				} else {
-					return null
-				}
+		private getPartStatus(prompterData: PrompterData, part: PrompterDataPart) {
+			if (prompterData.currentPartInstanceId === part.id) {
+				return 'live'
+			} else if (prompterData.nextPartInstanceId === part.id) {
+				return 'next'
+			} else {
+				return null
 			}
+		}
 
+		private renderPrompterData(prompterData: PrompterData) {
 			const lines: React.ReactNode[] = []
 
 			prompterData.segments.forEach((segment) => {
@@ -704,10 +710,11 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				}
 
 				const firstPart = segment.parts[0]
-				const firstPartStatus = getPartStatus(firstPart)
+				const firstPartStatus = this.getPartStatus(prompterData, firstPart)
 
 				lines.push(
 					<div
+						id={`segment_${segment.id}`}
 						data-obj-id={segment.id}
 						key={'segment_' + segment.id}
 						className={ClassNames(
@@ -725,9 +732,15 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				segment.parts.forEach((part) => {
 					lines.push(
 						<div
+							id={`part_${part.id}`}
 							data-obj-id={segment.id + '_' + part.id}
 							key={'part_' + part.id}
-							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}
+							className={ClassNames(
+								'prompter-part',
+								'scroll-anchor',
+								'part-' + part.id,
+								this.getPartStatus(prompterData, part)
+							)}
 						>
 							{part.title || 'N/A'}
 						</div>
@@ -736,6 +749,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					part.pieces.forEach((line) => {
 						lines.push(
 							<div
+								id={`line_${line.id}`}
 								data-obj-id={segment.id + '_' + part.id + '_' + line.id}
 								key={'line_' + part.id + '_' + segment.id + '_' + line.id}
 								className={ClassNames(
