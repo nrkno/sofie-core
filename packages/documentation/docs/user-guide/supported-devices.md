@@ -1,8 +1,9 @@
-# Supported playout devices
+---
+sidebar_position: 4
+---
+# Supported Playout Devices
 
-## Supported playout devices
-
-All playout devices are essentially driven through the timeline, which passes through _Sofie&nbsp;Core_ into the playout-gateway where it is processed by the timeline-state-resolver. This page details which devices and what parts of the devices can be controlled through the timeline-state-resolver library. In general a blueprints developer can use the [timeline-state-resolver-types package](https://www.npmjs.com/package/timeline-state-resolver-types) to see the interfaces for the timeline objects used to control the devices.
+All playout devices are essentially driven through the _timeline_, which passes through _Sofie&nbsp;Core_ into the Playout Gateway where it is processed by the timeline-state-resolver. This page details which devices and what parts of the devices can be controlled through the timeline-state-resolver library. In general a blueprints developer can use the [timeline-state-resolver-types package](https://www.npmjs.com/package/timeline-state-resolver-types) to see the interfaces for the timeline objects used to control the devices.
 
 ## Blackmagic Design's ATEM Vision Mixers <a id="blackmagic-design-atem-vision-mixers"></a>
 
@@ -17,7 +18,7 @@ We support almost all features of these devices except fairlight audio, camera c
 
 ## CasparCG&nbsp;Server<a id="casparcg"></a>
 
-Tested and developed against [a fork of version 2.1](https://github.com/nrkno/sofie-casparcg-server) with more support for 2.3 being added in the future.
+Tested and developed against [a fork of version 2.1](https://github.com/nrkno/sofie-casparcg-server) with more support for version 2.3 being added in the future.
 
 * Video playback
 * Graphics playback
