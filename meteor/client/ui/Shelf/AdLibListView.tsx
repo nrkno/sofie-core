@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import classNames from 'classnames'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { Random } from 'meteor/random'
 import { RundownUtils } from '../../lib/rundown'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import { AdLibPieceUi, AdlibSegmentUi } from './AdLibPanel'
@@ -12,6 +11,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
+import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -136,7 +136,7 @@ export function matchTags(item: AdLibPieceUi, tags?: string[]) {
 
 export function AdLibListView(props: IListViewPropsHeader) {
 	const table = useRef<HTMLTableElement>(null)
-	const instanceId = useRef(Random.id())
+	const instanceId = useRef(getRandomString())
 
 	useEffect(() => {
 		if (!table.current || !table.current.id || !props.selectedSegment) return

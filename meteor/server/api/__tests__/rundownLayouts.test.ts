@@ -1,8 +1,7 @@
-import { Random } from 'meteor/random'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { protectString, literal, unprotectString } from '../../../lib/lib'
+import { protectString, literal, unprotectString, getRandomString } from '../../../lib/lib'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
 import {
@@ -52,7 +51,7 @@ describe('Rundown Layouts', () => {
 
 	describe('HTTP API', () => {
 		function makeMockLayout(env: DefaultEnvironment) {
-			const rundownLayoutId = Random.id()
+			const rundownLayoutId = getRandomString()
 			const mockLayout = literal<RundownLayout>({
 				_id: protectString(rundownLayoutId),
 				name: 'MOCK LAYOUT',

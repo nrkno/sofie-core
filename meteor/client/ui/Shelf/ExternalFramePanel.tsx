@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
@@ -10,7 +9,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
-import { literal, protectString } from '../../../lib/lib'
+import { getRandomString, literal, protectString } from '../../../lib/lib'
 import {
 	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
@@ -122,7 +121,7 @@ export const ExternalFramePanel = withTranslation()(
 		onKeyEvent = (e: KeyboardEvent) => {
 			this.sendSofieMessage(
 				literal<SofieExternalMessage>({
-					id: Random.id(),
+					id: getRandomString(),
 					type: SofieExternalMessageType.KEYBOARD_EVENT,
 					// Send the event sanitized to prevent sending huge objects
 					payload: _.omit(
@@ -265,7 +264,7 @@ export const ExternalFramePanel = withTranslation()(
 				case SofieExternalMessageType.HELLO:
 					this.sendSofieMessageAwaitReply(
 						literal<WelcomeSofieExternalMessage>({
-							id: Random.id(),
+							id: getRandomString(),
 							replyToId: message.id,
 							type: SofieExternalMessageType.WELCOME,
 							payload: {
@@ -287,7 +286,7 @@ export const ExternalFramePanel = withTranslation()(
 				case SofieExternalMessageType.FOCUS_IN: {
 					this.sendSofieMessage(
 						literal<SofieExternalMessage>({
-							id: Random.id(),
+							id: getRandomString(),
 							replyToId: message.id,
 							type: SofieExternalMessageType.ACK,
 						})
@@ -329,7 +328,7 @@ export const ExternalFramePanel = withTranslation()(
 		sendSofieCurrentState() {
 			this.sendSofieMessage(
 				literal<CurrentNextPartChangedSofieExternalMessage>({
-					id: Random.id(),
+					id: getRandomString(),
 					type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 					payload: {
 						partInstanceId: this.props.playlist.currentPartInstanceId,
@@ -338,7 +337,7 @@ export const ExternalFramePanel = withTranslation()(
 			)
 			this.sendSofieMessage(
 				literal<CurrentNextPartChangedSofieExternalMessage>({
-					id: Random.id(),
+					id: getRandomString(),
 					type: SofieExternalMessageType.NEXT_PART_CHANGED,
 					payload: {
 						partInstanceId: this.props.playlist.nextPartInstanceId,
@@ -466,7 +465,7 @@ export const ExternalFramePanel = withTranslation()(
 			if (prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId) {
 				this.sendSofieMessage(
 					literal<CurrentNextPartChangedSofieExternalMessage>({
-						id: Random.id(),
+						id: getRandomString(),
 						type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 						payload: {
 							partInstanceId: this.props.playlist.currentPartInstanceId,
@@ -479,7 +478,7 @@ export const ExternalFramePanel = withTranslation()(
 			if (prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId) {
 				this.sendSofieMessage(
 					literal<CurrentNextPartChangedSofieExternalMessage>({
-						id: Random.id(),
+						id: getRandomString(),
 						type: SofieExternalMessageType.NEXT_PART_CHANGED,
 						payload: {
 							partInstanceId: this.props.playlist.nextPartInstanceId,

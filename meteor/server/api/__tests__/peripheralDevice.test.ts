@@ -1,6 +1,5 @@
 import '../../../__mocks__/_extendJest'
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
@@ -735,7 +734,7 @@ describe('test peripheralDevice general API methods', () => {
 		let deviceId: ProtectedString<any>
 		const MOCK_COLLECTION = 'MockCollection'
 		const MOCK_MEDIA_ID = 'SOME_FILE'.toUpperCase()
-		const MOCK_OBJID = Random.id()
+		const MOCK_OBJID = getRandomString()
 		beforeEach(async () => {
 			deviceId = getRandomId()
 			env = await setupDefaultStudioEnvironment()
