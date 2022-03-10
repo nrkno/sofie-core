@@ -304,8 +304,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			.catch(console.error)
 	}, [props.showStyleBaseId])
 
-	const onRemoveTriggeredAction = useCallback((triggeredActionsId: TriggeredActionId) => {
-		MeteorCall.triggeredActions.removeTriggeredActions(triggeredActionsId).catch(console.error)
+	const onRemoveTriggeredAction = useCallback((triggeredActionId: TriggeredActionId) => {
+		MeteorCall.triggeredActions.removeTriggeredActions(triggeredActionId).catch(console.error)
 	}, [])
 
 	const onDuplicateEntry = useCallback(

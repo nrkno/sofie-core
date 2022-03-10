@@ -76,6 +76,7 @@ function deepFreezeInner(object: any): void {
 export function getRandomString(numberOfChars?: number): string {
 	return Random.id(numberOfChars)
 }
+
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
 	return protectString(getRandomString(numberOfChars))
 }

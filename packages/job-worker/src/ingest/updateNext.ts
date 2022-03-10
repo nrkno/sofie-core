@@ -39,15 +39,17 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 				nextPartInstance,
 				allPartsAndSegments
 			)
-			if (!newNextPart) {
-				// No new next, so leave as is
-				span?.end()
-				return
-			}
 
-			if (newNextPart?.part?._id !== nextPartInstance.part._id || !isPartPlayable(nextPartInstance.part)) {
+			if (
+				// Nothing should be nexted
+				!newNextPart ||
+				// The nexted-part should be different to what is selected
+				newNextPart.part._id !== nextPartInstance.part._id ||
+				// The nexted-part Instance is no longer playable
+				!isPartPlayable(nextPartInstance.part)
+			) {
 				// The 'new' next part is before the current next, so move the next point
-				await setNextPartInner(context, cache, newNextPart.part)
+				await setNextPartInner(context, cache, newNextPart?.part ?? null)
 			}
 		} else if (!nextPartInstance || nextPartInstance.orphaned === 'deleted') {
 			// Don't have a nextPart or it has been deleted, so autoselect something
