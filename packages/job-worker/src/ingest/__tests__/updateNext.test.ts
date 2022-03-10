@@ -513,4 +513,64 @@ describe('ensureNextPartIsValid', () => {
 
 		expect(setNextPartInnerMock).toHaveBeenCalledTimes(0)
 	})
+	test('Next part is last in rundown and gets deleted', async () => {
+		// Insert a temporary instance
+		const instanceId: PartInstanceId = protectString('tmp_part_1_instance')
+		const part = literal<DBPart>({
+			_id: protectString('tmp_part_1'),
+			_rank: 99,
+			rundownId: rundownId,
+			segmentId: protectString('mock_segment4'),
+			externalId: 'tmp1',
+			title: 'Tmp Part 1',
+			expectedDurationWithPreroll: undefined,
+		})
+		await context.directCollections.PartInstances.insertOne(
+			literal<DBPartInstance>({
+				_id: instanceId,
+				rundownId: rundownId,
+				segmentId: protectString('mock_segment4'),
+				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
+				takeCount: 0,
+				rehearsal: false,
+				part: part,
+			})
+		)
+		await context.directCollections.Parts.insertOne(part)
+
+		try {
+			// make sure it finds the part we expect
+			await resetPartIds('mock_part_instance9', null, false)
+			await ensureNextPartIsValid()
+
+			expect(setNextPartInnerMock).toHaveBeenCalledTimes(1)
+			expect(setNextPartInnerMock).toHaveBeenCalledWith(
+				expect.objectContaining({}),
+				expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+				expect.objectContaining({ _id: 'tmp_part_1' })
+			)
+			jest.clearAllMocks()
+
+			// set as the part we expect
+			await resetPartIds('mock_part_instance9', instanceId, false)
+
+			// remove the last part
+			await context.directCollections.Parts.remove(part._id)
+
+			// make sure the next part gets cleared
+			await ensureNextPartIsValid()
+
+			expect(setNextPartInnerMock).toHaveBeenCalledTimes(1)
+			expect(setNextPartInnerMock).toHaveBeenCalledWith(
+				expect.objectContaining({}),
+				expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+				null
+			)
+		} finally {
+			// Cleanup to not mess with other tests
+			await context.directCollections.PartInstances.remove(instanceId)
+			await context.directCollections.Parts.remove(part._id)
+		}
+	})
 })
