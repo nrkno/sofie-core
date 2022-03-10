@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.38.2-1](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.38.2-1) (2022-03-10)
+
+
+### Features
+
+* use a better meteor reactivity debounce ([436b656](https://github.com/nrkno/sofie-core/commit/436b65614f580d21668bac76c65810991f29354c))
+
+
+### Bug Fixes
+
+* add Tab key to be default-disabled when keyboard Triggers are registered ([d8efbb1](https://github.com/nrkno/sofie-core/commit/d8efbb1d775069f51ac0a5484cc033b832b467fa))
+* Collect and pass all pieces into getPieceInstancesForPartInstance to improve performance ([77f4d49](https://github.com/nrkno/sofie-core/commit/77f4d49ea6cd9a674d9005e299e810c4e97cc9be))
+* **ExternalFramePanel:** re-focusing messes up with scroll position ([60447ba](https://github.com/nrkno/sofie-core/commit/60447ba04c47e9b8f29eb168237c27ae0afb2c9d))
+* fix bug introduced by changing a forEach to a for-loop. ([3d46553](https://github.com/nrkno/sofie-core/commit/3d46553ad4d56afc06444e27c588b30ecbc1e4e3))
+* ignore infinite continuations when checking if hold is allowed ([dffb2af](https://github.com/nrkno/sofie-core/commit/dffb2aff83deb7c061b2006f3a082c09ef5ea95c))
+* improve performance of mongoWhere ([4b4963a](https://github.com/nrkno/sofie-core/commit/4b4963a4bc3b3f7a790fbed35cfec6a335eec315))
+* move calculation of currentPartInstancePieceInstances out of loop, to improve performance ([02607a4](https://github.com/nrkno/sofie-core/commit/02607a49118c67a2b1875cd1dcd40b379e6788f9))
+* nexted-partinstance not being cleared if it was the last part in the rundown and gets deleted ([2c42b10](https://github.com/nrkno/sofie-core/commit/2c42b10e9dd7b2e89d16abae7e7e272f5db1e92f))
+* orphaned-deleted segment alternating between deleted and hidden ([2ad1200](https://github.com/nrkno/sofie-core/commit/2ad1200fc51e64021ccc3432d7048172ab72eaf1))
+* **Prompter:** prioritize Script text for anchoring vs anchoring of segment/part titles ([cae1a78](https://github.com/nrkno/sofie-core/commit/cae1a78a96044491bc9e62b30bfbdc1afaa8881e))
+* **Prompter:** when anchoring Prompter script, do not add additional margin ([b13e8f7](https://github.com/nrkno/sofie-core/commit/b13e8f736905fbc315d0075a3364278f3612ebbe))
+* refactor: move out inline-defined-array-function. ([2e63283](https://github.com/nrkno/sofie-core/commit/2e632831c395c5d7a5593612eb0d83eb25c50913))
+* replace Random.id() in favor for a custom one, for performance reasons. ([5b50cfc](https://github.com/nrkno/sofie-core/commit/5b50cfce8b429a0423e87f2e0d3c1dc563d77ac0))
+* scroll position anchoring during Rundown modifications ([3b4aa64](https://github.com/nrkno/sofie-core/commit/3b4aa64691b406757a738d95b81e935e07ad4af3))
+* slow down reactivity on Prompter ([83e2ad6](https://github.com/nrkno/sofie-core/commit/83e2ad683c6ee77bc359de0f73a128ef31ee9a51))
+* sync onEnd infinites into adlib part-instance when sycning ingest changes ([939f3b6](https://github.com/nrkno/sofie-core/commit/939f3b6d5dfba211b82071a9d77fe1af57d36121))
+
 ### [1.38.2-0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.38.2-0) (2022-02-11)
 
 
