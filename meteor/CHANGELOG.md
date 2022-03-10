@@ -18,6 +18,48 @@ All notable changes to this project will be documented in this file. See [standa
 * refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/tv-automation-server-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
 * replace threads with threadedclass ([a3773ed](https://github.com/nrkno/tv-automation-server-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
 
+## [1.39.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
+
+
+### Features
+
+* MigrationContextWithTriggeredActions exposes getTriggeredActionsId ([7bba681](https://github.com/nrkno/sofie-core/commit/7bba681a7eb628a8d476f6802e79c77153d69239))
+
+
+### Bug Fixes
+
+* migrationContext removeTriggeredAction missing showStyleBaseId ([d17e6d3](https://github.com/nrkno/sofie-core/commit/d17e6d3ebaf1998b93885701329e377a6bea7566))
+
+## [1.39.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
+
+
+### Bug Fixes
+
+* **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([905510c](https://github.com/nrkno/sofie-core/commit/905510cad05c48dcb17908822e9c1757576a42f7))
+* add Tab key to be default-disabled when keyboard Triggers are registered ([f5d61b2](https://github.com/nrkno/sofie-core/commit/f5d61b29f33ac19e3ba13e3e931c29bca78ac726))
+* **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/sofie-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
+* **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/sofie-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
+* **Storyboard:** LiveSpeak Storyboard thumbnail looks like a Camera with a Thumbnail ([f68c9d4](https://github.com/nrkno/sofie-core/commit/f68c9d40f7b529ae9617392642cea4d6d237c102))
+
+## [1.39.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+
+### Features
+
+* allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
+
+## [1.39.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+
+### Features
+
+* adlib-actions can block a take from happening until a certain time ([588f4d9](https://github.com/nrkno/sofie-core/commit/588f4d9f071530b59fb400e7a3e1d3ad43e5090f))
+* calculate and cache the 'old style' expectedDuration under a new property name on Parts ([7b531dc](https://github.com/nrkno/sofie-core/commit/7b531dc47da3036d918f2e49a5282dc2bea8c011))
+* make PeripheralDeviceApi.executeFunction and friends return a p… ([#632](https://github.com/nrkno/sofie-core/issues/632)) ([5f9a3a2](https://github.com/nrkno/sofie-core/commit/5f9a3a29acb61e8ea896b7b5a125ef3a3fc75e26))
+* out transitions ([03101a5](https://github.com/nrkno/sofie-core/commit/03101a503a82254baeaa279c4131cdad308c5344))
+* render out transition pieces at the end of the timeline ([c8e28df](https://github.com/nrkno/sofie-core/commit/c8e28dfe079af84626cd9cc03684e717a28b7d07))
+* REST method for disabling subdevice ([#649](https://github.com/nrkno/sofie-core/issues/649)) ([930e27f](https://github.com/nrkno/sofie-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
+
 
 ### Bug Fixes
 
@@ -81,6 +123,26 @@ All notable changes to this project will be documented in this file. See [standa
 * worker unit tests ([d5d3f10](https://github.com/nrkno/tv-automation-server-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
 * workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/tv-automation-server-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
 * yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/tv-automation-server-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
+* 0 length parts disappearing ([c1800af](https://github.com/nrkno/sofie-core/commit/c1800af10b1d74e293d7711dc6b769af83d07906))
+* add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/sofie-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
+* add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/sofie-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
+* change how the userAction.gatewayDuration is calculated, to make it more robust. ([098a04b](https://github.com/nrkno/sofie-core/commit/098a04b1f2cde962b73b84d949aebe36e99f43aa))
+* defer UserActionsLog update ([c80d148](https://github.com/nrkno/sofie-core/commit/c80d148d0f21166641cf682859db1e0f6fbc009f))
+* don't overwrite the timelineHash ([1f96a96](https://github.com/nrkno/sofie-core/commit/1f96a966430fb211a7196458bc40661e70250395))
+* **hoverscrub miniInspector:** STK borders wrong color ([825a54a](https://github.com/nrkno/sofie-core/commit/825a54ae1a4b932d87cb887858005697c8e0a272))
+* infinites capped by virtuals ([#662](https://github.com/nrkno/sofie-core/issues/662)) ([e75d394](https://github.com/nrkno/sofie-core/commit/e75d394f9faef5b4f157c4dd537fc2551ca01e95))
+* **MicFloatingInspector:** do not show Script is empty, if there is a content.comment ([4a5605e](https://github.com/nrkno/sofie-core/commit/4a5605ef74d9aac3ec0628db5efeefb1c8ed9d3e))
+* playback issues ([4d8a24c](https://github.com/nrkno/sofie-core/commit/4d8a24c94d679a305323e0281e49d3ab84a37380))
+* **Presenter screen:** show channel color on Local sources ([#676](https://github.com/nrkno/sofie-core/issues/676)) ([7ad427e](https://github.com/nrkno/sofie-core/commit/7ad427e9264db99dd2a9ec13aa31aeab3be480fc))
+* **Prompter:** Over/Under uses inconsistent color coding ([80edc24](https://github.com/nrkno/sofie-core/commit/80edc24c293eaf45157952ae4de8dd3ac02c0cd1))
+* restore expectedPackages when restoring snapshots ([082d8c0](https://github.com/nrkno/sofie-core/commit/082d8c03840f83f2f574b56316f6d90028d70f9a))
+* **Storyboard:** respect show_hidden_source_layers=1 ([87eb7a3](https://github.com/nrkno/sofie-core/commit/87eb7a3f0a13cd14d330973b5a3dd40c8a86b85d))
+* strict select of pieceinstances in timelineTriggerTime ([bbd4381](https://github.com/nrkno/sofie-core/commit/bbd4381167ded3f95a4247e6a27bf7146a7800cc))
+* TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/sofie-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
+* TSR dep ([8b506fa](https://github.com/nrkno/sofie-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
+* update timeline item colors for local and live speak pieces ([257e8be](https://github.com/nrkno/sofie-core/commit/257e8be7baa52cff8a1598f2eda4c375d743f872))
+* use global Diff calculation in Prompter ([85cec3b](https://github.com/nrkno/sofie-core/commit/85cec3b7494b146c6892fe03b5a5bb0c67b8cf4d))
+* use MeteorCall instead of Meteor.call for better type safety ([#647](https://github.com/nrkno/sofie-core/issues/647)) ([6b01a83](https://github.com/nrkno/sofie-core/commit/6b01a83ad8f92f91a597ffb7809d7b9009d4142a))
 
 ## [1.39.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
 
