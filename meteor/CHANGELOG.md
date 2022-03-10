@@ -2,6 +2,101 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.40.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
+
+
+### Features
+
+* First-class Sofie PWA ([#670](https://github.com/nrkno/sofie-core/issues/670)) ([c413d8a](https://github.com/nrkno/sofie-core/commit/c413d8ae8a5e70a4c5b0cd4fd6924900b69f6f4c))
+* **Timeline+Storyboard:** Invalid Parts show hover inspector with invalidReason ([#679](https://github.com/nrkno/sofie-core/issues/679)) ([43ba126](https://github.com/nrkno/sofie-core/commit/43ba126b986d3c185212d49433739804350cc084))
+
+
+### Bug Fixes
+
+* 'startup' log line being done too late ([808d6c7](https://github.com/nrkno/sofie-core/commit/808d6c7d883d2ee14f810997e8991f0ae4974ea7))
+* **Storyboard:** add Auto/Next label on end of Segment ([7ff9979](https://github.com/nrkno/sofie-core/commit/7ff9979dd04c45f619450a64af6120d7bbe3d942))
+* **Storyboard:** End of Show/End of Segment marker is missing ([5870f7f](https://github.com/nrkno/sofie-core/commit/5870f7fa13691952357326ee30bc42f73ca9acaa))
+* **Timeline:** end of segment take-line, when auto, displayed with arrows ([b73d4ac](https://github.com/nrkno/sofie-core/commit/b73d4ac12cb63e7048302c02675dbcd3f0d59945))
+
+## [1.40.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+
+
+### Features
+
+* 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/sofie-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
+* add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/sofie-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
+* kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/sofie-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
+* lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/sofie-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
+* make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/sofie-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
+* monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/sofie-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
+* monitor the status of the Worker ([746ba96](https://github.com/nrkno/sofie-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
+* move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/sofie-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
+* parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/sofie-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
+* refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/sofie-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
+* replace threads with threadedclass ([a3773ed](https://github.com/nrkno/sofie-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
+
+
+### Bug Fixes
+
+* add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/sofie-core/commit/213904cccdba4d45c219cbd855526118653fa133))
+* ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/sofie-core/issues/666)) ([ca9dba1](https://github.com/nrkno/sofie-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
+* better handling of errors from Core ([3ae8152](https://github.com/nrkno/sofie-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+* blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/sofie-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
+* bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/sofie-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
+* bug found by sonar ([65337e8](https://github.com/nrkno/sofie-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
+* clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/sofie-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
+* collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/sofie-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
+* **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/sofie-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
+* correctly show timecode values ([4eb3c0d](https://github.com/nrkno/sofie-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
+* disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/sofie-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
+* disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/sofie-core/commit/547674e8799217e290df4a57a12787d975ff5025))
+* don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/sofie-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
+* downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/sofie-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
+* failing tests ([84f2063](https://github.com/nrkno/sofie-core/commit/84f206337048441216b6e3589db753aba17d14e9))
+* GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/sofie-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
+* handle lock timeouts in workers ([783a214](https://github.com/nrkno/sofie-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
+* hook up broken debug method ([341cd6c](https://github.com/nrkno/sofie-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
+* Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/sofie-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
+* import error ([391b334](https://github.com/nrkno/sofie-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
+* improve accuracy of package framerate detection ([#653](https://github.com/nrkno/sofie-core/issues/653)) ([ad7926c](https://github.com/nrkno/sofie-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
+* improve meteor method signatures ([#669](https://github.com/nrkno/sofie-core/issues/669)) ([5fd4839](https://github.com/nrkno/sofie-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
+* influxdb for worker ([ee747b7](https://github.com/nrkno/sofie-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+* job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/sofie-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
+* launching of worker ([4adf500](https://github.com/nrkno/sofie-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
+* look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/sofie-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
+* meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/sofie-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
+* move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/sofie-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
+* multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/sofie-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
+* **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/sofie-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
+* package-lock ([55ee0ba](https://github.com/nrkno/sofie-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
+* parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/sofie-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
+* plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/sofie-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
+* port some more code ([4b742f5](https://github.com/nrkno/sofie-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
+* pre-commit hook ([621c184](https://github.com/nrkno/sofie-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
+* remaining meteor tests ([2f6a7e4](https://github.com/nrkno/sofie-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
+* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/sofie-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+* replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/sofie-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
+* route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/sofie-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
+* show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/sofie-core/issues/665)) ([6c88614](https://github.com/nrkno/sofie-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
+* some ci issues ([790fa30](https://github.com/nrkno/sofie-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
+* some meteor tests ([bcd016e](https://github.com/nrkno/sofie-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
+* some more cache invalidation ([26b1461](https://github.com/nrkno/sofie-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
+* some type errors ([872504a](https://github.com/nrkno/sofie-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
+* some work queue management bits ([ce4d019](https://github.com/nrkno/sofie-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
+* **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/sofie-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
+* tests ([91823ba](https://github.com/nrkno/sofie-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
+* type errors ([c67bd0e](https://github.com/nrkno/sofie-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
+* type errors ([5f807ee](https://github.com/nrkno/sofie-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
+* typings ([91bbae2](https://github.com/nrkno/sofie-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
+* typings errors ([56ddd0e](https://github.com/nrkno/sofie-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
+* update docker image node version ([8f0f92b](https://github.com/nrkno/sofie-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
+* update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/sofie-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
+* update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/sofie-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
+* worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/sofie-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
+* worker unit tests ([d5d3f10](https://github.com/nrkno/sofie-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
+* workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/sofie-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
+* yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/sofie-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
+
 ## [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
 
 ### Features
@@ -17,6 +112,48 @@ All notable changes to this project will be documented in this file. See [standa
 * parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/tv-automation-server-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
 * refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/tv-automation-server-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
 * replace threads with threadedclass ([a3773ed](https://github.com/nrkno/tv-automation-server-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
+
+## [1.39.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
+
+
+### Features
+
+* MigrationContextWithTriggeredActions exposes getTriggeredActionsId ([7bba681](https://github.com/nrkno/sofie-core/commit/7bba681a7eb628a8d476f6802e79c77153d69239))
+
+
+### Bug Fixes
+
+* migrationContext removeTriggeredAction missing showStyleBaseId ([d17e6d3](https://github.com/nrkno/sofie-core/commit/d17e6d3ebaf1998b93885701329e377a6bea7566))
+
+## [1.39.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
+
+
+### Bug Fixes
+
+* **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([905510c](https://github.com/nrkno/sofie-core/commit/905510cad05c48dcb17908822e9c1757576a42f7))
+* add Tab key to be default-disabled when keyboard Triggers are registered ([f5d61b2](https://github.com/nrkno/sofie-core/commit/f5d61b29f33ac19e3ba13e3e931c29bca78ac726))
+* **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/sofie-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
+* **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/sofie-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
+* **Storyboard:** LiveSpeak Storyboard thumbnail looks like a Camera with a Thumbnail ([f68c9d4](https://github.com/nrkno/sofie-core/commit/f68c9d40f7b529ae9617392642cea4d6d237c102))
+
+## [1.39.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+
+### Features
+
+* allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
+
+## [1.39.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+
+### Features
+
+* adlib-actions can block a take from happening until a certain time ([588f4d9](https://github.com/nrkno/sofie-core/commit/588f4d9f071530b59fb400e7a3e1d3ad43e5090f))
+* calculate and cache the 'old style' expectedDuration under a new property name on Parts ([7b531dc](https://github.com/nrkno/sofie-core/commit/7b531dc47da3036d918f2e49a5282dc2bea8c011))
+* make PeripheralDeviceApi.executeFunction and friends return a p… ([#632](https://github.com/nrkno/sofie-core/issues/632)) ([5f9a3a2](https://github.com/nrkno/sofie-core/commit/5f9a3a29acb61e8ea896b7b5a125ef3a3fc75e26))
+* out transitions ([03101a5](https://github.com/nrkno/sofie-core/commit/03101a503a82254baeaa279c4131cdad308c5344))
+* render out transition pieces at the end of the timeline ([c8e28df](https://github.com/nrkno/sofie-core/commit/c8e28dfe079af84626cd9cc03684e717a28b7d07))
+* REST method for disabling subdevice ([#649](https://github.com/nrkno/sofie-core/issues/649)) ([930e27f](https://github.com/nrkno/sofie-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
 
 
 ### Bug Fixes
@@ -81,6 +218,26 @@ All notable changes to this project will be documented in this file. See [standa
 * worker unit tests ([d5d3f10](https://github.com/nrkno/tv-automation-server-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
 * workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/tv-automation-server-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
 * yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/tv-automation-server-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
+* 0 length parts disappearing ([c1800af](https://github.com/nrkno/sofie-core/commit/c1800af10b1d74e293d7711dc6b769af83d07906))
+* add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/sofie-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
+* add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/sofie-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
+* change how the userAction.gatewayDuration is calculated, to make it more robust. ([098a04b](https://github.com/nrkno/sofie-core/commit/098a04b1f2cde962b73b84d949aebe36e99f43aa))
+* defer UserActionsLog update ([c80d148](https://github.com/nrkno/sofie-core/commit/c80d148d0f21166641cf682859db1e0f6fbc009f))
+* don't overwrite the timelineHash ([1f96a96](https://github.com/nrkno/sofie-core/commit/1f96a966430fb211a7196458bc40661e70250395))
+* **hoverscrub miniInspector:** STK borders wrong color ([825a54a](https://github.com/nrkno/sofie-core/commit/825a54ae1a4b932d87cb887858005697c8e0a272))
+* infinites capped by virtuals ([#662](https://github.com/nrkno/sofie-core/issues/662)) ([e75d394](https://github.com/nrkno/sofie-core/commit/e75d394f9faef5b4f157c4dd537fc2551ca01e95))
+* **MicFloatingInspector:** do not show Script is empty, if there is a content.comment ([4a5605e](https://github.com/nrkno/sofie-core/commit/4a5605ef74d9aac3ec0628db5efeefb1c8ed9d3e))
+* playback issues ([4d8a24c](https://github.com/nrkno/sofie-core/commit/4d8a24c94d679a305323e0281e49d3ab84a37380))
+* **Presenter screen:** show channel color on Local sources ([#676](https://github.com/nrkno/sofie-core/issues/676)) ([7ad427e](https://github.com/nrkno/sofie-core/commit/7ad427e9264db99dd2a9ec13aa31aeab3be480fc))
+* **Prompter:** Over/Under uses inconsistent color coding ([80edc24](https://github.com/nrkno/sofie-core/commit/80edc24c293eaf45157952ae4de8dd3ac02c0cd1))
+* restore expectedPackages when restoring snapshots ([082d8c0](https://github.com/nrkno/sofie-core/commit/082d8c03840f83f2f574b56316f6d90028d70f9a))
+* **Storyboard:** respect show_hidden_source_layers=1 ([87eb7a3](https://github.com/nrkno/sofie-core/commit/87eb7a3f0a13cd14d330973b5a3dd40c8a86b85d))
+* strict select of pieceinstances in timelineTriggerTime ([bbd4381](https://github.com/nrkno/sofie-core/commit/bbd4381167ded3f95a4247e6a27bf7146a7800cc))
+* TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/sofie-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
+* TSR dep ([8b506fa](https://github.com/nrkno/sofie-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
+* update timeline item colors for local and live speak pieces ([257e8be](https://github.com/nrkno/sofie-core/commit/257e8be7baa52cff8a1598f2eda4c375d743f872))
+* use global Diff calculation in Prompter ([85cec3b](https://github.com/nrkno/sofie-core/commit/85cec3b7494b146c6892fe03b5a5bb0c67b8cf4d))
+* use MeteorCall instead of Meteor.call for better type safety ([#647](https://github.com/nrkno/sofie-core/issues/647)) ([6b01a83](https://github.com/nrkno/sofie-core/commit/6b01a83ad8f92f91a597ffb7809d7b9009d4142a))
 
 ## [1.39.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
 
