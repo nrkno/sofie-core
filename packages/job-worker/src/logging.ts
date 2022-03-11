@@ -62,7 +62,7 @@ type LogTarget = (level: string, args: any[]) => void
 const targets: LogTarget[] = []
 
 /** Intercept all calls to the logger, and pipe the results to logLine */
-export function interceptLogging(threadName: string, logLine: LogLineHandler) {
+export function interceptLogging(threadName: string, logLine: LogLineHandler): void {
 	targets.push((level: string, args: any[]) => {
 		const message: string = args.map((arg) => stringifyError(arg)).join(',')
 
