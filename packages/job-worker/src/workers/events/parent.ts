@@ -1,4 +1,3 @@
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { EventsWorkerChild } from './child'
 import { InvalidateWorkerDataCache } from '../caches'
 import { WorkerParentBase, WorkerParentBaseOptions, WorkerParentOptions } from '../parent-base'
@@ -29,7 +28,7 @@ export class EventsWorkerParent extends WorkerParentBase {
 		const workerThread = await threadedClass<EventsWorkerChild, typeof EventsWorkerChild>(
 			'./child',
 			'EventsWorkerChild',
-			[emitLockEvent, baseOptions.jobManager.queueJob, logLine, fastTrackTimeline],
+			[baseOptions.studioId, emitLockEvent, baseOptions.jobManager.queueJob, logLine, fastTrackTimeline],
 			{
 				instanceName: `Events: ${baseOptions.studioId}`,
 			}
@@ -44,8 +43,8 @@ export class EventsWorkerParent extends WorkerParentBase {
 		return parent
 	}
 
-	protected async initWorker(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
-		return this.#thread.init(mongoUri, dbName, studioId)
+	protected async initWorker(mongoUri: string, dbName: string): Promise<void> {
+		return this.#thread.init(mongoUri, dbName)
 	}
 	protected async invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
 		return this.#thread.invalidateCaches(invalidations)

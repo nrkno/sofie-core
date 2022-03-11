@@ -11,6 +11,7 @@ import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
 import { interceptLogging, logger } from '../../logging'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { setupInfluxDb } from '../../influx'
+import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -22,18 +23,20 @@ interface StaticData {
 export class IngestWorkerChild {
 	#staticData: StaticData | undefined
 
+	readonly #studioId: StudioId
 	readonly #locks: LocksManager
 	readonly #queueJob: QueueJobFunc
 	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
 
 	constructor(
+		studioId: StudioId,
 		emitLockEvent: (event: AnyLockEvent) => Promise<void>,
 		queueJob: QueueJobFunc,
 		logLine: LogLineWithSourceFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	) {
 		// Intercept logging to pipe back over ipc
-		interceptLogging('ingest-child', logLine)
+		interceptLogging(getIngestQueueName(studioId), logLine)
 
 		setupApmAgent()
 		setupInfluxDb()
@@ -41,16 +44,17 @@ export class IngestWorkerChild {
 		this.#locks = new LocksManager(emitLockEvent)
 		this.#queueJob = queueJob
 		this.#fastTrackTimeline = fastTrackTimeline
+		this.#studioId = studioId
 	}
 
-	async init(mongoUri: string, mongoDb: string, studioId: StudioId): Promise<void> {
+	async init(mongoUri: string, mongoDb: string): Promise<void> {
 		if (this.#staticData) throw new Error('Worker already initialised')
 
 		const mongoClient = await createMongoConnection(mongoUri)
 		const collections = getMongoCollections(mongoClient, mongoDb)
 
 		// Load some 'static' data from the db
-		const dataCache = await loadWorkerDataCache(collections, studioId)
+		const dataCache = await loadWorkerDataCache(collections, this.#studioId)
 
 		this.#staticData = {
 			mongoClient,
@@ -59,7 +63,7 @@ export class IngestWorkerChild {
 			dataCache,
 		}
 
-		logger.info(`Ingest thread for ${studioId} initialised`)
+		logger.info(`Ingest thread for ${this.#studioId} initialised`)
 	}
 	async lockChange(lockId: string, locked: boolean): Promise<void> {
 		if (!this.#staticData) throw new Error('Worker not initialised')

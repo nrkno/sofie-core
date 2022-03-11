@@ -114,7 +114,7 @@ export abstract class WorkerParentBase {
 	}
 
 	/** Initialise the worker thread */
-	protected abstract initWorker(mongoUri: string, dbName: string, studioId: StudioId): Promise<void>
+	protected abstract initWorker(mongoUri: string, dbName: string): Promise<void>
 	/** Invalidate caches in the worker thread */
 	protected abstract invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void>
 	/** Run a job in the worker thread */
@@ -171,7 +171,7 @@ export abstract class WorkerParentBase {
 						case ThreadStatus.PendingInit:
 							logger.debug(`Re-initialising worker thread: "${this.#queueName}"`)
 							// Reinit the worker
-							await this.initWorker(mongoUri, this.#mongoDbName, this.#studioId)
+							await this.initWorker(mongoUri, this.#mongoDbName)
 							this.#threadStatus = ThreadStatus.Ready
 
 							break
