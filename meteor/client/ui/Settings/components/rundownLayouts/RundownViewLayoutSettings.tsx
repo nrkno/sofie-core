@@ -95,7 +95,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={`liveLineProps.requiredLayerIds`}
-					obj={this.props.item}
+					obj={item}
 					type="checkbox"
 					collection={RundownLayouts}
 					className="mod mas"
@@ -105,8 +105,8 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={`liveLineProps.requiredLayerIds`}
-					obj={this.props.item}
-					options={this.props.showStyleBase.sourceLayers.map((l) => {
+					obj={item}
+					options={showStyleBase.sourceLayers.map((l) => {
 						return { name: l.name, value: l._id }
 					})}
 					type="multiselect"
@@ -124,7 +124,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={`liveLineProps.additionalLayers`}
-					obj={this.props.item}
+					obj={item}
 					type="checkbox"
 					collection={RundownLayouts}
 					className="mod mas"
@@ -134,8 +134,8 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={`liveLineProps.additionalLayers`}
-					obj={this.props.item}
-					options={this.props.showStyleBase.sourceLayers.map((l) => {
+					obj={item}
+					options={showStyleBase.sourceLayers.map((l) => {
 						return { name: l.name, value: l._id }
 					})}
 					type="multiselect"
@@ -194,7 +194,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					<EditAttribute
 						modifiedClassName="bghl"
 						attribute={`liveLineProps.requireAllAdditionalSourcelayers`}
-						obj={this.props.item}
+						obj={item}
 						type="checkbox"
 						collection={RundownLayouts}
 						className="mod mas"
@@ -208,7 +208,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					<EditAttribute
 						modifiedClassName="bghl"
 						attribute={'hideRundownDivider'}
-						obj={this.props.item}
+						obj={item}
 						type="checkbox"
 						collection={RundownLayouts}
 						className="mod mas"
@@ -222,7 +222,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					<EditAttribute
 						modifiedClassName="bghl"
 						attribute={'showBreaksAsSegments'}
-						obj={this.props.item}
+						obj={item}
 						type="checkbox"
 						collection={RundownLayouts}
 						className="mod mas"
@@ -234,7 +234,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={`countdownToSegmentRequireLayers`}
-					obj={this.props.item}
+					obj={item}
 					type="checkbox"
 					collection={RundownLayouts}
 					className="mod mas"
@@ -244,8 +244,8 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={`countdownToSegmentRequireLayers`}
-					obj={this.props.item}
-					options={this.props.showStyleBase.sourceLayers.map((l) => {
+					obj={item}
+					options={showStyleBase.sourceLayers.map((l) => {
 						return { name: l.name, value: l._id }
 					})}
 					type="multiselect"
@@ -264,7 +264,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					<EditAttribute
 						modifiedClassName="bghl"
 						attribute={'fixedSegmentDuration'}
-						obj={this.props.item}
+						obj={item}
 						type="checkbox"
 						collection={RundownLayouts}
 						className="mod mas"
@@ -281,7 +281,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={`showDurationSourceLayers`}
-					obj={this.props.item}
+					obj={item}
 					type="checkbox"
 					collection={RundownLayouts}
 					className="mod mas"
@@ -291,8 +291,8 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				<EditAttribute
 					modifiedClassName="bghl"
 					attribute={`showDurationSourceLayers`}
-					obj={this.props.item}
-					options={this.props.showStyleBase.sourceLayers.map((l) => {
+					obj={item}
+					options={showStyleBase.sourceLayers.map((l) => {
 						return { name: l.name, value: l._id }
 					})}
 					type="multiselect"
