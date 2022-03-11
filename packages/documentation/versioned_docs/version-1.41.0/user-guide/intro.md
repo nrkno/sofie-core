@@ -18,7 +18,7 @@ sidebar_position: 0
 ![The prompter view](/img/docs/prompter-view.png)
 
 :::info
-Tip: The different web views \(such as the host view and the prompter\) can easily be transmitted over an SDI signal using the HTML producer in [CasparCG](installation/installing-connections-and-additional-hardware/casparcg-server-installation).
+Tip: The different web views \(such as the host view and the prompter\) can easily be transmitted over an SDI signal using the HTML producer in [CasparCG&nbsp;Server](installation/installing-connections-and-additional-hardware/casparcg-server-installation).
 :::
 
 ### Modular Device Control
