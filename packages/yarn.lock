@@ -2900,7 +2900,7 @@
     webpack-sources "^1.4.3"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.40.0-in-testing.0"
+  version "1.40.0-in-testing.1"
   dependencies:
     moment "2.29.1"
     timeline-state-resolver-types "6.4.0-release39.1"
@@ -2928,7 +2928,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.40.0-in-testing.0"
+  version "1.40.0-in-testing.1"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     fast-clone "^1.5.13"
