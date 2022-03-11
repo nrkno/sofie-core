@@ -1,4 +1,3 @@
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import type { StudioWorkerChild } from './child'
 import { InvalidateWorkerDataCache } from '../caches'
@@ -6,7 +5,6 @@ import { WorkerParentBase, WorkerParentOptions, WorkerParentBaseOptions } from '
 import { AnyLockEvent } from '../locks'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
-import { addThreadNameToLogLine } from '../../logging'
 
 export class StudioWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<StudioWorkerChild>
@@ -26,11 +24,11 @@ export class StudioWorkerParent extends WorkerParentBase {
 		const queueName = getStudioQueueName(baseOptions.studioId)
 		const prettyName = queueName
 		const emitLockEvent = async (e: AnyLockEvent) => baseOptions.locksManager.handleLockEvent(queueName, e)
-		const logLineInner = async (msg: unknown) => logLine(addThreadNameToLogLine(queueName, msg))
+
 		const workerThread = await threadedClass<StudioWorkerChild, typeof StudioWorkerChild>(
 			'./child',
 			'StudioWorkerChild',
-			[emitLockEvent, baseOptions.jobManager.queueJob, logLineInner, fastTrackTimeline],
+			[baseOptions.studioId, emitLockEvent, baseOptions.jobManager.queueJob, logLine, fastTrackTimeline],
 			{
 				instanceName: `Studio: ${baseOptions.studioId}`,
 			}
@@ -45,8 +43,8 @@ export class StudioWorkerParent extends WorkerParentBase {
 		return parent
 	}
 
-	protected async initWorker(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
-		return this.#thread.init(mongoUri, dbName, studioId)
+	protected async initWorker(mongoUri: string, dbName: string): Promise<void> {
+		return this.#thread.init(mongoUri, dbName)
 	}
 	protected async invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
 		return this.#thread.invalidateCaches(invalidations)

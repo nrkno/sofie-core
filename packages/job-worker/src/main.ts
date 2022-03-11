@@ -1,4 +1,4 @@
-import { logger } from './logging'
+import { LeveledLogMethodFixed, LogEntry, logger } from './logging'
 import { protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { StudioId, WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupApmAgent } from './profiler'
@@ -10,7 +10,6 @@ import { JobManager } from './manager'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { setupInfluxDb } from './influx'
-import { LogEntry } from 'winston'
 
 setupApmAgent()
 setupInfluxDb()
@@ -27,10 +26,10 @@ export interface JobSpec {
 
 export type FastTrackTimelineFunc = (newTimeline: TimelineComplete) => Promise<void>
 export type LogLineWithSourceFunc = (msg: LogEntry) => Promise<void>
-export type LogLineFunc = (msg: unknown) => Promise<void>
 
 async function defaultThreadLogger(msg: LogEntry) {
-	logger.log(msg)
+	const fcn = ((logger as any)[msg.level] as LeveledLogMethodFixed) || logger.info
+	fcn(`${msg.source}: ${msg.message}`)
 }
 
 export abstract class JobWorkerBase {

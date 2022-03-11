@@ -15,7 +15,6 @@ import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../sec
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { endTrace, sendTrace, startTrace } from './integration/influx'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { Meteor } from 'meteor/meteor'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { StudioId } from '../../lib/collections/Studios'
@@ -240,9 +239,6 @@ export namespace ServerClientAPI {
 					const errorTime = Date.now()
 
 					logger.error(`Error in ${methodName}: ${stringifyError(e)}`)
-					if ((e instanceof Error || e instanceof Meteor.Error) && e.stack) {
-						logger.error(e.stack)
-					}
 
 					const wrappedError = rewrapError(methodName, e)
 					const wrappedErrorStr = `ClientResponseError: ${translateMessage(
