@@ -89,7 +89,7 @@ import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataMode
 const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
 
 let MINIMUM_TAKE_SPAN = 1000
-export function setMinimumTakeSpan(span: number) {
+export function setMinimumTakeSpan(span: number): void {
 	// Used in tests
 	MINIMUM_TAKE_SPAN = span
 }
@@ -550,7 +550,12 @@ export async function activateHold(context: JobContext, data: ActivateHoldProps)
 			}
 
 			const hasDynamicallyInserted = cache.PieceInstances.findOne(
-				(p) => p.partInstanceId === currentPartInstance._id && p.dynamicallyInserted
+				(p) =>
+					p.partInstanceId === currentPartInstance._id &&
+					p.dynamicallyInserted &&
+					// If its a continuation of an infinite adlib it is probably a graphic, so is 'fine'
+					!p.infinite?.fromPreviousPart &&
+					!p.infinite?.fromPreviousPlayhead
 			)
 			if (hasDynamicallyInserted) throw UserError.create(UserErrorMessage.HoldAfterAdlib)
 

@@ -192,7 +192,7 @@ export class StudioWorkerSet {
 	}
 
 	public async terminate(): Promise<void> {
-		await Promise.allSettled(this.#threads.map((t) => t.terminate()))
+		await Promise.allSettled(this.#threads.map(async (t) => t.terminate()))
 
 		await Promise.allSettled(this.#streams.map((s) => s.close()))
 	}

@@ -48,7 +48,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		private partInstance: DBPartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
-		private playStatus: 'current' | 'next'
+		private playStatus: 'previous' | 'current' | 'next'
 	) {
 		super(
 			contextInfo,

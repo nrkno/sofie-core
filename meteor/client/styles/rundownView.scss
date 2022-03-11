@@ -1422,7 +1422,7 @@ svg.icon {
 				bottom: 0;
 				right: 1px;
 				z-index: 10;
-				pointer-events: none;
+				pointer-events: all;
 				background-image: repeating-linear-gradient(
 						45deg,
 						var(--invalid-reason-color-transparent) 0%,
@@ -1521,15 +1521,17 @@ svg.icon {
 
 			.segment-timeline__part__nextline.auto-next.segment-timeline__part__nextline--endline {
 				border-left-width: 1px;
+				top: -12px;
 
 				&::before,
 				&::after {
-					left: -1px;
+					display: none;
 				}
 
 				.segment-timeline__part__nextline__label {
 					display: block;
-					left: 10px;
+					top: -1px;
+					left: 2px;
 				}
 			}
 
@@ -1687,7 +1689,6 @@ svg.icon {
 				}
 
 				.segment-timeline__part__nextline__label {
-					padding: 0 0 0 7px;
 					color: $general-next-color;
 					display: block;
 
@@ -1695,6 +1696,12 @@ svg.icon {
 						> svg {
 							fill: $general-next-color;
 						}
+					}
+				}
+
+				&:not(.auto-next) {
+					.segment-timeline__part__nextline__label {
+						padding: 0 0 0 7px;
 					}
 				}
 			}

@@ -69,6 +69,7 @@ export function isUserNotesContext(obj: unknown): obj is IUserNotesContext {
 		return false
 	}
 
+	// eslint-disable-next-line @typescript-eslint/unbound-method
 	const { notifyUserError, notifyUserWarning, notifyUserInfo } = obj as IUserNotesContext
 
 	return (

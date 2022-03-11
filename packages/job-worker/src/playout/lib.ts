@@ -453,7 +453,7 @@ export async function setNextPart(
 	if (span) span.end()
 }
 
-export function setNextSegment(context: JobContext, cache: CacheForPlayout, nextSegment: DBSegment | null) {
+export function setNextSegment(context: JobContext, cache: CacheForPlayout, nextSegment: DBSegment | null): void {
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {
 		// Just run so that errors will be thrown if something wrong:
@@ -630,7 +630,7 @@ export function onPartHasStoppedPlaying(
 export function substituteObjectIds(
 	rawEnable: TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[],
 	idMap: { [oldId: string]: string | undefined }
-) {
+): TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[] {
 	const replaceIds = (str: string) => {
 		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
 			const id = m.substr(1, m.length - 1)

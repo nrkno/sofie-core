@@ -7,12 +7,15 @@ export class LazyInitialise<T> {
 
 	/** Create the lazy wrapper, and provide the init function to be called when first fetched */
 	public constructor(init: () => Promise<T>) {
-		this.#loading = new PLazy<void>(async (resolve, reject) => {
+		this.#loading = new PLazy<void>((resolve, reject) => {
 			try {
-				const v = await init()
-				this.#value = v
-				this.#loading = undefined
-				resolve()
+				init()
+					.then((v) => {
+						this.#value = v
+						this.#loading = undefined
+						resolve()
+					})
+					.catch((e) => reject(e))
 			} catch (e) {
 				reject(e)
 			}

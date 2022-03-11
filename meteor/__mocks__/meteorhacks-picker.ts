@@ -6,7 +6,12 @@ export interface Params {
 }
 
 export type FilterFunction = (req: IncomingMessage, res: ServerResponse) => boolean
-export type HandlerFunction = (params: Params, req: IncomingMessage, response: ServerResponse, next: () => void) => void
+export type HandlerFunction = (
+	params: Params,
+	req: IncomingMessage,
+	response: ServerResponse,
+	next: () => void
+) => Promise<void>
 
 export interface PickerMockRoute {
 	filter?: FilterFunction

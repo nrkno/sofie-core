@@ -150,7 +150,7 @@ describe('Playout API', () => {
 		})
 
 		test('take after execute (true)', async () => {
-			takeNextPartMock.mockImplementationOnce(() => Promise.resolve())
+			takeNextPartMock.mockImplementationOnce(async () => Promise.resolve())
 
 			context.updateShowStyleBlueprint({
 				executeAction: async (context) => {
@@ -172,7 +172,7 @@ describe('Playout API', () => {
 		})
 
 		test('take after execute (false)', async () => {
-			takeNextPartMock.mockImplementationOnce(() => Promise.resolve())
+			takeNextPartMock.mockImplementationOnce(async () => Promise.resolve())
 
 			context.updateShowStyleBlueprint({
 				executeAction: async (context) => {

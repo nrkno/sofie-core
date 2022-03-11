@@ -101,7 +101,27 @@ const AdLibListView = withTranslation()(
 				isSticky?: boolean
 				sourceLayer?: ISourceLayer
 				outputLayer?: IOutputLayer
-			})[] = []
+			})[] = this.props.rundownAdLibs.slice().concat(
+				this.props.showStyleBase.sourceLayers
+					.filter((i) => i.isSticky)
+					.map((layer) =>
+						literal<IAdLibListItem & { souceLayer?: ISourceLayer; isSticky: boolean }>({
+							_id: protectString(layer._id),
+							name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
+							status: PieceStatusCode.UNKNOWN,
+							sourceLayer: layer,
+							outputLayer: undefined,
+							lifespan: PieceLifespan.WithinPart,
+							isSticky: true,
+							sourceLayerId: layer._id,
+							externalId: '',
+							outputLayerId: '',
+							rundownId: protectString(''),
+							_rank: layer._rank,
+							content: { timelineObjects: [] },
+						})
+					)
+			)
 
 			return (
 				<tbody
@@ -109,105 +129,82 @@ const AdLibListView = withTranslation()(
 					key="globals"
 					className={ClassNames('adlib-panel__list-view__list__segment')}
 				>
-					{itemList
-						.concat(this.props.rundownAdLibs)
-						.concat(
-							this.props.showStyleBase.sourceLayers
-								.filter((i) => i.isSticky)
-								.map((layer) =>
-									literal<IAdLibListItem & { souceLayer?: ISourceLayer; isSticky: boolean }>({
-										_id: protectString(layer._id),
-										name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
-										status: PieceStatusCode.UNKNOWN,
-										sourceLayer: layer,
-										outputLayer: undefined,
-										lifespan: PieceLifespan.WithinPart,
-										isSticky: true,
-										sourceLayerId: layer._id,
-										externalId: '',
-										outputLayerId: '',
-										rundownId: protectString(''),
-										_rank: layer._rank,
-										content: { timelineObjects: [] },
-									})
+					{itemList.map((item) => {
+						if (!item.isHidden) {
+							if (
+								item.isSticky &&
+								item.sourceLayer &&
+								(!this.props.searchFilter ||
+									item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
+							) {
+								return (
+									<AdLibListItem
+										key={unprotectString(item._id)}
+										piece={item}
+										layer={item.sourceLayer}
+										studio={this.props.studio}
+										selected={
+											(this.props.selectedPiece &&
+												RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+												this.props.selectedPiece._id === item._id) ||
+											false
+										}
+										onToggleAdLib={this.props.onToggleSticky}
+										onSelectAdLib={this.props.onSelectAdLib}
+										playlist={this.props.playlist}
+									/>
 								)
-						)
-						.map((item) => {
-							if (!item.isHidden) {
-								if (
-									item.isSticky &&
-									item.sourceLayer &&
-									(!this.props.searchFilter ||
-										item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
-								) {
-									return (
-										<AdLibListItem
-											key={unprotectString(item._id)}
-											piece={item}
-											layer={item.sourceLayer}
-											studio={this.props.studio}
-											selected={
-												(this.props.selectedPiece &&
-													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
-													this.props.selectedPiece._id === item._id) ||
-												false
-											}
-											onToggleAdLib={this.props.onToggleSticky}
-											onSelectAdLib={this.props.onSelectAdLib}
-											playlist={this.props.playlist}
-										/>
-									)
-								} else if (
-									item.sourceLayer &&
-									item.outputLayer &&
-									(!this.props.searchFilter ||
-										item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
-								) {
-									return (
-										<AdLibListItem
-											key={unprotectString(item._id)}
-											piece={item}
-											layer={item.sourceLayer}
-											studio={this.props.studio}
-											selected={
-												(this.props.selectedPiece &&
-													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
-													this.props.selectedPiece._id === item._id) ||
-												false
-											}
-											onToggleAdLib={this.props.onToggleAdLib}
-											onSelectAdLib={this.props.onSelectAdLib}
-											playlist={this.props.playlist}
-										/>
-									)
-								} else if (
-									!this.props.searchFilter ||
-									item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0
-								) {
-									return (
-										<AdLibListItem
-											key={unprotectString(item._id)}
-											piece={item}
-											layer={item.sourceLayer}
-											studio={this.props.studio}
-											selected={
-												(this.props.selectedPiece &&
-													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
-													this.props.selectedPiece._id === item._id) ||
-												false
-											}
-											onToggleAdLib={this.props.onToggleAdLib}
-											onSelectAdLib={this.props.onSelectAdLib}
-											playlist={this.props.playlist}
-										/>
-									)
-								} else {
-									return null
-								}
+							} else if (
+								item.sourceLayer &&
+								item.outputLayer &&
+								(!this.props.searchFilter ||
+									item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
+							) {
+								return (
+									<AdLibListItem
+										key={unprotectString(item._id)}
+										piece={item}
+										layer={item.sourceLayer}
+										studio={this.props.studio}
+										selected={
+											(this.props.selectedPiece &&
+												RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+												this.props.selectedPiece._id === item._id) ||
+											false
+										}
+										onToggleAdLib={this.props.onToggleAdLib}
+										onSelectAdLib={this.props.onSelectAdLib}
+										playlist={this.props.playlist}
+									/>
+								)
+							} else if (
+								!this.props.searchFilter ||
+								item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0
+							) {
+								return (
+									<AdLibListItem
+										key={unprotectString(item._id)}
+										piece={item}
+										layer={item.sourceLayer}
+										studio={this.props.studio}
+										selected={
+											(this.props.selectedPiece &&
+												RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+												this.props.selectedPiece._id === item._id) ||
+											false
+										}
+										onToggleAdLib={this.props.onToggleAdLib}
+										onSelectAdLib={this.props.onSelectAdLib}
+										playlist={this.props.playlist}
+									/>
+								)
 							} else {
 								return null
 							}
-						})}
+						} else {
+							return null
+						}
+					})}
 				</tbody>
 			)
 		}

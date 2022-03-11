@@ -553,8 +553,7 @@ const EditAttributeDropdown = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (const key in this.props.options) {
-					const val = this.props.options[key]
+				for (const val of this.props.options) {
 					if (typeof val === 'object') {
 						options.push({
 							name: val.name,
@@ -700,8 +699,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (const key in this.props.options) {
-					const val = this.props.options[key]
+				for (const val of this.props.options) {
 					if (typeof val === 'object') {
 						options.push({
 							name: val.name,
@@ -830,8 +828,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (const key in this.props.options) {
-					const val = this.props.options[key]
+				for (const val of this.props.options) {
 					if (typeof val === 'object') {
 						options[val.value] = val.name
 					} else {

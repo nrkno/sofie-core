@@ -135,3 +135,10 @@ export function useInvalidateTimeout<K>(func: () => [K, number], deps: any[]): K
 
 	return value
 }
+
+export function isRunningInPWA() {
+	if (window.matchMedia('(display-mode: browser)').matches) {
+		return false
+	}
+	return true
+}

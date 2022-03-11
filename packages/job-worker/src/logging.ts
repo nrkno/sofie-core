@@ -15,7 +15,7 @@ export const logger = Winston.createLogger({
 	transports: [consoleTransport],
 })
 
-export function interceptLogging(handler: (msg: unknown) => Promise<void>) {
+export function interceptLogging(handler: (msg: unknown) => Promise<void>): void {
 	const customTransport = new CustomTransport(handler)
 
 	// Replace transports

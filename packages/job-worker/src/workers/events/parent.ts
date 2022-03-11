@@ -25,8 +25,8 @@ export class EventsWorkerParent extends WorkerParentBase {
 		const queueName = getEventsQueueName(baseOptions.studioId)
 		const prettyName = queueName
 
-		const emitLockEvent = (e: AnyLockEvent) => baseOptions.locksManager.handleLockEvent(queueName, e)
-		const logLineInner = (msg: unknown) => logLine(addThreadNameToLogLine(queueName, msg))
+		const emitLockEvent = async (e: AnyLockEvent) => baseOptions.locksManager.handleLockEvent(queueName, e)
+		const logLineInner = async (msg: unknown) => logLine(addThreadNameToLogLine(queueName, msg))
 
 		const workerThread = await threadedClass<EventsWorkerChild, typeof EventsWorkerChild>(
 			'./child',
@@ -52,7 +52,7 @@ export class EventsWorkerParent extends WorkerParentBase {
 	protected async invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
 		return this.#thread.invalidateCaches(invalidations)
 	}
-	protected async runJobInWorker(name: string, data: any): Promise<any> {
+	protected async runJobInWorker(name: string, data: unknown): Promise<any> {
 		return this.#thread.runJob(name, data)
 	}
 	protected async terminateWorkerThread(): Promise<void> {

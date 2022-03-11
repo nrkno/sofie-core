@@ -111,7 +111,7 @@
 			padding: 0.525rem 0.6375rem;
 			cursor: default;
 
-			overflow: hidden;
+			overflow-wrap: break-word;
 
 			> h5 {
 				color: inherit;
@@ -345,7 +345,7 @@
 
 	.notification-pop-ups {
 		position: absolute;
-		top: ‭3.6875‬rem;
+		top: 3.6875rem;
 		left: 0;
 		bottom: 0;
 		overflow-x: hidden;

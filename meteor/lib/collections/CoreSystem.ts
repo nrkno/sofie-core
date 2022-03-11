@@ -114,6 +114,9 @@ export const CoreSystem = createMongoCollection<ICoreSystem>(CollectionName.Core
 export function getCoreSystem(): ICoreSystem | undefined {
 	return CoreSystem.findOne(SYSTEM_ID)
 }
+export async function getCoreSystemAsync(): Promise<ICoreSystem | undefined> {
+	return CoreSystem.findOneAsync(SYSTEM_ID)
+}
 export function getCoreSystemCursor(options?: FindOptions<ICoreSystem>) {
 	return CoreSystem.find(SYSTEM_ID, options)
 }

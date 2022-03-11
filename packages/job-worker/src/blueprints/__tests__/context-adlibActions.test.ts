@@ -138,7 +138,7 @@ describe('Test blueprint api context', () => {
 		await cache.PieceInstances.fillWithDataFromDatabase({ rundownId: { $in: rundownIds } })
 
 		const showStyle = await jobContext.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
-		const showStyleConfig = await jobContext.getShowStyleBlueprintConfig(showStyle)
+		const showStyleConfig = jobContext.getShowStyleBlueprintConfig(showStyle)
 
 		const watchedPackages = WatchedPackagesHelper.empty(jobContext) // Not needed by the tests for now
 
@@ -185,7 +185,7 @@ describe('Test blueprint api context', () => {
 
 		await generateSparsePieceInstances(context, activationId, rundownId)
 
-		return runJobWithPlayoutCache(context, { playlistId }, null, (cache) => fcn(context, cache))
+		return runJobWithPlayoutCache(context, { playlistId }, null, async (cache) => fcn(context, cache))
 	}
 
 	describe('ActionExecutionContext', () => {

@@ -98,7 +98,7 @@ export abstract class JobWorkerBase {
 
 	public async stop(): Promise<void> {
 		// Terminate everything
-		await Promise.allSettled(Array.from(this.#workers.values()).map((w) => w.terminate()))
+		await Promise.allSettled(Array.from(this.#workers.values()).map(async (w) => w.terminate()))
 		this.#workers.clear()
 
 		if (this.#client) {

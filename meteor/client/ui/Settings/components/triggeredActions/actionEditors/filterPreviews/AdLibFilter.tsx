@@ -14,15 +14,16 @@ import { RundownBaselineAdLibPieces } from '../../../../../../../lib/collections
 import { AdLibPieces } from '../../../../../../../lib/collections/AdLibPieces'
 
 interface IProps {
+	index: number
 	link: IAdLibFilterLink
 	showStyleBase: ShowStyleBase | undefined
 	readonly?: boolean
 	opened: boolean
-	onChange: (newVal: IAdLibFilterLink, oldVal: IAdLibFilterLink) => void
-	onFocus?: () => void
-	onInsertNext?: () => void
-	onRemove?: () => void
-	onClose: () => void
+	onChange: (index, newVal: IAdLibFilterLink, oldVal: IAdLibFilterLink) => void
+	onFocus?: (index: number) => void
+	onInsertNext?: (index: number) => void
+	onRemove?: (index: number) => void
+	onClose: (index: number) => void
 }
 
 function typeOptionsWithLabels(t: TFunction) {
@@ -271,6 +272,7 @@ function isLinkFinal(link: IAdLibFilterLink) {
 }
 
 export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
+	index,
 	link,
 	readonly,
 	showStyleBase,
@@ -323,6 +325,7 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 
 	return (
 		<FilterEditor
+			index={index}
 			field={link.field}
 			fields={getAvailableFields(t, fields)}
 			fieldLabel={fieldToLabel(t, link.field)}
@@ -335,6 +338,7 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 			opened={opened}
 			onChange={(newValue) => {
 				onChange(
+					index,
 					{
 						...link,
 						value: fieldValueMutate(link, newValue) as any,
@@ -344,6 +348,7 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 			}}
 			onChangeField={(newValue) => {
 				onChange(
+					index,
 					{
 						...link,
 						field: newValue,

@@ -27,8 +27,7 @@ const index = {
 function typeConvertUrlParameters(args: any[]) {
 	const convertedArgs: any[] = []
 
-	for (const i in args) {
-		let val = args[i]
+	args.forEach((val, i) => {
 		if (val === 'null') val = null
 		else if (val === 'true') val = true
 		else if (val === 'false') val = false
@@ -49,7 +48,7 @@ function typeConvertUrlParameters(args: any[]) {
 		}
 
 		convertedArgs[i] = val
-	}
+	})
 
 	return convertedArgs
 }

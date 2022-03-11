@@ -255,9 +255,9 @@ export class MosHandler {
 					let connectionStatus = mosDevice.getConnectionStatus()
 					coreMosHandler.onMosConnectionChanged(connectionStatus) // initial check
 					// Profile 0: -------------------------------------------------
-					mosDevice.onConnectionChange((connectionStatus: IMOSConnectionStatus) => {
+					mosDevice.onConnectionChange((newStatus: IMOSConnectionStatus) => {
 						//  MOSDevice >>>> Core
-						coreMosHandler.onMosConnectionChanged(connectionStatus)
+						coreMosHandler.onMosConnectionChanged(newStatus)
 					})
 					coreMosHandler.onMosConnectionChanged(mosDevice.getConnectionStatus())
 					mosDevice.onRequestMachineInfo(() => {

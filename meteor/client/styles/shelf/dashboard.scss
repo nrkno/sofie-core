@@ -61,7 +61,7 @@ $dashboard-button-height: 5.625em;
 
 	&.dashboard-panel--actions {
 		background-color: none !important;
-		background: none !important;
+		background-image: none !important;
 		border-color: transparent;
 		box-shadow: none;
 		pointer-events: none;
@@ -72,7 +72,7 @@ $dashboard-button-height: 5.625em;
 			max-height: none;
 			overflow: visible;
 			background-color: none !important;
-			background: none !important;
+			background-image: none !important;
 			border: none !important;
 			height: calc(100% + 8px);
 
