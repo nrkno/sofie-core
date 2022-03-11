@@ -2,6 +2,11 @@
  * This file is the entry-point for Meteor's server side
  */
 
+import { Meteor } from 'meteor/meteor'
+Meteor.startup(() => {
+	console.log('startup')
+})
+
 import '../lib/main'
 
 // Import all files that register Meteor methods:
@@ -35,6 +40,7 @@ import './systemStatus/api'
 import './api/user'
 import './api/organizations'
 import './api/serviceMessages/api'
+import './webmanifest'
 
 // import all files that calls Meteor.startup:
 import './api/rest/rest'

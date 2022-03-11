@@ -1,9 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
 
-import { waitForPromise, protectString, waitTime } from '../../lib/lib'
+import { waitForPromise, protectString, waitTime, getRandomString } from '../../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
@@ -244,5 +243,5 @@ const innerAsynchronousFiberFunction = Meteor.wrapAsync((val0, val1, cb) => {
 })
 
 function tempTestRandom() {
-	return Random.id()
+	return getRandomString()
 }

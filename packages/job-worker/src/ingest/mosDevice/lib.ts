@@ -19,7 +19,7 @@ export function getSegmentExternalId(rundownId: RundownId, ingestPart: IngestPar
 	return `${rundownId}_${ingestPart.name.split(';')[0]}_${ingestPart.externalId}`
 }
 
-export function fixIllegalObject(o: any): void {
+export function fixIllegalObject(o: unknown): void {
 	if (_.isArray(o)) {
 		_.each(o, (val, _key) => {
 			fixIllegalObject(val)

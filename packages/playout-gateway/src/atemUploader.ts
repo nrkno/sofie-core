@@ -29,7 +29,7 @@ export class AtemUploadScript {
 		this.connection.on('error', consoleError)
 	}
 
-	public connect(ip: string): Promise<void> {
+	public async connect(ip: string): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			this.connection.once('connected', () => {
 				resolve()
@@ -40,7 +40,7 @@ export class AtemUploadScript {
 		})
 	}
 
-	public loadFile(fileUrl: string): Promise<Buffer> {
+	public async loadFile(fileUrl: string): Promise<Buffer> {
 		return new Promise<Buffer>((resolve, reject) => {
 			fs.readFile(fileUrl, (e, data) => {
 				consoleLog('got file')
@@ -52,7 +52,7 @@ export class AtemUploadScript {
 	public async loadFiles(folder: string): Promise<Buffer[]> {
 		const files = await fs.promises.readdir(folder)
 		consoleLog(files)
-		const loadBuffers = files.map((file) => fs.promises.readFile(path.join(folder, file)))
+		const loadBuffers = files.map(async (file) => fs.promises.readFile(path.join(folder, file)))
 		const buffers = Promise.all(loadBuffers)
 
 		consoleLog('got files')

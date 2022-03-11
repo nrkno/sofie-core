@@ -7,7 +7,7 @@ import {
 import { DBPartInstance } from '../../dataModel/PartInstance'
 import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '../../dataModel/Ids'
 import { DBPart } from '../../dataModel/Part'
-import { Piece } from '../../dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece } from '../../dataModel/Piece'
 import { PieceInstance, PieceInstancePiece } from '../../dataModel/PieceInstance'
 import { Rundown, DBRundown } from '../../dataModel/Rundown'
 import { literal } from '../../lib'
@@ -40,7 +40,8 @@ describe('Infinites', () => {
 				invalid: false,
 				status: -1,
 				virtual: clearOrAdlib === true,
-				content: { timelineObjects: [] },
+				content: {},
+				timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 				pieceType: IBlueprintPieceType.Normal,
 			}),
 			dynamicallyInserted: clearOrAdlib === true ? Date.now() : clearOrAdlib || undefined,
@@ -488,7 +489,8 @@ describe('Infinites', () => {
 					invalid: false,
 					status: -1,
 					virtual: clear,
-					content: { timelineObjects: [] },
+					content: {},
+					timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 					pieceType: IBlueprintPieceType.Normal,
 				}),
 				dynamicallyInserted: clear ? Date.now() : undefined,

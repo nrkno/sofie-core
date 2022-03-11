@@ -46,7 +46,7 @@ describe('Playout Actions', () => {
 		}
 
 		executePeripheralDeviceFunctionMock.mockClear()
-		executePeripheralDeviceFunctionMock.mockImplementation(() => Promise.resolve())
+		executePeripheralDeviceFunctionMock.mockImplementation(async () => Promise.resolve())
 	})
 	test('activateRundown', async () => {
 		const { playlistId: playlistId0 } = await setupDefaultRundownPlaylist(context, undefined, protectString('ro0'))

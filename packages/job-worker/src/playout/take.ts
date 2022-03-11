@@ -9,11 +9,11 @@ import { isTooCloseToAutonext, selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
 import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PartEndState, VTContent } from '@sofie-automation/blueprints-integration'
-import { DBPartInstance, unprotectPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 import { getResolvedPieces } from './pieces'
 import { clone, getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { protectString, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { updateTimeline } from './timeline'
 import {
 	PieceInstanceId,
@@ -27,6 +27,7 @@ import { innerStopPieces } from './adlib'
 import { reportPartInstanceHasStarted } from '../blueprints/events'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
+import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 
 export async function takeNextPartInnerSync(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
 	const span = context.startSpan('takeNextPartInner')
@@ -181,7 +182,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	if (span) span.end()
 }
 
-export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInstance?: DBPartInstance) {
+export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInstance?: DBPartInstance): void {
 	if (
 		takeOrCurrentPartInstance?.consumesNextSegmentId &&
 		cache.Playlist.doc.nextSegmentId === takeOrCurrentPartInstance.segmentId
@@ -195,7 +196,7 @@ export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInst
 	}
 }
 
-export function resetPreviousSegment(cache: CacheForPlayout) {
+export function resetPreviousSegment(cache: CacheForPlayout): void {
 	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the playlist is looping and
@@ -332,8 +333,8 @@ export function updatePartInstanceOnTake(
 			previousPartEndState = blueprint.blueprint.getEndStateForPart(
 				context2,
 				playlist.previousPersistentState,
-				unprotectPartInstance(clone(currentPartInstance)),
-				unprotectObjectArray(resolvedPieces),
+				convertPartInstanceToBlueprints(currentPartInstance),
+				resolvedPieces.map(convertResolvedPieceInstanceToBlueprints),
 				time
 			)
 			if (span) span.end()
@@ -414,7 +415,7 @@ function startHold(
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
 	const itemsToCopy = cache.PieceInstances.findFetch(
-		(p) => p.partInstanceId === holdFromPartInstance._id && p.piece.extendOnHold
+		(p) => p.partInstanceId === holdFromPartInstance._id && !!p.piece.extendOnHold
 	)
 	itemsToCopy.forEach((instance) => {
 		if (!instance.infinite) {

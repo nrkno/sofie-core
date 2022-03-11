@@ -396,14 +396,14 @@ export class CoreHandler {
 		}
 		return false
 	}
-	devicesMakeReady(okToDestroyStuff?: boolean, activeRundownId?: string): Promise<any> {
+	async devicesMakeReady(okToDestroyStuff?: boolean, activeRundownId?: string): Promise<any> {
 		if (this._tsrHandler) {
 			return this._tsrHandler.tsr.devicesMakeReady(okToDestroyStuff, activeRundownId)
 		} else {
 			throw Error('TSR not set up!')
 		}
 	}
-	devicesStandDown(okToDestroyStuff?: boolean): Promise<any> {
+	async devicesStandDown(okToDestroyStuff?: boolean): Promise<any> {
 		if (this._tsrHandler) {
 			return this._tsrHandler.tsr.devicesStandDown(okToDestroyStuff)
 		} else {
@@ -465,7 +465,7 @@ export class CoreHandler {
 			throw new Error('TSR not set up!')
 		}
 	}
-	restartCasparCG(deviceId: string): Promise<any> {
+	async restartCasparCG(deviceId: string): Promise<any> {
 		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
 
 		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<CasparCGDevice>
@@ -473,7 +473,7 @@ export class CoreHandler {
 
 		return device.restartCasparCG()
 	}
-	restartQuantel(deviceId: string): Promise<any> {
+	async restartQuantel(deviceId: string): Promise<any> {
 		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
 
 		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<QuantelDevice>
@@ -489,7 +489,7 @@ export class CoreHandler {
 
 		await device.formatDisks()
 	}
-	updateCoreStatus(): Promise<any> {
+	async updateCoreStatus(): Promise<any> {
 		let statusCode = P.StatusCode.GOOD
 		const messages: Array<string> = []
 
@@ -692,7 +692,7 @@ export class CoreTSRDeviceHandler {
 	killProcess(actually: number): boolean {
 		return this._coreParentHandler.killProcess(actually)
 	}
-	restartCasparCG(): Promise<any> {
+	async restartCasparCG(): Promise<any> {
 		const device = this._device.device as ThreadedClass<CasparCGDevice>
 		if (device.restartCasparCG) {
 			return device.restartCasparCG()
@@ -700,7 +700,7 @@ export class CoreTSRDeviceHandler {
 			return Promise.reject('device.restartCasparCG not set')
 		}
 	}
-	restartQuantel(): Promise<any> {
+	async restartQuantel(): Promise<any> {
 		const device = this._device.device as ThreadedClass<QuantelDevice>
 		if (device.restartGateway) {
 			return device.restartGateway()
@@ -708,7 +708,7 @@ export class CoreTSRDeviceHandler {
 			return Promise.reject('device.restartGateway not set')
 		}
 	}
-	formatHyperdeck(): Promise<any> {
+	async formatHyperdeck(): Promise<any> {
 		const device = this._device.device as ThreadedClass<HyperdeckDevice>
 		if (device.formatDisks) {
 			return device.formatDisks()

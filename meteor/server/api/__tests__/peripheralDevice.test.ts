@@ -1,6 +1,5 @@
 import '../../../__mocks__/_extendJest'
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
@@ -11,7 +10,7 @@ import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDev
 import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Parts } from '../../../lib/collections/Parts'
-import { Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 import {
 	getCurrentTime,
@@ -55,9 +54,6 @@ import {
 	StudioJobs,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { MeteorCall } from '../../../lib/api/methods'
-
-// import * as Workers from '../../worker/worker'
-// const queueStudioJobSpy = jest.spyOn(Workers, 'QueueStudioJob')
 
 const DEBUG = false
 
@@ -147,7 +143,8 @@ describe('test peripheralDevice general API methods', () => {
 			lifespan: PieceLifespan.WithinPart,
 			pieceType: IBlueprintPieceType.Normal,
 			invalid: false,
-			content: { timelineObjects: [] },
+			content: {},
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 		Parts.insert({
 			_id: protectString('part001'),
@@ -737,7 +734,7 @@ describe('test peripheralDevice general API methods', () => {
 		let deviceId: ProtectedString<any>
 		const MOCK_COLLECTION = 'MockCollection'
 		const MOCK_MEDIA_ID = 'SOME_FILE'.toUpperCase()
-		const MOCK_OBJID = Random.id()
+		const MOCK_OBJID = getRandomString()
 		beforeEach(async () => {
 			deviceId = getRandomId()
 			env = await setupDefaultStudioEnvironment()

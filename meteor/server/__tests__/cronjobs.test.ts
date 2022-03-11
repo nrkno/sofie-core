@@ -3,8 +3,7 @@ import { testInFiber, runAllTimers, beforeAllInFiber } from '../../__mocks__/hel
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
-import { Random } from 'meteor/random'
-import { getRandomId, protectString } from '../../lib/lib'
+import { getRandomId, getRandomString, protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
@@ -117,7 +116,7 @@ describe('cronjobs', () => {
 
 		testInFiber('Remove IngestDataCache objects that are not connected to any Rundown', async () => {
 			// Set up a mock rundown, a detached IngestDataCache object and an object attached to the mock rundown
-			const rundown0Id = protectString<RundownId>(Random.id())
+			const rundown0Id = protectString<RundownId>(getRandomString())
 			// Mock Rundown 0
 			Rundowns.insert({
 				_id: rundown0Id,
@@ -145,7 +144,7 @@ describe('cronjobs', () => {
 				},
 			})
 			// Detached IngestDataCache object 0
-			const dataCache0Id = protectString<IngestDataCacheObjId>(Random.id())
+			const dataCache0Id = protectString<IngestDataCacheObjId>(getRandomString())
 			IngestDataCache.insert({
 				_id: dataCache0Id,
 				data: {
@@ -160,7 +159,7 @@ describe('cronjobs', () => {
 				type: IngestCacheType.RUNDOWN,
 			})
 			// Attached IngestDataCache object 1
-			const dataCache1Id = protectString<IngestDataCacheObjId>(Random.id())
+			const dataCache1Id = protectString<IngestDataCacheObjId>(getRandomString())
 			IngestDataCache.insert({
 				_id: dataCache1Id,
 				data: {
@@ -184,7 +183,7 @@ describe('cronjobs', () => {
 		})
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry
-			const userAction0 = protectString<UserActionsLogItemId>(Random.id())
+			const userAction0 = protectString<UserActionsLogItemId>(getRandomString())
 			UserActionsLog.insert({
 				_id: userAction0,
 				organizationId: null,
@@ -197,7 +196,7 @@ describe('cronjobs', () => {
 				timestamp: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
 			})
 			// stale entry
-			const userAction1 = protectString<UserActionsLogItemId>(Random.id())
+			const userAction1 = protectString<UserActionsLogItemId>(getRandomString())
 			UserActionsLog.insert({
 				_id: userAction1,
 				organizationId: null,
@@ -219,7 +218,7 @@ describe('cronjobs', () => {
 		})
 		testInFiber('Removes old entries in Snapshots', async () => {
 			// reasonably fresh entry
-			const snapshot0 = protectString<SnapshotId>(Random.id())
+			const snapshot0 = protectString<SnapshotId>(getRandomString())
 			Snapshots.insert({
 				_id: snapshot0,
 				organizationId: null,
@@ -232,7 +231,7 @@ describe('cronjobs', () => {
 				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
 			})
 			// stale entry
-			const snapshot1 = protectString<SnapshotId>(Random.id())
+			const snapshot1 = protectString<SnapshotId>(getRandomString())
 			Snapshots.insert({
 				_id: snapshot1,
 				organizationId: null,
@@ -253,7 +252,7 @@ describe('cronjobs', () => {
 			expect(Snapshots.findOne(snapshot1)).toBeUndefined()
 		})
 		testInFiber('Attempts to restart CasparCG when job is enabled', async () => {
-			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
+			const mockPlayoutGw = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
 				organizationId: null,
@@ -274,7 +273,7 @@ describe('cronjobs', () => {
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
 			})
-			const mockCasparCg = protectString<PeripheralDeviceId>(Random.id())
+			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockCasparCg,
 				organizationId: null,
@@ -296,7 +295,7 @@ describe('cronjobs', () => {
 				},
 				token: '',
 			})
-			const mockATEM = protectString<PeripheralDeviceId>(Random.id())
+			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockATEM,
 				organizationId: null,
@@ -350,7 +349,7 @@ describe('cronjobs', () => {
 			expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
 		})
 		testInFiber('Does not attempt to restart CasparCG when job is disabled', async () => {
-			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
+			const mockPlayoutGw = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
 				organizationId: null,
@@ -371,7 +370,7 @@ describe('cronjobs', () => {
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
 			})
-			const mockCasparCg = protectString<PeripheralDeviceId>(Random.id())
+			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockCasparCg,
 				organizationId: null,
@@ -393,7 +392,7 @@ describe('cronjobs', () => {
 				},
 				token: '',
 			})
-			const mockATEM = protectString<PeripheralDeviceId>(Random.id())
+			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockATEM,
 				organizationId: null,

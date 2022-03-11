@@ -103,7 +103,9 @@ function createRundownPlaylistContext(
 	context: ActionContext,
 	filterChain: IBaseFilterLink[]
 ): InternalActionContext | undefined {
-	if (filterChain[0].object === 'view' && context.rundownPlaylist) {
+	if (filterChain.length === 0) {
+		return undefined
+	} else if (filterChain[0].object === 'view' && context.rundownPlaylist) {
 		return {
 			rundownPlaylistId: context.rundownPlaylist._id,
 			rundownPlaylist: context.rundownPlaylist,

@@ -320,7 +320,7 @@ async function notifyCurrentPlayingPartMOS(
 					MOS.IMOSObjectStatus.PLAY
 				)
 			} catch (error) {
-				logger.error('Error in setStoryStatus PLAY', error)
+				logger.error(`Error in setStoryStatus PLAY: ${stringifyError(error)}`)
 			}
 		}
 
@@ -334,7 +334,7 @@ async function notifyCurrentPlayingPartMOS(
 					MOS.IMOSObjectStatus.STOP
 				)
 			} catch (error) {
-				logger.error('Error in setStoryStatus STOP', error)
+				logger.error(`Error in setStoryStatus STOP: ${stringifyError(error)}`)
 			}
 		}
 	}

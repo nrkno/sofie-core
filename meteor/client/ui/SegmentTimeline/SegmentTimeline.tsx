@@ -395,7 +395,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> & any) => {
+	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
 		const scrollAmount = e.movementX * -1 || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
 		this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 		if (e.movementX === 0) {
@@ -409,7 +409,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineMouseUp = (e: React.MouseEvent<HTMLDivElement> & any) => {
+	onTimelineMouseUp = (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
 		document.removeEventListener('mousemove', this.onTimelineMouseMove)
 		document.removeEventListener('mouseup', this.onTimelineMouseUp)
 		this._mouseAttached = false
@@ -470,7 +470,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	// doubleclick is simulated by onTimelineMouseUp, because we use pointer lock and that prevents dblclick events
-	onTimelineDoubleClick = (_e: React.MouseEvent<HTMLDivElement>) => {
+	onTimelineDoubleClick = (_e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined || SegmentTimelineClass._zoomOutLatchId !== this.props.id) {
 			this.onTimelineZoomOn()
 		} else {

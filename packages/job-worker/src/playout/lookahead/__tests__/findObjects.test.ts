@@ -14,6 +14,10 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { setupDefaultJobEnvironment } from '../../../__mocks__/context'
 import _ = require('underscore')
+import {
+	EmptyPieceTimelineObjectsBlob,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 function stripObjectProperties(objs: Array<TimelineObjRundown & OnGenerateTimelineObj>, keepContent?: boolean): any[] {
 	const keys = _.compact([keepContent ? undefined : 'content', 'enable', 'objectType', 'keyframes'])
@@ -58,9 +62,8 @@ describe('findLookaheadObjectsForPart', () => {
 			pieceType: IBlueprintPieceType.Normal,
 			sourceLayerId: '',
 			outputLayerId: '',
-			content: {
-				timelineObjects: [],
-			},
+			content: {},
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		},
 	}
 
@@ -78,16 +81,15 @@ describe('findLookaheadObjectsForPart', () => {
 					rundownId: rundownId,
 					piece: {
 						...defaultPieceInstanceProps.piece,
-						content: {
-							timelineObjects: [
-								{
-									id: 'obj0',
-									enable: { start: 0 },
-									layer: layer1,
-									content: { deviceType: TSR.DeviceType.ABSTRACT },
-								},
-							],
-						},
+						content: {},
+						timelineObjectsString: serializePieceTimelineObjectsBlob([
+							{
+								id: 'obj0',
+								enable: { start: 0 },
+								layer: layer1,
+								content: { deviceType: TSR.DeviceType.ABSTRACT },
+							},
+						]),
 					},
 				},
 			]),
@@ -116,16 +118,15 @@ describe('findLookaheadObjectsForPart', () => {
 					rundownId: rundownId,
 					piece: {
 						...defaultPieceInstanceProps.piece,
-						content: {
-							timelineObjects: [
-								{
-									id: 'obj0',
-									enable: { start: 0 },
-									layer: layer0,
-									content: { deviceType: TSR.DeviceType.ABSTRACT },
-								},
-							],
-						},
+						content: {},
+						timelineObjectsString: serializePieceTimelineObjectsBlob([
+							{
+								id: 'obj0',
+								enable: { start: 0 },
+								layer: layer0,
+								content: { deviceType: TSR.DeviceType.ABSTRACT },
+							},
+						]),
 					},
 				},
 			]),
@@ -200,33 +201,32 @@ describe('findLookaheadObjectsForPart', () => {
 					rundownId: rundownId,
 					piece: {
 						...defaultPieceInstanceProps.piece,
-						content: {
-							timelineObjects: [
-								{
-									id: 'obj0',
-									enable: { start: 0 },
-									layer: layer0,
-									content: { deviceType: TSR.DeviceType.ABSTRACT },
-									keyframes: [
-										{
-											id: 'kf0',
-											enable: { start: 0 },
-											content: { kf0: true } as any,
-										},
-										{
-											id: 'kf1',
-											enable: { while: 1 },
-											content: { kf1: true } as any,
-										},
-										{
-											id: 'kf2',
-											enable: { while: '.is_transition' },
-											content: { kf2: true } as any,
-										},
-									],
-								},
-							],
-						},
+						content: {},
+						timelineObjectsString: serializePieceTimelineObjectsBlob([
+							{
+								id: 'obj0',
+								enable: { start: 0 },
+								layer: layer0,
+								content: { deviceType: TSR.DeviceType.ABSTRACT },
+								keyframes: [
+									{
+										id: 'kf0',
+										enable: { start: 0 },
+										content: { kf0: true } as any,
+									},
+									{
+										id: 'kf1',
+										enable: { while: 1 },
+										content: { kf1: true } as any,
+									},
+									{
+										id: 'kf2',
+										enable: { while: '.is_transition' },
+										content: { kf2: true } as any,
+									},
+								],
+							},
+						]),
 					},
 				},
 			]),
@@ -336,16 +336,15 @@ describe('findLookaheadObjectsForPart', () => {
 					rundownId: rundownId,
 					piece: {
 						...defaultPieceInstanceProps.piece,
-						content: {
-							timelineObjects: [
-								{
-									id: 'obj0',
-									enable: { start: 0 },
-									layer: layer0,
-									content: { deviceType: TSR.DeviceType.ABSTRACT },
-								},
-							],
-						},
+						content: {},
+						timelineObjectsString: serializePieceTimelineObjectsBlob([
+							{
+								id: 'obj0',
+								enable: { start: 0 },
+								layer: layer0,
+								content: { deviceType: TSR.DeviceType.ABSTRACT },
+							},
+						]),
 					},
 				},
 				{
@@ -356,16 +355,15 @@ describe('findLookaheadObjectsForPart', () => {
 						...defaultPieceInstanceProps.piece,
 						_id: protectString('piece1'),
 						enable: { start: 1000 },
-						content: {
-							timelineObjects: [
-								{
-									id: 'obj1',
-									enable: { start: 0 },
-									layer: layer0,
-									content: { deviceType: TSR.DeviceType.ABSTRACT },
-								},
-							],
-						},
+						content: {},
+						timelineObjectsString: serializePieceTimelineObjectsBlob([
+							{
+								id: 'obj1',
+								enable: { start: 0 },
+								layer: layer0,
+								content: { deviceType: TSR.DeviceType.ABSTRACT },
+							},
+						]),
 					},
 				},
 			]),
@@ -476,33 +474,32 @@ describe('findLookaheadObjectsForPart', () => {
 					rundownId: rundownId,
 					piece: {
 						...defaultPieceInstanceProps.piece,
-						content: {
-							timelineObjects: [
-								{
-									id: 'obj0',
-									enable: { start: 0 },
-									layer: layer0,
-									content: { deviceType: TSR.DeviceType.ABSTRACT },
-									keyframes: [
-										{
-											id: 'kf0',
-											enable: { start: 0 },
-											content: { kf0: true } as any,
-										},
-										{
-											id: 'kf1',
-											enable: { while: 1 },
-											content: { kf1: true } as any,
-										},
-										{
-											id: 'kf2',
-											enable: { while: '.is_transition' },
-											content: { kf2: true } as any,
-										},
-									],
-								},
-							],
-						},
+						content: {},
+						timelineObjectsString: serializePieceTimelineObjectsBlob([
+							{
+								id: 'obj0',
+								enable: { start: 0 },
+								layer: layer0,
+								content: { deviceType: TSR.DeviceType.ABSTRACT },
+								keyframes: [
+									{
+										id: 'kf0',
+										enable: { start: 0 },
+										content: { kf0: true } as any,
+									},
+									{
+										id: 'kf1',
+										enable: { while: 1 },
+										content: { kf1: true } as any,
+									},
+									{
+										id: 'kf2',
+										enable: { while: '.is_transition' },
+										content: { kf2: true } as any,
+									},
+								],
+							},
+						]),
 					},
 				},
 				{
@@ -513,23 +510,22 @@ describe('findLookaheadObjectsForPart', () => {
 						...defaultPieceInstanceProps.piece,
 						_id: protectString('piece1'),
 						enable: { start: 1000 },
-						content: {
-							timelineObjects: [
-								{
-									id: 'obj1',
-									enable: { start: 0 },
-									layer: layer0,
-									content: { deviceType: TSR.DeviceType.ABSTRACT },
-									keyframes: [
-										{
-											id: 'kf0',
-											enable: { while: '.is_transition' },
-											content: { kf0: true } as any,
-										},
-									],
-								},
-							],
-						},
+						content: {},
+						timelineObjectsString: serializePieceTimelineObjectsBlob([
+							{
+								id: 'obj1',
+								enable: { start: 0 },
+								layer: layer0,
+								content: { deviceType: TSR.DeviceType.ABSTRACT },
+								keyframes: [
+									{
+										id: 'kf0',
+										enable: { while: '.is_transition' },
+										content: { kf0: true } as any,
+									},
+								],
+							},
+						]),
 					},
 				},
 			]),
@@ -671,33 +667,32 @@ describe('findLookaheadObjectsForPart', () => {
 						rundownId: rundownId,
 						piece: {
 							...defaultPieceInstanceProps.piece,
-							content: {
-								timelineObjects: [
-									{
-										id: 'obj0',
-										enable: { start: 0 },
-										layer: layer0,
-										content: { deviceType: TSR.DeviceType.ABSTRACT },
-										keyframes: [
-											{
-												id: 'kf0',
-												enable: { start: 0 },
-												content: { kf0: true } as any,
-											},
-											{
-												id: 'kf1',
-												enable: { while: 1 },
-												content: { kf1: true } as any,
-											},
-											{
-												id: 'kf2',
-												enable: { while: '.is_transition' },
-												content: { kf2: true } as any,
-											},
-										],
-									},
-								],
-							},
+							content: {},
+							timelineObjectsString: serializePieceTimelineObjectsBlob([
+								{
+									id: 'obj0',
+									enable: { start: 0 },
+									layer: layer0,
+									content: { deviceType: TSR.DeviceType.ABSTRACT },
+									keyframes: [
+										{
+											id: 'kf0',
+											enable: { start: 0 },
+											content: { kf0: true } as any,
+										},
+										{
+											id: 'kf1',
+											enable: { while: 1 },
+											content: { kf1: true } as any,
+										},
+										{
+											id: 'kf2',
+											enable: { while: '.is_transition' },
+											content: { kf2: true } as any,
+										},
+									],
+								},
+							]),
 						},
 					},
 					{
@@ -708,23 +703,22 @@ describe('findLookaheadObjectsForPart', () => {
 							...defaultPieceInstanceProps.piece,
 							_id: protectString('piece1'),
 							enable: { start: 1000 },
-							content: {
-								timelineObjects: [
-									{
-										id: 'obj1',
-										enable: { start: 0 },
-										layer: layer0,
-										content: { deviceType: TSR.DeviceType.ABSTRACT },
-										keyframes: [
-											{
-												id: 'kf0',
-												enable: { while: '.is_transition' },
-												content: { kf0: true } as any,
-											},
-										],
-									},
-								],
-							},
+							content: {},
+							timelineObjectsString: serializePieceTimelineObjectsBlob([
+								{
+									id: 'obj1',
+									enable: { start: 0 },
+									layer: layer0,
+									content: { deviceType: TSR.DeviceType.ABSTRACT },
+									keyframes: [
+										{
+											id: 'kf0',
+											enable: { while: '.is_transition' },
+											content: { kf0: true } as any,
+										},
+									],
+								},
+							]),
 						},
 					},
 					{
@@ -736,16 +730,15 @@ describe('findLookaheadObjectsForPart', () => {
 							...defaultPieceInstanceProps.piece,
 							_id: protectString('piece2'),
 							pieceType: IBlueprintPieceType.InTransition,
-							content: {
-								timelineObjects: [
-									{
-										id: 'trans0',
-										enable: { start: 0 },
-										layer: layer0,
-										content: { deviceType: TSR.DeviceType.ABSTRACT },
-									},
-								],
-							},
+							content: {},
+							timelineObjectsString: serializePieceTimelineObjectsBlob([
+								{
+									id: 'trans0',
+									enable: { start: 0 },
+									layer: layer0,
+									content: { deviceType: TSR.DeviceType.ABSTRACT },
+								},
+							]),
 						},
 					},
 				]),

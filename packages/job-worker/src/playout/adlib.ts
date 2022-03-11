@@ -8,7 +8,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { assertNever, getRandomId, getRank, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, getRandomId, getRank, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
 import {
@@ -24,7 +24,7 @@ import {
 } from './cache'
 import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline'
-import { prefixAllObjectIds, selectNextPart, setNextPart } from './lib'
+import { selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
 import {
 	convertAdLibToPieceInstance,
@@ -40,10 +40,8 @@ import {
 } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
-import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -172,17 +170,6 @@ async function pieceTakeNowAsAdlib(
 		partInstance,
 		false
 	)
-	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
-		newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
-			newPieceInstance.piece.content.timelineObjects.map((obj) => {
-				return literal<TimelineObjGeneric>({
-					...obj,
-					objectType: TimelineObjType.RUNDOWN,
-				})
-			}),
-			unprotectString(newPieceInstance._id)
-		)
-	}
 
 	// Disable the original piece if from the same Part
 	if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
@@ -306,7 +293,7 @@ export async function innerStartOrQueueAdLibPiece(
 	queue: boolean,
 	currentPartInstance: DBPartInstance,
 	adLibPiece: AdLibPiece | BucketAdLib
-) {
+): Promise<void> {
 	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw new Error('RundownPlaylist is not active')
 
@@ -418,7 +405,7 @@ export async function startStickyPieceOnSourceLayer(
 	)
 }
 
-export function innerFindLastPieceOnLayer(
+export async function innerFindLastPieceOnLayer(
 	context: JobContext,
 	cache: CacheForPlayout,
 	sourceLayerId: string[],
@@ -428,7 +415,7 @@ export function innerFindLastPieceOnLayer(
 	const span = context.startSpan('innerFindLastPieceOnLayer')
 	const rundownIds = getRundownIDsFromCache(cache)
 
-	const query = {
+	const query: MongoQuery<PieceInstance> = {
 		...customQuery,
 		playlistActivationId: cache.Playlist.doc.activationId,
 		rundownId: { $in: rundownIds },
@@ -683,9 +670,8 @@ export function innerStopPieces(
 								status: PieceStatusCode.UNKNOWN,
 								pieceType: IBlueprintPieceType.Normal,
 								virtual: true,
-								content: {
-									timelineObjects: [],
-								},
+								content: {},
+								timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 							},
 							currentPartInstance.playlistActivationId,
 							currentPartInstance.rundownId,

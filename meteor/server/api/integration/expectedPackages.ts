@@ -344,7 +344,7 @@ export namespace PackageManagerIntegration {
 		Array<{ packageId: ExpectedPackageId; expectedContentVersionHash: string; actualContentVersionHash: string }>
 	> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		check(packageIds, Array)
+		check(packageIds, [String])
 		check(type, String)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')

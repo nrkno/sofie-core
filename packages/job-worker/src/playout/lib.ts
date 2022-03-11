@@ -453,7 +453,7 @@ export async function setNextPart(
 	if (span) span.end()
 }
 
-export function setNextSegment(context: JobContext, cache: CacheForPlayout, nextSegment: DBSegment | null) {
+export function setNextSegment(context: JobContext, cache: CacheForPlayout, nextSegment: DBSegment | null): void {
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {
 		// Just run so that errors will be thrown if something wrong:
@@ -630,7 +630,7 @@ export function onPartHasStoppedPlaying(
 export function substituteObjectIds(
 	rawEnable: TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[],
 	idMap: { [oldId: string]: string | undefined }
-) {
+): TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[] {
 	const replaceIds = (str: string) => {
 		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
 			const id = m.substr(1, m.length - 1)
@@ -651,31 +651,34 @@ export function substituteObjectIds(
 
 	return enable
 }
+export function prefixSingleObjectId<T extends TimelineObjGeneric>(
+	obj: T,
+	prefix: string,
+	ignoreOriginal?: never
+): string {
+	let id = obj.id
+	if (!ignoreOriginal) {
+		if (!obj.originalId) {
+			obj.originalId = obj.id
+		}
+		id = obj.originalId
+	}
+	return prefix + id
+}
 export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 	objList: T[],
 	prefix: string,
 	ignoreOriginal?: never
 ): T[] {
-	const getUpdatePrefixedId = (o: T) => {
-		let id = o.id
-		if (!ignoreOriginal) {
-			if (!o.originalId) {
-				o.originalId = o.id
-			}
-			id = o.originalId
-		}
-		return prefix + id
-	}
-
 	const idMap: { [oldId: string]: string | undefined } = {}
 	_.each(objList, (o) => {
-		idMap[o.id] = getUpdatePrefixedId(o)
+		idMap[o.id] = prefixSingleObjectId(o, prefix, ignoreOriginal)
 	})
 
 	return objList.map((rawObj) => {
 		const obj = clone(rawObj)
 
-		obj.id = getUpdatePrefixedId(obj)
+		obj.id = prefixSingleObjectId(obj, prefix, ignoreOriginal)
 		obj.enable = substituteObjectIds(obj.enable, idMap)
 
 		if (typeof obj.inGroup === 'string') {

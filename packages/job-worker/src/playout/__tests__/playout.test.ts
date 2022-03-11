@@ -42,7 +42,7 @@ import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import {
@@ -62,7 +62,7 @@ import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mock
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
 	.spyOn(peripheralDeviceLib, 'executePeripheralDeviceFunction')
-	.mockImplementation(() => sleep(10))
+	.mockImplementation(async () => sleep(10))
 
 describe('Playout API', () => {
 	let context: MockJobContext
@@ -110,7 +110,7 @@ describe('Playout API', () => {
 		context = setupDefaultJobEnvironment()
 
 		// Ignore event jobs
-		jest.spyOn(context, 'queueEventJob').mockImplementation(() => Promise.resolve())
+		jest.spyOn(context, 'queueEventJob').mockImplementation(async () => Promise.resolve())
 
 		showStyle = await setupMockShowStyleCompound(context)
 
@@ -942,9 +942,8 @@ async function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 0',
 		sourceLayerId: showStyle.sourceLayers[0]._id,
 		outputLayerId: showStyle.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -957,9 +956,8 @@ async function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 1',
 		sourceLayerId: showStyle.sourceLayers[1]._id,
 		outputLayerId: showStyle.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	await context.directCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib0)

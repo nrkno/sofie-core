@@ -24,8 +24,7 @@ import {
 	RundownLayoutsAPI,
 } from '../../../lib/api/rundownLayouts'
 import { PubSub } from '../../../lib/api/pubsub'
-import { literal, unprotectString } from '../../../lib/lib'
-import { Random } from 'meteor/random'
+import { getRandomString, literal, unprotectString } from '../../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -97,7 +96,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			RundownLayouts.update(item._id, {
 				$push: {
 					actionButtons: literal<DashboardLayoutActionButton>({
-						_id: Random.id(),
+						_id: getRandomString(),
 						label: t('Button'),
 						type: ActionButtonType.TAKE,
 						x: 0,
@@ -122,7 +121,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			RundownLayouts.update(item._id, {
 				$push: {
 					filters: literal<RundownLayoutFilter>({
-						_id: Random.id(),
+						_id: getRandomString(),
 						type: RundownLayoutElementType.FILTER,
 						name: filtersTitle,
 						currentSegment: false,

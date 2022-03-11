@@ -1,15 +1,18 @@
-import * as crypto from 'crypto'
-
-// TODO - copied from server-core-integration
+const randomChars = 'abcdefghifklmnopqrstuvxyzABCDEFGHIFKLMNOPQRSTUVXYZ0123456789'
+const randomCharsCount = randomChars.length - 1
+function randomChar(): string {
+	return randomChars[Math.floor(Math.random() * randomCharsCount)]
+}
+function randomFastId(numberOfChars = 17): string {
+	let str = ''
+	for (let i = 0; i < numberOfChars; i++) {
+		str += randomChar()
+	}
+	return str
+}
 export class Random {
-	static UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
 	// TODO - this needs to be made browser safe
 	public static id(digits = 17): string {
-		let id = ''
-		const bytes = crypto.randomBytes(digits)
-		for (let x = 0; x < digits; x++) {
-			id += this.UNMISTAKABLE_CHARS[bytes[x] % digits]
-		}
-		return id
+		return randomFastId(digits)
 	}
 }

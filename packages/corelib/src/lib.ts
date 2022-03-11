@@ -15,6 +15,14 @@ export type TimeDuration = number
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
+/**
+ * Make all optional properties be required and `| undefined`
+ * This is useful to ensure that no property is missed, when manually converting between types, but allowing fields to be undefined
+ */
+export type Complete<T> = {
+	[P in keyof Required<T>]: Pick<T, P> extends Required<Pick<T, P>> ? T[P] : T[P] | undefined
+}
+
 export type ArrayElement<A> = A extends readonly (infer T)[] ? T : never
 
 export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
@@ -76,6 +84,7 @@ function deepFreezeInner(object: any): void {
 export function getRandomString(numberOfChars?: number): string {
 	return Random.id(numberOfChars)
 }
+
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
 	return protectString(getRandomString(numberOfChars))
 }
@@ -205,12 +214,14 @@ export function applyToArray<T>(arr: T | T[], func: (val: T) => void): void {
 	}
 }
 
-export function objectPathGet(obj: any, path: string, defaultValue?: any) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function objectPathGet(obj: any, path: string, defaultValue?: any): any {
 	const v = objectPath.get(obj, path)
 	if (v === undefined && defaultValue !== undefined) return defaultValue
 	return v
 }
-export function objectPathSet(obj: any, path: string, value: any) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function objectPathSet(obj: any, path: string, value: any): any {
 	objectPath.set(obj, path, value)
 	return obj
 }
@@ -259,6 +270,7 @@ export interface ManualPromise<T> extends Promise<T> {
 	manualResolve(res: T): void
 	manualReject(e: Error): void
 }
+// eslint-disable-next-line @typescript-eslint/promise-function-async
 export function createManualPromise<T>(): ManualPromise<T> {
 	let resolve: (val: T) => void = () => null
 	let reject: (err: Error) => void = () => null
@@ -361,4 +373,12 @@ export function stringifyError(error: unknown, noStack = false): string {
 	}
 
 	return str
+}
+
+/**
+ * 'Defer' the execution of an async function.
+ * Pass an async function, and a catch block
+ */
+export function deferAsync(fn: () => Promise<void>, catcher: (e: unknown) => void): void {
+	fn().catch(catcher)
 }

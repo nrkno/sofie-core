@@ -40,7 +40,7 @@ export function translateMessage(translatable: ITranslatableMessage, i18nTransla
  * @param {...any} args Map of values to be inserted in place of placeholders
  * @return {string} the compiled string
  */
-export function interpollateTranslation(key: unknown, ...args: any): string {
+export function interpollateTranslation(key: unknown, ...args: any[]): string {
 	if (!args[0]) {
 		return String(key)
 	}
@@ -78,12 +78,12 @@ export function interpollateTranslation(key: unknown, ...args: any): string {
  *
  * @returns {boolean} true if the value implements the interface, false if not
  */
-export function isTranslatableMessage(obj: any): obj is ITranslatableMessage {
+export function isTranslatableMessage(obj: unknown): obj is ITranslatableMessage {
 	if (!obj) {
 		return false
 	}
 
-	const { key, args, namespaces } = obj
+	const { key, args, namespaces } = obj as ITranslatableMessage
 
 	if (!key || typeof key !== 'string') {
 		return false
@@ -93,7 +93,7 @@ export function isTranslatableMessage(obj: any): obj is ITranslatableMessage {
 		return false
 	}
 
-	if (namespaces && !Array.isArray(namespaces) && namespaces.find((ns: any) => typeof ns !== 'string')) {
+	if (namespaces && (!Array.isArray(namespaces) || namespaces.find((ns: any) => typeof ns !== 'string'))) {
 		return false
 	}
 

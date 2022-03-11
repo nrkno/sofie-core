@@ -14,7 +14,7 @@ exports.__esModule = true;
 exports.scopeHasLocalReference = exports.isDescribeCall = exports.isTestCaseCall = exports.getTestCallExpressionsFromDeclaredVariables = exports.isHook = exports.isFunction = exports.getNodeName = exports.TestCaseProperty = exports.DescribeProperty = exports.HookName = exports.TestCaseName = exports.DescribeAlias = exports.parseExpectCall = exports.isParsedEqualityMatcherCall = exports.EqualityMatcher = exports.ModifierName = exports.isExpectMember = exports.isExpectCall = exports.getAccessorValue = exports.isSupportedAccessor = exports.isIdentifier = exports.hasOnlyOneArgument = exports.getStringValue = exports.isStringNode = exports.followTypeAssertionChain = exports.createRule = void 0;
 /** https://github.com/jest-community/eslint-plugin-jest/blob/540326879df242daa3d96f43903178e36ba6b546/src/rules/utils.ts */
 // import { parse as parsePath } from 'path';
-var experimental_utils_1 = require("@typescript-eslint/experimental-utils");
+var experimental_utils_1 = require("@typescript-eslint/utils");
 // import { version } from '../../package.json';
 // const REPO_URL = 'https://github.com/jest-community/eslint-plugin-jest';
 exports.createRule = experimental_utils_1.ESLintUtils.RuleCreator(function (name) {

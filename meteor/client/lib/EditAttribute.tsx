@@ -9,8 +9,7 @@ import { TransformedCollection } from '../../lib/typings/meteor'
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
-import { Random } from 'meteor/random'
-import { assertNever } from '../../lib/lib'
+import { assertNever, getRandomString } from '../../lib/lib'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -553,8 +552,7 @@ const EditAttributeDropdown = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (const key in this.props.options) {
-					const val = this.props.options[key]
+				for (const val of this.props.options) {
 					if (typeof val === 'object') {
 						options.push({
 							name: val.name,
@@ -671,7 +669,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 			this.handleBlurText = this.handleBlurText.bind(this)
 			this.handleEscape = this.handleEscape.bind(this)
 
-			this._id = Random.id()
+			this._id = getRandomString()
 		}
 		handleChangeDropdown(event) {
 			// because event.target.value is always a string, use the original value instead
@@ -700,8 +698,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (const key in this.props.options) {
-					const val = this.props.options[key]
+				for (const val of this.props.options) {
 					if (typeof val === 'object') {
 						options.push({
 							name: val.name,
@@ -830,8 +827,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (const key in this.props.options) {
-					const val = this.props.options[key]
+				for (const val of this.props.options) {
 					if (typeof val === 'object') {
 						options[val.value] = val.name
 					} else {

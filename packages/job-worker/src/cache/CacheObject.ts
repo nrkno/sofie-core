@@ -27,7 +27,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 		private readonly _optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	) {
-		this._document = (doc ? clone(doc as any) : doc) as any
+		this._document = doc ? clone(doc as any) : doc
 		this._rawDocument = clone(doc as any)
 	}
 	get name(): string | null {
@@ -77,7 +77,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 	}
 
 	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
-	markForRemoval() {
+	markForRemoval(): void {
 		this.isToBeRemoved = true
 	}
 }
@@ -202,7 +202,7 @@ export class DbCacheWriteObject<
 		}
 	}
 
-	discardChanges() {
+	discardChanges(): void {
 		if (this.isModified()) {
 			this._updated = false
 			this._document = this._rawDocument ? clone(this._rawDocument) : this._rawDocument

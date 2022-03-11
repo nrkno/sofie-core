@@ -24,14 +24,6 @@ export function setLogLevel(level: LogLevel, startup = false) {
 	}
 }
 
-declare module 'winston' {
-	// TODO: workaround from https://github.com/winstonjs/winston/pull/2021
-	// To be removed once winston 3.4.1 or 3.5.0 is published
-	export interface LoggerOptions {
-		handleRejections?: boolean
-	}
-}
-
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
 interface LoggerInstanceFixed extends Winston.Logger {

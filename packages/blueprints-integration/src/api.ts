@@ -141,13 +141,18 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	getSegment: (context: ISegmentUserContext, ingestSegment: IngestSegment) => BlueprintResultSegment
 
 	/**
-	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment() )
+	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment())
+	 *
+	 * `playStatus: previous` means that the currentPartInstance is `orphaned: adlib-part`
+	 * and thus possibly depends on an already past PartInstance for some of it's properties. Therefore
+	 * the blueprint is allowed to modify the most recently played non-adlibbed PartInstance using ingested data.
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,
 		existingPartInstance: BlueprintSyncIngestPartInstance,
 		newData: BlueprintSyncIngestNewData,
-		playoutStatus: 'current' | 'next'
+
+		playoutStatus: 'previous' | 'current' | 'next'
 	) => void
 
 	/**
@@ -233,7 +238,7 @@ export type BlueprintResultStudioBaseline = BlueprintResultBaseline
 export interface BlueprintResultRundown {
 	rundown: IBlueprintRundown
 	globalAdLibPieces: IBlueprintAdLibPiece[]
-	globalActions?: IBlueprintActionManifest[]
+	globalActions: IBlueprintActionManifest[]
 	baseline: BlueprintResultBaseline
 }
 export interface BlueprintResultSegment {
@@ -245,7 +250,7 @@ export interface BlueprintResultPart {
 	part: IBlueprintPart
 	pieces: IBlueprintPiece[]
 	adLibPieces: IBlueprintAdLibPiece[]
-	actions?: IBlueprintActionManifest[]
+	actions: IBlueprintActionManifest[]
 }
 
 export interface BlueprintSyncIngestNewData {

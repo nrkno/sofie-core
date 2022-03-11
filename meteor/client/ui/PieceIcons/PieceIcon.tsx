@@ -7,13 +7,13 @@ import {
 	RemoteContent,
 	EvsContent,
 } from '@sofie-automation/blueprints-integration'
-import CamInputIcon from './Renderers/CamInput'
-import VTInputIcon from './Renderers/VTInput'
-import SplitInputIcon from './Renderers/SplitInput'
-import RemoteInputIcon from './Renderers/RemoteInput'
-import LiveSpeakInputIcon from './Renderers/LiveSpeakInput'
-import GraphicsInputIcon from './Renderers/GraphicsInput'
-import UnknownInputIcon from './Renderers/UnknownInput'
+import CamInputIcon from './Renderers/CamInputIcon'
+import VTInputIcon from './Renderers/VTInputIcon'
+import SplitInputIcon from './Renderers/SplitInputIcon'
+import RemoteInputIcon from './Renderers/RemoteInputIcon'
+import LiveSpeakInputIcon from './Renderers/LiveSpeakInputIcon'
+import GraphicsInputIcon from './Renderers/GraphicsInputIcon'
+import UnknownInputIcon from './Renderers/UnknownInputIcon'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
@@ -21,7 +21,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
 import { RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
-import LocalInputIcon from './Renderers/LocalInput'
+import LocalInputIcon from './Renderers/LocalInputIcon'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId

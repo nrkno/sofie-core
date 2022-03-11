@@ -87,6 +87,12 @@ class I18nContainer extends WithManagedTracker {
 				this.i18nTranslator = t
 				moment.locale(i18n.language)
 				document.documentElement.lang = i18n.language
+
+				const webManifestLink = document.head.querySelector('link[rel="manifest"]')
+				if (webManifestLink) {
+					const sourceHref = webManifestLink.getAttribute('data-href')
+					webManifestLink.setAttribute('href', sourceHref + `?lng=${i18n.language}`)
+				}
 			})
 			.catch((err: Error) => {
 				console.error('Error initializing i18Next:', err)

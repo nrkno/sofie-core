@@ -748,11 +748,8 @@ export async function restoreFromRundownPlaylistSnapshot(
 		pieceIdMap.set(oldId, adlib._id)
 	}
 
-	// const pieceInstanceIdMap = new Map<PieceInstanceId, PieceInstanceId>()
 	for (const pieceInstance of snapshot.pieceInstances) {
-		// const oldId = pieceInstance._id
 		pieceInstance._id = getRandomId()
-		// pieceInstanceIdMap.set(oldId, pieceInstance._id)
 
 		pieceInstance.piece._id = (pieceIdMap.get(pieceInstance.piece._id) || getRandomId()) as PieceId // Note: don't warn if not found, as the piece may have been deleted
 		if (pieceInstance.infinite) {

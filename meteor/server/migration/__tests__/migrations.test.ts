@@ -14,6 +14,7 @@ import {
 	MigrationContextShowStyle,
 	PlaylistTimingType,
 	PlaylistTimingNone,
+	ShowStyleBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Studios, Studio } from '../../../lib/collections/Studios'
@@ -302,7 +303,7 @@ describe('Migrations', () => {
 			getShowStyleId: () => null,
 		})
 
-		const showStyleManifest = () => ({
+		const showStyleManifest = (): ShowStyleBlueprintManifest => ({
 			blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
 			blueprintVersion: '1.0.0',
 			integrationVersion: '0.0.0',
@@ -353,12 +354,6 @@ describe('Migrations', () => {
 					},
 				},
 			],
-			getBaseline: () => {
-				return {
-					timelineObjects: [],
-				}
-			},
-			getShowStyleId: () => null,
 			getShowStyleVariantId: () => null,
 			getRundown: () => ({
 				rundown: {
@@ -369,6 +364,7 @@ describe('Migrations', () => {
 					}),
 				},
 				globalAdLibPieces: [],
+				globalActions: [],
 				baseline: { timelineObjects: [] },
 			}),
 			getSegment: () => ({

@@ -39,7 +39,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 
 	abstract DisplayName: string
 
-	protected getAllCollections() {
+	private getAllCollections() {
 		const highPrioDBs: DbCacheWritable<any>[] = []
 		const lowPrioDBs: DbCacheWritable<any>[] = []
 
@@ -65,7 +65,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		}
 	}
 
-	async saveAllToDatabase() {
+	async saveAllToDatabase(): Promise<void> {
 		const span = this.context.startSpan('Cache.saveAllToDatabase')
 
 		// Execute cache.defer()'s
@@ -105,7 +105,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	 * Discard all changes to documents in the cache.
 	 * This essentially acts as rolling back this transaction, and lets the cache be reused for another operation instead
 	 */
-	discardChanges() {
+	discardChanges(): void {
 		const { allDBs } = this.getAllCollections()
 		for (const coll of allDBs) {
 			coll.discardChanges()
@@ -195,7 +195,7 @@ export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheB
 	defer(fcn: DeferredFunction<T>): void {
 		this._deferredFunctions.push(fcn)
 	}
-	deferAfterSave(fcn: () => void | Promise<void>) {
+	deferAfterSave(fcn: () => void | Promise<void>): void {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}
 }

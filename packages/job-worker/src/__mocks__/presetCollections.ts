@@ -6,7 +6,7 @@ import {
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getCurrentTime, getSystemVersion } from '../lib'
@@ -234,9 +234,8 @@ export async function setupDefaultRundown(
 		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece000)
 
@@ -256,9 +255,8 @@ export async function setupDefaultRundown(
 		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece001)
 
@@ -274,9 +272,8 @@ export async function setupDefaultRundown(
 		name: 'AdLib 0',
 		sourceLayerId: showStyleCompound.sourceLayers[1]._id,
 		outputLayerId: showStyleCompound.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	await context.directCollections.AdLibPieces.insertOne(adLibPiece000)
@@ -308,9 +305,8 @@ export async function setupDefaultRundown(
 		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	await context.directCollections.Pieces.insertOne(piece010)
 
@@ -375,9 +371,8 @@ export async function setupDefaultRundown(
 		name: 'Global AdLib 0',
 		sourceLayerId: showStyleCompound.sourceLayers[0]._id,
 		outputLayerId: showStyleCompound.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -390,9 +385,8 @@ export async function setupDefaultRundown(
 		name: 'Global AdLib 1',
 		sourceLayerId: showStyleCompound.sourceLayers[1]._id,
 		outputLayerId: showStyleCompound.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	await context.directCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib0)

@@ -14,7 +14,7 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 ### Prerequisites
 
-- Install [Node.js](https://nodejs.org) 12 or 14 (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
+- Install [Node.js](https://nodejs.org) 16 (14 will also work) (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
 - If on Windows: `npm install --global windows-build-tools`
 - Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
 - Install [Yarn](https://yarnpkg.com) (`npm install --global corepack && corepack enable`)

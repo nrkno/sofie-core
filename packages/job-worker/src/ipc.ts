@@ -22,7 +22,7 @@ class IpcJobManager implements JobManager {
 	public subscribeToQueue(queueName: string, _workerId: WorkerId): JobStream {
 		return {
 			next: async () => this.getNextJob(queueName),
-			close: () => Promise.resolve(),
+			close: async () => Promise.resolve(),
 		}
 	}
 }
@@ -40,7 +40,7 @@ export class IpcJobWorker extends JobWorkerBase {
 		fastTrackTimeline: FastTrackTimelineFunc
 	) {
 		// Intercept logging to pipe back over ipc
-		interceptLogging('worker-parent', (msg) => logLine(msg))
+		interceptLogging('worker-parent', async (msg) => logLine(msg))
 
 		const jobManager = new IpcJobManager(jobFinished, queueJob, getNextJob)
 		super(workerId, jobManager, logLine, fastTrackTimeline)

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import {
 	IBlueprintPiece,
 	IngestPart,
@@ -1718,7 +1719,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {
+												timelineObjects: [],
+											},
 										}),
 									],
 								},
@@ -1736,7 +1739,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {
+												timelineObjects: [],
+											},
 										}),
 									],
 								},
@@ -1905,7 +1910,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {
+												timelineObjects: [],
+											},
 										}),
 									],
 								},
@@ -1923,7 +1930,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {
+												timelineObjects: [],
+											},
 										}),
 									],
 								},
@@ -2189,7 +2198,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		}
 	})
-	test('prevent hiding current segment', async () => {
+	test('prevent hiding current segment when preserveUnsyncedPlayingSegmentContents: true', async () => {
 		try {
 			// Cleanup any rundowns / playlists
 			{
@@ -2233,7 +2242,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {
+												timelineObjects: [],
+											},
 										}),
 									],
 								},
@@ -2251,7 +2262,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 											sourceLayerId: '',
 											outputLayerId: '',
 											lifespan: PieceLifespan.WithinPart,
-											content: { timelineObjects: [] },
+											content: {
+												timelineObjects: [],
+											},
 										}),
 									],
 								},
@@ -2448,7 +2461,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			})
 
 			// Intercept the calls to queueIngestJob
-			context.queueIngestJob = jest.fn(() => Promise.resolve())
+			context.queueIngestJob = jest.fn(async () => Promise.resolve())
 			expect(context.queueIngestJob).toHaveBeenCalledTimes(0)
 
 			// Take Segment 1
@@ -2499,6 +2512,192 @@ describe('Test ingest actions for rundowns and segments', () => {
 				expect(segment0?.orphaned).toBeFalsy()
 
 				expect(parts2).toHaveLength(1)
+			}
+		} finally {
+			// forcefully 'deactivate' the playlist to allow for cleanup to happen
+			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
+		}
+	})
+	test('prevent hiding current segment when deleting segment onAir', async () => {
+		try {
+			// Cleanup any rundowns / playlists
+			{
+				// Cleanup any rundowns / playlists
+				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+				await removeRundownPlaylistFromDb(
+					context,
+					playlists.map((p) => p._id)
+				)
+			}
+
+			const rundownData: IngestRundown = {
+				externalId: externalId,
+				name: 'MyMockRundown',
+				type: 'mock',
+				segments: [
+					{
+						externalId: 'segment0',
+						name: 'Segment 0',
+						rank: 0,
+						payload: {},
+						parts: [
+							{
+								externalId: 'part0',
+								name: 'Part 0',
+								rank: 0,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece0',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+							{
+								externalId: 'part1',
+								name: 'Part 1',
+								rank: 1,
+								payload: {
+									pieces: [
+										literal<IBlueprintPiece>({
+											externalId: 'piece1',
+											name: '',
+											enable: { start: 0 },
+											sourceLayerId: '',
+											outputLayerId: '',
+											lifespan: PieceLifespan.WithinPart,
+											content: { timelineObjects: [] },
+										}),
+									],
+								},
+							},
+						],
+					},
+					{
+						externalId: 'segment1',
+						name: 'Segment 1',
+						rank: 1,
+						payload: {},
+						parts: [
+							{
+								externalId: 'part2',
+								name: 'Part 2',
+								rank: 0,
+							},
+						],
+					},
+				],
+			}
+
+			// Preparation: set up rundown
+			await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+			await handleUpdatedRundown(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestRundown: rundownData,
+				isCreateAction: true,
+			})
+			const rundown = (await context.directCollections.Rundowns.findOne()) as Rundown
+			expect(rundown).toMatchObject({
+				externalId: rundownData.externalId,
+			})
+
+			const getPlaylist = async () =>
+				(await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
+			const getCurrentPartInstanceId = async () => {
+				const playlist = await getPlaylist()
+				return playlist.currentPartInstanceId
+			}
+
+			const playlist = await getPlaylist()
+			expect(playlist).toBeTruthy()
+
+			// const getRundown = async () => (await context.directCollections.Rundowns.findOne(rundown._id)) as Rundown
+
+			const { segments, parts } = await getRundownData({ _id: rundown._id })
+			expect(segments).toHaveLength(2)
+			expect(parts).toHaveLength(3)
+			await expect(
+				context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+			).resolves.toHaveLength(2)
+
+			// Activate the rundown
+			await activateRundownPlaylist(context, {
+				playlistId: playlist._id,
+				rehearsal: true,
+			})
+			await expect(getCurrentPartInstanceId()).resolves.toBeNull()
+
+			// Take the first part
+			await takeNextPart(context, {
+				playlistId: playlist._id,
+				fromPartInstanceId: null,
+			})
+			await expect(getCurrentPartInstanceId()).resolves.not.toBeNull()
+
+			{
+				// Check which part is current
+				const selectedInstances = await getSelectedPartInstances(context, await getPlaylist())
+				const currentPartInstance = selectedInstances.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+			}
+
+			// Delete segment 0, while on air
+			const segmentExternalId = rundownData.segments[0].externalId
+			await handleRemovedSegment(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				segmentExternalId: segmentExternalId,
+			})
+
+			{
+				const { segments, parts } = await getRundownData({ _id: rundown._id })
+				expect(segments).toHaveLength(2)
+
+				const segment0 = segments.find((s) => s.externalId === segmentExternalId) as DBSegment
+				expect(segment0).toBeTruthy()
+				expect(segment0.orphaned).toBe(SegmentOrphanedReason.DELETED)
+				expect(segment0.isHidden).toBeFalsy()
+
+				// Check that the PartInstance is still there
+				const selectedInstances = await getSelectedPartInstances(context, await getPlaylist())
+				const currentPartInstance = selectedInstances.currentPartInstance as DBPartInstance
+				expect(currentPartInstance).toBeTruthy()
+				expect(currentPartInstance.part.externalId).toBe('part0')
+				expect(currentPartInstance.part.segmentId).toBe(segment0._id)
+
+				// Check that the Parts have been removed
+				const parts0 = parts.filter((p) => p.segmentId === segment0._id)
+				expect(parts0).toHaveLength(0) // <- FAIL, length is 2
+			}
+
+			console.log('pre-updated')
+
+			// Trigger an 'resync' of the rundown
+			rundownData.segments.splice(0, 1)
+			await handleUpdatedRundown(context, {
+				peripheralDeviceId: device2._id,
+				rundownExternalId: rundownData.externalId,
+				ingestRundown: rundownData,
+				isCreateAction: false,
+			})
+
+			// Make sure segment0 is still deleted
+			{
+				const { segments } = await getRundownData({ _id: rundown._id })
+				expect(segments).toHaveLength(2)
+
+				const segment0 = segments.find((s) => s.externalId === segmentExternalId) as DBSegment
+				expect(segment0).toBeTruthy()
+				expect(segment0.orphaned).toBe(SegmentOrphanedReason.DELETED)
+				expect(segment0.isHidden).toBeFalsy()
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen

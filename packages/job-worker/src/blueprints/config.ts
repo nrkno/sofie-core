@@ -151,7 +151,7 @@ export function findMissingConfigs(
 }
 
 export function applyToConfig(
-	res: any,
+	res: unknown,
 	configManifest: ReadonlyDeep<ConfigManifestEntry[]>,
 	blueprintConfig: ReadonlyDeep<IBlueprintConfig>,
 	source: string

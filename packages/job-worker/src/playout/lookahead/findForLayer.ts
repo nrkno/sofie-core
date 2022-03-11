@@ -1,14 +1,13 @@
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { OnGenerateTimelineObjExt, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { JobContext } from '../../jobs'
 import { sortPieceInstancesByStart } from '../pieces'
-import { findLookaheadObjectsForPart } from './findObjects'
+import { findLookaheadObjectsForPart, LookaheadTimelineObject } from './findObjects'
 import { PartAndPieces, PartInstanceAndPieceInstances } from './util'
 
 export interface LookaheadResult {
-	timed: Array<TimelineObjRundown & OnGenerateTimelineObjExt>
-	future: Array<TimelineObjRundown & OnGenerateTimelineObjExt>
+	timed: Array<LookaheadTimelineObject>
+	future: Array<LookaheadTimelineObject>
 }
 
 export function findLookaheadForLayer(
