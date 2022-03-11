@@ -70,12 +70,17 @@ export interface IBlueprintActionManifest {
 	/** Properties defining the action behaviour */
 	userData: ActionUserData
 
-	/** Set if ad-lib action should be limited in context to the current part/segment */
+	/**
+	 * Set if ad-lib action should be limited in context to the current part/segment
+	 * Note: Only valid for items returned from getSegment
+	 */
 	partId?: string
 
 	/**
 	 * Set to true if ad-lib action should can be used in any showstyle-variant. Default: false = only used by the current variant.
 	 * This is useful for actions in Buckets, so that they can be easily shared between rundowns.
+	 * Note: When used, this must be set for ALL adlibs of a certain type (not just a few variants).
+	 * Note: Only valid for items returned from getAdlibItem
 	 */
 	allVariants?: boolean
 

@@ -127,6 +127,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 	let bucketItemUniquenessId: string | undefined = undefined
 	let onlyGenerateOneItem = false
 
+	let isFirstShowStyleVariant = true
 	for (const showStyleVariant of showStyleVariants) {
 		const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
 
@@ -205,9 +206,13 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 			}
 
 			if (isAdlibAction(rawAdlib)) {
-				if (rawAdlib.allVariants) {
-					// If the adlib can be used by all variants, we only should only generate it once.
-					onlyGenerateOneItem = true
+				if (isFirstShowStyleVariant) {
+					if (rawAdlib.allVariants) {
+						// If the adlib can be used by all variants, we only should only generate it once.
+						onlyGenerateOneItem = true
+					}
+				} else {
+					delete rawAdlib.allVariants
 				}
 				const action: BucketAdLibAction = postProcessBucketAction(
 					contextForVariant,
@@ -259,6 +264,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 				break
 			}
 		}
+		isFirstShowStyleVariant = false
 	}
 
 	// Cleanup old items:
