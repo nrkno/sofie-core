@@ -31,6 +31,7 @@ import { SegmentNamePanel } from './SegmentNamePanel'
 import { PartNamePanel } from './PartNamePanel'
 import { ColoredBoxPanel } from './ColoredBoxPanel'
 import { AdLibPieceUi } from '../../lib/shelf'
+import { MiniRundownPanel } from './MiniRundownPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -198,6 +199,14 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							/>
 						) : RundownLayoutsAPI.isNextInfo(panel) ? (
 							<NextInfoPanel
+								key={panel._id}
+								panel={panel}
+								layout={rundownLayout}
+								playlist={props.playlist}
+								visible={true}
+							/>
+						) : RundownLayoutsAPI.isMiniRundown(panel) ? (
+							<MiniRundownPanel
 								key={panel._id}
 								panel={panel}
 								layout={rundownLayout}

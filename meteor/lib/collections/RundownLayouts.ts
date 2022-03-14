@@ -66,6 +66,7 @@ export enum RundownLayoutElementType {
 	SEGMENT_NAME = 'segment_name',
 	PART_NAME = 'part_name',
 	COLORED_BOX = 'colored_box',
+	MINI_RUNDOWN = 'mini_rundown',
 }
 
 export interface RundownLayoutElementBase {
@@ -132,6 +133,10 @@ export interface RundownLayoutNextInfo extends RundownLayoutElementBase {
 	showSegmentName: boolean
 	showPartTitle: boolean
 	hideForDynamicallyInsertedParts: boolean
+}
+
+export interface RundownLayoutMiniRundown extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.MINI_RUNDOWN
 }
 
 export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBase {
@@ -296,6 +301,7 @@ export type DashboardLayoutSegmentName = DashboardPanel<RundownLayoutSegmentName
 export type DashboardLayoutPartName = DashboardPanel<RundownLayoutPartName>
 export type DashboardLayoutColoredBox = DashboardPanel<RundownLayoutColoredBox>
 export type DashboardLayoutKeyboardPreview = DashboardPanel<RundownLayoutKeyboardPreview>
+export type DashboardLayoutMiniRundown = DashboardPanel<RundownLayoutMiniRundown>
 export type DashboardLayoutFilter = DashboardPanel<
 	RundownLayoutFilterBase & {
 		enableSearch: boolean
