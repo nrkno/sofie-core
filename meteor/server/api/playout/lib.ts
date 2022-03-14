@@ -23,7 +23,13 @@ import {
 } from './infinites'
 import { Segment, DBSegment, SegmentId, SegmentOrphanedReason } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, DBPartInstance, PartInstanceId, SegmentPlayoutId } from '../../../lib/collections/PartInstances'
+import {
+	PartInstance,
+	DBPartInstance,
+	PartInstanceId,
+	SegmentPlayoutId,
+	PartInstances,
+} from '../../../lib/collections/PartInstances'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { profiler } from '../profiler'
 import { ReadonlyDeep } from 'type-fest'
@@ -298,7 +304,7 @@ export async function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (nextPartInfo.type === 'partinstance') {
 			newInstanceId = nextPartInfo.instance._id
-			cache.PartInstances.update(newInstanceId, {
+			cache.SomePartInstances.update(newInstanceId, {
 				$unset: {
 					consumesNextSegmentId: 1,
 				},
@@ -307,7 +313,7 @@ export async function setNextPart(
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
-			cache.PartInstances.update(newInstanceId, {
+			cache.SomePartInstances.update(newInstanceId, {
 				$set: {
 					consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
 				},
@@ -322,7 +328,7 @@ export async function setNextPart(
 					? currentPartInstance.segmentPlayoutId
 					: getRandomId()
 
-			cache.PartInstances.insert({
+			cache.SomePartInstances.insert({
 				_id: newInstanceId,
 				takeCount: newTakeCount,
 				playlistActivationId: cache.Playlist.doc.activationId,
@@ -389,7 +395,7 @@ export async function setNextPart(
 	}
 
 	// Remove any instances which havent been taken
-	const instancesIdsToRemove = cache.PartInstances.remove(
+	const instancesIdsToRemove = cache.SomePartInstances.remove(
 		(p) =>
 			!p.isTaken &&
 			p._id !== cache.Playlist.doc.nextPartInstanceId &&
@@ -405,7 +411,7 @@ export async function setNextPart(
 			const resetPartInstanceIds = new Set<PartInstanceId>()
 			if (currentPartInstance) {
 				// Always clean the current segment, anything after the current part (except the next part)
-				const trailingInOldSegment = cache.PartInstances.findFetch(
+				const trailingInOldSegment = cache.SomePartInstances.findFetch(
 					(p) =>
 						!p.reset &&
 						p._id !== currentPartInstance._id &&
@@ -426,7 +432,7 @@ export async function setNextPart(
 					nextPartInstance.part._rank < currentPartInstance.part._rank)
 			) {
 				// clean the whole segment if new, or jumping backwards
-				const newSegmentParts = cache.PartInstances.findFetch(
+				const newSegmentParts = cache.SomePartInstances.findFetch(
 					(p) =>
 						!p.reset &&
 						p._id !== nextPartInstance._id &&
@@ -439,20 +445,9 @@ export async function setNextPart(
 			}
 
 			if (resetPartInstanceIds.size > 0) {
-				cache.PartInstances.update(
-					(p) => resetPartInstanceIds.has(p._id),
-					(p) => {
-						p.reset = true
-						return p
-					}
-				)
-				cache.PieceInstances.update(
-					(p) => resetPartInstanceIds.has(p.partInstanceId),
-					(p) => {
-						p.reset = true
-						return p
-					}
-				)
+				resetPartInstancesWithPieceInstances(cache, {
+					_id: { $in: Array.from(resetPartInstanceIds) },
+				})
 			}
 		}
 	}
@@ -603,7 +598,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 	}
 
 	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
-	const orphanedInstances = cache.PartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
+	const orphanedInstances = cache.SomePartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
 	for (const partInstance of orphanedInstances) {
 		if (Settings.preserveUnsyncedPlayingSegmentContents && orphanedSegmentIds.has(partInstance.segmentId)) {
 			// If the segment is also orphaned, then don't delete it until it is clear
@@ -617,8 +612,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 
 	// Cleanup any instances from above
 	if (removePartInstanceIds.length > 0) {
-		cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
-		cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+		resetPartInstancesWithPieceInstances(cache, { _id: { $in: removePartInstanceIds } })
 	}
 }
 
@@ -628,7 +622,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
  * @param selector if not provided, all partInstances will be reset
  */
 function resetPartInstancesWithPieceInstances(cache: CacheForPlayout, selector?: MongoQuery<PartInstance>) {
-	const partInstancesToReset = cache.PartInstances.update(
+	const partInstancesToReset = cache.SomePartInstances.update(
 		selector
 			? {
 					...selector,
@@ -641,39 +635,71 @@ function resetPartInstancesWithPieceInstances(cache: CacheForPlayout, selector?:
 			},
 		}
 	)
-	if (partInstancesToReset.length) {
-		const cachedResetPieceInstances = cache.PieceInstances.update(
-			{
-				partInstanceId: { $in: partInstancesToReset },
-				reset: { $ne: true },
-			},
-			{
-				$set: {
-					reset: true,
-				},
-			}
-		)
-		cache.deferAfterSave(() => {
-			PieceInstances.update(
+
+	// Reset any in the cache now
+	const cachedResetPieceInstances = partInstancesToReset.length
+		? cache.PieceInstances.update(
 				{
 					partInstanceId: { $in: partInstancesToReset },
 					reset: { $ne: true },
-					_id: { $nin: cachedResetPieceInstances },
 				},
 				{
 					$set: {
 						reset: true,
 					},
-				},
-				{ multi: true }
-			)
-		})
-	}
+				}
+		  )
+		: []
+
+	// Reset anything which wasnt loaded into the cache
+	cache.deferAfterSave(async () => {
+		const resetInDb = await PartInstances.findFetchAsync(
+			{
+				...selector,
+				reset: { $ne: true },
+			},
+			{ fields: { _id: 1 } }
+		).then((ps) => ps.map((p) => p._id))
+
+		const allToReset = [...resetInDb, ...partInstancesToReset]
+
+		if (allToReset.length > 0) {
+			await Promise.all([
+				PartInstances.updateAsync(
+					{
+						_id: { $in: resetInDb },
+						reset: { $ne: true },
+					},
+					{
+						$set: {
+							reset: true,
+						},
+					},
+					{
+						multi: true,
+					}
+				),
+				PieceInstances.updateAsync(
+					{
+						partInstanceId: { $in: allToReset },
+						reset: { $ne: true },
+						_id: { $nin: cachedResetPieceInstances },
+					},
+					{
+						$set: {
+							reset: true,
+						},
+					},
+					{ multi: true }
+				),
+			])
+		}
+	})
 }
 
 export function onPartHasStoppedPlaying(cache: CacheForPlayout, partInstance: PartInstance, stoppedPlayingTime: Time) {
 	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
-		cache.PartInstances.update(partInstance._id, {
+		cache.SomePartInstances.update(partInstance._id, {
 			$set: {
 				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
 			},

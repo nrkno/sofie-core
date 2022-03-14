@@ -6,19 +6,22 @@ import {
 	setupDefaultRundownPlaylist,
 } from '../../../__mocks__/helpers/database'
 import { protectString } from '../../../lib/lib'
-import { RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { updatePartInstanceRanks } from '../rundown'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Part, PartId, Parts } from '../../../lib/collections/Parts'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../playout/lockFunction'
+import { CacheForIngest } from '../ingest/cache'
+import { BeforePartMap, BeforePartMapItem } from '../ingest/commit'
 
 require('../rundown') // include in order to create the Meteor methods needed
 
 describe('updatePartInstanceRanks', () => {
 	let env: DefaultEnvironment
 	let playlistId!: RundownPlaylistId
+	let rundownExternalId!: string
 	let rundownId!: RundownId
 	let segmentId!: SegmentId
 
@@ -34,6 +37,10 @@ describe('updatePartInstanceRanks', () => {
 
 		playlistId = info.playlistId
 		rundownId = info.rundownId
+
+		const rundown = Rundowns.findOne(rundownId) as Rundown
+		expect(rundown).toBeTruthy()
+		rundownExternalId = rundown.externalId
 
 		const segment0 = Segments.findOne({ rundownId }) as Segment
 		expect(segment0).toBeTruthy()
@@ -104,6 +111,20 @@ describe('updatePartInstanceRanks', () => {
 		}
 	}
 
+	async function updateRanksForSegment(
+		rundownExternalId: string,
+		segmentId: SegmentId,
+		initialRanks: BeforePartMapItem[]
+	): Promise<void> {
+		const cache = await CacheForIngest.create(env.studio._id, rundownExternalId)
+
+		const changeMap = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
+		changeMap.set(segmentId, initialRanks)
+		await updatePartInstanceRanks(cache, [segmentId], changeMap)
+
+		await cache.saveAllToDatabase()
+	}
+
 	testInFiber('sync from parts: no change', async () => {
 		const initialRanks = getPartRanks()
 		expect(initialRanks).toHaveLength(5)
@@ -113,14 +134,7 @@ describe('updatePartInstanceRanks', () => {
 		const initialInstanceRanks = getPartInstanceRanks()
 		expect(initialInstanceRanks).toHaveLength(5)
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updatePartInstanceRanks',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(rundownExternalId, segmentId, initialRanks)
 
 		const newInstanceRanks = getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -165,14 +179,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(initialInstanceRanks, 'part03', 4)
 		updatePartRank(initialInstanceRanks, 'part04', 2)
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updatePartInstanceRanks',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(rundownExternalId, segmentId, initialRanks)
 
 		const newInstanceRanks = getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -182,14 +189,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartRank(initialInstanceRanks, 'part02', 0)
 		updatePartRank(initialInstanceRanks, 'part05', 1)
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updatePartInstanceRanks',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(rundownExternalId, segmentId, initialRanks)
 
 		const newInstanceRanks2 = getPartInstanceRanks()
 		expect(newInstanceRanks2).toEqual(initialInstanceRanks)
@@ -210,14 +210,7 @@ describe('updatePartInstanceRanks', () => {
 		Parts.remove(protectString('part03'))
 		updatePartRank(initialInstanceRanks, 'part03', 2.5)
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updatePartInstanceRanks',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(rundownExternalId, segmentId, initialRanks)
 
 		const newInstanceRanks = getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -240,14 +233,7 @@ describe('updatePartInstanceRanks', () => {
 		Parts.remove(protectString('part01'))
 		updatePartRank(initialInstanceRanks, 'part01', 0)
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updatePartInstanceRanks',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(rundownExternalId, segmentId, initialRanks)
 
 		const newInstanceRanks = getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -288,14 +274,7 @@ describe('updatePartInstanceRanks', () => {
 			rank: 2.666666666666667,
 		})
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updatePartInstanceRanks',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(rundownExternalId, segmentId, initialRanks)
 
 		const newInstanceRanks = getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -317,14 +296,7 @@ describe('updatePartInstanceRanks', () => {
 			e.orphaned = 'deleted'
 		}
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updatePartInstanceRanks',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(rundownExternalId, segmentId, initialRanks)
 
 		const newInstanceRanks = getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -342,14 +314,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartInstanceRank(initialInstanceRanks, 'part04', -2)
 		updatePartInstanceRank(initialInstanceRanks, 'part05', -1)
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updatePartInstanceRanks',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks2 }])
-		)
+		await updateRanksForSegment(rundownExternalId, segmentId, initialRanks2)
 
 		const newInstanceRanks2 = getPartInstanceRanks()
 		expect(newInstanceRanks2).toEqual(initialInstanceRanks)
@@ -379,14 +344,7 @@ describe('updatePartInstanceRanks', () => {
 		updatePartInstanceRank(initialInstanceRanks, 'part04', -1.5)
 		updatePartInstanceRank(initialInstanceRanks, 'part05', -0.5)
 
-		await runPlayoutOperationWithCache(
-			null,
-			'updatePartInstanceRanks',
-			playlistId,
-			PlayoutLockFunctionPriority.USER_PLAYOUT,
-			null,
-			async (cache) => updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(rundownExternalId, segmentId, initialRanks)
 
 		const newInstanceRanks = getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)

@@ -26,7 +26,7 @@ import {
 	setupPieceInstanceInfiniteProperties,
 } from './pieces'
 import { updateTimeline } from './timeline'
-import { updatePartInstanceRanks } from '../rundown'
+import { updatePartInstanceRanksAfterAdlib } from '../rundown'
 
 import {
 	PieceInstances,
@@ -95,7 +95,7 @@ export namespace ServerPlayoutAdLibAPI {
 					throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
 				}
 
-				const partInstance = cache.PartInstances.findOne(partInstanceId)
+				const partInstance = cache.SomePartInstances.findOne(partInstanceId)
 				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
@@ -250,7 +250,7 @@ export namespace ServerPlayoutAdLibAPI {
 					throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
 			},
 			async (cache) => {
-				const partInstance = cache.PartInstances.findOne(partInstanceId)
+				const partInstance = cache.SomePartInstances.findOne(partInstanceId)
 				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
@@ -312,7 +312,7 @@ export namespace ServerPlayoutAdLibAPI {
 					)
 			},
 			async (cache) => {
-				const partInstance = cache.PartInstances.findOne(partInstanceId)
+				const partInstance = cache.SomePartInstances.findOne(partInstanceId)
 				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 				const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
@@ -504,7 +504,7 @@ export namespace ServerPlayoutAdLibAPI {
 			return
 		}
 
-		const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
+		const currentPartInstance = cache.SomePartInstances.findOne(playlist.currentPartInstanceId)
 
 		if (!currentPartInstance) {
 			return
@@ -570,7 +570,7 @@ export namespace ServerPlayoutAdLibAPI {
 			followingPart?.part?.segmentId === newPartInstance.segmentId ? followingPart?.part : undefined
 		)
 
-		cache.PartInstances.insert(newPartInstance)
+		cache.SomePartInstances.insert(newPartInstance)
 
 		newPieceInstances.forEach((pieceInstance) => {
 			// Ensure it is labelled as dynamic
@@ -583,10 +583,10 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.PieceInstances.insert(pieceInstance)
 		})
 
-		updatePartInstanceRanks(cache, [{ segmentId: newPartInstance.part.segmentId, oldPartIdsAndRanks: null }])
+		updatePartInstanceRanksAfterAdlib(cache, newPartInstance.part.segmentId)
 
 		// Find and insert any rundown defined infinites that we should inherit
-		newPartInstance = cache.PartInstances.findOne(newPartInstance._id)!
+		newPartInstance = cache.SomePartInstances.findOne(newPartInstance._id)!
 		const possiblePieces = await fetchPiecesThatMayBeActiveForPart(cache, undefined, newPartInstance.part)
 		const infinitePieceInstances = getPieceInstancesForPart(
 			cache,

@@ -73,7 +73,7 @@ function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
 		(p) => p.segmentId === nextPart.segmentId && p._rank < nextPart._rank
 	)
 	// Find any orphaned parts
-	const partInstancesBeforeThisInSegment = cache.PartInstances.findFetch(
+	const partInstancesBeforeThisInSegment = cache.SomePartInstances.findFetch(
 		(p) => p.segmentId === nextPart.segmentId && p.orphaned && p.part._rank < nextPart._rank
 	)
 	partsBeforeThisInSegment.push(...partInstancesBeforeThisInSegment.map((p) => p.part))

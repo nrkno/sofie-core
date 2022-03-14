@@ -9,6 +9,7 @@ import { CommitIngestData } from './lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
 import {
 	orphanedHiddenSegmentPropertiesToPreserve,
+	Segment,
 	SegmentId,
 	SegmentOrphanedReason,
 	Segments,
@@ -27,9 +28,9 @@ import { clone, max, normalizeArrayToMap, protectString, unprotectString } from 
 import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
-import { DbCacheWriteCollection } from '../../cache/CacheCollection'
-import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PartId, Parts } from '../../../lib/collections/Parts'
+import { DbCacheReadCollection, DbCacheWriteCollection } from '../../cache/CacheCollection'
+import { DBPartInstance, PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { DBPart, Part, PartId, Parts } from '../../../lib/collections/Parts'
 import { RundownNote } from '../../../lib/api/notes'
 import {
 	PlaylistLock,
@@ -49,8 +50,12 @@ import { shouldRemoveOrphanedPartInstance } from './shouldRemoveOrphanedPartInst
 import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import _ from 'underscore'
+import { BulkWriteOperation } from 'mongodb'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
 
-export type BeforePartMap = ReadonlyMap<SegmentId, Array<{ id: PartId; rank: number }>>
+export type BeforePartMapItem = { id: PartId; rank: number }
+export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
 
 interface PlaylistIdPair {
 	id: RundownPlaylistId
@@ -364,6 +369,13 @@ export async function CommitIngestOperation(
 						RundownPlaylists.upsertAsync(newPlaylist._id, newPlaylist),
 					])
 
+					// ensure instances are updated for rundown changes
+					updatePartInstancesSegmentIds(ingestCache, data.renamedSegments)
+					await updatePartInstancesBasicProperties(ingestCache.Parts, ingestCache.RundownId, newPlaylist)
+
+					// Update the playout to use the updated rundown
+					await updatePartInstanceRanks(ingestCache, data.changedSegmentIds, beforePartMap)
+
 					// Create the full playout cache, now we have the rundowns and playlist updated
 					const playoutCache = await CacheForPlayout.fromIngest(
 						newPlaylist,
@@ -377,17 +389,6 @@ export async function CommitIngestOperation(
 					try {
 						// Get the final copy of the rundown
 						const newRundown = getRundown(ingestCache)
-
-						// Update the playout to use the updated rundown
-						const changedSegmentsInfo = data.changedSegmentIds.map((id) => ({
-							segmentId: id,
-							oldPartIdsAndRanks: beforePartMap.get(id) ?? [],
-						}))
-
-						// ensure instances are updated for rundown changes
-						updatePartInstancesBasicProperties(playoutCache, newRundown._id, data.renamedSegments)
-
-						updatePartInstanceRanks(playoutCache, changedSegmentsInfo)
 
 						// sync changes to the 'selected' partInstances
 						await syncChangesToPartInstances(
@@ -545,42 +546,137 @@ function canRemoveSegment(
 	return true
 }
 
+async function updatePartInstancesSegmentIds(
+	cache: CacheForIngest,
+	renamedSegments: ReadonlyMap<SegmentId, SegmentId>
+) {
+	const renameRules = new Map<
+		SegmentId,
+		{
+			partIds: PartId[]
+			fromSegmentId: SegmentId | null
+		}
+	>()
+
+	for (const [fromSegmentId, toSegmentId] of renamedSegments) {
+		const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
+		renameRules.set(toSegmentId, rule)
+
+		rule.fromSegmentId = fromSegmentId
+	}
+
+	// const changedPartIds = new Map<PartId, SegmentId>()
+	for (const [id, doc] of cache.Parts.documents) {
+		if (doc?.updated) {
+			const rule = renameRules.get(doc.document.segmentId) ?? { partIds: [], fromSegmentId: null }
+			renameRules.set(doc.document.segmentId, rule)
+
+			rule.partIds.push(id)
+		}
+	}
+
+	await PartInstances.bulkWriteAsync(
+		Array.from(renameRules.entries()).map(([newSegmentId, rule]) => ({
+			updateMany: {
+				filter: {
+					$or: _.compact([
+						rule.fromSegmentId
+							? {
+									segmentId: rule.fromSegmentId,
+							  }
+							: undefined,
+						{
+							'part._id': { $in: rule.partIds },
+						},
+					]),
+				},
+				update: {
+					$set: {
+						segmentId: newSegmentId,
+						'part.segmentId': newSegmentId,
+					},
+				},
+			},
+		}))
+	)
+}
+
 /**
  * Ensure some 'basic' PartInstances properties are in sync with their parts
  */
-function updatePartInstancesBasicProperties(
-	cache: CacheForPlayout,
+async function updatePartInstancesBasicProperties(
+	partCache: DbCacheReadCollection<DBPart, DBPart>,
 	rundownId: RundownId,
-	renamedSegments: ReadonlyMap<SegmentId, SegmentId>
+	playlist: ReadonlyDeep<RundownPlaylist>
 ) {
-	const playlist = cache.Playlist.doc
-	const partInstances = cache.PartInstances.findFetch((p) => !p.reset && p.rundownId === rundownId)
-	for (const partInstance of partInstances) {
-		const part = cache.Parts.findOne(partInstance.part._id)
-		if (!part && !partInstance.orphaned) {
-			// Part is deleted, so reset this instance if it isnt on-air
-			if (
-				playlist.currentPartInstanceId !== partInstance._id &&
-				playlist.nextPartInstanceId !== partInstance._id
-			) {
-				cache.PartInstances.update(partInstance._id, { $set: { reset: true } })
-				cache.PieceInstances.update((p) => p.partInstanceId === partInstance._id, { $set: { reset: true } })
-			} else {
-				cache.PartInstances.update(partInstance._id, { $set: { orphaned: 'deleted' } })
-			}
-		}
+	const knownPartIds = partCache.findFetch({}, { fields: { _id: 1 } }).map((p) => p._id)
 
-		// Follow any segment renames
-		const newSegmentId = part?.segmentId ?? renamedSegments.get(partInstance.segmentId)
-		if (newSegmentId) {
-			cache.PartInstances.update(partInstance._id, {
-				$set: {
-					segmentId: newSegmentId,
-					'part.segmentId': newSegmentId,
-				},
-			})
+	// Find all the partInstances which are not reset, and are not orphaned, but their Part no longer exists
+	const partInstancesToOrphan = await PartInstances.findFetchAsync({
+		reset: { $ne: true },
+		rundownId: rundownId,
+		orphaned: { $exists: false },
+		'part._id': { $nin: knownPartIds },
+	})
+
+	const instancesToReset: PartInstanceId[] = []
+	const instancesToOrphan: PartInstanceId[] = []
+	// const writeOps: BulkWriteOperation<DBPartInstance>[] = []
+	for (const partInstance of partInstancesToOrphan) {
+		if (playlist.currentPartInstanceId !== partInstance._id && playlist.nextPartInstanceId !== partInstance._id) {
+			instancesToReset.push(partInstance._id)
+		} else {
+			instancesToOrphan.push(partInstance._id)
 		}
 	}
+
+	const ps: Array<Promise<any>> = []
+
+	if (instancesToReset.length) {
+		ps.push(
+			PartInstances.updateAsync(
+				{
+					_id: { $in: instancesToReset },
+				},
+				{
+					$set: {
+						reset: true,
+					},
+				},
+				{ multi: true }
+			)
+		)
+		ps.push(
+			PieceInstances.updateAsync(
+				{
+					partInstanceId: { $in: instancesToReset },
+				},
+				{
+					$set: {
+						reset: true,
+					},
+				},
+				{ multi: true }
+			)
+		)
+	}
+	if (instancesToOrphan.length) {
+		ps.push(
+			PartInstances.updateAsync(
+				{
+					_id: { $in: instancesToOrphan },
+				},
+				{
+					$set: {
+						orphaned: 'deleted',
+					},
+				},
+				{ multi: true }
+			)
+		)
+	}
+
+	await Promise.all([ps])
 }
 
 /**
@@ -651,7 +747,11 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 
 			if (insertedRundown) {
 				// If a rundown has changes, ensure instances are updated
-				updatePartInstancesBasicProperties(playoutCache, insertedRundown._id, new Map())
+				await updatePartInstancesBasicProperties(
+					playoutCache.Parts,
+					insertedRundown._id,
+					playoutCache.Playlist.doc
+				)
 			}
 
 			await ensureNextPartIsValid(playoutCache)

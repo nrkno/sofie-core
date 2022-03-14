@@ -115,7 +115,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 	public readonly Segments: DbCacheReadCollection<Segment, DBSegment>
 	public readonly Parts: DbCacheReadCollection<Part, DBPart>
-	public readonly PartInstances: DbCacheWriteCollection<PartInstance, DBPartInstance>
+	public readonly SomePartInstances: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	public readonly PieceInstances: DbCacheWriteCollection<PieceInstance, PieceInstance>
 
 	protected constructor(
@@ -138,7 +138,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		this.Segments = segments
 		this.Parts = parts
 
-		this.PartInstances = partInstances
+		this.SomePartInstances = partInstances
 		this.PieceInstances = pieceInstances
 	}
 
@@ -214,6 +214,22 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			playlist.previousPartInstanceId,
 		])
 
+		const segmentIds = _.uniq(
+			(
+				await PartInstances.findFetchAsync(
+					{
+						// TODO - do we need the Segment for previousPartInstanceId?
+						_id: { $in: selectedPartInstanceIds },
+					},
+					{
+						fields: {
+							segmentId: 1,
+						},
+					}
+				)
+			).map((p) => p.segmentId)
+		)
+
 		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
 		const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
 
@@ -221,6 +237,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			rundownId: { $in: rundownIds },
 			$or: [
 				{
+					segmentId: { $in: segmentIds },
 					reset: { $ne: true },
 				},
 				{
@@ -233,6 +250,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			partInstanceId: { $in: selectedPartInstanceIds },
 		}
 		if (playlist.activationId) {
+			// TODO - is this correct? If the playlist isnt active do we want any of these?
 			partInstancesSelector.playlistActivationId = playlist.activationId
 			pieceInstancesSelector.playlistActivationId = playlist.activationId
 		}
@@ -325,13 +343,13 @@ export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
 
 	return {
 		currentPartInstance: playlist.currentPartInstanceId
-			? cache.PartInstances.findOne(playlist.currentPartInstanceId)
+			? cache.SomePartInstances.findOne(playlist.currentPartInstanceId)
 			: undefined,
 		nextPartInstance: playlist.nextPartInstanceId
-			? cache.PartInstances.findOne(playlist.nextPartInstanceId)
+			? cache.SomePartInstances.findOne(playlist.nextPartInstanceId)
 			: undefined,
 		previousPartInstance: playlist.previousPartInstanceId
-			? cache.PartInstances.findOne(playlist.previousPartInstanceId)
+			? cache.SomePartInstances.findOne(playlist.previousPartInstanceId)
 			: undefined,
 	}
 }

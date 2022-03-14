@@ -198,7 +198,7 @@ export function reportPartInstanceHasStarted(
 		let timestampUpdated = false
 		// If timings.startedPlayback has already been set, we shouldn't set it to another value:
 		if (!partInstance.timings?.startedPlayback) {
-			cache.PartInstances.update(partInstance._id, {
+			cache.SomePartInstances.update(partInstance._id, {
 				$set: {
 					isTaken: true,
 					'timings.startedPlayback': timestamp,
@@ -208,7 +208,7 @@ export function reportPartInstanceHasStarted(
 
 			// Unset stoppedPlayback if it is set:
 			if (partInstance.timings?.stoppedPlayback) {
-				cache.PartInstances.update(partInstance._id, { $unset: { 'timings.stoppedPlayback': 1 } })
+				cache.SomePartInstances.update(partInstance._id, { $unset: { 'timings.stoppedPlayback': 1 } })
 			}
 		}
 		// Update the playlist:

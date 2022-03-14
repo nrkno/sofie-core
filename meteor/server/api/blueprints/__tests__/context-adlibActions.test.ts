@@ -207,7 +207,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
+					const partInstanceIds = cache.SomePartInstances.findFetch({}).map((pi) => pi._id)
 					expect(partInstanceIds).toHaveLength(5)
 
 					expect(context.getPartInstance('next')).toBeUndefined()
@@ -246,7 +246,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
+					const partInstanceIds = cache.SomePartInstances.findFetch({}).map((pi) => pi._id)
 					expect(partInstanceIds).toHaveLength(5)
 
 					expect(context.getPieceInstances('next')).toHaveLength(0)
@@ -285,7 +285,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
+					const partInstanceIds = cache.SomePartInstances.findFetch({}).map((pi) => pi._id)
 					expect(partInstanceIds).toHaveLength(5)
 
 					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(0)
@@ -350,7 +350,7 @@ describe('Test blueprint api context', () => {
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
 
-					const partInstances = cache.PartInstances.findFetch({})
+					const partInstances = cache.SomePartInstances.findFetch({})
 					expect(partInstances).toHaveLength(5)
 
 					const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
@@ -431,7 +431,7 @@ describe('Test blueprint api context', () => {
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
 
-					const partInstances = cache.PartInstances.findFetch({})
+					const partInstances = cache.SomePartInstances.findFetch({})
 					expect(partInstances).toHaveLength(5)
 
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstances[2]._id } })
@@ -512,7 +512,7 @@ describe('Test blueprint api context', () => {
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
 
-					const partInstances = cache.PartInstances.findFetch({})
+					const partInstances = cache.SomePartInstances.findFetch({})
 					expect(partInstances).toHaveLength(5)
 
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstances[2]._id } })
@@ -623,7 +623,7 @@ describe('Test blueprint api context', () => {
 						.sort((a, b) => a._rank - b._rank)
 						.map((s) => s._id)
 
-					const partInstances = cache.PartInstances.findFetch({ segmentId: segmentIds[0] }).sort(
+					const partInstances = cache.SomePartInstances.findFetch({ segmentId: segmentIds[0] }).sort(
 						(a, b) => a.part._rank - b.part._rank
 					)
 					expect(partInstances).toHaveLength(2)
@@ -681,7 +681,7 @@ describe('Test blueprint api context', () => {
 						.sort((a, b) => a._rank - b._rank)
 						.map((s) => s._id)
 
-					const partInstances = cache.PartInstances.findFetch({ segmentId: segmentIds[0] }).sort(
+					const partInstances = cache.SomePartInstances.findFetch({ segmentId: segmentIds[0] }).sort(
 						(a, b) => a.part._rank - b.part._rank
 					)
 					expect(partInstances).toHaveLength(2)
@@ -710,7 +710,7 @@ describe('Test blueprint api context', () => {
 						.sort((a, b) => a._rank - b._rank)
 						.map((s) => s._id)
 
-					const partInstances = cache.PartInstances.findFetch({ segmentId: segmentIds[0] }).sort(
+					const partInstances = cache.SomePartInstances.findFetch({ segmentId: segmentIds[0] }).sort(
 						(a, b) => a.part._rank - b.part._rank
 					)
 					expect(partInstances).toHaveLength(2)
@@ -793,7 +793,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
+					const partInstanceIds = cache.SomePartInstances.findFetch({}).map((pi) => pi._id)
 					expect(partInstanceIds).toHaveLength(5)
 
 					expect(
@@ -845,7 +845,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const partInstances = cache.PartInstances.findFetch({})
+					const partInstances = cache.SomePartInstances.findFetch({})
 					expect(partInstances).toHaveLength(5)
 
 					const pieceInstance0 = cache.PieceInstances.findOne({ partInstanceId: partInstances[0]._id })
@@ -879,7 +879,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const partInstance = cache.PartInstances.findOne() as PartInstance
+					const partInstance = cache.SomePartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
@@ -906,7 +906,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const partInstance = cache.PartInstances.findOne() as PartInstance
+					const partInstance = cache.SomePartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
@@ -1072,7 +1072,7 @@ describe('Test blueprint api context', () => {
 					// @ts-ignore
 					expect(() => context.queuePart()).toThrowError('Cannot queue part when no current partInstance')
 
-					const partInstance = cache.PartInstances.findOne() as PartInstance
+					const partInstance = cache.SomePartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
@@ -1143,7 +1143,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const partInstance = cache.PartInstances.findOne() as PartInstance
+					const partInstance = cache.SomePartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
 					cache.Playlist.update({ $set: { currentPartInstanceId: partInstance._id } })
 
@@ -1177,7 +1177,7 @@ describe('Test blueprint api context', () => {
 					expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(1)
 
 					// Verify some properties not exposed to the blueprints
-					const newPartInstance = cache.PartInstances.findOne(
+					const newPartInstance = cache.SomePartInstances.findOne(
 						cache.Playlist.doc.nextPartInstanceId!
 					) as PartInstance
 					expect(newPartInstance).toBeTruthy()
@@ -1221,7 +1221,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const currentPartInstance = cache.PartInstances.findOne() as PartInstance
+					const currentPartInstance = cache.SomePartInstances.findOne() as PartInstance
 					expect(currentPartInstance).toBeTruthy()
 					cache.Playlist.update({ $set: { currentPartInstanceId: currentPartInstance._id } })
 
@@ -1280,7 +1280,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const currentPartInstance = cache.PartInstances.findOne() as PartInstance
+					const currentPartInstance = cache.SomePartInstances.findOne() as PartInstance
 					expect(currentPartInstance).toBeTruthy()
 					cache.Playlist.update({ $set: { currentPartInstanceId: currentPartInstance._id } })
 
@@ -1364,9 +1364,9 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(async (cache) => {
 					const { context } = await getActionExecutionContext(cache)
 
-					const partInstance = cache.PartInstances.findOne() as PartInstance
+					const partInstance = cache.SomePartInstances.findOne() as PartInstance
 					expect(partInstance).toBeTruthy()
-					const partInstanceOther = cache.PartInstances.findOne({
+					const partInstanceOther = cache.SomePartInstances.findOne({
 						_id: { $ne: partInstance._id },
 					}) as PartInstance
 					expect(partInstanceOther).toBeTruthy()
@@ -1394,12 +1394,12 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(cache)
 
 					// Setup the rundown and find an instance to modify
-					const partInstance0 = cache.PartInstances.findOne() as PartInstance
+					const partInstance0 = cache.SomePartInstances.findOne() as PartInstance
 					expect(partInstance0).toBeTruthy()
 					cache.Playlist.update({ $set: { nextPartInstanceId: partInstance0._id } })
 
 					// Ensure there are no pending updates already
-					expect(cache.PartInstances.isModified()).toBeFalsy()
+					expect(cache.SomePartInstances.isModified()).toBeFalsy()
 
 					// Update it and expect it to match
 					const partInstance0Before = clone(partInstance0)
@@ -1411,7 +1411,7 @@ describe('Test blueprint api context', () => {
 						badProperty: 9, // This will be dropped
 					}
 					const resultPiece = context.updatePartInstance('next', partInstance0Delta)
-					const partInstance1 = cache.PartInstances.findOne() as PartInstance
+					const partInstance1 = cache.SomePartInstances.findOne() as PartInstance
 					expect(partInstance1).toBeTruthy()
 
 					expect(resultPiece).toEqual(partInstance1)
@@ -1425,7 +1425,7 @@ describe('Test blueprint api context', () => {
 					}
 					expect(partInstance1).toEqual(pieceInstance0After)
 					expect(
-						Array.from(cache.PartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
+						Array.from(cache.SomePartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
 					).toMatchObject([
 						{
 							updated: true,
