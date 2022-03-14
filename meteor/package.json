@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.40.0-in-testing.0",
+	"version": "1.41.0-in-development",
 	"private": true,
 	"engines": {
 		"node": ">=14.18.0"
@@ -114,7 +114,7 @@
 	"devDependencies": {
 		"@babel/core": "^7.17.0",
 		"@babel/plugin-transform-modules-commonjs": "^7.16.8",
-		"@sofie-automation/code-standard-preset": "~1.1.0",
+		"@sofie-automation/code-standard-preset": "~2.0.0",
 		"@types/amqplib": "^0.5.17",
 		"@types/app-root-path": "^1.2.4",
 		"@types/body-parser": "^1.19.2",
@@ -154,7 +154,7 @@
 		"meteor-babel": "^7.10.7",
 		"meteor-promise": "0.8.7",
 		"mock-http": "^1.1.0",
-		"open-cli": "^6.0.1",
+		"open-cli": "^7.0.1",
 		"simple-git": "^2.48.0",
 		"sinon": "^9.2.4",
 		"standard-version": "^9.3.2",
@@ -182,9 +182,5 @@
 		"scripts": {
 			"postbump": "yarn libs:syncVersionsAndChangelogs"
 		}
-	},
-	"resolutions": {
-		"@babel/core": "7.16.7",
-		"@babel/generator": "7.16.7"
 	}
 }

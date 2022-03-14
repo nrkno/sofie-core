@@ -1,3 +1,5 @@
+import { objectToXML } from '../util/object-to-xml'
+
 const PackageInfo = require('../../../../package.json')
 
 export enum AckStatus {
@@ -84,54 +86,4 @@ export function createMosAppInfoXmlString(uiMetrics?: UIMetric[]): string {
 	)
 
 	return new XMLSerializer().serializeToString(doc)
-}
-
-export function objectToXML(obj: object, rootName: string): Document {
-	const doc = new Document()
-	const root = doc.createElement(rootName)
-
-	addNodes(obj, root)
-
-	doc.appendChild(root)
-	return doc
-}
-
-function addNodes(obj: object, rootNode: Node): void {
-	const doc = rootNode.ownerDocument
-	if (doc) {
-		for (const name of Object.keys(obj)) {
-			const value = obj[name]
-
-			if (typeof value === 'object' && name === '_attributes') {
-				for (const attrName of Object.keys(value)) {
-					rootNode.appendChild(createAttribute(attrName, value[attrName], doc))
-				}
-			} else if (Array.isArray(value)) {
-				value.forEach((element) => {
-					rootNode.appendChild(createNode(name, element, doc))
-				})
-			} else if (value !== undefined) {
-				rootNode.appendChild(createNode(name, value, doc))
-			}
-		}
-	}
-}
-
-function createAttribute(name: string, value: any, doc: Document) {
-	const attr = doc.createAttribute(name)
-	attr.textContent = value
-
-	return attr
-}
-
-function createNode(name: string, value: any, doc: Document) {
-	const node = doc.createElement(name)
-
-	if (typeof value === 'object' && value !== null) {
-		addNodes(value, node)
-	} else {
-		node.textContent = value
-	}
-
-	return node
 }

@@ -15,6 +15,14 @@ export type TimeDuration = number
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
+/**
+ * Make all optional properties be required and `| undefined`
+ * This is useful to ensure that no property is missed, when manually converting between types, but allowing fields to be undefined
+ */
+export type Complete<T> = {
+	[P in keyof Required<T>]: Pick<T, P> extends Required<Pick<T, P>> ? T[P] : T[P] | undefined
+}
+
 export type ArrayElement<A> = A extends readonly (infer T)[] ? T : never
 
 export function omit<T, P extends keyof T>(obj: T, ...props: P[]): Omit<T, P> {
@@ -76,6 +84,7 @@ function deepFreezeInner(object: any): void {
 export function getRandomString(numberOfChars?: number): string {
 	return Random.id(numberOfChars)
 }
+
 export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
 	return protectString(getRandomString(numberOfChars))
 }
@@ -329,22 +338,32 @@ export function removeNullyProperties<T>(obj: T): T {
 	return obj
 }
 
-/** Make a string out of an error, including any additional data such as stack trace if available */
+/** Make a string out of an error (or other equivalents), including any additional data such as stack trace if available */
 export function stringifyError(error: unknown, noStack = false): string {
-	let str: string
+	let str: string | undefined = undefined
 
 	if (error && UserError.isUserError(error)) {
+		// Is a UserError
 		str = UserError.toJSON(error)
-	} else if (error && typeof error === 'object' && (error as Error).message) {
-		str = `${(error as Error).message}`
-	} else if (error && typeof error === 'object' && (error as any).reason) {
-		str = `${(error as any).reason}`
+	} else if (error && typeof error === 'object') {
+		if ((error as Error).message) {
+			// Is an Error
+			str = `${(error as Error).message}`
+		} else if ((error as any).reason) {
+			// Is a Meteor.Error
+			str = `${(error as any).reason}`
+		} else if ((error as any).details) {
+			str = `${(error as any).details}`
+		} else {
+			try {
+				// Try to stringify the object:
+				str = JSON.stringify(error)
+			} catch (e) {
+				str = `${error} (stringifyError: ${e})`
+			}
+		}
 	} else {
 		str = `${error}`
-	}
-
-	if (error && typeof error === 'object' && (error as any).details) {
-		str = `${(error as any).details}`
 	}
 
 	if (!noStack) {
@@ -352,6 +371,7 @@ export function stringifyError(error: unknown, noStack = false): string {
 			str += ', ' + (error as any).stack
 		}
 	}
+
 	return str
 }
 

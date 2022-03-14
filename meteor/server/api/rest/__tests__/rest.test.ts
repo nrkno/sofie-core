@@ -29,8 +29,7 @@ describe('REST API', () => {
 
 			await route.handler(params, req, res, jest.fn())
 
-			const resStr = parseResponseBuffer(res)
-			return resStr
+			return parseResponseBuffer(res)
 		}
 
 		testInFiber('registers endpoints for all UserActionAPI methods', () => {

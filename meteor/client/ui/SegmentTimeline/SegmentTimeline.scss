@@ -26,7 +26,8 @@ $timeline-layer-height: 1em;
 	border-radius: 3px;
 }
 .segment-timeline__part-identifiers {
-	text-align: left;
+	text-align: right;
+	margin: 0 1px 0 2px;
 
 	.segment-timeline__part-identifiers__identifier {
 		display: inline-block;

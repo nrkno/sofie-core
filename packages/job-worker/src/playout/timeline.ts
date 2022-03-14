@@ -15,7 +15,7 @@ import {
 	TimelineObjHoldMode,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
-import { protectString, unprotectObjectArray, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
 	deserializeTimelineBlob,
 	OnGenerateTimelineObjExt,
@@ -60,7 +60,7 @@ import {
 import { CacheForStudio, CacheForStudioBase } from '../studio/cache'
 import { getLookeaheadObjects } from './lookahead'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
-import { StudioBaselineContext, TimelineEventContext } from '../blueprints/context'
+import { StudioBaselineContext, OnTimelineGenerateContext } from '../blueprints/context'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
@@ -72,6 +72,8 @@ import {
 	getPartTimingsOrDefaults,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
+import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -354,7 +356,7 @@ async function getTimelineRundown(
 			)
 
 			if (blueprint.blueprint.onTimelineGenerate) {
-				const context2 = new TimelineEventContext(
+				const context2 = new OnTimelineGenerateContext(
 					context.studio,
 					context.getStudioBlueprintConfig(),
 					showStyle,
@@ -366,15 +368,16 @@ async function getTimelineRundown(
 					nextPartInstance
 				)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
+				context2.trackPieceInstances(resolvedPieces.pieces)
 				try {
 					const span = context.startSpan('blueprint.onTimelineGenerate')
 					const influxTrace = startTrace('blueprints:onTimelineGenerate')
 					const tlGenRes = await blueprint.blueprint.onTimelineGenerate(
 						context2,
 						timelineObjs,
-						cache.Playlist.doc.previousPersistentState,
-						currentPartInstance?.previousPartEndState,
-						unprotectObjectArray(resolvedPieces.pieces)
+						clone(cache.Playlist.doc.previousPersistentState),
+						clone(currentPartInstance?.previousPartEndState),
+						resolvedPieces.pieces.map(convertResolvedPieceInstanceToBlueprints)
 					)
 					sendTrace(endTrace(influxTrace))
 					if (span) span.end()
@@ -923,8 +926,9 @@ function transformBaselineItemsIntoTimeline(
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	for (const obj of objs) {
+		const objects = deserializePieceTimelineObjectsBlob(obj.timelineObjectsString)
 		// the baseline objects are layed out without any grouping
-		for (const o of obj.objects) {
+		for (const o of objects) {
 			timelineObjs.push({
 				...o,
 				objectType: TimelineObjType.RUNDOWN,
@@ -1072,12 +1076,13 @@ function transformPieceGroupAndObjects(
 	const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable)
 	const timelineObjs = [pieceGroup, ...capObjs]
 
-	if (!pieceInstance.piece.virtual && pieceInstance.piece.content?.timelineObjects && !hasDefinitelyEnded) {
+	if (!pieceInstance.piece.virtual && !hasDefinitelyEnded) {
 		timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
 
 		const pieceObjects: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
-		for (const o of pieceInstance.piece.content.timelineObjects) {
+		const objects = deserializePieceTimelineObjectsBlob(pieceInstance.piece.timelineObjectsString)
+		for (const o of objects) {
 			// Some objects can be filtered out at times based on the holdMode of the object
 			switch (o.holdMode) {
 				case TimelineObjHoldMode.NORMAL:
@@ -1107,7 +1112,7 @@ function transformPieceGroupAndObjects(
 			})
 		}
 
-		// This `prefixAllObjectIds` call needs to match the one in, lookahead.ts getStartOfObjectRef() will need updating
+		// This `prefixAllObjectIds` call needs to match the one in, lookahead.ts. If changed then getStartOfObjectRef() will need updating
 		timelineObjs.push(...prefixAllObjectIds(pieceObjects, unprotectString(pieceInstance._id)))
 	}
 

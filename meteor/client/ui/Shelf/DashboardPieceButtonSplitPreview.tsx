@@ -5,7 +5,7 @@ import { getSplitPreview } from '../../lib/ui/splitPreview'
 import { RenderSplitPreview } from '../../lib/SplitPreviewBox'
 
 interface IProps {
-	piece: PieceGeneric
+	piece: Omit<PieceGeneric, 'timelineObjectsString'>
 }
 
 export function DashboardPieceButtonSplitPreview({ piece }: IProps) {

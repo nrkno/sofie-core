@@ -2,7 +2,10 @@ import {
 	IBlueprintPieceGeneric,
 	IBlueprintPieceDB,
 	IBlueprintPieceType,
+	TimelineObjectCoreExt,
+	SomeContent,
 } from '@sofie-automation/blueprints-integration'
+import { ProtectedString, protectString, unprotectString } from '../protectedString'
 import { PieceId, RundownId, SegmentId, PartId } from './Ids'
 
 /** A generic list of playback availability statuses for a Piece */
@@ -29,8 +32,10 @@ export enum PieceStatusCode {
 }
 
 /** A Single item in a Part: script, VT, cameras */
-export interface PieceGeneric extends IBlueprintPieceGeneric {
+export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'content'> {
 	_id: PieceId // TODO - this should be moved to the implementation types
+
+	content: SomeContent
 
 	/** Playback availability status */
 	status: PieceStatusCode
@@ -38,9 +43,12 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: PieceId
+
+	/** Stringified timelineObjects */
+	timelineObjectsString: PieceTimelineObjectsBlob
 }
 
-export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId'> {
+export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId' | 'content'> {
 	/**
 	 * This is the id of the rundown this piece starts playing in.
 	 * Currently this is the only rundown the piece could be playing in
@@ -63,3 +71,13 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 	/** This is set when the part is invalid and these pieces should be ignored */
 	invalid: boolean
 }
+
+export type PieceTimelineObjectsBlob = ProtectedString<'PieceTimelineObjectsBlob'>
+
+export function deserializePieceTimelineObjectsBlob(timelineBlob: PieceTimelineObjectsBlob): TimelineObjectCoreExt[] {
+	return JSON.parse(unprotectString(timelineBlob)) as Array<TimelineObjectCoreExt>
+}
+export function serializePieceTimelineObjectsBlob(timeline: TimelineObjectCoreExt[]): PieceTimelineObjectsBlob {
+	return protectString(JSON.stringify(timeline))
+}
+export const EmptyPieceTimelineObjectsBlob = serializePieceTimelineObjectsBlob([])

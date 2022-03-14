@@ -18,7 +18,6 @@ import '../ExternalMessageQueue'
 
 describe('Test external message queue static methods', () => {
 	let studioEnv: DefaultEnvironment
-	// let rundown: Rundown
 	beforeAll(async () => {
 		studioEnv = await setupDefaultStudioEnvironment()
 		const now = getCurrentTime()

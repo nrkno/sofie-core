@@ -11,7 +11,6 @@ import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { clone, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { unprotectObject, unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -22,6 +21,14 @@ import { isTooCloseToAutonext, updateExpectedDurationWithPrerollForPartInstance 
 import _ = require('underscore')
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context/syncIngestUpdateToPartInstance'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
+import {
+	convertAdLibActionToBlueprints,
+	convertAdLibPieceToBlueprints,
+	convertPartInstanceToBlueprints,
+	convertPartToBlueprints,
+	convertPieceInstanceToBlueprints,
+} from '../blueprints/context/lib'
+import { saveIntoCache } from '../cache/lib'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type ReadOnlyIngestCacheWithoutRundown = Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'>
@@ -29,7 +36,7 @@ type SyncedInstance = {
 	existingPartInstance: DBPartInstance
 	previousPartInstance: DBPartInstance | undefined
 	playStatus: PlayStatus
-	newPart: DBPart
+	newPart: DBPart | undefined
 	piecesThatMayBeActive: Promise<Piece[]>
 }
 
@@ -105,8 +112,8 @@ export async function syncChangesToPartInstances(
 
 				const partId = existingPartInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
-					partInstance: unprotectObject(existingPartInstance),
-					pieceInstances: unprotectObjectArray(pieceInstancesInPart),
+					partInstance: convertPartInstanceToBlueprints(existingPartInstance),
+					pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprints),
 				}
 
 				const referencedAdlibIds = _.compact(pieceInstancesInPart.map((p) => p.adLibSourceId))
@@ -120,79 +127,103 @@ export async function syncChangesToPartInstances(
 					cache,
 					previousPartInstance,
 					rundown,
-					newPart,
+					newPart ?? existingPartInstance.part,
 					await piecesThatMayBeActive,
 					existingPartInstance._id,
 					false
 				)
 
-				const newResultData: BlueprintSyncIngestNewData = {
-					part: unprotectObject(newPart),
-					pieceInstances: unprotectObjectArray(proposedPieceInstances),
-					adLibPieces: unprotectObjectArray(adlibPieces),
-					actions: unprotectObjectArray(adlibActions),
-					referencedAdlibs: unprotectObjectArray(referencedAdlibs),
-				}
+				// If we have a new part to sync from, then do a proper sync
+				if (newPart) {
+					logger.info(`Syncing ingest changes for part: ${newPart._id}`)
 
-				const syncContext = new SyncIngestUpdateToPartInstanceContext(
-					context,
-					{
-						name: `Update to ${newPart.externalId}`,
-						identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
-					},
-					cache.Playlist.doc.activationId,
-					context.studio,
-					showStyle,
-					rundown,
-					existingPartInstance,
-					pieceInstancesInPart,
-					proposedPieceInstances,
-					playStatus
-				)
-				// TODO - how can we limit the frequency we run this? (ie, how do we know nothing affecting this has changed)
-				try {
-					// The blueprint handles what in the updated part is going to be synced into the partInstance:
-					blueprint.blueprint.syncIngestUpdateToPartInstance(
-						syncContext,
-						existingResultPartInstance,
-						clone(newResultData),
+					const newResultData: BlueprintSyncIngestNewData = {
+						part: convertPartToBlueprints(newPart),
+						pieceInstances: proposedPieceInstances.map(convertPieceInstanceToBlueprints),
+						adLibPieces: adlibPieces.map(convertAdLibPieceToBlueprints),
+						actions: adlibActions.map(convertAdLibActionToBlueprints),
+						referencedAdlibs: referencedAdlibs.map(convertAdLibPieceToBlueprints),
+					}
+					const syncContext = new SyncIngestUpdateToPartInstanceContext(
+						context,
+						{
+							name: `Update to ${newPart.externalId}`,
+							identifier: `rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
+						},
+						cache.Playlist.doc.activationId,
+						context.studio,
+						showStyle,
+						rundown,
+						existingPartInstance,
+						pieceInstancesInPart,
+						proposedPieceInstances,
 						playStatus
 					)
+					// TODO - how can we limit the frequency we run this? (ie, how do we know nothing affecting this has changed)
+					try {
+						// The blueprint handles what in the updated part is going to be synced into the partInstance:
+						blueprint.blueprint.syncIngestUpdateToPartInstance(
+							syncContext,
+							existingResultPartInstance,
+							clone(newResultData),
+							playStatus
+						)
 
-					// If the blueprint function throws, no changes will be synced to the cache:
-					syncContext.applyChangesToCache(cache)
-				} catch (err) {
-					logger.error(`Error in showStyleBlueprint.syncIngestUpdateToPartInstance: ${stringifyError(err)}`)
-				}
+						// If the blueprint function throws, no changes will be synced to the cache:
+						syncContext.applyChangesToCache(cache)
+					} catch (err) {
+						logger.error(
+							`Error in showStyleBlueprint.syncIngestUpdateToPartInstance: ${stringifyError(err)}`
+						)
+					}
 
-				if (playStatus === 'next') {
-					updateExpectedDurationWithPrerollForPartInstance(cache, existingPartInstance._id)
-				}
+					if (playStatus === 'next') {
+						updateExpectedDurationWithPrerollForPartInstance(cache, existingPartInstance._id)
+					}
 
-				// Save notes:
-				if (!existingPartInstance.part.notes) existingPartInstance.part.notes = []
-				const notes: PartNote[] = existingPartInstance.part.notes
-				let changed = false
-				for (const note of syncContext.notes) {
-					changed = true
-					notes.push(
-						literal<SegmentNote>({
-							type: note.type,
-							message: note.message,
-							origin: {
-								name: '', // TODO
+					// Save notes:
+					if (!existingPartInstance.part.notes) existingPartInstance.part.notes = []
+					const notes: PartNote[] = existingPartInstance.part.notes
+					let changed = false
+					for (const note of syncContext.notes) {
+						changed = true
+						notes.push(
+							literal<SegmentNote>({
+								type: note.type,
+								message: note.message,
+								origin: {
+									name: '', // TODO
+								},
+							})
+						)
+					}
+					if (changed) {
+						// TODO - these dont get shown to the user currently
+						// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?
+						cache.PartInstances.update(existingPartInstance._id, {
+							$set: {
+								'part.notes': notes,
 							},
 						})
+					}
+				} else {
+					logger.info(`Syncing onEnd infinites for part: ${existingPartInstance._id}`)
+
+					// Otherwise, we want to sync just the fromPreviousPart infinites
+					const infinitePieces = proposedPieceInstances.filter(
+						(p) => p.infinite?.fromPreviousPart && !p.infinite.fromPreviousPlayhead
 					)
-				}
-				if (changed) {
-					// TODO - these dont get shown to the user currently
-					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?
-					cache.PartInstances.update(existingPartInstance._id, {
-						$set: {
-							'part.notes': notes,
+
+					saveIntoCache(
+						context,
+						cache.PieceInstances,
+						{
+							partInstanceId: existingPartInstance._id,
+							'infinite.fromPreviousPart': true,
+							'infinite.fromPreviousPlayhead': { $ne: true },
 						},
-					})
+						infinitePieces
+					)
 				}
 
 				if (existingPartInstance._id === cache.Playlist.doc.currentPartInstanceId) {
@@ -216,7 +247,7 @@ function insertToSyncedInstanceCandidates(
 	ingestCache: ReadOnlyIngestCacheWithoutRundown,
 	thisPartInstance: DBPartInstance,
 	previousPartInstance: DBPartInstance | undefined,
-	part: DBPart,
+	part: DBPart | undefined,
 	playStatus: PlayStatus
 ): void {
 	instances.push({
@@ -224,7 +255,12 @@ function insertToSyncedInstanceCandidates(
 		previousPartInstance: previousPartInstance,
 		playStatus,
 		newPart: part,
-		piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(context, cache, ingestCache, part),
+		piecesThatMayBeActive: fetchPiecesThatMayBeActiveForPart(
+			context,
+			cache,
+			ingestCache,
+			part ?? thisPartInstance.part
+		),
 	})
 }
 
@@ -242,7 +278,6 @@ function findPartAndInsertToSyncedInstanceCandidates(
 	playStatus: PlayStatus
 ): void {
 	const newPart = cache.Parts.findOne(thisPartInstance.part._id)
-	if (!newPart) return
 
 	insertToSyncedInstanceCandidates(
 		context,

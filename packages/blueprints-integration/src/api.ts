@@ -242,7 +242,7 @@ export type BlueprintResultStudioBaseline = BlueprintResultBaseline
 export interface BlueprintResultRundown {
 	rundown: IBlueprintRundown
 	globalAdLibPieces: IBlueprintAdLibPiece[]
-	globalActions?: IBlueprintActionManifest[]
+	globalActions: IBlueprintActionManifest[]
 	baseline: BlueprintResultBaseline
 }
 export interface BlueprintResultSegment {
@@ -254,7 +254,7 @@ export interface BlueprintResultPart {
 	part: IBlueprintPart
 	pieces: IBlueprintPiece[]
 	adLibPieces: IBlueprintAdLibPiece[]
-	actions?: IBlueprintActionManifest[]
+	actions: IBlueprintActionManifest[]
 }
 
 export interface BlueprintSyncIngestNewData {

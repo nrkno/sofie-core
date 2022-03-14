@@ -81,7 +81,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 
 		let matchedDocs: TDoc[]
 		if (typeof selector._id === 'string') {
-			const doc = this.#documents.get(selector._id)
+			const doc = this.#documents.get(selector._id as any)
 			if (doc && mongoWhere(doc, selector)) {
 				matchedDocs = [doc]
 			} else {
@@ -192,7 +192,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 
 		for (const op of ops) {
 			if ('replaceOne' in op) {
-				await this.replaceInner(op.replaceOne.replacement)
+				await this.replaceInner(op.replaceOne.replacement as any)
 			} else if ('deleteMany' in op) {
 				await this.removeInner(op.deleteMany.filter)
 			} else {

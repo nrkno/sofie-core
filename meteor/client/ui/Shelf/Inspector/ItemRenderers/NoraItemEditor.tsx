@@ -12,7 +12,7 @@ export const MODULE_BROWSER_ORIGIN = `${MODULE_BROWSER_URL.protocol}//${MODULE_B
 export { NoraItemEditor }
 
 interface INoraEditorProps {
-	piece: PieceGeneric
+	piece: Omit<PieceGeneric, 'timelineObjectsString'>
 }
 
 class NoraItemEditor extends React.Component<INoraEditorProps> {

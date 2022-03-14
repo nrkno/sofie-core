@@ -5,10 +5,10 @@ import { RundownUtils } from '../../../lib/rundown'
 
 export default class SplitInputIcon extends React.Component<{
 	abbreviation?: string
-	piece?: PieceGeneric
+	piece?: Omit<PieceGeneric, 'timelineObjectsString'>
 	hideLabel?: boolean
 }> {
-	private getCameraLabel(piece: PieceGeneric | undefined) {
+	private getCameraLabel(piece: Omit<PieceGeneric, 'timelineObjectsString'> | undefined) {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const camera = c.boxSourceConfiguration.find((i) => i.type === SourceLayerType.CAMERA)
@@ -28,7 +28,7 @@ export default class SplitInputIcon extends React.Component<{
 		}
 	}
 
-	private getLeftSourceType(piece: PieceGeneric | undefined): string {
+	private getLeftSourceType(piece: Omit<PieceGeneric, 'timelineObjectsString'> | undefined): string {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const left = (c.boxSourceConfiguration && c.boxSourceConfiguration[0])?.type || SourceLayerType.CAMERA
@@ -37,7 +37,7 @@ export default class SplitInputIcon extends React.Component<{
 		return 'camera'
 	}
 
-	private getRightSourceType(piece: PieceGeneric | undefined): string {
+	private getRightSourceType(piece: Omit<PieceGeneric, 'timelineObjectsString'> | undefined): string {
 		if (piece && piece.content) {
 			const c = piece.content as SplitsContent
 			const right = (c.boxSourceConfiguration && c.boxSourceConfiguration[1])?.type || SourceLayerType.REMOTE

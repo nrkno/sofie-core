@@ -11,7 +11,7 @@ import {
 	PieceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -146,7 +146,8 @@ export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: Segm
 		},
 		sourceLayerId: '',
 		outputLayerId: '',
-		content: { timelineObjects: [] },
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.Normal,
 	}
 }
@@ -162,6 +163,7 @@ export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: Pa
 		lifespan: PieceLifespan.WithinPart,
 		sourceLayerId: '',
 		outputLayerId: '',
-		content: { timelineObjects: [] },
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 }

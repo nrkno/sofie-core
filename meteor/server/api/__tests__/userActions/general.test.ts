@@ -11,7 +11,6 @@ require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
 
 describe('User Actions - General', () => {
-	// let env: DefaultEnvironment
 	beforeEach(async () => {
 		await setupDefaultStudioEnvironment()
 	})

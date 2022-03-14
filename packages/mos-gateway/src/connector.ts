@@ -53,12 +53,10 @@ export class Connector {
 			})
 			.catch((e) => {
 				this._logger.error('Error during initialization:', e, e.stack)
-				// this._logger.error(e)
-				// this._logger.error(e.stack)
 
 				this._logger.info('Shutting down in 10 seconds!')
 
-				this.dispose().catch((e) => this._logger.error(e))
+				this.dispose().catch((e2) => this._logger.error(e2))
 
 				setTimeout(() => {
 					process.exit(0)

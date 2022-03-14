@@ -9,11 +9,10 @@ import { ShelfTabs, DEFAULT_TAB as SHELF_DEFAULT_TAB } from './Shelf'
 import { AdLibPanel, AdLibPieceUi } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Studio } from '../../../lib/collections/Studios'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
 
@@ -35,24 +34,35 @@ export interface IShelfRundownLayoutProps {
 	}>
 }
 
-export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
-	props: Translated<IShelfRundownLayoutProps>
-) {
-	const { t, rundownLayout, onSwitchTab } = props
+export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
+	const { t } = useTranslation()
+	const { rundownLayout, onSwitchTab } = props
 	return (
-		<React.Fragment>
+		<>
 			<div className="rundown-view__shelf__tabs">
 				<OverflowingContainer className="rundown-view__shelf__tabs__tab-group">
-					<div
-						className={ClassNames('rundown-view__shelf__tabs__tab', {
-							selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.ADLIB,
-						})}
-						onClick={() => onSwitchTab(ShelfTabs.ADLIB)}
-						tabIndex={0}
-					>
-						{t('AdLib')}
-					</div>
-					{rundownLayout &&
+					{!rundownLayout ? (
+						<>
+							<div
+								className={ClassNames('rundown-view__shelf__tabs__tab', {
+									selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.ADLIB,
+								})}
+								onClick={() => onSwitchTab(ShelfTabs.ADLIB)}
+								tabIndex={0}
+							>
+								{t('AdLib')}
+							</div>
+							<div
+								className={ClassNames('rundown-view__shelf__tabs__tab', {
+									selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB,
+								})}
+								onClick={() => onSwitchTab(ShelfTabs.GLOBAL_ADLIB)}
+								tabIndex={0}
+							>
+								{t('Global AdLib')}
+							</div>
+						</>
+					) : (
 						rundownLayout.filters
 							.sort((a, b) => a.rank - b.rank)
 							.map((panel) => (
@@ -67,17 +77,9 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 								>
 									{panel.name}
 								</div>
-							))}
+							))
+					)}
 				</OverflowingContainer>
-				<div
-					className={ClassNames('rundown-view__shelf__tabs__tab', {
-						selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB,
-					})}
-					onClick={() => onSwitchTab(ShelfTabs.GLOBAL_ADLIB)}
-					tabIndex={0}
-				>
-					{t('Global AdLib')}
-				</div>
 				<div
 					className={ClassNames('rundown-view__shelf__tabs__tab', {
 						selected: (props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS,
@@ -89,18 +91,28 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 				</div>
 			</div>
 			<div className="rundown-view__shelf__panel super-dark">
-				<AdLibPanel
-					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.ADLIB}
-					registerHotkeys={true}
-					selectedPiece={props.selectedPiece}
-					onSelectPiece={props.onSelectPiece}
-					playlist={props.playlist}
-					showStyleBase={props.showStyleBase}
-					studioMode={props.studioMode}
-					studio={props.studio}
-					hotkeyGroup={props.playlist.name.replace(/\W/, '') + 'AdLibPanel'}
-				></AdLibPanel>
-				{rundownLayout &&
+				{!rundownLayout ? (
+					<>
+						<AdLibPanel
+							visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.ADLIB}
+							selectedPiece={props.selectedPiece}
+							onSelectPiece={props.onSelectPiece}
+							playlist={props.playlist}
+							showStyleBase={props.showStyleBase}
+							studioMode={props.studioMode}
+							studio={props.studio}
+						></AdLibPanel>
+						<GlobalAdLibPanel
+							visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB}
+							selectedPiece={props.selectedPiece}
+							onSelectPiece={props.onSelectPiece}
+							playlist={props.playlist}
+							showStyleBase={props.showStyleBase}
+							studioMode={props.studioMode}
+							studio={props.studio}
+						></GlobalAdLibPanel>
+					</>
+				) : (
 					rundownLayout.filters.map((panel) =>
 						RundownLayoutsAPI.isFilter(panel) ? (
 							<AdLibPanel
@@ -114,7 +126,6 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
 								studio={props.studio}
-								hotkeyGroup={panel.name.replace(/\W/, '_')}
 							/>
 						) : RundownLayoutsAPI.isExternalFrame(panel) ? (
 							<ExternalFramePanel
@@ -125,23 +136,14 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 								playlist={props.playlist}
 							/>
 						) : undefined
-					)}
-				<GlobalAdLibPanel
-					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB}
-					selectedPiece={props.selectedPiece}
-					onSelectPiece={props.onSelectPiece}
-					playlist={props.playlist}
-					showStyleBase={props.showStyleBase}
-					studioMode={props.studioMode}
-					hotkeyGroup={props.playlist.name.replace(/\W/, '_') + 'GlobalAdLibPanel'}
-					studio={props.studio}
-				></GlobalAdLibPanel>
+					)
+				)}
 				<HotkeyHelpPanel
 					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS}
 					showStyleBase={props.showStyleBase}
 					hotkeys={props.hotkeys}
 				></HotkeyHelpPanel>
 			</div>
-		</React.Fragment>
+		</>
 	)
-})
+}

@@ -2,9 +2,16 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import * as _ from 'underscore'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
-import { Time, ProtectedString, unprotectString, isProtectedString, protectString, assertNever } from '../../../lib/lib'
+import {
+	Time,
+	ProtectedString,
+	unprotectString,
+	isProtectedString,
+	protectString,
+	assertNever,
+	getRandomString,
+} from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { RundownId } from '../../../lib/collections/Rundowns'
@@ -176,7 +183,7 @@ class NotificationCenter0 {
 	 * @memberof NotificationCenter0
 	 */
 	registerNotifier(source: Notifier): NotifierHandle {
-		const notifierId = Random.id()
+		const notifierId = getRandomString()
 
 		return new NotifierHandle(notifierId, source)
 	}
@@ -189,7 +196,7 @@ class NotificationCenter0 {
 	 * @memberof NotificationCenter0
 	 */
 	push(notice: Notification): NotificationHandle {
-		const id = notice.id || Random.id()
+		const id = notice.id || getRandomString()
 		notifications[id] = notice
 		notice.id = id
 		notificationsDep.changed()

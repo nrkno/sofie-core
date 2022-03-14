@@ -32,6 +32,7 @@ import {
 	PlayoutActions,
 	StatusCode,
 	IBlueprintPieceType,
+	IBlueprintActionManifest,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -47,7 +48,7 @@ import { literal, getCurrentTime, protectString, unprotectString, getRandomId, g
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
-import { Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob, Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
@@ -132,7 +133,7 @@ export function setupMockPeripheralDevice(
 			'@sofie-automation/server-core-integration': stripVersion(PackageInfo.version),
 		},
 	}
-	const device = _.extend(defaultDevice, doc) as PeripheralDevice
+	const device: PeripheralDevice = _.extend(defaultDevice, doc)
 	PeripheralDevices.insert(device)
 	return device
 }
@@ -392,6 +393,7 @@ export async function setupMockShowStyleBlueprint(
 					return {
 						rundown,
 						globalAdLibPieces: [],
+						globalActions: [],
 						baseline: { timelineObjects: [] },
 					}
 				},
@@ -426,10 +428,12 @@ export async function setupMockShowStyleBlueprint(
 						}
 						const pieces: IBlueprintPiece[] = ingestPart.payload?.pieces ?? []
 						const adLibPieces: IBlueprintAdLibPiece[] = []
+						const actions: IBlueprintActionManifest[] = []
 						parts.push({
 							part,
 							pieces,
 							adLibPieces,
+							actions,
 						})
 					})
 					return {
@@ -616,9 +620,8 @@ export function setupDefaultRundown(
 		lifespan: PieceLifespan.WithinPart,
 		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	Pieces.insert(piece000)
 
@@ -638,9 +641,8 @@ export function setupDefaultRundown(
 		lifespan: PieceLifespan.WithinPart,
 		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	Pieces.insert(piece001)
 
@@ -656,9 +658,8 @@ export function setupDefaultRundown(
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	AdLibPieces.insert(adLibPiece000)
@@ -690,9 +691,8 @@ export function setupDefaultRundown(
 		lifespan: PieceLifespan.WithinPart,
 		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	Pieces.insert(piece010)
 
@@ -759,9 +759,8 @@ export function setupDefaultRundown(
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -774,9 +773,8 @@ export function setupDefaultRundown(
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)
@@ -917,9 +915,8 @@ export function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -932,9 +929,8 @@ export function setupRundownWithAutoplayPart0(
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)

@@ -7,10 +7,11 @@ import { setupApmAgent, startTransaction } from '../../profiler'
 import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
 import { JobContextImpl, QueueJobFunc } from '../context'
 import { AnyLockEvent, LocksManager } from '../locks'
-import { FastTrackTimelineFunc, LogLineFunc } from '../../main'
+import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
 import { interceptLogging, logger } from '../../logging'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { setupInfluxDb } from '../../influx'
+import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -24,17 +25,20 @@ interface StaticData {
 export class EventsWorkerChild {
 	#staticData: StaticData | undefined
 
+	readonly #studioId: StudioId
 	readonly #locks: LocksManager
 	readonly #queueJob: QueueJobFunc
 	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
 
 	constructor(
+		studioId: StudioId,
 		emitLockEvent: (event: AnyLockEvent) => Promise<void>,
 		queueJob: QueueJobFunc,
-		logLine: LogLineFunc,
+		logLine: LogLineWithSourceFunc,
 		fastTrackTimeline: FastTrackTimelineFunc | null
 	) {
-		interceptLogging(logLine)
+		// Intercept logging to pipe back over ipc
+		interceptLogging(getEventsQueueName(studioId), logLine)
 
 		setupApmAgent()
 		setupInfluxDb()
@@ -42,16 +46,17 @@ export class EventsWorkerChild {
 		this.#locks = new LocksManager(emitLockEvent)
 		this.#queueJob = queueJob
 		this.#fastTrackTimeline = fastTrackTimeline
+		this.#studioId = studioId
 	}
 
-	async init(mongoUri: string, dbName: string, studioId: StudioId): Promise<void> {
+	async init(mongoUri: string, dbName: string): Promise<void> {
 		if (this.#staticData) throw new Error('Worker already initialised')
 
 		const mongoClient = await createMongoConnection(mongoUri)
 		const collections = getMongoCollections(mongoClient, dbName)
 
 		// Load some 'static' data from the db
-		const dataCache = await loadWorkerDataCache(collections, studioId)
+		const dataCache = await loadWorkerDataCache(collections, this.#studioId)
 
 		this.#staticData = {
 			mongoClient,
@@ -60,7 +65,7 @@ export class EventsWorkerChild {
 			dataCache,
 		}
 
-		logger.info(`Events thread for ${studioId} initialised`)
+		logger.info(`Events thread for ${this.#studioId} initialised`)
 	}
 	async lockChange(lockId: string, locked: boolean): Promise<void> {
 		if (!this.#staticData) throw new Error('Worker not initialised')

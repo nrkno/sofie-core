@@ -17,7 +17,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { faTrash, faPencilAlt, faCheck, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
-import { literal, unprotectString, ProtectedString, assertNever } from '../../../lib/lib'
+import { literal, unprotectString, ProtectedString, assertNever, getRandomString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { withTranslation } from 'react-i18next'
 import { hotkeyHelper } from '../../lib/hotkeyHelper'
@@ -373,7 +373,7 @@ const SourceLayerSettings = withTranslation()(
 			const { t } = this.props
 
 			const newSource = literal<ISourceLayer>({
-				_id: this.props.showStyleBase._id + '-' + Random.id(5),
+				_id: this.props.showStyleBase._id + '-' + getRandomString(5),
 				_rank: maxRank ? maxRank._rank + 10 : 0,
 				name: t('New Source'),
 				type: SourceLayerType.UNKNOWN,
@@ -1025,7 +1025,7 @@ const HotkeyLegendSettings = withTranslation()(
 		}
 		onAddHotkeyLegend = () => {
 			const newItem = literal<HotkeyDefinition>({
-				_id: Random.id(),
+				_id: getRandomString(),
 				key: '',
 				label: 'New hotkey',
 			})

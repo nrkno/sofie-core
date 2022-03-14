@@ -2,17 +2,12 @@ import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { clone, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
-import {
-	protectString,
-	unprotectObject,
-	protectStringArray,
-	unprotectStringArray,
-} from '@sofie-automation/corelib/dist/protectedString'
+import { normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
+import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { CacheForPlayout } from '../../playout/cache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
-import { ReadonlyDeep } from 'type-fest'
+import { ReadonlyDeep, SetRequired } from 'type-fest'
 import _ = require('underscore')
 import { ContextInfo, RundownUserContext } from './context'
 import {
@@ -22,13 +17,22 @@ import {
 	OmitId,
 	IBlueprintMutatablePart,
 	IBlueprintPartInstance,
+	SomeContent,
+	WithTimeline,
 } from '@sofie-automation/blueprints-integration'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
+import {
+	IBlueprintPieceObjectsSampleKeys,
+	IBlueprintMutatablePartSampleKeys,
+	convertPieceInstanceToBlueprints,
+	convertPartInstanceToBlueprints,
+} from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext } from '../../jobs'
 import { logChanges } from '../../cache/lib'
+import { MongoModifier } from '../../db'
+import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
@@ -112,8 +116,7 @@ export class SyncIngestUpdateToPartInstanceContext
 					this.partInstance.rundownId,
 					this.partInstance.segmentId,
 					this.partInstance.part._id,
-					this.playStatus === 'current',
-					true
+					this.playStatus === 'current'
 			  )[0]
 			: proposedPieceInstance.piece
 
@@ -124,11 +127,11 @@ export class SyncIngestUpdateToPartInstanceContext
 			piece: piece,
 		}
 		this._pieceInstanceCache.replace(newPieceInstance)
-		return clone(unprotectObject(newPieceInstance))
+		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}
 
 	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
-		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceSampleKeys)
+		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceObjectsSampleKeys)
 
 		const piece = postProcessPieces(
 			this._context,
@@ -137,8 +140,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.partInstance.rundownId,
 			this.partInstance.segmentId,
 			this.partInstance.part._id,
-			this.playStatus === 'current',
-			true
+			this.playStatus === 'current'
 		)[0]
 		const newPieceInstance = wrapPieceToInstance(piece, this.playlistActivationId, this.partInstance._id)
 
@@ -147,11 +149,11 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		this._pieceInstanceCache.insert(newPieceInstance)
 
-		return clone(unprotectObject(newPieceInstance))
+		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}
 	updatePieceInstance(pieceInstanceId: string, updatedPiece: Partial<IBlueprintPiece>): IBlueprintPieceInstance {
 		// filter the submission to the allowed ones
-		const trimmedPiece: Partial<OmitId<IBlueprintPiece>> = _.pick(updatedPiece, IBlueprintPieceSampleKeys)
+		const trimmedPiece: Partial<OmitId<IBlueprintPiece>> = _.pick(updatedPiece, IBlueprintPieceObjectsSampleKeys)
 		if (Object.keys(trimmedPiece).length === 0) {
 			throw new Error(`Cannot update PieceInstance "${pieceInstanceId}". Some valid properties must be defined`)
 		}
@@ -164,23 +166,26 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`)
 		}
 
-		if (updatedPiece.content && updatedPiece.content.timelineObjects) {
-			updatedPiece.content.timelineObjects = postProcessTimelineObjects(
-				pieceInstance.piece._id,
-				this.showStyleCompound.blueprintId,
-				updatedPiece.content.timelineObjects,
-				false
-			)
-		}
-
-		const update: any = {
+		const update: SetRequired<MongoModifier<PieceInstance>, '$set' | '$unset'> = {
 			$set: {},
 			$unset: {},
 		}
 
+		if (updatedPiece.content?.timelineObjects) {
+			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
+				postProcessTimelineObjects(
+					pieceInstance.piece._id,
+					this.showStyleCompound.blueprintId,
+					updatedPiece.content.timelineObjects
+				)
+			)
+			// This has been processed
+			updatedPiece.content = omit(updatedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
+		}
+
 		for (const [k, val] of Object.entries(trimmedPiece)) {
 			if (val === undefined) {
-				update.$unset[`piece.${k}`] = val
+				update.$unset[`piece.${k}`] = 1
 			} else {
 				update.$set[`piece.${k}`] = val
 			}
@@ -193,7 +198,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found, after applying changes`)
 		}
 
-		return clone(unprotectObject(updatedPieceInstance))
+		return convertPieceInstanceToBlueprints(updatedPieceInstance)
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones
@@ -222,7 +227,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PartInstance could not be found, after applying changes`)
 		}
 
-		return clone(unprotectObject(updatedPartInstance))
+		return convertPartInstanceToBlueprints(updatedPartInstance)
 	}
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
 		const pieceInstances = this._pieceInstanceCache.findFetch({

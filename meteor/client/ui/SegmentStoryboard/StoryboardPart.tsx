@@ -186,7 +186,8 @@ export function StoryboardPart({
 							{
 								'segment-storyboard__part__next-line--autonext': part.instance.part.autoNext,
 								'segment-storyboard__part__next-line--next': isLivePart && (!isLastSegment || doesPlaylistHaveNextPart),
-								'segment-storyboard__part__next-line--end-of-show': isLastSegment && !doesPlaylistHaveNextPart,
+								'segment-storyboard__part__next-line--end-of-show':
+									isLastSegment && (!isLivePart || !doesPlaylistHaveNextPart),
 							}
 						)}
 					></div>
@@ -226,9 +227,11 @@ export function StoryboardPart({
 						'segment-storyboard__part__show-end--loop': isPlaylistLooping,
 					})}
 				>
-					<div className="segment-storyboard__part__show-end__label">
-						{isPlaylistLooping ? t('Loops to top') : t('Show End')}
-					</div>
+					{(!isLivePart || !doesPlaylistHaveNextPart || isPlaylistLooping) && (
+						<div className="segment-storyboard__part__show-end__label">
+							{isPlaylistLooping ? t('Loops to top') : t('Show End')}
+						</div>
+					)}
 				</div>
 			)}
 			{isLivePart && displayLiveLineCounter ? (

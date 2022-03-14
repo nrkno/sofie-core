@@ -32,18 +32,18 @@ import {
 	protectStringArray,
 	unDeepString,
 	unpartialString,
-	unprotectObject,
 	unprotectObjectArray,
 	unprotectString,
 } from '@sofie-automation/corelib/dist/protectedString'
-import { PartId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import {
-	DBPartInstance,
-	protectPartInstance,
-	unprotectPartInstance,
-	unprotectPartInstanceArray,
-} from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+	PartId,
+	PartInstanceId,
+	PieceInstanceId,
+	RundownPlaylistId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	assertNever,
 	clone,
@@ -56,10 +56,7 @@ import {
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib'
-import {
-	protectPieceInstance,
-	unprotectPieceInstanceArray,
-} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { getShowStyleConfigRef, getStudioConfigRef, ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config'
 import _ = require('underscore')
@@ -68,6 +65,7 @@ import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { JobContext } from '../../jobs'
 import { MongoQuery } from '../../db'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
+import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints, convertSegmentToBlueprints } from './lib'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -529,7 +527,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 			rundown
 		)
 
-		this.part = unprotectPartInstance(partInstance)
+		this.part = convertPartInstanceToBlueprints(partInstance)
 	}
 
 	getCurrentTime(): number {
@@ -542,15 +540,23 @@ interface ABSessionInfoExt extends ABSessionInfo {
 	keep?: boolean
 }
 
-export class TimelineEventContext extends RundownContext implements ITimelineEventContext {
+export class OnTimelineGenerateContext extends RundownContext implements ITimelineEventContext {
 	private readonly partInstances: ReadonlyDeep<Array<DBPartInstance>>
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
 	private readonly _knownSessions: ABSessionInfoExt[]
 
+	private readonly pieceInstanceCache = new Map<PieceInstanceId, PieceInstance>()
+
 	public get knownSessions(): ABSessionInfo[] {
 		return this._knownSessions.filter((s) => s.keep).map((s) => omit(s, 'keep'))
+	}
+
+	public trackPieceInstances(pieceInstances: PieceInstance[]): void {
+		for (const pieceInstance of pieceInstances) {
+			this.pieceInstanceCache.set(pieceInstance._id, pieceInstance)
+		}
 	}
 
 	constructor(
@@ -576,8 +582,8 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 			rundown
 		)
 
-		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
-		this.nextPartInstance = nextPartInstance ? unprotectPartInstance(nextPartInstance) : undefined
+		this.currentPartInstance = currentPartInstance && convertPartInstanceToBlueprints(currentPartInstance)
+		this.nextPartInstance = nextPartInstance && convertPartInstanceToBlueprints(nextPartInstance)
 
 		this.partInstances = _.compact([previousPartInstance, currentPartInstance, nextPartInstance])
 
@@ -593,9 +599,9 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		return getRandomString()
 	}
 
-	getPieceABSessionId(pieceInstance0: IBlueprintPieceInstance, sessionName: string): string {
-		const pieceInstance = protectPieceInstance(pieceInstance0)
-		const partInstanceId = pieceInstance.partInstanceId
+	getPieceABSessionId(pieceInstance0: Pick<IBlueprintPieceInstance, '_id'>, sessionName: string): string {
+		const pieceInstance = this.pieceInstanceCache.get(protectString(pieceInstance0._id))
+		const partInstanceId = pieceInstance?.partInstanceId
 		if (!partInstanceId) throw new Error('Missing partInstanceId in call to getPieceABSessionId')
 
 		const partInstanceIndex = this.partInstances.findIndex((p) => p._id === partInstanceId)
@@ -779,8 +785,10 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 	private readonly _currentPart: DBPartInstance
 	readonly nextPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
 
+	private readonly partInstanceCache = new Map<PartInstanceId, DBPartInstance>()
+
 	public get currentPart(): Readonly<IBlueprintPartInstance<unknown>> {
-		return unprotectPartInstance(this._currentPart)
+		return convertPartInstanceToBlueprints(this._currentPart)
 	}
 
 	constructor(
@@ -794,19 +802,25 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 	) {
 		super(context, contextInfo, showStyleCompound, rundown)
 
-		this.previousPart = unprotectPartInstance(previousPartInstance)
+		if (previousPartInstance) this.partInstanceCache.set(previousPartInstance._id, previousPartInstance)
+		if (partInstance) this.partInstanceCache.set(partInstance._id, partInstance)
+		if (nextPartInstance) this.partInstanceCache.set(nextPartInstance._id, nextPartInstance)
+
+		this.previousPart = previousPartInstance && convertPartInstanceToBlueprints(previousPartInstance)
 		this._currentPart = partInstance
-		this.nextPart = unprotectPartInstance(nextPartInstance)
+		this.nextPart = nextPartInstance && convertPartInstanceToBlueprints(nextPartInstance)
 	}
 
 	async getFirstPartInstanceInRundown(allowUntimed?: boolean): Promise<Readonly<IBlueprintPartInstance<unknown>>> {
 		const query: MongoQuery<DBPartInstance> = {
 			rundownId: this._rundown._id,
 			playlistActivationId: this._currentPart.playlistActivationId,
+			'part.untimed': { $ne: true },
 		}
 
-		if (!allowUntimed) {
-			query['part.untimed'] = { $ne: true }
+		if (allowUntimed) {
+			// This is a weird way to define the query, but its necessary to make typings happy
+			delete query['part.untimed']
 		}
 
 		const partInstance = await this.context.directCollections.PartInstances.findOne(query, {
@@ -821,13 +835,16 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 				`No PartInstances found for Rundown "${this._rundown._id}" (PlaylistActivationId "${this._currentPart.playlistActivationId}")`
 			)
 
-		return unprotectPartInstance(partInstance)
+		this.partInstanceCache.set(partInstance._id, partInstance)
+
+		return convertPartInstanceToBlueprints(partInstance)
 	}
 
 	async getPartInstancesInSegmentPlayoutId(
-		refPartInstance: Readonly<IBlueprintPartInstance<unknown>>
+		refPartInstance: Readonly<Pick<IBlueprintPartInstance<unknown>, '_id'>>
 	): Promise<Array<IBlueprintPartInstance<unknown>>> {
-		const refPartInstance2 = protectPartInstance(refPartInstance)
+		// Pull the PartInstance from the cached list, so that we can access 'secret' values
+		const refPartInstance2 = this.partInstanceCache.get(protectString(refPartInstance._id))
 		if (!refPartInstance2 || !refPartInstance2.segmentId || !refPartInstance2.segmentPlayoutId)
 			throw new Error('Missing partInstance to use a reference for the segment')
 
@@ -845,7 +862,13 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 			}
 		)
 
-		return unprotectPartInstanceArray(partInstances)
+		const res: Array<IBlueprintPartInstance<unknown>> = []
+		for (const partInstance of partInstances) {
+			this.partInstanceCache.set(partInstance._id, partInstance)
+			res.push(convertPartInstanceToBlueprints(partInstance))
+		}
+
+		return res
 	}
 
 	async getPieceInstances(...partInstanceIds: string[]): Promise<Array<IBlueprintPieceInstance<unknown>>> {
@@ -857,18 +880,18 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 			partInstanceId: { $in: protectStringArray(partInstanceIds) },
 		})
 
-		return unprotectPieceInstanceArray(pieceInstances)
+		return pieceInstances.map(convertPieceInstanceToBlueprints)
 	}
 
 	async getSegment(segmentId: string): Promise<Readonly<IBlueprintSegmentDB<unknown>> | undefined> {
 		if (!segmentId) return undefined
 
-		return unprotectObject(
-			await this.context.directCollections.Segments.findOne({
-				_id: protectString(segmentId),
-				rundownId: this._rundown._id,
-			})
-		)
+		const segment = await this.context.directCollections.Segments.findOne({
+			_id: protectString(segmentId),
+			rundownId: this._rundown._id,
+		})
+
+		return segment && convertSegmentToBlueprints(segment)
 	}
 }
 
