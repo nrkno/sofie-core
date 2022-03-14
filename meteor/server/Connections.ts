@@ -50,12 +50,12 @@ Meteor.onConnection((conn: Meteor.Connection) => {
 	})
 })
 
-let logTimeout: NodeJS.Timeout | undefined = undefined
+let logTimeout: number | undefined = undefined
 function traceConnections() {
 	if (logTimeout) {
 		clearTimeout(logTimeout)
 	}
-	logTimeout = setTimeout(() => {
+	logTimeout = Meteor.setTimeout(() => {
 		logTimeout = undefined
 		logger.debug(`Connection count: ${connections.size}`)
 
