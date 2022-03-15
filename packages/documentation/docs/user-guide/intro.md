@@ -23,7 +23,7 @@ Tip: The different web views \(such as the host view and the prompter\) can easi
 
 ### Modular Device Control
 
-Sofie controls playout devices \(such as vision and audio mixers, graphics and video playback\) via the Playout Gateway, using the [timeline](dictionary#timeline).  
+Sofie controls playout devices \(such as vision and audio mixers, graphics and video playback\) via the Playout Gateway, using the [Timeline](concepts-and-architecture#timeline).  
 The Playout Gateway controls the devices and keeps track of their state and statuses, and lets the user know via the GUI if something's wrong that can affect the show.
 
 ### _State-based Playout_
