@@ -207,6 +207,7 @@ export function actionToAdLibPieceUi(
 		nextPieceTags: action.display.nextPieceTags,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
 		expectedPackages: action.expectedPackages,
+		uniquenessId: action.uniquenessId,
 	})
 }
 
@@ -388,14 +389,14 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							bucketId: this.props.bucket._id,
 							studioId: this.props.playlist.studioId,
 							showStyleVariantId: {
-								$in: showStyleVariants,
+								$in: [null, ...showStyleVariants], // null = valid for all variants
 							},
 						})
 						this.subscribe(PubSub.bucketAdLibActions, {
 							bucketId: this.props.bucket._id,
 							studioId: this.props.playlist.studioId,
 							showStyleVariantId: {
-								$in: showStyleVariants,
+								$in: [null, ...showStyleVariants], // null = valid for all variants
 							},
 						})
 						this.subscribe(PubSub.showStyleBases, {
