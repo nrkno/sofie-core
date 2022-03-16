@@ -122,7 +122,9 @@ export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleCont
 export interface IGetRundownContext extends IShowStyleUserContext {
 	/** Returns a list of the Playlists in the studio */
 	getPlaylists: () => Promise<Readonly<IBlueprintRundownPlaylist[]>>
+	/** Returns the Playlist in which the Rundown currently is in. If it's a new Rundown, this will return undefined. */
 	getCurrentPlaylist: () => Promise<Readonly<IBlueprintRundownPlaylist> | undefined>
+	/** Returns a randomized string, intended to be used as ids. */
 	getRandomId: () => string
 }
 
