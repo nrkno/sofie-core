@@ -13,6 +13,8 @@ module.exports = {
 	organizationName: 'nrkno',
 	projectName: 'sofie-core',
 	themeConfig: {
+		hideableSidebar: true,
+		autoCollapseSidebarCategories: true,
 		navbar: {
 			title: 'Sofie TV Automation',
 			logo: {

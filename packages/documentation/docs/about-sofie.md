@@ -1,5 +1,8 @@
 ---
 title: About Sofie
+hide_table_of_contents: true
+sidebar_label: About Sofie
+sidebar_position: 1
 ---
 
 # NRK Sofie TV Automation System
