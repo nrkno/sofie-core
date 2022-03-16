@@ -306,7 +306,7 @@ export class GetRundownContext extends ShowStyleUserContext implements IGetRundo
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		watchedPackages: WatchedPackagesHelper,
 		private getPlaylistsInStudio: () => Promise<DBRundownPlaylist[]>,
-		private getRundownsInStudio: () => Promise<Rundown[]>,
+		private getRundownsInStudio: () => Promise<Pick<Rundown, '_id' | 'playlistId'>[]>,
 		private getExistingRundown: () => Promise<ReadonlyObjectDeep<Rundown> | undefined>
 	) {
 		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, watchedPackages)
@@ -339,7 +339,10 @@ export class GetRundownContext extends ShowStyleUserContext implements IGetRundo
 	public getRandomId(): string {
 		return getRandomString()
 	}
-	private stripPlaylist(playlist: DBRundownPlaylist, rundownsInStudio: Rundown[]): IBlueprintRundownPlaylist {
+	private stripPlaylist(
+		playlist: DBRundownPlaylist,
+		rundownsInStudio: Pick<Rundown, '_id' | 'playlistId'>[]
+	): IBlueprintRundownPlaylist {
 		return {
 			name: playlist.name,
 

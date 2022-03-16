@@ -567,9 +567,17 @@ export async function getRundownFromIngestData(
 			})
 		},
 		async () => {
-			return context.directCollections.Rundowns.findFetch({
-				studioId: context.studioId,
-			})
+			return context.directCollections.Rundowns.findFetch(
+				{
+					studioId: context.studioId,
+				},
+				{
+					projection: {
+						_id: 1,
+						playlistId: 1,
+					},
+				}
+			) as Promise<Pick<DBRundown, '_id' | 'playlistId'>[]>
 		},
 		async () => {
 			return cache.Rundown.doc
