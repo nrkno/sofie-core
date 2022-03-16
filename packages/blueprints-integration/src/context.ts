@@ -238,6 +238,7 @@ export interface IEventContext {
 export interface ITimelineEventContext extends IEventContext, IRundownContext {
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
+	readonly previousPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
 	/**
 	 * Get the full session id for an ab playback session.
