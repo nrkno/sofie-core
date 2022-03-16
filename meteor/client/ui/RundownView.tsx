@@ -1281,6 +1281,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				isInspectorShelfExpanded = shelfLayout.openByDefault
 			}
 
+			const poisonKey = Meteor.settings.poisonKey
 			this.state = {
 				timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
 				studioMode: getAllowStudio(),
@@ -1291,10 +1292,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				subsReady: false,
 				usedHotkeys: [
 					// Register additional hotkeys or legend entries
-					{
-						key: 'Escape',
+					...(poisonKey ? [{
+						key: poisonKey,
 						label: t('Cancel currently pressed hotkey'),
-					},
+					}] : []),
 					{
 						key: 'F11',
 						label: t('Change to fullscreen mode'),
