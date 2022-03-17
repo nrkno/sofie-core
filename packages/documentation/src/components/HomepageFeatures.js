@@ -1,48 +1,59 @@
 import React from 'react';
+import Link from '@docusaurus/Link';
 import clsx from 'clsx';
 import styles from './HomepageFeatures.module.css';
 
 const FeatureList = [
   {
-    title: 'Easy to Use',
-    Svg: require('../../static/img/undraw_docusaurus_mountain.svg').default,
+    title: 'User Guide',
+    Svg: require('../img/undraw_press_play.svg').default,
+    link: 'docs/user-guide/intro',
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        General documentation describing functionality, installation, and operation of a <em>Sofie</em> system.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    Svg: require('../../static/img/undraw_docusaurus_tree.svg').default,
+    title: 'For Developers',
+    Svg: require('../img/undraw_developer_activity.svg').default,
+    link: 'docs/for-developers/intro',
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Specific documentation regarding development and contribution to the <em>Sofie</em> code base.
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    Svg: require('../../static/img/undraw_docusaurus_react.svg').default,
+    title: 'Releases',
+    Svg: require('../img/undraw_going_up.svg').default,
+    link: 'docs/releases',
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Current, past, and upcoming releases of the <em>Sofie</em> system.
+      </>
+    ),
+  },
+  {
+    title: 'Community',
+    Svg: require('../img/undraw_work_chat.svg').default,
+    link: 'https://join.slack.com/t/sofietv/shared_invite/enQtNTk2Mzc3MTQ1NzAzLTJkZjMyMDg3OGM0YWU3MmU4YzBhZDAyZWI1YmJmNmRiYWQ1OTZjYTkzOTkzMTA2YTE1YjgxMmVkM2U1OGZlNWI',
+    description: (
+      <>
+        Please join the growing <em>Slack</em> to meet the developers and other <em>Sofie</em> users.
       </>
     ),
   },
 ];
 
-function Feature({Svg, title, description}) {
+function Feature({ Svg, title, description, link }) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx('col col--3')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} alt={title} />
+        {Svg ? <Link to={link}><Svg className={styles.featureSvg} alt={title} /></Link> : null}
       </div>
       <div className="text--center padding-horiz--md">
-        <h3>{title}</h3>
+        <h3><Link to={link}>{title}</Link></h3>
         <p>{description}</p>
       </div>
     </div>

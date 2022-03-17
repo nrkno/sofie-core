@@ -6,17 +6,18 @@ description: List of all repositories related to Sofie
 
 ## Main Application
 
-The Sofie TV Automation system consists of the [**Sofie&nbsp;Core**](https://github.com/nrkno/sofie-core) which is the core application that serves the web GUI and handles the core logic.
+[**Sofie&nbsp;Core**](https://github.com/nrkno/sofie-core) is the main application that serves the web GUI and handles the core logic.
 
 ## Gateways
 
 Together with the _Sofie&nbsp;Core_ there are several _gateways_ which are separate applications, but which connect to _Sofie&nbsp;Core_ and are managed from within the Core's web UI.
 
-* [**Input Gateway**](https://github.com/nrkno/sofie-input-gateway) 
-* [**MOS Gateway**](https://github.com/nrkno/sofie-mos-gateway) Connects _Sofie_ to a newsroom system \(NRCS\) and ingests rundowns via the [MOS protocol](http://mosprotocol.com/).
-* [**Spreadsheet Gateway**](https://github.com/SuperFlyTV/spreadsheet-gateway) Connects _Sofie_ to a _Google Drive_ folder and ingests rundowns from _Google Sheets_.
-* [**Playout Gateway**](https://github.com/nrkno/sofie-playout-gateway) Handles the playout from _Sofie_. Connects to and controls a multitude of devices, such as vision mixers, graphics, light controllers, audio mixers etc..
+* [**Playout Gateway**](https://github.com/nrkno/sofie-core/tree/master/packages/playout-gateway) Handles the playout from _Sofie_. Connects to and controls a multitude of devices, such as vision mixers, graphics, light controllers, audio mixers etc..
+* [**MOS Gateway**](https://github.com/nrkno/sofie-core/tree/master/packages/mos-gateway) Connects _Sofie_ to a newsroom system \(NRCS\) and ingests rundowns via the [MOS protocol](http://mosprotocol.com/).
+* [**iNEWS Gateway**](https://github.com/tv2/inews-ftp-gateway) Connects _Sofie_ to an Avid iNEWS newsroom system.
 * [**Quantel Gateway**](https://github.com/nrkno/sofie-quantel-gateway) CORBA to REST gateway for _Quantel/ISA_ playback. 
+* [**Spreadsheet Gateway**](https://github.com/SuperFlyTV/spreadsheet-gateway) Connects _Sofie_ to a _Google Drive_ folder and ingests rundowns from _Google Sheets_.
+* [**Input Gateway**](https://github.com/nrkno/sofie-input-gateway) 
 
 
 ## Libraries

@@ -4,7 +4,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
 	title: 'Sofie TV Automation Documentation',
-	tagline: '',
+	tagline: 'Sofie is a web-based, open\xa0source TV\xa0automation system for studios and live shows, used in daily live\xa0TV\xa0news productions by the Norwegian public\xa0service broadcaster NRK since September\xa02018.',
 	url: 'https://nrkno.github.io',
 	baseUrl: '/sofie-core/',
 	onBrokenLinks: 'warn',
@@ -38,7 +38,7 @@ module.exports = {
 					docsPluginId: 'default',
 				},
 				{
-					href: 'https://github.com/nrkno/sofie-core',
+					href: 'https://github.com/nrkno/Sofie-TV-automation/',
 					label: 'GitHub',
 					position: 'right',
 				},
@@ -120,25 +120,10 @@ module.exports = {
 		],
 	],
 	plugins: [
-		// [
-		// 	'@docusaurus/plugin-content-docs',
-		// 	{
-		// 		id: 'releases',
-		// 		path: 'releases',
-		// 		routeBasePath: 'releases',
-		// 		sidebarPath: require.resolve('./sidebarsReleases.js'),
-		// 		// ... other options
-		// 	},
-		// ],
-		// [
-		//   '@docusaurus/plugin-content-docs',
-		//   {
-		//     id: 'legacy',
-		//     path: 'legacy',
-		//     routeBasePath: 'legacy',
-		//     sidebarPath: require.resolve('./sidebars.js'),
-		//     // ... other options
-		//   },
-		// ],
+		[require.resolve('docusaurus-lunr-search'), {
+			excludeRoutes: [
+				'docs/[0-9].*.[0-9]/**/*', // exclude changelogs from indexing
+			]
+		}],
 	],
 }
