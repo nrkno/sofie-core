@@ -21,6 +21,8 @@ import {
 	NoteSeverity,
 	IBlueprintSegmentRundown,
 	IRundownUserContext,
+	IGetRundownContext,
+	IBlueprintRundownPlaylist,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
@@ -51,7 +53,7 @@ import {
 	getRandomString,
 	omit,
 } from '@sofie-automation/corelib/dist/lib'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -62,6 +64,7 @@ import { WatchedPackagesHelper } from './watchedPackages'
 import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { JobContext } from '../../jobs'
 import { MongoQuery } from '../../db'
+import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints, convertSegmentToBlueprints } from './lib'
 
 export interface ContextInfo {
@@ -291,6 +294,75 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 
 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
 		return this.watchedPackages.getPackageInfo(packageId)
+	}
+}
+export class GetRundownContext extends ShowStyleUserContext implements IGetRundownContext {
+	private cachedPlaylistsInStudio: Promise<Readonly<IBlueprintRundownPlaylist>[]> | undefined
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: ReadonlyDeep<DBStudio>,
+		studioBlueprintConfig: ProcessedStudioConfig,
+		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleBlueprintConfig: ProcessedShowStyleConfig,
+		watchedPackages: WatchedPackagesHelper,
+		private getPlaylistsInStudio: () => Promise<DBRundownPlaylist[]>,
+		private getRundownsInStudio: () => Promise<Pick<Rundown, '_id' | 'playlistId'>[]>,
+		private getExistingRundown: () => Promise<ReadonlyObjectDeep<Rundown> | undefined>
+	) {
+		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, watchedPackages)
+	}
+	private async _getPlaylistsInStudio() {
+		if (!this.cachedPlaylistsInStudio) {
+			this.cachedPlaylistsInStudio = Promise.resolve().then(async () => {
+				const [rundownsInStudio, playlistsInStudio] = await Promise.all([
+					this.getRundownsInStudio(),
+					this.getPlaylistsInStudio(),
+				])
+
+				return playlistsInStudio.map((playlist) => this.stripPlaylist(playlist, rundownsInStudio))
+			})
+		}
+		return this.cachedPlaylistsInStudio
+	}
+	async getPlaylists(): Promise<Readonly<IBlueprintRundownPlaylist[]>> {
+		return this._getPlaylistsInStudio()
+	}
+	async getCurrentPlaylist(): Promise<Readonly<IBlueprintRundownPlaylist | undefined>> {
+		const existingRundown = await this.getExistingRundown()
+		if (!existingRundown) return undefined
+
+		const rundownPlaylistId = unprotectString(existingRundown.playlistId)
+
+		const playlists = await this._getPlaylistsInStudio()
+		return playlists.find((playlist) => playlist._id === rundownPlaylistId)
+	}
+	public getRandomId(): string {
+		return getRandomString()
+	}
+	private stripPlaylist(
+		playlist: DBRundownPlaylist,
+		rundownsInStudio: Pick<Rundown, '_id' | 'playlistId'>[]
+	): IBlueprintRundownPlaylist {
+		return {
+			name: playlist.name,
+
+			timing: playlist.timing,
+			outOfOrderTiming: playlist.outOfOrderTiming,
+			loop: playlist.loop,
+			timeOfDayCountdowns: playlist.timeOfDayCountdowns,
+
+			metaData: playlist.metaData,
+
+			_id: unprotectString(playlist._id),
+			externalId: playlist.externalId,
+			created: playlist.created,
+			modified: playlist.modified,
+			isActive: !!playlist.activationId,
+			rehearsal: playlist.rehearsal ?? false,
+			startedPlayback: playlist.startedPlayback,
+
+			rundownCount: rundownsInStudio.filter((rundown) => rundown.playlistId === playlist._id).length,
+		}
 	}
 }
 

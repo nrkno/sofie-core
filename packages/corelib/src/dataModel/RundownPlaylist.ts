@@ -62,6 +62,8 @@ export interface DBRundownPlaylist {
 	outOfOrderTiming?: boolean
 	/** Should time-of-day clocks be used instead of countdowns by default */
 	timeOfDayCountdowns?: boolean
+	/** Arbitraty data used by rundowns */
+	metaData?: unknown
 
 	/** the id of the Live Part - if empty, no part in this rundown is live */
 	currentPartInstanceId: PartInstanceId | null

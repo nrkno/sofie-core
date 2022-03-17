@@ -216,6 +216,7 @@ export function produceRundownPlaylistInfoFromRundown(
 
 			outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
 			timeOfDayCountdowns: playlistInfo.playlist.timeOfDayCountdowns,
+			metaData: playlistInfo.playlist.metaData,
 
 			modified: getCurrentTime(),
 		}
