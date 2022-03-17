@@ -127,6 +127,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 	let bucketItemUniquenessId: string | undefined = undefined
 	let onlyGenerateOneItem = false
 
+	const ps: Promise<any>[] = []
 	let isFirstShowStyleVariant = true
 	for (const showStyleVariant of showStyleVariants) {
 		const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
@@ -226,12 +227,11 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 				)
 				if (!bucketItemUniquenessId) bucketItemUniquenessId = action.uniquenessId
 
-				await context.directCollections.BucketAdLibActions.replace(action)
-
-				await Promise.all([
+				ps.push(
+					context.directCollections.BucketAdLibActions.replace(action),
 					updateExpectedMediaItemForBucketAdLibAction(context, action),
-					updateExpectedPackagesForBucketAdLibAction(context, action),
-				])
+					updateExpectedPackagesForBucketAdLibAction(context, action)
+				)
 
 				// Preserve this one
 				actionIdsToRemove = actionIdsToRemove.filter((id) => id !== action._id)
@@ -248,12 +248,11 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 				)
 				if (!bucketItemUniquenessId) bucketItemUniquenessId = adlib.uniquenessId
 
-				await context.directCollections.BucketAdLibPieces.replace(adlib)
-
-				await Promise.all([
+				ps.push(
+					context.directCollections.BucketAdLibPieces.replace(adlib),
 					updateExpectedMediaItemForBucketAdLibPiece(context, adlib),
-					updateExpectedPackagesForBucketAdLibPiece(context, adlib),
-				])
+					updateExpectedPackagesForBucketAdLibPiece(context, adlib)
+				)
 
 				// Preserve this one
 				adlibIdsToRemove = adlibIdsToRemove.filter((id) => id !== adlib._id)
@@ -268,18 +267,19 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 	}
 
 	// Cleanup old items:
-	await Promise.all([
+	ps.push(
 		cleanUpExpectedMediaItemForBucketAdLibPiece(context, adlibIdsToRemove),
 		cleanUpExpectedMediaItemForBucketAdLibActions(context, actionIdsToRemove),
 		cleanUpExpectedPackagesForBucketAdLibs(context, adlibIdsToRemove),
 		cleanUpExpectedPackagesForBucketAdLibsActions(context, actionIdsToRemove),
 		adlibIdsToRemove.length
 			? context.directCollections.BucketAdLibPieces.remove({ _id: { $in: adlibIdsToRemove } })
-			: undefined,
+			: Promise.resolve(),
 		actionIdsToRemove.length
 			? context.directCollections.BucketAdLibActions.remove({ _id: { $in: actionIdsToRemove } })
-			: undefined,
-	])
+			: Promise.resolve()
+	)
+	await Promise.all(ps)
 }
 
 export async function handleBucketActionRegenerateExpectedPackages(
