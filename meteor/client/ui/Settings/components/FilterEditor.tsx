@@ -35,6 +35,7 @@ import {
 	RundownLayoutTimeOfDay,
 	DashboardPanelUnit,
 	DashboardPanelBase,
+	RundownLayoutMiniRundown,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -1751,6 +1752,34 @@ export default withTranslation()(
 			)
 		}
 
+		renderMiniRundown(
+			item: RundownLayoutBase,
+			tab: RundownLayoutMiniRundown,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+				</React.Fragment>
+			)
+		}
+
 		render() {
 			const { t } = this.props
 
@@ -1946,6 +1975,14 @@ export default withTranslation()(
 						  )
 						: RundownLayoutsAPI.isSystemStatus(this.props.filter)
 						? this.renderSystemStatus(
+								this.props.item,
+								this.props.filter,
+								this.props.index,
+								isRundownLayout,
+								isDashboardLayout
+						  )
+						: RundownLayoutsAPI.isMiniRundown(this.props.filter)
+						? this.renderMiniRundown(
 								this.props.item,
 								this.props.filter,
 								this.props.index,
