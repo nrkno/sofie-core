@@ -77,7 +77,7 @@ export function PartTimingsDemo() {
 			</div>
 
 			{/* Controls */}
-			<table>
+			<table className="margin-top--md">
 				<InputRow label="Piece B1 Preroll Duration" max={1000} value={prerollB1} setValue={setPrerollB1} />
 				<InputRow label="Piece B2 Preroll Duration" max={1000} value={prerollB2} setValue={setPrerollB2} />
 				<InputRow
