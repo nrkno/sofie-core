@@ -182,5 +182,8 @@
 		"scripts": {
 			"postbump": "yarn libs:syncVersionsAndChangelogs"
 		}
+	},
+	"resolutions": {
+		"url-parse": "^1.5.9"
 	}
 }
