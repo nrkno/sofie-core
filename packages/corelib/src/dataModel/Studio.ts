@@ -5,6 +5,7 @@ import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId } from './Ids'
 export interface MappingsExt {
 	[layerName: string]: MappingExt
 }
+// TODOSYNC: make deviceId be a known ProtectedString type
 export type MappingExt = ProtectedStringProperties<BlueprintMapping, 'deviceId'>
 
 export interface IStudioSettings {
@@ -115,6 +116,15 @@ export enum StudioRouteBehavior {
 	TOGGLE = 1,
 	ACTIVATE_ONLY = 2,
 }
+
+export enum StudioRouteType {
+	/** Default */
+	REROUTE = 0,
+	// TODOSYNC: What is the purpose of this?
+	/** Replace all properties with a new mapping */
+	REMAP = 1,
+}
+
 export interface RouteMapping extends ResultingMappingRoute {
 	/** Which original layer to route. If false, a "new" layer will be inserted during routing */
 	mappedLayer: string | undefined
@@ -130,5 +140,6 @@ export interface ResultingMappingRoutes {
 export interface ResultingMappingRoute {
 	outputMappedLayer: string
 	deviceType?: TSR.DeviceType
-	remapping?: Partial<MappingExt>
+	remapping?: Partial<BlueprintMapping>
+	routeType: StudioRouteType
 }

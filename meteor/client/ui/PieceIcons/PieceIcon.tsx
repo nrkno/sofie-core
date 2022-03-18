@@ -34,7 +34,7 @@ export const PieceIcon = (props: {
 	pieceInstance: PieceInstance | undefined
 	sourceLayer: ISourceLayer | undefined
 	renderUnknown?: boolean
-}) => {
+}): JSX.Element | null => {
 	const piece = props.pieceInstance ? props.pieceInstance.piece : undefined
 	if (props.sourceLayer && piece) {
 		switch (props.sourceLayer.type) {

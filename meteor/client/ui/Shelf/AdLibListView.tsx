@@ -3,7 +3,7 @@ import classNames from 'classnames'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { RundownUtils } from '../../lib/rundown'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
-import { AdLibPieceUi, AdlibSegmentUi } from './AdLibPanel'
+import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { RundownLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
@@ -40,20 +40,20 @@ interface IListViewPropsHeader {
 export function matchFilter(
 	item: AdLibPieceUi,
 	showStyleBase: ShowStyleBase,
-	uiSegments: Array<AdlibSegmentUi>,
+	liveSegment?: AdlibSegmentUi,
 	filter?: RundownLayoutFilterBase,
 	searchFilter?: string,
 	uniquenessIds?: Set<string>
 ) {
 	if (!searchFilter && !filter) return true
-	const liveSegment = uiSegments.find((i) => i.isLive === true)
 	const uppercaseLabel = item.name.toUpperCase()
 	if (filter) {
 		// Filter currentSegment only
 		if (
 			filter.currentSegment === true &&
 			item.partId &&
-			((liveSegment && liveSegment.parts.find((i) => item.partId === i.part._id) === undefined) || !liveSegment)
+			((liveSegment && liveSegment._id !== item.segmentId) || !liveSegment)
+			// TODOSYNC: NRK had checked liveSegment.parts.find((i) => item.partId === i.part._id) === undefined)
 		) {
 			return false
 		}
@@ -151,6 +151,8 @@ export function AdLibListView(props: IListViewPropsHeader) {
 		})
 	}, [props.selectedSegment, table.current])
 
+	const liveSegment = useMemo(() => props.uiSegments.find((i) => i.isLive === true), [props.uiSegments])
+
 	const { rundownAdLibs, rundownAdLibsUniqueIds } = useMemo(() => {
 		const uniquenessIds0 = new Set<string>()
 		return {
@@ -158,7 +160,7 @@ export function AdLibListView(props: IListViewPropsHeader) {
 				? props.rundownAdLibs.filter(
 						(item) =>
 							!item.isHidden &&
-							matchFilter(item, props.showStyleBase, props.uiSegments, props.filter, props.searchFilter, uniquenessIds0)
+							matchFilter(item, props.showStyleBase, liveSegment, props.filter, props.searchFilter, uniquenessIds0)
 				  )
 				: ([] as AdLibPieceUi[]),
 			rundownAdLibsUniqueIds: uniquenessIds0,
@@ -178,7 +180,7 @@ export function AdLibListView(props: IListViewPropsHeader) {
 
 		filteredSegments.forEach((segment) => {
 			segmentMap[unprotectString(segment._id)] = segment.pieces.filter((item) =>
-				matchFilter(item, props.showStyleBase, filteredSegments, props.filter, props.searchFilter, uniquenessIds1)
+				matchFilter(item, props.showStyleBase, liveSegment, props.filter, props.searchFilter, uniquenessIds1)
 			)
 		})
 

@@ -51,6 +51,7 @@ export function PieceCountdownContainer(props: IPropsHeader): JSX.Element | null
 	const piece = pieceInstance ? pieceInstance.piece : undefined
 	const sourceDuration = (piece?.content as VTContent)?.sourceDuration
 	const seek = (piece?.content as VTContent)?.seek || 0
+	const postrollDuration = (piece?.content as VTContent)?.postrollDuration || 0
 	const pieceEnable = typeof piece?.enable.start !== 'number' ? 0 : piece?.enable.start
 	if (
 		props.partStartedPlayback &&
@@ -62,7 +63,9 @@ export function PieceCountdownContainer(props: IPropsHeader): JSX.Element | null
 			(!props.partAutoNext &&
 				Math.abs(pieceEnable + (sourceDuration - seek) - (props.partExpectedDuration || 0)) > 500))
 	) {
-		const freezeCountdown = props.partStartedPlayback + pieceEnable + (sourceDuration - seek) - getCurrentTime()
+		const freezeCountdown =
+			props.partStartedPlayback + pieceEnable + (sourceDuration - seek) + postrollDuration - getCurrentTime()
+
 		if (freezeCountdown > 0) {
 			return (
 				<>

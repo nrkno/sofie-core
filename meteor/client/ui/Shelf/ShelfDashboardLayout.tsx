@@ -13,7 +13,8 @@ import { PieceCountdownPanel } from './PieceCountdownPanel'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from './AdLibPanel'
+import { AdLibPieceUi } from '../../lib/shelf'
+import { MiniRundownPanel } from './MiniRundownPanel'
 import { NextInfoPanel } from './NextInfoPanel'
 import { PlaylistStartTimerPanel } from './PlaylistStartTimerPanel'
 import { EndWordsPanel } from './EndWordsPanel'
@@ -229,6 +230,26 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							)
 						} else if (RundownLayoutsAPI.isColoredBox(panel)) {
 							return <ColoredBoxPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+							// } else if (RundownLayoutsAPI.isKeyboardMap(panel)) {
+							// 	return (
+							// 		<KeyboardPreviewPanel
+							// 			key={panel._id}
+							// 			visible={true}
+							// 			showStyleBase={props.showStyleBase}
+							// 			layout={rundownLayout}
+							// 			panel={panel}
+							// 		/>
+							// 	)
+						} else if (RundownLayoutsAPI.isMiniRundown(panel)) {
+							return (
+								<MiniRundownPanel
+									key={panel._id}
+									panel={panel}
+									layout={rundownLayout}
+									playlist={props.playlist}
+									visible={true}
+								/>
+							)
 						}
 					})}
 			{rundownLayout.actionButtons && (

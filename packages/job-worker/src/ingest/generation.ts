@@ -282,6 +282,57 @@ export async function calculateSegmentsFromIngestData(
 
 				part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(part, processedPieces)
 			})
+
+			// When we have orphaned segments, try to keep the order correct when adding and removing other segments
+			const orphanedDeletedSegments = cache.Segments.findFetch({
+				orphaned: SegmentOrphanedReason.DELETED,
+				rundownId: newSegment.rundownId,
+			})
+			if (orphanedDeletedSegments.length) {
+				const allSegmentsByRank = cache.Segments.findFetch(
+					{ rundownId: newSegment.rundownId },
+					{ sort: { _rank: -1 } }
+				)
+				// Rank padding
+				const rankPad = 0.0001
+				for (const orphanedSegment of orphanedDeletedSegments) {
+					const removedInd = allSegmentsByRank.findIndex((s) => s._id === orphanedSegment._id)
+					let newRank = Number.MIN_SAFE_INTEGER
+					const previousSegment = allSegmentsByRank[removedInd + 1]
+					const nextSegment = allSegmentsByRank[removedInd - 1]
+					const previousPreviousSegment = allSegmentsByRank[removedInd + 2]
+
+					if (previousSegment) {
+						newRank = previousSegment._rank + rankPad
+						if (previousSegment._id === segmentId) {
+							if (previousSegment._rank > newSegment._rank) {
+								// Moved previous segment up: follow it
+								newRank = newSegment._rank + rankPad
+							} else if (previousSegment._rank < newSegment._rank && previousPreviousSegment) {
+								// Moved previous segment down: stay behind more previous
+								newRank = previousPreviousSegment._rank + rankPad
+							}
+						} else if (
+							nextSegment &&
+							nextSegment._id === segmentId &&
+							nextSegment._rank > newSegment._rank
+						) {
+							// Next segment was moved uo
+							if (previousPreviousSegment) {
+								if (previousPreviousSegment._rank < newSegment._rank) {
+									// Swapped segments directly before and after
+									// Will always result in both going below the unsynced
+									// Will also affect multiple segents moved directly above the previous
+									newRank = previousPreviousSegment._rank + rankPad
+								}
+							} else {
+								newRank = Number.MIN_SAFE_INTEGER
+							}
+						}
+					}
+					cache.Segments.update({ _id: orphanedSegment._id }, { $set: { _rank: newRank } })
+				}
+			}
 		}
 
 		span?.end()
@@ -501,6 +552,7 @@ export async function updateRundownFromIngestData(
 	}
 
 	const { dbRundownData, rundownRes } = rundownData
+
 	// Save rundown and baseline
 	const dbRundown = await saveChangesForRundown(context, cache, dbRundownData, rundownRes, showStyle)
 

@@ -22,6 +22,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	isLastInSegment,
 	totalSegmentDuration,
 	parentTimeScale,
+	showDurationSourceLayers,
 }: {
 	t: TFunction
 	showMiniInspector: boolean
@@ -40,6 +41,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	isLastInSegment: boolean
 	totalSegmentDuration: number
 	parentTimeScale: number
+	showDurationSourceLayers?: Set<string>
 }) => {
 	const [miniInspectorEl, setMiniInnspectorEl] = useState<HTMLDivElement | null>(null)
 	const [containOffset, setContainOffset] = useState(0)
@@ -94,6 +96,8 @@ export const SegmentTimelinePartHoverPreview = ({
 							isAfterLastValidInSegmentAndItsLive={false}
 							part={part}
 							isPreview={true}
+							isBudgetGap={false}
+							showDurationSourceLayers={showDurationSourceLayers}
 						/>
 					)
 				})}
@@ -120,6 +124,8 @@ export const SegmentTimelinePartHoverPreview = ({
 						part={followingPart}
 						isPreview={true}
 						cropDuration={followingPartPreviewDuration}
+						isBudgetGap={false}
+						showDurationSourceLayers={showDurationSourceLayers}
 					/>
 				)}
 			</div>

@@ -82,6 +82,11 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 			hint: 'Time between retries for media that could not be loaded on first try. Set to -1 to disable.',
 			type: ConfigManifestEntryType.INT,
 		},
+		{
+			id: 'options.retryInterval',
+			name: 'Media retry interval (ms), -1 disables, 0 default',
+			type: ConfigManifestEntryType.INT,
+		},
 	],
 	[TSRDeviceType.ATEM]: [
 		...PLAYOUT_SUBDEVICE_COMMON,
@@ -462,6 +467,8 @@ type NoMappingSettingsDeviceTypes =
 	| TSRDeviceType.VIZMSE
 	| TSRDeviceType.SHOTOKU
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 type ImplementedMappingsManifest = Pick<MappingsManifest, Exclude<TSRDeviceType, NoMappingSettingsDeviceTypes>>
 
 const MAPPING_MANIFEST: ImplementedMappingsManifest = {

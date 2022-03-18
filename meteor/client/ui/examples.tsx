@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import * as React from 'react'
-import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
+import {
+	TimingDataResolution,
+	TimingTickResolution,
+	withTiming,
+	WithTiming,
+} from './RundownView/RundownTiming/withTiming'
 import { withTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Meteor } from 'meteor/meteor'
@@ -186,7 +191,8 @@ interface WithTimingComponentState {
 	myState0: string
 }
 const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingComponentState>({
-	isHighResolution: false,
+	dataResolution: TimingDataResolution.Synced,
+	tickResolution: TimingTickResolution.Synced,
 })(
 	class WithTimingComponent extends React.Component<WithTiming<WithTimingComponentProps>, WithTimingComponentState> {
 		_refreshTimer: number | undefined

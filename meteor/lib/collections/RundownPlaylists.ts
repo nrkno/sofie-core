@@ -3,16 +3,16 @@ import { Mongo } from 'meteor/mongo'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
 import { normalizeArrayFunc, unprotectString } from '../lib'
-import { Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
-import { Segments, Segment, DBSegment } from './Segments'
-import { Parts, Part, DBPart } from './Parts'
 import {
 	sortPartsInSegments,
 	sortPartsInSortedSegments,
 	sortSegmentsInRundowns,
 } from '@sofie-automation/corelib/dist/playout/playlist'
-import { PartInstance, PartInstances } from './PartInstances'
+import { Rundowns, Rundown, DBRundown } from './Rundowns'
+import { Segments, Segment, DBSegment } from './Segments'
+import { Parts, Part, DBPart } from './Parts'
+import { PartInstance, PartInstances, SegmentPlayoutId } from './PartInstances'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ReadonlyDeep } from 'type-fest'
@@ -337,7 +337,10 @@ export class RundownPlaylistCollectionUtil {
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
 
-	static _sortSegments<TSegment extends Pick<Segment, '_id' | 'rundownId' | '_rank'>>(
+	static getPartInstancesForSegmentPlayout(rundownId: RundownId, segmentPlayoutId: SegmentPlayoutId) {
+		return PartInstances.find({ rundownId, segmentPlayoutId }, { sort: { takeCount: 1 } }).fetch()
+	}
+	static _sortSegments<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(
 		segments: Array<TSegment>,
 		rundowns: Array<ReadonlyDeep<DBRundown>>
 	) {

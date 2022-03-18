@@ -46,12 +46,12 @@ export function AfterBroadcastForm(props: IProps) {
 			})
 		}
 
-		if (answers.q0 !== 'nothing') {
+		if (answers.q0 !== 'nothing' || answers.q1.trim() !== '') {
 			doUserAction(
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e) => MeteorCall.userAction.storeRundownSnapshot(e, props.playlist._id, 'Evaluation form'),
+				(e) => MeteorCall.userAction.storeRundownSnapshot(e, props.playlist._id, 'Evaluation form', false),
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
 						saveEvaluation(snapshotId)

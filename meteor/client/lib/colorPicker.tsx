@@ -22,6 +22,13 @@ export const defaultColorPickerPalette = [
 	'#e82c2c',
 	'#ecf0f1',
 	'#95a5a6',
+	'#ac29a5',
+	'#00a97f',
+	'#005919',
+	'#af4900',
+	'#ca9d00',
+	'#370020',
+	'#1769ff',
 ]
 
 interface IProps {

@@ -86,6 +86,7 @@ interface IProps {
 	lastValidPartIndex: number | undefined
 	budgetDuration?: number
 	showCountdownToSegment: boolean
+	showDurationSourceLayers?: Set<string>
 	fixedSegmentDuration: boolean | undefined
 }
 interface IStateHeader {
@@ -122,11 +123,11 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 
 	componentDidMount() {
 		this.checkTimingChange()
-		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
+		window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}
 
 	componentWillUnmount() {
-		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
+		window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}
 
 	onTimeupdate = () => {
@@ -720,6 +721,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							isLastSegment={this.props.isLastSegment}
 							isLastInSegment={false}
 							timelineWidth={this.state.timelineWidth}
+							showDurationSourceLayers={this.props.showDurationSourceLayers}
 						/>
 					)}
 					<SegmentTimelinePart
@@ -750,7 +752,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							previousPartIsLive &&
 							!!this.props.playlist.nextPartInstanceId
 						}
+						showDurationSourceLayers={this.props.showDurationSourceLayers}
 						part={part}
+						isBudgetGap={false}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
@@ -768,6 +772,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							isLastSegment={this.props.isLastSegment}
 							isLastInSegment={true}
 							timelineWidth={this.state.timelineWidth}
+							showDurationSourceLayers={this.props.showDurationSourceLayers}
 						/>
 					)}
 				</React.Fragment>
@@ -805,8 +810,13 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				isAfterLastValidInSegmentAndItsLive={false}
 				isBudgetGap={true}
 				part={BUDGET_GAP_PART}
+				showDurationSourceLayers={this.props.showDurationSourceLayers}
 			/>
 		)
+	}
+
+	renderEndOfSegment() {
+		return <div className="segment-timeline__part segment-timeline__part--end-of-segment"></div>
 	}
 
 	getActiveOutputGroups(): IOutputLayerUi[] {
@@ -1023,25 +1033,24 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							/>
 						)}
 				</div>
+
+				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
 				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
-					{this.props.playlist &&
-						this.props.parts &&
-						this.props.parts.length > 0 &&
-						this.props.showCountdownToSegment && (
-							<PartCountdown
-								partId={countdownToPartId}
-								hideOnZero={!useTimeOfDayCountdowns}
-								useWallClock={useTimeOfDayCountdowns}
-								playlist={this.props.playlist}
-								label={
-									useTimeOfDayCountdowns ? (
-										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-									) : (
-										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-									)
-								}
-							/>
-						)}
+					{this.props.playlist && this.props.parts && this.props.parts.length > 0 && this.props.showCountdownToSegment && (
+						<PartCountdown
+							partId={countdownToPartId}
+							hideOnZero={!useTimeOfDayCountdowns} // TODOSYNC: Discussion on how to solve this. // [TV 2]: hideOnZero `&& false` -> We want the timer to hold on zero, but do not time to time-of-day
+							useWallClock={useTimeOfDayCountdowns}
+							playlist={this.props.playlist}
+							label={
+								useTimeOfDayCountdowns ? (
+									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+								) : (
+									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+								)
+							}
+						/>
+					)}
 					{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}
@@ -1075,6 +1084,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						<ErrorBoundary>
 							{this.renderTimeline()}
 							{this.renderBudgetGapPart()}
+							{this.renderEndOfSegment()}
 						</ErrorBoundary>
 					</div>
 					{this.renderEditorialLine()}

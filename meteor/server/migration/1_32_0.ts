@@ -5,6 +5,7 @@ import { dropDeprecatedDatabases, getDeprecatedDatabases } from './deprecatedDat
 import semver from 'semver'
 import * as _ from 'underscore'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { StudioRouteType, Studios } from '../../lib/collections/Studios'
 
 // Release 32
 export const addSteps = addMigrationSteps('1.32.0', [
@@ -42,6 +43,35 @@ export const addSteps = addMigrationSteps('1.32.0', [
 			if (dbs) {
 				dropDeprecatedDatabases()
 			}
+		},
+	},
+
+	{
+		id: 'Add new routeType property to routeSets where missing',
+		canBeRunAutomatically: true,
+		validate: () => {
+			return (
+				Studios.find({
+					routeSets: { $exists: false },
+				}).count() > 0
+			)
+		},
+		migrate: () => {
+			Studios.find({}).forEach((studio) => {
+				const routeSets = studio.routeSets
+
+				Object.entries(routeSets).forEach(([routeSetId, routeSet]) => {
+					routeSet.routes.forEach((route) => {
+						if (!route.routeType) {
+							route.routeType = StudioRouteType.REROUTE
+						}
+					})
+
+					routeSets[routeSetId] = routeSet
+				})
+
+				Studios.update(studio._id, { $set: { routeSets } })
+			})
 		},
 	},
 ])

@@ -41,6 +41,7 @@ export interface ISourceLayerPropsBase {
 	layerIndex: number
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	isPreview: boolean
+	showDurationSourceLayers?: Set<string>
 }
 interface ISourceLayerProps extends ISourceLayerPropsBase {
 	layer: ISourceLayerUi
@@ -134,6 +135,7 @@ export function SourceLayer(props: ISourceLayerProps) {
 									onFollowLiveLine={props.onFollowLiveLine}
 									layerIndex={props.layerIndex}
 									isPreview={props.isPreview}
+									showDurationSourceLayers={props.showDurationSourceLayers}
 								/>
 							)
 						})

@@ -90,6 +90,7 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	displayDurationGroup: true,
 	displayDuration: true,
 	identifier: true,
+	hackListenToMediaObjectUpdates: true,
 })
 
 /*
@@ -216,6 +217,7 @@ export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 		displayDurationGroup: part.displayDurationGroup,
 		displayDuration: part.displayDuration,
 		identifier: part.identifier,
+		hackListenToMediaObjectUpdates: part.hackListenToMediaObjectUpdates,
 	}
 
 	return obj
@@ -232,6 +234,8 @@ export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLi
 		currentPieceTags: clone(adLib.currentPieceTags),
 		nextPieceTags: clone(adLib.nextPieceTags),
 		uniquenessId: adLib.uniquenessId,
+		invertOnAirState: adLib.invertOnAirState,
+		noHotKey: adLib.noHotKey,
 	}
 
 	return obj
@@ -260,6 +264,7 @@ export function convertSegmentToBlueprints(segment: ReadonlyDeep<DBSegment>): IB
 		isHidden: segment.isHidden,
 		identifier: segment.identifier,
 		displayAs: segment.displayAs,
+		showShelf: segment.showShelf,
 	}
 
 	return obj

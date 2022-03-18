@@ -1,11 +1,13 @@
 import React from 'react'
 import * as _ from 'underscore'
 
-import { NoraContent, GraphicsContent } from '@sofie-automation/blueprints-integration'
+import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integration'
 
 import { NoraFloatingInspector } from './NoraFloatingInspector'
 import { FloatingInspector } from '../FloatingInspector'
+import { Time } from '../../../lib/lib'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { FloatingInspectorTimeInformationRow } from './FloatingInspectorHelpers/FloatingInspectorTimeInformationRow'
 
 interface IProps {
 	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>
@@ -26,6 +28,8 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	floatingInspectorStyle,
 	showMiniInspector,
 	piece,
+	pieceRenderedIn,
+	pieceRenderedDuration,
 	typeClass,
 	displayOn,
 }) => {
@@ -65,6 +69,8 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		) as Array<KeyValue>
 	}
 
+	const changed: Time | undefined = noraContent?.payload?.changed ?? undefined
+
 	const graphicContent = (content as GraphicsContent)?.fileName ? (content as GraphicsContent | undefined) : undefined
 
 	const templateName = noraContent?.payload?.metadata?.templateName ?? piece.name
@@ -98,50 +104,12 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 								<td className="mini-inspector__value">{item.value}</td>
 							</tr>
 						))}
-						{/* Disable the timing information for now, since it's not being used.
-							To be eventually removed, if noone complains -- Jan Starzak, 2021/09/30
-							<tr>
-							<td className="mini-inspector__row--timing"></td>
-							<td className="mini-inspector__row--timing">
-								<span className="mini-inspector__in-point">
-									{RundownUtils.formatTimeToShortTime(pieceRenderedIn || 0)}
-								</span>
-								{!pieceRenderedDuration && !innerPiece.enable.duration ? (
-									(innerPiece.lifespan === PieceLifespan.WithinPart && (
-										<span className="mini-inspector__duration">{t('Until next take')}</span>
-									)) ||
-									(innerPiece.lifespan === PieceLifespan.OutOnSegmentChange && (
-										<span className="mini-inspector__duration">{t('Until next segment')}</span>
-									)) ||
-									(innerPiece.lifespan === PieceLifespan.OutOnSegmentEnd && (
-										<span className="mini-inspector__duration">{t('Until end of segment')}</span>
-									)) ||
-									(innerPiece.lifespan === PieceLifespan.OutOnRundownChange && (
-										<span className="mini-inspector__duration">{t('Until next rundown')}</span>
-									)) ||
-									(innerPiece.lifespan === PieceLifespan.OutOnRundownEnd && (
-										<span className="mini-inspector__duration">{t('Until end of rundown')}</span>
-									)) ||
-									(innerPiece.lifespan === PieceLifespan.OutOnShowStyleEnd && (
-										<span className="mini-inspector__duration">{t('Until end of showstyle')}</span>
-									))
-								) : (
-									<span className="mini-inspector__duration">
-										{RundownUtils.formatTimeToShortTime(
-											pieceRenderedDuration ||
-												(_.isNumber(innerPiece.enable.duration)
-													? parseFloat(innerPiece.enable.duration as any as string)
-													: 0)
-										)}
-									</span>
-								)}
-								{changed && (
-									<span className="mini-inspector__changed">
-										<Moment date={changed} calendar={true} />
-									</span>
-								)}
-							</td>
-						</tr> */}
+						<FloatingInspectorTimeInformationRow
+							piece={piece}
+							pieceRenderedDuration={pieceRenderedDuration}
+							pieceRenderedIn={pieceRenderedIn}
+							changed={changed}
+						/>
 					</tbody>
 				</table>
 			</div>
