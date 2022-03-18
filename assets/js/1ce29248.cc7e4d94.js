@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunksofie_documentation=self.webpackChunksofie_documentation||[]).push([[9726],{8240:function(o){o.exports=JSON.parse('{"allTagsPath":"/sofie-core/blog/tags","slug":"/sofie-core/blog/tags/hola","name":"hola","count":1,"permalink":"/sofie-core/blog/tags/hola"}')}}]);
