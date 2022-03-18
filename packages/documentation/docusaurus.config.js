@@ -13,6 +13,7 @@ module.exports = {
 	organizationName: 'nrkno',
 	projectName: 'sofie-core',
 	themeConfig: {
+		image: 'img/pilot_fredag-05.jpg',
 		hideableSidebar: true,
 		autoCollapseSidebarCategories: true,
 		navbar: {
