@@ -1,4 +1,5 @@
 ---
+title: Installing CasparCG Server for Sofie
 description: Sofie specific fork of CasparCG&nbsp;Server 2.1
 ---
 
