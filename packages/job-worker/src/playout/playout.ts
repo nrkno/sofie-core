@@ -1201,28 +1201,19 @@ export async function executeActionInner(
 
 	if (actionContext.takeAfterExecute) {
 		await callTakeWithCache(context, cache, now)
-		return {
-			queuedPartInstanceId: actionContext.queuedPartInstanceId,
-			taken: true,
-		}
 	} else {
 		if (
 			actionContext.currentPartState !== ActionPartChange.NONE ||
 			actionContext.nextPartState !== ActionPartChange.NONE
 		) {
 			await updateTimeline(context, cache)
-			return {
-				queuedPartInstanceId: actionContext.queuedPartInstanceId,
-			}
-		}
-		if (actionContext.nextPartState !== ActionPartChange.NONE && actionContext.queuedPartInstanceId) {
-			return {
-				queuedPartInstanceId: actionContext.queuedPartInstanceId,
-			}
 		}
 	}
 
-	return {}
+	return {
+		queuedPartInstanceId: actionContext.queuedPartInstanceId,
+		taken: actionContext.takeAfterExecute,
+	}
 }
 /**
  * This exists for the purpose of mocking this call for testing.

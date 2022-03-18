@@ -467,8 +467,6 @@ type NoMappingSettingsDeviceTypes =
 	| TSRDeviceType.VIZMSE
 	| TSRDeviceType.SHOTOKU
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 type ImplementedMappingsManifest = Pick<MappingsManifest, Exclude<TSRDeviceType, NoMappingSettingsDeviceTypes>>
 
 const MAPPING_MANIFEST: ImplementedMappingsManifest = {

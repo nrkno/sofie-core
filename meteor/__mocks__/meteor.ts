@@ -85,7 +85,9 @@ const $ = {
 
 let mockIsClient = false
 export class MeteorMock {
-	static isClient: boolean = mockIsClient
+	static get isClient(): boolean {
+		return mockIsClient
+	}
 	static get isServer() {
 		return !MeteorMock.isClient
 	}

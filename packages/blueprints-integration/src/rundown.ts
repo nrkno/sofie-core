@@ -232,13 +232,13 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	identifier?: string
 
 	/** MediaObjects that when created/updated, should cause the blueprint to be rerun for the Segment of this Part */
-	hackListenToMediaObjectUpdates?: HackPartMediaObjectSubscription[]
+	// hackListenToMediaObjectUpdates?: HackPartMediaObjectSubscription[]
 }
 
-export interface HackPartMediaObjectSubscription {
-	/** The playable reference (CasparCG clip name, quantel GUID, etc) */
-	mediaId: string
-}
+// export interface HackPartMediaObjectSubscription {
+// 	/** The playable reference (CasparCG clip name, quantel GUID, etc) */
+// 	mediaId: string
+// }
 
 /** The Part generated from Blueprint */
 export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatablePart<TMetadata> {

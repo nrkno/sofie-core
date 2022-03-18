@@ -185,7 +185,6 @@ export async function deactivateRundownPlaylistInner(
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
-			nextSegmentId: undefined,
 		},
 		$unset: {
 			activationId: 1,

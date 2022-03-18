@@ -90,7 +90,7 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	displayDurationGroup: true,
 	displayDuration: true,
 	identifier: true,
-	hackListenToMediaObjectUpdates: true,
+	// hackListenToMediaObjectUpdates: true,
 })
 
 /*
@@ -217,7 +217,7 @@ export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 		displayDurationGroup: part.displayDurationGroup,
 		displayDuration: part.displayDuration,
 		identifier: part.identifier,
-		hackListenToMediaObjectUpdates: part.hackListenToMediaObjectUpdates,
+		// hackListenToMediaObjectUpdates: part.hackListenToMediaObjectUpdates,
 	}
 
 	return obj
