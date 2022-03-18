@@ -32,6 +32,7 @@ import _ = require('underscore')
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import {
+	DBSegment,
 	orphanedHiddenSegmentPropertiesToPreserve,
 	SegmentOrphanedReason,
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -336,7 +337,7 @@ export async function CommitIngestOperation(
 				if (orphanHiddenSegmentIds.size) {
 					const preserveSomeProperties = Object.keys(orphanedHiddenSegmentPropertiesToPreserve).length > 0
 					const oldSegments = preserveSomeProperties
-						? normalizeArrayToMap(
+						? normalizeArrayToMap<Partial<DBSegment>, '_id'>(
 								await context.directCollections.Segments.findFetch(
 									{ _id: { $in: [...orphanHiddenSegmentIds] }, rundownId: ingestCache.RundownId },
 									{

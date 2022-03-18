@@ -194,7 +194,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 					},
 					limit: 1,
 				}
-			),
+			) as Promise<Array<Pick<BucketAdLib, '_rank'>>>,
 			context.directCollections.BucketAdLibActions.findFetch(
 				{
 					bucketId: data.bucketId,
@@ -208,7 +208,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 					},
 					limit: 1,
 				}
-			),
+			) as Promise<Array<{ display: Pick<BucketAdLibAction['display'], '_rank'> }>>,
 		])
 		const newRank = Math.max(highestAdlib[0]?._rank ?? 0, highestAction[0]?.display?._rank ?? 0) + 1
 

@@ -472,9 +472,12 @@ export async function innerFindLastScriptedPieceOnLayer(
 		sourceLayerId: { $in: sourceLayerId },
 	}
 
-	const pieces = await context.directCollections.Pieces.findFetch(query, {
-		projection: { _id: 1, startPartId: 1, enable: 1 },
-	})
+	const pieces: Pick<Piece, '_id' | 'startPartId' | 'enable'>[] = await context.directCollections.Pieces.findFetch(
+		query,
+		{
+			projection: { _id: 1, startPartId: 1, enable: 1 },
+		}
+	)
 
 	const part = cache.Parts.findOne(
 		{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },

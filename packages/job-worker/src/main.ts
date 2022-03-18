@@ -117,7 +117,7 @@ async function getStudioIdsToRun(db: MongoDb): Promise<Array<StudioId>> {
 		return ids
 	} else {
 		// Or find the current studios, and run for everything
-		const studios = await db
+		const studios: Pick<DBStudio, '_id'>[] = await db
 			.collection<DBStudio>(CollectionName.Studios)
 			.find({}, { projection: { _id: 1 } })
 			.toArray()
