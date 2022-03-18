@@ -3,8 +3,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
-	title: 'Sofie Automation',
-	tagline: '',
+	title: 'Sofie TV Automation Documentation',
+	tagline: 'Sofie is a web-based, open\xa0source TV\xa0automation system for studios and live shows, used in daily live\xa0TV\xa0news productions by the Norwegian public\xa0service broadcaster NRK since September\xa02018.',
 	url: 'https://nrkno.github.io',
 	baseUrl: '/sofie-core/',
 	onBrokenLinks: 'warn',
@@ -13,6 +13,8 @@ module.exports = {
 	organizationName: 'nrkno',
 	projectName: 'sofie-core',
 	themeConfig: {
+		hideableSidebar: true,
+		autoCollapseSidebarCategories: true,
 		navbar: {
 			title: 'Sofie TV Automation',
 			logo: {
@@ -20,12 +22,9 @@ module.exports = {
 				src: 'img/sofie-logo.svg',
 			},
 			items: [
-				{ to: '/docs/getting-started/intro', label: 'Getting Started', position: 'left' },
-				{ to: '/docs/main/intro', label: 'Docs', position: 'left' },
+				{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-				{ href: 'https://nrkno.github.io/sofie-core/typedoc', label: 'API Docs' }, // external link to typedoc
-				{ to: '/releases', label: 'Releases', position: 'left' },
-				// {to: '/blog', label: 'Blog', position: 'left'},
+				{ to: '/docs/releases', label: 'Releases', position: 'left' },
 
 				{
 					type: 'docsVersionDropdown',
@@ -39,7 +38,7 @@ module.exports = {
 					docsPluginId: 'default',
 				},
 				{
-					href: 'https://github.com/nrkno/sofie-core',
+					href: 'https://github.com/nrkno/Sofie-TV-automation/',
 					label: 'GitHub',
 					position: 'right',
 				},
@@ -49,25 +48,27 @@ module.exports = {
 			style: 'dark',
 			links: [
 				{
-					title: 'Docs',
+					//title: 'Documentation',
 					items: [
-						{ to: '/docs/getting-started/intro', label: 'Getting Started' },
-						{ to: '/docs/main/intro', label: 'Docs' },
-						{ to: '/docs/for-developers/intro', label: 'For Developers' },
-						{ to: '/typedoc', label: 'API Docs' },
-						{ to: '/releases', label: 'Releases' },
+						{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
+						{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
+						{ to: '/docs/releases', label: 'Releases', position: 'left' },
 					],
 				},
 				{
-					title: 'Community',
+					//title: 'Community',
 					items: [
 						{
-							label: 'Slack',
+							label: 'Sofie Slack Community',
 							href: 'https://join.slack.com/t/sofietv/shared_invite/enQtNTk2Mzc3MTQ1NzAzLTJkZjMyMDg3OGM0YWU3MmU4YzBhZDAyZWI1YmJmNmRiYWQ1OTZjYTkzOTkzMTA2YTE1YjgxMmVkM2U1OGZlNWI',
 						},
 					],
 				},
-/* 				{
+				{
+					//title: 'About Sofie',
+					items: [{ to: '/docs/about-sofie', label: 'About Sofie', position: 'right' }],
+				},
+				/* 				{
 					title: 'More',
 					items: [
 						// {
@@ -80,8 +81,9 @@ module.exports = {
 						},
 					],
 				},
- */			],
-			copyright: `Copyright © ${new Date().getFullYear()} Norsk rikskringkasting AS and Contributors`,
+ */
+			],
+			copyright: `Copyright ©${new Date().getFullYear()} Norsk rikskringkasting AS and Contributors`,
 		},
 		prism: {
 			theme: lightCodeTheme,
@@ -118,25 +120,10 @@ module.exports = {
 		],
 	],
 	plugins: [
-		[
-			'@docusaurus/plugin-content-docs',
-			{
-				id: 'releases',
-				path: 'releases',
-				routeBasePath: 'releases',
-				sidebarPath: require.resolve('./sidebarsReleases.js'),
-				// ... other options
-			},
-		]
-		// [
-		//   '@docusaurus/plugin-content-docs',
-		//   {
-		//     id: 'legacy',
-		//     path: 'legacy',
-		//     routeBasePath: 'legacy',
-		//     sidebarPath: require.resolve('./sidebars.js'),
-		//     // ... other options
-		//   },
-		// ],
+		[require.resolve('docusaurus-lunr-search'), {
+			excludeRoutes: [
+				'docs/[0-9].*.[0-9]/**/*', // exclude changelogs from indexing
+			]
+		}],
 	],
 }
